@@ -45,6 +45,9 @@ DEFAULT_oci_engine_volumeflags=""
 DEFAULT_oci_engine_build_opts="$([[ 'docker' == ${RB_OCI_ENGINE:-$DEFAULT_oci_engine} ]] && echo $DEFAULT_docker_build_opts || echo $DEFAULT_podman_build_opts)"
 DEFAULT_oci_engine_run_opts="$([[ 'docker' == ${RB_OCI_ENGINE:-$DEFAULT_oci_engine} ]] && echo $DEFAULT_docker_run_opts || echo $DEFAULT_podman_run_opts)"
 
+echo "" > $SCRIPTDIR/out.log # Reset log file
+logtofile "Starting project $groupId:$artifactId:$version" $SCRIPTDIR/out.log
+
 echo "| 1. rebuild what binaries?"
 displayOptional  "referenceRepo" "$DEFAULT_referenceRepo"
 displayMandatory "groupId"
@@ -89,7 +92,7 @@ displayOptional  "issue"
 
 base="$SCRIPTDIR"
 
-pushd "$(dirname ${buildspec})" >/dev/null || fatal "Could not move into ${buildspec}"
+pushd "$(dirname $(dirname ${buildspec}))" >/dev/null || fatal "Could not move into ${buildspec}"
 
 echo
 # set umask for the script execution itself because Git updates are better with target umask
@@ -122,5 +125,29 @@ displayOptional  "arch"
 [ -n "$execAfter" ] && info "executing after command: $execAfter" && eval "$execAfter"
 
 #git reset --hard
+buildcompare="$(dirname "${buildinfo}")/$(basename ${buildinfo} .buildinfo).buildcompare"
+
+compare=""
+for f in ${buildcompare}
+do
+  compare=$f
+done
+
+source ${buildcompare}
+
+pushd ../../${version} > /dev/null || fatal "Unable to move into ../../${version}"
+if [[ ${ko} -gt 0 ]]
+then
+  if [ -z "${sourcePath}" ]
+  then
+    runcommand $SCRIPTDIR/build_diffoscope.sh $(basename ${compare}) buildcache/${artifactId}
+  else
+    runcommand $SCRIPTDIR/build_diffoscope.sh $(basename ${compare}) buildcache/${sourcePath}
+  fi
+fi
 
 popd > /dev/null || fatal "Unable to return to starting directory"
+
+popd > /dev/null || fatal "Unable to return to starting directory"
+
+

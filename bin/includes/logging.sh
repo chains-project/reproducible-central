@@ -45,7 +45,11 @@ function runlog() {
   echo -e "${Color_Off}${IWhite}[${BIGreen}RUN ${IWhite}] ${Green}$* ${Color_Off}"
 }
 
-function runcommand() {
+logtofile() {
+  echo -e "$1" >> $2
+}
+
+runcommand() {
   runlog "$*"
 #  echo -e "\033[2m$*\033[0m"
   echo -e "\033[90m"

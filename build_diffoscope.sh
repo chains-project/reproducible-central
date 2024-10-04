@@ -23,13 +23,30 @@ counter=0
 grep '# diffoscope ' ${compare} | ${sed} -e 's/# diffoscope //' | ( while read -r line
 do
   ((counter++))
-  echo -e "$counter / $count \033[1m$line\033[0m"
-  docker run --rm -w /mnt -v $(pwd)/$(dirname ${compare})/${builddir}:/mnt:ro ghcr.io/jvm-repo-rebuild/diffoscope --no-progress --exclude META-INF/jandex.idx $line
-  echo
-done ) | tee ${diffoscope_file}
+  # Split $line into path1 and path2
 
-# remove ansi escape codes from file
-${sed} -i 's/\x1b\[[0-9;]*m//g' ${diffoscope_file}
+  relpath1=$(echo "$line" | cut -d' ' -f1)
+  relpath2=$(echo "$line" | cut -d' ' -f2)
+  path1=$builddir/$relpath1
+  path2=$builddir/$relpath2
+  diffoscope_file="$(basename $relpath1).diffoscope.json"
+  diffoscope_file_path=$(dirname ${compare})/${diffoscope_file}
 
-echo -e "build diffoscope file saved to \033[1m${diffoscope_file}\033[0m"
-du -h ${diffoscope_file}
+
+  dir_with_version=$(pwd)
+  pushd ..
+  echo -e "$counter / $count \033[1m$relpath1 $relpath2\033[0m"
+  docker run --rm \
+      -w /mnt \
+      -v $(realpath $builddir):/mnt \
+      -v $(realpath $path1):/$relpath1 \
+      -v $(realpath $path2):/$relpath2 \
+      -v $dir_with_version:/output \
+      registry.salsa.debian.org/reproducible-builds/diffoscope \
+        --no-progress \
+        --json /output/$(basename ${diffoscope_file_path}) \
+        /$relpath1 /$relpath2
+  popd
+  # remove ansi escape codes from file
+  ${sed} -i 's/\x1b\[[0-9;]*m//g' ${diffoscope_file_path}
+done )

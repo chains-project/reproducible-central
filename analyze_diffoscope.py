@@ -1,26 +1,36 @@
 #!/usr/bin/env python3
 
+from pathlib import Path
 import os
 import json
 import sys
 
-count_of_tools = {}
+count_of_tools = {'procyon': set(), 'javap': set()}
+
+def process_details(details, group_id, artifact_id, count_of_tools, version):
+    for detail in details:
+        source1 = detail.get('source1', '')
+        source2 = detail.get('source2', '')
+        
+        if 'procyon' in source1 or 'procyon' in source2:
+            count_of_tools['procyon'].add(f"{group_id}:{artifact_id}:{version}")
+        if 'javap' in source1 or 'javap' in source2:
+            count_of_tools['javap'].add(f"{group_id}:{artifact_id}:{version}")
+        
+        # Recursively process nested details
+        if 'details' in detail:
+            process_details(detail['details'], group_id, artifact_id, count_of_tools, version)
 
 def analyze_diffoscope(diffoscope_file):
     with open(diffoscope_file, 'r') as file:
         data = json.load(file)
 
-    # Extract relevant information from the diffoscope data
+    diffoscope_file = Path(diffoscope_file)
+    version = diffoscope_file.parent.name
+    artifact_id = diffoscope_file.parent.parent.name
+    group_id = diffoscope_file.parent.parent.parent.name
     details = data['details']
-    for detail in details:
-        source1 = detail['source1']
-        source2 = detail['source2']
-        print(source1, source2)
-        if source1 != source2:
-            print(f"source1 and source2 are probably files names.")
-            count_of_tools['unix_diff'] = count_of_tools.get('unix_diff', 0) + 1
-        else:
-            count_of_tools[source1] = count_of_tools.get(source1, 0) + 1
+    process_details(details, group_id, artifact_id, count_of_tools, version)
 
 if __name__ == "__main__":
     for root, dirs, files in os.walk("results"):

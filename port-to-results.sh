@@ -11,6 +11,9 @@ content_dir="content"
 declare -A groupIdSet
 declare -A artifactIdSet
 
+project_count=0
+max_projects=$1
+echo "Max projects: $max_projects"
 
 for buildspec in $(find $content_dir -name "*.buildspec")
 do
@@ -50,5 +53,18 @@ do
 
     info "Processed Maven project: $groupId:$artifactId:$version"
 
+    
+    if [[ -n "$max_projects" ]]; then
+        if (( project_count >= max_projects )); then
+            info "Reached maximum number of Maven projects ($max_projects). Stopping."
+            break
+        fi
+    fi
+    
+    # Increment project count
+    ((project_count++))
+
 done
+
+echo "Total projects processed: $project_count"
 

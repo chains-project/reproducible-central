@@ -42,7 +42,7 @@ do
       -v $(realpath $path1):/$relpath1 \
       -v $(realpath $path2):/$relpath2 \
       -v $dir_with_version:/output \
-      registry.salsa.debian.org/reproducible-builds/diffoscope \
+      custom-diffoscope \
         --no-progress \
         --json /output/$(basename ${diffoscope_file_path}) \
         /$relpath1 /$relpath2

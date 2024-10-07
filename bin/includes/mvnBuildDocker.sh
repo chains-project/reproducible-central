@@ -127,27 +127,23 @@ mvnBuildDocker() {
     -e MVN_UMASK=${MVN_UMASK}\
     -w /var/maven/app"
 
+  exit_code=0
   if [[ "${newline}" == crlf* ]]
   then
     if [[ "${crlfDocker}" == "yes" ]]
     then
-      runcommand_time ${engine_command} ${mvnImage} ${mvnCommand} ${mvn_engine_params} -Dline.separator=$'\r\n'
+      runcommand ${engine_command} ${mvnImage} ${mvnCommand} ${mvn_engine_params} -Dline.separator=$'\r\n'
+      exit_code=$?
     else
       mvnCommand="$(echo "${mvnCommand}" | sed "s_^mvn _/var/maven/.m2/mvncrlf _")"
-      runcommand_time ${engine_command} ${mvnImage} ${mvnCommand} ${mvn_engine_params}
+      runcommand ${engine_command} ${mvnImage} ${mvnCommand} ${mvn_engine_params}
+      exit_code=$?
     fi
   else
-    runcommand_time ${engine_command} ${mvnImage} ${mvnCommand} ${mvn_engine_params}
+    runcommand ${engine_command} ${mvnImage} ${mvnCommand} ${mvn_engine_params}
+    exit_code=$?
   fi
-}
-
-buildImage() {
-  local image="$1"
-  local dockerFile="$2"
-  if ! runcommand_time "${RB_OCI_ENGINE}" build ${RB_OCI_ENGINE_BUILD_OPTS} -t "${image}" -f "${DOCKERFILES_TMP_DIR}/${dockerFile}" $([ "$CI" == true ] && echo "--push --cache-to type=gha,mode=max --cache-from type=gha") "${SCRIPTDIR}/bin" ;
-  then
-    fatal "Unable to build ${image} using ${dockerFile}"
-  fi
+  logtofile "exit_code=$exit_code" $RESULTDIR/out.log
 }
 
 # ############### TOOLCHAINS BASE IMAGE ###############

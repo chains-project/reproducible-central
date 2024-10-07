@@ -15,7 +15,7 @@ displayResult() {
   . ${buildcompare}
   if [[ ${ko} -gt 0 ]]
   then
-    logtofile "$groupId:$artifactId:$version:ok=${ok}:ko=${ko}" $SCRIPTDIR/out.log
+    logtofile "$groupId:$artifactId:$version:ok=${ok}:ko=${ko}" $RESULTSDIR/out.log
     echo -e "           ok=${ok}"
     echo -e "           okFiles=\"${okFiles}\""
     [[ ${ignored} -gt 0 ]] && echo -e "           \033[33;1mignored=${ignored}\033[0m" && echo -e "           ignoredFiles=${ignoredFiles}"
@@ -40,7 +40,7 @@ displayResult() {
       info "    \033[1m./build_diffoscope.sh $(dirname ${buildspec})/$(basename ${compare}) buildcache/${sourcePath}\033[0m"
     fi
   else
-    logtofile "$groupId:$artifactId:$version:ok=${ok}:ko=${ko}" $SCRIPTDIR/out.log
+    logtofile "$groupId:$artifactId:$version:ok=${ok}:ko=${ko}" $RESULTSDIR/out.log
     echo -e "    \033[32;1mok=${ok}\033[0m"
     echo -e "    okFiles=\"${okFiles}\""
     [[ ${ignored} -gt 0 ]] && echo -e "    \033[33;1mignored=${ignored}\033[0m" && echo -e "    ignoredFiles=${ignoredFiles}"

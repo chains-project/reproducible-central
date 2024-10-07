@@ -115,7 +115,7 @@ mvnBuildDocker() {
   [ -d $base/.npm ] || mkdir -p $base/.npm
   [ -d $base/.sbt ] || mkdir -p $base/.sbt
 
-  local engine_command="$RB_OCI_ENGINE run --name rebuild-central $([ "$CI" != true ] && echo "-it ")--rm\
+  local engine_command="$RB_OCI_ENGINE run $([ "$CI" != true ] && echo "-it ")--rm --name rebuild-central\
     ${RB_OCI_ENGINE_RUN_OPTS}\
     -v $PWD:/var/maven/app${RB_OCI_VOLUME_FLAGS}\
     -v $base/m2:/var/maven/.m2${RB_OCI_VOLUME_FLAGS}\
@@ -176,8 +176,8 @@ mvnBuildDockerBuildBaseToolchainsImage() {
       esac
     done
 
-    mvnImage="ghcr.io/jvm-repo-rebuild/rb-ubuntu-2204-${JDKTAG}"
-    local DOCKERFILE="Dockerfile-$(basename ${mvnImage})"
+    mvnImage="rb-ubuntu-2204-${JDKTAG}"
+    local DOCKERFILE="Dockerfile-${mvnImage}"
     (
       cat "${DOCKERFILES_TEMPLATES_DIR}/Dockerfile.toolchains.template" | \
         sed "s_@@BASEIMAGE@@_${baseMvnImage}_g" | \
@@ -194,7 +194,10 @@ mvnBuildDockerBuildBaseToolchainsImage() {
     fi
 
     info "Building base Reproducible Builder toolchains image \033[1m${mvnImage}\033[0m"
-    buildImage "${mvnImage}" "${DOCKERFILE}"
+    if ! runcommand "${RB_OCI_ENGINE}" build ${RB_OCI_ENGINE_BUILD_OPTS} -t "${mvnImage}" -f "${DOCKERFILES_TMP_DIR}/${DOCKERFILE}" "${SCRIPTDIR}/bin" ;
+    then
+      fatal "Unable to build ${mvnImage} using ${DOCKERFILE}"
+    fi
 }
 
 # ################## INSTALL MAVEN ######################
@@ -204,8 +207,8 @@ mvnBuildDockerAddMaven() {
 
   local baseMvnImage="${mvnImage}"
 
-  mvnImage="ghcr.io/jvm-repo-rebuild/$(basename ${mvnImage})-maven"
-  local DOCKERFILE="Dockerfile-$(basename ${mvnImage})"
+  mvnImage="$(basename ${mvnImage})-maven"
+  local DOCKERFILE="Dockerfile-${mvnImage}"
   (
     cat "${DOCKERFILES_TEMPLATES_DIR}/Dockerfile.maven.template" | \
       sed "s_@@BASEIMAGE@@_${baseMvnImage}_g" | \
@@ -213,7 +216,10 @@ mvnBuildDockerAddMaven() {
       sed "s/@@MAVEN_MAJOR@@/$(echo "${mvnVersion}" | cut -c 1)/g"
   ) > "${DOCKERFILES_TMP_DIR}/${DOCKERFILE}"
 
-  buildImage "${mvnImage}" "${DOCKERFILE}"
+  if ! runcommand "${RB_OCI_ENGINE}" build ${RB_OCI_ENGINE_BUILD_OPTS} -t "${mvnImage}" -f "${DOCKERFILES_TMP_DIR}/${DOCKERFILE}" "${SCRIPTDIR}/bin" ;
+  then
+    fatal "Unable to build ${mvnImage} using ${DOCKERFILE}"
+  fi
 }
 
 # ################## LOCAL USER ######################
@@ -223,8 +229,8 @@ mvnBuildDockerAddUserLayer() {
 
   local baseMvnImage="${mvnImage}"
 
-  mvnImage="ghcr.io/jvm-repo-rebuild/$(basename ${mvnImage})-${USER_NAME}"
-  local DOCKERFILE="Dockerfile-$(basename ${mvnImage})"
+  mvnImage="$(basename ${mvnImage})-${USER_NAME}"
+  local DOCKERFILE="Dockerfile-${mvnImage}"
   (
     cat "${DOCKERFILES_TEMPLATES_DIR}/Dockerfile.localuser.template" | \
       sed "s_@@BASEIMAGE@@_${baseMvnImage}_g" | \
@@ -239,7 +245,10 @@ mvnBuildDockerAddUserLayer() {
     sed -i.bak 's/##TOOLCHAINS##//' "${DOCKERFILES_TMP_DIR}/${DOCKERFILE}"
   fi
 
-  buildImage "${mvnImage}" "${DOCKERFILE}"
+  if ! runcommand "${RB_OCI_ENGINE}" build ${RB_OCI_ENGINE_BUILD_OPTS} -t "${mvnImage}" -f "${DOCKERFILES_TMP_DIR}/${DOCKERFILE}" "${SCRIPTDIR}/bin" ;
+  then
+    fatal "Unable to build ${mvnImage} using ${DOCKERFILE}"
+  fi
 }
 
 # ################## BUILD ENVIRONMENT CHOICES ######################
@@ -251,15 +260,18 @@ mvnBuildDockerAddEnvironmentLayer() {
 
   local ENVTAG="$(echo "${timezone}-${locale}-${umask}" | tr '[:upper:]' '[:lower:]' | tr '/' '_' | tr '+' '_' )"
   mvnImage="${mvnImage}-${ENVTAG}"
-  local DOCKERFILE="Dockerfile-$(basename ${mvnImage})"
+  local DOCKERFILE="Dockerfile-${mvnImage}"
   (
     cat "${DOCKERFILES_TEMPLATES_DIR}/Dockerfile.environment.template" | \
-      sed "s_@@BASEIMAGE@@_${baseMvnImage}_g" | \
+      sed "s/@@BASEIMAGE@@/${baseMvnImage}/g" | \
       sed "s/@@BUILD_LOCALE@@/${locale}/g" | \
       sed "s/@@BUILD_UMASK@@/${umask}/g" | \
       sed "s/@@MAVEN_OPTS@@/${MAVEN_OPTS}/g" | \
       sed "s@\@\@BUILD_TIMEZONE\@\@@${timezone}@g"
    ) > "${DOCKERFILES_TMP_DIR}/${DOCKERFILE}"
 
-  buildImage "${mvnImage}" "${DOCKERFILE}"
+  if ! runcommand "${RB_OCI_ENGINE}" build ${RB_OCI_ENGINE_BUILD_OPTS} -t "${mvnImage}" -f "${DOCKERFILES_TMP_DIR}/${DOCKERFILE}" "${SCRIPTDIR}/bin" ;
+  then
+    fatal "Unable to build ${mvnImage} using ${DOCKERFILE}"
+  fi
 }

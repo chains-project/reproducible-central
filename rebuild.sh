@@ -14,6 +14,8 @@ SCRIPTDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null && pwd )"
 
 . "${SCRIPTDIR}/bin/includes/displayResult.sh"
 
+RESULTSDIR=$SCRIPTDIR/results
+
 # ----------------------------------------------------------------------------------------------------
 
 buildspec=$1
@@ -45,8 +47,7 @@ DEFAULT_oci_engine_volumeflags=""
 DEFAULT_oci_engine_build_opts="$([[ 'docker' == ${RB_OCI_ENGINE:-$DEFAULT_oci_engine} ]] && echo $DEFAULT_docker_build_opts || echo $DEFAULT_podman_build_opts)"
 DEFAULT_oci_engine_run_opts="$([[ 'docker' == ${RB_OCI_ENGINE:-$DEFAULT_oci_engine} ]] && echo $DEFAULT_docker_run_opts || echo $DEFAULT_podman_run_opts)"
 
-echo "" > $SCRIPTDIR/out.log # Reset log file
-logtofile "Starting project $groupId:$artifactId:$version" $SCRIPTDIR/out.log
+logtofile "Starting project $groupId:$artifactId:$version" $RESULTSDIR/out.log
 
 echo "| 1. rebuild what binaries?"
 displayOptional  "referenceRepo" "$DEFAULT_referenceRepo"

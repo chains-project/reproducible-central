@@ -10,4 +10,4 @@ COPY ./bin/docker/custom-diffoscope/procyon-dependencies/procyon /usr/bin/procyo
 
 
 # Set the entrypoint to run diffoscope
-ENTRYPOINT ["diffoscope", "--no-progress"]
+ENTRYPOINT ["diffoscope"]

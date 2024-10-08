@@ -29,8 +29,16 @@ def analyze_diffoscope(diffoscope_file):
     version = diffoscope_file.parent.name
     artifact_id = diffoscope_file.parent.parent.name
     group_id = diffoscope_file.parent.parent.parent.name
-    details = data['details']
-    process_details(details, group_id, artifact_id, count_of_tools, version)
+    if 'details' in data:
+        details = data['details']
+        process_details(details, group_id, artifact_id, count_of_tools, version)
+    else:
+        source1 = data.get('source1', '')
+        source2 = data.get('source2', '')
+        if 'procyon' in source1 or 'procyon' in source2:
+            count_of_tools['procyon'].add(f"{group_id}:{artifact_id}:{version}")
+        if 'javap' in source1 or 'javap' in source2:
+            count_of_tools['javap'].add(f"{group_id}:{artifact_id}:{version}")
 
 if __name__ == "__main__":
     for root, dirs, files in os.walk("results"):

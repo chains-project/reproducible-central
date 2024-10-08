@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+. "${SCRIPTDIR}/bin/includes/logging.sh"
+
 # path to .buildcompare file
 compare=$1
 # relative path to source code, usually buildcache/${artifactId}
@@ -36,7 +38,7 @@ do
   dir_with_version=$(pwd)
   pushd ..
   echo -e "$counter / $count \033[1m$relpath1 $relpath2\033[0m"
-  docker run --rm \
+  runcommand docker run --rm \
       -w /mnt \
       -v $(realpath $builddir):/mnt \
       -v $(realpath $path1):/$relpath1 \
@@ -46,6 +48,8 @@ do
         --no-progress \
         --json /output/$(basename ${diffoscope_file_path}) \
         /$relpath1 /$relpath2
+  exit_code=$?
+  logtofile "diffoscope exit_code=$exit_code" $RESULT_DIR/out.log
   popd
   # remove ansi escape codes from file
   ${sed} -i 's/\x1b\[[0-9;]*m//g' ${diffoscope_file_path}

@@ -143,7 +143,7 @@ mvnBuildDocker() {
     runcommand ${engine_command} ${mvnImage} ${mvnCommand} ${mvn_engine_params}
     exit_code=$?
   fi
-  logtofile "exit_code=$exit_code" $RESULT_DIR/out.log
+  logtofile "maven build exit_code=$exit_code" $RESULT_DIR/out.log
 }
 
 # ############### TOOLCHAINS BASE IMAGE ###############

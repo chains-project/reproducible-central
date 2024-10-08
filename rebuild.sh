@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-SCRIPTDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null && pwd )"
+export SCRIPTDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null && pwd )"
 
 . "${SCRIPTDIR}/bin/includes/bashcolors.sh"
 . "${SCRIPTDIR}/bin/includes/logging.sh"
@@ -14,10 +14,12 @@ SCRIPTDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null && pwd )"
 
 . "${SCRIPTDIR}/bin/includes/displayResult.sh"
 
-RESULT_DIR=$SCRIPTDIR/results
+export RESULT_DIR=$SCRIPTDIR/results
 
 
 # ----------------------------------------------------------------------------------------------------
+
+logtofile "" $RESULT_DIR/out.log
 
 buildspec=$1
 if [ -z "${buildspec}" ]

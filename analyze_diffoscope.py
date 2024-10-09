@@ -6,7 +6,7 @@ import json
 import sys
 import requests
 from github import Github
-
+import argparse
 count_of_tools = {'procyon': {}, 'javap': {}}
 
 def process_details(details, group_id, artifact_id, count_of_tools, version, diffoscope_file):
@@ -54,11 +54,6 @@ def analyze_diffoscope(diffoscope_file):
 
 def create_github_comment(repo, issue_number, comment_body, dry_run=False):
     if dry_run:
-        print(f"Dry run: Comment for issue #{issue_number}")
-        print("---Comment content start---")
-        print(comment_body)
-        print("---Comment content end---")
-        print()
         return
 
     # GitHub API endpoint
@@ -92,12 +87,18 @@ def format_comment(tool, elements):
 
 
 if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description="Process and post GitHub comments.")
+    parser.add_argument("--push-comments", action="store_true", help="Push comments to GitHub")
+    args = parser.parse_args()
+
     for root, dirs, files in os.walk("results"):
         for file in files:
             if file.endswith(".diffoscope.json"):
                 analyze_diffoscope(os.path.join(root, file))
 
     repo = "algomaster99/reproducible-central"
+
+    dry_run = not args.push_comments
 
     for key in count_of_tools:
         if key == 'procyon':
@@ -107,6 +108,16 @@ if __name__ == "__main__":
         for tool in count_of_tools[key]:
             elements = count_of_tools[key][tool]
             comment_body = format_comment(tool, elements)
-            create_github_comment(repo, issue_number, comment_body, dry_run=True)
-    print("All comments have been posted to the GitHub issue.")
+            create_github_comment(repo, issue_number, comment_body, dry_run=dry_run)
+    
+    if not dry_run:
+        print("All comments have been posted to the GitHub issue.")
+    
+    results = {'procyon': {}, 'javap': {}}
+    for key in count_of_tools:
+        results[key]['releases'] = len(count_of_tools[key])
+        for release in count_of_tools[key]:
+            results[key]['diffs'] = len(count_of_tools[key][release])
+    
+    print(results)
     

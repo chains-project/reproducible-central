@@ -60,7 +60,7 @@ do
 
   logtofile "jNorm $(basename $reference)" $RESULT_DIR/out.log
   mkdir -p $dir_with_version/$(basename $reference)/jNorm/
-  runcommand docker run --rm \
+  runcommand docker run --user $(id -u) --rm \
     -w /mnt \
     -v $(realpath $builddir):/mnt \
     -v $(realpath $path1):/$reference \
@@ -74,7 +74,7 @@ do
 
   jnorm_reference_exit_code=$exit_code
 
-  runcommand docker run --rm \
+  runcommand docker run --user $(id -u) --rm \
     -w /mnt \
     -v $(realpath $builddir):/mnt \
     -v $(realpath $path2):/$rebuild \

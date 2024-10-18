@@ -25,6 +25,14 @@ fi
 find "$RESULT_DIR" -type f -name "*.buildspec" | while read -r buildspec; do
     echo "Processing buildspec: $buildspec"
     
+    buildspec_dir=$(dirname "$buildspec")
+
+    if ls $buildspec_dir/*.buildcompare 1> /dev/null 2>&1;
+    then
+        echo "Skipping $buildspec as .buildcompare file exists"
+        continue
+    fi
+
     # Call the rebuild_to_get_diffoscope.sh script with the buildspec file
     "$REBUILD_SCRIPT" "$buildspec"
     

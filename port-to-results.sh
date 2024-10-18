@@ -15,6 +15,15 @@ project_count=0
 max_projects=$1
 echo "Max projects: $max_projects"
 
+
+is_in_csv() {
+    local group_id=$1
+    local artifact_id=$2
+    local version=$3
+    grep -q "$group_id,$artifact_id,$version" releases_with_diffs.csv
+    return $?
+}
+
 for buildspec in $(find $content_dir -name "*.buildspec")
 do
 
@@ -28,6 +37,12 @@ do
 
     if [[ "${jdk}" == ??.0.* || -n "${RB_SHELL}" || ${command} == SHELL* ]]
     then
+        continue
+    fi
+
+    if ! is_in_csv $groupId $artifactId $version
+    then
+        info "Skipping $buildspec as it's not in the CSV"
         continue
     fi
 

@@ -1,0 +1,1767 @@
+public class com.novell.ldapchai.provider.JNDIProviderImpl extends com.novell.ldapchai.provider.AbstractProvider implements com.novell.ldapchai.provider.ChaiProviderImplementor
+{
+private static final int DEFAULT_INITIAL_POOL_SIZE;
+private static final int DEFAULT_PREFERRED_POOL_SIZE;
+private static final int DEFAULT_MAXIMUM_POOL_SIZE;
+private static final com.novell.ldapchai.util.internal.ChaiLogger LOGGER;
+private java.lang.Boolean cachedPagingEnableSupport;
+private javax.naming.ldap.LdapContext jndiConnection;
+private javax.net.SocketFactory socketFactory;
+private static javax.naming.ldap.LdapContext generateNewJndiContext(java.util.Hashtable) throws com.novell.ldapchai.exception.ChaiOperationException, com.novell.ldapchai.exception.ChaiUnavailableException
+{
+java.lang.Throwable v16;
+javax.naming.ldap.InitialLdapContext v6;
+javax.naming.NamingException v11;
+java.util.function.Supplier v10;
+java.time.Duration v8;
+java.lang.String v15, v18, v2, v20, v22, v23, v4;
+java.util.Hashtable v0;
+boolean v13;
+java.time.Instant v5, v7;
+com.novell.ldapchai.exception.ChaiError v21;
+com.novell.ldapchai.exception.ChaiUnavailableException v19, v24;
+java.lang.Object v1, v3;
+java.lang.StringBuilder v12, v14, v17;
+com.novell.ldapchai.util.internal.ChaiLogger v9;
+v0 := @parameter0: java.util.Hashtable;
+v1 = virtualinvoke v0.<java.util.Hashtable: java.lang.Object get(java.lang.Object)>("java.naming.provider.url");
+v2 = staticinvoke <java.lang.String: java.lang.String valueOf(java.lang.Object)>(v1);
+v3 = virtualinvoke v0.<java.util.Hashtable: java.lang.Object get(java.lang.Object)>("java.naming.security.principal");
+v4 = staticinvoke <java.lang.String: java.lang.String valueOf(java.lang.Object)>(v3);
+label1:
+v5 = staticinvoke <java.time.Instant: java.time.Instant now()>();
+v6 = new javax.naming.ldap.InitialLdapContext;
+specialinvoke v6.<javax.naming.ldap.InitialLdapContext: void <init>(java.util.Hashtable,javax.naming.ldap.Control[])>(v0, null);
+v7 = staticinvoke <java.time.Instant: java.time.Instant now()>();
+v8 = staticinvoke <java.time.Duration: java.time.Duration between(java.time.temporal.Temporal,java.time.temporal.Temporal)>(v5, v7);
+v9 = <com.novell.ldapchai.provider.JNDIProviderImpl: com.novell.ldapchai.util.internal.ChaiLogger LOGGER>;
+v10 = staticinvoke <com.novell.ldapchai.provider.JNDIProviderImpl$lambda_generateNewJndiContext_0__146: java.util.function.Supplier bootstrap$(java.lang.String)>(v4);
+virtualinvoke v9.<com.novell.ldapchai.util.internal.ChaiLogger: void trace(java.util.function.Supplier,java.time.Duration)>(v10, v8);
+label2:
+return v6;
+label3:
+v11 := @caughtexception;
+v12 = new java.lang.StringBuilder;
+specialinvoke v12.<java.lang.StringBuilder: void <init>()>();
+virtualinvoke v12.<java.lang.StringBuilder: java.lang.StringBuilder append(java.lang.String)>("unable to bind to ");
+virtualinvoke v12.<java.lang.StringBuilder: java.lang.StringBuilder append(java.lang.String)>(v2);
+virtualinvoke v12.<java.lang.StringBuilder: java.lang.StringBuilder append(java.lang.String)>(" as ");
+virtualinvoke v12.<java.lang.StringBuilder: java.lang.StringBuilder append(java.lang.String)>(v4);
+virtualinvoke v12.<java.lang.StringBuilder: java.lang.StringBuilder append(java.lang.String)>(" reason: ");
+v13 = v11 instanceof javax.naming.CommunicationException;
+if v13 == 0 goto label5;
+v14 = virtualinvoke v12.<java.lang.StringBuilder: java.lang.StringBuilder append(java.lang.String)>("CommunicationException (");
+v15 = virtualinvoke v11.<javax.naming.NamingException: java.lang.String getMessage()>();
+virtualinvoke v14.<java.lang.StringBuilder: java.lang.StringBuilder append(java.lang.String)>(v15);
+v16 = virtualinvoke v11.<javax.naming.NamingException: java.lang.Throwable getRootCause()>();
+if v16 == null goto label4;
+v17 = virtualinvoke v12.<java.lang.StringBuilder: java.lang.StringBuilder append(java.lang.String)>("; ");
+v18 = virtualinvoke v16.<java.lang.Throwable: java.lang.String getMessage()>();
+virtualinvoke v17.<java.lang.StringBuilder: java.lang.StringBuilder append(java.lang.String)>(v18);
+label4:
+virtualinvoke v12.<java.lang.StringBuilder: java.lang.StringBuilder append(java.lang.String)>(")");
+v19 = new com.novell.ldapchai.exception.ChaiUnavailableException;
+v20 = virtualinvoke v12.<java.lang.StringBuilder: java.lang.String toString()>();
+v21 = <com.novell.ldapchai.exception.ChaiError: com.novell.ldapchai.exception.ChaiError COMMUNICATION>;
+specialinvoke v19.<com.novell.ldapchai.exception.ChaiUnavailableException: void <init>(java.lang.String,com.novell.ldapchai.exception.ChaiError,boolean,boolean,java.lang.Throwable)>(v20, v21, 0, 1, v11);
+throw v19;
+label5:
+v22 = virtualinvoke v11.<javax.naming.NamingException: java.lang.String getMessage()>();
+virtualinvoke v12.<java.lang.StringBuilder: java.lang.StringBuilder append(java.lang.String)>(v22);
+v23 = virtualinvoke v12.<java.lang.StringBuilder: java.lang.String toString()>();
+v24 = staticinvoke <com.novell.ldapchai.exception.ChaiUnavailableException: com.novell.ldapchai.exception.ChaiUnavailableException forErrorMessage(java.lang.String,java.lang.Throwable)>(v23, v11);
+throw v24;
+catch javax.naming.NamingException from label1 to label2 with label3;
+}
+private static java.lang.Byte[] toObject(byte[])
+{
+byte[] v0;
+java.lang.Byte[] v2, v4;
+byte v7;
+int v1, v3, v5, v6;
+java.lang.Byte v8;
+v0 := @parameter0: byte[];
+if v0 != null goto label1;
+return null;
+label1:
+v1 = lengthof v0;
+if v1 != 0 goto label2;
+v2 = newarray (java.lang.Byte)[0];
+return v2;
+label2:
+v3 = lengthof v0;
+v4 = newarray (java.lang.Byte)[v3];
+v5 = 0;
+label3:
+v6 = lengthof v0;
+if v5 >= v6 goto label4;
+v7 = v0[v5];
+v8 = staticinvoke <java.lang.Byte: java.lang.Byte valueOf(byte)>(v7);
+v4[v5] = v8;
+v5 = v5 + 1;
+goto label3;
+label4:
+return v4;
+}
+private static byte[] toPrimitive(java.lang.Byte[])
+{
+byte[] v2, v4;
+java.lang.Byte[] v0;
+byte v8;
+int v1, v3, v5, v6;
+java.lang.Byte v7;
+v0 := @parameter0: java.lang.Byte[];
+if v0 != null goto label1;
+return null;
+label1:
+v1 = lengthof v0;
+if v1 != 0 goto label2;
+v2 = newarray (byte)[0];
+return v2;
+label2:
+v3 = lengthof v0;
+v4 = newarray (byte)[v3];
+v5 = 0;
+label3:
+v6 = lengthof v0;
+if v5 >= v6 goto label4;
+v7 = v0[v5];
+v8 = virtualinvoke v7.<java.lang.Byte: byte byteValue()>();
+v4[v5] = v8;
+v5 = v5 + 1;
+goto label3;
+label4:
+return v4;
+}
+void <init>()
+{
+com.novell.ldapchai.provider.JNDIProviderImpl v0;
+v0 := @this: com.novell.ldapchai.provider.JNDIProviderImpl;
+specialinvoke v0.<com.novell.ldapchai.provider.AbstractProvider: void <init>()>();
+v0.<com.novell.ldapchai.provider.JNDIProviderImpl: java.lang.Boolean cachedPagingEnableSupport> = null;
+return;
+}
+public void close()
+{
+java.lang.Throwable v6;
+com.novell.ldapchai.provider.JNDIProviderImpl v0;
+javax.naming.ldap.LdapContext v1, v2;
+java.util.function.Supplier v5;
+java.lang.Exception v3;
+com.novell.ldapchai.util.internal.ChaiLogger v4;
+v0 := @this: com.novell.ldapchai.provider.JNDIProviderImpl;
+specialinvoke v0.<com.novell.ldapchai.provider.AbstractProvider: void close()>();
+v1 = v0.<com.novell.ldapchai.provider.JNDIProviderImpl: javax.naming.ldap.LdapContext jndiConnection>;
+if v1 == null goto label6;
+label1:
+v2 = v0.<com.novell.ldapchai.provider.JNDIProviderImpl: javax.naming.ldap.LdapContext jndiConnection>;
+interfaceinvoke v2.<javax.naming.ldap.LdapContext: void close()>();
+label2:
+v0.<com.novell.ldapchai.provider.JNDIProviderImpl: javax.naming.ldap.LdapContext jndiConnection> = null;
+goto label6;
+label3:
+v3 := @caughtexception;
+v4 = <com.novell.ldapchai.provider.JNDIProviderImpl: com.novell.ldapchai.util.internal.ChaiLogger LOGGER>;
+v5 = staticinvoke <com.novell.ldapchai.provider.JNDIProviderImpl$lambda_close_1__147: java.util.function.Supplier bootstrap$(java.lang.Exception)>(v3);
+virtualinvoke v4.<com.novell.ldapchai.util.internal.ChaiLogger: void warn(java.util.function.Supplier,java.lang.Exception)>(v5, v3);
+label4:
+v0.<com.novell.ldapchai.provider.JNDIProviderImpl: javax.naming.ldap.LdapContext jndiConnection> = null;
+goto label6;
+label5:
+v6 := @caughtexception;
+v0.<com.novell.ldapchai.provider.JNDIProviderImpl: javax.naming.ldap.LdapContext jndiConnection> = null;
+throw v6;
+label6:
+return;
+catch java.lang.Exception from label1 to label2 with label3;
+catch java.lang.Throwable from label1 to label2 with label5;
+catch java.lang.Throwable from label3 to label4 with label5;
+}
+public final boolean compareStringAttribute(java.lang.String, java.lang.String, java.lang.String) throws com.novell.ldapchai.exception.ChaiUnavailableException, com.novell.ldapchai.exception.ChaiOperationException
+{
+java.lang.Throwable v18;
+byte[] v5;
+java.lang.Object[] v13;
+java.lang.String[] v9;
+javax.naming.NamingException v16;
+javax.naming.directory.SearchControls v8;
+java.lang.String v1, v11, v12, v2, v3;
+com.novell.ldapchai.exception.ChaiOperationException v17;
+boolean v15;
+java.lang.UnsupportedOperationException v7;
+com.novell.ldapchai.provider.JNDIProviderImpl v0;
+javax.naming.NamingEnumeration v14;
+com.novell.ldapchai.provider.AbstractProvider$ChaiProviderInputValidator v4;
+javax.naming.ldap.LdapContext v10;
+java.io.UnsupportedEncodingException v6;
+v0 := @this: com.novell.ldapchai.provider.JNDIProviderImpl;
+v1 := @parameter0: java.lang.String;
+v2 := @parameter1: java.lang.String;
+v3 := @parameter2: java.lang.String;
+virtualinvoke v0.<com.novell.ldapchai.provider.JNDIProviderImpl: void activityPreCheck()>();
+v4 = virtualinvoke v0.<com.novell.ldapchai.provider.JNDIProviderImpl: com.novell.ldapchai.provider.AbstractProvider$ChaiProviderInputValidator getInputValidator()>();
+virtualinvoke v4.<com.novell.ldapchai.provider.AbstractProvider$ChaiProviderInputValidator: boolean compareStringAttribute(java.lang.String,java.lang.String,java.lang.String)>(v1, v2, v3);
+label1:
+v5 = virtualinvoke v3.<java.lang.String: byte[] getBytes(java.lang.String)>("UTF-8");
+label2:
+goto label4;
+label3:
+v6 := @caughtexception;
+v7 = new java.lang.UnsupportedOperationException;
+specialinvoke v7.<java.lang.UnsupportedOperationException: void <init>(java.lang.Throwable)>(v6);
+throw v7;
+label4:
+v8 = new javax.naming.directory.SearchControls;
+specialinvoke v8.<javax.naming.directory.SearchControls: void <init>()>();
+v9 = newarray (java.lang.String)[0];
+virtualinvoke v8.<javax.naming.directory.SearchControls: void setReturningAttributes(java.lang.String[])>(v9);
+virtualinvoke v8.<javax.naming.directory.SearchControls: void setSearchScope(int)>(0);
+v10 = specialinvoke v0.<com.novell.ldapchai.provider.JNDIProviderImpl: javax.naming.ldap.LdapContext getLdapConnection()>();
+label5:
+v11 = staticinvoke <com.novell.ldapchai.provider.JNDIProviderImpl: java.lang.String addJndiEscape(java.lang.String)>(v1);
+v12 = dynamicinvoke "makeConcatWithConstants" <java.lang.String (java.lang.String)>(v2) <java.lang.invoke.StringConcatFactory: java.lang.invoke.CallSite makeConcatWithConstants(java.lang.invoke.MethodHandles$Lookup,java.lang.String,java.lang.invoke.MethodType,java.lang.String,java.lang.Object[])>("(\u0001={0})");
+v13 = newarray (java.lang.Object)[1];
+v13[0] = v5;
+v14 = interfaceinvoke v10.<javax.naming.ldap.LdapContext: javax.naming.NamingEnumeration search(java.lang.String,java.lang.String,java.lang.Object[],javax.naming.directory.SearchControls)>(v11, v12, v13, v8);
+v15 = interfaceinvoke v14.<javax.naming.NamingEnumeration: boolean hasMore()>();
+label6:
+goto label9;
+label7:
+v16 := @caughtexception;
+v17 = specialinvoke v0.<com.novell.ldapchai.provider.JNDIProviderImpl: com.novell.ldapchai.exception.ChaiOperationException convertNamingException(javax.naming.NamingException)>(v16);
+throw v17;
+label8:
+v18 := @caughtexception;
+throw v18;
+label9:
+return v15;
+catch java.io.UnsupportedEncodingException from label1 to label2 with label3;
+catch javax.naming.NamingException from label5 to label6 with label7;
+catch java.lang.Throwable from label5 to label6 with label8;
+}
+public final void createEntry(java.lang.String, java.lang.String, java.util.Map) throws com.novell.ldapchai.exception.ChaiUnavailableException, com.novell.ldapchai.exception.ChaiOperationException
+{
+com.novell.ldapchai.provider.JNDIProviderImpl v0;
+java.util.Map v3;
+java.util.Set v5;
+java.lang.String v1, v2;
+com.novell.ldapchai.provider.AbstractProvider$ChaiProviderInputValidator v4;
+v0 := @this: com.novell.ldapchai.provider.JNDIProviderImpl;
+v1 := @parameter0: java.lang.String;
+v2 := @parameter1: java.lang.String;
+v3 := @parameter2: java.util.Map;
+v4 = virtualinvoke v0.<com.novell.ldapchai.provider.JNDIProviderImpl: com.novell.ldapchai.provider.AbstractProvider$ChaiProviderInputValidator getInputValidator()>();
+virtualinvoke v4.<com.novell.ldapchai.provider.AbstractProvider$ChaiProviderInputValidator: void createEntry(java.lang.String,java.lang.String,java.util.Map)>(v1, v2, v3);
+v5 = staticinvoke <java.util.Collections: java.util.Set singleton(java.lang.Object)>(v2);
+virtualinvoke v0.<com.novell.ldapchai.provider.JNDIProviderImpl: void createEntry(java.lang.String,java.util.Set,java.util.Map)>(v1, v5, v3);
+return;
+}
+public final void createEntry(java.lang.String, java.util.Set, java.util.Map) throws com.novell.ldapchai.exception.ChaiOperationException, com.novell.ldapchai.exception.ChaiUnavailableException
+{
+javax.naming.NamingException v18;
+javax.naming.directory.BasicAttribute v6;
+java.util.Map v3;
+java.lang.String v1, v17;
+com.novell.ldapchai.exception.ChaiOperationException v19;
+boolean v12, v8;
+java.util.Iterator v11, v7;
+java.util.Set v10, v2;
+javax.naming.directory.BasicAttributes v5;
+com.novell.ldapchai.provider.JNDIProviderImpl v0;
+java.lang.Object v13, v14, v15, v9;
+com.novell.ldapchai.provider.AbstractProvider$ChaiProviderInputValidator v4;
+javax.naming.ldap.LdapContext v16;
+v0 := @this: com.novell.ldapchai.provider.JNDIProviderImpl;
+v1 := @parameter0: java.lang.String;
+v2 := @parameter1: java.util.Set;
+v3 := @parameter2: java.util.Map;
+virtualinvoke v0.<com.novell.ldapchai.provider.JNDIProviderImpl: void activityPreCheck()>();
+v4 = virtualinvoke v0.<com.novell.ldapchai.provider.JNDIProviderImpl: com.novell.ldapchai.provider.AbstractProvider$ChaiProviderInputValidator getInputValidator()>();
+virtualinvoke v4.<com.novell.ldapchai.provider.AbstractProvider$ChaiProviderInputValidator: void createEntry(java.lang.String,java.util.Set,java.util.Map)>(v1, v2, v3);
+v5 = new javax.naming.directory.BasicAttributes;
+specialinvoke v5.<javax.naming.directory.BasicAttributes: void <init>()>();
+v6 = new javax.naming.directory.BasicAttribute;
+specialinvoke v6.<javax.naming.directory.BasicAttribute: void <init>(java.lang.String)>("objectClass");
+v7 = interfaceinvoke v2.<java.util.Set: java.util.Iterator iterator()>();
+label1:
+v8 = interfaceinvoke v7.<java.util.Iterator: boolean hasNext()>();
+if v8 == 0 goto label2;
+v9 = interfaceinvoke v7.<java.util.Iterator: java.lang.Object next()>();
+virtualinvoke v6.<javax.naming.directory.BasicAttribute: boolean add(java.lang.Object)>(v9);
+goto label1;
+label2:
+interfaceinvoke v5.<javax.naming.directory.Attributes: javax.naming.directory.Attribute put(javax.naming.directory.Attribute)>(v6);
+v10 = interfaceinvoke v3.<java.util.Map: java.util.Set entrySet()>();
+v11 = interfaceinvoke v10.<java.util.Set: java.util.Iterator iterator()>();
+label3:
+v12 = interfaceinvoke v11.<java.util.Iterator: boolean hasNext()>();
+if v12 == 0 goto label4;
+v13 = interfaceinvoke v11.<java.util.Iterator: java.lang.Object next()>();
+v14 = interfaceinvoke v13.<java.util.Map$Entry: java.lang.Object getKey()>();
+v15 = interfaceinvoke v13.<java.util.Map$Entry: java.lang.Object getValue()>();
+interfaceinvoke v5.<javax.naming.directory.Attributes: javax.naming.directory.Attribute put(java.lang.String,java.lang.Object)>(v14, v15);
+goto label3;
+label4:
+v16 = specialinvoke v0.<com.novell.ldapchai.provider.JNDIProviderImpl: javax.naming.ldap.LdapContext getLdapConnection()>();
+label5:
+v17 = staticinvoke <com.novell.ldapchai.provider.JNDIProviderImpl: java.lang.String addJndiEscape(java.lang.String)>(v1);
+interfaceinvoke v16.<javax.naming.directory.DirContext: javax.naming.directory.DirContext createSubcontext(java.lang.String,javax.naming.directory.Attributes)>(v17, v5);
+label6:
+goto label8;
+label7:
+v18 := @caughtexception;
+v19 = specialinvoke v0.<com.novell.ldapchai.provider.JNDIProviderImpl: com.novell.ldapchai.exception.ChaiOperationException convertNamingException(javax.naming.NamingException)>(v18);
+throw v19;
+label8:
+return;
+catch javax.naming.NamingException from label5 to label6 with label7;
+}
+public void renameEntry(java.lang.String, java.lang.String, java.lang.String) throws com.novell.ldapchai.exception.ChaiOperationException, com.novell.ldapchai.exception.ChaiUnavailableException, java.lang.IllegalStateException
+{
+javax.naming.NamingException v7;
+com.novell.ldapchai.provider.JNDIProviderImpl v0;
+java.lang.String v1, v2, v3, v6;
+com.novell.ldapchai.provider.AbstractProvider$ChaiProviderInputValidator v4;
+javax.naming.ldap.LdapContext v5;
+com.novell.ldapchai.exception.ChaiOperationException v8;
+v0 := @this: com.novell.ldapchai.provider.JNDIProviderImpl;
+v1 := @parameter0: java.lang.String;
+v2 := @parameter1: java.lang.String;
+v3 := @parameter2: java.lang.String;
+virtualinvoke v0.<com.novell.ldapchai.provider.JNDIProviderImpl: void activityPreCheck()>();
+v4 = virtualinvoke v0.<com.novell.ldapchai.provider.JNDIProviderImpl: com.novell.ldapchai.provider.AbstractProvider$ChaiProviderInputValidator getInputValidator()>();
+virtualinvoke v4.<com.novell.ldapchai.provider.AbstractProvider$ChaiProviderInputValidator: void renameEntry(java.lang.String,java.lang.String,java.lang.String)>(v1, v2, v3);
+v5 = specialinvoke v0.<com.novell.ldapchai.provider.JNDIProviderImpl: javax.naming.ldap.LdapContext getLdapConnection()>();
+label1:
+v6 = dynamicinvoke "makeConcatWithConstants" <java.lang.String (java.lang.String,java.lang.String)>(v2, v3) <java.lang.invoke.StringConcatFactory: java.lang.invoke.CallSite makeConcatWithConstants(java.lang.invoke.MethodHandles$Lookup,java.lang.String,java.lang.invoke.MethodType,java.lang.String,java.lang.Object[])>("\u0001,\u0001");
+interfaceinvoke v5.<javax.naming.ldap.LdapContext: void rename(java.lang.String,java.lang.String)>(v1, v6);
+label2:
+goto label4;
+label3:
+v7 := @caughtexception;
+v8 = specialinvoke v0.<com.novell.ldapchai.provider.JNDIProviderImpl: com.novell.ldapchai.exception.ChaiOperationException convertNamingException(javax.naming.NamingException)>(v7);
+throw v8;
+label4:
+return;
+catch javax.naming.NamingException from label1 to label2 with label3;
+}
+public final void deleteEntry(java.lang.String) throws com.novell.ldapchai.exception.ChaiUnavailableException, com.novell.ldapchai.exception.ChaiOperationException
+{
+com.novell.ldapchai.provider.JNDIProviderImpl v0;
+java.lang.String v1, v4;
+javax.naming.NamingException v5;
+com.novell.ldapchai.provider.AbstractProvider$ChaiProviderInputValidator v2;
+javax.naming.ldap.LdapContext v3;
+com.novell.ldapchai.exception.ChaiOperationException v6;
+v0 := @this: com.novell.ldapchai.provider.JNDIProviderImpl;
+v1 := @parameter0: java.lang.String;
+virtualinvoke v0.<com.novell.ldapchai.provider.JNDIProviderImpl: void activityPreCheck()>();
+v2 = virtualinvoke v0.<com.novell.ldapchai.provider.JNDIProviderImpl: com.novell.ldapchai.provider.AbstractProvider$ChaiProviderInputValidator getInputValidator()>();
+virtualinvoke v2.<com.novell.ldapchai.provider.AbstractProvider$ChaiProviderInputValidator: void deleteEntry(java.lang.String)>(v1);
+v3 = specialinvoke v0.<com.novell.ldapchai.provider.JNDIProviderImpl: javax.naming.ldap.LdapContext getLdapConnection()>();
+label1:
+v4 = staticinvoke <com.novell.ldapchai.provider.JNDIProviderImpl: java.lang.String addJndiEscape(java.lang.String)>(v1);
+interfaceinvoke v3.<javax.naming.ldap.LdapContext: void destroySubcontext(java.lang.String)>(v4);
+label2:
+goto label4;
+label3:
+v5 := @caughtexception;
+v6 = specialinvoke v0.<com.novell.ldapchai.provider.JNDIProviderImpl: com.novell.ldapchai.exception.ChaiOperationException convertNamingException(javax.naming.NamingException)>(v5);
+throw v6;
+label4:
+return;
+catch javax.naming.NamingException from label1 to label2 with label3;
+}
+public final void deleteStringAttributeValue(java.lang.String, java.lang.String, java.lang.String) throws com.novell.ldapchai.exception.ChaiUnavailableException, com.novell.ldapchai.exception.ChaiOperationException
+{
+javax.naming.directory.ModificationItem v7;
+javax.naming.NamingException v10;
+javax.naming.directory.BasicAttribute v5;
+com.novell.ldapchai.provider.JNDIProviderImpl v0;
+javax.naming.directory.ModificationItem[] v6;
+java.lang.String v1, v2, v3, v9;
+com.novell.ldapchai.provider.AbstractProvider$ChaiProviderInputValidator v4;
+javax.naming.ldap.LdapContext v8;
+com.novell.ldapchai.exception.ChaiOperationException v11;
+v0 := @this: com.novell.ldapchai.provider.JNDIProviderImpl;
+v1 := @parameter0: java.lang.String;
+v2 := @parameter1: java.lang.String;
+v3 := @parameter2: java.lang.String;
+virtualinvoke v0.<com.novell.ldapchai.provider.JNDIProviderImpl: void activityPreCheck()>();
+v4 = virtualinvoke v0.<com.novell.ldapchai.provider.JNDIProviderImpl: com.novell.ldapchai.provider.AbstractProvider$ChaiProviderInputValidator getInputValidator()>();
+virtualinvoke v4.<com.novell.ldapchai.provider.AbstractProvider$ChaiProviderInputValidator: void deleteStringAttributeValue(java.lang.String,java.lang.String,java.lang.String)>(v1, v2, v3);
+v5 = new javax.naming.directory.BasicAttribute;
+specialinvoke v5.<javax.naming.directory.BasicAttribute: void <init>(java.lang.String,java.lang.Object)>(v2, v3);
+v6 = newarray (javax.naming.directory.ModificationItem)[1];
+v7 = new javax.naming.directory.ModificationItem;
+specialinvoke v7.<javax.naming.directory.ModificationItem: void <init>(int,javax.naming.directory.Attribute)>(3, v5);
+v6[0] = v7;
+v8 = specialinvoke v0.<com.novell.ldapchai.provider.JNDIProviderImpl: javax.naming.ldap.LdapContext getLdapConnection()>();
+label1:
+v9 = staticinvoke <com.novell.ldapchai.provider.JNDIProviderImpl: java.lang.String addJndiEscape(java.lang.String)>(v1);
+interfaceinvoke v8.<javax.naming.ldap.LdapContext: void modifyAttributes(java.lang.String,javax.naming.directory.ModificationItem[])>(v9, v6);
+label2:
+goto label4;
+label3:
+v10 := @caughtexception;
+v11 = specialinvoke v0.<com.novell.ldapchai.provider.JNDIProviderImpl: com.novell.ldapchai.exception.ChaiOperationException convertNamingException(javax.naming.NamingException)>(v10);
+throw v11;
+label4:
+return;
+catch javax.naming.NamingException from label1 to label2 with label3;
+}
+public final javax.naming.ldap.ExtendedResponse extendedOperation(javax.naming.ldap.ExtendedRequest) throws com.novell.ldapchai.exception.ChaiUnavailableException, com.novell.ldapchai.exception.ChaiOperationException
+{
+java.lang.Throwable v7;
+java.lang.IllegalStateException v8;
+javax.naming.ldap.ExtendedRequest v1;
+javax.naming.NamingException v5;
+javax.naming.ldap.ExtendedResponse v4;
+com.novell.ldapchai.provider.JNDIProviderImpl v0;
+java.lang.String v10, v9;
+com.novell.ldapchai.provider.AbstractProvider$ChaiProviderInputValidator v2;
+javax.naming.ldap.LdapContext v3;
+com.novell.ldapchai.exception.ChaiOperationException v6;
+v0 := @this: com.novell.ldapchai.provider.JNDIProviderImpl;
+v1 := @parameter0: javax.naming.ldap.ExtendedRequest;
+virtualinvoke v0.<com.novell.ldapchai.provider.JNDIProviderImpl: void activityPreCheck()>();
+v2 = virtualinvoke v0.<com.novell.ldapchai.provider.JNDIProviderImpl: com.novell.ldapchai.provider.AbstractProvider$ChaiProviderInputValidator getInputValidator()>();
+virtualinvoke v2.<com.novell.ldapchai.provider.AbstractProvider$ChaiProviderInputValidator: javax.naming.ldap.ExtendedResponse extendedOperation(javax.naming.ldap.ExtendedRequest)>(v1);
+virtualinvoke v0.<com.novell.ldapchai.provider.JNDIProviderImpl: void preCheckExtendedOperation(javax.naming.ldap.ExtendedRequest)>(v1);
+v3 = specialinvoke v0.<com.novell.ldapchai.provider.JNDIProviderImpl: javax.naming.ldap.LdapContext getLdapConnection()>();
+label1:
+v4 = interfaceinvoke v3.<javax.naming.ldap.LdapContext: javax.naming.ldap.ExtendedResponse extendedOperation(javax.naming.ldap.ExtendedRequest)>(v1);
+label2:
+return v4;
+label3:
+v5 := @caughtexception;
+virtualinvoke v0.<com.novell.ldapchai.provider.JNDIProviderImpl: void cacheExtendedOperationException(javax.naming.ldap.ExtendedRequest,java.lang.Exception)>(v1, v5);
+v6 = specialinvoke v0.<com.novell.ldapchai.provider.JNDIProviderImpl: com.novell.ldapchai.exception.ChaiOperationException convertNamingException(javax.naming.NamingException)>(v5);
+throw v6;
+label4:
+v7 := @caughtexception;
+v8 = new java.lang.IllegalStateException;
+v9 = virtualinvoke v7.<java.lang.Throwable: java.lang.String getMessage()>();
+v10 = dynamicinvoke "makeConcatWithConstants" <java.lang.String (java.lang.String)>(v9) <java.lang.invoke.StringConcatFactory: java.lang.invoke.CallSite makeConcatWithConstants(java.lang.invoke.MethodHandles$Lookup,java.lang.String,java.lang.invoke.MethodType,java.lang.String,java.lang.Object[])>("unexpected chai api error: \u0001");
+specialinvoke v8.<java.lang.IllegalStateException: void <init>(java.lang.String,java.lang.Throwable)>(v10, v7);
+throw v8;
+catch javax.naming.NamingException from label1 to label2 with label3;
+catch java.lang.Throwable from label1 to label2 with label4;
+}
+public com.novell.ldapchai.provider.ChaiConfiguration getChaiConfiguration()
+{
+com.novell.ldapchai.provider.ChaiConfiguration v1;
+com.novell.ldapchai.provider.JNDIProviderImpl v0;
+v0 := @this: com.novell.ldapchai.provider.JNDIProviderImpl;
+v1 = v0.<com.novell.ldapchai.provider.JNDIProviderImpl: com.novell.ldapchai.provider.ChaiConfiguration chaiConfig>;
+return v1;
+}
+public com.novell.ldapchai.provider.ProviderStatistics getProviderStatistics()
+{
+com.novell.ldapchai.provider.JNDIProviderImpl v0;
+v0 := @this: com.novell.ldapchai.provider.JNDIProviderImpl;
+return null;
+}
+public final byte[][] readMultiByteAttribute(java.lang.String, java.lang.String) throws com.novell.ldapchai.exception.ChaiUnavailableException, com.novell.ldapchai.exception.ChaiOperationException
+{
+byte[] v21;
+javax.naming.NamingException v22, v27, v30, v33;
+java.lang.NullPointerException v25;
+javax.naming.directory.Attribute v11;
+boolean v12, v14;
+byte[][] v17, v26;
+javax.naming.directory.Attributes v10;
+javax.naming.NamingEnumeration v5;
+javax.naming.ldap.LdapContext v7;
+com.novell.ldapchai.util.internal.ChaiLogger v23, v28, v34;
+java.lang.Throwable v32;
+java.lang.String[] v6;
+java.util.function.Supplier v24, v29, v35;
+java.util.ArrayList v4;
+int v16, v18, v19;
+java.lang.String v1, v2, v9;
+com.novell.ldapchai.exception.ChaiOperationException v31;
+com.novell.ldapchai.provider.JNDIProviderImpl v0;
+java.lang.Byte[] v15;
+java.lang.Object v13, v20, v8;
+com.novell.ldapchai.provider.AbstractProvider$ChaiProviderInputValidator v3;
+v0 := @this: com.novell.ldapchai.provider.JNDIProviderImpl;
+v1 := @parameter0: java.lang.String;
+v2 := @parameter1: java.lang.String;
+virtualinvoke v0.<com.novell.ldapchai.provider.JNDIProviderImpl: void activityPreCheck()>();
+v3 = virtualinvoke v0.<com.novell.ldapchai.provider.JNDIProviderImpl: com.novell.ldapchai.provider.AbstractProvider$ChaiProviderInputValidator getInputValidator()>();
+virtualinvoke v3.<com.novell.ldapchai.provider.AbstractProvider$ChaiProviderInputValidator: byte[][] readMultiByteAttribute(java.lang.String,java.lang.String)>(v1, v2);
+v4 = new java.util.ArrayList;
+specialinvoke v4.<java.util.ArrayList: void <init>()>();
+v5 = null;
+v6 = newarray (java.lang.String)[1];
+v6[0] = v2;
+label01:
+v7 = specialinvoke v0.<com.novell.ldapchai.provider.JNDIProviderImpl: javax.naming.ldap.LdapContext getLdapConnection()>();
+v8 = interfaceinvoke v7.<javax.naming.ldap.LdapContext: java.lang.Object lookup(java.lang.String)>("");
+interfaceinvoke v8.<javax.naming.ldap.LdapContext: java.lang.Object addToEnvironment(java.lang.String,java.lang.Object)>("java.naming.ldap.attributes.binary", v2);
+v9 = staticinvoke <com.novell.ldapchai.provider.JNDIProviderImpl: java.lang.String addJndiEscape(java.lang.String)>(v1);
+v10 = interfaceinvoke v8.<javax.naming.ldap.LdapContext: javax.naming.directory.Attributes getAttributes(java.lang.String,java.lang.String[])>(v9, v6);
+v11 = interfaceinvoke v10.<javax.naming.directory.Attributes: javax.naming.directory.Attribute get(java.lang.String)>(v2);
+v5 = interfaceinvoke v11.<javax.naming.directory.Attribute: javax.naming.NamingEnumeration getAll()>();
+label02:
+v12 = interfaceinvoke v5.<javax.naming.NamingEnumeration: boolean hasMore()>();
+if v12 == 0 goto label03;
+v13 = interfaceinvoke v5.<javax.naming.NamingEnumeration: java.lang.Object next()>();
+v14 = v13 instanceof byte[];
+if v14 == 0 goto label02;
+v15 = staticinvoke <com.novell.ldapchai.provider.JNDIProviderImpl: java.lang.Byte[] toObject(byte[])>(v13);
+interfaceinvoke v4.<java.util.List: boolean add(java.lang.Object)>(v15);
+goto label02;
+label03:
+v16 = interfaceinvoke v4.<java.util.List: int size()>();
+v17 = newarray (byte[])[v16];
+v18 = 0;
+label04:
+v19 = interfaceinvoke v4.<java.util.List: int size()>();
+if v18 >= v19 goto label05;
+v20 = interfaceinvoke v4.<java.util.List: java.lang.Object get(int)>(v18);
+v21 = staticinvoke <com.novell.ldapchai.provider.JNDIProviderImpl: byte[] toPrimitive(java.lang.Byte[])>(v20);
+v17[v18] = v21;
+v18 = v18 + 1;
+goto label04;
+label05:
+interfaceinvoke v5.<javax.naming.NamingEnumeration: void close()>();
+label06:
+goto label08;
+label07:
+v22 := @caughtexception;
+v23 = <com.novell.ldapchai.provider.JNDIProviderImpl: com.novell.ldapchai.util.internal.ChaiLogger LOGGER>;
+v24 = staticinvoke <com.novell.ldapchai.provider.JNDIProviderImpl$lambda_readMultiByteAttribute_2__150: java.util.function.Supplier bootstrap$(javax.naming.NamingException)>(v22);
+virtualinvoke v23.<com.novell.ldapchai.util.internal.ChaiLogger: void trace(java.util.function.Supplier)>(v24);
+label08:
+return v17;
+label09:
+v25 := @caughtexception;
+v26 = newmultiarray (byte)[0][0];
+label10:
+if v5 == null goto label13;
+interfaceinvoke v5.<javax.naming.NamingEnumeration: void close()>();
+label11:
+goto label13;
+label12:
+v27 := @caughtexception;
+v28 = <com.novell.ldapchai.provider.JNDIProviderImpl: com.novell.ldapchai.util.internal.ChaiLogger LOGGER>;
+v29 = staticinvoke <com.novell.ldapchai.provider.JNDIProviderImpl$lambda_readMultiByteAttribute_2__149: java.util.function.Supplier bootstrap$(javax.naming.NamingException)>(v27);
+virtualinvoke v28.<com.novell.ldapchai.util.internal.ChaiLogger: void trace(java.util.function.Supplier)>(v29);
+label13:
+return v26;
+label14:
+v30 := @caughtexception;
+v31 = specialinvoke v0.<com.novell.ldapchai.provider.JNDIProviderImpl: com.novell.ldapchai.exception.ChaiOperationException convertNamingException(javax.naming.NamingException)>(v30);
+throw v31;
+label15:
+v32 := @caughtexception;
+label16:
+if v5 == null goto label19;
+interfaceinvoke v5.<javax.naming.NamingEnumeration: void close()>();
+label17:
+goto label19;
+label18:
+v33 := @caughtexception;
+v34 = <com.novell.ldapchai.provider.JNDIProviderImpl: com.novell.ldapchai.util.internal.ChaiLogger LOGGER>;
+v35 = staticinvoke <com.novell.ldapchai.provider.JNDIProviderImpl$lambda_readMultiByteAttribute_2__148: java.util.function.Supplier bootstrap$(javax.naming.NamingException)>(v33);
+virtualinvoke v34.<com.novell.ldapchai.util.internal.ChaiLogger: void trace(java.util.function.Supplier)>(v35);
+label19:
+throw v32;
+catch javax.naming.NamingException from label05 to label06 with label07;
+catch java.lang.NullPointerException from label01 to label05 with label09;
+catch javax.naming.NamingException from label10 to label11 with label12;
+catch javax.naming.NamingException from label01 to label05 with label14;
+catch java.lang.Throwable from label01 to label05 with label15;
+catch java.lang.Throwable from label09 to label10 with label15;
+catch javax.naming.NamingException from label16 to label17 with label18;
+}
+public final java.util.Set readMultiStringAttribute(java.lang.String, java.lang.String) throws com.novell.ldapchai.exception.ChaiUnavailableException, com.novell.ldapchai.exception.ChaiOperationException
+{
+java.lang.Throwable v24;
+java.lang.String[] v6;
+javax.naming.NamingException v14, v19, v22, v25;
+java.util.function.Supplier v16, v21, v27;
+java.lang.NullPointerException v17;
+java.util.HashSet v4;
+javax.naming.directory.Attribute v10;
+java.lang.String v1, v13, v2, v8;
+com.novell.ldapchai.exception.ChaiOperationException v23;
+boolean v11;
+java.util.Set v18;
+com.novell.ldapchai.provider.JNDIProviderImpl v0;
+javax.naming.directory.Attributes v9;
+javax.naming.NamingEnumeration v5;
+java.lang.Object v12;
+com.novell.ldapchai.provider.AbstractProvider$ChaiProviderInputValidator v3;
+javax.naming.ldap.LdapContext v7;
+com.novell.ldapchai.util.internal.ChaiLogger v15, v20, v26;
+v0 := @this: com.novell.ldapchai.provider.JNDIProviderImpl;
+v1 := @parameter0: java.lang.String;
+v2 := @parameter1: java.lang.String;
+virtualinvoke v0.<com.novell.ldapchai.provider.JNDIProviderImpl: void activityPreCheck()>();
+v3 = virtualinvoke v0.<com.novell.ldapchai.provider.JNDIProviderImpl: com.novell.ldapchai.provider.AbstractProvider$ChaiProviderInputValidator getInputValidator()>();
+virtualinvoke v3.<com.novell.ldapchai.provider.AbstractProvider$ChaiProviderInputValidator: java.util.Set readMultiStringAttribute(java.lang.String,java.lang.String)>(v1, v2);
+v4 = new java.util.HashSet;
+specialinvoke v4.<java.util.HashSet: void <init>()>();
+v5 = null;
+label01:
+v6 = newarray (java.lang.String)[1];
+v6[0] = v2;
+v7 = specialinvoke v0.<com.novell.ldapchai.provider.JNDIProviderImpl: javax.naming.ldap.LdapContext getLdapConnection()>();
+v8 = staticinvoke <com.novell.ldapchai.provider.JNDIProviderImpl: java.lang.String addJndiEscape(java.lang.String)>(v1);
+v9 = interfaceinvoke v7.<javax.naming.ldap.LdapContext: javax.naming.directory.Attributes getAttributes(java.lang.String,java.lang.String[])>(v8, v6);
+v10 = interfaceinvoke v9.<javax.naming.directory.Attributes: javax.naming.directory.Attribute get(java.lang.String)>(v2);
+v5 = interfaceinvoke v10.<javax.naming.directory.Attribute: javax.naming.NamingEnumeration getAll()>();
+label02:
+v11 = interfaceinvoke v5.<javax.naming.NamingEnumeration: boolean hasMore()>();
+if v11 == 0 goto label03;
+v12 = interfaceinvoke v5.<javax.naming.NamingEnumeration: java.lang.Object next()>();
+v13 = virtualinvoke v12.<java.lang.Object: java.lang.String toString()>();
+interfaceinvoke v4.<java.util.Set: boolean add(java.lang.Object)>(v13);
+goto label02;
+label03:
+interfaceinvoke v5.<javax.naming.NamingEnumeration: void close()>();
+label04:
+goto label06;
+label05:
+v14 := @caughtexception;
+v15 = <com.novell.ldapchai.provider.JNDIProviderImpl: com.novell.ldapchai.util.internal.ChaiLogger LOGGER>;
+v16 = staticinvoke <com.novell.ldapchai.provider.JNDIProviderImpl$lambda_readMultiStringAttribute_3__153: java.util.function.Supplier bootstrap$(javax.naming.NamingException)>(v14);
+virtualinvoke v15.<com.novell.ldapchai.util.internal.ChaiLogger: void trace(java.util.function.Supplier)>(v16);
+label06:
+return v4;
+label07:
+v17 := @caughtexception;
+v18 = staticinvoke <java.util.Collections: java.util.Set emptySet()>();
+label08:
+if v5 == null goto label11;
+interfaceinvoke v5.<javax.naming.NamingEnumeration: void close()>();
+label09:
+goto label11;
+label10:
+v19 := @caughtexception;
+v20 = <com.novell.ldapchai.provider.JNDIProviderImpl: com.novell.ldapchai.util.internal.ChaiLogger LOGGER>;
+v21 = staticinvoke <com.novell.ldapchai.provider.JNDIProviderImpl$lambda_readMultiStringAttribute_3__152: java.util.function.Supplier bootstrap$(javax.naming.NamingException)>(v19);
+virtualinvoke v20.<com.novell.ldapchai.util.internal.ChaiLogger: void trace(java.util.function.Supplier)>(v21);
+label11:
+return v18;
+label12:
+v22 := @caughtexception;
+v23 = specialinvoke v0.<com.novell.ldapchai.provider.JNDIProviderImpl: com.novell.ldapchai.exception.ChaiOperationException convertNamingException(javax.naming.NamingException)>(v22);
+throw v23;
+label13:
+v24 := @caughtexception;
+label14:
+if v5 == null goto label17;
+interfaceinvoke v5.<javax.naming.NamingEnumeration: void close()>();
+label15:
+goto label17;
+label16:
+v25 := @caughtexception;
+v26 = <com.novell.ldapchai.provider.JNDIProviderImpl: com.novell.ldapchai.util.internal.ChaiLogger LOGGER>;
+v27 = staticinvoke <com.novell.ldapchai.provider.JNDIProviderImpl$lambda_readMultiStringAttribute_3__151: java.util.function.Supplier bootstrap$(javax.naming.NamingException)>(v25);
+virtualinvoke v26.<com.novell.ldapchai.util.internal.ChaiLogger: void trace(java.util.function.Supplier)>(v27);
+label17:
+throw v24;
+catch javax.naming.NamingException from label03 to label04 with label05;
+catch java.lang.NullPointerException from label01 to label03 with label07;
+catch javax.naming.NamingException from label08 to label09 with label10;
+catch javax.naming.NamingException from label01 to label03 with label12;
+catch java.lang.Throwable from label01 to label03 with label13;
+catch java.lang.Throwable from label07 to label08 with label13;
+catch javax.naming.NamingException from label14 to label15 with label16;
+}
+public final java.lang.String readStringAttribute(java.lang.String, java.lang.String) throws com.novell.ldapchai.exception.ChaiUnavailableException, com.novell.ldapchai.exception.ChaiOperationException
+{
+com.novell.ldapchai.provider.JNDIProviderImpl v0;
+java.util.Map v5;
+java.util.Set v4;
+java.lang.Object v6;
+java.lang.String v1, v2;
+com.novell.ldapchai.provider.AbstractProvider$ChaiProviderInputValidator v3;
+v0 := @this: com.novell.ldapchai.provider.JNDIProviderImpl;
+v1 := @parameter0: java.lang.String;
+v2 := @parameter1: java.lang.String;
+virtualinvoke v0.<com.novell.ldapchai.provider.JNDIProviderImpl: void activityPreCheck()>();
+v3 = virtualinvoke v0.<com.novell.ldapchai.provider.JNDIProviderImpl: com.novell.ldapchai.provider.AbstractProvider$ChaiProviderInputValidator getInputValidator()>();
+virtualinvoke v3.<com.novell.ldapchai.provider.AbstractProvider$ChaiProviderInputValidator: java.lang.String readStringAttribute(java.lang.String,java.lang.String)>(v1, v2);
+v4 = staticinvoke <java.util.Collections: java.util.Set singleton(java.lang.Object)>(v2);
+v5 = virtualinvoke v0.<com.novell.ldapchai.provider.JNDIProviderImpl: java.util.Map readStringAttributes(java.lang.String,java.util.Set)>(v1, v4);
+v6 = interfaceinvoke v5.<java.util.Map: java.lang.Object get(java.lang.Object)>(v2);
+return v6;
+}
+public final java.util.Map readStringAttributes(java.lang.String, java.util.Set) throws com.novell.ldapchai.exception.ChaiUnavailableException, com.novell.ldapchai.exception.ChaiOperationException
+{
+java.lang.Throwable v27;
+java.lang.Object[] v17;
+java.lang.String[] v16;
+javax.naming.NamingException v25;
+java.util.LinkedHashMap v4;
+javax.naming.directory.Attribute v22;
+java.lang.String v1, v12, v14, v15, v24, v7;
+com.novell.ldapchai.exception.ChaiOperationException v26;
+boolean v10, v20, v6;
+java.util.Iterator v19;
+java.util.Set v2;
+com.novell.ldapchai.provider.JNDIProviderImpl v0;
+javax.naming.directory.Attributes v18, v8;
+javax.naming.NamingEnumeration v9;
+java.lang.Object v11, v13, v21, v23;
+com.novell.ldapchai.provider.AbstractProvider$ChaiProviderInputValidator v3;
+javax.naming.ldap.LdapContext v5;
+v0 := @this: com.novell.ldapchai.provider.JNDIProviderImpl;
+v1 := @parameter0: java.lang.String;
+v2 := @parameter1: java.util.Set;
+virtualinvoke v0.<com.novell.ldapchai.provider.JNDIProviderImpl: void activityPreCheck()>();
+v3 = virtualinvoke v0.<com.novell.ldapchai.provider.JNDIProviderImpl: com.novell.ldapchai.provider.AbstractProvider$ChaiProviderInputValidator getInputValidator()>();
+virtualinvoke v3.<com.novell.ldapchai.provider.AbstractProvider$ChaiProviderInputValidator: java.util.Map readStringAttributes(java.lang.String,java.util.Set)>(v1, v2);
+v4 = new java.util.LinkedHashMap;
+specialinvoke v4.<java.util.LinkedHashMap: void <init>()>();
+v5 = specialinvoke v0.<com.novell.ldapchai.provider.JNDIProviderImpl: javax.naming.ldap.LdapContext getLdapConnection()>();
+label1:
+if v2 == null goto label2;
+v6 = interfaceinvoke v2.<java.util.Set: boolean isEmpty()>();
+if v6 == 0 goto label4;
+label2:
+v7 = staticinvoke <com.novell.ldapchai.provider.JNDIProviderImpl: java.lang.String addJndiEscape(java.lang.String)>(v1);
+v8 = interfaceinvoke v5.<javax.naming.ldap.LdapContext: javax.naming.directory.Attributes getAttributes(java.lang.String,java.lang.String[])>(v7, null);
+v9 = interfaceinvoke v8.<javax.naming.directory.Attributes: javax.naming.NamingEnumeration getAll()>();
+label3:
+v10 = interfaceinvoke v9.<javax.naming.NamingEnumeration: boolean hasMoreElements()>();
+if v10 == 0 goto label8;
+v11 = interfaceinvoke v9.<javax.naming.NamingEnumeration: java.lang.Object nextElement()>();
+if v11 == null goto label3;
+v12 = interfaceinvoke v11.<javax.naming.directory.Attribute: java.lang.String getID()>();
+v13 = interfaceinvoke v11.<javax.naming.directory.Attribute: java.lang.Object get()>();
+v14 = virtualinvoke v13.<java.lang.Object: java.lang.String toString()>();
+interfaceinvoke v4.<java.util.Map: java.lang.Object put(java.lang.Object,java.lang.Object)>(v12, v14);
+goto label3;
+label4:
+v15 = staticinvoke <com.novell.ldapchai.provider.JNDIProviderImpl: java.lang.String addJndiEscape(java.lang.String)>(v1);
+v16 = newarray (java.lang.String)[0];
+v17 = interfaceinvoke v2.<java.util.Set: java.lang.Object[] toArray(java.lang.Object[])>(v16);
+v18 = interfaceinvoke v5.<javax.naming.ldap.LdapContext: javax.naming.directory.Attributes getAttributes(java.lang.String,java.lang.String[])>(v15, v17);
+v19 = interfaceinvoke v2.<java.util.Set: java.util.Iterator iterator()>();
+label5:
+v20 = interfaceinvoke v19.<java.util.Iterator: boolean hasNext()>();
+if v20 == 0 goto label8;
+v21 = interfaceinvoke v19.<java.util.Iterator: java.lang.Object next()>();
+v22 = interfaceinvoke v18.<javax.naming.directory.Attributes: javax.naming.directory.Attribute get(java.lang.String)>(v21);
+if v22 == null goto label5;
+v23 = interfaceinvoke v22.<javax.naming.directory.Attribute: java.lang.Object get()>();
+v24 = virtualinvoke v23.<java.lang.Object: java.lang.String toString()>();
+interfaceinvoke v4.<java.util.Map: java.lang.Object put(java.lang.Object,java.lang.Object)>(v21, v24);
+goto label5;
+label6:
+v25 := @caughtexception;
+v26 = specialinvoke v0.<com.novell.ldapchai.provider.JNDIProviderImpl: com.novell.ldapchai.exception.ChaiOperationException convertNamingException(javax.naming.NamingException)>(v25);
+throw v26;
+label7:
+v27 := @caughtexception;
+throw v27;
+label8:
+return v4;
+catch javax.naming.NamingException from label1 to label6 with label6;
+catch java.lang.Throwable from label1 to label6 with label7;
+}
+public final void replaceStringAttribute(java.lang.String, java.lang.String, java.lang.String, java.lang.String) throws com.novell.ldapchai.exception.ChaiUnavailableException, com.novell.ldapchai.exception.ChaiOperationException
+{
+javax.naming.directory.ModificationItem v7, v9;
+javax.naming.NamingException v13;
+javax.naming.directory.BasicAttribute v10, v8;
+com.novell.ldapchai.provider.JNDIProviderImpl v0;
+javax.naming.directory.ModificationItem[] v6;
+java.lang.String v1, v12, v2, v3, v4;
+com.novell.ldapchai.provider.AbstractProvider$ChaiProviderInputValidator v5;
+javax.naming.ldap.LdapContext v11;
+com.novell.ldapchai.exception.ChaiOperationException v14;
+v0 := @this: com.novell.ldapchai.provider.JNDIProviderImpl;
+v1 := @parameter0: java.lang.String;
+v2 := @parameter1: java.lang.String;
+v3 := @parameter2: java.lang.String;
+v4 := @parameter3: java.lang.String;
+virtualinvoke v0.<com.novell.ldapchai.provider.JNDIProviderImpl: void activityPreCheck()>();
+v5 = virtualinvoke v0.<com.novell.ldapchai.provider.JNDIProviderImpl: com.novell.ldapchai.provider.AbstractProvider$ChaiProviderInputValidator getInputValidator()>();
+virtualinvoke v5.<com.novell.ldapchai.provider.AbstractProvider$ChaiProviderInputValidator: void replaceStringAttribute(java.lang.String,java.lang.String,java.lang.String,java.lang.String)>(v1, v2, v3, v4);
+v6 = newarray (javax.naming.directory.ModificationItem)[2];
+v7 = new javax.naming.directory.ModificationItem;
+v8 = new javax.naming.directory.BasicAttribute;
+specialinvoke v8.<javax.naming.directory.BasicAttribute: void <init>(java.lang.String,java.lang.Object)>(v2, v3);
+specialinvoke v7.<javax.naming.directory.ModificationItem: void <init>(int,javax.naming.directory.Attribute)>(3, v8);
+v6[0] = v7;
+v9 = new javax.naming.directory.ModificationItem;
+v10 = new javax.naming.directory.BasicAttribute;
+specialinvoke v10.<javax.naming.directory.BasicAttribute: void <init>(java.lang.String,java.lang.Object)>(v2, v4);
+specialinvoke v9.<javax.naming.directory.ModificationItem: void <init>(int,javax.naming.directory.Attribute)>(1, v10);
+v6[1] = v9;
+v11 = specialinvoke v0.<com.novell.ldapchai.provider.JNDIProviderImpl: javax.naming.ldap.LdapContext getLdapConnection()>();
+label1:
+v12 = staticinvoke <com.novell.ldapchai.provider.JNDIProviderImpl: java.lang.String addJndiEscape(java.lang.String)>(v1);
+interfaceinvoke v11.<javax.naming.ldap.LdapContext: void modifyAttributes(java.lang.String,javax.naming.directory.ModificationItem[])>(v12, v6);
+label2:
+goto label4;
+label3:
+v13 := @caughtexception;
+v14 = specialinvoke v0.<com.novell.ldapchai.provider.JNDIProviderImpl: com.novell.ldapchai.exception.ChaiOperationException convertNamingException(javax.naming.NamingException)>(v13);
+throw v14;
+label4:
+return;
+catch javax.naming.NamingException from label1 to label2 with label3;
+}
+public final java.util.Map search(java.lang.String, com.novell.ldapchai.util.SearchHelper) throws com.novell.ldapchai.exception.ChaiUnavailableException, com.novell.ldapchai.exception.ChaiOperationException
+{
+com.novell.ldapchai.util.SearchHelper v2;
+java.util.HashMap v7;
+java.util.LinkedHashMap v15;
+java.util.Map v23, v24, v25, v6;
+int v8;
+java.lang.String v1;
+boolean v11, v18;
+java.util.Iterator v10, v17;
+com.novell.ldapchai.provider.JNDIProviderImpl$SearchEngine v4;
+com.novell.ldapchai.provider.ChaiConfiguration v5;
+java.util.Set v16, v9;
+com.novell.ldapchai.provider.JNDIProviderImpl v0;
+java.lang.Object v12, v13, v14, v19, v20, v21, v22;
+com.novell.ldapchai.provider.AbstractProvider$ChaiProviderInputValidator v3;
+v0 := @this: com.novell.ldapchai.provider.JNDIProviderImpl;
+v1 := @parameter0: java.lang.String;
+v2 := @parameter1: com.novell.ldapchai.util.SearchHelper;
+virtualinvoke v0.<com.novell.ldapchai.provider.JNDIProviderImpl: void activityPreCheck()>();
+v3 = virtualinvoke v0.<com.novell.ldapchai.provider.JNDIProviderImpl: com.novell.ldapchai.provider.AbstractProvider$ChaiProviderInputValidator getInputValidator()>();
+virtualinvoke v3.<com.novell.ldapchai.provider.AbstractProvider$ChaiProviderInputValidator: java.util.Map search(java.lang.String,com.novell.ldapchai.util.SearchHelper)>(v1, v2);
+v4 = new com.novell.ldapchai.provider.JNDIProviderImpl$SearchEngine;
+v5 = v0.<com.novell.ldapchai.provider.JNDIProviderImpl: com.novell.ldapchai.provider.ChaiConfiguration chaiConfig>;
+specialinvoke v4.<com.novell.ldapchai.provider.JNDIProviderImpl$SearchEngine: void <init>(com.novell.ldapchai.provider.JNDIProviderImpl,com.novell.ldapchai.provider.ChaiConfiguration,java.lang.String,com.novell.ldapchai.util.SearchHelper,boolean)>(v0, v5, v1, v2, 0);
+v6 = virtualinvoke v4.<com.novell.ldapchai.provider.JNDIProviderImpl$SearchEngine: java.util.Map getResults()>();
+if v6 == null goto label5;
+v7 = new java.util.HashMap;
+v8 = interfaceinvoke v6.<java.util.Map: int size()>();
+specialinvoke v7.<java.util.HashMap: void <init>(int)>(v8);
+v9 = interfaceinvoke v6.<java.util.Map: java.util.Set entrySet()>();
+v10 = interfaceinvoke v9.<java.util.Set: java.util.Iterator iterator()>();
+label1:
+v11 = interfaceinvoke v10.<java.util.Iterator: boolean hasNext()>();
+if v11 == 0 goto label4;
+v12 = interfaceinvoke v10.<java.util.Iterator: java.lang.Object next()>();
+v13 = interfaceinvoke v12.<java.util.Map$Entry: java.lang.Object getKey()>();
+v14 = interfaceinvoke v12.<java.util.Map$Entry: java.lang.Object getValue()>();
+v15 = new java.util.LinkedHashMap;
+specialinvoke v15.<java.util.LinkedHashMap: void <init>()>();
+v16 = interfaceinvoke v14.<java.util.Map: java.util.Set entrySet()>();
+v17 = interfaceinvoke v16.<java.util.Set: java.util.Iterator iterator()>();
+label2:
+v18 = interfaceinvoke v17.<java.util.Iterator: boolean hasNext()>();
+if v18 == 0 goto label3;
+v19 = interfaceinvoke v17.<java.util.Iterator: java.lang.Object next()>();
+v20 = interfaceinvoke v19.<java.util.Map$Entry: java.lang.Object getKey()>();
+v21 = interfaceinvoke v19.<java.util.Map$Entry: java.lang.Object getValue()>();
+v22 = interfaceinvoke v21.<java.util.List: java.lang.Object get(int)>(0);
+interfaceinvoke v15.<java.util.Map: java.lang.Object put(java.lang.Object,java.lang.Object)>(v20, v22);
+goto label2;
+label3:
+v23 = staticinvoke <java.util.Collections: java.util.Map unmodifiableMap(java.util.Map)>(v15);
+interfaceinvoke v7.<java.util.Map: java.lang.Object put(java.lang.Object,java.lang.Object)>(v13, v23);
+goto label1;
+label4:
+v24 = staticinvoke <java.util.Collections: java.util.Map unmodifiableMap(java.util.Map)>(v7);
+return v24;
+label5:
+v25 = staticinvoke <java.util.Collections: java.util.Map emptyMap()>();
+return v25;
+}
+public final java.util.Map search(java.lang.String, java.lang.String, java.util.Set, com.novell.ldapchai.provider.SearchScope) throws com.novell.ldapchai.exception.ChaiUnavailableException, com.novell.ldapchai.exception.ChaiOperationException
+{
+com.novell.ldapchai.util.SearchHelper v6;
+java.util.Set v3;
+com.novell.ldapchai.provider.JNDIProviderImpl v0;
+java.util.Map v7;
+java.lang.String v1, v2;
+com.novell.ldapchai.provider.AbstractProvider$ChaiProviderInputValidator v5;
+com.novell.ldapchai.provider.SearchScope v4;
+v0 := @this: com.novell.ldapchai.provider.JNDIProviderImpl;
+v1 := @parameter0: java.lang.String;
+v2 := @parameter1: java.lang.String;
+v3 := @parameter2: java.util.Set;
+v4 := @parameter3: com.novell.ldapchai.provider.SearchScope;
+virtualinvoke v0.<com.novell.ldapchai.provider.JNDIProviderImpl: void activityPreCheck()>();
+v5 = virtualinvoke v0.<com.novell.ldapchai.provider.JNDIProviderImpl: com.novell.ldapchai.provider.AbstractProvider$ChaiProviderInputValidator getInputValidator()>();
+virtualinvoke v5.<com.novell.ldapchai.provider.AbstractProvider$ChaiProviderInputValidator: java.util.Map search(java.lang.String,java.lang.String,java.util.Set,com.novell.ldapchai.provider.SearchScope)>(v1, v2, v3, v4);
+v6 = new com.novell.ldapchai.util.SearchHelper;
+specialinvoke v6.<com.novell.ldapchai.util.SearchHelper: void <init>()>();
+virtualinvoke v6.<com.novell.ldapchai.util.SearchHelper: void setFilter(java.lang.String)>(v2);
+virtualinvoke v6.<com.novell.ldapchai.util.SearchHelper: void setAttributes(java.util.Collection)>(v3);
+virtualinvoke v6.<com.novell.ldapchai.util.SearchHelper: void setSearchScope(com.novell.ldapchai.provider.SearchScope)>(v4);
+v7 = virtualinvoke v0.<com.novell.ldapchai.provider.JNDIProviderImpl: java.util.Map search(java.lang.String,com.novell.ldapchai.util.SearchHelper)>(v1, v6);
+return v7;
+}
+public final java.util.Map searchMultiValues(java.lang.String, com.novell.ldapchai.util.SearchHelper) throws com.novell.ldapchai.exception.ChaiUnavailableException, com.novell.ldapchai.exception.ChaiOperationException
+{
+com.novell.ldapchai.provider.JNDIProviderImpl v0;
+com.novell.ldapchai.util.SearchHelper v2;
+com.novell.ldapchai.provider.JNDIProviderImpl$SearchEngine v4;
+java.util.Map v6;
+com.novell.ldapchai.provider.ChaiConfiguration v5;
+java.lang.String v1;
+com.novell.ldapchai.provider.AbstractProvider$ChaiProviderInputValidator v3;
+v0 := @this: com.novell.ldapchai.provider.JNDIProviderImpl;
+v1 := @parameter0: java.lang.String;
+v2 := @parameter1: com.novell.ldapchai.util.SearchHelper;
+virtualinvoke v0.<com.novell.ldapchai.provider.JNDIProviderImpl: void activityPreCheck()>();
+v3 = virtualinvoke v0.<com.novell.ldapchai.provider.JNDIProviderImpl: com.novell.ldapchai.provider.AbstractProvider$ChaiProviderInputValidator getInputValidator()>();
+virtualinvoke v3.<com.novell.ldapchai.provider.AbstractProvider$ChaiProviderInputValidator: java.util.Map searchMultiValues(java.lang.String,com.novell.ldapchai.util.SearchHelper)>(v1, v2);
+v4 = new com.novell.ldapchai.provider.JNDIProviderImpl$SearchEngine;
+v5 = v0.<com.novell.ldapchai.provider.JNDIProviderImpl: com.novell.ldapchai.provider.ChaiConfiguration chaiConfig>;
+specialinvoke v4.<com.novell.ldapchai.provider.JNDIProviderImpl$SearchEngine: void <init>(com.novell.ldapchai.provider.JNDIProviderImpl,com.novell.ldapchai.provider.ChaiConfiguration,java.lang.String,com.novell.ldapchai.util.SearchHelper,boolean)>(v0, v5, v1, v2, 1);
+v6 = virtualinvoke v4.<com.novell.ldapchai.provider.JNDIProviderImpl$SearchEngine: java.util.Map getResults()>();
+return v6;
+}
+public final java.util.Map searchMultiValues(java.lang.String, java.lang.String, java.util.Set, com.novell.ldapchai.provider.SearchScope) throws com.novell.ldapchai.exception.ChaiUnavailableException, com.novell.ldapchai.exception.ChaiOperationException
+{
+com.novell.ldapchai.util.SearchHelper v6;
+com.novell.ldapchai.provider.JNDIProviderImpl$SearchEngine v7;
+com.novell.ldapchai.provider.ChaiConfiguration v8;
+java.util.Set v3;
+com.novell.ldapchai.provider.JNDIProviderImpl v0;
+java.util.Map v9;
+java.lang.String v1, v2;
+com.novell.ldapchai.provider.AbstractProvider$ChaiProviderInputValidator v5;
+com.novell.ldapchai.provider.SearchScope v4;
+v0 := @this: com.novell.ldapchai.provider.JNDIProviderImpl;
+v1 := @parameter0: java.lang.String;
+v2 := @parameter1: java.lang.String;
+v3 := @parameter2: java.util.Set;
+v4 := @parameter3: com.novell.ldapchai.provider.SearchScope;
+virtualinvoke v0.<com.novell.ldapchai.provider.JNDIProviderImpl: void activityPreCheck()>();
+v5 = virtualinvoke v0.<com.novell.ldapchai.provider.JNDIProviderImpl: com.novell.ldapchai.provider.AbstractProvider$ChaiProviderInputValidator getInputValidator()>();
+virtualinvoke v5.<com.novell.ldapchai.provider.AbstractProvider$ChaiProviderInputValidator: java.util.Map searchMultiValues(java.lang.String,java.lang.String,java.util.Set,com.novell.ldapchai.provider.SearchScope)>(v1, v2, v3, v4);
+v6 = new com.novell.ldapchai.util.SearchHelper;
+specialinvoke v6.<com.novell.ldapchai.util.SearchHelper: void <init>()>();
+virtualinvoke v6.<com.novell.ldapchai.util.SearchHelper: void setFilter(java.lang.String)>(v2);
+virtualinvoke v6.<com.novell.ldapchai.util.SearchHelper: void setAttributes(java.util.Collection)>(v3);
+virtualinvoke v6.<com.novell.ldapchai.util.SearchHelper: void setSearchScope(com.novell.ldapchai.provider.SearchScope)>(v4);
+v7 = new com.novell.ldapchai.provider.JNDIProviderImpl$SearchEngine;
+v8 = v0.<com.novell.ldapchai.provider.JNDIProviderImpl: com.novell.ldapchai.provider.ChaiConfiguration chaiConfig>;
+specialinvoke v7.<com.novell.ldapchai.provider.JNDIProviderImpl$SearchEngine: void <init>(com.novell.ldapchai.provider.JNDIProviderImpl,com.novell.ldapchai.provider.ChaiConfiguration,java.lang.String,com.novell.ldapchai.util.SearchHelper,boolean)>(v0, v8, v1, v6, 1);
+v9 = virtualinvoke v7.<com.novell.ldapchai.provider.JNDIProviderImpl$SearchEngine: java.util.Map getResults()>();
+return v9;
+}
+public final void writeBinaryAttribute(java.lang.String, java.lang.String, byte[][], boolean) throws com.novell.ldapchai.exception.ChaiUnavailableException, com.novell.ldapchai.exception.ChaiOperationException
+{
+byte[][] v3;
+com.novell.ldapchai.provider.JNDIProviderImpl v0;
+java.lang.String v1, v2;
+boolean v4;
+v0 := @this: com.novell.ldapchai.provider.JNDIProviderImpl;
+v1 := @parameter0: java.lang.String;
+v2 := @parameter1: java.lang.String;
+v3 := @parameter2: byte[][];
+v4 := @parameter3: boolean;
+virtualinvoke v0.<com.novell.ldapchai.provider.JNDIProviderImpl: void writeBinaryAttribute(java.lang.String,java.lang.String,byte[][],boolean,com.novell.ldapchai.ChaiRequestControl[])>(v1, v2, v3, v4, null);
+return;
+}
+public final void writeBinaryAttribute(java.lang.String, java.lang.String, byte[][], boolean, com.novell.ldapchai.ChaiRequestControl[]) throws com.novell.ldapchai.exception.ChaiUnavailableException, com.novell.ldapchai.exception.ChaiOperationException
+{
+java.lang.Throwable v22;
+javax.naming.directory.ModificationItem v14;
+byte[] v12;
+javax.naming.NamingException v20;
+javax.naming.directory.BasicAttribute v11;
+javax.naming.directory.ModificationItem[] v8;
+byte v13;
+int v10, v16, v7, v9;
+com.novell.ldapchai.ChaiRequestControl[] v5;
+java.lang.String v1, v18, v2;
+com.novell.ldapchai.exception.ChaiOperationException v21;
+boolean v4;
+javax.naming.ldap.BasicControl[] v17;
+java.lang.Exception v19, v23;
+byte[][] v3;
+com.novell.ldapchai.provider.JNDIProviderImpl v0;
+com.novell.ldapchai.provider.AbstractProvider$ChaiProviderInputValidator v6;
+javax.naming.ldap.LdapContext v15;
+v0 := @this: com.novell.ldapchai.provider.JNDIProviderImpl;
+v1 := @parameter0: java.lang.String;
+v2 := @parameter1: java.lang.String;
+v3 := @parameter2: byte[][];
+v4 := @parameter3: boolean;
+v5 := @parameter4: com.novell.ldapchai.ChaiRequestControl[];
+virtualinvoke v0.<com.novell.ldapchai.provider.JNDIProviderImpl: void activityPreCheck()>();
+v6 = virtualinvoke v0.<com.novell.ldapchai.provider.JNDIProviderImpl: com.novell.ldapchai.provider.AbstractProvider$ChaiProviderInputValidator getInputValidator()>();
+virtualinvoke v6.<com.novell.ldapchai.provider.AbstractProvider$ChaiProviderInputValidator: void writeBinaryAttribute(java.lang.String,java.lang.String,byte[][],boolean)>(v1, v2, v3, v4);
+v7 = lengthof v3;
+v8 = newarray (javax.naming.directory.ModificationItem)[v7];
+v9 = 0;
+label01:
+v10 = lengthof v3;
+if v9 >= v10 goto label04;
+v11 = new javax.naming.directory.BasicAttribute;
+v12 = v3[v9];
+specialinvoke v11.<javax.naming.directory.BasicAttribute: void <init>(java.lang.String,java.lang.Object)>(v2, v12);
+if v9 != 0 goto label02;
+if v4 == 0 goto label02;
+v13 = 2;
+goto label03;
+label02:
+v13 = 1;
+label03:
+v14 = new javax.naming.directory.ModificationItem;
+specialinvoke v14.<javax.naming.directory.ModificationItem: void <init>(int,javax.naming.directory.Attribute)>(v13, v11);
+v8[v9] = v14;
+v9 = v9 + 1;
+goto label01;
+label04:
+v15 = specialinvoke v0.<com.novell.ldapchai.provider.JNDIProviderImpl: javax.naming.ldap.LdapContext getLdapConnection()>();
+label05:
+if v5 == null goto label06;
+v16 = lengthof v5;
+if v16 <= 0 goto label06;
+v17 = staticinvoke <com.novell.ldapchai.provider.JNDIProviderImpl: javax.naming.ldap.BasicControl[] convertControls(com.novell.ldapchai.ChaiRequestControl[])>(v5);
+interfaceinvoke v15.<javax.naming.ldap.LdapContext: void setRequestControls(javax.naming.ldap.Control[])>(v17);
+label06:
+v18 = staticinvoke <com.novell.ldapchai.provider.JNDIProviderImpl: java.lang.String addJndiEscape(java.lang.String)>(v1);
+interfaceinvoke v15.<javax.naming.ldap.LdapContext: void modifyAttributes(java.lang.String,javax.naming.directory.ModificationItem[])>(v18, v8);
+interfaceinvoke v15.<javax.naming.ldap.LdapContext: java.lang.Object addToEnvironment(java.lang.String,java.lang.Object)>("java.naming.ldap.attributes.binary", v2);
+label07:
+interfaceinvoke v15.<javax.naming.ldap.LdapContext: java.lang.Object removeFromEnvironment(java.lang.String)>("java.naming.ldap.attributes.binary");
+label08:
+goto label16;
+label09:
+v19 := @caughtexception;
+goto label16;
+label10:
+v20 := @caughtexception;
+v21 = specialinvoke v0.<com.novell.ldapchai.provider.JNDIProviderImpl: com.novell.ldapchai.exception.ChaiOperationException convertNamingException(javax.naming.NamingException)>(v20);
+throw v21;
+label11:
+v22 := @caughtexception;
+label12:
+interfaceinvoke v15.<javax.naming.ldap.LdapContext: java.lang.Object removeFromEnvironment(java.lang.String)>("java.naming.ldap.attributes.binary");
+label13:
+goto label15;
+label14:
+v23 := @caughtexception;
+label15:
+throw v22;
+label16:
+return;
+catch java.lang.Exception from label07 to label08 with label09;
+catch javax.naming.NamingException from label05 to label07 with label10;
+catch java.lang.Throwable from label05 to label07 with label11;
+catch java.lang.Exception from label12 to label13 with label14;
+}
+public final void replaceBinaryAttribute(java.lang.String, java.lang.String, byte[], byte[]) throws com.novell.ldapchai.exception.ChaiUnavailableException, com.novell.ldapchai.exception.ChaiOperationException
+{
+java.lang.Throwable v16;
+javax.naming.directory.ModificationItem v10, v8;
+byte[] v3, v4;
+javax.naming.NamingException v14;
+javax.naming.directory.BasicAttribute v7, v9;
+javax.naming.directory.ModificationItem[] v6;
+java.lang.String v1, v12, v2;
+com.novell.ldapchai.exception.ChaiOperationException v15;
+java.lang.Exception v13, v17;
+com.novell.ldapchai.provider.JNDIProviderImpl v0;
+com.novell.ldapchai.provider.AbstractProvider$ChaiProviderInputValidator v5;
+javax.naming.ldap.LdapContext v11;
+v0 := @this: com.novell.ldapchai.provider.JNDIProviderImpl;
+v1 := @parameter0: java.lang.String;
+v2 := @parameter1: java.lang.String;
+v3 := @parameter2: byte[];
+v4 := @parameter3: byte[];
+virtualinvoke v0.<com.novell.ldapchai.provider.JNDIProviderImpl: void activityPreCheck()>();
+v5 = virtualinvoke v0.<com.novell.ldapchai.provider.JNDIProviderImpl: com.novell.ldapchai.provider.AbstractProvider$ChaiProviderInputValidator getInputValidator()>();
+virtualinvoke v5.<com.novell.ldapchai.provider.AbstractProvider$ChaiProviderInputValidator: void replaceBinaryAttribute(java.lang.String,java.lang.String,byte[],byte[])>(v1, v2, v3, v4);
+v6 = newarray (javax.naming.directory.ModificationItem)[2];
+v7 = new javax.naming.directory.BasicAttribute;
+specialinvoke v7.<javax.naming.directory.BasicAttribute: void <init>(java.lang.String,java.lang.Object)>(v2, v3);
+v8 = new javax.naming.directory.ModificationItem;
+specialinvoke v8.<javax.naming.directory.ModificationItem: void <init>(int,javax.naming.directory.Attribute)>(3, v7);
+v6[0] = v8;
+v9 = new javax.naming.directory.BasicAttribute;
+specialinvoke v9.<javax.naming.directory.BasicAttribute: void <init>(java.lang.String,java.lang.Object)>(v2, v4);
+v10 = new javax.naming.directory.ModificationItem;
+specialinvoke v10.<javax.naming.directory.ModificationItem: void <init>(int,javax.naming.directory.Attribute)>(1, v9);
+v6[1] = v10;
+v11 = specialinvoke v0.<com.novell.ldapchai.provider.JNDIProviderImpl: javax.naming.ldap.LdapContext getLdapConnection()>();
+label01:
+v12 = staticinvoke <com.novell.ldapchai.provider.JNDIProviderImpl: java.lang.String addJndiEscape(java.lang.String)>(v1);
+interfaceinvoke v11.<javax.naming.ldap.LdapContext: void modifyAttributes(java.lang.String,javax.naming.directory.ModificationItem[])>(v12, v6);
+interfaceinvoke v11.<javax.naming.ldap.LdapContext: java.lang.Object addToEnvironment(java.lang.String,java.lang.Object)>("java.naming.ldap.attributes.binary", v2);
+label02:
+interfaceinvoke v11.<javax.naming.ldap.LdapContext: java.lang.Object removeFromEnvironment(java.lang.String)>("java.naming.ldap.attributes.binary");
+label03:
+goto label11;
+label04:
+v13 := @caughtexception;
+goto label11;
+label05:
+v14 := @caughtexception;
+v15 = specialinvoke v0.<com.novell.ldapchai.provider.JNDIProviderImpl: com.novell.ldapchai.exception.ChaiOperationException convertNamingException(javax.naming.NamingException)>(v14);
+throw v15;
+label06:
+v16 := @caughtexception;
+label07:
+interfaceinvoke v11.<javax.naming.ldap.LdapContext: java.lang.Object removeFromEnvironment(java.lang.String)>("java.naming.ldap.attributes.binary");
+label08:
+goto label10;
+label09:
+v17 := @caughtexception;
+label10:
+throw v16;
+label11:
+return;
+catch java.lang.Exception from label02 to label03 with label04;
+catch javax.naming.NamingException from label01 to label02 with label05;
+catch java.lang.Throwable from label01 to label02 with label06;
+catch java.lang.Exception from label07 to label08 with label09;
+}
+public final void writeStringAttribute(java.lang.String, java.lang.String, java.util.Set, boolean) throws com.novell.ldapchai.exception.ChaiUnavailableException, com.novell.ldapchai.exception.ChaiOperationException
+{
+javax.naming.directory.ModificationItem v14;
+javax.naming.NamingException v17;
+java.util.function.Supplier v19;
+javax.naming.directory.BasicAttribute v12;
+javax.naming.directory.ModificationItem[] v7;
+byte v13;
+int v6, v8;
+java.lang.String v1, v16, v2;
+com.novell.ldapchai.exception.ChaiOperationException v20;
+boolean v10, v4;
+java.util.Iterator v9;
+java.util.Set v3;
+com.novell.ldapchai.provider.JNDIProviderImpl v0;
+java.lang.Object v11;
+com.novell.ldapchai.provider.AbstractProvider$ChaiProviderInputValidator v5;
+javax.naming.ldap.LdapContext v15;
+com.novell.ldapchai.util.internal.ChaiLogger v18;
+v0 := @this: com.novell.ldapchai.provider.JNDIProviderImpl;
+v1 := @parameter0: java.lang.String;
+v2 := @parameter1: java.lang.String;
+v3 := @parameter2: java.util.Set;
+v4 := @parameter3: boolean;
+virtualinvoke v0.<com.novell.ldapchai.provider.JNDIProviderImpl: void activityPreCheck()>();
+v5 = virtualinvoke v0.<com.novell.ldapchai.provider.JNDIProviderImpl: com.novell.ldapchai.provider.AbstractProvider$ChaiProviderInputValidator getInputValidator()>();
+virtualinvoke v5.<com.novell.ldapchai.provider.AbstractProvider$ChaiProviderInputValidator: void writeStringAttribute(java.lang.String,java.lang.String,java.util.Set,boolean)>(v1, v2, v3, v4);
+v6 = interfaceinvoke v3.<java.util.Set: int size()>();
+v7 = newarray (javax.naming.directory.ModificationItem)[v6];
+v8 = 0;
+v9 = interfaceinvoke v3.<java.util.Set: java.util.Iterator iterator()>();
+label1:
+v10 = interfaceinvoke v9.<java.util.Iterator: boolean hasNext()>();
+if v10 == 0 goto label4;
+v11 = interfaceinvoke v9.<java.util.Iterator: java.lang.Object next()>();
+v12 = new javax.naming.directory.BasicAttribute;
+specialinvoke v12.<javax.naming.directory.BasicAttribute: void <init>(java.lang.String,java.lang.Object)>(v2, v11);
+if v8 != 0 goto label2;
+if v4 == 0 goto label2;
+v13 = 2;
+goto label3;
+label2:
+v13 = 1;
+label3:
+v14 = new javax.naming.directory.ModificationItem;
+specialinvoke v14.<javax.naming.directory.ModificationItem: void <init>(int,javax.naming.directory.Attribute)>(v13, v12);
+v7[v8] = v14;
+v8 = v8 + 1;
+goto label1;
+label4:
+v15 = specialinvoke v0.<com.novell.ldapchai.provider.JNDIProviderImpl: javax.naming.ldap.LdapContext getLdapConnection()>();
+label5:
+v16 = staticinvoke <com.novell.ldapchai.provider.JNDIProviderImpl: java.lang.String addJndiEscape(java.lang.String)>(v1);
+interfaceinvoke v15.<javax.naming.ldap.LdapContext: void modifyAttributes(java.lang.String,javax.naming.directory.ModificationItem[])>(v16, v7);
+label6:
+goto label8;
+label7:
+v17 := @caughtexception;
+v18 = <com.novell.ldapchai.provider.JNDIProviderImpl: com.novell.ldapchai.util.internal.ChaiLogger LOGGER>;
+v19 = staticinvoke <com.novell.ldapchai.provider.JNDIProviderImpl$lambda_writeStringAttribute_4__154: java.util.function.Supplier bootstrap$(java.lang.String,javax.naming.NamingException)>(v2, v17);
+virtualinvoke v18.<com.novell.ldapchai.util.internal.ChaiLogger: void trace(java.util.function.Supplier)>(v19);
+v20 = specialinvoke v0.<com.novell.ldapchai.provider.JNDIProviderImpl: com.novell.ldapchai.exception.ChaiOperationException convertNamingException(javax.naming.NamingException)>(v17);
+throw v20;
+label8:
+return;
+catch javax.naming.NamingException from label5 to label6 with label7;
+}
+public final void writeStringAttributes(java.lang.String, java.util.Map, boolean) throws com.novell.ldapchai.exception.ChaiUnavailableException, com.novell.ldapchai.exception.ChaiOperationException
+{
+com.novell.ldapchai.provider.JNDIProviderImpl v0;
+java.util.Map v2;
+java.lang.String v1;
+boolean v3;
+v0 := @this: com.novell.ldapchai.provider.JNDIProviderImpl;
+v1 := @parameter0: java.lang.String;
+v2 := @parameter1: java.util.Map;
+v3 := @parameter2: boolean;
+virtualinvoke v0.<com.novell.ldapchai.provider.JNDIProviderImpl: void writeStringAttributes(java.lang.String,java.util.Map,boolean,javax.naming.ldap.BasicControl[])>(v1, v2, v3, null);
+return;
+}
+public final void writeStringAttributes(java.lang.String, java.util.Map, boolean, javax.naming.ldap.BasicControl[]) throws com.novell.ldapchai.exception.ChaiUnavailableException, com.novell.ldapchai.exception.ChaiOperationException
+{
+javax.naming.directory.ModificationItem v16;
+java.lang.Object[] v18;
+javax.naming.NamingException v21;
+java.util.ArrayList v8;
+javax.naming.directory.BasicAttribute v13;
+javax.naming.directory.ModificationItem[] v17;
+byte v6, v7;
+java.util.Map v2;
+java.lang.String v1, v20;
+com.novell.ldapchai.exception.ChaiOperationException v22;
+boolean v11, v3;
+java.util.Iterator v10;
+java.util.Set v9;
+javax.naming.ldap.BasicControl[] v4;
+com.novell.ldapchai.provider.JNDIProviderImpl v0;
+java.lang.Object v12, v14, v15;
+com.novell.ldapchai.provider.AbstractProvider$ChaiProviderInputValidator v5;
+javax.naming.ldap.LdapContext v19;
+v0 := @this: com.novell.ldapchai.provider.JNDIProviderImpl;
+v1 := @parameter0: java.lang.String;
+v2 := @parameter1: java.util.Map;
+v3 := @parameter2: boolean;
+v4 := @parameter3: javax.naming.ldap.BasicControl[];
+virtualinvoke v0.<com.novell.ldapchai.provider.JNDIProviderImpl: void activityPreCheck()>();
+v5 = virtualinvoke v0.<com.novell.ldapchai.provider.JNDIProviderImpl: com.novell.ldapchai.provider.AbstractProvider$ChaiProviderInputValidator getInputValidator()>();
+virtualinvoke v5.<com.novell.ldapchai.provider.AbstractProvider$ChaiProviderInputValidator: void writeStringAttributes(java.lang.String,java.util.Map,boolean)>(v1, v2, v3);
+if v3 == 0 goto label1;
+v6 = 2;
+goto label2;
+label1:
+v6 = 1;
+label2:
+v7 = v6;
+v8 = new java.util.ArrayList;
+specialinvoke v8.<java.util.ArrayList: void <init>()>();
+v9 = interfaceinvoke v2.<java.util.Map: java.util.Set entrySet()>();
+v10 = interfaceinvoke v9.<java.util.Set: java.util.Iterator iterator()>();
+label3:
+v11 = interfaceinvoke v10.<java.util.Iterator: boolean hasNext()>();
+if v11 == 0 goto label4;
+v12 = interfaceinvoke v10.<java.util.Iterator: java.lang.Object next()>();
+v13 = new javax.naming.directory.BasicAttribute;
+v14 = interfaceinvoke v12.<java.util.Map$Entry: java.lang.Object getKey()>();
+v15 = interfaceinvoke v12.<java.util.Map$Entry: java.lang.Object getValue()>();
+specialinvoke v13.<javax.naming.directory.BasicAttribute: void <init>(java.lang.String,java.lang.Object)>(v14, v15);
+v16 = new javax.naming.directory.ModificationItem;
+specialinvoke v16.<javax.naming.directory.ModificationItem: void <init>(int,javax.naming.directory.Attribute)>(v7, v13);
+interfaceinvoke v8.<java.util.List: boolean add(java.lang.Object)>(v16);
+goto label3;
+label4:
+v17 = newarray (javax.naming.directory.ModificationItem)[0];
+v18 = interfaceinvoke v8.<java.util.List: java.lang.Object[] toArray(java.lang.Object[])>(v17);
+v19 = specialinvoke v0.<com.novell.ldapchai.provider.JNDIProviderImpl: javax.naming.ldap.LdapContext getLdapConnection()>();
+label5:
+v20 = staticinvoke <com.novell.ldapchai.provider.JNDIProviderImpl: java.lang.String addJndiEscape(java.lang.String)>(v1);
+interfaceinvoke v19.<javax.naming.ldap.LdapContext: void modifyAttributes(java.lang.String,javax.naming.directory.ModificationItem[])>(v20, v18);
+label6:
+goto label8;
+label7:
+v21 := @caughtexception;
+v22 = specialinvoke v0.<com.novell.ldapchai.provider.JNDIProviderImpl: com.novell.ldapchai.exception.ChaiOperationException convertNamingException(javax.naming.NamingException)>(v21);
+throw v22;
+label8:
+return;
+catch javax.naming.NamingException from label5 to label6 with label7;
+}
+public java.lang.Object getConnectionObject() throws java.lang.Exception
+{
+com.novell.ldapchai.provider.JNDIProviderImpl v0;
+javax.naming.ldap.LdapContext v1;
+v0 := @this: com.novell.ldapchai.provider.JNDIProviderImpl;
+v1 = specialinvoke v0.<com.novell.ldapchai.provider.JNDIProviderImpl: javax.naming.ldap.LdapContext getLdapConnection()>();
+return v1;
+}
+public java.lang.String getCurrentConnectionURL()
+{
+com.novell.ldapchai.provider.ChaiConfiguration v1;
+com.novell.ldapchai.provider.JNDIProviderImpl v0;
+java.lang.String v2;
+v0 := @this: com.novell.ldapchai.provider.JNDIProviderImpl;
+v1 = virtualinvoke v0.<com.novell.ldapchai.provider.JNDIProviderImpl: com.novell.ldapchai.provider.ChaiConfiguration getChaiConfiguration()>();
+v2 = virtualinvoke v1.<com.novell.ldapchai.provider.ChaiConfiguration: java.lang.String getDebugUrl()>();
+return v2;
+}
+public void init(com.novell.ldapchai.provider.ChaiConfiguration, com.novell.ldapchai.provider.ChaiProviderFactory) throws com.novell.ldapchai.exception.ChaiUnavailableException, java.lang.IllegalStateException
+{
+com.novell.ldapchai.provider.ChaiConfiguration v1;
+com.novell.ldapchai.exception.ChaiError v11;
+com.novell.ldapchai.provider.ChaiProviderFactory v2;
+com.novell.ldapchai.provider.JNDIProviderImpl v0;
+java.util.List v3;
+com.novell.ldapchai.exception.ChaiUnavailableException v8;
+java.lang.Object v4;
+java.lang.String v10, v9;
+javax.naming.ldap.LdapContext v6;
+com.novell.ldapchai.exception.ChaiOperationException v7;
+java.util.Hashtable v5;
+v0 := @this: com.novell.ldapchai.provider.JNDIProviderImpl;
+v1 := @parameter0: com.novell.ldapchai.provider.ChaiConfiguration;
+v2 := @parameter1: com.novell.ldapchai.provider.ChaiProviderFactory;
+v0.<com.novell.ldapchai.provider.JNDIProviderImpl: com.novell.ldapchai.provider.ChaiConfiguration chaiConfig> = v1;
+v3 = virtualinvoke v1.<com.novell.ldapchai.provider.ChaiConfiguration: java.util.List bindURLsAsList()>();
+v4 = interfaceinvoke v3.<java.util.List: java.lang.Object get(int)>(0);
+v5 = specialinvoke v0.<com.novell.ldapchai.provider.JNDIProviderImpl: java.util.Hashtable generateJndiEnvironment(java.lang.String)>(v4);
+label1:
+v6 = staticinvoke <com.novell.ldapchai.provider.JNDIProviderImpl: javax.naming.ldap.LdapContext generateNewJndiContext(java.util.Hashtable)>(v5);
+v0.<com.novell.ldapchai.provider.JNDIProviderImpl: javax.naming.ldap.LdapContext jndiConnection> = v6;
+label2:
+goto label4;
+label3:
+v7 := @caughtexception;
+v8 = new com.novell.ldapchai.exception.ChaiUnavailableException;
+v9 = virtualinvoke v7.<com.novell.ldapchai.exception.ChaiOperationException: java.lang.String getMessage()>();
+v10 = dynamicinvoke "makeConcatWithConstants" <java.lang.String (java.lang.String)>(v9) <java.lang.invoke.StringConcatFactory: java.lang.invoke.CallSite makeConcatWithConstants(java.lang.invoke.MethodHandles$Lookup,java.lang.String,java.lang.invoke.MethodType,java.lang.String,java.lang.Object[])>("bind failed (\u0001)");
+v11 = virtualinvoke v7.<com.novell.ldapchai.exception.ChaiOperationException: com.novell.ldapchai.exception.ChaiError getErrorCode()>();
+specialinvoke v8.<com.novell.ldapchai.exception.ChaiUnavailableException: void <init>(java.lang.String,com.novell.ldapchai.exception.ChaiError,java.lang.Throwable)>(v10, v11, v7);
+throw v8;
+label4:
+specialinvoke v0.<com.novell.ldapchai.provider.AbstractProvider: void init(com.novell.ldapchai.provider.ChaiConfiguration,com.novell.ldapchai.provider.ChaiProviderFactory)>(v1, v2);
+return;
+catch com.novell.ldapchai.exception.ChaiOperationException from label1 to label2 with label3;
+}
+private java.util.Hashtable generateJndiEnvironment(java.lang.String)
+{
+javax.net.ssl.SSLContext v38, v51;
+java.security.SecureRandom v41, v54;
+java.security.GeneralSecurityException v46, v59;
+javax.net.ssl.X509TrustManager[] v39, v50, v53;
+java.util.Set v69;
+javax.net.ssl.SSLSocketFactory v42, v55;
+com.novell.ldapchai.provider.AbstractProvider$PromiscuousTrustManager v40;
+java.util.function.Supplier v48, v61;
+java.lang.String v1, v11, v14, v15, v16, v19, v25, v28, v33, v45, v5, v58, v6, v8;
+com.novell.ldapchai.provider.JNDIProviderImpl v0;
+java.net.URI v32;
+boolean v13, v31, v34, v37, v66, v71, v75, v76;
+javax.net.SocketFactory v43, v56;
+com.novell.ldapchai.util.internal.ChaiLogger v47, v60;
+int v22;
+java.lang.Boolean v12;
+java.util.Hashtable v2;
+java.util.Iterator v70;
+com.novell.ldapchai.provider.ChaiConfiguration v17, v20, v23, v26, v29, v3, v35, v49, v52, v62, v64, v67, v7, v9;
+com.novell.ldapchai.provider.ChaiSetting v10, v18, v21, v24, v27, v30, v36, v4;
+java.lang.Class v44, v57;
+java.lang.Object v63, v65, v68, v72, v73, v74;
+v0 := @this: com.novell.ldapchai.provider.JNDIProviderImpl;
+v1 := @parameter0: java.lang.String;
+v2 = new java.util.Hashtable;
+specialinvoke v2.<java.util.Hashtable: void <init>()>();
+virtualinvoke v2.<java.util.Hashtable: java.lang.Object put(java.lang.Object,java.lang.Object)>("java.naming.factory.initial", "com.sun.jndi.ldap.LdapCtxFactory");
+virtualinvoke v2.<java.util.Hashtable: java.lang.Object put(java.lang.Object,java.lang.Object)>("java.naming.provider.url", v1);
+v3 = v0.<com.novell.ldapchai.provider.JNDIProviderImpl: com.novell.ldapchai.provider.ChaiConfiguration chaiConfig>;
+v4 = <com.novell.ldapchai.provider.ChaiSetting: com.novell.ldapchai.provider.ChaiSetting BIND_DN>;
+v5 = virtualinvoke v3.<com.novell.ldapchai.provider.ChaiConfiguration: java.lang.String getSetting(com.novell.ldapchai.provider.ChaiSetting)>(v4);
+v6 = staticinvoke <com.novell.ldapchai.provider.JNDIProviderImpl: java.lang.String addJndiEscape(java.lang.String)>(v5);
+virtualinvoke v2.<java.util.Hashtable: java.lang.Object put(java.lang.Object,java.lang.Object)>("java.naming.security.principal", v6);
+v7 = v0.<com.novell.ldapchai.provider.JNDIProviderImpl: com.novell.ldapchai.provider.ChaiConfiguration chaiConfig>;
+v8 = virtualinvoke v7.<com.novell.ldapchai.provider.ChaiConfiguration: java.lang.String getBindPassword()>();
+virtualinvoke v2.<java.util.Hashtable: java.lang.Object put(java.lang.Object,java.lang.Object)>("java.naming.security.credentials", v8);
+v9 = v0.<com.novell.ldapchai.provider.JNDIProviderImpl: com.novell.ldapchai.provider.ChaiConfiguration chaiConfig>;
+v10 = <com.novell.ldapchai.provider.ChaiSetting: com.novell.ldapchai.provider.ChaiSetting JNDI_ENABLE_POOL>;
+v11 = virtualinvoke v9.<com.novell.ldapchai.provider.ChaiConfiguration: java.lang.String getSetting(com.novell.ldapchai.provider.ChaiSetting)>(v10);
+v12 = staticinvoke <java.lang.Boolean: java.lang.Boolean valueOf(java.lang.String)>(v11);
+v13 = virtualinvoke v12.<java.lang.Boolean: boolean booleanValue()>();
+if v13 == 0 goto label01;
+virtualinvoke v2.<java.util.Hashtable: java.lang.Object put(java.lang.Object,java.lang.Object)>("com.sun.jndi.ldap.connect.pool", "true");
+v14 = staticinvoke <java.lang.String: java.lang.String valueOf(int)>(1);
+virtualinvoke v2.<java.util.Hashtable: java.lang.Object put(java.lang.Object,java.lang.Object)>("com.sun.jndi.ldap.connect.pool.initsize", v14);
+v15 = staticinvoke <java.lang.String: java.lang.String valueOf(int)>(50);
+virtualinvoke v2.<java.util.Hashtable: java.lang.Object put(java.lang.Object,java.lang.Object)>("com.sun.jndi.ldap.connect.pool.maxsize", v15);
+v16 = staticinvoke <java.lang.String: java.lang.String valueOf(int)>(10);
+virtualinvoke v2.<java.util.Hashtable: java.lang.Object put(java.lang.Object,java.lang.Object)>("com.sun.jndi.ldap.connect.pool.prefsize", v16);
+label01:
+virtualinvoke v2.<java.util.Hashtable: java.lang.Object put(java.lang.Object,java.lang.Object)>("com.sun.jndi.ldap.connect.pool.protocol", "plain ssl");
+v17 = v0.<com.novell.ldapchai.provider.JNDIProviderImpl: com.novell.ldapchai.provider.ChaiConfiguration chaiConfig>;
+v18 = <com.novell.ldapchai.provider.ChaiSetting: com.novell.ldapchai.provider.ChaiSetting LDAP_CONNECT_TIMEOUT>;
+v19 = virtualinvoke v17.<com.novell.ldapchai.provider.ChaiConfiguration: java.lang.String getSetting(com.novell.ldapchai.provider.ChaiSetting)>(v18);
+virtualinvoke v2.<java.util.Hashtable: java.lang.Object put(java.lang.Object,java.lang.Object)>("com.sun.jndi.ldap.connect.timeout", v19);
+v20 = v0.<com.novell.ldapchai.provider.JNDIProviderImpl: com.novell.ldapchai.provider.ChaiConfiguration chaiConfig>;
+v21 = <com.novell.ldapchai.provider.ChaiSetting: com.novell.ldapchai.provider.ChaiSetting LDAP_READ_TIMEOUT>;
+v22 = virtualinvoke v20.<com.novell.ldapchai.provider.ChaiConfiguration: int getIntSetting(com.novell.ldapchai.provider.ChaiSetting)>(v21);
+if v22 <= 0 goto label02;
+v23 = v0.<com.novell.ldapchai.provider.JNDIProviderImpl: com.novell.ldapchai.provider.ChaiConfiguration chaiConfig>;
+v24 = <com.novell.ldapchai.provider.ChaiSetting: com.novell.ldapchai.provider.ChaiSetting LDAP_READ_TIMEOUT>;
+v25 = virtualinvoke v23.<com.novell.ldapchai.provider.ChaiConfiguration: java.lang.String getSetting(com.novell.ldapchai.provider.ChaiSetting)>(v24);
+virtualinvoke v2.<java.util.Hashtable: java.lang.Object put(java.lang.Object,java.lang.Object)>("com.sun.jndi.ldap.read.timeout", v25);
+label02:
+v26 = v0.<com.novell.ldapchai.provider.JNDIProviderImpl: com.novell.ldapchai.provider.ChaiConfiguration chaiConfig>;
+v27 = <com.novell.ldapchai.provider.ChaiSetting: com.novell.ldapchai.provider.ChaiSetting LDAP_DEREFENCE_ALIAS>;
+v28 = virtualinvoke v26.<com.novell.ldapchai.provider.ChaiConfiguration: java.lang.String getSetting(com.novell.ldapchai.provider.ChaiSetting)>(v27);
+virtualinvoke v2.<java.util.Hashtable: java.lang.Object put(java.lang.Object,java.lang.Object)>("java.naming.ldap.derefAliases", v28);
+v29 = v0.<com.novell.ldapchai.provider.JNDIProviderImpl: com.novell.ldapchai.provider.ChaiConfiguration chaiConfig>;
+v30 = <com.novell.ldapchai.provider.ChaiSetting: com.novell.ldapchai.provider.ChaiSetting LDAP_FOLLOW_REFERRALS>;
+v31 = virtualinvoke v29.<com.novell.ldapchai.provider.ChaiConfiguration: boolean getBooleanSetting(com.novell.ldapchai.provider.ChaiSetting)>(v30);
+if v31 == 0 goto label03;
+virtualinvoke v2.<java.util.Hashtable: java.lang.Object put(java.lang.Object,java.lang.Object)>("java.naming.referral", "follow");
+label03:
+v32 = staticinvoke <java.net.URI: java.net.URI create(java.lang.String)>(v1);
+v33 = virtualinvoke v32.<java.net.URI: java.lang.String getScheme()>();
+v34 = virtualinvoke v33.<java.lang.String: boolean equalsIgnoreCase(java.lang.String)>("ldaps");
+v35 = v0.<com.novell.ldapchai.provider.JNDIProviderImpl: com.novell.ldapchai.provider.ChaiConfiguration chaiConfig>;
+v36 = <com.novell.ldapchai.provider.ChaiSetting: com.novell.ldapchai.provider.ChaiSetting PROMISCUOUS_SSL>;
+v37 = virtualinvoke v35.<com.novell.ldapchai.provider.ChaiConfiguration: boolean getBooleanSetting(com.novell.ldapchai.provider.ChaiSetting)>(v36);
+if v34 == 0 goto label11;
+if v37 == 0 goto label07;
+label04:
+v38 = staticinvoke <javax.net.ssl.SSLContext: javax.net.ssl.SSLContext getInstance(java.lang.String)>("SSL");
+v39 = newarray (javax.net.ssl.X509TrustManager)[1];
+v40 = new com.novell.ldapchai.provider.AbstractProvider$PromiscuousTrustManager;
+specialinvoke v40.<com.novell.ldapchai.provider.AbstractProvider$PromiscuousTrustManager: void <init>()>();
+v39[0] = v40;
+v41 = new java.security.SecureRandom;
+specialinvoke v41.<java.security.SecureRandom: void <init>()>();
+virtualinvoke v38.<javax.net.ssl.SSLContext: void init(javax.net.ssl.KeyManager[],javax.net.ssl.TrustManager[],java.security.SecureRandom)>(null, v39, v41);
+v42 = virtualinvoke v38.<javax.net.ssl.SSLContext: javax.net.ssl.SSLSocketFactory getSocketFactory()>();
+v0.<com.novell.ldapchai.provider.JNDIProviderImpl: javax.net.SocketFactory socketFactory> = v42;
+v43 = v0.<com.novell.ldapchai.provider.JNDIProviderImpl: javax.net.SocketFactory socketFactory>;
+staticinvoke <com.novell.ldapchai.provider.JNDIProviderImpl$ThreadLocalSocketFactory: void set(javax.net.SocketFactory)>(v43);
+v44 = class "Lcom/novell/ldapchai/provider/JNDIProviderImpl$ThreadLocalSocketFactory;";
+v45 = virtualinvoke v44.<java.lang.Class: java.lang.String getName()>();
+virtualinvoke v2.<java.util.Hashtable: java.lang.Object put(java.lang.Object,java.lang.Object)>("java.naming.ldap.factory.socket", v45);
+label05:
+goto label11;
+label06:
+v46 := @caughtexception;
+v47 = <com.novell.ldapchai.provider.JNDIProviderImpl: com.novell.ldapchai.util.internal.ChaiLogger LOGGER>;
+v48 = staticinvoke <com.novell.ldapchai.provider.JNDIProviderImpl$lambda_generateJndiEnvironment_5__156: java.util.function.Supplier bootstrap$()>();
+virtualinvoke v47.<com.novell.ldapchai.util.internal.ChaiLogger: void error(java.util.function.Supplier)>(v48);
+goto label11;
+label07:
+v49 = v0.<com.novell.ldapchai.provider.JNDIProviderImpl: com.novell.ldapchai.provider.ChaiConfiguration chaiConfig>;
+v50 = virtualinvoke v49.<com.novell.ldapchai.provider.ChaiConfiguration: javax.net.ssl.X509TrustManager[] getTrustManager()>();
+if v50 == null goto label11;
+label08:
+v51 = staticinvoke <javax.net.ssl.SSLContext: javax.net.ssl.SSLContext getInstance(java.lang.String)>("SSL");
+v52 = v0.<com.novell.ldapchai.provider.JNDIProviderImpl: com.novell.ldapchai.provider.ChaiConfiguration chaiConfig>;
+v53 = virtualinvoke v52.<com.novell.ldapchai.provider.ChaiConfiguration: javax.net.ssl.X509TrustManager[] getTrustManager()>();
+v54 = new java.security.SecureRandom;
+specialinvoke v54.<java.security.SecureRandom: void <init>()>();
+virtualinvoke v51.<javax.net.ssl.SSLContext: void init(javax.net.ssl.KeyManager[],javax.net.ssl.TrustManager[],java.security.SecureRandom)>(null, v53, v54);
+v55 = virtualinvoke v51.<javax.net.ssl.SSLContext: javax.net.ssl.SSLSocketFactory getSocketFactory()>();
+v0.<com.novell.ldapchai.provider.JNDIProviderImpl: javax.net.SocketFactory socketFactory> = v55;
+v56 = v0.<com.novell.ldapchai.provider.JNDIProviderImpl: javax.net.SocketFactory socketFactory>;
+staticinvoke <com.novell.ldapchai.provider.JNDIProviderImpl$ThreadLocalSocketFactory: void set(javax.net.SocketFactory)>(v56);
+v57 = class "Lcom/novell/ldapchai/provider/JNDIProviderImpl$ThreadLocalSocketFactory;";
+v58 = virtualinvoke v57.<java.lang.Class: java.lang.String getName()>();
+virtualinvoke v2.<java.util.Hashtable: java.lang.Object put(java.lang.Object,java.lang.Object)>("java.naming.ldap.factory.socket", v58);
+label09:
+goto label11;
+label10:
+v59 := @caughtexception;
+v60 = <com.novell.ldapchai.provider.JNDIProviderImpl: com.novell.ldapchai.util.internal.ChaiLogger LOGGER>;
+v61 = staticinvoke <com.novell.ldapchai.provider.JNDIProviderImpl$lambda_generateJndiEnvironment_6__155: java.util.function.Supplier bootstrap$()>();
+virtualinvoke v60.<com.novell.ldapchai.util.internal.ChaiLogger: void error(java.util.function.Supplier)>(v61);
+label11:
+v62 = v0.<com.novell.ldapchai.provider.JNDIProviderImpl: com.novell.ldapchai.provider.ChaiConfiguration chaiConfig>;
+v63 = virtualinvoke v62.<com.novell.ldapchai.provider.ChaiConfiguration: java.lang.Object getImplementationConfiguration()>();
+if v63 == null goto label13;
+v64 = v0.<com.novell.ldapchai.provider.JNDIProviderImpl: com.novell.ldapchai.provider.ChaiConfiguration chaiConfig>;
+v65 = virtualinvoke v64.<com.novell.ldapchai.provider.ChaiConfiguration: java.lang.Object getImplementationConfiguration()>();
+v66 = v65 instanceof java.util.Map;
+if v66 == 0 goto label13;
+v67 = v0.<com.novell.ldapchai.provider.JNDIProviderImpl: com.novell.ldapchai.provider.ChaiConfiguration chaiConfig>;
+v68 = virtualinvoke v67.<com.novell.ldapchai.provider.ChaiConfiguration: java.lang.Object getImplementationConfiguration()>();
+v69 = interfaceinvoke v68.<java.util.Map: java.util.Set entrySet()>();
+v70 = interfaceinvoke v69.<java.util.Set: java.util.Iterator iterator()>();
+label12:
+v71 = interfaceinvoke v70.<java.util.Iterator: boolean hasNext()>();
+if v71 == 0 goto label13;
+v72 = interfaceinvoke v70.<java.util.Iterator: java.lang.Object next()>();
+v73 = interfaceinvoke v72.<java.util.Map$Entry: java.lang.Object getKey()>();
+v74 = interfaceinvoke v72.<java.util.Map$Entry: java.lang.Object getValue()>();
+v75 = v73 instanceof java.lang.String;
+if v75 == 0 goto label12;
+v76 = v74 instanceof java.lang.String;
+if v76 == 0 goto label12;
+virtualinvoke v2.<java.util.Hashtable: java.lang.Object put(java.lang.Object,java.lang.Object)>(v73, v74);
+goto label12;
+label13:
+return v2;
+catch java.security.NoSuchAlgorithmException from label04 to label05 with label06;
+catch java.security.KeyManagementException from label04 to label05 with label06;
+catch java.security.NoSuchAlgorithmException from label08 to label09 with label10;
+catch java.security.KeyManagementException from label08 to label09 with label10;
+}
+private java.util.Map parseAttributeValues(javax.naming.NamingEnumeration, boolean) throws javax.naming.NamingException
+{
+java.util.HashMap v3;
+java.util.ArrayList v8;
+com.novell.ldapchai.provider.JNDIProviderImpl v0;
+java.util.List v13;
+java.util.Map v14;
+javax.naming.NamingEnumeration v1, v9;
+java.lang.Object v11, v6;
+java.lang.String v12, v7;
+boolean v10, v2, v4, v5;
+v0 := @this: com.novell.ldapchai.provider.JNDIProviderImpl;
+v1 := @parameter0: javax.naming.NamingEnumeration;
+v2 := @parameter1: boolean;
+v3 = new java.util.HashMap;
+specialinvoke v3.<java.util.HashMap: void <init>()>();
+if v1 == null goto label4;
+v4 = interfaceinvoke v1.<javax.naming.NamingEnumeration: boolean hasMore()>();
+if v4 == 0 goto label4;
+label1:
+v5 = interfaceinvoke v1.<javax.naming.NamingEnumeration: boolean hasMore()>();
+if v5 == 0 goto label4;
+v6 = interfaceinvoke v1.<javax.naming.NamingEnumeration: java.lang.Object next()>();
+v7 = interfaceinvoke v6.<javax.naming.directory.Attribute: java.lang.String getID()>();
+v8 = new java.util.ArrayList;
+specialinvoke v8.<java.util.ArrayList: void <init>()>();
+v9 = interfaceinvoke v6.<javax.naming.directory.Attribute: javax.naming.NamingEnumeration getAll()>();
+label2:
+v10 = interfaceinvoke v9.<javax.naming.NamingEnumeration: boolean hasMore()>();
+if v10 == 0 goto label3;
+v11 = interfaceinvoke v9.<javax.naming.NamingEnumeration: java.lang.Object next()>();
+v12 = virtualinvoke v11.<java.lang.Object: java.lang.String toString()>();
+interfaceinvoke v8.<java.util.List: boolean add(java.lang.Object)>(v12);
+if v2 != 0 goto label2;
+interfaceinvoke v9.<javax.naming.NamingEnumeration: void close()>();
+label3:
+v13 = staticinvoke <java.util.Collections: java.util.List unmodifiableList(java.util.List)>(v8);
+interfaceinvoke v3.<java.util.Map: java.lang.Object put(java.lang.Object,java.lang.Object)>(v7, v13);
+goto label1;
+label4:
+v14 = staticinvoke <java.util.Collections: java.util.Map unmodifiableMap(java.util.Map)>(v3);
+return v14;
+}
+private boolean supportsSearchResultPaging() throws com.novell.ldapchai.exception.ChaiUnavailableException, com.novell.ldapchai.exception.ChaiOperationException
+{
+com.novell.ldapchai.provider.ChaiConfiguration v1;
+java.util.Set v8;
+com.novell.ldapchai.ChaiEntry v7;
+com.novell.ldapchai.provider.ChaiSetting v2;
+com.novell.ldapchai.provider.JNDIProviderImpl v0;
+java.lang.Boolean v10, v11, v6;
+java.lang.String v3, v4;
+boolean v12, v13, v5, v9;
+v0 := @this: com.novell.ldapchai.provider.JNDIProviderImpl;
+v1 = virtualinvoke v0.<com.novell.ldapchai.provider.JNDIProviderImpl: com.novell.ldapchai.provider.ChaiConfiguration getChaiConfiguration()>();
+v2 = <com.novell.ldapchai.provider.ChaiSetting: com.novell.ldapchai.provider.ChaiSetting LDAP_SEARCH_PAGING_ENABLE>;
+v3 = virtualinvoke v1.<com.novell.ldapchai.provider.ChaiConfiguration: java.lang.String getSetting(com.novell.ldapchai.provider.ChaiSetting)>(v2);
+v4 = "auto";
+v5 = virtualinvoke v4.<java.lang.String: boolean equalsIgnoreCase(java.lang.String)>(v3);
+if v5 == 0 goto label2;
+v6 = v0.<com.novell.ldapchai.provider.JNDIProviderImpl: java.lang.Boolean cachedPagingEnableSupport>;
+if v6 != null goto label1;
+v7 = staticinvoke <com.novell.ldapchai.util.ChaiUtility: com.novell.ldapchai.ChaiEntry getRootDSE(com.novell.ldapchai.provider.ChaiProvider)>(v0);
+v8 = interfaceinvoke v7.<com.novell.ldapchai.ChaiEntry: java.util.Set readMultiStringAttribute(java.lang.String)>("supportedControl");
+v9 = interfaceinvoke v8.<java.util.Set: boolean contains(java.lang.Object)>("1.2.840.113556.1.4.319");
+v10 = staticinvoke <java.lang.Boolean: java.lang.Boolean valueOf(boolean)>(v9);
+v0.<com.novell.ldapchai.provider.JNDIProviderImpl: java.lang.Boolean cachedPagingEnableSupport> = v10;
+label1:
+v11 = v0.<com.novell.ldapchai.provider.JNDIProviderImpl: java.lang.Boolean cachedPagingEnableSupport>;
+v12 = virtualinvoke v11.<java.lang.Boolean: boolean booleanValue()>();
+return v12;
+label2:
+v13 = staticinvoke <java.lang.Boolean: boolean parseBoolean(java.lang.String)>(v3);
+return v13;
+}
+private javax.naming.ldap.LdapContext getLdapConnection() throws com.novell.ldapchai.exception.ChaiUnavailableException
+{
+javax.naming.NamingException v5;
+com.novell.ldapchai.exception.ChaiError v9;
+javax.net.SocketFactory v1, v2;
+com.novell.ldapchai.provider.JNDIProviderImpl v0;
+com.novell.ldapchai.exception.ChaiUnavailableException v8;
+java.lang.String v6, v7;
+javax.naming.ldap.LdapContext v3, v4;
+v0 := @this: com.novell.ldapchai.provider.JNDIProviderImpl;
+label1:
+v1 = v0.<com.novell.ldapchai.provider.JNDIProviderImpl: javax.net.SocketFactory socketFactory>;
+if v1 == null goto label2;
+v2 = v0.<com.novell.ldapchai.provider.JNDIProviderImpl: javax.net.SocketFactory socketFactory>;
+staticinvoke <com.novell.ldapchai.provider.JNDIProviderImpl$ThreadLocalSocketFactory: void set(javax.net.SocketFactory)>(v2);
+label2:
+v3 = v0.<com.novell.ldapchai.provider.JNDIProviderImpl: javax.naming.ldap.LdapContext jndiConnection>;
+v4 = interfaceinvoke v3.<javax.naming.ldap.LdapContext: javax.naming.ldap.LdapContext newInstance(javax.naming.ldap.Control[])>(null);
+label3:
+return v4;
+label4:
+v5 := @caughtexception;
+v6 = virtualinvoke v5.<javax.naming.NamingException: java.lang.String getMessage()>();
+v7 = dynamicinvoke "makeConcatWithConstants" <java.lang.String (java.lang.String)>(v6) <java.lang.invoke.StringConcatFactory: java.lang.invoke.CallSite makeConcatWithConstants(java.lang.invoke.MethodHandles$Lookup,java.lang.String,java.lang.invoke.MethodType,java.lang.String,java.lang.Object[])>("error creating new jndiConnection instance: \u0001");
+v8 = new com.novell.ldapchai.exception.ChaiUnavailableException;
+v9 = <com.novell.ldapchai.exception.ChaiError: com.novell.ldapchai.exception.ChaiError CHAI_INTERNAL_ERROR>;
+specialinvoke v8.<com.novell.ldapchai.exception.ChaiUnavailableException: void <init>(java.lang.String,com.novell.ldapchai.exception.ChaiError,java.lang.Throwable)>(v7, v9, v5);
+throw v8;
+catch javax.naming.NamingException from label1 to label3 with label4;
+}
+private com.novell.ldapchai.exception.ChaiOperationException convertNamingException(javax.naming.NamingException) throws com.novell.ldapchai.exception.ChaiUnavailableException
+{
+java.lang.Throwable v8;
+javax.naming.NamingException v1;
+int v9;
+java.lang.String v12, v13, v15, v18, v20, v4, v5, v7;
+com.novell.ldapchai.exception.ChaiOperationException v21;
+boolean v16;
+com.novell.ldapchai.exception.ChaiError v19;
+com.novell.ldapchai.provider.JNDIProviderImpl v0;
+com.novell.ldapchai.exception.ChaiUnavailableException v17;
+java.lang.Class v11, v3;
+java.lang.StringBuilder v10, v14, v2, v6;
+v0 := @this: com.novell.ldapchai.provider.JNDIProviderImpl;
+v1 := @parameter0: javax.naming.NamingException;
+v2 = new java.lang.StringBuilder;
+specialinvoke v2.<java.lang.StringBuilder: void <init>()>();
+v3 = virtualinvoke v1.<java.lang.Object: java.lang.Class getClass()>();
+v4 = virtualinvoke v3.<java.lang.Class: java.lang.String getName()>();
+virtualinvoke v2.<java.lang.StringBuilder: java.lang.StringBuilder append(java.lang.String)>(v4);
+v5 = virtualinvoke v1.<javax.naming.NamingException: java.lang.String getMessage()>();
+if v5 == null goto label1;
+v6 = virtualinvoke v2.<java.lang.StringBuilder: java.lang.StringBuilder append(java.lang.String)>(": ");
+v7 = virtualinvoke v1.<javax.naming.NamingException: java.lang.String getMessage()>();
+virtualinvoke v6.<java.lang.StringBuilder: java.lang.StringBuilder append(java.lang.String)>(v7);
+label1:
+v8 = virtualinvoke v1.<javax.naming.NamingException: java.lang.Throwable getCause()>();
+v9 = 0;
+label2:
+if v8 == null goto label4;
+if v9 >= 10 goto label4;
+v9 = v9 + 1;
+v10 = virtualinvoke v2.<java.lang.StringBuilder: java.lang.StringBuilder append(java.lang.String)>(", cause:");
+v11 = virtualinvoke v8.<java.lang.Object: java.lang.Class getClass()>();
+v12 = virtualinvoke v11.<java.lang.Class: java.lang.String getName()>();
+virtualinvoke v10.<java.lang.StringBuilder: java.lang.StringBuilder append(java.lang.String)>(v12);
+v13 = virtualinvoke v8.<java.lang.Throwable: java.lang.String getMessage()>();
+if v13 == null goto label3;
+v14 = virtualinvoke v2.<java.lang.StringBuilder: java.lang.StringBuilder append(java.lang.String)>(": ");
+v15 = virtualinvoke v8.<java.lang.Throwable: java.lang.String getMessage()>();
+virtualinvoke v14.<java.lang.StringBuilder: java.lang.StringBuilder append(java.lang.String)>(v15);
+label3:
+v8 = virtualinvoke v8.<java.lang.Throwable: java.lang.Throwable getCause()>();
+goto label2;
+label4:
+v16 = virtualinvoke v0.<com.novell.ldapchai.provider.JNDIProviderImpl: boolean errorIsRetryable(java.lang.Exception)>(v1);
+if v16 == 0 goto label5;
+v17 = new com.novell.ldapchai.exception.ChaiUnavailableException;
+v18 = virtualinvoke v2.<java.lang.StringBuilder: java.lang.String toString()>();
+v19 = <com.novell.ldapchai.exception.ChaiError: com.novell.ldapchai.exception.ChaiError COMMUNICATION>;
+specialinvoke v17.<com.novell.ldapchai.exception.ChaiUnavailableException: void <init>(java.lang.String,com.novell.ldapchai.exception.ChaiError,boolean,boolean,java.lang.Throwable)>(v18, v19, 0, 0, v1);
+throw v17;
+label5:
+v20 = virtualinvoke v2.<java.lang.StringBuilder: java.lang.String toString()>();
+v21 = staticinvoke <com.novell.ldapchai.exception.ChaiOperationException: com.novell.ldapchai.exception.ChaiOperationException forErrorMessage(java.lang.String,java.lang.Throwable)>(v20, v1);
+return v21;
+}
+public boolean errorIsRetryable(java.lang.Exception)
+{
+java.util.function.Supplier v10;
+java.lang.Exception v1;
+com.novell.ldapchai.provider.JNDIProviderImpl v0;
+java.lang.String v4, v5;
+boolean v11, v2, v3, v6, v7, v8;
+com.novell.ldapchai.util.internal.ChaiLogger v9;
+v0 := @this: com.novell.ldapchai.provider.JNDIProviderImpl;
+v1 := @parameter0: java.lang.Exception;
+v2 = v1 instanceof javax.naming.CommunicationException;
+if v2 != 0 goto label1;
+v3 = v1 instanceof javax.naming.ServiceUnavailableException;
+if v3 == 0 goto label2;
+label1:
+v4 = virtualinvoke v1.<java.lang.Exception: java.lang.String getMessage()>();
+if v4 == null goto label2;
+v5 = virtualinvoke v4.<java.lang.String: java.lang.String toLowerCase()>();
+v6 = virtualinvoke v5.<java.lang.String: boolean contains(java.lang.CharSequence)>("unrecognized extended operation");
+if v6 != 0 goto label2;
+return 1;
+label2:
+v7 = v1 instanceof java.lang.InterruptedException;
+if v7 != 0 goto label3;
+v8 = v1 instanceof javax.naming.InterruptedNamingException;
+if v8 == 0 goto label4;
+label3:
+v9 = <com.novell.ldapchai.provider.JNDIProviderImpl: com.novell.ldapchai.util.internal.ChaiLogger LOGGER>;
+v10 = staticinvoke <com.novell.ldapchai.provider.JNDIProviderImpl$lambda_errorIsRetryable_7__157: java.util.function.Supplier bootstrap$(java.lang.Exception)>(v1);
+virtualinvoke v9.<com.novell.ldapchai.util.internal.ChaiLogger: void trace(java.util.function.Supplier)>(v10);
+return 1;
+label4:
+v11 = specialinvoke v0.<com.novell.ldapchai.provider.AbstractProvider: boolean errorIsRetryable(java.lang.Exception)>(v1);
+return v11;
+}
+public boolean isConnected()
+{
+com.novell.ldapchai.provider.JNDIProviderImpl v0;
+javax.naming.ldap.LdapContext v1;
+boolean v2;
+v0 := @this: com.novell.ldapchai.provider.JNDIProviderImpl;
+v1 = v0.<com.novell.ldapchai.provider.JNDIProviderImpl: javax.naming.ldap.LdapContext jndiConnection>;
+if v1 == null goto label1;
+v2 = 1;
+goto label2;
+label1:
+v2 = 0;
+label2:
+return v2;
+}
+protected static java.lang.String removeJndiEscapes(java.lang.String)
+{
+java.lang.String v0, v2;
+boolean v1;
+v0 := @parameter0: java.lang.String;
+if v0 != null goto label1;
+return null;
+label1:
+v1 = virtualinvoke v0.<java.lang.String: boolean matches(java.lang.String)>("^\".*/.*\"$");
+if v1 == 0 goto label2;
+v2 = virtualinvoke v0.<java.lang.String: java.lang.String replaceAll(java.lang.String,java.lang.String)>("^\"|\"$", "");
+return v2;
+label2:
+return v0;
+}
+protected static java.lang.String addJndiEscape(java.lang.String)
+{
+java.lang.String v0, v1;
+v0 := @parameter0: java.lang.String;
+if v0 != null goto label1;
+return null;
+label1:
+v1 = virtualinvoke v0.<java.lang.String: java.lang.String replaceAll(java.lang.String,java.lang.String)>("/", "\\\\2f");
+return v1;
+}
+protected static javax.naming.ldap.BasicControl[] convertControls(com.novell.ldapchai.ChaiRequestControl[])
+{
+byte[] v11;
+com.novell.ldapchai.ChaiRequestControl v10, v6, v8;
+javax.naming.ldap.BasicControl[] v2;
+int v1, v3, v4;
+com.novell.ldapchai.ChaiRequestControl[] v0;
+java.lang.String v7;
+javax.naming.ldap.BasicControl v5;
+boolean v9;
+v0 := @parameter0: com.novell.ldapchai.ChaiRequestControl[];
+if v0 != null goto label1;
+return null;
+label1:
+v1 = lengthof v0;
+v2 = newarray (javax.naming.ldap.BasicControl)[v1];
+v3 = 0;
+label2:
+v4 = lengthof v0;
+if v3 >= v4 goto label3;
+v5 = new javax.naming.ldap.BasicControl;
+v6 = v0[v3];
+v7 = virtualinvoke v6.<com.novell.ldapchai.ChaiRequestControl: java.lang.String getId()>();
+v8 = v0[v3];
+v9 = virtualinvoke v8.<com.novell.ldapchai.ChaiRequestControl: boolean isCritical()>();
+v10 = v0[v3];
+v11 = virtualinvoke v10.<com.novell.ldapchai.ChaiRequestControl: byte[] getValue()>();
+specialinvoke v5.<javax.naming.ldap.BasicControl: void <init>(java.lang.String,boolean,byte[])>(v7, v9, v11);
+v2[v3] = v5;
+v3 = v3 + 1;
+goto label2;
+label3:
+return v2;
+}
+static void <clinit>()
+{
+com.novell.ldapchai.util.internal.ChaiLogger v0;
+v0 = staticinvoke <com.novell.ldapchai.util.internal.ChaiLogger: com.novell.ldapchai.util.internal.ChaiLogger getLogger(java.lang.Class)>(class "Lcom/novell/ldapchai/provider/JNDIProviderImpl;");
+<com.novell.ldapchai.provider.JNDIProviderImpl: com.novell.ldapchai.util.internal.ChaiLogger LOGGER> = v0;
+return;
+}
+}

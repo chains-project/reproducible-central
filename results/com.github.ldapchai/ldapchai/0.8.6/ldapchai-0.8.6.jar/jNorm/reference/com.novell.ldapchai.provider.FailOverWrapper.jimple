@@ -1,0 +1,295 @@
+class com.novell.ldapchai.provider.FailOverWrapper extends java.lang.Object implements java.lang.reflect.InvocationHandler
+{
+private static final com.novell.ldapchai.util.internal.ChaiLogger LOGGER;
+private final com.novell.ldapchai.provider.FailOverRotationMachine rotationMachine;
+private final com.novell.ldapchai.provider.ChaiProvider originalProvider;
+private final com.novell.ldapchai.provider.ChaiConfiguration originalConfiguration;
+private final com.novell.ldapchai.provider.FailOverSettings settings;
+private volatile boolean closed;
+private final java.util.concurrent.locks.Lock failOverLock;
+static com.novell.ldapchai.provider.ChaiProviderImplementor forConfiguration(com.novell.ldapchai.provider.ChaiProviderFactory, com.novell.ldapchai.provider.ChaiConfiguration) throws com.novell.ldapchai.exception.ChaiUnavailableException
+{
+com.novell.ldapchai.provider.FailOverWrapper v5;
+com.novell.ldapchai.provider.ChaiConfiguration v1;
+java.lang.Class[] v2;
+java.lang.Class v3;
+java.lang.Object v6;
+java.lang.ClassLoader v4;
+com.novell.ldapchai.provider.ChaiProviderFactory v0;
+v0 := @parameter0: com.novell.ldapchai.provider.ChaiProviderFactory;
+v1 := @parameter1: com.novell.ldapchai.provider.ChaiConfiguration;
+v2 = newarray (java.lang.Class)[1];
+v2[0] = class "Lcom/novell/ldapchai/provider/ChaiProviderImplementor;";
+v3 = virtualinvoke v1.<java.lang.Object: java.lang.Class getClass()>();
+v4 = virtualinvoke v3.<java.lang.Class: java.lang.ClassLoader getClassLoader()>();
+v5 = new com.novell.ldapchai.provider.FailOverWrapper;
+specialinvoke v5.<com.novell.ldapchai.provider.FailOverWrapper: void <init>(com.novell.ldapchai.provider.ChaiProviderFactory,com.novell.ldapchai.provider.ChaiConfiguration)>(v0, v1);
+v6 = staticinvoke <java.lang.reflect.Proxy: java.lang.Object newProxyInstance(java.lang.ClassLoader,java.lang.Class[],java.lang.reflect.InvocationHandler)>(v4, v2, v5);
+return v6;
+}
+private void <init>(com.novell.ldapchai.provider.ChaiProviderFactory, com.novell.ldapchai.provider.ChaiConfiguration) throws com.novell.ldapchai.exception.ChaiUnavailableException
+{
+java.lang.Throwable v16;
+com.novell.ldapchai.provider.ChaiProviderImplementor v11;
+com.novell.ldapchai.provider.ChaiProviderFactory v1;
+com.novell.ldapchai.provider.FailOverWrapper v0;
+int v6, v9;
+java.lang.String v5, v8;
+com.novell.ldapchai.provider.FailOverSettings v18, v20;
+java.util.concurrent.locks.ReentrantLock v3;
+com.novell.ldapchai.provider.ChaiConfiguration v2;
+com.novell.ldapchai.provider.ChaiSetting v4, v7;
+com.novell.ldapchai.exception.ChaiError v15;
+java.lang.Exception v13;
+com.novell.ldapchai.provider.ChaiProvider v22;
+com.novell.ldapchai.provider.FailOverRotationMachine v19, v21;
+java.util.concurrent.locks.Lock v10, v12, v17;
+com.novell.ldapchai.exception.ChaiUnavailableException v14;
+v0 := @this: com.novell.ldapchai.provider.FailOverWrapper;
+v1 := @parameter0: com.novell.ldapchai.provider.ChaiProviderFactory;
+v2 := @parameter1: com.novell.ldapchai.provider.ChaiConfiguration;
+specialinvoke v0.<java.lang.Object: void <init>()>();
+v0.<com.novell.ldapchai.provider.FailOverWrapper: boolean closed> = 0;
+v3 = new java.util.concurrent.locks.ReentrantLock;
+specialinvoke v3.<java.util.concurrent.locks.ReentrantLock: void <init>()>();
+v0.<com.novell.ldapchai.provider.FailOverWrapper: java.util.concurrent.locks.Lock failOverLock> = v3;
+v4 = <com.novell.ldapchai.provider.ChaiSetting: com.novell.ldapchai.provider.ChaiSetting FAILOVER_CONNECT_RETRIES>;
+v5 = virtualinvoke v2.<com.novell.ldapchai.provider.ChaiConfiguration: java.lang.String getSetting(com.novell.ldapchai.provider.ChaiSetting)>(v4);
+v6 = staticinvoke <java.lang.Integer: int parseInt(java.lang.String)>(v5);
+v7 = <com.novell.ldapchai.provider.ChaiSetting: com.novell.ldapchai.provider.ChaiSetting FAILOVER_MINIMUM_FAILBACK_TIME>;
+v8 = virtualinvoke v2.<com.novell.ldapchai.provider.ChaiConfiguration: java.lang.String getSetting(com.novell.ldapchai.provider.ChaiSetting)>(v7);
+v9 = staticinvoke <java.lang.Integer: int parseInt(java.lang.String)>(v8);
+v0.<com.novell.ldapchai.provider.FailOverWrapper: com.novell.ldapchai.provider.ChaiConfiguration originalConfiguration> = v2;
+v10 = v0.<com.novell.ldapchai.provider.FailOverWrapper: java.util.concurrent.locks.Lock failOverLock>;
+interfaceinvoke v10.<java.util.concurrent.locks.Lock: void lock()>();
+label1:
+v11 = staticinvoke <com.novell.ldapchai.provider.ChaiProviderFactory: com.novell.ldapchai.provider.ChaiProviderImplementor createConcreteProvider(com.novell.ldapchai.provider.ChaiProviderFactory,com.novell.ldapchai.provider.ChaiConfiguration,boolean)>(v1, v2, 0);
+label2:
+v12 = v0.<com.novell.ldapchai.provider.FailOverWrapper: java.util.concurrent.locks.Lock failOverLock>;
+interfaceinvoke v12.<java.util.concurrent.locks.Lock: void unlock()>();
+goto label5;
+label3:
+v13 := @caughtexception;
+v14 = new com.novell.ldapchai.exception.ChaiUnavailableException;
+v15 = <com.novell.ldapchai.exception.ChaiError: com.novell.ldapchai.exception.ChaiError CHAI_INTERNAL_ERROR>;
+specialinvoke v14.<com.novell.ldapchai.exception.ChaiUnavailableException: void <init>(java.lang.String,com.novell.ldapchai.exception.ChaiError,java.lang.Throwable)>("unable to create a required concrete provider for the failover wrapper", v15, v13);
+throw v14;
+label4:
+v16 := @caughtexception;
+v17 = v0.<com.novell.ldapchai.provider.FailOverWrapper: java.util.concurrent.locks.Lock failOverLock>;
+interfaceinvoke v17.<java.util.concurrent.locks.Lock: void unlock()>();
+throw v16;
+label5:
+v18 = new com.novell.ldapchai.provider.FailOverSettings;
+specialinvoke v18.<com.novell.ldapchai.provider.FailOverSettings: void <init>(com.novell.ldapchai.provider.ChaiProviderImplementor,int,int)>(v11, v6, v9);
+v0.<com.novell.ldapchai.provider.FailOverWrapper: com.novell.ldapchai.provider.FailOverSettings settings> = v18;
+v19 = new com.novell.ldapchai.provider.FailOverRotationMachine;
+v20 = v0.<com.novell.ldapchai.provider.FailOverWrapper: com.novell.ldapchai.provider.FailOverSettings settings>;
+specialinvoke v19.<com.novell.ldapchai.provider.FailOverRotationMachine: void <init>(com.novell.ldapchai.provider.ChaiProviderFactory,com.novell.ldapchai.provider.ChaiConfiguration,com.novell.ldapchai.provider.FailOverSettings)>(v1, v2, v20);
+v0.<com.novell.ldapchai.provider.FailOverWrapper: com.novell.ldapchai.provider.FailOverRotationMachine rotationMachine> = v19;
+v21 = v0.<com.novell.ldapchai.provider.FailOverWrapper: com.novell.ldapchai.provider.FailOverRotationMachine rotationMachine>;
+v22 = virtualinvoke v21.<com.novell.ldapchai.provider.FailOverRotationMachine: com.novell.ldapchai.provider.ChaiProvider getCurrentProvider()>();
+v0.<com.novell.ldapchai.provider.FailOverWrapper: com.novell.ldapchai.provider.ChaiProvider originalProvider> = v22;
+return;
+catch java.lang.Exception from label1 to label2 with label3;
+catch java.lang.Throwable from label1 to label2 with label4;
+}
+public java.lang.Object invoke(java.lang.Object, java.lang.reflect.Method, java.lang.Object[]) throws java.lang.Throwable
+{
+java.lang.IllegalStateException v13;
+java.lang.Object[] v3;
+com.novell.ldapchai.provider.FailOverWrapper v0;
+java.lang.String v4, v5, v8, v9;
+java.lang.reflect.Method v2;
+boolean v10, v12, v15, v6;
+com.novell.ldapchai.provider.ChaiConfiguration v11;
+com.novell.ldapchai.provider.ChaiProvider v17;
+java.lang.'annotation'.Annotation v14;
+java.lang.Class v7;
+java.lang.Object v1, v16, v18;
+v0 := @this: com.novell.ldapchai.provider.FailOverWrapper;
+v1 := @parameter0: java.lang.Object;
+v2 := @parameter1: java.lang.reflect.Method;
+v3 := @parameter2: java.lang.Object[];
+v4 = "close";
+v5 = virtualinvoke v2.<java.lang.reflect.Method: java.lang.String getName()>();
+v6 = virtualinvoke v4.<java.lang.String: boolean equals(java.lang.Object)>(v5);
+if v6 == 0 goto label1;
+specialinvoke v0.<com.novell.ldapchai.provider.FailOverWrapper: void closeThis()>();
+v7 = <java.lang.Void: java.lang.Class TYPE>;
+return v7;
+label1:
+v8 = "getChaiConfiguration";
+v9 = virtualinvoke v2.<java.lang.reflect.Method: java.lang.String getName()>();
+v10 = virtualinvoke v8.<java.lang.String: boolean equals(java.lang.Object)>(v9);
+if v10 == 0 goto label2;
+v11 = v0.<com.novell.ldapchai.provider.FailOverWrapper: com.novell.ldapchai.provider.ChaiConfiguration originalConfiguration>;
+return v11;
+label2:
+v12 = v0.<com.novell.ldapchai.provider.FailOverWrapper: boolean closed>;
+if v12 == 0 goto label3;
+v13 = new java.lang.IllegalStateException;
+specialinvoke v13.<java.lang.IllegalStateException: void <init>(java.lang.String)>("fail-over wrapper is closed");
+throw v13;
+label3:
+v14 = virtualinvoke v2.<java.lang.reflect.Method: java.lang.'annotation'.Annotation getAnnotation(java.lang.Class)>(class "Lcom/novell/ldapchai/provider/ChaiProvider$LdapOperation;");
+if v14 == null goto label4;
+v15 = 1;
+goto label5;
+label4:
+v15 = 0;
+label5:
+if v15 == 0 goto label6;
+v16 = specialinvoke v0.<com.novell.ldapchai.provider.FailOverWrapper: java.lang.Object failableInvoke(java.lang.reflect.Method,java.lang.Object[])>(v2, v3);
+return v16;
+label6:
+v17 = v0.<com.novell.ldapchai.provider.FailOverWrapper: com.novell.ldapchai.provider.ChaiProvider originalProvider>;
+v18 = staticinvoke <com.novell.ldapchai.provider.AbstractWrapper: java.lang.Object invoker(com.novell.ldapchai.provider.ChaiProvider,java.lang.reflect.Method,java.lang.Object[])>(v17, v2, v3);
+return v18;
+}
+private void closeThis()
+{
+com.novell.ldapchai.provider.FailOverRotationMachine v2, v3;
+com.novell.ldapchai.provider.FailOverWrapper v0;
+boolean v1;
+com.novell.ldapchai.provider.ChaiProvider v4;
+v0 := @this: com.novell.ldapchai.provider.FailOverWrapper;
+v1 = v0.<com.novell.ldapchai.provider.FailOverWrapper: boolean closed>;
+if v1 == 0 goto label1;
+return;
+label1:
+v2 = v0.<com.novell.ldapchai.provider.FailOverWrapper: com.novell.ldapchai.provider.FailOverRotationMachine rotationMachine>;
+if v2 == null goto label2;
+v3 = v0.<com.novell.ldapchai.provider.FailOverWrapper: com.novell.ldapchai.provider.FailOverRotationMachine rotationMachine>;
+virtualinvoke v3.<com.novell.ldapchai.provider.FailOverRotationMachine: void destoryAllConnections()>();
+label2:
+v4 = v0.<com.novell.ldapchai.provider.FailOverWrapper: com.novell.ldapchai.provider.ChaiProvider originalProvider>;
+interfaceinvoke v4.<com.novell.ldapchai.provider.ChaiProvider: void close()>();
+v0.<com.novell.ldapchai.provider.FailOverWrapper: boolean closed> = 1;
+return;
+}
+private java.lang.Object failableInvoke(java.lang.reflect.Method, java.lang.Object[]) throws com.novell.ldapchai.exception.ChaiException
+{
+java.lang.IllegalStateException v30;
+com.novell.ldapchai.provider.FailOverWrapper v0;
+java.lang.reflect.Method v1;
+boolean v21, v22, v28, v29, v6;
+java.lang.Exception v19;
+com.novell.ldapchai.provider.ChaiProvider v14;
+com.novell.ldapchai.provider.FailOverRotationMachine v13, v24, v7;
+java.util.List v34;
+com.novell.ldapchai.exception.ChaiUnavailableException v10, v36, v38;
+com.novell.ldapchai.util.internal.ChaiLogger v8;
+java.lang.Throwable v16, v26;
+java.lang.Object[] v2;
+java.util.function.Supplier v9;
+int v35, v4, v5;
+java.lang.String v31, v32;
+com.novell.ldapchai.provider.FailOverSettings v20, v3;
+com.novell.ldapchai.provider.ChaiConfiguration v33;
+com.novell.ldapchai.exception.ChaiError v11, v37, v39;
+java.util.concurrent.locks.Lock v12, v15, v17, v23, v25, v27;
+java.lang.Object v18;
+v0 := @this: com.novell.ldapchai.provider.FailOverWrapper;
+v1 := @parameter0: java.lang.reflect.Method;
+v2 := @parameter1: java.lang.Object[];
+v3 = v0.<com.novell.ldapchai.provider.FailOverWrapper: com.novell.ldapchai.provider.FailOverSettings settings>;
+v4 = virtualinvoke v3.<com.novell.ldapchai.provider.FailOverSettings: int getMaxRetries()>();
+v5 = 0;
+label01:
+if v5 >= v4 goto label17;
+v6 = v0.<com.novell.ldapchai.provider.FailOverWrapper: boolean closed>;
+if v6 != 0 goto label02;
+v7 = v0.<com.novell.ldapchai.provider.FailOverWrapper: com.novell.ldapchai.provider.FailOverRotationMachine rotationMachine>;
+if v7 != null goto label03;
+label02:
+v8 = <com.novell.ldapchai.provider.FailOverWrapper: com.novell.ldapchai.util.internal.ChaiLogger LOGGER>;
+v9 = staticinvoke <com.novell.ldapchai.provider.FailOverWrapper$lambda_failableInvoke_0__139: java.util.function.Supplier bootstrap$()>();
+virtualinvoke v8.<com.novell.ldapchai.util.internal.ChaiLogger: void debug(java.util.function.Supplier)>(v9);
+v10 = new com.novell.ldapchai.exception.ChaiUnavailableException;
+v11 = <com.novell.ldapchai.exception.ChaiError: com.novell.ldapchai.exception.ChaiError COMMUNICATION>;
+specialinvoke v10.<com.novell.ldapchai.exception.ChaiUnavailableException: void <init>(java.lang.String,com.novell.ldapchai.exception.ChaiError)>("FailOverWrapper closed while retrying connection", v11);
+throw v10;
+label03:
+v12 = v0.<com.novell.ldapchai.provider.FailOverWrapper: java.util.concurrent.locks.Lock failOverLock>;
+interfaceinvoke v12.<java.util.concurrent.locks.Lock: void lock()>();
+label04:
+v13 = v0.<com.novell.ldapchai.provider.FailOverWrapper: com.novell.ldapchai.provider.FailOverRotationMachine rotationMachine>;
+v14 = virtualinvoke v13.<com.novell.ldapchai.provider.FailOverRotationMachine: com.novell.ldapchai.provider.ChaiProvider getCurrentProvider()>();
+label05:
+v15 = v0.<com.novell.ldapchai.provider.FailOverWrapper: java.util.concurrent.locks.Lock failOverLock>;
+interfaceinvoke v15.<java.util.concurrent.locks.Lock: void unlock()>();
+goto label07;
+label06:
+v16 := @caughtexception;
+v17 = v0.<com.novell.ldapchai.provider.FailOverWrapper: java.util.concurrent.locks.Lock failOverLock>;
+interfaceinvoke v17.<java.util.concurrent.locks.Lock: void unlock()>();
+throw v16;
+label07:
+v18 = staticinvoke <com.novell.ldapchai.provider.AbstractWrapper: java.lang.Object invoker(com.novell.ldapchai.provider.ChaiProvider,java.lang.reflect.Method,java.lang.Object[])>(v14, v1, v2);
+label08:
+return v18;
+label09:
+v19 := @caughtexception;
+v20 = v0.<com.novell.ldapchai.provider.FailOverWrapper: com.novell.ldapchai.provider.FailOverSettings settings>;
+v21 = virtualinvoke v20.<com.novell.ldapchai.provider.FailOverSettings: boolean errorIsRetryable(java.lang.Exception)>(v19);
+if v21 == 0 goto label13;
+v22 = v0.<com.novell.ldapchai.provider.FailOverWrapper: boolean closed>;
+if v22 != 0 goto label13;
+v23 = v0.<com.novell.ldapchai.provider.FailOverWrapper: java.util.concurrent.locks.Lock failOverLock>;
+interfaceinvoke v23.<java.util.concurrent.locks.Lock: void lock()>();
+label10:
+v24 = v0.<com.novell.ldapchai.provider.FailOverWrapper: com.novell.ldapchai.provider.FailOverRotationMachine rotationMachine>;
+virtualinvoke v24.<com.novell.ldapchai.provider.FailOverRotationMachine: void reportBrokenProvider(com.novell.ldapchai.provider.ChaiProvider,java.lang.Exception)>(v14, v19);
+label11:
+v25 = v0.<com.novell.ldapchai.provider.FailOverWrapper: java.util.concurrent.locks.Lock failOverLock>;
+interfaceinvoke v25.<java.util.concurrent.locks.Lock: void unlock()>();
+goto label16;
+label12:
+v26 := @caughtexception;
+v27 = v0.<com.novell.ldapchai.provider.FailOverWrapper: java.util.concurrent.locks.Lock failOverLock>;
+interfaceinvoke v27.<java.util.concurrent.locks.Lock: void unlock()>();
+throw v26;
+label13:
+v28 = v19 instanceof com.novell.ldapchai.exception.ChaiOperationException;
+if v28 == 0 goto label14;
+throw v19;
+label14:
+v29 = v19 instanceof com.novell.ldapchai.exception.ChaiUnavailableException;
+if v29 == 0 goto label15;
+throw v19;
+label15:
+v30 = new java.lang.IllegalStateException;
+v31 = virtualinvoke v19.<java.lang.Exception: java.lang.String getMessage()>();
+v32 = dynamicinvoke "makeConcatWithConstants" <java.lang.String (java.lang.String)>(v31) <java.lang.invoke.StringConcatFactory: java.lang.invoke.CallSite makeConcatWithConstants(java.lang.invoke.MethodHandles$Lookup,java.lang.String,java.lang.invoke.MethodType,java.lang.String,java.lang.Object[])>("unexpected chai api error: \u0001");
+specialinvoke v30.<java.lang.IllegalStateException: void <init>(java.lang.String,java.lang.Throwable)>(v32, v19);
+throw v30;
+label16:
+v5 = v5 + 1;
+goto label01;
+label17:
+v33 = v0.<com.novell.ldapchai.provider.FailOverWrapper: com.novell.ldapchai.provider.ChaiConfiguration originalConfiguration>;
+v34 = virtualinvoke v33.<com.novell.ldapchai.provider.ChaiConfiguration: java.util.List bindURLsAsList()>();
+v35 = interfaceinvoke v34.<java.util.List: int size()>();
+if v35 <= 1 goto label18;
+v36 = new com.novell.ldapchai.exception.ChaiUnavailableException;
+v37 = <com.novell.ldapchai.exception.ChaiError: com.novell.ldapchai.exception.ChaiError COMMUNICATION>;
+specialinvoke v36.<com.novell.ldapchai.exception.ChaiUnavailableException: void <init>(java.lang.String,com.novell.ldapchai.exception.ChaiError)>("unable to reach any configured ldap server, maximum retries exceeded", v37);
+throw v36;
+label18:
+v38 = new com.novell.ldapchai.exception.ChaiUnavailableException;
+v39 = <com.novell.ldapchai.exception.ChaiError: com.novell.ldapchai.exception.ChaiError COMMUNICATION>;
+specialinvoke v38.<com.novell.ldapchai.exception.ChaiUnavailableException: void <init>(java.lang.String,com.novell.ldapchai.exception.ChaiError)>("unable to reach ldap server", v39);
+throw v38;
+catch java.lang.Throwable from label04 to label05 with label06;
+catch java.lang.Exception from label07 to label08 with label09;
+catch java.lang.Throwable from label10 to label11 with label12;
+}
+static void <clinit>()
+{
+com.novell.ldapchai.util.internal.ChaiLogger v0;
+v0 = staticinvoke <com.novell.ldapchai.util.internal.ChaiLogger: com.novell.ldapchai.util.internal.ChaiLogger getLogger(java.lang.Class)>(class "Lcom/novell/ldapchai/provider/FailOverWrapper;");
+<com.novell.ldapchai.provider.FailOverWrapper: com.novell.ldapchai.util.internal.ChaiLogger LOGGER> = v0;
+return;
+}
+}

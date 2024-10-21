@@ -1,0 +1,202 @@
+class com.novell.ldapchai.provider.WatchdogService extends java.lang.Object implements java.io.Closeable
+{
+private static final com.novell.ldapchai.util.internal.ChaiLogger LOGGER;
+private static final java.lang.String THREAD_NAME;
+private final long watchdogFrequency;
+private final com.novell.ldapchai.provider.ChaiProviderFactory chaiProviderFactory;
+private final com.novell.ldapchai.provider.ChaiProviderFactory$WeakReferenceHolder issuedWatchdogWrappers;
+private final java.util.concurrent.locks.Lock serviceThreadLock;
+private volatile java.util.concurrent.ScheduledExecutorService watchdogTimer;
+void <init>(com.novell.ldapchai.provider.ChaiProviderFactory)
+{
+java.util.concurrent.locks.ReentrantLock v3;
+com.novell.ldapchai.provider.ChaiProviderFactorySetting v5, v6;
+com.novell.ldapchai.provider.ChaiProviderFactory v1;
+com.novell.ldapchai.provider.WatchdogService v0;
+java.util.Map v4;
+int v9;
+com.novell.ldapchai.provider.ChaiProviderFactory$WeakReferenceHolder v2;
+java.lang.Object v8;
+java.lang.String v7;
+v0 := @this: com.novell.ldapchai.provider.WatchdogService;
+v1 := @parameter0: com.novell.ldapchai.provider.ChaiProviderFactory;
+specialinvoke v0.<java.lang.Object: void <init>()>();
+v2 = new com.novell.ldapchai.provider.ChaiProviderFactory$WeakReferenceHolder;
+specialinvoke v2.<com.novell.ldapchai.provider.ChaiProviderFactory$WeakReferenceHolder: void <init>()>();
+v0.<com.novell.ldapchai.provider.WatchdogService: com.novell.ldapchai.provider.ChaiProviderFactory$WeakReferenceHolder issuedWatchdogWrappers> = v2;
+v3 = new java.util.concurrent.locks.ReentrantLock;
+specialinvoke v3.<java.util.concurrent.locks.ReentrantLock: void <init>()>();
+v0.<com.novell.ldapchai.provider.WatchdogService: java.util.concurrent.locks.Lock serviceThreadLock> = v3;
+v0.<com.novell.ldapchai.provider.WatchdogService: java.util.concurrent.ScheduledExecutorService watchdogTimer> = null;
+v4 = virtualinvoke v1.<com.novell.ldapchai.provider.ChaiProviderFactory: java.util.Map getChaiProviderFactorySettings()>();
+v5 = <com.novell.ldapchai.provider.ChaiProviderFactorySetting: com.novell.ldapchai.provider.ChaiProviderFactorySetting WATCHDOG_CHECK_FREQUENCY>;
+v6 = <com.novell.ldapchai.provider.ChaiProviderFactorySetting: com.novell.ldapchai.provider.ChaiProviderFactorySetting WATCHDOG_CHECK_FREQUENCY>;
+v7 = virtualinvoke v6.<com.novell.ldapchai.provider.ChaiProviderFactorySetting: java.lang.String getDefaultValue()>();
+v8 = interfaceinvoke v4.<java.util.Map: java.lang.Object getOrDefault(java.lang.Object,java.lang.Object)>(v5, v7);
+v9 = staticinvoke <java.lang.Integer: int parseInt(java.lang.String)>(v8);
+v0.<com.novell.ldapchai.provider.WatchdogService: long watchdogFrequency> = v9;
+v0.<com.novell.ldapchai.provider.WatchdogService: com.novell.ldapchai.provider.ChaiProviderFactory chaiProviderFactory> = v1;
+return;
+}
+void registerInstance(com.novell.ldapchai.provider.WatchdogWrapper)
+{
+com.novell.ldapchai.provider.WatchdogService v0;
+com.novell.ldapchai.provider.WatchdogWrapper v1;
+com.novell.ldapchai.provider.ChaiProviderFactory$WeakReferenceHolder v2;
+v0 := @this: com.novell.ldapchai.provider.WatchdogService;
+v1 := @parameter0: com.novell.ldapchai.provider.WatchdogWrapper;
+v2 = v0.<com.novell.ldapchai.provider.WatchdogService: com.novell.ldapchai.provider.ChaiProviderFactory$WeakReferenceHolder issuedWatchdogWrappers>;
+virtualinvoke v2.<com.novell.ldapchai.provider.ChaiProviderFactory$WeakReferenceHolder: void add(java.lang.Object)>(v1);
+specialinvoke v0.<com.novell.ldapchai.provider.WatchdogService: void checkTimer()>();
+return;
+}
+private void checkTimer()
+{
+java.lang.Throwable v9;
+java.util.Collection v4;
+java.util.function.Supplier v7;
+com.novell.ldapchai.provider.WatchdogService v0;
+java.util.concurrent.locks.Lock v1, v10, v8;
+java.util.concurrent.ScheduledExecutorService v2;
+com.novell.ldapchai.provider.ChaiProviderFactory$WeakReferenceHolder v3;
+boolean v5;
+com.novell.ldapchai.util.internal.ChaiLogger v6;
+v0 := @this: com.novell.ldapchai.provider.WatchdogService;
+v1 = v0.<com.novell.ldapchai.provider.WatchdogService: java.util.concurrent.locks.Lock serviceThreadLock>;
+interfaceinvoke v1.<java.util.concurrent.locks.Lock: void lock()>();
+label1:
+v2 = v0.<com.novell.ldapchai.provider.WatchdogService: java.util.concurrent.ScheduledExecutorService watchdogTimer>;
+if v2 != null goto label2;
+v3 = v0.<com.novell.ldapchai.provider.WatchdogService: com.novell.ldapchai.provider.ChaiProviderFactory$WeakReferenceHolder issuedWatchdogWrappers>;
+v4 = virtualinvoke v3.<com.novell.ldapchai.provider.ChaiProviderFactory$WeakReferenceHolder: java.util.Collection allValues()>();
+v5 = interfaceinvoke v4.<java.util.Collection: boolean isEmpty()>();
+if v5 != 0 goto label2;
+v6 = <com.novell.ldapchai.provider.WatchdogService: com.novell.ldapchai.util.internal.ChaiLogger LOGGER>;
+v7 = staticinvoke <com.novell.ldapchai.provider.WatchdogService$lambda_checkTimer_0__181: java.util.function.Supplier bootstrap$(com.novell.ldapchai.provider.WatchdogService)>(v0);
+virtualinvoke v6.<com.novell.ldapchai.util.internal.ChaiLogger: void debug(java.util.function.Supplier)>(v7);
+specialinvoke v0.<com.novell.ldapchai.provider.WatchdogService: void startWatchdogThread()>();
+label2:
+v8 = v0.<com.novell.ldapchai.provider.WatchdogService: java.util.concurrent.locks.Lock serviceThreadLock>;
+interfaceinvoke v8.<java.util.concurrent.locks.Lock: void unlock()>();
+goto label4;
+label3:
+v9 := @caughtexception;
+v10 = v0.<com.novell.ldapchai.provider.WatchdogService: java.util.concurrent.locks.Lock serviceThreadLock>;
+interfaceinvoke v10.<java.util.concurrent.locks.Lock: void unlock()>();
+throw v9;
+label4:
+return;
+catch java.lang.Throwable from label1 to label2 with label3;
+}
+private void startWatchdogThread()
+{
+long v5, v6;
+com.novell.ldapchai.provider.WatchdogService v0;
+java.util.concurrent.TimeUnit v7;
+java.util.concurrent.ScheduledExecutorService v2, v3;
+com.novell.ldapchai.provider.WatchdogService$WatchdogTask v4;
+com.novell.ldapchai.provider.WatchdogService$1 v1;
+v0 := @this: com.novell.ldapchai.provider.WatchdogService;
+v1 = new com.novell.ldapchai.provider.WatchdogService$1;
+specialinvoke v1.<com.novell.ldapchai.provider.WatchdogService$1: void <init>(com.novell.ldapchai.provider.WatchdogService)>(v0);
+v2 = staticinvoke <java.util.concurrent.Executors: java.util.concurrent.ScheduledExecutorService newSingleThreadScheduledExecutor(java.util.concurrent.ThreadFactory)>(v1);
+v0.<com.novell.ldapchai.provider.WatchdogService: java.util.concurrent.ScheduledExecutorService watchdogTimer> = v2;
+v3 = v0.<com.novell.ldapchai.provider.WatchdogService: java.util.concurrent.ScheduledExecutorService watchdogTimer>;
+v4 = new com.novell.ldapchai.provider.WatchdogService$WatchdogTask;
+specialinvoke v4.<com.novell.ldapchai.provider.WatchdogService$WatchdogTask: void <init>(com.novell.ldapchai.provider.WatchdogService)>(v0);
+v5 = v0.<com.novell.ldapchai.provider.WatchdogService: long watchdogFrequency>;
+v6 = v0.<com.novell.ldapchai.provider.WatchdogService: long watchdogFrequency>;
+v7 = <java.util.concurrent.TimeUnit: java.util.concurrent.TimeUnit MILLISECONDS>;
+interfaceinvoke v3.<java.util.concurrent.ScheduledExecutorService: java.util.concurrent.ScheduledFuture scheduleWithFixedDelay(java.lang.Runnable,long,long,java.util.concurrent.TimeUnit)>(v4, v5, v6, v7);
+return;
+}
+private void stopWatchdogThread()
+{
+com.novell.ldapchai.provider.WatchdogService v0;
+java.util.concurrent.ScheduledExecutorService v1;
+v0 := @this: com.novell.ldapchai.provider.WatchdogService;
+v1 = v0.<com.novell.ldapchai.provider.WatchdogService: java.util.concurrent.ScheduledExecutorService watchdogTimer>;
+interfaceinvoke v1.<java.util.concurrent.ScheduledExecutorService: void shutdown()>();
+v0.<com.novell.ldapchai.provider.WatchdogService: java.util.concurrent.ScheduledExecutorService watchdogTimer> = null;
+return;
+}
+private void checkProvider(com.novell.ldapchai.provider.WatchdogWrapper)
+{
+com.novell.ldapchai.provider.WatchdogWrapper v1;
+java.util.function.Supplier v7;
+java.lang.Exception v2;
+com.novell.ldapchai.provider.WatchdogService v0;
+java.lang.String v3, v4, v5;
+com.novell.ldapchai.util.internal.ChaiLogger v6;
+v0 := @this: com.novell.ldapchai.provider.WatchdogService;
+v1 := @parameter0: com.novell.ldapchai.provider.WatchdogWrapper;
+label1:
+if v1 == null goto label4;
+virtualinvoke v1.<com.novell.ldapchai.provider.WatchdogWrapper: void periodicStatusCheck()>();
+label2:
+goto label4;
+label3:
+v2 := @caughtexception;
+v3 = virtualinvoke v1.<com.novell.ldapchai.provider.WatchdogWrapper: java.lang.String getIdentifier()>();
+v4 = virtualinvoke v2.<java.lang.Exception: java.lang.String getMessage()>();
+v5 = dynamicinvoke "makeConcatWithConstants" <java.lang.String (java.lang.String,java.lang.String)>(v3, v4) <java.lang.invoke.StringConcatFactory: java.lang.invoke.CallSite makeConcatWithConstants(java.lang.invoke.MethodHandles$Lookup,java.lang.String,java.lang.invoke.MethodType,java.lang.String,java.lang.Object[])>("error during watchdog provider idle check of connection \u0001, error: \u0001");
+v6 = <com.novell.ldapchai.provider.WatchdogService: com.novell.ldapchai.util.internal.ChaiLogger LOGGER>;
+v7 = staticinvoke <com.novell.ldapchai.provider.WatchdogService$lambda_checkProvider_1__182: java.util.function.Supplier bootstrap$(java.lang.String)>(v5);
+virtualinvoke v6.<com.novell.ldapchai.util.internal.ChaiLogger: void warn(java.util.function.Supplier)>(v7);
+label4:
+return;
+catch java.lang.Exception from label1 to label2 with label3;
+}
+public void close()
+{
+java.lang.Throwable v11;
+java.util.Iterator v6;
+java.util.Collection v5;
+com.novell.ldapchai.provider.WatchdogService v0;
+java.util.concurrent.locks.Lock v1, v10, v12;
+java.util.concurrent.ScheduledExecutorService v2, v3;
+com.novell.ldapchai.provider.ChaiProviderFactory$WeakReferenceHolder v4, v9;
+java.lang.Object v8;
+boolean v7;
+v0 := @this: com.novell.ldapchai.provider.WatchdogService;
+label1:
+v1 = v0.<com.novell.ldapchai.provider.WatchdogService: java.util.concurrent.locks.Lock serviceThreadLock>;
+interfaceinvoke v1.<java.util.concurrent.locks.Lock: void lock()>();
+v2 = v0.<com.novell.ldapchai.provider.WatchdogService: java.util.concurrent.ScheduledExecutorService watchdogTimer>;
+if v2 == null goto label2;
+v3 = v0.<com.novell.ldapchai.provider.WatchdogService: java.util.concurrent.ScheduledExecutorService watchdogTimer>;
+interfaceinvoke v3.<java.util.concurrent.ScheduledExecutorService: void shutdown()>();
+v0.<com.novell.ldapchai.provider.WatchdogService: java.util.concurrent.ScheduledExecutorService watchdogTimer> = null;
+label2:
+v4 = v0.<com.novell.ldapchai.provider.WatchdogService: com.novell.ldapchai.provider.ChaiProviderFactory$WeakReferenceHolder issuedWatchdogWrappers>;
+v5 = virtualinvoke v4.<com.novell.ldapchai.provider.ChaiProviderFactory$WeakReferenceHolder: java.util.Collection allValues()>();
+v6 = interfaceinvoke v5.<java.util.Collection: java.util.Iterator iterator()>();
+label3:
+v7 = interfaceinvoke v6.<java.util.Iterator: boolean hasNext()>();
+if v7 == 0 goto label4;
+v8 = interfaceinvoke v6.<java.util.Iterator: java.lang.Object next()>();
+virtualinvoke v8.<com.novell.ldapchai.provider.WatchdogWrapper: void close()>();
+v9 = v0.<com.novell.ldapchai.provider.WatchdogService: com.novell.ldapchai.provider.ChaiProviderFactory$WeakReferenceHolder issuedWatchdogWrappers>;
+virtualinvoke v9.<com.novell.ldapchai.provider.ChaiProviderFactory$WeakReferenceHolder: void remove(java.lang.Object)>(v8);
+goto label3;
+label4:
+v10 = v0.<com.novell.ldapchai.provider.WatchdogService: java.util.concurrent.locks.Lock serviceThreadLock>;
+interfaceinvoke v10.<java.util.concurrent.locks.Lock: void unlock()>();
+goto label6;
+label5:
+v11 := @caughtexception;
+v12 = v0.<com.novell.ldapchai.provider.WatchdogService: java.util.concurrent.locks.Lock serviceThreadLock>;
+interfaceinvoke v12.<java.util.concurrent.locks.Lock: void unlock()>();
+throw v11;
+label6:
+return;
+catch java.lang.Throwable from label1 to label4 with label5;
+}
+static void <clinit>()
+{
+com.novell.ldapchai.util.internal.ChaiLogger v0;
+v0 = staticinvoke <com.novell.ldapchai.util.internal.ChaiLogger: com.novell.ldapchai.util.internal.ChaiLogger getLogger(java.lang.Class)>(class "Lcom/novell/ldapchai/provider/WatchdogService;");
+<com.novell.ldapchai.provider.WatchdogService: com.novell.ldapchai.util.internal.ChaiLogger LOGGER> = v0;
+return;
+}
+}

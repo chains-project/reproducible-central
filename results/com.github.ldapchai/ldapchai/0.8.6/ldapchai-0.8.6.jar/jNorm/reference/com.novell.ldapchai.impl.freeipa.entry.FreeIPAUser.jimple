@@ -1,0 +1,253 @@
+class com.novell.ldapchai.impl.freeipa.entry.FreeIPAUser extends com.novell.ldapchai.impl.AbstractChaiUser implements com.novell.ldapchai.ChaiUser
+{
+private static final java.lang.String ATTR_PRINCIPAL_NAME;
+private static final java.lang.String ATTR_ACCOUNT_LOCK;
+private static final java.lang.String ATTR_PASSWORD_EXPIRATION_TIME;
+private static final java.lang.String ATTR_LAST_PASSWORD_CHANGE_TIME;
+private static final java.lang.String ATTR_LAST_FAILED_AUTH_TIME;
+private static final java.lang.String ATTR_LAST_ADMIN_UNLOCK_TIME;
+private static final java.lang.String ATTR_LOGIN_FAILED_COUNT;
+private static final java.lang.String ATTR_PWD_POLICY_REFERENCE;
+private static final java.lang.String ATTR_IPA_PWD_POLICY_MAX_FAILURE;
+private static final java.lang.String ATTR_IPA_PWD_POLICY_LOCKOUT_DURATION;
+private static final java.lang.String ATTR_IPA_PWD_POLICY_FAIL_COUNT_INTERVAL;
+void <init>(java.lang.String, com.novell.ldapchai.provider.ChaiProvider)
+{
+com.novell.ldapchai.impl.freeipa.entry.FreeIPAUser v0;
+java.lang.String v1;
+com.novell.ldapchai.provider.ChaiProvider v2;
+v0 := @this: com.novell.ldapchai.impl.freeipa.entry.FreeIPAUser;
+v1 := @parameter0: java.lang.String;
+v2 := @parameter1: com.novell.ldapchai.provider.ChaiProvider;
+specialinvoke v0.<com.novell.ldapchai.impl.AbstractChaiUser: void <init>(java.lang.String,com.novell.ldapchai.provider.ChaiProvider)>(v1, v2);
+return;
+}
+public java.lang.String getRealm() throws com.novell.ldapchai.exception.ChaiOperationException, com.novell.ldapchai.exception.ChaiUnavailableException
+{
+com.novell.ldapchai.impl.freeipa.entry.FreeIPAUser v0;
+java.util.regex.Matcher v3;
+java.lang.String v1, v5;
+java.util.regex.Pattern v2;
+boolean v4;
+v0 := @this: com.novell.ldapchai.impl.freeipa.entry.FreeIPAUser;
+v1 = virtualinvoke v0.<com.novell.ldapchai.impl.freeipa.entry.FreeIPAUser: java.lang.String readStringAttribute(java.lang.String)>("krbPrincipalName");
+if v1 == null goto label1;
+v2 = staticinvoke <java.util.regex.Pattern: java.util.regex.Pattern compile(java.lang.String)>("@([^@]+)$");
+v3 = virtualinvoke v2.<java.util.regex.Pattern: java.util.regex.Matcher matcher(java.lang.CharSequence)>(v1);
+v4 = virtualinvoke v3.<java.util.regex.Matcher: boolean find()>();
+if v4 == 0 goto label1;
+v5 = virtualinvoke v3.<java.util.regex.Matcher: java.lang.String group(int)>(1);
+return v5;
+label1:
+return null;
+}
+public java.lang.String getNamingContext() throws com.novell.ldapchai.exception.ChaiOperationException, com.novell.ldapchai.exception.ChaiUnavailableException
+{
+com.novell.ldapchai.impl.freeipa.entry.FreeIPAUser v0;
+java.util.regex.Matcher v3;
+java.lang.String v1, v5;
+java.util.regex.Pattern v2;
+boolean v4;
+v0 := @this: com.novell.ldapchai.impl.freeipa.entry.FreeIPAUser;
+v1 = virtualinvoke v0.<com.novell.ldapchai.impl.freeipa.entry.FreeIPAUser: java.lang.String getEntryDN()>();
+if v1 == null goto label1;
+v2 = staticinvoke <java.util.regex.Pattern: java.util.regex.Pattern compile(java.lang.String)>(",(dc=.*)$");
+v3 = virtualinvoke v2.<java.util.regex.Pattern: java.util.regex.Matcher matcher(java.lang.CharSequence)>(v1);
+v4 = virtualinvoke v3.<java.util.regex.Matcher: boolean find()>();
+if v4 == 0 goto label1;
+v5 = virtualinvoke v3.<java.util.regex.Matcher: java.lang.String group(int)>(1);
+return v5;
+label1:
+return null;
+}
+public java.util.Set getGroups() throws com.novell.ldapchai.exception.ChaiOperationException, com.novell.ldapchai.exception.ChaiUnavailableException
+{
+com.novell.ldapchai.impl.freeipa.entry.FreeIPAUser v0;
+java.util.Iterator v3;
+java.util.Set v2, v9;
+com.novell.ldapchai.provider.ChaiProvider v6;
+com.novell.ldapchai.ChaiEntryFactory v7;
+java.lang.Object v5;
+com.novell.ldapchai.ChaiGroup v8;
+java.util.LinkedHashSet v1;
+boolean v4;
+v0 := @this: com.novell.ldapchai.impl.freeipa.entry.FreeIPAUser;
+v1 = new java.util.LinkedHashSet;
+specialinvoke v1.<java.util.LinkedHashSet: void <init>()>();
+v2 = virtualinvoke v0.<com.novell.ldapchai.impl.freeipa.entry.FreeIPAUser: java.util.Set readMultiStringAttribute(java.lang.String)>("memberOf");
+v3 = interfaceinvoke v2.<java.util.Set: java.util.Iterator iterator()>();
+label1:
+v4 = interfaceinvoke v3.<java.util.Iterator: boolean hasNext()>();
+if v4 == 0 goto label2;
+v5 = interfaceinvoke v3.<java.util.Iterator: java.lang.Object next()>();
+v6 = virtualinvoke v0.<com.novell.ldapchai.impl.freeipa.entry.FreeIPAUser: com.novell.ldapchai.provider.ChaiProvider getChaiProvider()>();
+v7 = interfaceinvoke v6.<com.novell.ldapchai.provider.ChaiProvider: com.novell.ldapchai.ChaiEntryFactory getEntryFactory()>();
+v8 = virtualinvoke v7.<com.novell.ldapchai.ChaiEntryFactory: com.novell.ldapchai.ChaiGroup newChaiGroup(java.lang.String)>(v5);
+interfaceinvoke v1.<java.util.Set: boolean add(java.lang.Object)>(v8);
+goto label1;
+label2:
+v9 = staticinvoke <java.util.Collections: java.util.Set unmodifiableSet(java.util.Set)>(v1);
+return v9;
+}
+public void addGroupMembership(com.novell.ldapchai.ChaiGroup) throws com.novell.ldapchai.exception.ChaiOperationException, com.novell.ldapchai.exception.ChaiUnavailableException
+{
+com.novell.ldapchai.impl.freeipa.entry.FreeIPAUser v0;
+java.lang.String v2, v3;
+com.novell.ldapchai.ChaiGroup v1;
+v0 := @this: com.novell.ldapchai.impl.freeipa.entry.FreeIPAUser;
+v1 := @parameter0: com.novell.ldapchai.ChaiGroup;
+v2 = interfaceinvoke v1.<com.novell.ldapchai.ChaiGroup: java.lang.String getEntryDN()>();
+virtualinvoke v0.<com.novell.ldapchai.impl.freeipa.entry.FreeIPAUser: void addAttribute(java.lang.String,java.lang.String)>("memberOf", v2);
+v3 = virtualinvoke v0.<com.novell.ldapchai.impl.freeipa.entry.FreeIPAUser: java.lang.String getEntryDN()>();
+interfaceinvoke v1.<com.novell.ldapchai.ChaiGroup: void addAttribute(java.lang.String,java.lang.String)>("member", v3);
+return;
+}
+public void removeGroupMembership(com.novell.ldapchai.ChaiGroup) throws com.novell.ldapchai.exception.ChaiOperationException, com.novell.ldapchai.exception.ChaiUnavailableException
+{
+com.novell.ldapchai.impl.freeipa.entry.FreeIPAUser v0;
+java.lang.String v2, v3;
+com.novell.ldapchai.ChaiGroup v1;
+v0 := @this: com.novell.ldapchai.impl.freeipa.entry.FreeIPAUser;
+v1 := @parameter0: com.novell.ldapchai.ChaiGroup;
+v2 = interfaceinvoke v1.<com.novell.ldapchai.ChaiGroup: java.lang.String getEntryDN()>();
+virtualinvoke v0.<com.novell.ldapchai.impl.freeipa.entry.FreeIPAUser: void deleteAttribute(java.lang.String,java.lang.String)>("memberOf", v2);
+v3 = virtualinvoke v0.<com.novell.ldapchai.impl.freeipa.entry.FreeIPAUser: java.lang.String getEntryDN()>();
+interfaceinvoke v1.<com.novell.ldapchai.ChaiGroup: void deleteAttribute(java.lang.String,java.lang.String)>("member", v3);
+return;
+}
+public java.time.Instant readPasswordExpirationDate() throws com.novell.ldapchai.exception.ChaiUnavailableException, com.novell.ldapchai.exception.ChaiOperationException
+{
+com.novell.ldapchai.impl.freeipa.entry.FreeIPAUser v0;
+java.time.Instant v1;
+v0 := @this: com.novell.ldapchai.impl.freeipa.entry.FreeIPAUser;
+v1 = virtualinvoke v0.<com.novell.ldapchai.impl.freeipa.entry.FreeIPAUser: java.time.Instant readDateAttribute(java.lang.String)>("krbPasswordExpiration");
+return v1;
+}
+public com.novell.ldapchai.ChaiPasswordPolicy getPasswordPolicy() throws com.novell.ldapchai.exception.ChaiUnavailableException, com.novell.ldapchai.exception.ChaiOperationException
+{
+com.novell.ldapchai.impl.freeipa.entry.FreeIPAUser v0;
+com.novell.ldapchai.provider.ChaiProvider v6, v9;
+com.novell.ldapchai.impl.freeipa.entry.FreeIPAEntry v5;
+com.novell.ldapchai.impl.freeipa.entry.FreeIPAPasswordPolicy v8;
+java.lang.String v1, v3, v4;
+boolean v2, v7;
+v0 := @this: com.novell.ldapchai.impl.freeipa.entry.FreeIPAUser;
+v1 = virtualinvoke v0.<com.novell.ldapchai.impl.freeipa.entry.FreeIPAUser: java.lang.String readStringAttribute(java.lang.String)>("krbPwdPolicyReference");
+if v1 == null goto label1;
+v2 = virtualinvoke v1.<java.lang.String: boolean isEmpty()>();
+if v2 == 0 goto label2;
+label1:
+v3 = virtualinvoke v0.<com.novell.ldapchai.impl.freeipa.entry.FreeIPAUser: java.lang.String getRealm()>();
+v4 = virtualinvoke v0.<com.novell.ldapchai.impl.freeipa.entry.FreeIPAUser: java.lang.String getNamingContext()>();
+v1 = dynamicinvoke "makeConcatWithConstants" <java.lang.String (java.lang.String,java.lang.String)>(v3, v4) <java.lang.invoke.StringConcatFactory: java.lang.invoke.CallSite makeConcatWithConstants(java.lang.invoke.MethodHandles$Lookup,java.lang.String,java.lang.invoke.MethodType,java.lang.String,java.lang.Object[])>("cn=global_policy,cn=\u0001,cn=kerberos,\u0001");
+label2:
+v5 = new com.novell.ldapchai.impl.freeipa.entry.FreeIPAEntry;
+v6 = virtualinvoke v0.<com.novell.ldapchai.impl.freeipa.entry.FreeIPAUser: com.novell.ldapchai.provider.ChaiProvider getChaiProvider()>();
+specialinvoke v5.<com.novell.ldapchai.impl.freeipa.entry.FreeIPAEntry: void <init>(java.lang.String,com.novell.ldapchai.provider.ChaiProvider)>(v1, v6);
+v7 = virtualinvoke v5.<com.novell.ldapchai.impl.freeipa.entry.FreeIPAEntry: boolean exists()>();
+if v7 == 0 goto label3;
+v8 = new com.novell.ldapchai.impl.freeipa.entry.FreeIPAPasswordPolicy;
+v9 = virtualinvoke v0.<com.novell.ldapchai.impl.freeipa.entry.FreeIPAUser: com.novell.ldapchai.provider.ChaiProvider getChaiProvider()>();
+specialinvoke v8.<com.novell.ldapchai.impl.freeipa.entry.FreeIPAPasswordPolicy: void <init>(java.lang.String,com.novell.ldapchai.provider.ChaiProvider)>(v1, v9);
+return v8;
+label3:
+return null;
+}
+public boolean isPasswordExpired() throws com.novell.ldapchai.exception.ChaiUnavailableException, com.novell.ldapchai.exception.ChaiOperationException
+{
+com.novell.ldapchai.impl.freeipa.entry.FreeIPAUser v0;
+java.time.Instant v1, v3;
+boolean v2;
+v0 := @this: com.novell.ldapchai.impl.freeipa.entry.FreeIPAUser;
+v1 = virtualinvoke v0.<com.novell.ldapchai.impl.freeipa.entry.FreeIPAUser: java.time.Instant readPasswordExpirationDate()>();
+if v1 != null goto label1;
+v2 = 0;
+goto label2;
+label1:
+v3 = staticinvoke <java.time.Instant: java.time.Instant now()>();
+v2 = virtualinvoke v1.<java.time.Instant: boolean isBefore(java.time.Instant)>(v3);
+label2:
+return v2;
+}
+public java.time.Instant readPasswordModificationDate() throws com.novell.ldapchai.exception.ChaiOperationException, com.novell.ldapchai.exception.ChaiUnavailableException
+{
+com.novell.ldapchai.impl.freeipa.entry.FreeIPAUser v0;
+java.time.Instant v1;
+v0 := @this: com.novell.ldapchai.impl.freeipa.entry.FreeIPAUser;
+v1 = virtualinvoke v0.<com.novell.ldapchai.impl.freeipa.entry.FreeIPAUser: java.time.Instant readDateAttribute(java.lang.String)>("krbLastPwdChange");
+return v1;
+}
+public boolean isAccountEnabled() throws com.novell.ldapchai.exception.ChaiOperationException, com.novell.ldapchai.exception.ChaiUnavailableException
+{
+com.novell.ldapchai.impl.freeipa.entry.FreeIPAUser v0;
+boolean v1, v2;
+v0 := @this: com.novell.ldapchai.impl.freeipa.entry.FreeIPAUser;
+v1 = virtualinvoke v0.<com.novell.ldapchai.impl.freeipa.entry.FreeIPAUser: boolean readBooleanAttribute(java.lang.String)>("nsAccountLock");
+if v1 != 0 goto label1;
+v2 = 1;
+goto label2;
+label1:
+v2 = 0;
+label2:
+return v2;
+}
+public boolean isPasswordLocked() throws com.novell.ldapchai.exception.ChaiOperationException, com.novell.ldapchai.exception.ChaiUnavailableException
+{
+com.novell.ldapchai.impl.freeipa.entry.FreeIPAUser v0;
+java.lang.NumberFormatException v12;
+com.novell.ldapchai.ChaiPasswordPolicy v1;
+java.time.Instant v10, v5, v9;
+java.time.temporal.ChronoUnit v8;
+int v2, v4, v7;
+java.lang.String v3, v6;
+boolean v11;
+v0 := @this: com.novell.ldapchai.impl.freeipa.entry.FreeIPAUser;
+v1 = virtualinvoke v0.<com.novell.ldapchai.impl.freeipa.entry.FreeIPAUser: com.novell.ldapchai.ChaiPasswordPolicy getPasswordPolicy()>();
+if v1 != null goto label1;
+return 0;
+label1:
+v2 = virtualinvoke v0.<com.novell.ldapchai.impl.freeipa.entry.FreeIPAUser: int readIntAttribute(java.lang.String)>("krbLoginFailedCount");
+v3 = interfaceinvoke v1.<com.novell.ldapchai.ChaiPasswordPolicy: java.lang.String getValue(java.lang.String)>("krbPwdMaxFailure");
+v4 = staticinvoke <java.lang.Integer: int parseInt(java.lang.String)>(v3);
+if v2 >= v4 goto label3;
+label2:
+return 0;
+label3:
+v5 = virtualinvoke v0.<com.novell.ldapchai.impl.freeipa.entry.FreeIPAUser: java.time.Instant readDateAttribute(java.lang.String)>("krbLastFailedAuth");
+v6 = interfaceinvoke v1.<com.novell.ldapchai.ChaiPasswordPolicy: java.lang.String getValue(java.lang.String)>("krbPwdLockoutDuration");
+v7 = staticinvoke <java.lang.Integer: int parseInt(java.lang.String)>(v6);
+v8 = <java.time.temporal.ChronoUnit: java.time.temporal.ChronoUnit SECONDS>;
+v9 = virtualinvoke v5.<java.time.Instant: java.time.Instant plus(long,java.time.temporal.TemporalUnit)>(v7, v8);
+v10 = staticinvoke <java.time.Instant: java.time.Instant now()>();
+v11 = virtualinvoke v9.<java.time.Instant: boolean isBefore(java.time.Instant)>(v10);
+if v11 == 0 goto label6;
+label4:
+return 0;
+label5:
+v12 := @caughtexception;
+return 0;
+label6:
+return 1;
+catch java.lang.NumberFormatException from label1 to label2 with label5;
+catch java.lang.NumberFormatException from label3 to label4 with label5;
+}
+public boolean isLocked() throws com.novell.ldapchai.exception.ChaiOperationException, com.novell.ldapchai.exception.ChaiUnavailableException
+{
+com.novell.ldapchai.impl.freeipa.entry.FreeIPAUser v0;
+boolean v1;
+v0 := @this: com.novell.ldapchai.impl.freeipa.entry.FreeIPAUser;
+v1 = virtualinvoke v0.<com.novell.ldapchai.impl.freeipa.entry.FreeIPAUser: boolean isPasswordExpired()>();
+return v1;
+}
+public java.lang.String readGUID() throws com.novell.ldapchai.exception.ChaiOperationException, com.novell.ldapchai.exception.ChaiUnavailableException
+{
+com.novell.ldapchai.impl.freeipa.entry.FreeIPAUser v0;
+java.lang.String v2, v3;
+com.novell.ldapchai.provider.ChaiProvider v1;
+v0 := @this: com.novell.ldapchai.impl.freeipa.entry.FreeIPAUser;
+v1 = virtualinvoke v0.<com.novell.ldapchai.impl.freeipa.entry.FreeIPAUser: com.novell.ldapchai.provider.ChaiProvider getChaiProvider()>();
+v2 = virtualinvoke v0.<com.novell.ldapchai.impl.freeipa.entry.FreeIPAUser: java.lang.String getEntryDN()>();
+v3 = staticinvoke <com.novell.ldapchai.impl.freeipa.entry.FreeIPAEntry: java.lang.String readGUIDImpl(com.novell.ldapchai.provider.ChaiProvider,java.lang.String)>(v1, v2);
+return v3;
+}
+}

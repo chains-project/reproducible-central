@@ -1,0 +1,568 @@
+class com.novell.ldapchai.provider.FailOverRotationMachine extends java.lang.Object
+{
+private static final com.novell.ldapchai.util.internal.ChaiLogger LOGGER;
+private java.time.Instant lastFailureTime;
+private final java.util.List providerSlots;
+private final java.util.concurrent.atomic.AtomicInteger activeSlot;
+private final com.novell.ldapchai.provider.FailOverSettings settings;
+private final com.novell.ldapchai.provider.ChaiProviderFactory providerFactory;
+private final com.novell.ldapchai.provider.ChaiConfiguration originalConfiguration;
+private final int urlListHashCode;
+private static final java.util.Map LAST_KNOWN_GOOD_CACHE;
+private static final int MAX_SIZE_LNG_CACHE;
+private static long lngLastPopulateTime;
+private java.lang.Exception lastConnectionException;
+private volatile com.novell.ldapchai.provider.FailOverRotationMachine$FailState failState;
+void <init>(com.novell.ldapchai.provider.ChaiProviderFactory, com.novell.ldapchai.provider.ChaiConfiguration, com.novell.ldapchai.provider.FailOverSettings) throws com.novell.ldapchai.exception.ChaiUnavailableException
+{
+com.novell.ldapchai.provider.ChaiConfiguration v2;
+java.time.Instant v4;
+com.novell.ldapchai.provider.ChaiProviderFactory v1;
+com.novell.ldapchai.provider.FailOverRotationMachine v0;
+java.util.List v8;
+java.util.concurrent.atomic.AtomicInteger v6;
+int v9;
+com.novell.ldapchai.provider.FailOverRotationMachine$FailState v7;
+com.novell.ldapchai.provider.FailOverSettings v3;
+java.util.concurrent.CopyOnWriteArrayList v5;
+v0 := @this: com.novell.ldapchai.provider.FailOverRotationMachine;
+v1 := @parameter0: com.novell.ldapchai.provider.ChaiProviderFactory;
+v2 := @parameter1: com.novell.ldapchai.provider.ChaiConfiguration;
+v3 := @parameter2: com.novell.ldapchai.provider.FailOverSettings;
+specialinvoke v0.<java.lang.Object: void <init>()>();
+v4 = staticinvoke <java.time.Instant: java.time.Instant now()>();
+v0.<com.novell.ldapchai.provider.FailOverRotationMachine: java.time.Instant lastFailureTime> = v4;
+v5 = new java.util.concurrent.CopyOnWriteArrayList;
+specialinvoke v5.<java.util.concurrent.CopyOnWriteArrayList: void <init>()>();
+v0.<com.novell.ldapchai.provider.FailOverRotationMachine: java.util.List providerSlots> = v5;
+v6 = new java.util.concurrent.atomic.AtomicInteger;
+specialinvoke v6.<java.util.concurrent.atomic.AtomicInteger: void <init>(int)>(0);
+v0.<com.novell.ldapchai.provider.FailOverRotationMachine: java.util.concurrent.atomic.AtomicInteger activeSlot> = v6;
+v7 = <com.novell.ldapchai.provider.FailOverRotationMachine$FailState: com.novell.ldapchai.provider.FailOverRotationMachine$FailState NEW>;
+v0.<com.novell.ldapchai.provider.FailOverRotationMachine: com.novell.ldapchai.provider.FailOverRotationMachine$FailState failState> = v7;
+v8 = virtualinvoke v2.<com.novell.ldapchai.provider.ChaiConfiguration: java.util.List bindURLsAsList()>();
+v9 = interfaceinvoke v8.<java.util.List: int hashCode()>();
+v0.<com.novell.ldapchai.provider.FailOverRotationMachine: int urlListHashCode> = v9;
+v0.<com.novell.ldapchai.provider.FailOverRotationMachine: com.novell.ldapchai.provider.FailOverSettings settings> = v3;
+v0.<com.novell.ldapchai.provider.FailOverRotationMachine: com.novell.ldapchai.provider.ChaiProviderFactory providerFactory> = v1;
+v0.<com.novell.ldapchai.provider.FailOverRotationMachine: com.novell.ldapchai.provider.ChaiConfiguration originalConfiguration> = v2;
+specialinvoke v0.<com.novell.ldapchai.provider.FailOverRotationMachine: void configureInitialState(com.novell.ldapchai.provider.ChaiConfiguration)>(v2);
+return;
+}
+private void setActiveSlot(int)
+{
+long v10;
+java.lang.Integer v8, v9;
+java.util.function.Supplier v17;
+java.util.concurrent.atomic.AtomicInteger v2;
+java.util.Map v11, v13, v6;
+int v1, v12, v7;
+boolean v5;
+java.util.Iterator v15;
+com.novell.ldapchai.provider.ChaiConfiguration v3;
+java.util.Set v14;
+com.novell.ldapchai.provider.ChaiSetting v4;
+com.novell.ldapchai.provider.FailOverRotationMachine v0;
+com.novell.ldapchai.util.internal.ChaiLogger v16;
+v0 := @this: com.novell.ldapchai.provider.FailOverRotationMachine;
+v1 := @parameter0: int;
+v2 = v0.<com.novell.ldapchai.provider.FailOverRotationMachine: java.util.concurrent.atomic.AtomicInteger activeSlot>;
+virtualinvoke v2.<java.util.concurrent.atomic.AtomicInteger: void set(int)>(v1);
+if v1 == 0 goto label2;
+v3 = v0.<com.novell.ldapchai.provider.FailOverRotationMachine: com.novell.ldapchai.provider.ChaiConfiguration originalConfiguration>;
+v4 = <com.novell.ldapchai.provider.ChaiSetting: com.novell.ldapchai.provider.ChaiSetting FAILOVER_USE_LAST_KNOWN_GOOD_HINT>;
+v5 = virtualinvoke v3.<com.novell.ldapchai.provider.ChaiConfiguration: boolean getBooleanSetting(com.novell.ldapchai.provider.ChaiSetting)>(v4);
+if v5 == 0 goto label2;
+v6 = <com.novell.ldapchai.provider.FailOverRotationMachine: java.util.Map LAST_KNOWN_GOOD_CACHE>;
+v7 = v0.<com.novell.ldapchai.provider.FailOverRotationMachine: int urlListHashCode>;
+v8 = staticinvoke <java.lang.Integer: java.lang.Integer valueOf(int)>(v7);
+v9 = staticinvoke <java.lang.Integer: java.lang.Integer valueOf(int)>(v1);
+interfaceinvoke v6.<java.util.Map: java.lang.Object put(java.lang.Object,java.lang.Object)>(v8, v9);
+v10 = staticinvoke <java.lang.System: long currentTimeMillis()>();
+<com.novell.ldapchai.provider.FailOverRotationMachine: long lngLastPopulateTime> = v10;
+label1:
+v11 = <com.novell.ldapchai.provider.FailOverRotationMachine: java.util.Map LAST_KNOWN_GOOD_CACHE>;
+v12 = interfaceinvoke v11.<java.util.Map: int size()>();
+if v12 <= 50 goto label2;
+v13 = <com.novell.ldapchai.provider.FailOverRotationMachine: java.util.Map LAST_KNOWN_GOOD_CACHE>;
+v14 = interfaceinvoke v13.<java.util.Map: java.util.Set keySet()>();
+v15 = interfaceinvoke v14.<java.util.Set: java.util.Iterator iterator()>();
+interfaceinvoke v15.<java.util.Iterator: void remove()>();
+v16 = <com.novell.ldapchai.provider.FailOverRotationMachine: com.novell.ldapchai.util.internal.ChaiLogger LOGGER>;
+v17 = staticinvoke <com.novell.ldapchai.provider.FailOverRotationMachine$lambda_setActiveSlot_0__130: java.util.function.Supplier bootstrap$()>();
+virtualinvoke v16.<com.novell.ldapchai.util.internal.ChaiLogger: void warn(java.util.function.Supplier)>(v17);
+goto label1;
+label2:
+return;
+}
+private void configureInitialState(com.novell.ldapchai.provider.ChaiConfiguration)
+{
+java.lang.Integer v26, v31;
+byte v22;
+java.util.concurrent.atomic.AtomicInteger v28;
+java.util.Map v15, v23, v24, v29;
+boolean v14, v16, v27, v4;
+com.novell.ldapchai.provider.ChaiConfiguration$ChaiConfigurationBuilder v6, v8;
+com.novell.ldapchai.provider.FailOverRotationMachine v0;
+java.util.List v10, v2;
+com.novell.ldapchai.provider.FailOverRotationMachine$ProviderSlot v11;
+com.novell.ldapchai.util.internal.ChaiLogger v34;
+long v17, v18, v19;
+java.util.function.Supplier v35;
+int v21, v25, v30, v33;
+com.novell.ldapchai.provider.FailOverSettings v20;
+java.util.Iterator v3;
+com.novell.ldapchai.provider.ChaiConfiguration v1, v12, v9;
+com.novell.ldapchai.provider.ChaiSetting v13, v7;
+java.lang.Object v32, v5;
+v0 := @this: com.novell.ldapchai.provider.FailOverRotationMachine;
+v1 := @parameter0: com.novell.ldapchai.provider.ChaiConfiguration;
+v2 = virtualinvoke v1.<com.novell.ldapchai.provider.ChaiConfiguration: java.util.List bindURLsAsList()>();
+v3 = interfaceinvoke v2.<java.util.List: java.util.Iterator iterator()>();
+label1:
+v4 = interfaceinvoke v3.<java.util.Iterator: boolean hasNext()>();
+if v4 == 0 goto label2;
+v5 = interfaceinvoke v3.<java.util.Iterator: java.lang.Object next()>();
+v6 = staticinvoke <com.novell.ldapchai.provider.ChaiConfiguration: com.novell.ldapchai.provider.ChaiConfiguration$ChaiConfigurationBuilder builder(com.novell.ldapchai.provider.ChaiConfiguration)>(v1);
+v7 = <com.novell.ldapchai.provider.ChaiSetting: com.novell.ldapchai.provider.ChaiSetting BIND_URLS>;
+v8 = virtualinvoke v6.<com.novell.ldapchai.provider.ChaiConfiguration$ChaiConfigurationBuilder: com.novell.ldapchai.provider.ChaiConfiguration$ChaiConfigurationBuilder setSetting(com.novell.ldapchai.provider.ChaiSetting,java.lang.String)>(v7, v5);
+v9 = virtualinvoke v8.<com.novell.ldapchai.provider.ChaiConfiguration$ChaiConfigurationBuilder: com.novell.ldapchai.provider.ChaiConfiguration build()>();
+v10 = v0.<com.novell.ldapchai.provider.FailOverRotationMachine: java.util.List providerSlots>;
+v11 = new com.novell.ldapchai.provider.FailOverRotationMachine$ProviderSlot;
+specialinvoke v11.<com.novell.ldapchai.provider.FailOverRotationMachine$ProviderSlot: void <init>(com.novell.ldapchai.provider.ChaiConfiguration,java.lang.String)>(v9, v5);
+interfaceinvoke v10.<java.util.List: boolean add(java.lang.Object)>(v11);
+goto label1;
+label2:
+v12 = v0.<com.novell.ldapchai.provider.FailOverRotationMachine: com.novell.ldapchai.provider.ChaiConfiguration originalConfiguration>;
+v13 = <com.novell.ldapchai.provider.ChaiSetting: com.novell.ldapchai.provider.ChaiSetting FAILOVER_USE_LAST_KNOWN_GOOD_HINT>;
+v14 = virtualinvoke v12.<com.novell.ldapchai.provider.ChaiConfiguration: boolean getBooleanSetting(com.novell.ldapchai.provider.ChaiSetting)>(v13);
+if v14 == 0 goto label4;
+v15 = <com.novell.ldapchai.provider.FailOverRotationMachine: java.util.Map LAST_KNOWN_GOOD_CACHE>;
+v16 = interfaceinvoke v15.<java.util.Map: boolean isEmpty()>();
+if v16 != 0 goto label3;
+v17 = staticinvoke <java.lang.System: long currentTimeMillis()>();
+v18 = <com.novell.ldapchai.provider.FailOverRotationMachine: long lngLastPopulateTime>;
+v19 = v17 - v18;
+v20 = v0.<com.novell.ldapchai.provider.FailOverRotationMachine: com.novell.ldapchai.provider.FailOverSettings settings>;
+v21 = virtualinvoke v20.<com.novell.ldapchai.provider.FailOverSettings: int getMinFailBackTime()>();
+v22 = v19 cmp v21;
+if v22 <= 0 goto label3;
+v23 = <com.novell.ldapchai.provider.FailOverRotationMachine: java.util.Map LAST_KNOWN_GOOD_CACHE>;
+interfaceinvoke v23.<java.util.Map: void clear()>();
+label3:
+v24 = <com.novell.ldapchai.provider.FailOverRotationMachine: java.util.Map LAST_KNOWN_GOOD_CACHE>;
+v25 = v0.<com.novell.ldapchai.provider.FailOverRotationMachine: int urlListHashCode>;
+v26 = staticinvoke <java.lang.Integer: java.lang.Integer valueOf(int)>(v25);
+v27 = interfaceinvoke v24.<java.util.Map: boolean containsKey(java.lang.Object)>(v26);
+if v27 == 0 goto label4;
+v28 = v0.<com.novell.ldapchai.provider.FailOverRotationMachine: java.util.concurrent.atomic.AtomicInteger activeSlot>;
+v29 = <com.novell.ldapchai.provider.FailOverRotationMachine: java.util.Map LAST_KNOWN_GOOD_CACHE>;
+v30 = v0.<com.novell.ldapchai.provider.FailOverRotationMachine: int urlListHashCode>;
+v31 = staticinvoke <java.lang.Integer: java.lang.Integer valueOf(int)>(v30);
+v32 = interfaceinvoke v29.<java.util.Map: java.lang.Object get(java.lang.Object)>(v31);
+v33 = virtualinvoke v32.<java.lang.Integer: int intValue()>();
+virtualinvoke v28.<java.util.concurrent.atomic.AtomicInteger: void set(int)>(v33);
+v34 = <com.novell.ldapchai.provider.FailOverRotationMachine: com.novell.ldapchai.util.internal.ChaiLogger LOGGER>;
+v35 = staticinvoke <com.novell.ldapchai.provider.FailOverRotationMachine$lambda_configureInitialState_1__131: java.util.function.Supplier bootstrap$(com.novell.ldapchai.provider.FailOverRotationMachine)>(v0);
+virtualinvoke v34.<com.novell.ldapchai.util.internal.ChaiLogger: void debug(java.util.function.Supplier)>(v35);
+label4:
+return;
+}
+com.novell.ldapchai.provider.ChaiProvider getCurrentProvider() throws com.novell.ldapchai.exception.ChaiUnavailableException
+{
+java.util.concurrent.atomic.AtomicInteger v14, v23, v4;
+boolean v9;
+java.lang.Exception v31, v32, v34, v35;
+com.novell.ldapchai.provider.FailOverRotationMachine v0;
+java.util.List v13, v22, v29;
+com.novell.ldapchai.exception.ChaiUnavailableException v1, v37, v7;
+java.lang.StringBuilder v27;
+com.novell.ldapchai.provider.ChaiProviderImplementor v17, v26;
+int v15, v24, v30, v5;
+java.lang.String v33, v36, v38;
+com.novell.ldapchai.provider.FailOverSettings v8;
+com.novell.ldapchai.provider.ChaiConfiguration v28;
+com.novell.ldapchai.exception.ChaiError v39;
+java.lang.Object v16, v25;
+com.novell.ldapchai.provider.FailOverRotationMachine$FailState v10, v11, v12, v18, v19, v2, v20, v21, v3, v6;
+v0 := @this: com.novell.ldapchai.provider.FailOverRotationMachine;
+specialinvoke v0.<com.novell.ldapchai.provider.FailOverRotationMachine: void failbackCheck()>();
+v1 = null;
+v2 = v0.<com.novell.ldapchai.provider.FailOverRotationMachine: com.novell.ldapchai.provider.FailOverRotationMachine$FailState failState>;
+v3 = <com.novell.ldapchai.provider.FailOverRotationMachine$FailState: com.novell.ldapchai.provider.FailOverRotationMachine$FailState NEW>;
+if v2 != v3 goto label5;
+label1:
+v4 = v0.<com.novell.ldapchai.provider.FailOverRotationMachine: java.util.concurrent.atomic.AtomicInteger activeSlot>;
+v5 = virtualinvoke v4.<java.util.concurrent.atomic.AtomicInteger: int get()>();
+specialinvoke v0.<com.novell.ldapchai.provider.FailOverRotationMachine: void makeNewProvider(int)>(v5);
+v6 = <com.novell.ldapchai.provider.FailOverRotationMachine$FailState: com.novell.ldapchai.provider.FailOverRotationMachine$FailState OKAY>;
+v0.<com.novell.ldapchai.provider.FailOverRotationMachine: com.novell.ldapchai.provider.FailOverRotationMachine$FailState failState> = v6;
+label2:
+goto label5;
+label3:
+v7 := @caughtexception;
+v1 = v7;
+v8 = v0.<com.novell.ldapchai.provider.FailOverRotationMachine: com.novell.ldapchai.provider.FailOverSettings settings>;
+v9 = virtualinvoke v8.<com.novell.ldapchai.provider.FailOverSettings: boolean errorIsRetryable(java.lang.Exception)>(v7);
+if v9 == 0 goto label4;
+v10 = <com.novell.ldapchai.provider.FailOverRotationMachine$FailState: com.novell.ldapchai.provider.FailOverRotationMachine$FailState FAILED>;
+v0.<com.novell.ldapchai.provider.FailOverRotationMachine: com.novell.ldapchai.provider.FailOverRotationMachine$FailState failState> = v10;
+goto label5;
+label4:
+throw v7;
+label5:
+v11 = v0.<com.novell.ldapchai.provider.FailOverRotationMachine: com.novell.ldapchai.provider.FailOverRotationMachine$FailState failState>;
+v12 = <com.novell.ldapchai.provider.FailOverRotationMachine$FailState: com.novell.ldapchai.provider.FailOverRotationMachine$FailState OKAY>;
+if v11 != v12 goto label6;
+v13 = v0.<com.novell.ldapchai.provider.FailOverRotationMachine: java.util.List providerSlots>;
+v14 = v0.<com.novell.ldapchai.provider.FailOverRotationMachine: java.util.concurrent.atomic.AtomicInteger activeSlot>;
+v15 = virtualinvoke v14.<java.util.concurrent.atomic.AtomicInteger: int get()>();
+v16 = interfaceinvoke v13.<java.util.List: java.lang.Object get(int)>(v15);
+v17 = virtualinvoke v16.<com.novell.ldapchai.provider.FailOverRotationMachine$ProviderSlot: com.novell.ldapchai.provider.ChaiProviderImplementor getProvider()>();
+return v17;
+label6:
+v18 = v0.<com.novell.ldapchai.provider.FailOverRotationMachine: com.novell.ldapchai.provider.FailOverRotationMachine$FailState failState>;
+v19 = <com.novell.ldapchai.provider.FailOverRotationMachine$FailState: com.novell.ldapchai.provider.FailOverRotationMachine$FailState FAILED>;
+if v18 != v19 goto label7;
+specialinvoke v0.<com.novell.ldapchai.provider.FailOverRotationMachine: void currentServerIsBroken(java.lang.Exception)>(v1);
+v20 = v0.<com.novell.ldapchai.provider.FailOverRotationMachine: com.novell.ldapchai.provider.FailOverRotationMachine$FailState failState>;
+v21 = <com.novell.ldapchai.provider.FailOverRotationMachine$FailState: com.novell.ldapchai.provider.FailOverRotationMachine$FailState OKAY>;
+if v20 != v21 goto label7;
+v22 = v0.<com.novell.ldapchai.provider.FailOverRotationMachine: java.util.List providerSlots>;
+v23 = v0.<com.novell.ldapchai.provider.FailOverRotationMachine: java.util.concurrent.atomic.AtomicInteger activeSlot>;
+v24 = virtualinvoke v23.<java.util.concurrent.atomic.AtomicInteger: int get()>();
+v25 = interfaceinvoke v22.<java.util.List: java.lang.Object get(int)>(v24);
+v26 = virtualinvoke v25.<com.novell.ldapchai.provider.FailOverRotationMachine$ProviderSlot: com.novell.ldapchai.provider.ChaiProviderImplementor getProvider()>();
+return v26;
+label7:
+v27 = new java.lang.StringBuilder;
+specialinvoke v27.<java.lang.StringBuilder: void <init>()>();
+v28 = v0.<com.novell.ldapchai.provider.FailOverRotationMachine: com.novell.ldapchai.provider.ChaiConfiguration originalConfiguration>;
+v29 = virtualinvoke v28.<com.novell.ldapchai.provider.ChaiConfiguration: java.util.List bindURLsAsList()>();
+v30 = interfaceinvoke v29.<java.util.List: int size()>();
+if v30 <= 1 goto label8;
+virtualinvoke v27.<java.lang.StringBuilder: java.lang.StringBuilder append(java.lang.String)>("unable to connect to any configured ldap url");
+v31 = v0.<com.novell.ldapchai.provider.FailOverRotationMachine: java.lang.Exception lastConnectionException>;
+if v31 == null goto label9;
+virtualinvoke v27.<java.lang.StringBuilder: java.lang.StringBuilder append(java.lang.String)>(", last error: ");
+v32 = v0.<com.novell.ldapchai.provider.FailOverRotationMachine: java.lang.Exception lastConnectionException>;
+v33 = virtualinvoke v32.<java.lang.Exception: java.lang.String getMessage()>();
+virtualinvoke v27.<java.lang.StringBuilder: java.lang.StringBuilder append(java.lang.String)>(v33);
+goto label9;
+label8:
+virtualinvoke v27.<java.lang.StringBuilder: java.lang.StringBuilder append(java.lang.String)>("unable to connect to ldap url");
+v34 = v0.<com.novell.ldapchai.provider.FailOverRotationMachine: java.lang.Exception lastConnectionException>;
+if v34 == null goto label9;
+virtualinvoke v27.<java.lang.StringBuilder: java.lang.StringBuilder append(java.lang.String)>(", error: ");
+v35 = v0.<com.novell.ldapchai.provider.FailOverRotationMachine: java.lang.Exception lastConnectionException>;
+v36 = virtualinvoke v35.<java.lang.Exception: java.lang.String getMessage()>();
+virtualinvoke v27.<java.lang.StringBuilder: java.lang.StringBuilder append(java.lang.String)>(v36);
+label9:
+v37 = new com.novell.ldapchai.exception.ChaiUnavailableException;
+v38 = virtualinvoke v27.<java.lang.StringBuilder: java.lang.String toString()>();
+v39 = <com.novell.ldapchai.exception.ChaiError: com.novell.ldapchai.exception.ChaiError COMMUNICATION>;
+specialinvoke v37.<com.novell.ldapchai.exception.ChaiUnavailableException: void <init>(java.lang.String,com.novell.ldapchai.exception.ChaiError)>(v38, v39);
+throw v37;
+catch com.novell.ldapchai.exception.ChaiUnavailableException from label1 to label2 with label3;
+}
+void reportBrokenProvider(com.novell.ldapchai.provider.ChaiProvider, java.lang.Exception)
+{
+com.novell.ldapchai.provider.ChaiProviderImplementor v9;
+java.lang.Exception v2;
+com.novell.ldapchai.provider.ChaiProvider v1;
+com.novell.ldapchai.provider.FailOverRotationMachine v0;
+java.util.List v5;
+java.util.concurrent.atomic.AtomicInteger v6;
+int v7;
+java.lang.Object v8;
+boolean v10;
+com.novell.ldapchai.provider.FailOverRotationMachine$FailState v3, v4;
+v0 := @this: com.novell.ldapchai.provider.FailOverRotationMachine;
+v1 := @parameter0: com.novell.ldapchai.provider.ChaiProvider;
+v2 := @parameter1: java.lang.Exception;
+v3 = v0.<com.novell.ldapchai.provider.FailOverRotationMachine: com.novell.ldapchai.provider.FailOverRotationMachine$FailState failState>;
+v4 = <com.novell.ldapchai.provider.FailOverRotationMachine$FailState: com.novell.ldapchai.provider.FailOverRotationMachine$FailState OKAY>;
+if v3 == v4 goto label1;
+return;
+label1:
+v5 = v0.<com.novell.ldapchai.provider.FailOverRotationMachine: java.util.List providerSlots>;
+v6 = v0.<com.novell.ldapchai.provider.FailOverRotationMachine: java.util.concurrent.atomic.AtomicInteger activeSlot>;
+v7 = virtualinvoke v6.<java.util.concurrent.atomic.AtomicInteger: int get()>();
+v8 = interfaceinvoke v5.<java.util.List: java.lang.Object get(int)>(v7);
+v9 = virtualinvoke v8.<com.novell.ldapchai.provider.FailOverRotationMachine$ProviderSlot: com.novell.ldapchai.provider.ChaiProviderImplementor getProvider()>();
+if v9 == null goto label2;
+v10 = virtualinvoke v9.<java.lang.Object: boolean equals(java.lang.Object)>(v1);
+if v10 == 0 goto label2;
+specialinvoke v0.<com.novell.ldapchai.provider.FailOverRotationMachine: void currentServerIsBroken(java.lang.Exception)>(v2);
+label2:
+return;
+}
+private void failbackCheck()
+{
+long v8;
+java.time.Instant v5, v6;
+com.novell.ldapchai.provider.FailOverRotationMachine v0;
+byte v11;
+java.util.concurrent.atomic.AtomicInteger v3;
+java.time.Duration v7;
+int v10, v4;
+com.novell.ldapchai.provider.FailOverRotationMachine$FailState v1, v12, v2;
+com.novell.ldapchai.provider.FailOverSettings v9;
+v0 := @this: com.novell.ldapchai.provider.FailOverRotationMachine;
+v1 = v0.<com.novell.ldapchai.provider.FailOverRotationMachine: com.novell.ldapchai.provider.FailOverRotationMachine$FailState failState>;
+v2 = <com.novell.ldapchai.provider.FailOverRotationMachine$FailState: com.novell.ldapchai.provider.FailOverRotationMachine$FailState OKAY>;
+if v1 != v2 goto label1;
+v3 = v0.<com.novell.ldapchai.provider.FailOverRotationMachine: java.util.concurrent.atomic.AtomicInteger activeSlot>;
+v4 = virtualinvoke v3.<java.util.concurrent.atomic.AtomicInteger: int get()>();
+if v4 == 0 goto label1;
+v5 = v0.<com.novell.ldapchai.provider.FailOverRotationMachine: java.time.Instant lastFailureTime>;
+v6 = staticinvoke <java.time.Instant: java.time.Instant now()>();
+v7 = staticinvoke <java.time.Duration: java.time.Duration between(java.time.temporal.Temporal,java.time.temporal.Temporal)>(v5, v6);
+v8 = virtualinvoke v7.<java.time.Duration: long toMillis()>();
+v9 = v0.<com.novell.ldapchai.provider.FailOverRotationMachine: com.novell.ldapchai.provider.FailOverSettings settings>;
+v10 = virtualinvoke v9.<com.novell.ldapchai.provider.FailOverSettings: int getMinFailBackTime()>();
+v11 = v8 cmp v10;
+if v11 <= 0 goto label1;
+v12 = <com.novell.ldapchai.provider.FailOverRotationMachine$FailState: com.novell.ldapchai.provider.FailOverRotationMachine$FailState NEW>;
+v0.<com.novell.ldapchai.provider.FailOverRotationMachine: com.novell.ldapchai.provider.FailOverRotationMachine$FailState failState> = v12;
+specialinvoke v0.<com.novell.ldapchai.provider.FailOverRotationMachine: void setActiveSlot(int)>(0);
+label1:
+return;
+}
+private void currentServerIsBroken(java.lang.Exception)
+{
+java.util.concurrent.atomic.AtomicInteger v14, v22, v30;
+java.time.Duration v41;
+boolean v35, v9;
+java.time.Instant v29, v40, v8;
+java.lang.Exception v1;
+com.novell.ldapchai.provider.FailOverRotationMachine v0;
+java.util.List v11, v17, v2, v25;
+com.novell.ldapchai.exception.ChaiUnavailableException v32;
+com.novell.ldapchai.util.internal.ChaiLogger v27, v36, v38, v4, v42, v6;
+java.lang.Throwable v45;
+com.novell.ldapchai.provider.ChaiProviderImplementor v34;
+java.util.function.Supplier v28, v37, v39, v43, v5, v7;
+int v12, v13, v15, v16, v18, v19, v21, v23, v24, v26, v3, v31;
+com.novell.ldapchai.provider.FailOverSettings v20, v33;
+com.novell.ldapchai.provider.FailOverRotationMachine$FailState v10, v44, v46;
+v0 := @this: com.novell.ldapchai.provider.FailOverRotationMachine;
+v1 := @parameter0: java.lang.Exception;
+v2 = v0.<com.novell.ldapchai.provider.FailOverRotationMachine: java.util.List providerSlots>;
+v3 = interfaceinvoke v2.<java.util.List: int size()>();
+if v3 <= 1 goto label01;
+v4 = <com.novell.ldapchai.provider.FailOverRotationMachine: com.novell.ldapchai.util.internal.ChaiLogger LOGGER>;
+v5 = staticinvoke <com.novell.ldapchai.provider.FailOverRotationMachine$lambda_currentServerIsBroken_2__135: java.util.function.Supplier bootstrap$(com.novell.ldapchai.provider.FailOverRotationMachine,java.lang.Exception)>(v0, v1);
+virtualinvoke v4.<com.novell.ldapchai.util.internal.ChaiLogger: void warn(java.util.function.Supplier)>(v5);
+goto label02;
+label01:
+v6 = <com.novell.ldapchai.provider.FailOverRotationMachine: com.novell.ldapchai.util.internal.ChaiLogger LOGGER>;
+v7 = staticinvoke <com.novell.ldapchai.provider.FailOverRotationMachine$lambda_currentServerIsBroken_3__132: java.util.function.Supplier bootstrap$(com.novell.ldapchai.provider.FailOverRotationMachine,java.lang.Exception)>(v0, v1);
+virtualinvoke v6.<com.novell.ldapchai.util.internal.ChaiLogger: void warn(java.util.function.Supplier)>(v7);
+label02:
+v8 = staticinvoke <java.time.Instant: java.time.Instant now()>();
+v0.<com.novell.ldapchai.provider.FailOverRotationMachine: java.time.Instant lastFailureTime> = v8;
+v9 = 0;
+label03:
+v10 = <com.novell.ldapchai.provider.FailOverRotationMachine$FailState: com.novell.ldapchai.provider.FailOverRotationMachine$FailState SEEKING>;
+v0.<com.novell.ldapchai.provider.FailOverRotationMachine: com.novell.ldapchai.provider.FailOverRotationMachine$FailState failState> = v10;
+v11 = v0.<com.novell.ldapchai.provider.FailOverRotationMachine: java.util.List providerSlots>;
+v12 = interfaceinvoke v11.<java.util.List: int size()>();
+v13 = 0;
+label04:
+if v9 != 0 goto label13;
+if v13 >= v12 goto label13;
+v14 = v0.<com.novell.ldapchai.provider.FailOverRotationMachine: java.util.concurrent.atomic.AtomicInteger activeSlot>;
+v15 = virtualinvoke v14.<java.util.concurrent.atomic.AtomicInteger: int get()>();
+v16 = v15 + 1;
+v17 = v0.<com.novell.ldapchai.provider.FailOverRotationMachine: java.util.List providerSlots>;
+v18 = interfaceinvoke v17.<java.util.List: int size()>();
+v19 = v18 - 1;
+if v16 <= v19 goto label05;
+specialinvoke v0.<com.novell.ldapchai.provider.FailOverRotationMachine: void setActiveSlot(int)>(0);
+v20 = v0.<com.novell.ldapchai.provider.FailOverRotationMachine: com.novell.ldapchai.provider.FailOverSettings settings>;
+v21 = virtualinvoke v20.<com.novell.ldapchai.provider.FailOverSettings: int getRotateDelay()>();
+staticinvoke <com.novell.ldapchai.provider.FailOverRotationMachine: void pause(long)>(v21);
+goto label06;
+label05:
+v22 = v0.<com.novell.ldapchai.provider.FailOverRotationMachine: java.util.concurrent.atomic.AtomicInteger activeSlot>;
+v23 = virtualinvoke v22.<java.util.concurrent.atomic.AtomicInteger: int get()>();
+v24 = v23 + 1;
+specialinvoke v0.<com.novell.ldapchai.provider.FailOverRotationMachine: void setActiveSlot(int)>(v24);
+label06:
+v25 = v0.<com.novell.ldapchai.provider.FailOverRotationMachine: java.util.List providerSlots>;
+v26 = interfaceinvoke v25.<java.util.List: int size()>();
+if v26 <= 1 goto label07;
+v27 = <com.novell.ldapchai.provider.FailOverRotationMachine: com.novell.ldapchai.util.internal.ChaiLogger LOGGER>;
+v28 = staticinvoke <com.novell.ldapchai.provider.FailOverRotationMachine$lambda_currentServerIsBroken_4__134: java.util.function.Supplier bootstrap$(com.novell.ldapchai.provider.FailOverRotationMachine)>(v0);
+virtualinvoke v27.<com.novell.ldapchai.util.internal.ChaiLogger: void debug(java.util.function.Supplier)>(v28);
+label07:
+v29 = staticinvoke <java.time.Instant: java.time.Instant now()>();
+label08:
+v30 = v0.<com.novell.ldapchai.provider.FailOverRotationMachine: java.util.concurrent.atomic.AtomicInteger activeSlot>;
+v31 = virtualinvoke v30.<java.util.concurrent.atomic.AtomicInteger: int get()>();
+specialinvoke v0.<com.novell.ldapchai.provider.FailOverRotationMachine: void makeNewProvider(int)>(v31);
+v9 = 1;
+label09:
+goto label12;
+label10:
+v32 := @caughtexception;
+v0.<com.novell.ldapchai.provider.FailOverRotationMachine: java.lang.Exception lastConnectionException> = v32;
+v33 = v0.<com.novell.ldapchai.provider.FailOverRotationMachine: com.novell.ldapchai.provider.FailOverSettings settings>;
+v34 = virtualinvoke v33.<com.novell.ldapchai.provider.FailOverSettings: com.novell.ldapchai.provider.ChaiProviderImplementor getFailOverHelper()>();
+v35 = interfaceinvoke v34.<com.novell.ldapchai.provider.ChaiProviderImplementor: boolean errorIsRetryable(java.lang.Exception)>(v32);
+if v35 == 0 goto label11;
+v36 = <com.novell.ldapchai.provider.FailOverRotationMachine: com.novell.ldapchai.util.internal.ChaiLogger LOGGER>;
+v37 = staticinvoke <com.novell.ldapchai.provider.FailOverRotationMachine$lambda_currentServerIsBroken_5__137: java.util.function.Supplier bootstrap$(com.novell.ldapchai.exception.ChaiUnavailableException)>(v32);
+virtualinvoke v36.<com.novell.ldapchai.util.internal.ChaiLogger: void debug(java.util.function.Supplier)>(v37);
+goto label12;
+label11:
+v38 = <com.novell.ldapchai.provider.FailOverRotationMachine: com.novell.ldapchai.util.internal.ChaiLogger LOGGER>;
+v39 = staticinvoke <com.novell.ldapchai.provider.FailOverRotationMachine$lambda_currentServerIsBroken_6__136: java.util.function.Supplier bootstrap$(com.novell.ldapchai.exception.ChaiUnavailableException)>(v32);
+virtualinvoke v38.<com.novell.ldapchai.util.internal.ChaiLogger: void debug(java.util.function.Supplier)>(v39);
+goto label13;
+label12:
+v40 = staticinvoke <java.time.Instant: java.time.Instant now()>();
+v41 = staticinvoke <java.time.Duration: java.time.Duration between(java.time.temporal.Temporal,java.time.temporal.Temporal)>(v29, v40);
+v42 = <com.novell.ldapchai.provider.FailOverRotationMachine: com.novell.ldapchai.util.internal.ChaiLogger LOGGER>;
+v43 = staticinvoke <com.novell.ldapchai.provider.FailOverRotationMachine$lambda_currentServerIsBroken_7__133: java.util.function.Supplier bootstrap$(com.novell.ldapchai.provider.FailOverRotationMachine)>(v0);
+virtualinvoke v42.<com.novell.ldapchai.util.internal.ChaiLogger: void debug(java.util.function.Supplier,java.time.Duration)>(v43, v41);
+v13 = v13 + 1;
+goto label04;
+label13:
+if v9 == 0 goto label14;
+v44 = <com.novell.ldapchai.provider.FailOverRotationMachine$FailState: com.novell.ldapchai.provider.FailOverRotationMachine$FailState OKAY>;
+goto label15;
+label14:
+v44 = <com.novell.ldapchai.provider.FailOverRotationMachine$FailState: com.novell.ldapchai.provider.FailOverRotationMachine$FailState FAILED>;
+label15:
+v0.<com.novell.ldapchai.provider.FailOverRotationMachine: com.novell.ldapchai.provider.FailOverRotationMachine$FailState failState> = v44;
+goto label19;
+label16:
+v45 := @caughtexception;
+if v9 == 0 goto label17;
+v46 = <com.novell.ldapchai.provider.FailOverRotationMachine$FailState: com.novell.ldapchai.provider.FailOverRotationMachine$FailState OKAY>;
+goto label18;
+label17:
+v46 = <com.novell.ldapchai.provider.FailOverRotationMachine$FailState: com.novell.ldapchai.provider.FailOverRotationMachine$FailState FAILED>;
+label18:
+v0.<com.novell.ldapchai.provider.FailOverRotationMachine: com.novell.ldapchai.provider.FailOverRotationMachine$FailState failState> = v46;
+throw v45;
+label19:
+return;
+catch com.novell.ldapchai.exception.ChaiUnavailableException from label08 to label09 with label10;
+catch java.lang.Throwable from label03 to label13 with label16;
+}
+private void makeNewProvider(int) throws com.novell.ldapchai.exception.ChaiUnavailableException
+{
+java.lang.IllegalStateException v13;
+com.novell.ldapchai.provider.ChaiConfiguration v5;
+com.novell.ldapchai.provider.ChaiProviderImplementor v6;
+java.util.function.Supplier v12;
+java.lang.Exception v8;
+com.novell.ldapchai.provider.ChaiProviderFactory v4;
+com.novell.ldapchai.provider.FailOverRotationMachine v0;
+java.util.List v2;
+int v1;
+com.novell.ldapchai.exception.ChaiUnavailableException v7;
+java.lang.Object v3;
+java.lang.String v10, v9;
+com.novell.ldapchai.util.internal.ChaiLogger v11;
+v0 := @this: com.novell.ldapchai.provider.FailOverRotationMachine;
+v1 := @parameter0: int;
+virtualinvoke v0.<com.novell.ldapchai.provider.FailOverRotationMachine: void destoryAllConnections()>();
+v2 = v0.<com.novell.ldapchai.provider.FailOverRotationMachine: java.util.List providerSlots>;
+v3 = interfaceinvoke v2.<java.util.List: java.lang.Object get(int)>(v1);
+label1:
+v4 = v0.<com.novell.ldapchai.provider.FailOverRotationMachine: com.novell.ldapchai.provider.ChaiProviderFactory providerFactory>;
+v5 = virtualinvoke v3.<com.novell.ldapchai.provider.FailOverRotationMachine$ProviderSlot: com.novell.ldapchai.provider.ChaiConfiguration getConfig()>();
+v6 = staticinvoke <com.novell.ldapchai.provider.ChaiProviderFactory: com.novell.ldapchai.provider.ChaiProviderImplementor createConcreteProvider(com.novell.ldapchai.provider.ChaiProviderFactory,com.novell.ldapchai.provider.ChaiConfiguration,boolean)>(v4, v5, 1);
+virtualinvoke v3.<com.novell.ldapchai.provider.FailOverRotationMachine$ProviderSlot: void setProvider(com.novell.ldapchai.provider.ChaiProviderImplementor)>(v6);
+label2:
+goto label5;
+label3:
+v7 := @caughtexception;
+throw v7;
+label4:
+v8 := @caughtexception;
+v9 = virtualinvoke v8.<java.lang.Exception: java.lang.String getMessage()>();
+v10 = dynamicinvoke "makeConcatWithConstants" <java.lang.String (java.lang.String)>(v9) <java.lang.invoke.StringConcatFactory: java.lang.invoke.CallSite makeConcatWithConstants(java.lang.invoke.MethodHandles$Lookup,java.lang.String,java.lang.invoke.MethodType,java.lang.String,java.lang.Object[])>("unexpected error creating new FailOver ChaiProvider: \u0001");
+v11 = <com.novell.ldapchai.provider.FailOverRotationMachine: com.novell.ldapchai.util.internal.ChaiLogger LOGGER>;
+v12 = staticinvoke <com.novell.ldapchai.provider.FailOverRotationMachine$lambda_makeNewProvider_8__138: java.util.function.Supplier bootstrap$(java.lang.String)>(v10);
+virtualinvoke v11.<com.novell.ldapchai.util.internal.ChaiLogger: void error(java.util.function.Supplier)>(v12);
+v13 = new java.lang.IllegalStateException;
+specialinvoke v13.<java.lang.IllegalStateException: void <init>(java.lang.String,java.lang.Throwable)>(v10, v8);
+throw v13;
+label5:
+return;
+catch com.novell.ldapchai.exception.ChaiUnavailableException from label1 to label2 with label3;
+catch java.lang.Exception from label1 to label2 with label4;
+}
+public void destoryAllConnections()
+{
+com.novell.ldapchai.provider.FailOverRotationMachine v0;
+java.util.List v1;
+java.util.Iterator v2;
+java.lang.Object v4;
+com.novell.ldapchai.provider.ChaiProviderImplementor v5;
+boolean v3;
+v0 := @this: com.novell.ldapchai.provider.FailOverRotationMachine;
+v1 = v0.<com.novell.ldapchai.provider.FailOverRotationMachine: java.util.List providerSlots>;
+v2 = interfaceinvoke v1.<java.util.List: java.util.Iterator iterator()>();
+label1:
+v3 = interfaceinvoke v2.<java.util.Iterator: boolean hasNext()>();
+if v3 == 0 goto label2;
+v4 = interfaceinvoke v2.<java.util.Iterator: java.lang.Object next()>();
+v5 = virtualinvoke v4.<com.novell.ldapchai.provider.FailOverRotationMachine$ProviderSlot: com.novell.ldapchai.provider.ChaiProviderImplementor getProvider()>();
+if v5 == null goto label1;
+interfaceinvoke v5.<com.novell.ldapchai.provider.ChaiProvider: void close()>();
+goto label1;
+label2:
+return;
+}
+private static void pause(long)
+{
+long v0, v1, v2, v3, v4, v6, v8, v9;
+byte v10, v5;
+java.lang.InterruptedException v7;
+v0 := @parameter0: long;
+v1 = staticinvoke <java.lang.System: long currentTimeMillis()>();
+label1:
+v2 = staticinvoke <java.lang.System: long currentTimeMillis()>();
+v3 = v2 - v1;
+v4 = v0 - v3;
+v5 = v4 cmp 0L;
+if v5 <= 0 goto label2;
+v6 = v4;
+goto label3;
+label2:
+v6 = 10L;
+label3:
+staticinvoke <java.lang.Thread: void sleep(long)>(v6);
+label4:
+goto label6;
+label5:
+v7 := @caughtexception;
+label6:
+v8 = staticinvoke <java.lang.System: long currentTimeMillis()>();
+v9 = v8 - v1;
+v10 = v9 cmp v0;
+if v10 < 0 goto label1;
+return;
+catch java.lang.InterruptedException from label1 to label4 with label5;
+}
+static void <clinit>()
+{
+java.util.concurrent.ConcurrentHashMap v1;
+long v2;
+com.novell.ldapchai.util.internal.ChaiLogger v0;
+v0 = staticinvoke <com.novell.ldapchai.util.internal.ChaiLogger: com.novell.ldapchai.util.internal.ChaiLogger getLogger(java.lang.Class)>(class "Lcom/novell/ldapchai/provider/FailOverRotationMachine;");
+<com.novell.ldapchai.provider.FailOverRotationMachine: com.novell.ldapchai.util.internal.ChaiLogger LOGGER> = v0;
+v1 = new java.util.concurrent.ConcurrentHashMap;
+specialinvoke v1.<java.util.concurrent.ConcurrentHashMap: void <init>()>();
+<com.novell.ldapchai.provider.FailOverRotationMachine: java.util.Map LAST_KNOWN_GOOD_CACHE> = v1;
+v2 = staticinvoke <java.lang.System: long currentTimeMillis()>();
+<com.novell.ldapchai.provider.FailOverRotationMachine: long lngLastPopulateTime> = v2;
+return;
+}
+}

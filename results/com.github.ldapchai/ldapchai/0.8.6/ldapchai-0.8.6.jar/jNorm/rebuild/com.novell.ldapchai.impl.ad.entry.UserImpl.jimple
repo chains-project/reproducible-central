@@ -1,0 +1,613 @@
+class com.novell.ldapchai.impl.ad.entry.UserImpl extends com.novell.ldapchai.impl.AbstractChaiUser implements com.novell.ldapchai.impl.ad.entry.User, com.novell.ldapchai.impl.ad.entry.Top, com.novell.ldapchai.ChaiUser
+{
+private static final int COMPUTED_ACCOUNT_CONTROL_ACCOUNT_ACTIVE;
+private static final int COMPUTED_ACCOUNT_CONTROL_UC_LOCKOUT;
+private static final int COMPUTED_ACCOUNT_CONTROL_UC_PASSWORD_EXPIRED;
+private static final int ADS_UF_DONT_EXPIRE_PASSWD;
+private static final java.lang.String LDAP_SERVER_POLICY_HINTS_OID;
+void <init>(java.lang.String, com.novell.ldapchai.provider.ChaiProvider)
+{
+com.novell.ldapchai.impl.ad.entry.UserImpl v0;
+java.lang.String v1;
+com.novell.ldapchai.provider.ChaiProvider v2;
+v0 := @this: com.novell.ldapchai.impl.ad.entry.UserImpl;
+v1 := @parameter0: java.lang.String;
+v2 := @parameter1: com.novell.ldapchai.provider.ChaiProvider;
+specialinvoke v0.<com.novell.ldapchai.impl.AbstractChaiUser: void <init>(java.lang.String,com.novell.ldapchai.provider.ChaiProvider)>(v1, v2);
+return;
+}
+public java.util.Set getGroups() throws com.novell.ldapchai.exception.ChaiOperationException, com.novell.ldapchai.exception.ChaiUnavailableException
+{
+java.util.Iterator v3;
+java.util.Set v2, v9;
+com.novell.ldapchai.provider.ChaiProvider v6;
+java.util.HashSet v1;
+com.novell.ldapchai.impl.ad.entry.UserImpl v0;
+com.novell.ldapchai.ChaiEntryFactory v7;
+java.lang.Object v5;
+com.novell.ldapchai.ChaiGroup v8;
+boolean v4;
+v0 := @this: com.novell.ldapchai.impl.ad.entry.UserImpl;
+v1 = new java.util.HashSet;
+specialinvoke v1.<java.util.HashSet: void <init>()>();
+v2 = virtualinvoke v0.<com.novell.ldapchai.impl.ad.entry.UserImpl: java.util.Set readMultiStringAttribute(java.lang.String)>("memberOf");
+v3 = interfaceinvoke v2.<java.util.Set: java.util.Iterator iterator()>();
+label1:
+v4 = interfaceinvoke v3.<java.util.Iterator: boolean hasNext()>();
+if v4 == 0 goto label2;
+v5 = interfaceinvoke v3.<java.util.Iterator: java.lang.Object next()>();
+v6 = virtualinvoke v0.<com.novell.ldapchai.impl.ad.entry.UserImpl: com.novell.ldapchai.provider.ChaiProvider getChaiProvider()>();
+v7 = interfaceinvoke v6.<com.novell.ldapchai.provider.ChaiProvider: com.novell.ldapchai.ChaiEntryFactory getEntryFactory()>();
+v8 = virtualinvoke v7.<com.novell.ldapchai.ChaiEntryFactory: com.novell.ldapchai.ChaiGroup newChaiGroup(java.lang.String)>(v5);
+interfaceinvoke v1.<java.util.Set: boolean add(java.lang.Object)>(v8);
+goto label1;
+label2:
+v9 = staticinvoke <java.util.Collections: java.util.Set unmodifiableSet(java.util.Set)>(v1);
+return v9;
+}
+public void addGroupMembership(com.novell.ldapchai.ChaiGroup) throws com.novell.ldapchai.exception.ChaiOperationException, com.novell.ldapchai.exception.ChaiUnavailableException
+{
+com.novell.ldapchai.impl.ad.entry.UserImpl v0;
+java.lang.String v2;
+com.novell.ldapchai.ChaiGroup v1;
+v0 := @this: com.novell.ldapchai.impl.ad.entry.UserImpl;
+v1 := @parameter0: com.novell.ldapchai.ChaiGroup;
+v2 = virtualinvoke v0.<com.novell.ldapchai.impl.ad.entry.UserImpl: java.lang.String getEntryDN()>();
+interfaceinvoke v1.<com.novell.ldapchai.ChaiGroup: void addAttribute(java.lang.String,java.lang.String)>("member", v2);
+return;
+}
+public com.novell.ldapchai.ChaiPasswordPolicy getPasswordPolicy() throws com.novell.ldapchai.exception.ChaiUnavailableException, com.novell.ldapchai.exception.ChaiOperationException
+{
+java.util.LinkedHashMap v1;
+com.novell.ldapchai.impl.ad.entry.MsDSPasswordSettingsImpl v23;
+com.novell.ldapchai.impl.ad.entry.UserImpl v0;
+com.novell.ldapchai.util.DefaultChaiPasswordPolicy v30;
+java.util.regex.Matcher v13;
+int v18, v22;
+java.lang.String v10, v12, v15, v17, v20, v21, v29, v3, v4, v6, v7, v9;
+boolean v14, v27;
+java.util.Iterator v26;
+java.util.Set v25;
+com.novell.ldapchai.provider.ChaiProvider v16, v24;
+java.lang.Object v28;
+com.novell.ldapchai.ChaiPasswordRule v19, v2, v5, v8;
+java.util.regex.Pattern v11;
+v0 := @this: com.novell.ldapchai.impl.ad.entry.UserImpl;
+v1 = new java.util.LinkedHashMap;
+specialinvoke v1.<java.util.LinkedHashMap: void <init>()>();
+v2 = <com.novell.ldapchai.ChaiPasswordRule: com.novell.ldapchai.ChaiPasswordRule AllowNumeric>;
+v3 = virtualinvoke v2.<com.novell.ldapchai.ChaiPasswordRule: java.lang.String getKey()>();
+v4 = staticinvoke <java.lang.String: java.lang.String valueOf(boolean)>(1);
+interfaceinvoke v1.<java.util.Map: java.lang.Object put(java.lang.Object,java.lang.Object)>(v3, v4);
+v5 = <com.novell.ldapchai.ChaiPasswordRule: com.novell.ldapchai.ChaiPasswordRule AllowSpecial>;
+v6 = virtualinvoke v5.<com.novell.ldapchai.ChaiPasswordRule: java.lang.String getKey()>();
+v7 = staticinvoke <java.lang.String: java.lang.String valueOf(boolean)>(1);
+interfaceinvoke v1.<java.util.Map: java.lang.Object put(java.lang.Object,java.lang.Object)>(v6, v7);
+v8 = <com.novell.ldapchai.ChaiPasswordRule: com.novell.ldapchai.ChaiPasswordRule CaseSensitive>;
+v9 = virtualinvoke v8.<com.novell.ldapchai.ChaiPasswordRule: java.lang.String getKey()>();
+v10 = staticinvoke <java.lang.String: java.lang.String valueOf(boolean)>(1);
+interfaceinvoke v1.<java.util.Map: java.lang.Object put(java.lang.Object,java.lang.Object)>(v9, v10);
+v11 = staticinvoke <java.util.regex.Pattern: java.util.regex.Pattern compile(java.lang.String,int)>("(dc=[a-z0-9-]+[,]*)+", 2);
+v12 = virtualinvoke v0.<com.novell.ldapchai.impl.ad.entry.UserImpl: java.lang.String getEntryDN()>();
+v13 = virtualinvoke v11.<java.util.regex.Pattern: java.util.regex.Matcher matcher(java.lang.CharSequence)>(v12);
+v14 = virtualinvoke v13.<java.util.regex.Matcher: boolean find()>();
+if v14 == 0 goto label1;
+v15 = virtualinvoke v13.<java.util.regex.Matcher: java.lang.String group()>();
+v16 = virtualinvoke v0.<com.novell.ldapchai.impl.ad.entry.UserImpl: com.novell.ldapchai.provider.ChaiProvider getChaiProvider()>();
+v17 = interfaceinvoke v16.<com.novell.ldapchai.provider.ChaiProvider: java.lang.String readStringAttribute(java.lang.String,java.lang.String)>(v15, "minPwdLength");
+if v17 == null goto label1;
+v18 = virtualinvoke v17.<java.lang.String: int length()>();
+if v18 <= 0 goto label1;
+v19 = <com.novell.ldapchai.ChaiPasswordRule: com.novell.ldapchai.ChaiPasswordRule MinimumLength>;
+v20 = virtualinvoke v19.<com.novell.ldapchai.ChaiPasswordRule: java.lang.String getKey()>();
+interfaceinvoke v1.<java.util.Map: java.lang.Object put(java.lang.Object,java.lang.Object)>(v20, v17);
+label1:
+v21 = virtualinvoke v0.<com.novell.ldapchai.impl.ad.entry.UserImpl: java.lang.String readStringAttribute(java.lang.String)>("msDS-ResultantPSO");
+if v21 == null goto label3;
+v22 = virtualinvoke v21.<java.lang.String: int length()>();
+if v22 <= 0 goto label3;
+v23 = new com.novell.ldapchai.impl.ad.entry.MsDSPasswordSettingsImpl;
+v24 = virtualinvoke v0.<com.novell.ldapchai.impl.ad.entry.UserImpl: com.novell.ldapchai.provider.ChaiProvider getChaiProvider()>();
+specialinvoke v23.<com.novell.ldapchai.impl.ad.entry.MsDSPasswordSettingsImpl: void <init>(java.lang.String,com.novell.ldapchai.provider.ChaiProvider)>(v21, v24);
+v25 = virtualinvoke v23.<com.novell.ldapchai.impl.ad.entry.MsDSPasswordSettingsImpl: java.util.Set getKeys()>();
+v26 = interfaceinvoke v25.<java.util.Set: java.util.Iterator iterator()>();
+label2:
+v27 = interfaceinvoke v26.<java.util.Iterator: boolean hasNext()>();
+if v27 == 0 goto label3;
+v28 = interfaceinvoke v26.<java.util.Iterator: java.lang.Object next()>();
+v29 = virtualinvoke v23.<com.novell.ldapchai.impl.ad.entry.MsDSPasswordSettingsImpl: java.lang.String getValue(java.lang.String)>(v28);
+interfaceinvoke v1.<java.util.Map: java.lang.Object put(java.lang.Object,java.lang.Object)>(v28, v29);
+goto label2;
+label3:
+v30 = staticinvoke <com.novell.ldapchai.util.DefaultChaiPasswordPolicy: com.novell.ldapchai.util.DefaultChaiPasswordPolicy createDefaultChaiPasswordPolicy(java.util.Map)>(v1);
+return v30;
+}
+public java.lang.String readPassword() throws com.novell.ldapchai.exception.ChaiUnavailableException, com.novell.ldapchai.exception.ChaiOperationException
+{
+java.lang.UnsupportedOperationException v1;
+com.novell.ldapchai.impl.ad.entry.UserImpl v0;
+v0 := @this: com.novell.ldapchai.impl.ad.entry.UserImpl;
+v1 = new java.lang.UnsupportedOperationException;
+specialinvoke v1.<java.lang.UnsupportedOperationException: void <init>(java.lang.String)>("ChaiUser#readPassword not implemented in ad-impl ldapChai API");
+throw v1;
+}
+public void removeGroupMembership(com.novell.ldapchai.ChaiGroup) throws com.novell.ldapchai.exception.ChaiOperationException, com.novell.ldapchai.exception.ChaiUnavailableException
+{
+com.novell.ldapchai.impl.ad.entry.UserImpl v0;
+java.lang.String v2;
+com.novell.ldapchai.ChaiGroup v1;
+v0 := @this: com.novell.ldapchai.impl.ad.entry.UserImpl;
+v1 := @parameter0: com.novell.ldapchai.ChaiGroup;
+v2 = virtualinvoke v0.<com.novell.ldapchai.impl.ad.entry.UserImpl: java.lang.String getEntryDN()>();
+interfaceinvoke v1.<com.novell.ldapchai.ChaiGroup: void deleteAttribute(java.lang.String,java.lang.String)>("member", v2);
+return;
+}
+public boolean testPassword(java.lang.String) throws com.novell.ldapchai.exception.ChaiUnavailableException, com.novell.ldapchai.exception.ChaiPasswordPolicyException
+{
+java.lang.UnsupportedOperationException v2;
+com.novell.ldapchai.impl.ad.entry.UserImpl v0;
+java.lang.String v1;
+v0 := @this: com.novell.ldapchai.impl.ad.entry.UserImpl;
+v1 := @parameter0: java.lang.String;
+v2 = new java.lang.UnsupportedOperationException;
+specialinvoke v2.<java.lang.UnsupportedOperationException: void <init>(java.lang.String)>("ChaiUser#testPassword not implemented in ad-impl ldapChai API");
+throw v2;
+}
+public boolean testPasswordPolicy(java.lang.String) throws com.novell.ldapchai.exception.ChaiUnavailableException, com.novell.ldapchai.exception.ChaiPasswordPolicyException
+{
+com.novell.ldapchai.impl.ad.entry.UserImpl v0;
+java.lang.String v1;
+v0 := @this: com.novell.ldapchai.impl.ad.entry.UserImpl;
+v1 := @parameter0: java.lang.String;
+return 0;
+}
+public void unlockPassword() throws com.novell.ldapchai.exception.ChaiOperationException, com.novell.ldapchai.exception.ChaiUnavailableException
+{
+com.novell.ldapchai.impl.ad.entry.UserImpl v0;
+v0 := @this: com.novell.ldapchai.impl.ad.entry.UserImpl;
+virtualinvoke v0.<com.novell.ldapchai.impl.ad.entry.UserImpl: void writeStringAttribute(java.lang.String,java.lang.String)>("lockoutTime", "0");
+return;
+}
+public void setPassword(java.lang.String, boolean) throws com.novell.ldapchai.exception.ChaiUnavailableException, com.novell.ldapchai.exception.ChaiPasswordPolicyException, com.novell.ldapchai.exception.ChaiOperationException
+{
+byte[] v12, v4;
+java.lang.IllegalStateException v6;
+com.novell.ldapchai.impl.ad.entry.UserImpl v0;
+com.novell.ldapchai.ChaiRequestControl[] v13;
+java.lang.String v1, v16, v21, v3;
+com.novell.ldapchai.exception.ChaiOperationException v17, v20;
+boolean v11, v2;
+com.novell.ldapchai.provider.ChaiConfiguration v9;
+com.novell.ldapchai.ChaiRequestControl v14;
+com.novell.ldapchai.provider.ChaiSetting v10;
+com.novell.ldapchai.exception.ChaiError v18, v19, v22;
+com.novell.ldapchai.provider.ChaiProvider v15, v8;
+byte[][] v7;
+java.io.UnsupportedEncodingException v5;
+v0 := @this: com.novell.ldapchai.impl.ad.entry.UserImpl;
+v1 := @parameter0: java.lang.String;
+v2 := @parameter1: boolean;
+v3 = dynamicinvoke "makeConcatWithConstants" <java.lang.String (java.lang.String)>(v1) <java.lang.invoke.StringConcatFactory: java.lang.invoke.CallSite makeConcatWithConstants(java.lang.invoke.MethodHandles$Lookup,java.lang.String,java.lang.invoke.MethodType,java.lang.String,java.lang.Object[])>("\"\u0001\"");
+label01:
+v4 = virtualinvoke v3.<java.lang.String: byte[] getBytes(java.lang.String)>("UTF-16LE");
+label02:
+goto label04;
+label03:
+v5 := @caughtexception;
+v6 = new java.lang.IllegalStateException;
+specialinvoke v6.<java.lang.IllegalStateException: void <init>(java.lang.String,java.lang.Throwable)>("unexpected error, missing \'UTF-16LE\' character encoder", v5);
+throw v6;
+label04:
+v7 = newarray (byte[])[1];
+v7[0] = v4;
+label05:
+if v2 == 0 goto label06;
+v8 = virtualinvoke v0.<com.novell.ldapchai.impl.ad.entry.UserImpl: com.novell.ldapchai.provider.ChaiProvider getChaiProvider()>();
+v9 = interfaceinvoke v8.<com.novell.ldapchai.provider.ChaiProvider: com.novell.ldapchai.provider.ChaiConfiguration getChaiConfiguration()>();
+v10 = <com.novell.ldapchai.provider.ChaiSetting: com.novell.ldapchai.provider.ChaiSetting AD_SET_POLICY_HINTS_ON_PW_SET>;
+v11 = virtualinvoke v9.<com.novell.ldapchai.provider.ChaiConfiguration: boolean getBooleanSetting(com.novell.ldapchai.provider.ChaiSetting)>(v10);
+if v11 == 0 goto label06;
+v12 = newarray (byte)[9];
+v12[0] = 48;
+v12[1] = -124;
+v12[2] = 0;
+v12[3] = 0;
+v12[4] = 0;
+v12[5] = 3;
+v12[6] = 2;
+v12[7] = 1;
+v12[8] = 1;
+v13 = newarray (com.novell.ldapchai.ChaiRequestControl)[1];
+v14 = new com.novell.ldapchai.ChaiRequestControl;
+specialinvoke v14.<com.novell.ldapchai.ChaiRequestControl: void <init>(java.lang.String,boolean,byte[])>("1.2.840.113556.1.4.2066", 1, v12);
+v13[0] = v14;
+v15 = v0.<com.novell.ldapchai.impl.ad.entry.UserImpl: com.novell.ldapchai.provider.ChaiProvider chaiProvider>;
+v16 = virtualinvoke v0.<com.novell.ldapchai.impl.ad.entry.UserImpl: java.lang.String getEntryDN()>();
+interfaceinvoke v15.<com.novell.ldapchai.provider.ChaiProvider: void writeBinaryAttribute(java.lang.String,java.lang.String,byte[][],boolean,com.novell.ldapchai.ChaiRequestControl[])>(v16, "unicodePwd", v7, 1, v13);
+goto label10;
+label06:
+virtualinvoke v0.<com.novell.ldapchai.impl.ad.entry.UserImpl: void writeBinaryAttribute(java.lang.String,byte[][])>("unicodePwd", v7);
+label07:
+goto label10;
+label08:
+v17 := @caughtexception;
+v18 = virtualinvoke v17.<com.novell.ldapchai.exception.ChaiOperationException: com.novell.ldapchai.exception.ChaiError getErrorCode()>();
+v19 = <com.novell.ldapchai.exception.ChaiError: com.novell.ldapchai.exception.ChaiError UNKNOWN>;
+if v18 != v19 goto label09;
+v20 = new com.novell.ldapchai.exception.ChaiOperationException;
+v21 = virtualinvoke v17.<com.novell.ldapchai.exception.ChaiOperationException: java.lang.String getMessage()>();
+v22 = <com.novell.ldapchai.exception.ChaiError: com.novell.ldapchai.exception.ChaiError PASSWORD_BADPASSWORD>;
+specialinvoke v20.<com.novell.ldapchai.exception.ChaiOperationException: void <init>(java.lang.String,com.novell.ldapchai.exception.ChaiError,java.lang.Throwable)>(v21, v22, v17);
+throw v20;
+label09:
+throw v17;
+label10:
+return;
+catch java.io.UnsupportedEncodingException from label01 to label02 with label03;
+catch com.novell.ldapchai.exception.ChaiOperationException from label05 to label07 with label08;
+}
+public boolean isPasswordExpired() throws com.novell.ldapchai.exception.ChaiUnavailableException, com.novell.ldapchai.exception.ChaiOperationException
+{
+com.novell.ldapchai.impl.ad.entry.UserImpl v0;
+int v2, v3, v4;
+java.lang.String v1;
+boolean v5;
+v0 := @this: com.novell.ldapchai.impl.ad.entry.UserImpl;
+v1 = virtualinvoke v0.<com.novell.ldapchai.impl.ad.entry.UserImpl: java.lang.String readStringAttribute(java.lang.String)>("msDS-User-Account-Control-Computed");
+if v1 == null goto label3;
+v2 = virtualinvoke v1.<java.lang.String: int length()>();
+if v2 <= 0 goto label3;
+v3 = staticinvoke <java.lang.Integer: int parseInt(java.lang.String)>(v1);
+v4 = v3 & 8388608;
+if v4 != 8388608 goto label1;
+v5 = 1;
+goto label2;
+label1:
+v5 = 0;
+label2:
+return v5;
+label3:
+return 0;
+}
+public final java.lang.String readGivenName() throws com.novell.ldapchai.exception.ChaiOperationException, com.novell.ldapchai.exception.ChaiUnavailableException
+{
+com.novell.ldapchai.impl.ad.entry.UserImpl v0;
+java.lang.String v1;
+v0 := @this: com.novell.ldapchai.impl.ad.entry.UserImpl;
+v1 = virtualinvoke v0.<com.novell.ldapchai.impl.ad.entry.UserImpl: java.lang.String readStringAttribute(java.lang.String)>("givenName");
+return v1;
+}
+public final java.time.Instant readLastLoginTime() throws com.novell.ldapchai.exception.ChaiOperationException, com.novell.ldapchai.exception.ChaiUnavailableException
+{
+java.lang.String[] v2;
+java.util.HashSet v1;
+com.novell.ldapchai.impl.ad.entry.UserImpl v0;
+java.util.Map v4;
+boolean v14, v5, v9;
+java.time.Instant v11, v12, v13, v15, v7, v8;
+java.util.List v3;
+java.lang.Object v10, v6;
+v0 := @this: com.novell.ldapchai.impl.ad.entry.UserImpl;
+v1 = new java.util.HashSet;
+v2 = newarray (java.lang.String)[2];
+v2[0] = "lastLogon";
+v2[1] = "lastLogonTimestamp";
+v3 = staticinvoke <java.util.Arrays: java.util.List asList(java.lang.Object[])>(v2);
+specialinvoke v1.<java.util.HashSet: void <init>(java.util.Collection)>(v3);
+v4 = virtualinvoke v0.<com.novell.ldapchai.impl.ad.entry.UserImpl: java.util.Map readStringAttributes(java.util.Set)>(v1);
+v5 = interfaceinvoke v4.<java.util.Map: boolean containsKey(java.lang.Object)>("lastLogon");
+if v5 == 0 goto label01;
+v6 = interfaceinvoke v4.<java.util.Map: java.lang.Object get(java.lang.Object)>("lastLogon");
+v7 = staticinvoke <com.novell.ldapchai.impl.ad.entry.ADEntries: java.time.Instant convertWinEpochToDate(java.lang.String)>(v6);
+goto label02;
+label01:
+v7 = null;
+label02:
+v8 = v7;
+v9 = interfaceinvoke v4.<java.util.Map: boolean containsKey(java.lang.Object)>("lastLogonTimestamp");
+if v9 == 0 goto label03;
+v10 = interfaceinvoke v4.<java.util.Map: java.lang.Object get(java.lang.Object)>("lastLogonTimestamp");
+v11 = staticinvoke <com.novell.ldapchai.impl.ad.entry.ADEntries: java.time.Instant convertWinEpochToDate(java.lang.String)>(v10);
+goto label04;
+label03:
+v11 = null;
+label04:
+v12 = v11;
+if v8 == null goto label05;
+if v11 != null goto label08;
+label05:
+if v8 != null goto label06;
+v13 = v12;
+goto label07;
+label06:
+v13 = v8;
+label07:
+return v13;
+label08:
+v14 = virtualinvoke v8.<java.time.Instant: boolean isAfter(java.time.Instant)>(v11);
+if v14 == 0 goto label09;
+v15 = v8;
+goto label10;
+label09:
+v15 = v11;
+label10:
+return v15;
+}
+public final void changePassword(java.lang.String, java.lang.String) throws com.novell.ldapchai.exception.ChaiUnavailableException, com.novell.ldapchai.exception.ChaiPasswordPolicyException, com.novell.ldapchai.exception.ChaiOperationException
+{
+byte[] v5, v6;
+java.lang.IllegalStateException v8;
+com.novell.ldapchai.exception.ChaiPasswordPolicyException v12, v15;
+com.novell.ldapchai.impl.ad.entry.UserImpl v0;
+java.lang.String v1, v13, v16, v17, v2, v3, v4;
+com.novell.ldapchai.exception.ChaiOperationException v9;
+com.novell.ldapchai.exception.ChaiError v10, v11, v14, v18;
+java.io.UnsupportedEncodingException v7;
+v0 := @this: com.novell.ldapchai.impl.ad.entry.UserImpl;
+v1 := @parameter0: java.lang.String;
+v2 := @parameter1: java.lang.String;
+v3 = dynamicinvoke "makeConcatWithConstants" <java.lang.String (java.lang.String)>(v1) <java.lang.invoke.StringConcatFactory: java.lang.invoke.CallSite makeConcatWithConstants(java.lang.invoke.MethodHandles$Lookup,java.lang.String,java.lang.invoke.MethodType,java.lang.String,java.lang.Object[])>("\"\u0001\"");
+v4 = dynamicinvoke "makeConcatWithConstants" <java.lang.String (java.lang.String)>(v2) <java.lang.invoke.StringConcatFactory: java.lang.invoke.CallSite makeConcatWithConstants(java.lang.invoke.MethodHandles$Lookup,java.lang.String,java.lang.invoke.MethodType,java.lang.String,java.lang.Object[])>("\"\u0001\"");
+label1:
+v5 = virtualinvoke v3.<java.lang.String: byte[] getBytes(java.lang.String)>("UTF-16LE");
+v6 = virtualinvoke v4.<java.lang.String: byte[] getBytes(java.lang.String)>("UTF-16LE");
+label2:
+goto label4;
+label3:
+v7 := @caughtexception;
+v8 = new java.lang.IllegalStateException;
+specialinvoke v8.<java.lang.IllegalStateException: void <init>(java.lang.String,java.lang.Throwable)>("unexpected error, missing \'UTF-16LE\' character encoder", v7);
+throw v8;
+label4:
+virtualinvoke v0.<com.novell.ldapchai.impl.ad.entry.UserImpl: void replaceBinaryAttribute(java.lang.String,byte[],byte[])>("unicodePwd", v5, v6);
+label5:
+goto label8;
+label6:
+v9 := @caughtexception;
+v10 = virtualinvoke v9.<com.novell.ldapchai.exception.ChaiOperationException: com.novell.ldapchai.exception.ChaiError getErrorCode()>();
+v11 = <com.novell.ldapchai.exception.ChaiError: com.novell.ldapchai.exception.ChaiError UNKNOWN>;
+if v10 != v11 goto label7;
+v12 = new com.novell.ldapchai.exception.ChaiPasswordPolicyException;
+v13 = virtualinvoke v9.<com.novell.ldapchai.exception.ChaiOperationException: java.lang.String getMessage()>();
+v14 = <com.novell.ldapchai.exception.ChaiError: com.novell.ldapchai.exception.ChaiError PASSWORD_BADPASSWORD>;
+specialinvoke v12.<com.novell.ldapchai.exception.ChaiPasswordPolicyException: void <init>(java.lang.String,com.novell.ldapchai.exception.ChaiError)>(v13, v14);
+throw v12;
+label7:
+v15 = new com.novell.ldapchai.exception.ChaiPasswordPolicyException;
+v16 = virtualinvoke v9.<com.novell.ldapchai.exception.ChaiOperationException: java.lang.String getMessage()>();
+v17 = virtualinvoke v9.<com.novell.ldapchai.exception.ChaiOperationException: java.lang.String getMessage()>();
+v18 = staticinvoke <com.novell.ldapchai.exception.ChaiErrors: com.novell.ldapchai.exception.ChaiError getErrorForMessage(java.lang.String)>(v17);
+specialinvoke v15.<com.novell.ldapchai.exception.ChaiPasswordPolicyException: void <init>(java.lang.String,com.novell.ldapchai.exception.ChaiError)>(v16, v18);
+throw v15;
+label8:
+return;
+catch java.io.UnsupportedEncodingException from label1 to label2 with label3;
+catch com.novell.ldapchai.exception.ChaiOperationException from label4 to label5 with label6;
+}
+public void expirePassword() throws com.novell.ldapchai.exception.ChaiOperationException, com.novell.ldapchai.exception.ChaiUnavailableException
+{
+com.novell.ldapchai.impl.ad.entry.UserImpl v0;
+v0 := @this: com.novell.ldapchai.impl.ad.entry.UserImpl;
+virtualinvoke v0.<com.novell.ldapchai.impl.ad.entry.UserImpl: void writeStringAttribute(java.lang.String,java.lang.String)>("pwdLastSet", "0");
+return;
+}
+public boolean isPasswordLocked() throws com.novell.ldapchai.exception.ChaiOperationException, com.novell.ldapchai.exception.ChaiUnavailableException
+{
+com.novell.ldapchai.ChaiEntry v7;
+long v13, v14, v15, v16, v18, v19, v8;
+com.novell.ldapchai.impl.ad.entry.UserImpl v0;
+byte v10, v20;
+int v2, v3, v4, v9;
+java.lang.String v1, v12;
+boolean v11, v21, v5;
+java.time.Instant v17, v6;
+v0 := @this: com.novell.ldapchai.impl.ad.entry.UserImpl;
+v1 = virtualinvoke v0.<com.novell.ldapchai.impl.ad.entry.UserImpl: java.lang.String readStringAttribute(java.lang.String)>("msDS-User-Account-Control-Computed");
+if v1 == null goto label3;
+v2 = virtualinvoke v1.<java.lang.String: int length()>();
+if v2 <= 0 goto label3;
+v3 = staticinvoke <java.lang.Integer: int parseInt(java.lang.String)>(v1);
+v4 = v3 & 16;
+if v4 != 16 goto label1;
+v5 = 1;
+goto label2;
+label1:
+v5 = 0;
+label2:
+return v5;
+label3:
+v6 = virtualinvoke v0.<com.novell.ldapchai.impl.ad.entry.UserImpl: java.time.Instant readDateAttribute(java.lang.String)>("lockoutTime");
+if v6 == null goto label9;
+v7 = virtualinvoke v0.<com.novell.ldapchai.impl.ad.entry.UserImpl: com.novell.ldapchai.ChaiEntry getParentEntry()>();
+v8 = 0L;
+v9 = 0;
+label4:
+v10 = v8 cmp 0L;
+if v10 != 0 goto label6;
+if v7 == null goto label6;
+if v9 >= 50 goto label6;
+v11 = interfaceinvoke v7.<com.novell.ldapchai.ChaiEntry: boolean compareStringAttribute(java.lang.String,java.lang.String)>("objectClass", "domainDNS");
+if v11 == 0 goto label5;
+v12 = interfaceinvoke v7.<com.novell.ldapchai.ChaiEntry: java.lang.String readStringAttribute(java.lang.String)>("lockoutDuration");
+v13 = staticinvoke <java.lang.Long: long parseLong(java.lang.String)>(v12);
+v14 = staticinvoke <java.lang.Math: long abs(long)>(v13);
+v8 = v14 / 10000L;
+label5:
+v7 = interfaceinvoke v7.<com.novell.ldapchai.ChaiEntry: com.novell.ldapchai.ChaiEntry getParentEntry()>();
+v9 = v9 + 1;
+goto label4;
+label6:
+v15 = virtualinvoke v6.<java.time.Instant: long toEpochMilli()>();
+v16 = v15 + v8;
+v17 = staticinvoke <java.time.Instant: java.time.Instant ofEpochMilli(long)>(v16);
+v18 = staticinvoke <java.lang.System: long currentTimeMillis()>();
+v19 = virtualinvoke v17.<java.time.Instant: long toEpochMilli()>();
+v20 = v18 cmp v19;
+if v20 > 0 goto label7;
+v21 = 1;
+goto label8;
+label7:
+v21 = 0;
+label8:
+return v21;
+label9:
+return 0;
+}
+public java.time.Instant readPasswordModificationDate() throws com.novell.ldapchai.exception.ChaiOperationException, com.novell.ldapchai.exception.ChaiUnavailableException
+{
+com.novell.ldapchai.impl.ad.entry.UserImpl v0;
+java.time.Instant v1;
+v0 := @this: com.novell.ldapchai.impl.ad.entry.UserImpl;
+v1 = virtualinvoke v0.<com.novell.ldapchai.impl.ad.entry.UserImpl: java.time.Instant readDateAttribute(java.lang.String)>("pwdLastSet");
+return v1;
+}
+public java.time.Instant readPasswordExpirationDate() throws com.novell.ldapchai.exception.ChaiUnavailableException, com.novell.ldapchai.exception.ChaiOperationException
+{
+java.lang.String[] v1;
+long v12, v15, v16, v17, v22, v23;
+java.util.HashSet v2;
+com.novell.ldapchai.impl.ad.entry.UserImpl v0;
+byte v18;
+java.util.Map v4;
+int v10, v11, v14, v20, v6, v9;
+java.lang.String v13;
+java.time.Instant v21, v24, v7;
+java.util.List v3;
+java.lang.Object v19, v5, v8;
+v0 := @this: com.novell.ldapchai.impl.ad.entry.UserImpl;
+v1 = newarray (java.lang.String)[3];
+v1[0] = "pwdLastSet";
+v1[1] = "userAccountControl";
+v1[2] = "msDS-UserPasswordExpiryTimeComputed";
+v2 = new java.util.HashSet;
+v3 = staticinvoke <java.util.Arrays: java.util.List asList(java.lang.Object[])>(v1);
+specialinvoke v2.<java.util.HashSet: void <init>(java.util.Collection)>(v3);
+v4 = virtualinvoke v0.<com.novell.ldapchai.impl.ad.entry.UserImpl: java.util.Map readStringAttributes(java.util.Set)>(v2);
+v5 = interfaceinvoke v4.<java.util.Map: java.lang.Object get(java.lang.Object)>("msDS-UserPasswordExpiryTimeComputed");
+if v5 == null goto label1;
+v6 = virtualinvoke v5.<java.lang.String: int length()>();
+if v6 <= 0 goto label1;
+v7 = staticinvoke <com.novell.ldapchai.impl.ad.entry.ADEntries: java.time.Instant convertWinEpochToDate(java.lang.String)>(v5);
+return v7;
+label1:
+v8 = interfaceinvoke v4.<java.util.Map: java.lang.Object get(java.lang.Object)>("userAccountControl");
+if v8 == null goto label2;
+v9 = virtualinvoke v8.<java.lang.String: int length()>();
+if v9 <= 0 goto label2;
+v10 = staticinvoke <com.novell.ldapchai.util.internal.StringHelper: int convertStrToInt(java.lang.String,int)>(v8, 0);
+v11 = 65536 & v10;
+if v11 != 65536 goto label2;
+return null;
+label2:
+v12 = 0L;
+v13 = specialinvoke v0.<com.novell.ldapchai.impl.ad.entry.UserImpl: java.lang.String readDomainValue(java.lang.String)>("maxPwdAge");
+if v13 == null goto label3;
+v14 = virtualinvoke v13.<java.lang.String: int length()>();
+if v14 <= 0 goto label3;
+v15 = staticinvoke <java.lang.Long: long parseLong(java.lang.String)>(v13);
+v16 = staticinvoke <java.lang.Math: long abs(long)>(v15);
+v17 = v16 / 10000L;
+v12 = v17;
+label3:
+v18 = v12 cmp 0L;
+if v18 != 0 goto label4;
+return null;
+label4:
+v19 = interfaceinvoke v4.<java.util.Map: java.lang.Object get(java.lang.Object)>("pwdLastSet");
+if v19 == null goto label5;
+v20 = virtualinvoke v19.<java.lang.String: int length()>();
+if v20 <= 0 goto label5;
+v21 = staticinvoke <com.novell.ldapchai.impl.ad.entry.ADEntries: java.time.Instant convertWinEpochToDate(java.lang.String)>(v19);
+if v21 == null goto label5;
+v22 = virtualinvoke v21.<java.time.Instant: long toEpochMilli()>();
+v23 = v22 + v12;
+v24 = staticinvoke <java.time.Instant: java.time.Instant ofEpochMilli(long)>(v23);
+return v24;
+label5:
+return null;
+}
+private java.lang.String readDomainValue(java.lang.String) throws com.novell.ldapchai.exception.ChaiUnavailableException, com.novell.ldapchai.exception.ChaiOperationException
+{
+com.novell.ldapchai.impl.ad.entry.UserImpl v0;
+int v3;
+com.novell.ldapchai.ChaiEntry v2;
+java.lang.String v1, v5;
+boolean v4;
+v0 := @this: com.novell.ldapchai.impl.ad.entry.UserImpl;
+v1 := @parameter0: java.lang.String;
+v2 = virtualinvoke v0.<com.novell.ldapchai.impl.ad.entry.UserImpl: com.novell.ldapchai.ChaiEntry getParentEntry()>();
+v3 = 0;
+label1:
+if v2 == null goto label3;
+if v3 >= 50 goto label3;
+v4 = interfaceinvoke v2.<com.novell.ldapchai.ChaiEntry: boolean compareStringAttribute(java.lang.String,java.lang.String)>("objectClass", "domainDNS");
+if v4 == 0 goto label2;
+v5 = interfaceinvoke v2.<com.novell.ldapchai.ChaiEntry: java.lang.String readStringAttribute(java.lang.String)>(v1);
+return v5;
+label2:
+v2 = interfaceinvoke v2.<com.novell.ldapchai.ChaiEntry: com.novell.ldapchai.ChaiEntry getParentEntry()>();
+v3 = v3 + 1;
+goto label1;
+label3:
+return null;
+}
+public java.lang.String readGUID() throws com.novell.ldapchai.exception.ChaiOperationException, com.novell.ldapchai.exception.ChaiUnavailableException
+{
+com.novell.ldapchai.impl.ad.entry.UserImpl v0;
+java.lang.String v1;
+v0 := @this: com.novell.ldapchai.impl.ad.entry.UserImpl;
+v1 = staticinvoke <com.novell.ldapchai.impl.ad.entry.ADEntries: java.lang.String readGUID(com.novell.ldapchai.ChaiEntry)>(v0);
+return v1;
+}
+public boolean isAccountEnabled() throws com.novell.ldapchai.exception.ChaiOperationException, com.novell.ldapchai.exception.ChaiUnavailableException
+{
+java.util.Iterator v7;
+com.novell.ldapchai.util.SearchHelper v1;
+java.util.Set v6;
+com.novell.ldapchai.provider.ChaiProvider v3;
+com.novell.ldapchai.impl.ad.entry.UserImpl v0;
+java.util.Map v5;
+java.lang.Object v9;
+java.lang.String v10, v4;
+com.novell.ldapchai.provider.SearchScope v2;
+boolean v11, v8;
+v0 := @this: com.novell.ldapchai.impl.ad.entry.UserImpl;
+v1 = new com.novell.ldapchai.util.SearchHelper;
+specialinvoke v1.<com.novell.ldapchai.util.SearchHelper: void <init>()>();
+virtualinvoke v1.<com.novell.ldapchai.util.SearchHelper: void setFilter(java.lang.String)>("(useraccountcontrol:1.2.840.113556.1.4.803:=2)");
+v2 = <com.novell.ldapchai.provider.SearchScope: com.novell.ldapchai.provider.SearchScope BASE>;
+virtualinvoke v1.<com.novell.ldapchai.util.SearchHelper: void setSearchScope(com.novell.ldapchai.provider.SearchScope)>(v2);
+v3 = virtualinvoke v0.<com.novell.ldapchai.impl.ad.entry.UserImpl: com.novell.ldapchai.provider.ChaiProvider getChaiProvider()>();
+v4 = virtualinvoke v0.<com.novell.ldapchai.impl.ad.entry.UserImpl: java.lang.String getEntryDN()>();
+v5 = interfaceinvoke v3.<com.novell.ldapchai.provider.ChaiProvider: java.util.Map search(java.lang.String,com.novell.ldapchai.util.SearchHelper)>(v4, v1);
+v6 = interfaceinvoke v5.<java.util.Map: java.util.Set keySet()>();
+v7 = interfaceinvoke v6.<java.util.Set: java.util.Iterator iterator()>();
+label1:
+v8 = interfaceinvoke v7.<java.util.Iterator: boolean hasNext()>();
+if v8 == 0 goto label2;
+v9 = interfaceinvoke v7.<java.util.Iterator: java.lang.Object next()>();
+if v9 == null goto label1;
+v10 = virtualinvoke v0.<com.novell.ldapchai.impl.ad.entry.UserImpl: java.lang.String getEntryDN()>();
+v11 = virtualinvoke v9.<java.lang.String: boolean equals(java.lang.Object)>(v10);
+if v11 == 0 goto label1;
+return 0;
+label2:
+return 1;
+}
+public java.time.Instant readAccountExpirationDate() throws com.novell.ldapchai.exception.ChaiUnavailableException, com.novell.ldapchai.exception.ChaiOperationException
+{
+com.novell.ldapchai.impl.ad.entry.UserImpl v0;
+java.time.Instant v1;
+v0 := @this: com.novell.ldapchai.impl.ad.entry.UserImpl;
+v1 = virtualinvoke v0.<com.novell.ldapchai.impl.ad.entry.UserImpl: java.time.Instant readDateAttribute(java.lang.String)>("accountExpires");
+return v1;
+}
+public java.lang.String readCanonicalDN() throws com.novell.ldapchai.exception.ChaiOperationException, com.novell.ldapchai.exception.ChaiUnavailableException
+{
+com.novell.ldapchai.impl.ad.entry.UserImpl v0;
+java.lang.String v1;
+v0 := @this: com.novell.ldapchai.impl.ad.entry.UserImpl;
+v1 = virtualinvoke v0.<com.novell.ldapchai.impl.ad.entry.UserImpl: java.lang.String readStringAttribute(java.lang.String)>("distinguishedName");
+return v1;
+}
+}

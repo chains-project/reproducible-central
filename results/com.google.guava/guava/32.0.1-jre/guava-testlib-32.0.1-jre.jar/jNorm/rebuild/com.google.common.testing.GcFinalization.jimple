@@ -1,0 +1,226 @@
+public final class com.google.common.testing.GcFinalization extends java.lang.Object
+{
+private void <init>()
+{
+com.google.common.testing.GcFinalization v0;
+v0 := @this: com.google.common.testing.GcFinalization;
+specialinvoke v0.<java.lang.Object: void <init>()>();
+return;
+}
+private static long timeoutSeconds()
+{
+java.lang.Runtime v0;
+long v1, v2, v3;
+v0 = staticinvoke <java.lang.Runtime: java.lang.Runtime getRuntime()>();
+v1 = virtualinvoke v0.<java.lang.Runtime: long totalMemory()>();
+v2 = v1 / 33554432L;
+v3 = staticinvoke <java.lang.Math: long max(long,long)>(10L, v2);
+return v3;
+}
+public static void awaitDone(java.util.concurrent.Future)
+{
+java.lang.Object[] v16;
+java.util.concurrent.TimeoutException v12;
+long v13, v14, v2, v3, v5, v6;
+java.util.concurrent.Future v0;
+byte v15;
+java.lang.Long v17;
+boolean v1, v7;
+java.lang.RuntimeException v11, v18;
+java.lang.Exception v9;
+java.util.concurrent.TimeUnit v4, v8;
+java.lang.InterruptedException v10;
+v0 := @parameter0: java.util.concurrent.Future;
+v1 = interfaceinvoke v0.<java.util.concurrent.Future: boolean isDone()>();
+if v1 == 0 goto label1;
+return;
+label1:
+v2 = staticinvoke <com.google.common.testing.GcFinalization: long timeoutSeconds()>();
+v3 = staticinvoke <java.lang.System: long nanoTime()>();
+v4 = <java.util.concurrent.TimeUnit: java.util.concurrent.TimeUnit SECONDS>;
+v5 = virtualinvoke v4.<java.util.concurrent.TimeUnit: long toNanos(long)>(v2);
+v6 = v3 + v5;
+label2:
+staticinvoke <java.lang.System: void runFinalization()>();
+v7 = interfaceinvoke v0.<java.util.concurrent.Future: boolean isDone()>();
+if v7 == 0 goto label3;
+return;
+label3:
+staticinvoke <java.lang.System: void gc()>();
+label4:
+v8 = <java.util.concurrent.TimeUnit: java.util.concurrent.TimeUnit SECONDS>;
+interfaceinvoke v0.<java.util.concurrent.Future: java.lang.Object get(long,java.util.concurrent.TimeUnit)>(1L, v8);
+label5:
+return;
+label6:
+v9 := @caughtexception;
+return;
+label7:
+v10 := @caughtexception;
+v11 = new java.lang.RuntimeException;
+specialinvoke v11.<java.lang.RuntimeException: void <init>(java.lang.String,java.lang.Throwable)>("Unexpected interrupt while waiting for future", v10);
+throw v11;
+label8:
+v12 := @caughtexception;
+v13 = staticinvoke <java.lang.System: long nanoTime()>();
+v14 = v13 - v6;
+v15 = v14 cmp 0L;
+if v15 < 0 goto label2;
+v16 = newarray (java.lang.Object)[1];
+v17 = staticinvoke <java.lang.Long: java.lang.Long valueOf(long)>(v2);
+v16[0] = v17;
+v18 = staticinvoke <com.google.common.testing.GcFinalization: java.lang.RuntimeException formatRuntimeException(java.lang.String,java.lang.Object[])>("Future not done within %d second timeout", v16);
+throw v18;
+catch java.util.concurrent.CancellationException from label4 to label5 with label6;
+catch java.util.concurrent.ExecutionException from label4 to label5 with label6;
+catch java.lang.InterruptedException from label4 to label5 with label7;
+catch java.util.concurrent.TimeoutException from label4 to label5 with label8;
+}
+public static void awaitDone(com.google.common.testing.GcFinalization$FinalizationPredicate)
+{
+java.lang.Object[] v13;
+com.google.common.testing.GcFinalization$FinalizationPredicate v0;
+long v10, v11, v2, v3, v5, v6;
+byte v12;
+java.lang.Long v14;
+boolean v1, v7, v9;
+java.lang.RuntimeException v15;
+java.util.concurrent.TimeUnit v4;
+java.util.concurrent.CountDownLatch v8;
+v0 := @parameter0: com.google.common.testing.GcFinalization$FinalizationPredicate;
+v1 = interfaceinvoke v0.<com.google.common.testing.GcFinalization$FinalizationPredicate: boolean isDone()>();
+if v1 == 0 goto label1;
+return;
+label1:
+v2 = staticinvoke <com.google.common.testing.GcFinalization: long timeoutSeconds()>();
+v3 = staticinvoke <java.lang.System: long nanoTime()>();
+v4 = <java.util.concurrent.TimeUnit: java.util.concurrent.TimeUnit SECONDS>;
+v5 = virtualinvoke v4.<java.util.concurrent.TimeUnit: long toNanos(long)>(v2);
+v6 = v3 + v5;
+label2:
+staticinvoke <java.lang.System: void runFinalization()>();
+v7 = interfaceinvoke v0.<com.google.common.testing.GcFinalization$FinalizationPredicate: boolean isDone()>();
+if v7 == 0 goto label3;
+return;
+label3:
+v8 = new java.util.concurrent.CountDownLatch;
+specialinvoke v8.<java.util.concurrent.CountDownLatch: void <init>(int)>(1);
+staticinvoke <com.google.common.testing.GcFinalization: void createUnreachableLatchFinalizer(java.util.concurrent.CountDownLatch)>(v8);
+staticinvoke <com.google.common.testing.GcFinalization: void await(java.util.concurrent.CountDownLatch)>(v8);
+v9 = interfaceinvoke v0.<com.google.common.testing.GcFinalization$FinalizationPredicate: boolean isDone()>();
+if v9 == 0 goto label4;
+return;
+label4:
+v10 = staticinvoke <java.lang.System: long nanoTime()>();
+v11 = v10 - v6;
+v12 = v11 cmp 0L;
+if v12 < 0 goto label2;
+v13 = newarray (java.lang.Object)[1];
+v14 = staticinvoke <java.lang.Long: java.lang.Long valueOf(long)>(v2);
+v13[0] = v14;
+v15 = staticinvoke <com.google.common.testing.GcFinalization: java.lang.RuntimeException formatRuntimeException(java.lang.String,java.lang.Object[])>("Predicate did not become true within %d second timeout", v13);
+throw v15;
+}
+public static void await(java.util.concurrent.CountDownLatch)
+{
+java.lang.Object[] v17;
+long v1, v14, v15, v3, v4, v6, v7, v8;
+byte v16, v2, v9;
+java.lang.Long v18;
+boolean v11;
+java.lang.RuntimeException v13, v19;
+java.util.concurrent.TimeUnit v10, v5;
+java.util.concurrent.CountDownLatch v0;
+java.lang.InterruptedException v12;
+v0 := @parameter0: java.util.concurrent.CountDownLatch;
+v1 = virtualinvoke v0.<java.util.concurrent.CountDownLatch: long getCount()>();
+v2 = v1 cmp 0L;
+if v2 != 0 goto label1;
+return;
+label1:
+v3 = staticinvoke <com.google.common.testing.GcFinalization: long timeoutSeconds()>();
+v4 = staticinvoke <java.lang.System: long nanoTime()>();
+v5 = <java.util.concurrent.TimeUnit: java.util.concurrent.TimeUnit SECONDS>;
+v6 = virtualinvoke v5.<java.util.concurrent.TimeUnit: long toNanos(long)>(v3);
+v7 = v4 + v6;
+label2:
+staticinvoke <java.lang.System: void runFinalization()>();
+v8 = virtualinvoke v0.<java.util.concurrent.CountDownLatch: long getCount()>();
+v9 = v8 cmp 0L;
+if v9 != 0 goto label3;
+return;
+label3:
+staticinvoke <java.lang.System: void gc()>();
+label4:
+v10 = <java.util.concurrent.TimeUnit: java.util.concurrent.TimeUnit SECONDS>;
+v11 = virtualinvoke v0.<java.util.concurrent.CountDownLatch: boolean await(long,java.util.concurrent.TimeUnit)>(1L, v10);
+if v11 == 0 goto label7;
+label5:
+return;
+label6:
+v12 := @caughtexception;
+v13 = new java.lang.RuntimeException;
+specialinvoke v13.<java.lang.RuntimeException: void <init>(java.lang.String,java.lang.Throwable)>("Unexpected interrupt while waiting for latch", v12);
+throw v13;
+label7:
+v14 = staticinvoke <java.lang.System: long nanoTime()>();
+v15 = v14 - v7;
+v16 = v15 cmp 0L;
+if v16 < 0 goto label2;
+v17 = newarray (java.lang.Object)[1];
+v18 = staticinvoke <java.lang.Long: java.lang.Long valueOf(long)>(v3);
+v17[0] = v18;
+v19 = staticinvoke <com.google.common.testing.GcFinalization: java.lang.RuntimeException formatRuntimeException(java.lang.String,java.lang.Object[])>("Latch failed to count down within %d second timeout", v17);
+throw v19;
+catch java.lang.InterruptedException from label4 to label5 with label6;
+}
+private static void createUnreachableLatchFinalizer(java.util.concurrent.CountDownLatch)
+{
+java.util.concurrent.CountDownLatch v0;
+com.google.common.testing.GcFinalization$1 v1;
+v0 := @parameter0: java.util.concurrent.CountDownLatch;
+v1 = new com.google.common.testing.GcFinalization$1;
+specialinvoke v1.<com.google.common.testing.GcFinalization$1: void <init>(java.util.concurrent.CountDownLatch)>(v0);
+return;
+}
+public static void awaitClear(java.lang.ref.WeakReference)
+{
+java.lang.ref.WeakReference v0;
+com.google.common.testing.GcFinalization$2 v1;
+v0 := @parameter0: java.lang.ref.WeakReference;
+v1 = new com.google.common.testing.GcFinalization$2;
+specialinvoke v1.<com.google.common.testing.GcFinalization$2: void <init>(java.lang.ref.WeakReference)>(v0);
+staticinvoke <com.google.common.testing.GcFinalization: void awaitDone(com.google.common.testing.GcFinalization$FinalizationPredicate)>(v1);
+return;
+}
+public static void awaitFullGc()
+{
+java.util.concurrent.CountDownLatch v0;
+java.lang.ref.WeakReference v1;
+com.google.common.testing.GcFinalization$3 v2;
+v0 = new java.util.concurrent.CountDownLatch;
+specialinvoke v0.<java.util.concurrent.CountDownLatch: void <init>(int)>(1);
+v1 = new java.lang.ref.WeakReference;
+v2 = new com.google.common.testing.GcFinalization$3;
+specialinvoke v2.<com.google.common.testing.GcFinalization$3: void <init>(java.util.concurrent.CountDownLatch)>(v0);
+specialinvoke v1.<java.lang.ref.WeakReference: void <init>(java.lang.Object)>(v2);
+staticinvoke <com.google.common.testing.GcFinalization: void await(java.util.concurrent.CountDownLatch)>(v0);
+staticinvoke <com.google.common.testing.GcFinalization: void awaitClear(java.lang.ref.WeakReference)>(v1);
+staticinvoke <java.lang.System: void runFinalization()>();
+return;
+}
+private static transient java.lang.RuntimeException formatRuntimeException(java.lang.String, java.lang.Object[])
+{
+java.lang.Object[] v1;
+java.util.Locale v3;
+java.lang.RuntimeException v2;
+java.lang.String v0, v4;
+v0 := @parameter0: java.lang.String;
+v1 := @parameter1: java.lang.Object[];
+v2 = new java.lang.RuntimeException;
+v3 = <java.util.Locale: java.util.Locale ROOT>;
+v4 = staticinvoke <java.lang.String: java.lang.String format(java.util.Locale,java.lang.String,java.lang.Object[])>(v3, v0, v1);
+specialinvoke v2.<java.lang.RuntimeException: void <init>(java.lang.String)>(v4);
+return v2;
+}
+}

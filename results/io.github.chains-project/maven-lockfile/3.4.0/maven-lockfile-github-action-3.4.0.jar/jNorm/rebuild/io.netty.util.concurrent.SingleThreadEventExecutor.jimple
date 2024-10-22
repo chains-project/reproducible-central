@@ -1,0 +1,1444 @@
+public abstract class io.netty.util.concurrent.SingleThreadEventExecutor extends io.netty.util.concurrent.AbstractScheduledEventExecutor implements io.netty.util.concurrent.OrderedEventExecutor
+{
+static final int DEFAULT_MAX_PENDING_EXECUTOR_TASKS;
+private static final io.netty.util.internal.logging.InternalLogger logger;
+private static final int ST_NOT_STARTED;
+private static final int ST_STARTED;
+private static final int ST_SHUTTING_DOWN;
+private static final int ST_SHUTDOWN;
+private static final int ST_TERMINATED;
+private static final java.lang.Runnable NOOP_TASK;
+private static final java.util.concurrent.atomic.AtomicIntegerFieldUpdater STATE_UPDATER;
+private static final java.util.concurrent.atomic.AtomicReferenceFieldUpdater PROPERTIES_UPDATER;
+private final java.util.Queue taskQueue;
+private volatile java.lang.Thread thread;
+private volatile io.netty.util.concurrent.ThreadProperties threadProperties;
+private final java.util.concurrent.Executor executor;
+private volatile boolean interrupted;
+private final java.util.concurrent.CountDownLatch threadLock;
+private final java.util.Set shutdownHooks;
+private final boolean addTaskWakesUp;
+private final int maxPendingTasks;
+private final io.netty.util.concurrent.RejectedExecutionHandler rejectedExecutionHandler;
+private long lastExecutionTime;
+private volatile int state;
+private volatile long gracefulShutdownQuietPeriod;
+private volatile long gracefulShutdownTimeout;
+private long gracefulShutdownStartTime;
+private final io.netty.util.concurrent.Promise terminationFuture;
+private static final long SCHEDULE_PURGE_INTERVAL;
+static final boolean $assertionsDisabled;
+protected void <init>(io.netty.util.concurrent.EventExecutorGroup, java.util.concurrent.ThreadFactory, boolean)
+{
+io.netty.util.concurrent.ThreadPerTaskExecutor v4;
+io.netty.util.concurrent.SingleThreadEventExecutor v0;
+io.netty.util.concurrent.EventExecutorGroup v1;
+java.util.concurrent.ThreadFactory v2;
+boolean v3;
+v0 := @this: io.netty.util.concurrent.SingleThreadEventExecutor;
+v1 := @parameter0: io.netty.util.concurrent.EventExecutorGroup;
+v2 := @parameter1: java.util.concurrent.ThreadFactory;
+v3 := @parameter2: boolean;
+v4 = new io.netty.util.concurrent.ThreadPerTaskExecutor;
+specialinvoke v4.<io.netty.util.concurrent.ThreadPerTaskExecutor: void <init>(java.util.concurrent.ThreadFactory)>(v2);
+specialinvoke v0.<io.netty.util.concurrent.SingleThreadEventExecutor: void <init>(io.netty.util.concurrent.EventExecutorGroup,java.util.concurrent.Executor,boolean)>(v1, v4, v3);
+return;
+}
+protected void <init>(io.netty.util.concurrent.EventExecutorGroup, java.util.concurrent.ThreadFactory, boolean, int, io.netty.util.concurrent.RejectedExecutionHandler)
+{
+io.netty.util.concurrent.ThreadPerTaskExecutor v6;
+io.netty.util.concurrent.SingleThreadEventExecutor v0;
+int v4;
+io.netty.util.concurrent.EventExecutorGroup v1;
+java.util.concurrent.ThreadFactory v2;
+io.netty.util.concurrent.RejectedExecutionHandler v5;
+boolean v3;
+v0 := @this: io.netty.util.concurrent.SingleThreadEventExecutor;
+v1 := @parameter0: io.netty.util.concurrent.EventExecutorGroup;
+v2 := @parameter1: java.util.concurrent.ThreadFactory;
+v3 := @parameter2: boolean;
+v4 := @parameter3: int;
+v5 := @parameter4: io.netty.util.concurrent.RejectedExecutionHandler;
+v6 = new io.netty.util.concurrent.ThreadPerTaskExecutor;
+specialinvoke v6.<io.netty.util.concurrent.ThreadPerTaskExecutor: void <init>(java.util.concurrent.ThreadFactory)>(v2);
+specialinvoke v0.<io.netty.util.concurrent.SingleThreadEventExecutor: void <init>(io.netty.util.concurrent.EventExecutorGroup,java.util.concurrent.Executor,boolean,int,io.netty.util.concurrent.RejectedExecutionHandler)>(v1, v6, v3, v4, v5);
+return;
+}
+protected void <init>(io.netty.util.concurrent.EventExecutorGroup, java.util.concurrent.Executor, boolean)
+{
+io.netty.util.concurrent.SingleThreadEventExecutor v0;
+java.util.concurrent.Executor v2;
+int v4;
+io.netty.util.concurrent.EventExecutorGroup v1;
+io.netty.util.concurrent.RejectedExecutionHandler v5;
+boolean v3;
+v0 := @this: io.netty.util.concurrent.SingleThreadEventExecutor;
+v1 := @parameter0: io.netty.util.concurrent.EventExecutorGroup;
+v2 := @parameter1: java.util.concurrent.Executor;
+v3 := @parameter2: boolean;
+v4 = <io.netty.util.concurrent.SingleThreadEventExecutor: int DEFAULT_MAX_PENDING_EXECUTOR_TASKS>;
+v5 = staticinvoke <io.netty.util.concurrent.RejectedExecutionHandlers: io.netty.util.concurrent.RejectedExecutionHandler reject()>();
+specialinvoke v0.<io.netty.util.concurrent.SingleThreadEventExecutor: void <init>(io.netty.util.concurrent.EventExecutorGroup,java.util.concurrent.Executor,boolean,int,io.netty.util.concurrent.RejectedExecutionHandler)>(v1, v2, v3, v4, v5);
+return;
+}
+protected void <init>(io.netty.util.concurrent.EventExecutorGroup, java.util.concurrent.Executor, boolean, int, io.netty.util.concurrent.RejectedExecutionHandler)
+{
+io.netty.util.concurrent.SingleThreadEventExecutor v0;
+java.util.concurrent.Executor v11, v2;
+io.netty.util.concurrent.EventExecutorGroup v1;
+io.netty.util.concurrent.GlobalEventExecutor v9;
+io.netty.util.concurrent.DefaultPromise v8;
+java.util.concurrent.CountDownLatch v6;
+int v10, v12, v4;
+java.lang.Object v14;
+java.util.Queue v13;
+io.netty.util.concurrent.RejectedExecutionHandler v5;
+java.util.LinkedHashSet v7;
+boolean v3;
+v0 := @this: io.netty.util.concurrent.SingleThreadEventExecutor;
+v1 := @parameter0: io.netty.util.concurrent.EventExecutorGroup;
+v2 := @parameter1: java.util.concurrent.Executor;
+v3 := @parameter2: boolean;
+v4 := @parameter3: int;
+v5 := @parameter4: io.netty.util.concurrent.RejectedExecutionHandler;
+specialinvoke v0.<io.netty.util.concurrent.AbstractScheduledEventExecutor: void <init>(io.netty.util.concurrent.EventExecutorGroup)>(v1);
+v6 = new java.util.concurrent.CountDownLatch;
+specialinvoke v6.<java.util.concurrent.CountDownLatch: void <init>(int)>(1);
+v0.<io.netty.util.concurrent.SingleThreadEventExecutor: java.util.concurrent.CountDownLatch threadLock> = v6;
+v7 = new java.util.LinkedHashSet;
+specialinvoke v7.<java.util.LinkedHashSet: void <init>()>();
+v0.<io.netty.util.concurrent.SingleThreadEventExecutor: java.util.Set shutdownHooks> = v7;
+v0.<io.netty.util.concurrent.SingleThreadEventExecutor: int state> = 1;
+v8 = new io.netty.util.concurrent.DefaultPromise;
+v9 = <io.netty.util.concurrent.GlobalEventExecutor: io.netty.util.concurrent.GlobalEventExecutor INSTANCE>;
+specialinvoke v8.<io.netty.util.concurrent.DefaultPromise: void <init>(io.netty.util.concurrent.EventExecutor)>(v9);
+v0.<io.netty.util.concurrent.SingleThreadEventExecutor: io.netty.util.concurrent.Promise terminationFuture> = v8;
+v0.<io.netty.util.concurrent.SingleThreadEventExecutor: boolean addTaskWakesUp> = v3;
+v10 = staticinvoke <java.lang.Math: int max(int,int)>(16, v4);
+v0.<io.netty.util.concurrent.SingleThreadEventExecutor: int maxPendingTasks> = v10;
+v11 = staticinvoke <io.netty.util.internal.ThreadExecutorMap: java.util.concurrent.Executor apply(java.util.concurrent.Executor,io.netty.util.concurrent.EventExecutor)>(v2, v0);
+v0.<io.netty.util.concurrent.SingleThreadEventExecutor: java.util.concurrent.Executor executor> = v11;
+v12 = v0.<io.netty.util.concurrent.SingleThreadEventExecutor: int maxPendingTasks>;
+v13 = virtualinvoke v0.<io.netty.util.concurrent.SingleThreadEventExecutor: java.util.Queue newTaskQueue(int)>(v12);
+v0.<io.netty.util.concurrent.SingleThreadEventExecutor: java.util.Queue taskQueue> = v13;
+v14 = staticinvoke <io.netty.util.internal.ObjectUtil: java.lang.Object checkNotNull(java.lang.Object,java.lang.String)>(v5, "rejectedHandler");
+v0.<io.netty.util.concurrent.SingleThreadEventExecutor: io.netty.util.concurrent.RejectedExecutionHandler rejectedExecutionHandler> = v14;
+return;
+}
+protected void <init>(io.netty.util.concurrent.EventExecutorGroup, java.util.concurrent.Executor, boolean, java.util.Queue, io.netty.util.concurrent.RejectedExecutionHandler)
+{
+io.netty.util.concurrent.SingleThreadEventExecutor v0;
+java.util.concurrent.Executor v11, v2;
+io.netty.util.concurrent.EventExecutorGroup v1;
+io.netty.util.concurrent.GlobalEventExecutor v9;
+io.netty.util.concurrent.DefaultPromise v8;
+java.util.concurrent.CountDownLatch v6;
+int v10;
+java.lang.Object v12, v13;
+java.util.Queue v4;
+io.netty.util.concurrent.RejectedExecutionHandler v5;
+java.util.LinkedHashSet v7;
+boolean v3;
+v0 := @this: io.netty.util.concurrent.SingleThreadEventExecutor;
+v1 := @parameter0: io.netty.util.concurrent.EventExecutorGroup;
+v2 := @parameter1: java.util.concurrent.Executor;
+v3 := @parameter2: boolean;
+v4 := @parameter3: java.util.Queue;
+v5 := @parameter4: io.netty.util.concurrent.RejectedExecutionHandler;
+specialinvoke v0.<io.netty.util.concurrent.AbstractScheduledEventExecutor: void <init>(io.netty.util.concurrent.EventExecutorGroup)>(v1);
+v6 = new java.util.concurrent.CountDownLatch;
+specialinvoke v6.<java.util.concurrent.CountDownLatch: void <init>(int)>(1);
+v0.<io.netty.util.concurrent.SingleThreadEventExecutor: java.util.concurrent.CountDownLatch threadLock> = v6;
+v7 = new java.util.LinkedHashSet;
+specialinvoke v7.<java.util.LinkedHashSet: void <init>()>();
+v0.<io.netty.util.concurrent.SingleThreadEventExecutor: java.util.Set shutdownHooks> = v7;
+v0.<io.netty.util.concurrent.SingleThreadEventExecutor: int state> = 1;
+v8 = new io.netty.util.concurrent.DefaultPromise;
+v9 = <io.netty.util.concurrent.GlobalEventExecutor: io.netty.util.concurrent.GlobalEventExecutor INSTANCE>;
+specialinvoke v8.<io.netty.util.concurrent.DefaultPromise: void <init>(io.netty.util.concurrent.EventExecutor)>(v9);
+v0.<io.netty.util.concurrent.SingleThreadEventExecutor: io.netty.util.concurrent.Promise terminationFuture> = v8;
+v0.<io.netty.util.concurrent.SingleThreadEventExecutor: boolean addTaskWakesUp> = v3;
+v10 = <io.netty.util.concurrent.SingleThreadEventExecutor: int DEFAULT_MAX_PENDING_EXECUTOR_TASKS>;
+v0.<io.netty.util.concurrent.SingleThreadEventExecutor: int maxPendingTasks> = v10;
+v11 = staticinvoke <io.netty.util.internal.ThreadExecutorMap: java.util.concurrent.Executor apply(java.util.concurrent.Executor,io.netty.util.concurrent.EventExecutor)>(v2, v0);
+v0.<io.netty.util.concurrent.SingleThreadEventExecutor: java.util.concurrent.Executor executor> = v11;
+v12 = staticinvoke <io.netty.util.internal.ObjectUtil: java.lang.Object checkNotNull(java.lang.Object,java.lang.String)>(v4, "taskQueue");
+v0.<io.netty.util.concurrent.SingleThreadEventExecutor: java.util.Queue taskQueue> = v12;
+v13 = staticinvoke <io.netty.util.internal.ObjectUtil: java.lang.Object checkNotNull(java.lang.Object,java.lang.String)>(v5, "rejectedHandler");
+v0.<io.netty.util.concurrent.SingleThreadEventExecutor: io.netty.util.concurrent.RejectedExecutionHandler rejectedExecutionHandler> = v13;
+return;
+}
+protected java.util.Queue newTaskQueue()
+{
+int v1;
+java.util.Queue v2;
+io.netty.util.concurrent.SingleThreadEventExecutor v0;
+v0 := @this: io.netty.util.concurrent.SingleThreadEventExecutor;
+v1 = v0.<io.netty.util.concurrent.SingleThreadEventExecutor: int maxPendingTasks>;
+v2 = virtualinvoke v0.<io.netty.util.concurrent.SingleThreadEventExecutor: java.util.Queue newTaskQueue(int)>(v1);
+return v2;
+}
+protected java.util.Queue newTaskQueue(int)
+{
+int v1;
+io.netty.util.concurrent.SingleThreadEventExecutor v0;
+java.util.concurrent.LinkedBlockingQueue v2;
+v0 := @this: io.netty.util.concurrent.SingleThreadEventExecutor;
+v1 := @parameter0: int;
+v2 = new java.util.concurrent.LinkedBlockingQueue;
+specialinvoke v2.<java.util.concurrent.LinkedBlockingQueue: void <init>(int)>(v1);
+return v2;
+}
+protected void interruptThread()
+{
+io.netty.util.concurrent.SingleThreadEventExecutor v0;
+java.lang.Thread v1;
+v0 := @this: io.netty.util.concurrent.SingleThreadEventExecutor;
+v1 = v0.<io.netty.util.concurrent.SingleThreadEventExecutor: java.lang.Thread thread>;
+if v1 != null goto label1;
+v0.<io.netty.util.concurrent.SingleThreadEventExecutor: boolean interrupted> = 1;
+goto label2;
+label1:
+virtualinvoke v1.<java.lang.Thread: void interrupt()>();
+label2:
+return;
+}
+protected java.lang.Runnable pollTask()
+{
+io.netty.util.concurrent.SingleThreadEventExecutor v0;
+java.lang.AssertionError v3;
+java.util.Queue v4;
+java.lang.Runnable v5;
+boolean v1, v2;
+v0 := @this: io.netty.util.concurrent.SingleThreadEventExecutor;
+v1 = <io.netty.util.concurrent.SingleThreadEventExecutor: boolean $assertionsDisabled>;
+if v1 != 0 goto label1;
+v2 = virtualinvoke v0.<io.netty.util.concurrent.SingleThreadEventExecutor: boolean inEventLoop()>();
+if v2 != 0 goto label1;
+v3 = new java.lang.AssertionError;
+specialinvoke v3.<java.lang.AssertionError: void <init>()>();
+throw v3;
+label1:
+v4 = v0.<io.netty.util.concurrent.SingleThreadEventExecutor: java.util.Queue taskQueue>;
+v5 = staticinvoke <io.netty.util.concurrent.SingleThreadEventExecutor: java.lang.Runnable pollTaskFrom(java.util.Queue)>(v4);
+return v5;
+}
+protected static java.lang.Runnable pollTaskFrom(java.util.Queue)
+{
+java.lang.Object v1;
+java.util.Queue v0;
+java.lang.Runnable v2;
+v0 := @parameter0: java.util.Queue;
+label1:
+v1 = interfaceinvoke v0.<java.util.Queue: java.lang.Object poll()>();
+v2 = <io.netty.util.concurrent.SingleThreadEventExecutor: java.lang.Runnable WAKEUP_TASK>;
+if v1 == v2 goto label1;
+return v1;
+}
+protected java.lang.Runnable takeTask()
+{
+io.netty.util.concurrent.ScheduledFutureTask v8;
+long v12;
+java.lang.AssertionError v3;
+java.lang.Runnable v10;
+byte v13;
+boolean v1, v2, v5;
+java.lang.UnsupportedOperationException v6;
+io.netty.util.concurrent.SingleThreadEventExecutor v0;
+java.util.concurrent.TimeUnit v14;
+java.lang.InterruptedException v11, v16;
+java.lang.Object v15, v9;
+java.util.Queue v4, v7;
+v0 := @this: io.netty.util.concurrent.SingleThreadEventExecutor;
+v1 = <io.netty.util.concurrent.SingleThreadEventExecutor: boolean $assertionsDisabled>;
+if v1 != 0 goto label01;
+v2 = virtualinvoke v0.<io.netty.util.concurrent.SingleThreadEventExecutor: boolean inEventLoop()>();
+if v2 != 0 goto label01;
+v3 = new java.lang.AssertionError;
+specialinvoke v3.<java.lang.AssertionError: void <init>()>();
+throw v3;
+label01:
+v4 = v0.<io.netty.util.concurrent.SingleThreadEventExecutor: java.util.Queue taskQueue>;
+v5 = v4 instanceof java.util.concurrent.BlockingQueue;
+if v5 != 0 goto label02;
+v6 = new java.lang.UnsupportedOperationException;
+specialinvoke v6.<java.lang.UnsupportedOperationException: void <init>()>();
+throw v6;
+label02:
+v7 = v0.<io.netty.util.concurrent.SingleThreadEventExecutor: java.util.Queue taskQueue>;
+label03:
+v8 = virtualinvoke v0.<io.netty.util.concurrent.SingleThreadEventExecutor: io.netty.util.concurrent.ScheduledFutureTask peekScheduledTask()>();
+if v8 != null goto label08;
+label04:
+v9 = interfaceinvoke v7.<java.util.concurrent.BlockingQueue: java.lang.Object take()>();
+v10 = <io.netty.util.concurrent.SingleThreadEventExecutor: java.lang.Runnable WAKEUP_TASK>;
+if v9 != v10 goto label07;
+v9 = null;
+label05:
+goto label07;
+label06:
+v11 := @caughtexception;
+label07:
+return v9;
+label08:
+v12 = virtualinvoke v8.<io.netty.util.concurrent.ScheduledFutureTask: long delayNanos()>();
+v13 = v12 cmp 0L;
+if v13 <= 0 goto label12;
+label09:
+v14 = <java.util.concurrent.TimeUnit: java.util.concurrent.TimeUnit NANOSECONDS>;
+v15 = interfaceinvoke v7.<java.util.concurrent.BlockingQueue: java.lang.Object poll(long,java.util.concurrent.TimeUnit)>(v12, v14);
+label10:
+goto label12;
+label11:
+v16 := @caughtexception;
+return null;
+label12:
+if v15 != null goto label13;
+specialinvoke v0.<io.netty.util.concurrent.SingleThreadEventExecutor: boolean fetchFromScheduledTaskQueue()>();
+interfaceinvoke v7.<java.util.concurrent.BlockingQueue: java.lang.Object poll()>();
+label13:
+if v15 == null goto label03;
+return v15;
+catch java.lang.InterruptedException from label04 to label05 with label06;
+catch java.lang.InterruptedException from label09 to label10 with label11;
+}
+private boolean fetchFromScheduledTaskQueue()
+{
+io.netty.util.concurrent.SingleThreadEventExecutor v0;
+io.netty.util.internal.PriorityQueue v1, v2, v8;
+long v4;
+java.lang.Runnable v5;
+java.util.Queue v6;
+boolean v3, v7;
+v0 := @this: io.netty.util.concurrent.SingleThreadEventExecutor;
+v1 = v0.<io.netty.util.concurrent.SingleThreadEventExecutor: io.netty.util.internal.PriorityQueue scheduledTaskQueue>;
+if v1 == null goto label1;
+v2 = v0.<io.netty.util.concurrent.SingleThreadEventExecutor: io.netty.util.internal.PriorityQueue scheduledTaskQueue>;
+v3 = interfaceinvoke v2.<io.netty.util.internal.PriorityQueue: boolean isEmpty()>();
+if v3 == 0 goto label2;
+label1:
+return 1;
+label2:
+v4 = virtualinvoke v0.<io.netty.util.concurrent.SingleThreadEventExecutor: long getCurrentTimeNanos()>();
+label3:
+v5 = virtualinvoke v0.<io.netty.util.concurrent.SingleThreadEventExecutor: java.lang.Runnable pollScheduledTask(long)>(v4);
+if v5 != null goto label4;
+return 1;
+label4:
+v6 = v0.<io.netty.util.concurrent.SingleThreadEventExecutor: java.util.Queue taskQueue>;
+v7 = interfaceinvoke v6.<java.util.Queue: boolean offer(java.lang.Object)>(v5);
+if v7 != 0 goto label3;
+v8 = v0.<io.netty.util.concurrent.SingleThreadEventExecutor: io.netty.util.internal.PriorityQueue scheduledTaskQueue>;
+interfaceinvoke v8.<io.netty.util.internal.PriorityQueue: boolean add(java.lang.Object)>(v5);
+return 0;
+}
+private boolean executeExpiredScheduledTasks()
+{
+io.netty.util.concurrent.SingleThreadEventExecutor v0;
+io.netty.util.internal.PriorityQueue v1, v2;
+long v4;
+java.lang.Runnable v5, v6;
+boolean v3;
+v0 := @this: io.netty.util.concurrent.SingleThreadEventExecutor;
+v1 = v0.<io.netty.util.concurrent.SingleThreadEventExecutor: io.netty.util.internal.PriorityQueue scheduledTaskQueue>;
+if v1 == null goto label1;
+v2 = v0.<io.netty.util.concurrent.SingleThreadEventExecutor: io.netty.util.internal.PriorityQueue scheduledTaskQueue>;
+v3 = interfaceinvoke v2.<io.netty.util.internal.PriorityQueue: boolean isEmpty()>();
+if v3 == 0 goto label2;
+label1:
+return 0;
+label2:
+v4 = virtualinvoke v0.<io.netty.util.concurrent.SingleThreadEventExecutor: long getCurrentTimeNanos()>();
+v5 = virtualinvoke v0.<io.netty.util.concurrent.SingleThreadEventExecutor: java.lang.Runnable pollScheduledTask(long)>(v4);
+if v5 != null goto label3;
+return 0;
+label3:
+staticinvoke <io.netty.util.concurrent.SingleThreadEventExecutor: void safeExecute(java.lang.Runnable)>(v5);
+v6 = virtualinvoke v0.<io.netty.util.concurrent.SingleThreadEventExecutor: java.lang.Runnable pollScheduledTask(long)>(v4);
+v5 = v6;
+if v6 != null goto label3;
+return 1;
+}
+protected java.lang.Runnable peekTask()
+{
+io.netty.util.concurrent.SingleThreadEventExecutor v0;
+java.lang.Object v5;
+java.lang.AssertionError v3;
+java.util.Queue v4;
+boolean v1, v2;
+v0 := @this: io.netty.util.concurrent.SingleThreadEventExecutor;
+v1 = <io.netty.util.concurrent.SingleThreadEventExecutor: boolean $assertionsDisabled>;
+if v1 != 0 goto label1;
+v2 = virtualinvoke v0.<io.netty.util.concurrent.SingleThreadEventExecutor: boolean inEventLoop()>();
+if v2 != 0 goto label1;
+v3 = new java.lang.AssertionError;
+specialinvoke v3.<java.lang.AssertionError: void <init>()>();
+throw v3;
+label1:
+v4 = v0.<io.netty.util.concurrent.SingleThreadEventExecutor: java.util.Queue taskQueue>;
+v5 = interfaceinvoke v4.<java.util.Queue: java.lang.Object peek()>();
+return v5;
+}
+protected boolean hasTasks()
+{
+io.netty.util.concurrent.SingleThreadEventExecutor v0;
+java.lang.AssertionError v3;
+java.util.Queue v4;
+boolean v1, v2, v5, v6;
+v0 := @this: io.netty.util.concurrent.SingleThreadEventExecutor;
+v1 = <io.netty.util.concurrent.SingleThreadEventExecutor: boolean $assertionsDisabled>;
+if v1 != 0 goto label1;
+v2 = virtualinvoke v0.<io.netty.util.concurrent.SingleThreadEventExecutor: boolean inEventLoop()>();
+if v2 != 0 goto label1;
+v3 = new java.lang.AssertionError;
+specialinvoke v3.<java.lang.AssertionError: void <init>()>();
+throw v3;
+label1:
+v4 = v0.<io.netty.util.concurrent.SingleThreadEventExecutor: java.util.Queue taskQueue>;
+v5 = interfaceinvoke v4.<java.util.Queue: boolean isEmpty()>();
+if v5 != 0 goto label2;
+v6 = 1;
+goto label3;
+label2:
+v6 = 0;
+label3:
+return v6;
+}
+public int pendingTasks()
+{
+int v2;
+java.util.Queue v1;
+io.netty.util.concurrent.SingleThreadEventExecutor v0;
+v0 := @this: io.netty.util.concurrent.SingleThreadEventExecutor;
+v1 = v0.<io.netty.util.concurrent.SingleThreadEventExecutor: java.util.Queue taskQueue>;
+v2 = interfaceinvoke v1.<java.util.Queue: int size()>();
+return v2;
+}
+protected void addTask(java.lang.Runnable)
+{
+io.netty.util.concurrent.SingleThreadEventExecutor v0;
+java.lang.Runnable v1;
+boolean v2;
+v0 := @this: io.netty.util.concurrent.SingleThreadEventExecutor;
+v1 := @parameter0: java.lang.Runnable;
+staticinvoke <io.netty.util.internal.ObjectUtil: java.lang.Object checkNotNull(java.lang.Object,java.lang.String)>(v1, "task");
+v2 = virtualinvoke v0.<io.netty.util.concurrent.SingleThreadEventExecutor: boolean offerTask(java.lang.Runnable)>(v1);
+if v2 != 0 goto label1;
+virtualinvoke v0.<io.netty.util.concurrent.SingleThreadEventExecutor: void reject(java.lang.Runnable)>(v1);
+label1:
+return;
+}
+final boolean offerTask(java.lang.Runnable)
+{
+io.netty.util.concurrent.SingleThreadEventExecutor v0;
+java.util.Queue v3;
+java.lang.Runnable v1;
+boolean v2, v4;
+v0 := @this: io.netty.util.concurrent.SingleThreadEventExecutor;
+v1 := @parameter0: java.lang.Runnable;
+v2 = virtualinvoke v0.<io.netty.util.concurrent.SingleThreadEventExecutor: boolean isShutdown()>();
+if v2 == 0 goto label1;
+staticinvoke <io.netty.util.concurrent.SingleThreadEventExecutor: void reject()>();
+label1:
+v3 = v0.<io.netty.util.concurrent.SingleThreadEventExecutor: java.util.Queue taskQueue>;
+v4 = interfaceinvoke v3.<java.util.Queue: boolean offer(java.lang.Object)>(v1);
+return v4;
+}
+protected boolean removeTask(java.lang.Runnable)
+{
+io.netty.util.concurrent.SingleThreadEventExecutor v0;
+java.lang.Object v3;
+java.util.Queue v2;
+java.lang.Runnable v1;
+boolean v4;
+v0 := @this: io.netty.util.concurrent.SingleThreadEventExecutor;
+v1 := @parameter0: java.lang.Runnable;
+v2 = v0.<io.netty.util.concurrent.SingleThreadEventExecutor: java.util.Queue taskQueue>;
+v3 = staticinvoke <io.netty.util.internal.ObjectUtil: java.lang.Object checkNotNull(java.lang.Object,java.lang.String)>(v1, "task");
+v4 = interfaceinvoke v2.<java.util.Queue: boolean remove(java.lang.Object)>(v3);
+return v4;
+}
+protected boolean runAllTasks()
+{
+io.netty.util.concurrent.SingleThreadEventExecutor v0;
+long v8;
+java.lang.AssertionError v3;
+java.util.Queue v6;
+boolean v1, v2, v4, v5, v7;
+v0 := @this: io.netty.util.concurrent.SingleThreadEventExecutor;
+v1 = <io.netty.util.concurrent.SingleThreadEventExecutor: boolean $assertionsDisabled>;
+if v1 != 0 goto label1;
+v2 = virtualinvoke v0.<io.netty.util.concurrent.SingleThreadEventExecutor: boolean inEventLoop()>();
+if v2 != 0 goto label1;
+v3 = new java.lang.AssertionError;
+specialinvoke v3.<java.lang.AssertionError: void <init>()>();
+throw v3;
+label1:
+v4 = 0;
+label2:
+v5 = specialinvoke v0.<io.netty.util.concurrent.SingleThreadEventExecutor: boolean fetchFromScheduledTaskQueue()>();
+v6 = v0.<io.netty.util.concurrent.SingleThreadEventExecutor: java.util.Queue taskQueue>;
+v7 = virtualinvoke v0.<io.netty.util.concurrent.SingleThreadEventExecutor: boolean runAllTasksFrom(java.util.Queue)>(v6);
+if v7 == 0 goto label3;
+v4 = 1;
+label3:
+if v5 == 0 goto label2;
+if v4 == 0 goto label4;
+v8 = virtualinvoke v0.<io.netty.util.concurrent.SingleThreadEventExecutor: long getCurrentTimeNanos()>();
+v0.<io.netty.util.concurrent.SingleThreadEventExecutor: long lastExecutionTime> = v8;
+label4:
+virtualinvoke v0.<io.netty.util.concurrent.SingleThreadEventExecutor: void afterRunningAllTasks()>();
+return v4;
+}
+protected final boolean runScheduledAndExecutorTasks(int)
+{
+io.netty.util.concurrent.SingleThreadEventExecutor v0;
+long v10;
+java.lang.AssertionError v4;
+int v1, v5;
+java.util.Queue v6;
+boolean v11, v2, v3, v7, v8, v9;
+v0 := @this: io.netty.util.concurrent.SingleThreadEventExecutor;
+v1 := @parameter0: int;
+v2 = <io.netty.util.concurrent.SingleThreadEventExecutor: boolean $assertionsDisabled>;
+if v2 != 0 goto label1;
+v3 = virtualinvoke v0.<io.netty.util.concurrent.SingleThreadEventExecutor: boolean inEventLoop()>();
+if v3 != 0 goto label1;
+v4 = new java.lang.AssertionError;
+specialinvoke v4.<java.lang.AssertionError: void <init>()>();
+throw v4;
+label1:
+v5 = 0;
+label2:
+v6 = v0.<io.netty.util.concurrent.SingleThreadEventExecutor: java.util.Queue taskQueue>;
+v7 = specialinvoke v0.<io.netty.util.concurrent.SingleThreadEventExecutor: boolean runExistingTasksFrom(java.util.Queue)>(v6);
+v8 = specialinvoke v0.<io.netty.util.concurrent.SingleThreadEventExecutor: boolean executeExpiredScheduledTasks()>();
+v9 = v7 | v8;
+if v9 == 0 goto label3;
+v5 = v5 + 1;
+if v5 < v1 goto label2;
+label3:
+if v5 <= 0 goto label4;
+v10 = virtualinvoke v0.<io.netty.util.concurrent.SingleThreadEventExecutor: long getCurrentTimeNanos()>();
+v0.<io.netty.util.concurrent.SingleThreadEventExecutor: long lastExecutionTime> = v10;
+label4:
+virtualinvoke v0.<io.netty.util.concurrent.SingleThreadEventExecutor: void afterRunningAllTasks()>();
+if v5 <= 0 goto label5;
+v11 = 1;
+goto label6;
+label5:
+v11 = 0;
+label6:
+return v11;
+}
+protected final boolean runAllTasksFrom(java.util.Queue)
+{
+java.util.Queue v1;
+io.netty.util.concurrent.SingleThreadEventExecutor v0;
+java.lang.Runnable v2;
+v0 := @this: io.netty.util.concurrent.SingleThreadEventExecutor;
+v1 := @parameter0: java.util.Queue;
+v2 = staticinvoke <io.netty.util.concurrent.SingleThreadEventExecutor: java.lang.Runnable pollTaskFrom(java.util.Queue)>(v1);
+if v2 != null goto label1;
+return 0;
+label1:
+staticinvoke <io.netty.util.concurrent.SingleThreadEventExecutor: void safeExecute(java.lang.Runnable)>(v2);
+v2 = staticinvoke <io.netty.util.concurrent.SingleThreadEventExecutor: java.lang.Runnable pollTaskFrom(java.util.Queue)>(v1);
+if v2 != null goto label1;
+return 1;
+}
+private boolean runExistingTasksFrom(java.util.Queue)
+{
+io.netty.util.concurrent.SingleThreadEventExecutor v0;
+java.lang.Runnable v2;
+int v3, v4, v5, v6;
+java.lang.Object v7;
+java.util.Queue v1;
+v0 := @this: io.netty.util.concurrent.SingleThreadEventExecutor;
+v1 := @parameter0: java.util.Queue;
+v2 = staticinvoke <io.netty.util.concurrent.SingleThreadEventExecutor: java.lang.Runnable pollTaskFrom(java.util.Queue)>(v1);
+if v2 != null goto label1;
+return 0;
+label1:
+v3 = v0.<io.netty.util.concurrent.SingleThreadEventExecutor: int maxPendingTasks>;
+v4 = interfaceinvoke v1.<java.util.Queue: int size()>();
+v5 = staticinvoke <java.lang.Math: int min(int,int)>(v3, v4);
+staticinvoke <io.netty.util.concurrent.SingleThreadEventExecutor: void safeExecute(java.lang.Runnable)>(v2);
+label2:
+v6 = v5;
+v5 = v5 - 1;
+if v6 <= 0 goto label3;
+v7 = interfaceinvoke v1.<java.util.Queue: java.lang.Object poll()>();
+if v7 == null goto label3;
+staticinvoke <io.netty.util.concurrent.SingleThreadEventExecutor: void safeExecute(java.lang.Runnable)>(v7);
+goto label2;
+label3:
+return 1;
+}
+protected boolean runAllTasks(long)
+{
+io.netty.util.concurrent.SingleThreadEventExecutor v0;
+long v1, v10, v4, v5, v6, v7, v8;
+java.lang.Runnable v2;
+byte v11, v3, v9;
+v0 := @this: io.netty.util.concurrent.SingleThreadEventExecutor;
+v1 := @parameter0: long;
+specialinvoke v0.<io.netty.util.concurrent.SingleThreadEventExecutor: boolean fetchFromScheduledTaskQueue()>();
+v2 = virtualinvoke v0.<io.netty.util.concurrent.SingleThreadEventExecutor: java.lang.Runnable pollTask()>();
+if v2 != null goto label1;
+virtualinvoke v0.<io.netty.util.concurrent.SingleThreadEventExecutor: void afterRunningAllTasks()>();
+return 0;
+label1:
+v3 = v1 cmp 0L;
+if v3 <= 0 goto label2;
+v4 = virtualinvoke v0.<io.netty.util.concurrent.SingleThreadEventExecutor: long getCurrentTimeNanos()>();
+v5 = v4 + v1;
+goto label3;
+label2:
+v5 = 0L;
+label3:
+v6 = v5;
+v7 = 0L;
+label4:
+staticinvoke <io.netty.util.concurrent.SingleThreadEventExecutor: void safeExecute(java.lang.Runnable)>(v2);
+v7 = v7 + 1L;
+v8 = v7 & 63L;
+v9 = v8 cmp 0L;
+if v9 != 0 goto label5;
+v10 = virtualinvoke v0.<io.netty.util.concurrent.SingleThreadEventExecutor: long getCurrentTimeNanos()>();
+v11 = v10 cmp v6;
+if v11 >= 0 goto label6;
+label5:
+v2 = virtualinvoke v0.<io.netty.util.concurrent.SingleThreadEventExecutor: java.lang.Runnable pollTask()>();
+if v2 != null goto label4;
+v10 = virtualinvoke v0.<io.netty.util.concurrent.SingleThreadEventExecutor: long getCurrentTimeNanos()>();
+label6:
+virtualinvoke v0.<io.netty.util.concurrent.SingleThreadEventExecutor: void afterRunningAllTasks()>();
+v0.<io.netty.util.concurrent.SingleThreadEventExecutor: long lastExecutionTime> = v10;
+return 1;
+}
+protected void afterRunningAllTasks()
+{
+io.netty.util.concurrent.SingleThreadEventExecutor v0;
+v0 := @this: io.netty.util.concurrent.SingleThreadEventExecutor;
+return;
+}
+protected long delayNanos(long)
+{
+io.netty.util.concurrent.ScheduledFutureTask v4;
+io.netty.util.concurrent.SingleThreadEventExecutor v0;
+long v1, v2, v3, v5, v6;
+v0 := @this: io.netty.util.concurrent.SingleThreadEventExecutor;
+v1 := @parameter0: long;
+v2 = staticinvoke <io.netty.util.concurrent.SingleThreadEventExecutor: long initialNanoTime()>();
+v3 = v1 - v2;
+v4 = virtualinvoke v0.<io.netty.util.concurrent.SingleThreadEventExecutor: io.netty.util.concurrent.ScheduledFutureTask peekScheduledTask()>();
+if v4 != null goto label1;
+v5 = <io.netty.util.concurrent.SingleThreadEventExecutor: long SCHEDULE_PURGE_INTERVAL>;
+return v5;
+label1:
+v6 = virtualinvoke v4.<io.netty.util.concurrent.ScheduledFutureTask: long delayNanos(long)>(v3);
+return v6;
+}
+protected long deadlineNanos()
+{
+io.netty.util.concurrent.ScheduledFutureTask v1;
+io.netty.util.concurrent.SingleThreadEventExecutor v0;
+long v2, v3, v4, v5;
+v0 := @this: io.netty.util.concurrent.SingleThreadEventExecutor;
+v1 = virtualinvoke v0.<io.netty.util.concurrent.SingleThreadEventExecutor: io.netty.util.concurrent.ScheduledFutureTask peekScheduledTask()>();
+if v1 != null goto label1;
+v2 = virtualinvoke v0.<io.netty.util.concurrent.SingleThreadEventExecutor: long getCurrentTimeNanos()>();
+v3 = <io.netty.util.concurrent.SingleThreadEventExecutor: long SCHEDULE_PURGE_INTERVAL>;
+v4 = v2 + v3;
+return v4;
+label1:
+v5 = virtualinvoke v1.<io.netty.util.concurrent.ScheduledFutureTask: long deadlineNanos()>();
+return v5;
+}
+protected void updateLastExecutionTime()
+{
+long v1;
+io.netty.util.concurrent.SingleThreadEventExecutor v0;
+v0 := @this: io.netty.util.concurrent.SingleThreadEventExecutor;
+v1 = virtualinvoke v0.<io.netty.util.concurrent.SingleThreadEventExecutor: long getCurrentTimeNanos()>();
+v0.<io.netty.util.concurrent.SingleThreadEventExecutor: long lastExecutionTime> = v1;
+return;
+}
+protected abstract void run();
+protected void cleanup()
+{
+io.netty.util.concurrent.SingleThreadEventExecutor v0;
+v0 := @this: io.netty.util.concurrent.SingleThreadEventExecutor;
+return;
+}
+protected void wakeup(boolean)
+{
+io.netty.util.concurrent.SingleThreadEventExecutor v0;
+java.util.Queue v2;
+java.lang.Runnable v3;
+boolean v1;
+v0 := @this: io.netty.util.concurrent.SingleThreadEventExecutor;
+v1 := @parameter0: boolean;
+if v1 != 0 goto label1;
+v2 = v0.<io.netty.util.concurrent.SingleThreadEventExecutor: java.util.Queue taskQueue>;
+v3 = <io.netty.util.concurrent.SingleThreadEventExecutor: java.lang.Runnable WAKEUP_TASK>;
+interfaceinvoke v2.<java.util.Queue: boolean offer(java.lang.Object)>(v3);
+label1:
+return;
+}
+public boolean inEventLoop(java.lang.Thread)
+{
+io.netty.util.concurrent.SingleThreadEventExecutor v0;
+java.lang.Thread v1, v2;
+boolean v3;
+v0 := @this: io.netty.util.concurrent.SingleThreadEventExecutor;
+v1 := @parameter0: java.lang.Thread;
+v2 = v0.<io.netty.util.concurrent.SingleThreadEventExecutor: java.lang.Thread thread>;
+if v1 != v2 goto label1;
+v3 = 1;
+goto label2;
+label1:
+v3 = 0;
+label2:
+return v3;
+}
+public void addShutdownHook(java.lang.Runnable)
+{
+io.netty.util.concurrent.SingleThreadEventExecutor v0;
+io.netty.util.concurrent.SingleThreadEventExecutor$2 v4;
+java.util.Set v3;
+java.lang.Runnable v1;
+boolean v2;
+v0 := @this: io.netty.util.concurrent.SingleThreadEventExecutor;
+v1 := @parameter0: java.lang.Runnable;
+v2 = virtualinvoke v0.<io.netty.util.concurrent.SingleThreadEventExecutor: boolean inEventLoop()>();
+if v2 == 0 goto label1;
+v3 = v0.<io.netty.util.concurrent.SingleThreadEventExecutor: java.util.Set shutdownHooks>;
+interfaceinvoke v3.<java.util.Set: boolean add(java.lang.Object)>(v1);
+goto label2;
+label1:
+v4 = new io.netty.util.concurrent.SingleThreadEventExecutor$2;
+specialinvoke v4.<io.netty.util.concurrent.SingleThreadEventExecutor$2: void <init>(io.netty.util.concurrent.SingleThreadEventExecutor,java.lang.Runnable)>(v0, v1);
+virtualinvoke v0.<io.netty.util.concurrent.SingleThreadEventExecutor: void execute(java.lang.Runnable)>(v4);
+label2:
+return;
+}
+public void removeShutdownHook(java.lang.Runnable)
+{
+io.netty.util.concurrent.SingleThreadEventExecutor v0;
+io.netty.util.concurrent.SingleThreadEventExecutor$3 v4;
+java.util.Set v3;
+java.lang.Runnable v1;
+boolean v2;
+v0 := @this: io.netty.util.concurrent.SingleThreadEventExecutor;
+v1 := @parameter0: java.lang.Runnable;
+v2 = virtualinvoke v0.<io.netty.util.concurrent.SingleThreadEventExecutor: boolean inEventLoop()>();
+if v2 == 0 goto label1;
+v3 = v0.<io.netty.util.concurrent.SingleThreadEventExecutor: java.util.Set shutdownHooks>;
+interfaceinvoke v3.<java.util.Set: boolean remove(java.lang.Object)>(v1);
+goto label2;
+label1:
+v4 = new io.netty.util.concurrent.SingleThreadEventExecutor$3;
+specialinvoke v4.<io.netty.util.concurrent.SingleThreadEventExecutor$3: void <init>(io.netty.util.concurrent.SingleThreadEventExecutor,java.lang.Runnable)>(v0, v1);
+virtualinvoke v0.<io.netty.util.concurrent.SingleThreadEventExecutor: void execute(java.lang.Runnable)>(v4);
+label2:
+return;
+}
+private boolean runShutdownHooks()
+{
+java.lang.Throwable v10, v12;
+java.util.Iterator v7;
+io.netty.util.concurrent.SingleThreadEventExecutor v0;
+java.util.Set v2, v5, v6;
+long v13;
+java.util.ArrayList v4;
+io.netty.util.internal.logging.InternalLogger v11;
+java.lang.Object v9;
+boolean v1, v3, v8;
+v0 := @this: io.netty.util.concurrent.SingleThreadEventExecutor;
+v1 = 0;
+label1:
+v2 = v0.<io.netty.util.concurrent.SingleThreadEventExecutor: java.util.Set shutdownHooks>;
+v3 = interfaceinvoke v2.<java.util.Set: boolean isEmpty()>();
+if v3 != 0 goto label8;
+v4 = new java.util.ArrayList;
+v5 = v0.<io.netty.util.concurrent.SingleThreadEventExecutor: java.util.Set shutdownHooks>;
+specialinvoke v4.<java.util.ArrayList: void <init>(java.util.Collection)>(v5);
+v6 = v0.<io.netty.util.concurrent.SingleThreadEventExecutor: java.util.Set shutdownHooks>;
+interfaceinvoke v6.<java.util.Set: void clear()>();
+v7 = interfaceinvoke v4.<java.util.List: java.util.Iterator iterator()>();
+label2:
+v8 = interfaceinvoke v7.<java.util.Iterator: boolean hasNext()>();
+if v8 == 0 goto label1;
+v9 = interfaceinvoke v7.<java.util.Iterator: java.lang.Object next()>();
+label3:
+staticinvoke <io.netty.util.concurrent.SingleThreadEventExecutor: void runTask(java.lang.Runnable)>(v9);
+label4:
+v1 = 1;
+goto label2;
+label5:
+v10 := @caughtexception;
+v11 = <io.netty.util.concurrent.SingleThreadEventExecutor: io.netty.util.internal.logging.InternalLogger logger>;
+interfaceinvoke v11.<io.netty.util.internal.logging.InternalLogger: void warn(java.lang.String,java.lang.Throwable)>("Shutdown hook raised an exception.", v10);
+label6:
+v1 = 1;
+goto label2;
+label7:
+v12 := @caughtexception;
+throw v12;
+label8:
+if v1 == 0 goto label9;
+v13 = virtualinvoke v0.<io.netty.util.concurrent.SingleThreadEventExecutor: long getCurrentTimeNanos()>();
+v0.<io.netty.util.concurrent.SingleThreadEventExecutor: long lastExecutionTime> = v13;
+label9:
+return v1;
+catch java.lang.Throwable from label3 to label4 with label5;
+catch java.lang.Throwable from label5 to label6 with label7;
+}
+public io.netty.util.concurrent.Future shutdownGracefully(long, long, java.util.concurrent.TimeUnit)
+{
+java.util.concurrent.atomic.AtomicIntegerFieldUpdater v15;
+long v1, v17, v18, v2;
+java.lang.Runnable v22;
+byte v4;
+int v13, v14;
+java.lang.String v6;
+boolean v10, v12, v16, v19, v23, v7, v9;
+io.netty.util.concurrent.Promise v20;
+io.netty.util.concurrent.SingleThreadEventExecutor v0;
+java.lang.IllegalArgumentException v5;
+java.util.concurrent.TimeUnit v3;
+java.util.Queue v21;
+io.netty.util.concurrent.Future v11, v24, v8;
+v0 := @this: io.netty.util.concurrent.SingleThreadEventExecutor;
+v1 := @parameter0: long;
+v2 := @parameter1: long;
+v3 := @parameter2: java.util.concurrent.TimeUnit;
+staticinvoke <io.netty.util.internal.ObjectUtil: long checkPositiveOrZero(long,java.lang.String)>(v1, "quietPeriod");
+v4 = v2 cmp v1;
+if v4 >= 0 goto label01;
+v5 = new java.lang.IllegalArgumentException;
+v6 = dynamicinvoke "makeConcatWithConstants" <java.lang.String (long,long)>(v2, v1) <java.lang.invoke.StringConcatFactory: java.lang.invoke.CallSite makeConcatWithConstants(java.lang.invoke.MethodHandles$Lookup,java.lang.String,java.lang.invoke.MethodType,java.lang.String,java.lang.Object[])>("timeout: \u0001 (expected >= quietPeriod (\u0001))");
+specialinvoke v5.<java.lang.IllegalArgumentException: void <init>(java.lang.String)>(v6);
+throw v5;
+label01:
+staticinvoke <io.netty.util.internal.ObjectUtil: java.lang.Object checkNotNull(java.lang.Object,java.lang.String)>(v3, "unit");
+v7 = virtualinvoke v0.<io.netty.util.concurrent.SingleThreadEventExecutor: boolean isShuttingDown()>();
+if v7 == 0 goto label02;
+v8 = virtualinvoke v0.<io.netty.util.concurrent.SingleThreadEventExecutor: io.netty.util.concurrent.Future terminationFuture()>();
+return v8;
+label02:
+v9 = virtualinvoke v0.<io.netty.util.concurrent.SingleThreadEventExecutor: boolean inEventLoop()>();
+label03:
+v10 = virtualinvoke v0.<io.netty.util.concurrent.SingleThreadEventExecutor: boolean isShuttingDown()>();
+if v10 == 0 goto label04;
+v11 = virtualinvoke v0.<io.netty.util.concurrent.SingleThreadEventExecutor: io.netty.util.concurrent.Future terminationFuture()>();
+return v11;
+label04:
+v12 = 1;
+v13 = v0.<io.netty.util.concurrent.SingleThreadEventExecutor: int state>;
+if v9 == 0 goto label05;
+v14 = 3;
+goto label08;
+label05:
+lookupswitch(v13)
+{
+case 1: goto label06;
+case 2: goto label06;
+default: goto label07;
+};
+label06:
+v14 = 3;
+goto label08;
+label07:
+v14 = v13;
+v12 = 0;
+label08:
+v15 = <io.netty.util.concurrent.SingleThreadEventExecutor: java.util.concurrent.atomic.AtomicIntegerFieldUpdater STATE_UPDATER>;
+v16 = virtualinvoke v15.<java.util.concurrent.atomic.AtomicIntegerFieldUpdater: boolean compareAndSet(java.lang.Object,int,int)>(v0, v13, v14);
+if v16 == 0 goto label03;
+v17 = virtualinvoke v3.<java.util.concurrent.TimeUnit: long toNanos(long)>(v1);
+v0.<io.netty.util.concurrent.SingleThreadEventExecutor: long gracefulShutdownQuietPeriod> = v17;
+v18 = virtualinvoke v3.<java.util.concurrent.TimeUnit: long toNanos(long)>(v2);
+v0.<io.netty.util.concurrent.SingleThreadEventExecutor: long gracefulShutdownTimeout> = v18;
+v19 = specialinvoke v0.<io.netty.util.concurrent.SingleThreadEventExecutor: boolean ensureThreadStarted(int)>(v13);
+if v19 == 0 goto label09;
+v20 = v0.<io.netty.util.concurrent.SingleThreadEventExecutor: io.netty.util.concurrent.Promise terminationFuture>;
+return v20;
+label09:
+if v12 == 0 goto label10;
+v21 = v0.<io.netty.util.concurrent.SingleThreadEventExecutor: java.util.Queue taskQueue>;
+v22 = <io.netty.util.concurrent.SingleThreadEventExecutor: java.lang.Runnable WAKEUP_TASK>;
+interfaceinvoke v21.<java.util.Queue: boolean offer(java.lang.Object)>(v22);
+v23 = v0.<io.netty.util.concurrent.SingleThreadEventExecutor: boolean addTaskWakesUp>;
+if v23 != 0 goto label10;
+virtualinvoke v0.<io.netty.util.concurrent.SingleThreadEventExecutor: void wakeup(boolean)>(v9);
+label10:
+v24 = virtualinvoke v0.<io.netty.util.concurrent.SingleThreadEventExecutor: io.netty.util.concurrent.Future terminationFuture()>();
+return v24;
+}
+public io.netty.util.concurrent.Future terminationFuture()
+{
+io.netty.util.concurrent.Promise v1;
+io.netty.util.concurrent.SingleThreadEventExecutor v0;
+v0 := @this: io.netty.util.concurrent.SingleThreadEventExecutor;
+v1 = v0.<io.netty.util.concurrent.SingleThreadEventExecutor: io.netty.util.concurrent.Promise terminationFuture>;
+return v1;
+}
+public void shutdown()
+{
+java.util.concurrent.atomic.AtomicIntegerFieldUpdater v7;
+io.netty.util.concurrent.SingleThreadEventExecutor v0;
+java.lang.Runnable v11;
+int v5, v6;
+java.util.Queue v10;
+boolean v1, v12, v2, v3, v4, v8, v9;
+v0 := @this: io.netty.util.concurrent.SingleThreadEventExecutor;
+v1 = virtualinvoke v0.<io.netty.util.concurrent.SingleThreadEventExecutor: boolean isShutdown()>();
+if v1 == 0 goto label1;
+return;
+label1:
+v2 = virtualinvoke v0.<io.netty.util.concurrent.SingleThreadEventExecutor: boolean inEventLoop()>();
+label2:
+v3 = virtualinvoke v0.<io.netty.util.concurrent.SingleThreadEventExecutor: boolean isShuttingDown()>();
+if v3 == 0 goto label3;
+return;
+label3:
+v4 = 1;
+v5 = v0.<io.netty.util.concurrent.SingleThreadEventExecutor: int state>;
+if v2 == 0 goto label4;
+v6 = 4;
+goto label7;
+label4:
+tableswitch(v5)
+{
+case 1: goto label5;
+case 2: goto label5;
+case 3: goto label5;
+default: goto label6;
+};
+label5:
+v6 = 4;
+goto label7;
+label6:
+v6 = v5;
+v4 = 0;
+label7:
+v7 = <io.netty.util.concurrent.SingleThreadEventExecutor: java.util.concurrent.atomic.AtomicIntegerFieldUpdater STATE_UPDATER>;
+v8 = virtualinvoke v7.<java.util.concurrent.atomic.AtomicIntegerFieldUpdater: boolean compareAndSet(java.lang.Object,int,int)>(v0, v5, v6);
+if v8 == 0 goto label2;
+v9 = specialinvoke v0.<io.netty.util.concurrent.SingleThreadEventExecutor: boolean ensureThreadStarted(int)>(v5);
+if v9 == 0 goto label8;
+return;
+label8:
+if v4 == 0 goto label9;
+v10 = v0.<io.netty.util.concurrent.SingleThreadEventExecutor: java.util.Queue taskQueue>;
+v11 = <io.netty.util.concurrent.SingleThreadEventExecutor: java.lang.Runnable WAKEUP_TASK>;
+interfaceinvoke v10.<java.util.Queue: boolean offer(java.lang.Object)>(v11);
+v12 = v0.<io.netty.util.concurrent.SingleThreadEventExecutor: boolean addTaskWakesUp>;
+if v12 != 0 goto label9;
+virtualinvoke v0.<io.netty.util.concurrent.SingleThreadEventExecutor: void wakeup(boolean)>(v2);
+label9:
+return;
+}
+public boolean isShuttingDown()
+{
+int v1;
+io.netty.util.concurrent.SingleThreadEventExecutor v0;
+boolean v2;
+v0 := @this: io.netty.util.concurrent.SingleThreadEventExecutor;
+v1 = v0.<io.netty.util.concurrent.SingleThreadEventExecutor: int state>;
+if v1 < 3 goto label1;
+v2 = 1;
+goto label2;
+label1:
+v2 = 0;
+label2:
+return v2;
+}
+public boolean isShutdown()
+{
+int v1;
+io.netty.util.concurrent.SingleThreadEventExecutor v0;
+boolean v2;
+v0 := @this: io.netty.util.concurrent.SingleThreadEventExecutor;
+v1 = v0.<io.netty.util.concurrent.SingleThreadEventExecutor: int state>;
+if v1 < 4 goto label1;
+v2 = 1;
+goto label2;
+label1:
+v2 = 0;
+label2:
+return v2;
+}
+public boolean isTerminated()
+{
+int v1;
+io.netty.util.concurrent.SingleThreadEventExecutor v0;
+boolean v2;
+v0 := @this: io.netty.util.concurrent.SingleThreadEventExecutor;
+v1 = v0.<io.netty.util.concurrent.SingleThreadEventExecutor: int state>;
+if v1 != 5 goto label1;
+v2 = 1;
+goto label2;
+label1:
+v2 = 0;
+label2:
+return v2;
+}
+protected boolean confirmShutdown()
+{
+java.lang.IllegalStateException v3;
+long v10, v14, v16, v17, v18, v20, v21, v22, v4, v6;
+java.lang.Runnable v13, v25;
+byte v11, v19, v23, v5;
+boolean v1, v15, v2, v7, v8, v9;
+io.netty.util.concurrent.SingleThreadEventExecutor v0;
+java.lang.InterruptedException v26;
+java.util.Queue v12, v24;
+v0 := @this: io.netty.util.concurrent.SingleThreadEventExecutor;
+v1 = virtualinvoke v0.<io.netty.util.concurrent.SingleThreadEventExecutor: boolean isShuttingDown()>();
+if v1 != 0 goto label01;
+return 0;
+label01:
+v2 = virtualinvoke v0.<io.netty.util.concurrent.SingleThreadEventExecutor: boolean inEventLoop()>();
+if v2 != 0 goto label02;
+v3 = new java.lang.IllegalStateException;
+specialinvoke v3.<java.lang.IllegalStateException: void <init>(java.lang.String)>("must be invoked from an event loop");
+throw v3;
+label02:
+virtualinvoke v0.<io.netty.util.concurrent.SingleThreadEventExecutor: void cancelScheduledTasks()>();
+v4 = v0.<io.netty.util.concurrent.SingleThreadEventExecutor: long gracefulShutdownStartTime>;
+v5 = v4 cmp 0L;
+if v5 != 0 goto label03;
+v6 = virtualinvoke v0.<io.netty.util.concurrent.SingleThreadEventExecutor: long getCurrentTimeNanos()>();
+v0.<io.netty.util.concurrent.SingleThreadEventExecutor: long gracefulShutdownStartTime> = v6;
+label03:
+v7 = virtualinvoke v0.<io.netty.util.concurrent.SingleThreadEventExecutor: boolean runAllTasks()>();
+if v7 != 0 goto label04;
+v8 = specialinvoke v0.<io.netty.util.concurrent.SingleThreadEventExecutor: boolean runShutdownHooks()>();
+if v8 == 0 goto label07;
+label04:
+v9 = virtualinvoke v0.<io.netty.util.concurrent.SingleThreadEventExecutor: boolean isShutdown()>();
+if v9 == 0 goto label05;
+return 1;
+label05:
+v10 = v0.<io.netty.util.concurrent.SingleThreadEventExecutor: long gracefulShutdownQuietPeriod>;
+v11 = v10 cmp 0L;
+if v11 != 0 goto label06;
+return 1;
+label06:
+v12 = v0.<io.netty.util.concurrent.SingleThreadEventExecutor: java.util.Queue taskQueue>;
+v13 = <io.netty.util.concurrent.SingleThreadEventExecutor: java.lang.Runnable WAKEUP_TASK>;
+interfaceinvoke v12.<java.util.Queue: boolean offer(java.lang.Object)>(v13);
+return 0;
+label07:
+v14 = virtualinvoke v0.<io.netty.util.concurrent.SingleThreadEventExecutor: long getCurrentTimeNanos()>();
+v15 = virtualinvoke v0.<io.netty.util.concurrent.SingleThreadEventExecutor: boolean isShutdown()>();
+if v15 != 0 goto label08;
+v16 = v0.<io.netty.util.concurrent.SingleThreadEventExecutor: long gracefulShutdownStartTime>;
+v17 = v14 - v16;
+v18 = v0.<io.netty.util.concurrent.SingleThreadEventExecutor: long gracefulShutdownTimeout>;
+v19 = v17 cmp v18;
+if v19 <= 0 goto label09;
+label08:
+return 1;
+label09:
+v20 = v0.<io.netty.util.concurrent.SingleThreadEventExecutor: long lastExecutionTime>;
+v21 = v14 - v20;
+v22 = v0.<io.netty.util.concurrent.SingleThreadEventExecutor: long gracefulShutdownQuietPeriod>;
+v23 = v21 cmp v22;
+if v23 > 0 goto label14;
+v24 = v0.<io.netty.util.concurrent.SingleThreadEventExecutor: java.util.Queue taskQueue>;
+v25 = <io.netty.util.concurrent.SingleThreadEventExecutor: java.lang.Runnable WAKEUP_TASK>;
+interfaceinvoke v24.<java.util.Queue: boolean offer(java.lang.Object)>(v25);
+label10:
+staticinvoke <java.lang.Thread: void sleep(long)>(100L);
+label11:
+goto label13;
+label12:
+v26 := @caughtexception;
+label13:
+return 0;
+label14:
+return 1;
+catch java.lang.InterruptedException from label10 to label11 with label12;
+}
+public boolean awaitTermination(long, java.util.concurrent.TimeUnit) throws java.lang.InterruptedException
+{
+java.util.concurrent.TimeUnit v2;
+java.lang.IllegalStateException v4;
+java.util.concurrent.CountDownLatch v5;
+io.netty.util.concurrent.SingleThreadEventExecutor v0;
+long v1;
+boolean v3, v6;
+v0 := @this: io.netty.util.concurrent.SingleThreadEventExecutor;
+v1 := @parameter0: long;
+v2 := @parameter1: java.util.concurrent.TimeUnit;
+staticinvoke <io.netty.util.internal.ObjectUtil: java.lang.Object checkNotNull(java.lang.Object,java.lang.String)>(v2, "unit");
+v3 = virtualinvoke v0.<io.netty.util.concurrent.SingleThreadEventExecutor: boolean inEventLoop()>();
+if v3 == 0 goto label1;
+v4 = new java.lang.IllegalStateException;
+specialinvoke v4.<java.lang.IllegalStateException: void <init>(java.lang.String)>("cannot await termination of the current thread");
+throw v4;
+label1:
+v5 = v0.<io.netty.util.concurrent.SingleThreadEventExecutor: java.util.concurrent.CountDownLatch threadLock>;
+virtualinvoke v5.<java.util.concurrent.CountDownLatch: boolean await(long,java.util.concurrent.TimeUnit)>(v1, v2);
+v6 = virtualinvoke v0.<io.netty.util.concurrent.SingleThreadEventExecutor: boolean isTerminated()>();
+return v6;
+}
+public void execute(java.lang.Runnable)
+{
+io.netty.util.concurrent.SingleThreadEventExecutor v0;
+java.lang.Runnable v1;
+v0 := @this: io.netty.util.concurrent.SingleThreadEventExecutor;
+v1 := @parameter0: java.lang.Runnable;
+specialinvoke v0.<io.netty.util.concurrent.SingleThreadEventExecutor: void execute0(java.lang.Runnable)>(v1);
+return;
+}
+public void lazyExecute(java.lang.Runnable)
+{
+io.netty.util.concurrent.SingleThreadEventExecutor v0;
+java.lang.Runnable v1;
+v0 := @this: io.netty.util.concurrent.SingleThreadEventExecutor;
+v1 := @parameter0: java.lang.Runnable;
+specialinvoke v0.<io.netty.util.concurrent.SingleThreadEventExecutor: void lazyExecute0(java.lang.Runnable)>(v1);
+return;
+}
+private void execute0(java.lang.Runnable)
+{
+io.netty.util.concurrent.SingleThreadEventExecutor v0;
+java.lang.Runnable v1;
+boolean v2;
+v0 := @this: io.netty.util.concurrent.SingleThreadEventExecutor;
+v1 := @parameter0: java.lang.Runnable;
+staticinvoke <io.netty.util.internal.ObjectUtil: java.lang.Object checkNotNull(java.lang.Object,java.lang.String)>(v1, "task");
+v2 = virtualinvoke v0.<io.netty.util.concurrent.SingleThreadEventExecutor: boolean wakesUpForTask(java.lang.Runnable)>(v1);
+specialinvoke v0.<io.netty.util.concurrent.SingleThreadEventExecutor: void execute(java.lang.Runnable,boolean)>(v1, v2);
+return;
+}
+private void lazyExecute0(java.lang.Runnable)
+{
+java.lang.Object v2;
+io.netty.util.concurrent.SingleThreadEventExecutor v0;
+java.lang.Runnable v1;
+v0 := @this: io.netty.util.concurrent.SingleThreadEventExecutor;
+v1 := @parameter0: java.lang.Runnable;
+v2 = staticinvoke <io.netty.util.internal.ObjectUtil: java.lang.Object checkNotNull(java.lang.Object,java.lang.String)>(v1, "task");
+specialinvoke v0.<io.netty.util.concurrent.SingleThreadEventExecutor: void execute(java.lang.Runnable,boolean)>(v2, 0);
+return;
+}
+private void execute(java.lang.Runnable, boolean)
+{
+java.lang.UnsupportedOperationException v7;
+io.netty.util.concurrent.SingleThreadEventExecutor v0;
+java.lang.Runnable v1;
+boolean v2, v3, v4, v5, v6, v8;
+v0 := @this: io.netty.util.concurrent.SingleThreadEventExecutor;
+v1 := @parameter0: java.lang.Runnable;
+v2 := @parameter1: boolean;
+v3 = virtualinvoke v0.<io.netty.util.concurrent.SingleThreadEventExecutor: boolean inEventLoop()>();
+virtualinvoke v0.<io.netty.util.concurrent.SingleThreadEventExecutor: void addTask(java.lang.Runnable)>(v1);
+if v3 != 0 goto label5;
+specialinvoke v0.<io.netty.util.concurrent.SingleThreadEventExecutor: void startThread()>();
+v4 = virtualinvoke v0.<io.netty.util.concurrent.SingleThreadEventExecutor: boolean isShutdown()>();
+if v4 == 0 goto label5;
+v5 = 0;
+label1:
+v6 = virtualinvoke v0.<io.netty.util.concurrent.SingleThreadEventExecutor: boolean removeTask(java.lang.Runnable)>(v1);
+if v6 == 0 goto label4;
+v5 = 1;
+label2:
+goto label4;
+label3:
+v7 := @caughtexception;
+label4:
+if v5 == 0 goto label5;
+staticinvoke <io.netty.util.concurrent.SingleThreadEventExecutor: void reject()>();
+label5:
+v8 = v0.<io.netty.util.concurrent.SingleThreadEventExecutor: boolean addTaskWakesUp>;
+if v8 != 0 goto label6;
+if v2 == 0 goto label6;
+virtualinvoke v0.<io.netty.util.concurrent.SingleThreadEventExecutor: void wakeup(boolean)>(v3);
+label6:
+return;
+catch java.lang.UnsupportedOperationException from label1 to label2 with label3;
+}
+public java.lang.Object invokeAny(java.util.Collection) throws java.lang.InterruptedException, java.util.concurrent.ExecutionException
+{
+java.lang.Object v2;
+io.netty.util.concurrent.SingleThreadEventExecutor v0;
+java.util.Collection v1;
+v0 := @this: io.netty.util.concurrent.SingleThreadEventExecutor;
+v1 := @parameter0: java.util.Collection;
+specialinvoke v0.<io.netty.util.concurrent.SingleThreadEventExecutor: void throwIfInEventLoop(java.lang.String)>("invokeAny");
+v2 = specialinvoke v0.<io.netty.util.concurrent.AbstractScheduledEventExecutor: java.lang.Object invokeAny(java.util.Collection)>(v1);
+return v2;
+}
+public java.lang.Object invokeAny(java.util.Collection, long, java.util.concurrent.TimeUnit) throws java.lang.InterruptedException, java.util.concurrent.ExecutionException, java.util.concurrent.TimeoutException
+{
+java.util.concurrent.TimeUnit v3;
+io.netty.util.concurrent.SingleThreadEventExecutor v0;
+java.util.Collection v1;
+java.lang.Object v4;
+long v2;
+v0 := @this: io.netty.util.concurrent.SingleThreadEventExecutor;
+v1 := @parameter0: java.util.Collection;
+v2 := @parameter1: long;
+v3 := @parameter2: java.util.concurrent.TimeUnit;
+specialinvoke v0.<io.netty.util.concurrent.SingleThreadEventExecutor: void throwIfInEventLoop(java.lang.String)>("invokeAny");
+v4 = specialinvoke v0.<io.netty.util.concurrent.AbstractScheduledEventExecutor: java.lang.Object invokeAny(java.util.Collection,long,java.util.concurrent.TimeUnit)>(v1, v2, v3);
+return v4;
+}
+public java.util.List invokeAll(java.util.Collection) throws java.lang.InterruptedException
+{
+java.util.List v2;
+io.netty.util.concurrent.SingleThreadEventExecutor v0;
+java.util.Collection v1;
+v0 := @this: io.netty.util.concurrent.SingleThreadEventExecutor;
+v1 := @parameter0: java.util.Collection;
+specialinvoke v0.<io.netty.util.concurrent.SingleThreadEventExecutor: void throwIfInEventLoop(java.lang.String)>("invokeAll");
+v2 = specialinvoke v0.<io.netty.util.concurrent.AbstractScheduledEventExecutor: java.util.List invokeAll(java.util.Collection)>(v1);
+return v2;
+}
+public java.util.List invokeAll(java.util.Collection, long, java.util.concurrent.TimeUnit) throws java.lang.InterruptedException
+{
+java.util.concurrent.TimeUnit v3;
+java.util.List v4;
+io.netty.util.concurrent.SingleThreadEventExecutor v0;
+java.util.Collection v1;
+long v2;
+v0 := @this: io.netty.util.concurrent.SingleThreadEventExecutor;
+v1 := @parameter0: java.util.Collection;
+v2 := @parameter1: long;
+v3 := @parameter2: java.util.concurrent.TimeUnit;
+specialinvoke v0.<io.netty.util.concurrent.SingleThreadEventExecutor: void throwIfInEventLoop(java.lang.String)>("invokeAll");
+v4 = specialinvoke v0.<io.netty.util.concurrent.AbstractScheduledEventExecutor: java.util.List invokeAll(java.util.Collection,long,java.util.concurrent.TimeUnit)>(v1, v2, v3);
+return v4;
+}
+private void throwIfInEventLoop(java.lang.String)
+{
+java.util.concurrent.RejectedExecutionException v3;
+io.netty.util.concurrent.SingleThreadEventExecutor v0;
+java.lang.String v1, v4;
+boolean v2;
+v0 := @this: io.netty.util.concurrent.SingleThreadEventExecutor;
+v1 := @parameter0: java.lang.String;
+v2 = virtualinvoke v0.<io.netty.util.concurrent.SingleThreadEventExecutor: boolean inEventLoop()>();
+if v2 == 0 goto label1;
+v3 = new java.util.concurrent.RejectedExecutionException;
+v4 = dynamicinvoke "makeConcatWithConstants" <java.lang.String (java.lang.String)>(v1) <java.lang.invoke.StringConcatFactory: java.lang.invoke.CallSite makeConcatWithConstants(java.lang.invoke.MethodHandles$Lookup,java.lang.String,java.lang.invoke.MethodType,java.lang.String,java.lang.Object[])>("Calling \u0001 from within the EventLoop is not allowed");
+specialinvoke v3.<java.util.concurrent.RejectedExecutionException: void <init>(java.lang.String)>(v4);
+throw v3;
+label1:
+return;
+}
+public final io.netty.util.concurrent.ThreadProperties threadProperties()
+{
+io.netty.util.concurrent.SingleThreadEventExecutor v0;
+java.util.concurrent.atomic.AtomicReferenceFieldUpdater v11;
+java.lang.AssertionError v5, v9;
+java.lang.Runnable v6;
+io.netty.util.concurrent.SingleThreadEventExecutor$DefaultThreadProperties v10;
+java.lang.Thread v2;
+io.netty.util.concurrent.Future v7;
+io.netty.util.concurrent.ThreadProperties v1;
+boolean v12, v3, v4, v8;
+v0 := @this: io.netty.util.concurrent.SingleThreadEventExecutor;
+v1 = v0.<io.netty.util.concurrent.SingleThreadEventExecutor: io.netty.util.concurrent.ThreadProperties threadProperties>;
+if v1 != null goto label3;
+v2 = v0.<io.netty.util.concurrent.SingleThreadEventExecutor: java.lang.Thread thread>;
+if v2 != null goto label2;
+v3 = <io.netty.util.concurrent.SingleThreadEventExecutor: boolean $assertionsDisabled>;
+if v3 != 0 goto label1;
+v4 = virtualinvoke v0.<io.netty.util.concurrent.SingleThreadEventExecutor: boolean inEventLoop()>();
+if v4 == 0 goto label1;
+v5 = new java.lang.AssertionError;
+specialinvoke v5.<java.lang.AssertionError: void <init>()>();
+throw v5;
+label1:
+v6 = <io.netty.util.concurrent.SingleThreadEventExecutor: java.lang.Runnable NOOP_TASK>;
+v7 = virtualinvoke v0.<io.netty.util.concurrent.SingleThreadEventExecutor: io.netty.util.concurrent.Future submit(java.lang.Runnable)>(v6);
+interfaceinvoke v7.<io.netty.util.concurrent.Future: io.netty.util.concurrent.Future syncUninterruptibly()>();
+v2 = v0.<io.netty.util.concurrent.SingleThreadEventExecutor: java.lang.Thread thread>;
+v8 = <io.netty.util.concurrent.SingleThreadEventExecutor: boolean $assertionsDisabled>;
+if v8 != 0 goto label2;
+if v2 != null goto label2;
+v9 = new java.lang.AssertionError;
+specialinvoke v9.<java.lang.AssertionError: void <init>()>();
+throw v9;
+label2:
+v10 = new io.netty.util.concurrent.SingleThreadEventExecutor$DefaultThreadProperties;
+specialinvoke v10.<io.netty.util.concurrent.SingleThreadEventExecutor$DefaultThreadProperties: void <init>(java.lang.Thread)>(v2);
+v1 = v10;
+v11 = <io.netty.util.concurrent.SingleThreadEventExecutor: java.util.concurrent.atomic.AtomicReferenceFieldUpdater PROPERTIES_UPDATER>;
+v12 = virtualinvoke v11.<java.util.concurrent.atomic.AtomicReferenceFieldUpdater: boolean compareAndSet(java.lang.Object,java.lang.Object,java.lang.Object)>(v0, null, v10);
+if v12 != 0 goto label3;
+v1 = v0.<io.netty.util.concurrent.SingleThreadEventExecutor: io.netty.util.concurrent.ThreadProperties threadProperties>;
+label3:
+return v1;
+}
+protected boolean wakesUpForTask(java.lang.Runnable)
+{
+io.netty.util.concurrent.SingleThreadEventExecutor v0;
+java.lang.Runnable v1;
+v0 := @this: io.netty.util.concurrent.SingleThreadEventExecutor;
+v1 := @parameter0: java.lang.Runnable;
+return 1;
+}
+protected static void reject()
+{
+java.util.concurrent.RejectedExecutionException v0;
+v0 = new java.util.concurrent.RejectedExecutionException;
+specialinvoke v0.<java.util.concurrent.RejectedExecutionException: void <init>(java.lang.String)>("event executor terminated");
+throw v0;
+}
+protected final void reject(java.lang.Runnable)
+{
+io.netty.util.concurrent.RejectedExecutionHandler v2;
+io.netty.util.concurrent.SingleThreadEventExecutor v0;
+java.lang.Runnable v1;
+v0 := @this: io.netty.util.concurrent.SingleThreadEventExecutor;
+v1 := @parameter0: java.lang.Runnable;
+v2 = v0.<io.netty.util.concurrent.SingleThreadEventExecutor: io.netty.util.concurrent.RejectedExecutionHandler rejectedExecutionHandler>;
+interfaceinvoke v2.<io.netty.util.concurrent.RejectedExecutionHandler: void rejected(java.lang.Runnable,io.netty.util.concurrent.SingleThreadEventExecutor)>(v1, v0);
+return;
+}
+private void startThread()
+{
+java.lang.Throwable v4;
+java.util.concurrent.atomic.AtomicIntegerFieldUpdater v2, v5;
+io.netty.util.concurrent.SingleThreadEventExecutor v0;
+int v1;
+boolean v3;
+v0 := @this: io.netty.util.concurrent.SingleThreadEventExecutor;
+v1 = v0.<io.netty.util.concurrent.SingleThreadEventExecutor: int state>;
+if v1 != 1 goto label4;
+v2 = <io.netty.util.concurrent.SingleThreadEventExecutor: java.util.concurrent.atomic.AtomicIntegerFieldUpdater STATE_UPDATER>;
+v3 = virtualinvoke v2.<java.util.concurrent.atomic.AtomicIntegerFieldUpdater: boolean compareAndSet(java.lang.Object,int,int)>(v0, 1, 2);
+if v3 == 0 goto label4;
+label1:
+specialinvoke v0.<io.netty.util.concurrent.SingleThreadEventExecutor: void doStartThread()>();
+label2:
+goto label4;
+label3:
+v4 := @caughtexception;
+v5 = <io.netty.util.concurrent.SingleThreadEventExecutor: java.util.concurrent.atomic.AtomicIntegerFieldUpdater STATE_UPDATER>;
+virtualinvoke v5.<java.util.concurrent.atomic.AtomicIntegerFieldUpdater: boolean compareAndSet(java.lang.Object,int,int)>(v0, 2, 1);
+throw v4;
+label4:
+return;
+catch java.lang.Throwable from label1 to label2 with label3;
+}
+private boolean ensureThreadStarted(int)
+{
+java.lang.Throwable v2;
+java.util.concurrent.atomic.AtomicIntegerFieldUpdater v3;
+io.netty.util.concurrent.Promise v4;
+io.netty.util.concurrent.SingleThreadEventExecutor v0;
+int v1;
+boolean v5;
+v0 := @this: io.netty.util.concurrent.SingleThreadEventExecutor;
+v1 := @parameter0: int;
+if v1 != 1 goto label5;
+label1:
+specialinvoke v0.<io.netty.util.concurrent.SingleThreadEventExecutor: void doStartThread()>();
+label2:
+goto label5;
+label3:
+v2 := @caughtexception;
+v3 = <io.netty.util.concurrent.SingleThreadEventExecutor: java.util.concurrent.atomic.AtomicIntegerFieldUpdater STATE_UPDATER>;
+virtualinvoke v3.<java.util.concurrent.atomic.AtomicIntegerFieldUpdater: void set(java.lang.Object,int)>(v0, 5);
+v4 = v0.<io.netty.util.concurrent.SingleThreadEventExecutor: io.netty.util.concurrent.Promise terminationFuture>;
+interfaceinvoke v4.<io.netty.util.concurrent.Promise: boolean tryFailure(java.lang.Throwable)>(v2);
+v5 = v2 instanceof java.lang.Exception;
+if v5 != 0 goto label4;
+staticinvoke <io.netty.util.internal.PlatformDependent: void throwException(java.lang.Throwable)>(v2);
+label4:
+return 1;
+label5:
+return 0;
+catch java.lang.Throwable from label1 to label2 with label3;
+}
+private void doStartThread()
+{
+io.netty.util.concurrent.SingleThreadEventExecutor$4 v5;
+io.netty.util.concurrent.SingleThreadEventExecutor v0;
+java.util.concurrent.Executor v4;
+java.lang.Thread v2;
+java.lang.AssertionError v3;
+boolean v1;
+v0 := @this: io.netty.util.concurrent.SingleThreadEventExecutor;
+v1 = <io.netty.util.concurrent.SingleThreadEventExecutor: boolean $assertionsDisabled>;
+if v1 != 0 goto label1;
+v2 = v0.<io.netty.util.concurrent.SingleThreadEventExecutor: java.lang.Thread thread>;
+if v2 == null goto label1;
+v3 = new java.lang.AssertionError;
+specialinvoke v3.<java.lang.AssertionError: void <init>()>();
+throw v3;
+label1:
+v4 = v0.<io.netty.util.concurrent.SingleThreadEventExecutor: java.util.concurrent.Executor executor>;
+v5 = new io.netty.util.concurrent.SingleThreadEventExecutor$4;
+specialinvoke v5.<io.netty.util.concurrent.SingleThreadEventExecutor$4: void <init>(io.netty.util.concurrent.SingleThreadEventExecutor)>(v0);
+interfaceinvoke v4.<java.util.concurrent.Executor: void execute(java.lang.Runnable)>(v5);
+return;
+}
+final int drainTasks()
+{
+io.netty.util.concurrent.SingleThreadEventExecutor v0;
+int v1;
+java.lang.Object v3;
+java.util.Queue v2;
+java.lang.Runnable v4;
+v0 := @this: io.netty.util.concurrent.SingleThreadEventExecutor;
+v1 = 0;
+label1:
+v2 = v0.<io.netty.util.concurrent.SingleThreadEventExecutor: java.util.Queue taskQueue>;
+v3 = interfaceinvoke v2.<java.util.Queue: java.lang.Object poll()>();
+if v3 == null goto label2;
+v4 = <io.netty.util.concurrent.SingleThreadEventExecutor: java.lang.Runnable WAKEUP_TASK>;
+if v4 == v3 goto label1;
+v1 = v1 + 1;
+goto label1;
+label2:
+return v1;
+}
+static void <clinit>()
+{
+java.util.concurrent.atomic.AtomicIntegerFieldUpdater v7;
+java.util.concurrent.atomic.AtomicReferenceFieldUpdater v8;
+long v10;
+java.util.concurrent.TimeUnit v9;
+io.netty.util.concurrent.SingleThreadEventExecutor$1 v6;
+io.netty.util.internal.logging.InternalLogger v5;
+int v3, v4;
+java.lang.Class v0;
+boolean v1, v2;
+v0 = class "Lio/netty/util/concurrent/SingleThreadEventExecutor;";
+v1 = virtualinvoke v0.<java.lang.Class: boolean desiredAssertionStatus()>();
+if v1 != 0 goto label1;
+v2 = 1;
+goto label2;
+label1:
+v2 = 0;
+label2:
+<io.netty.util.concurrent.SingleThreadEventExecutor: boolean $assertionsDisabled> = v2;
+v3 = staticinvoke <io.netty.util.internal.SystemPropertyUtil: int getInt(java.lang.String,int)>("io.netty.eventexecutor.maxPendingTasks", 2147483647);
+v4 = staticinvoke <java.lang.Math: int max(int,int)>(16, v3);
+<io.netty.util.concurrent.SingleThreadEventExecutor: int DEFAULT_MAX_PENDING_EXECUTOR_TASKS> = v4;
+v5 = staticinvoke <io.netty.util.internal.logging.InternalLoggerFactory: io.netty.util.internal.logging.InternalLogger getInstance(java.lang.Class)>(class "Lio/netty/util/concurrent/SingleThreadEventExecutor;");
+<io.netty.util.concurrent.SingleThreadEventExecutor: io.netty.util.internal.logging.InternalLogger logger> = v5;
+v6 = new io.netty.util.concurrent.SingleThreadEventExecutor$1;
+specialinvoke v6.<io.netty.util.concurrent.SingleThreadEventExecutor$1: void <init>()>();
+<io.netty.util.concurrent.SingleThreadEventExecutor: java.lang.Runnable NOOP_TASK> = v6;
+v7 = staticinvoke <java.util.concurrent.atomic.AtomicIntegerFieldUpdater: java.util.concurrent.atomic.AtomicIntegerFieldUpdater newUpdater(java.lang.Class,java.lang.String)>(class "Lio/netty/util/concurrent/SingleThreadEventExecutor;", "state");
+<io.netty.util.concurrent.SingleThreadEventExecutor: java.util.concurrent.atomic.AtomicIntegerFieldUpdater STATE_UPDATER> = v7;
+v8 = staticinvoke <java.util.concurrent.atomic.AtomicReferenceFieldUpdater: java.util.concurrent.atomic.AtomicReferenceFieldUpdater newUpdater(java.lang.Class,java.lang.Class,java.lang.String)>(class "Lio/netty/util/concurrent/SingleThreadEventExecutor;", class "Lio/netty/util/concurrent/ThreadProperties;", "threadProperties");
+<io.netty.util.concurrent.SingleThreadEventExecutor: java.util.concurrent.atomic.AtomicReferenceFieldUpdater PROPERTIES_UPDATER> = v8;
+v9 = <java.util.concurrent.TimeUnit: java.util.concurrent.TimeUnit SECONDS>;
+v10 = virtualinvoke v9.<java.util.concurrent.TimeUnit: long toNanos(long)>(1L);
+<io.netty.util.concurrent.SingleThreadEventExecutor: long SCHEDULE_PURGE_INTERVAL> = v10;
+return;
+}
+}

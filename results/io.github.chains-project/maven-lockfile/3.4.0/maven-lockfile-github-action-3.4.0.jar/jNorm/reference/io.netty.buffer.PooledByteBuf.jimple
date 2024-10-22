@@ -1,0 +1,535 @@
+abstract class io.netty.buffer.PooledByteBuf extends io.netty.buffer.AbstractReferenceCountedByteBuf
+{
+private final io.netty.util.Recycler$EnhancedHandle recyclerHandle;
+protected io.netty.buffer.PoolChunk chunk;
+protected long handle;
+protected java.lang.Object memory;
+protected int offset;
+protected int length;
+int maxLength;
+io.netty.buffer.PoolThreadCache cache;
+java.nio.ByteBuffer tmpNioBuf;
+private io.netty.buffer.ByteBufAllocator allocator;
+static final boolean $assertionsDisabled;
+protected void <init>(io.netty.util.internal.ObjectPool$Handle, int)
+{
+int v2;
+io.netty.buffer.PooledByteBuf v0;
+io.netty.util.internal.ObjectPool$Handle v1;
+v0 := @this: io.netty.buffer.PooledByteBuf;
+v1 := @parameter0: io.netty.util.internal.ObjectPool$Handle;
+v2 := @parameter1: int;
+specialinvoke v0.<io.netty.buffer.AbstractReferenceCountedByteBuf: void <init>(int)>(v2);
+v0.<io.netty.buffer.PooledByteBuf: io.netty.util.Recycler$EnhancedHandle recyclerHandle> = v1;
+return;
+}
+void init(io.netty.buffer.PoolChunk, java.nio.ByteBuffer, long, int, int, int, io.netty.buffer.PoolThreadCache)
+{
+io.netty.buffer.PooledByteBuf v0;
+long v3;
+java.nio.ByteBuffer v2;
+io.netty.buffer.PoolThreadCache v7;
+int v4, v5, v6;
+io.netty.buffer.PoolChunk v1;
+v0 := @this: io.netty.buffer.PooledByteBuf;
+v1 := @parameter0: io.netty.buffer.PoolChunk;
+v2 := @parameter1: java.nio.ByteBuffer;
+v3 := @parameter2: long;
+v4 := @parameter3: int;
+v5 := @parameter4: int;
+v6 := @parameter5: int;
+v7 := @parameter6: io.netty.buffer.PoolThreadCache;
+specialinvoke v0.<io.netty.buffer.PooledByteBuf: void init0(io.netty.buffer.PoolChunk,java.nio.ByteBuffer,long,int,int,int,io.netty.buffer.PoolThreadCache)>(v1, v2, v3, v4, v5, v6, v7);
+return;
+}
+void initUnpooled(io.netty.buffer.PoolChunk, int)
+{
+int v2;
+io.netty.buffer.PoolChunk v1;
+io.netty.buffer.PooledByteBuf v0;
+v0 := @this: io.netty.buffer.PooledByteBuf;
+v1 := @parameter0: io.netty.buffer.PoolChunk;
+v2 := @parameter1: int;
+specialinvoke v0.<io.netty.buffer.PooledByteBuf: void init0(io.netty.buffer.PoolChunk,java.nio.ByteBuffer,long,int,int,int,io.netty.buffer.PoolThreadCache)>(v1, null, 0L, 0, v2, v2, null);
+return;
+}
+private void init0(io.netty.buffer.PoolChunk, java.nio.ByteBuffer, long, int, int, int, io.netty.buffer.PoolThreadCache)
+{
+long v3;
+java.lang.AssertionError v10, v12, v19;
+java.nio.ByteBuffer v2;
+byte v9;
+int v16, v18, v4, v5, v6;
+boolean v11, v13, v14, v8;
+io.netty.buffer.PoolArena v15, v17, v21;
+io.netty.buffer.PooledByteBuf v0;
+io.netty.buffer.PooledByteBufAllocator v22;
+io.netty.buffer.PoolThreadCache v7;
+io.netty.buffer.PoolChunk v1;
+java.lang.Object v20;
+v0 := @this: io.netty.buffer.PooledByteBuf;
+v1 := @parameter0: io.netty.buffer.PoolChunk;
+v2 := @parameter1: java.nio.ByteBuffer;
+v3 := @parameter2: long;
+v4 := @parameter3: int;
+v5 := @parameter4: int;
+v6 := @parameter5: int;
+v7 := @parameter6: io.netty.buffer.PoolThreadCache;
+v8 = <io.netty.buffer.PooledByteBuf: boolean $assertionsDisabled>;
+if v8 != 0 goto label1;
+v9 = v3 cmp 0L;
+if v9 >= 0 goto label1;
+v10 = new java.lang.AssertionError;
+specialinvoke v10.<java.lang.AssertionError: void <init>()>();
+throw v10;
+label1:
+v11 = <io.netty.buffer.PooledByteBuf: boolean $assertionsDisabled>;
+if v11 != 0 goto label2;
+if v1 != null goto label2;
+v12 = new java.lang.AssertionError;
+specialinvoke v12.<java.lang.AssertionError: void <init>()>();
+throw v12;
+label2:
+v13 = <io.netty.buffer.PooledByteBuf: boolean $assertionsDisabled>;
+if v13 != 0 goto label3;
+v14 = staticinvoke <io.netty.buffer.PoolChunk: boolean isSubpage(long)>(v3);
+if v14 == 0 goto label3;
+v15 = v1.<io.netty.buffer.PoolChunk: io.netty.buffer.PoolArena arena>;
+v16 = virtualinvoke v15.<io.netty.buffer.PoolArena: int size2SizeIdx(int)>(v6);
+v17 = v1.<io.netty.buffer.PoolChunk: io.netty.buffer.PoolArena arena>;
+v18 = v17.<io.netty.buffer.PoolArena: int smallMaxSizeIdx>;
+if v16 <= v18 goto label3;
+v19 = new java.lang.AssertionError;
+specialinvoke v19.<java.lang.AssertionError: void <init>(java.lang.Object)>("Allocated small sub-page handle for a buffer size that isn\'t \"small.\"");
+throw v19;
+label3:
+virtualinvoke v1.<io.netty.buffer.PoolChunk: void incrementPinnedMemory(int)>(v6);
+v0.<io.netty.buffer.PooledByteBuf: io.netty.buffer.PoolChunk chunk> = v1;
+v20 = v1.<io.netty.buffer.PoolChunk: java.lang.Object memory>;
+v0.<io.netty.buffer.PooledByteBuf: java.lang.Object memory> = v20;
+v0.<io.netty.buffer.PooledByteBuf: java.nio.ByteBuffer tmpNioBuf> = v2;
+v21 = v1.<io.netty.buffer.PoolChunk: io.netty.buffer.PoolArena arena>;
+v22 = v21.<io.netty.buffer.PoolArena: io.netty.buffer.PooledByteBufAllocator parent>;
+v0.<io.netty.buffer.PooledByteBuf: io.netty.buffer.ByteBufAllocator allocator> = v22;
+v0.<io.netty.buffer.PooledByteBuf: io.netty.buffer.PoolThreadCache cache> = v7;
+v0.<io.netty.buffer.PooledByteBuf: long handle> = v3;
+v0.<io.netty.buffer.PooledByteBuf: int offset> = v4;
+v0.<io.netty.buffer.PooledByteBuf: int length> = v5;
+v0.<io.netty.buffer.PooledByteBuf: int maxLength> = v6;
+return;
+}
+final void reuse(int)
+{
+int v1;
+io.netty.buffer.PooledByteBuf v0;
+v0 := @this: io.netty.buffer.PooledByteBuf;
+v1 := @parameter0: int;
+virtualinvoke v0.<io.netty.buffer.PooledByteBuf: void maxCapacity(int)>(v1);
+virtualinvoke v0.<io.netty.buffer.PooledByteBuf: void resetRefCnt()>();
+virtualinvoke v0.<io.netty.buffer.PooledByteBuf: void setIndex0(int,int)>(0, 0);
+virtualinvoke v0.<io.netty.buffer.PooledByteBuf: void discardMarks()>();
+return;
+}
+public final int capacity()
+{
+int v1;
+io.netty.buffer.PooledByteBuf v0;
+v0 := @this: io.netty.buffer.PooledByteBuf;
+v1 = v0.<io.netty.buffer.PooledByteBuf: int length>;
+return v1;
+}
+public int maxFastWritableBytes()
+{
+int v1, v2, v3, v4, v5;
+io.netty.buffer.PooledByteBuf v0;
+v0 := @this: io.netty.buffer.PooledByteBuf;
+v1 = v0.<io.netty.buffer.PooledByteBuf: int maxLength>;
+v2 = virtualinvoke v0.<io.netty.buffer.PooledByteBuf: int maxCapacity()>();
+v3 = staticinvoke <java.lang.Math: int min(int,int)>(v1, v2);
+v4 = v0.<io.netty.buffer.PooledByteBuf: int writerIndex>;
+v5 = v3 - v4;
+return v5;
+}
+public final io.netty.buffer.ByteBuf capacity(int)
+{
+int v1, v10, v11, v13, v2, v5, v6, v7, v8, v9;
+boolean v4;
+io.netty.buffer.PoolArena v15;
+io.netty.buffer.PooledByteBuf v0;
+io.netty.buffer.PoolChunk v12, v14, v3;
+v0 := @this: io.netty.buffer.PooledByteBuf;
+v1 := @parameter0: int;
+v2 = v0.<io.netty.buffer.PooledByteBuf: int length>;
+if v1 != v2 goto label1;
+virtualinvoke v0.<io.netty.buffer.PooledByteBuf: void ensureAccessible()>();
+return v0;
+label1:
+virtualinvoke v0.<io.netty.buffer.PooledByteBuf: void checkNewCapacity(int)>(v1);
+v3 = v0.<io.netty.buffer.PooledByteBuf: io.netty.buffer.PoolChunk chunk>;
+v4 = v3.<io.netty.buffer.PoolChunk: boolean unpooled>;
+if v4 != 0 goto label4;
+v5 = v0.<io.netty.buffer.PooledByteBuf: int length>;
+if v1 <= v5 goto label2;
+v6 = v0.<io.netty.buffer.PooledByteBuf: int maxLength>;
+if v1 > v6 goto label4;
+v0.<io.netty.buffer.PooledByteBuf: int length> = v1;
+return v0;
+label2:
+v7 = v0.<io.netty.buffer.PooledByteBuf: int maxLength>;
+v8 = v7 >>> 1;
+if v1 <= v8 goto label4;
+v9 = v0.<io.netty.buffer.PooledByteBuf: int maxLength>;
+if v9 > 512 goto label3;
+v10 = v0.<io.netty.buffer.PooledByteBuf: int maxLength>;
+v11 = v10 - 16;
+if v1 <= v11 goto label4;
+label3:
+v0.<io.netty.buffer.PooledByteBuf: int length> = v1;
+virtualinvoke v0.<io.netty.buffer.PooledByteBuf: void trimIndicesToCapacity(int)>(v1);
+return v0;
+label4:
+v12 = v0.<io.netty.buffer.PooledByteBuf: io.netty.buffer.PoolChunk chunk>;
+v13 = v0.<io.netty.buffer.PooledByteBuf: int maxLength>;
+virtualinvoke v12.<io.netty.buffer.PoolChunk: void decrementPinnedMemory(int)>(v13);
+v14 = v0.<io.netty.buffer.PooledByteBuf: io.netty.buffer.PoolChunk chunk>;
+v15 = v14.<io.netty.buffer.PoolChunk: io.netty.buffer.PoolArena arena>;
+virtualinvoke v15.<io.netty.buffer.PoolArena: void reallocate(io.netty.buffer.PooledByteBuf,int,boolean)>(v0, v1, 1);
+return v0;
+}
+public final io.netty.buffer.ByteBufAllocator alloc()
+{
+io.netty.buffer.PooledByteBuf v0;
+io.netty.buffer.ByteBufAllocator v1;
+v0 := @this: io.netty.buffer.PooledByteBuf;
+v1 = v0.<io.netty.buffer.PooledByteBuf: io.netty.buffer.ByteBufAllocator allocator>;
+return v1;
+}
+public final java.nio.ByteOrder order()
+{
+io.netty.buffer.PooledByteBuf v0;
+java.nio.ByteOrder v1;
+v0 := @this: io.netty.buffer.PooledByteBuf;
+v1 = <java.nio.ByteOrder: java.nio.ByteOrder BIG_ENDIAN>;
+return v1;
+}
+public final io.netty.buffer.ByteBuf unwrap()
+{
+io.netty.buffer.PooledByteBuf v0;
+v0 := @this: io.netty.buffer.PooledByteBuf;
+return null;
+}
+public final io.netty.buffer.ByteBuf retainedDuplicate()
+{
+io.netty.buffer.PooledDuplicatedByteBuf v3;
+int v1, v2;
+io.netty.buffer.PooledByteBuf v0;
+v0 := @this: io.netty.buffer.PooledByteBuf;
+v1 = virtualinvoke v0.<io.netty.buffer.PooledByteBuf: int readerIndex()>();
+v2 = virtualinvoke v0.<io.netty.buffer.PooledByteBuf: int writerIndex()>();
+v3 = staticinvoke <io.netty.buffer.PooledDuplicatedByteBuf: io.netty.buffer.PooledDuplicatedByteBuf newInstance(io.netty.buffer.AbstractByteBuf,io.netty.buffer.ByteBuf,int,int)>(v0, v0, v1, v2);
+return v3;
+}
+public final io.netty.buffer.ByteBuf retainedSlice()
+{
+io.netty.buffer.ByteBuf v4;
+int v1, v2, v3;
+io.netty.buffer.PooledByteBuf v0;
+v0 := @this: io.netty.buffer.PooledByteBuf;
+v1 = virtualinvoke v0.<io.netty.buffer.PooledByteBuf: int readerIndex()>();
+v2 = virtualinvoke v0.<io.netty.buffer.PooledByteBuf: int writerIndex()>();
+v3 = v2 - v1;
+v4 = virtualinvoke v0.<io.netty.buffer.PooledByteBuf: io.netty.buffer.ByteBuf retainedSlice(int,int)>(v1, v3);
+return v4;
+}
+public final io.netty.buffer.ByteBuf retainedSlice(int, int)
+{
+int v1, v2;
+io.netty.buffer.PooledByteBuf v0;
+io.netty.buffer.PooledSlicedByteBuf v3;
+v0 := @this: io.netty.buffer.PooledByteBuf;
+v1 := @parameter0: int;
+v2 := @parameter1: int;
+v3 = staticinvoke <io.netty.buffer.PooledSlicedByteBuf: io.netty.buffer.PooledSlicedByteBuf newInstance(io.netty.buffer.AbstractByteBuf,io.netty.buffer.ByteBuf,int,int)>(v0, v0, v1, v2);
+return v3;
+}
+protected final java.nio.ByteBuffer internalNioBuffer()
+{
+io.netty.buffer.PooledByteBuf v0;
+java.lang.Object v2;
+java.nio.ByteBuffer v1, v3;
+v0 := @this: io.netty.buffer.PooledByteBuf;
+v1 = v0.<io.netty.buffer.PooledByteBuf: java.nio.ByteBuffer tmpNioBuf>;
+if v1 != null goto label1;
+v2 = v0.<io.netty.buffer.PooledByteBuf: java.lang.Object memory>;
+v3 = virtualinvoke v0.<io.netty.buffer.PooledByteBuf: java.nio.ByteBuffer newInternalNioBuffer(java.lang.Object)>(v2);
+v1 = v3;
+v0.<io.netty.buffer.PooledByteBuf: java.nio.ByteBuffer tmpNioBuf> = v3;
+goto label2;
+label1:
+virtualinvoke v1.<java.nio.ByteBuffer: java.nio.ByteBuffer clear()>();
+label2:
+return v1;
+}
+protected abstract java.nio.ByteBuffer newInternalNioBuffer(java.lang.Object);
+protected final void deallocate()
+{
+io.netty.buffer.PoolArena v7;
+io.netty.buffer.PooledByteBuf v0;
+long v1, v3;
+java.nio.ByteBuffer v9;
+io.netty.buffer.PoolThreadCache v11;
+byte v2;
+io.netty.util.Recycler$EnhancedHandle v12;
+int v10, v5;
+io.netty.buffer.PoolChunk v4, v6, v8;
+v0 := @this: io.netty.buffer.PooledByteBuf;
+v1 = v0.<io.netty.buffer.PooledByteBuf: long handle>;
+v2 = v1 cmp 0L;
+if v2 < 0 goto label1;
+v3 = v0.<io.netty.buffer.PooledByteBuf: long handle>;
+v0.<io.netty.buffer.PooledByteBuf: long handle> = -1L;
+v0.<io.netty.buffer.PooledByteBuf: java.lang.Object memory> = null;
+v4 = v0.<io.netty.buffer.PooledByteBuf: io.netty.buffer.PoolChunk chunk>;
+v5 = v0.<io.netty.buffer.PooledByteBuf: int maxLength>;
+virtualinvoke v4.<io.netty.buffer.PoolChunk: void decrementPinnedMemory(int)>(v5);
+v6 = v0.<io.netty.buffer.PooledByteBuf: io.netty.buffer.PoolChunk chunk>;
+v7 = v6.<io.netty.buffer.PoolChunk: io.netty.buffer.PoolArena arena>;
+v8 = v0.<io.netty.buffer.PooledByteBuf: io.netty.buffer.PoolChunk chunk>;
+v9 = v0.<io.netty.buffer.PooledByteBuf: java.nio.ByteBuffer tmpNioBuf>;
+v10 = v0.<io.netty.buffer.PooledByteBuf: int maxLength>;
+v11 = v0.<io.netty.buffer.PooledByteBuf: io.netty.buffer.PoolThreadCache cache>;
+virtualinvoke v7.<io.netty.buffer.PoolArena: void free(io.netty.buffer.PoolChunk,java.nio.ByteBuffer,long,int,io.netty.buffer.PoolThreadCache)>(v8, v9, v3, v10, v11);
+v0.<io.netty.buffer.PooledByteBuf: java.nio.ByteBuffer tmpNioBuf> = null;
+v0.<io.netty.buffer.PooledByteBuf: io.netty.buffer.PoolChunk chunk> = null;
+v0.<io.netty.buffer.PooledByteBuf: io.netty.buffer.PoolThreadCache cache> = null;
+v12 = v0.<io.netty.buffer.PooledByteBuf: io.netty.util.Recycler$EnhancedHandle recyclerHandle>;
+virtualinvoke v12.<io.netty.util.Recycler$EnhancedHandle: void unguardedRecycle(java.lang.Object)>(v0);
+label1:
+return;
+}
+protected final int idx(int)
+{
+int v1, v2, v3;
+io.netty.buffer.PooledByteBuf v0;
+v0 := @this: io.netty.buffer.PooledByteBuf;
+v1 := @parameter0: int;
+v2 = v0.<io.netty.buffer.PooledByteBuf: int offset>;
+v3 = v2 + v1;
+return v3;
+}
+final java.nio.ByteBuffer _internalNioBuffer(int, int, boolean)
+{
+io.netty.buffer.PooledByteBuf v0;
+java.nio.ByteBuffer v6, v8;
+int v1, v2, v4, v7;
+java.lang.Object v5;
+boolean v3;
+v0 := @this: io.netty.buffer.PooledByteBuf;
+v1 := @parameter0: int;
+v2 := @parameter1: int;
+v3 := @parameter2: boolean;
+v4 = virtualinvoke v0.<io.netty.buffer.PooledByteBuf: int idx(int)>(v1);
+if v3 == 0 goto label1;
+v5 = v0.<io.netty.buffer.PooledByteBuf: java.lang.Object memory>;
+v6 = virtualinvoke v0.<io.netty.buffer.PooledByteBuf: java.nio.ByteBuffer newInternalNioBuffer(java.lang.Object)>(v5);
+goto label2;
+label1:
+v6 = virtualinvoke v0.<io.netty.buffer.PooledByteBuf: java.nio.ByteBuffer internalNioBuffer()>();
+label2:
+v7 = v4 + v2;
+v8 = virtualinvoke v6.<java.nio.ByteBuffer: java.nio.ByteBuffer limit(int)>(v7);
+virtualinvoke v8.<java.nio.ByteBuffer: java.nio.ByteBuffer position(int)>(v4);
+return v6;
+}
+java.nio.ByteBuffer duplicateInternalNioBuffer(int, int)
+{
+int v1, v2;
+io.netty.buffer.PooledByteBuf v0;
+java.nio.ByteBuffer v3;
+v0 := @this: io.netty.buffer.PooledByteBuf;
+v1 := @parameter0: int;
+v2 := @parameter1: int;
+virtualinvoke v0.<io.netty.buffer.PooledByteBuf: void checkIndex(int,int)>(v1, v2);
+v3 = virtualinvoke v0.<io.netty.buffer.PooledByteBuf: java.nio.ByteBuffer _internalNioBuffer(int,int,boolean)>(v1, v2, 1);
+return v3;
+}
+public final java.nio.ByteBuffer internalNioBuffer(int, int)
+{
+int v1, v2;
+io.netty.buffer.PooledByteBuf v0;
+java.nio.ByteBuffer v3;
+v0 := @this: io.netty.buffer.PooledByteBuf;
+v1 := @parameter0: int;
+v2 := @parameter1: int;
+virtualinvoke v0.<io.netty.buffer.PooledByteBuf: void checkIndex(int,int)>(v1, v2);
+v3 = virtualinvoke v0.<io.netty.buffer.PooledByteBuf: java.nio.ByteBuffer _internalNioBuffer(int,int,boolean)>(v1, v2, 0);
+return v3;
+}
+public final int nioBufferCount()
+{
+io.netty.buffer.PooledByteBuf v0;
+v0 := @this: io.netty.buffer.PooledByteBuf;
+return 1;
+}
+public final java.nio.ByteBuffer nioBuffer(int, int)
+{
+int v1, v2;
+io.netty.buffer.PooledByteBuf v0;
+java.nio.ByteBuffer v3, v4;
+v0 := @this: io.netty.buffer.PooledByteBuf;
+v1 := @parameter0: int;
+v2 := @parameter1: int;
+v3 = virtualinvoke v0.<io.netty.buffer.PooledByteBuf: java.nio.ByteBuffer duplicateInternalNioBuffer(int,int)>(v1, v2);
+v4 = virtualinvoke v3.<java.nio.ByteBuffer: java.nio.ByteBuffer slice()>();
+return v4;
+}
+public final java.nio.ByteBuffer[] nioBuffers(int, int)
+{
+java.nio.ByteBuffer[] v3;
+int v1, v2;
+io.netty.buffer.PooledByteBuf v0;
+java.nio.ByteBuffer v4;
+v0 := @this: io.netty.buffer.PooledByteBuf;
+v1 := @parameter0: int;
+v2 := @parameter1: int;
+v3 = newarray (java.nio.ByteBuffer)[1];
+v4 = virtualinvoke v0.<io.netty.buffer.PooledByteBuf: java.nio.ByteBuffer nioBuffer(int,int)>(v1, v2);
+v3[0] = v4;
+return v3;
+}
+public final boolean isContiguous()
+{
+io.netty.buffer.PooledByteBuf v0;
+v0 := @this: io.netty.buffer.PooledByteBuf;
+return 1;
+}
+public final int getBytes(int, java.nio.channels.GatheringByteChannel, int) throws java.io.IOException
+{
+int v1, v3, v5;
+io.netty.buffer.PooledByteBuf v0;
+java.nio.ByteBuffer v4;
+java.nio.channels.GatheringByteChannel v2;
+v0 := @this: io.netty.buffer.PooledByteBuf;
+v1 := @parameter0: int;
+v2 := @parameter1: java.nio.channels.GatheringByteChannel;
+v3 := @parameter2: int;
+v4 = virtualinvoke v0.<io.netty.buffer.PooledByteBuf: java.nio.ByteBuffer duplicateInternalNioBuffer(int,int)>(v1, v3);
+v5 = interfaceinvoke v2.<java.nio.channels.GatheringByteChannel: int write(java.nio.ByteBuffer)>(v4);
+return v5;
+}
+public final int readBytes(java.nio.channels.GatheringByteChannel, int) throws java.io.IOException
+{
+io.netty.buffer.PooledByteBuf v0;
+java.nio.ByteBuffer v4;
+int v2, v3, v5, v6, v7;
+java.nio.channels.GatheringByteChannel v1;
+v0 := @this: io.netty.buffer.PooledByteBuf;
+v1 := @parameter0: java.nio.channels.GatheringByteChannel;
+v2 := @parameter1: int;
+virtualinvoke v0.<io.netty.buffer.PooledByteBuf: void checkReadableBytes(int)>(v2);
+v3 = v0.<io.netty.buffer.PooledByteBuf: int readerIndex>;
+v4 = virtualinvoke v0.<io.netty.buffer.PooledByteBuf: java.nio.ByteBuffer _internalNioBuffer(int,int,boolean)>(v3, v2, 0);
+v5 = interfaceinvoke v1.<java.nio.channels.GatheringByteChannel: int write(java.nio.ByteBuffer)>(v4);
+v6 = v0.<io.netty.buffer.PooledByteBuf: int readerIndex>;
+v7 = v6 + v5;
+v0.<io.netty.buffer.PooledByteBuf: int readerIndex> = v7;
+return v5;
+}
+public final int getBytes(int, java.nio.channels.FileChannel, long, int) throws java.io.IOException
+{
+int v1, v4, v6;
+io.netty.buffer.PooledByteBuf v0;
+long v3;
+java.nio.channels.FileChannel v2;
+java.nio.ByteBuffer v5;
+v0 := @this: io.netty.buffer.PooledByteBuf;
+v1 := @parameter0: int;
+v2 := @parameter1: java.nio.channels.FileChannel;
+v3 := @parameter2: long;
+v4 := @parameter3: int;
+v5 = virtualinvoke v0.<io.netty.buffer.PooledByteBuf: java.nio.ByteBuffer duplicateInternalNioBuffer(int,int)>(v1, v4);
+v6 = virtualinvoke v2.<java.nio.channels.FileChannel: int write(java.nio.ByteBuffer,long)>(v5, v3);
+return v6;
+}
+public final int readBytes(java.nio.channels.FileChannel, long, int) throws java.io.IOException
+{
+io.netty.buffer.PooledByteBuf v0;
+long v2;
+java.nio.ByteBuffer v5;
+int v3, v4, v6, v7, v8;
+java.nio.channels.FileChannel v1;
+v0 := @this: io.netty.buffer.PooledByteBuf;
+v1 := @parameter0: java.nio.channels.FileChannel;
+v2 := @parameter1: long;
+v3 := @parameter2: int;
+virtualinvoke v0.<io.netty.buffer.PooledByteBuf: void checkReadableBytes(int)>(v3);
+v4 = v0.<io.netty.buffer.PooledByteBuf: int readerIndex>;
+v5 = virtualinvoke v0.<io.netty.buffer.PooledByteBuf: java.nio.ByteBuffer _internalNioBuffer(int,int,boolean)>(v4, v3, 0);
+v6 = virtualinvoke v1.<java.nio.channels.FileChannel: int write(java.nio.ByteBuffer,long)>(v5, v2);
+v7 = v0.<io.netty.buffer.PooledByteBuf: int readerIndex>;
+v8 = v7 + v6;
+v0.<io.netty.buffer.PooledByteBuf: int readerIndex> = v8;
+return v6;
+}
+public final int setBytes(int, java.nio.channels.ScatteringByteChannel, int) throws java.io.IOException
+{
+java.nio.channels.ScatteringByteChannel v2;
+java.nio.channels.ClosedChannelException v6;
+io.netty.buffer.PooledByteBuf v0;
+java.nio.ByteBuffer v4;
+int v1, v3, v5, v7;
+v0 := @this: io.netty.buffer.PooledByteBuf;
+v1 := @parameter0: int;
+v2 := @parameter1: java.nio.channels.ScatteringByteChannel;
+v3 := @parameter2: int;
+label1:
+v4 = virtualinvoke v0.<io.netty.buffer.PooledByteBuf: java.nio.ByteBuffer internalNioBuffer(int,int)>(v1, v3);
+v5 = interfaceinvoke v2.<java.nio.channels.ScatteringByteChannel: int read(java.nio.ByteBuffer)>(v4);
+label2:
+return v5;
+label3:
+v6 := @caughtexception;
+v7 = (int) -1;
+return v7;
+catch java.nio.channels.ClosedChannelException from label1 to label2 with label3;
+}
+public final int setBytes(int, java.nio.channels.FileChannel, long, int) throws java.io.IOException
+{
+java.nio.channels.ClosedChannelException v7;
+io.netty.buffer.PooledByteBuf v0;
+long v3;
+java.nio.ByteBuffer v5;
+int v1, v4, v6, v8;
+java.nio.channels.FileChannel v2;
+v0 := @this: io.netty.buffer.PooledByteBuf;
+v1 := @parameter0: int;
+v2 := @parameter1: java.nio.channels.FileChannel;
+v3 := @parameter2: long;
+v4 := @parameter3: int;
+label1:
+v5 = virtualinvoke v0.<io.netty.buffer.PooledByteBuf: java.nio.ByteBuffer internalNioBuffer(int,int)>(v1, v4);
+v6 = virtualinvoke v2.<java.nio.channels.FileChannel: int read(java.nio.ByteBuffer,long)>(v5, v3);
+label2:
+return v6;
+label3:
+v7 := @caughtexception;
+v8 = (int) -1;
+return v8;
+catch java.nio.channels.ClosedChannelException from label1 to label2 with label3;
+}
+static void <clinit>()
+{
+java.lang.Class v0;
+boolean v1, v2;
+v0 = class "Lio/netty/buffer/PooledByteBuf;";
+v1 = virtualinvoke v0.<java.lang.Class: boolean desiredAssertionStatus()>();
+if v1 != 0 goto label1;
+v2 = 1;
+goto label2;
+label1:
+v2 = 0;
+label2:
+<io.netty.buffer.PooledByteBuf: boolean $assertionsDisabled> = v2;
+return;
+}
+}

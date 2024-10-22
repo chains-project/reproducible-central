@@ -1,0 +1,403 @@
+public class io.netty.handler.codec.LengthFieldBasedFrameDecoder extends io.netty.handler.codec.ByteToMessageDecoder
+{
+private final java.nio.ByteOrder byteOrder;
+private final int maxFrameLength;
+private final int lengthFieldOffset;
+private final int lengthFieldLength;
+private final int lengthFieldEndOffset;
+private final int lengthAdjustment;
+private final int initialBytesToStrip;
+private final boolean failFast;
+private boolean discardingTooLongFrame;
+private long tooLongFrameLength;
+private long bytesToDiscard;
+private int frameLengthInt;
+public void <init>(int, int, int)
+{
+io.netty.handler.codec.LengthFieldBasedFrameDecoder v0;
+int v1, v2, v3;
+v0 := @this: io.netty.handler.codec.LengthFieldBasedFrameDecoder;
+v1 := @parameter0: int;
+v2 := @parameter1: int;
+v3 := @parameter2: int;
+specialinvoke v0.<io.netty.handler.codec.LengthFieldBasedFrameDecoder: void <init>(int,int,int,int,int)>(v1, v2, v3, 0, 0);
+return;
+}
+public void <init>(int, int, int, int, int)
+{
+io.netty.handler.codec.LengthFieldBasedFrameDecoder v0;
+int v1, v2, v3, v4, v5;
+v0 := @this: io.netty.handler.codec.LengthFieldBasedFrameDecoder;
+v1 := @parameter0: int;
+v2 := @parameter1: int;
+v3 := @parameter2: int;
+v4 := @parameter3: int;
+v5 := @parameter4: int;
+specialinvoke v0.<io.netty.handler.codec.LengthFieldBasedFrameDecoder: void <init>(int,int,int,int,int,boolean)>(v1, v2, v3, v4, v5, 1);
+return;
+}
+public void <init>(int, int, int, int, int, boolean)
+{
+io.netty.handler.codec.LengthFieldBasedFrameDecoder v0;
+java.nio.ByteOrder v7;
+int v1, v2, v3, v4, v5;
+boolean v6;
+v0 := @this: io.netty.handler.codec.LengthFieldBasedFrameDecoder;
+v1 := @parameter0: int;
+v2 := @parameter1: int;
+v3 := @parameter2: int;
+v4 := @parameter3: int;
+v5 := @parameter4: int;
+v6 := @parameter5: boolean;
+v7 = <java.nio.ByteOrder: java.nio.ByteOrder BIG_ENDIAN>;
+specialinvoke v0.<io.netty.handler.codec.LengthFieldBasedFrameDecoder: void <init>(java.nio.ByteOrder,int,int,int,int,int,boolean)>(v7, v1, v2, v3, v4, v5, v6);
+return;
+}
+public void <init>(java.nio.ByteOrder, int, int, int, int, int, boolean)
+{
+io.netty.handler.codec.LengthFieldBasedFrameDecoder v0;
+java.lang.IllegalArgumentException v11;
+java.nio.ByteOrder v1;
+int v10, v13, v2, v3, v4, v5, v6, v8;
+java.lang.Object v9;
+java.lang.String v12;
+boolean v7;
+v0 := @this: io.netty.handler.codec.LengthFieldBasedFrameDecoder;
+v1 := @parameter0: java.nio.ByteOrder;
+v2 := @parameter1: int;
+v3 := @parameter2: int;
+v4 := @parameter3: int;
+v5 := @parameter4: int;
+v6 := @parameter5: int;
+v7 := @parameter6: boolean;
+specialinvoke v0.<io.netty.handler.codec.ByteToMessageDecoder: void <init>()>();
+v8 = (int) -1;
+v0.<io.netty.handler.codec.LengthFieldBasedFrameDecoder: int frameLengthInt> = v8;
+v9 = staticinvoke <io.netty.util.internal.ObjectUtil: java.lang.Object checkNotNull(java.lang.Object,java.lang.String)>(v1, "byteOrder");
+v0.<io.netty.handler.codec.LengthFieldBasedFrameDecoder: java.nio.ByteOrder byteOrder> = v9;
+staticinvoke <io.netty.util.internal.ObjectUtil: int checkPositive(int,java.lang.String)>(v2, "maxFrameLength");
+staticinvoke <io.netty.util.internal.ObjectUtil: int checkPositiveOrZero(int,java.lang.String)>(v3, "lengthFieldOffset");
+staticinvoke <io.netty.util.internal.ObjectUtil: int checkPositiveOrZero(int,java.lang.String)>(v6, "initialBytesToStrip");
+v10 = v2 - v4;
+if v3 <= v10 goto label1;
+v11 = new java.lang.IllegalArgumentException;
+v12 = dynamicinvoke "makeConcatWithConstants" <java.lang.String (int,int,int)>(v2, v3, v4) <java.lang.invoke.StringConcatFactory: java.lang.invoke.CallSite makeConcatWithConstants(java.lang.invoke.MethodHandles$Lookup,java.lang.String,java.lang.invoke.MethodType,java.lang.String,java.lang.Object[])>("maxFrameLength (\u0001) must be equal to or greater than lengthFieldOffset (\u0001) + lengthFieldLength (\u0001).");
+specialinvoke v11.<java.lang.IllegalArgumentException: void <init>(java.lang.String)>(v12);
+throw v11;
+label1:
+v0.<io.netty.handler.codec.LengthFieldBasedFrameDecoder: int maxFrameLength> = v2;
+v0.<io.netty.handler.codec.LengthFieldBasedFrameDecoder: int lengthFieldOffset> = v3;
+v0.<io.netty.handler.codec.LengthFieldBasedFrameDecoder: int lengthFieldLength> = v4;
+v0.<io.netty.handler.codec.LengthFieldBasedFrameDecoder: int lengthAdjustment> = v5;
+v13 = v3 + v4;
+v0.<io.netty.handler.codec.LengthFieldBasedFrameDecoder: int lengthFieldEndOffset> = v13;
+v0.<io.netty.handler.codec.LengthFieldBasedFrameDecoder: int initialBytesToStrip> = v6;
+v0.<io.netty.handler.codec.LengthFieldBasedFrameDecoder: boolean failFast> = v7;
+return;
+}
+protected final void decode(io.netty.channel.ChannelHandlerContext, io.netty.buffer.ByteBuf, java.util.List) throws java.lang.Exception
+{
+io.netty.channel.ChannelHandlerContext v1;
+io.netty.handler.codec.LengthFieldBasedFrameDecoder v0;
+java.util.List v3;
+io.netty.buffer.ByteBuf v2;
+java.lang.Object v4;
+v0 := @this: io.netty.handler.codec.LengthFieldBasedFrameDecoder;
+v1 := @parameter0: io.netty.channel.ChannelHandlerContext;
+v2 := @parameter1: io.netty.buffer.ByteBuf;
+v3 := @parameter2: java.util.List;
+v4 = virtualinvoke v0.<io.netty.handler.codec.LengthFieldBasedFrameDecoder: java.lang.Object decode(io.netty.channel.ChannelHandlerContext,io.netty.buffer.ByteBuf)>(v1, v2);
+if v4 == null goto label1;
+interfaceinvoke v3.<java.util.List: boolean add(java.lang.Object)>(v4);
+label1:
+return;
+}
+private void discardingTooLongFrame(io.netty.buffer.ByteBuf)
+{
+io.netty.handler.codec.LengthFieldBasedFrameDecoder v0;
+io.netty.buffer.ByteBuf v1;
+int v3, v6;
+long v2, v4, v5;
+v0 := @this: io.netty.handler.codec.LengthFieldBasedFrameDecoder;
+v1 := @parameter0: io.netty.buffer.ByteBuf;
+v2 = v0.<io.netty.handler.codec.LengthFieldBasedFrameDecoder: long bytesToDiscard>;
+v3 = virtualinvoke v1.<io.netty.buffer.ByteBuf: int readableBytes()>();
+v4 = staticinvoke <java.lang.Math: long min(long,long)>(v2, v3);
+virtualinvoke v1.<io.netty.buffer.ByteBuf: io.netty.buffer.ByteBuf skipBytes(int)>(v4);
+v5 = v2 - v6;
+v0.<io.netty.handler.codec.LengthFieldBasedFrameDecoder: long bytesToDiscard> = v5;
+specialinvoke v0.<io.netty.handler.codec.LengthFieldBasedFrameDecoder: void failIfNecessary(boolean)>(0);
+return;
+}
+private static void failOnNegativeLengthField(io.netty.buffer.ByteBuf, long, int)
+{
+io.netty.buffer.ByteBuf v0;
+int v2;
+long v1;
+java.lang.String v4;
+io.netty.handler.codec.CorruptedFrameException v3;
+v0 := @parameter0: io.netty.buffer.ByteBuf;
+v1 := @parameter1: long;
+v2 := @parameter2: int;
+virtualinvoke v0.<io.netty.buffer.ByteBuf: io.netty.buffer.ByteBuf skipBytes(int)>(v2);
+v3 = new io.netty.handler.codec.CorruptedFrameException;
+v4 = dynamicinvoke "makeConcatWithConstants" <java.lang.String (long)>(v1) <java.lang.invoke.StringConcatFactory: java.lang.invoke.CallSite makeConcatWithConstants(java.lang.invoke.MethodHandles$Lookup,java.lang.String,java.lang.invoke.MethodType,java.lang.String,java.lang.Object[])>("negative pre-adjustment length field: \u0001");
+specialinvoke v3.<io.netty.handler.codec.CorruptedFrameException: void <init>(java.lang.String)>(v4);
+throw v3;
+}
+private static void failOnFrameLengthLessThanLengthFieldEndOffset(io.netty.buffer.ByteBuf, long, int)
+{
+io.netty.buffer.ByteBuf v0;
+int v2;
+long v1;
+java.lang.String v4;
+io.netty.handler.codec.CorruptedFrameException v3;
+v0 := @parameter0: io.netty.buffer.ByteBuf;
+v1 := @parameter1: long;
+v2 := @parameter2: int;
+virtualinvoke v0.<io.netty.buffer.ByteBuf: io.netty.buffer.ByteBuf skipBytes(int)>(v2);
+v3 = new io.netty.handler.codec.CorruptedFrameException;
+v4 = dynamicinvoke "makeConcatWithConstants" <java.lang.String (long,int)>(v1, v2) <java.lang.invoke.StringConcatFactory: java.lang.invoke.CallSite makeConcatWithConstants(java.lang.invoke.MethodHandles$Lookup,java.lang.String,java.lang.invoke.MethodType,java.lang.String,java.lang.Object[])>("Adjusted frame length (\u0001) is less than lengthFieldEndOffset: \u0001");
+specialinvoke v3.<io.netty.handler.codec.CorruptedFrameException: void <init>(java.lang.String)>(v4);
+throw v3;
+}
+private void exceededFrameLength(io.netty.buffer.ByteBuf, long)
+{
+io.netty.handler.codec.LengthFieldBasedFrameDecoder v0;
+byte v5;
+io.netty.buffer.ByteBuf v1;
+int v3, v6;
+long v2, v4;
+v0 := @this: io.netty.handler.codec.LengthFieldBasedFrameDecoder;
+v1 := @parameter0: io.netty.buffer.ByteBuf;
+v2 := @parameter1: long;
+v3 = virtualinvoke v1.<io.netty.buffer.ByteBuf: int readableBytes()>();
+v4 = v2 - v3;
+v0.<io.netty.handler.codec.LengthFieldBasedFrameDecoder: long tooLongFrameLength> = v2;
+v5 = v4 cmp 0L;
+if v5 >= 0 goto label1;
+virtualinvoke v1.<io.netty.buffer.ByteBuf: io.netty.buffer.ByteBuf skipBytes(int)>(v2);
+goto label2;
+label1:
+v0.<io.netty.handler.codec.LengthFieldBasedFrameDecoder: boolean discardingTooLongFrame> = 1;
+v0.<io.netty.handler.codec.LengthFieldBasedFrameDecoder: long bytesToDiscard> = v4;
+v6 = virtualinvoke v1.<io.netty.buffer.ByteBuf: int readableBytes()>();
+virtualinvoke v1.<io.netty.buffer.ByteBuf: io.netty.buffer.ByteBuf skipBytes(int)>(v6);
+label2:
+specialinvoke v0.<io.netty.handler.codec.LengthFieldBasedFrameDecoder: void failIfNecessary(boolean)>(1);
+return;
+}
+private static void failOnFrameLengthLessThanInitialBytesToStrip(io.netty.buffer.ByteBuf, long, int)
+{
+io.netty.buffer.ByteBuf v0;
+int v2;
+long v1;
+java.lang.String v4;
+io.netty.handler.codec.CorruptedFrameException v3;
+v0 := @parameter0: io.netty.buffer.ByteBuf;
+v1 := @parameter1: long;
+v2 := @parameter2: int;
+virtualinvoke v0.<io.netty.buffer.ByteBuf: io.netty.buffer.ByteBuf skipBytes(int)>(v1);
+v3 = new io.netty.handler.codec.CorruptedFrameException;
+v4 = dynamicinvoke "makeConcatWithConstants" <java.lang.String (long,int)>(v1, v2) <java.lang.invoke.StringConcatFactory: java.lang.invoke.CallSite makeConcatWithConstants(java.lang.invoke.MethodHandles$Lookup,java.lang.String,java.lang.invoke.MethodType,java.lang.String,java.lang.Object[])>("Adjusted frame length (\u0001) is less than initialBytesToStrip: \u0001");
+specialinvoke v3.<io.netty.handler.codec.CorruptedFrameException: void <init>(java.lang.String)>(v4);
+throw v3;
+}
+protected java.lang.Object decode(io.netty.channel.ChannelHandlerContext, io.netty.buffer.ByteBuf) throws java.lang.Exception
+{
+byte v15, v21, v24;
+boolean v6;
+java.nio.ByteOrder v13;
+long v14, v3;
+io.netty.channel.ChannelHandlerContext v1;
+io.netty.buffer.ByteBuf v2, v35;
+int v10, v11, v12, v16, v17, v18, v19, v20, v22, v23, v25, v26, v27, v28, v29, v30, v31, v32, v33, v34, v36, v37, v4, v5, v7, v8, v9;
+io.netty.handler.codec.LengthFieldBasedFrameDecoder v0;
+v0 := @this: io.netty.handler.codec.LengthFieldBasedFrameDecoder;
+v1 := @parameter0: io.netty.channel.ChannelHandlerContext;
+v2 := @parameter1: io.netty.buffer.ByteBuf;
+v3 = 0L;
+v4 = v0.<io.netty.handler.codec.LengthFieldBasedFrameDecoder: int frameLengthInt>;
+v5 = (int) -1;
+if v4 != v5 goto label6;
+v6 = v0.<io.netty.handler.codec.LengthFieldBasedFrameDecoder: boolean discardingTooLongFrame>;
+if v6 == 0 goto label1;
+specialinvoke v0.<io.netty.handler.codec.LengthFieldBasedFrameDecoder: void discardingTooLongFrame(io.netty.buffer.ByteBuf)>(v2);
+label1:
+v7 = virtualinvoke v2.<io.netty.buffer.ByteBuf: int readableBytes()>();
+v8 = v0.<io.netty.handler.codec.LengthFieldBasedFrameDecoder: int lengthFieldEndOffset>;
+if v7 >= v8 goto label2;
+return null;
+label2:
+v9 = virtualinvoke v2.<io.netty.buffer.ByteBuf: int readerIndex()>();
+v10 = v0.<io.netty.handler.codec.LengthFieldBasedFrameDecoder: int lengthFieldOffset>;
+v11 = v9 + v10;
+v12 = v0.<io.netty.handler.codec.LengthFieldBasedFrameDecoder: int lengthFieldLength>;
+v13 = v0.<io.netty.handler.codec.LengthFieldBasedFrameDecoder: java.nio.ByteOrder byteOrder>;
+v14 = virtualinvoke v0.<io.netty.handler.codec.LengthFieldBasedFrameDecoder: long getUnadjustedFrameLength(io.netty.buffer.ByteBuf,int,int,java.nio.ByteOrder)>(v2, v11, v12, v13);
+v15 = v14 cmp 0L;
+if v15 >= 0 goto label3;
+v16 = v0.<io.netty.handler.codec.LengthFieldBasedFrameDecoder: int lengthFieldEndOffset>;
+staticinvoke <io.netty.handler.codec.LengthFieldBasedFrameDecoder: void failOnNegativeLengthField(io.netty.buffer.ByteBuf,long,int)>(v2, v14, v16);
+label3:
+v17 = v0.<io.netty.handler.codec.LengthFieldBasedFrameDecoder: int lengthAdjustment>;
+v18 = v0.<io.netty.handler.codec.LengthFieldBasedFrameDecoder: int lengthFieldEndOffset>;
+v19 = v17 + v18;
+v3 = v14 + v19;
+v20 = v0.<io.netty.handler.codec.LengthFieldBasedFrameDecoder: int lengthFieldEndOffset>;
+v21 = v3 cmp v20;
+if v21 >= 0 goto label4;
+v22 = v0.<io.netty.handler.codec.LengthFieldBasedFrameDecoder: int lengthFieldEndOffset>;
+staticinvoke <io.netty.handler.codec.LengthFieldBasedFrameDecoder: void failOnFrameLengthLessThanLengthFieldEndOffset(io.netty.buffer.ByteBuf,long,int)>(v2, v3, v22);
+label4:
+v23 = v0.<io.netty.handler.codec.LengthFieldBasedFrameDecoder: int maxFrameLength>;
+v24 = v3 cmp v23;
+if v24 <= 0 goto label5;
+specialinvoke v0.<io.netty.handler.codec.LengthFieldBasedFrameDecoder: void exceededFrameLength(io.netty.buffer.ByteBuf,long)>(v2, v3);
+return null;
+label5:
+v0.<io.netty.handler.codec.LengthFieldBasedFrameDecoder: int frameLengthInt> = v3;
+label6:
+v25 = virtualinvoke v2.<io.netty.buffer.ByteBuf: int readableBytes()>();
+v26 = v0.<io.netty.handler.codec.LengthFieldBasedFrameDecoder: int frameLengthInt>;
+if v25 >= v26 goto label7;
+return null;
+label7:
+v27 = v0.<io.netty.handler.codec.LengthFieldBasedFrameDecoder: int initialBytesToStrip>;
+v28 = v0.<io.netty.handler.codec.LengthFieldBasedFrameDecoder: int frameLengthInt>;
+if v27 <= v28 goto label8;
+v29 = v0.<io.netty.handler.codec.LengthFieldBasedFrameDecoder: int initialBytesToStrip>;
+staticinvoke <io.netty.handler.codec.LengthFieldBasedFrameDecoder: void failOnFrameLengthLessThanInitialBytesToStrip(io.netty.buffer.ByteBuf,long,int)>(v2, v3, v29);
+label8:
+v30 = v0.<io.netty.handler.codec.LengthFieldBasedFrameDecoder: int initialBytesToStrip>;
+virtualinvoke v2.<io.netty.buffer.ByteBuf: io.netty.buffer.ByteBuf skipBytes(int)>(v30);
+v31 = virtualinvoke v2.<io.netty.buffer.ByteBuf: int readerIndex()>();
+v32 = v0.<io.netty.handler.codec.LengthFieldBasedFrameDecoder: int frameLengthInt>;
+v33 = v0.<io.netty.handler.codec.LengthFieldBasedFrameDecoder: int initialBytesToStrip>;
+v34 = v32 - v33;
+v35 = virtualinvoke v0.<io.netty.handler.codec.LengthFieldBasedFrameDecoder: io.netty.buffer.ByteBuf extractFrame(io.netty.channel.ChannelHandlerContext,io.netty.buffer.ByteBuf,int,int)>(v1, v2, v31, v34);
+v36 = v31 + v34;
+virtualinvoke v2.<io.netty.buffer.ByteBuf: io.netty.buffer.ByteBuf readerIndex(int)>(v36);
+v37 = (int) -1;
+v0.<io.netty.handler.codec.LengthFieldBasedFrameDecoder: int frameLengthInt> = v37;
+return v35;
+}
+protected long getUnadjustedFrameLength(io.netty.buffer.ByteBuf, int, int, java.nio.ByteOrder)
+{
+io.netty.handler.codec.DecoderException v7;
+io.netty.handler.codec.LengthFieldBasedFrameDecoder v0;
+java.nio.ByteOrder v4;
+short v6;
+io.netty.buffer.ByteBuf v1, v5;
+int v2, v3, v8;
+java.lang.String v9;
+v0 := @this: io.netty.handler.codec.LengthFieldBasedFrameDecoder;
+v1 := @parameter0: io.netty.buffer.ByteBuf;
+v2 := @parameter1: int;
+v3 := @parameter2: int;
+v4 := @parameter3: java.nio.ByteOrder;
+v5 = virtualinvoke v1.<io.netty.buffer.ByteBuf: io.netty.buffer.ByteBuf order(java.nio.ByteOrder)>(v4);
+tableswitch(v3)
+{
+case 1: goto label1;
+case 2: goto label2;
+case 3: goto label3;
+case 4: goto label4;
+case 5: goto label6;
+case 6: goto label6;
+case 7: goto label6;
+case 8: goto label5;
+default: goto label6;
+};
+label1:
+v6 = virtualinvoke v5.<io.netty.buffer.ByteBuf: short getUnsignedByte(int)>(v2);
+goto label7;
+label2:
+virtualinvoke v5.<io.netty.buffer.ByteBuf: int getUnsignedShort(int)>(v2);
+goto label7;
+label3:
+virtualinvoke v5.<io.netty.buffer.ByteBuf: int getUnsignedMedium(int)>(v2);
+goto label7;
+label4:
+v6 = virtualinvoke v5.<io.netty.buffer.ByteBuf: long getUnsignedInt(int)>(v2);
+goto label7;
+label5:
+v6 = virtualinvoke v5.<io.netty.buffer.ByteBuf: long getLong(int)>(v2);
+goto label7;
+label6:
+v7 = new io.netty.handler.codec.DecoderException;
+v8 = v0.<io.netty.handler.codec.LengthFieldBasedFrameDecoder: int lengthFieldLength>;
+v9 = dynamicinvoke "makeConcatWithConstants" <java.lang.String (int)>(v8) <java.lang.invoke.StringConcatFactory: java.lang.invoke.CallSite makeConcatWithConstants(java.lang.invoke.MethodHandles$Lookup,java.lang.String,java.lang.invoke.MethodType,java.lang.String,java.lang.Object[])>("unsupported lengthFieldLength: \u0001 (expected: 1, 2, 3, 4, or 8)");
+specialinvoke v7.<io.netty.handler.codec.DecoderException: void <init>(java.lang.String)>(v9);
+throw v7;
+label7:
+return v6;
+}
+private void failIfNecessary(boolean)
+{
+io.netty.handler.codec.LengthFieldBasedFrameDecoder v0;
+long v2, v4, v7;
+byte v3;
+boolean v1, v5, v6;
+v0 := @this: io.netty.handler.codec.LengthFieldBasedFrameDecoder;
+v1 := @parameter0: boolean;
+v2 = v0.<io.netty.handler.codec.LengthFieldBasedFrameDecoder: long bytesToDiscard>;
+v3 = v2 cmp 0L;
+if v3 != 0 goto label2;
+v4 = v0.<io.netty.handler.codec.LengthFieldBasedFrameDecoder: long tooLongFrameLength>;
+v0.<io.netty.handler.codec.LengthFieldBasedFrameDecoder: long tooLongFrameLength> = 0L;
+v0.<io.netty.handler.codec.LengthFieldBasedFrameDecoder: boolean discardingTooLongFrame> = 0;
+v5 = v0.<io.netty.handler.codec.LengthFieldBasedFrameDecoder: boolean failFast>;
+if v5 == 0 goto label1;
+if v1 == 0 goto label3;
+label1:
+specialinvoke v0.<io.netty.handler.codec.LengthFieldBasedFrameDecoder: void fail(long)>(v4);
+goto label3;
+label2:
+v6 = v0.<io.netty.handler.codec.LengthFieldBasedFrameDecoder: boolean failFast>;
+if v6 == 0 goto label3;
+if v1 == 0 goto label3;
+v7 = v0.<io.netty.handler.codec.LengthFieldBasedFrameDecoder: long tooLongFrameLength>;
+specialinvoke v0.<io.netty.handler.codec.LengthFieldBasedFrameDecoder: void fail(long)>(v7);
+label3:
+return;
+}
+protected io.netty.buffer.ByteBuf extractFrame(io.netty.channel.ChannelHandlerContext, io.netty.buffer.ByteBuf, int, int)
+{
+io.netty.channel.ChannelHandlerContext v1;
+io.netty.handler.codec.LengthFieldBasedFrameDecoder v0;
+io.netty.buffer.ByteBuf v2, v5;
+int v3, v4;
+v0 := @this: io.netty.handler.codec.LengthFieldBasedFrameDecoder;
+v1 := @parameter0: io.netty.channel.ChannelHandlerContext;
+v2 := @parameter1: io.netty.buffer.ByteBuf;
+v3 := @parameter2: int;
+v4 := @parameter3: int;
+v5 = virtualinvoke v2.<io.netty.buffer.ByteBuf: io.netty.buffer.ByteBuf retainedSlice(int,int)>(v3, v4);
+return v5;
+}
+private void fail(long)
+{
+io.netty.handler.codec.LengthFieldBasedFrameDecoder v0;
+io.netty.handler.codec.TooLongFrameException v3, v6;
+long v1;
+byte v2;
+int v4, v7;
+java.lang.String v5, v8;
+v0 := @this: io.netty.handler.codec.LengthFieldBasedFrameDecoder;
+v1 := @parameter0: long;
+v2 = v1 cmp 0L;
+if v2 <= 0 goto label1;
+v3 = new io.netty.handler.codec.TooLongFrameException;
+v4 = v0.<io.netty.handler.codec.LengthFieldBasedFrameDecoder: int maxFrameLength>;
+v5 = dynamicinvoke "makeConcatWithConstants" <java.lang.String (int,long)>(v4, v1) <java.lang.invoke.StringConcatFactory: java.lang.invoke.CallSite makeConcatWithConstants(java.lang.invoke.MethodHandles$Lookup,java.lang.String,java.lang.invoke.MethodType,java.lang.String,java.lang.Object[])>("Adjusted frame length exceeds \u0001: \u0001 - discarded");
+specialinvoke v3.<io.netty.handler.codec.TooLongFrameException: void <init>(java.lang.String)>(v5);
+throw v3;
+label1:
+v6 = new io.netty.handler.codec.TooLongFrameException;
+v7 = v0.<io.netty.handler.codec.LengthFieldBasedFrameDecoder: int maxFrameLength>;
+v8 = dynamicinvoke "makeConcatWithConstants" <java.lang.String (int)>(v7) <java.lang.invoke.StringConcatFactory: java.lang.invoke.CallSite makeConcatWithConstants(java.lang.invoke.MethodHandles$Lookup,java.lang.String,java.lang.invoke.MethodType,java.lang.String,java.lang.Object[])>("Adjusted frame length exceeds \u0001 - discarding");
+specialinvoke v6.<io.netty.handler.codec.TooLongFrameException: void <init>(java.lang.String)>(v8);
+throw v6;
+}
+}

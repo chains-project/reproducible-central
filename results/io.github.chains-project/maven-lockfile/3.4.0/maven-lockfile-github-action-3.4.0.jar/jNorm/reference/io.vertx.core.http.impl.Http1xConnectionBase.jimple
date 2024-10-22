@@ -1,0 +1,369 @@
+abstract class io.vertx.core.http.impl.Http1xConnectionBase extends io.vertx.core.net.impl.ConnectionBase implements io.vertx.core.http.HttpConnection
+{
+protected io.vertx.core.http.impl.WebSocketImplBase webSocket;
+void <init>(io.vertx.core.impl.ContextInternal, io.netty.channel.ChannelHandlerContext)
+{
+io.netty.channel.ChannelHandlerContext v2;
+io.vertx.core.impl.ContextInternal v1;
+io.vertx.core.http.impl.Http1xConnectionBase v0;
+v0 := @this: io.vertx.core.http.impl.Http1xConnectionBase;
+v1 := @parameter0: io.vertx.core.impl.ContextInternal;
+v2 := @parameter1: io.netty.channel.ChannelHandlerContext;
+specialinvoke v0.<io.vertx.core.net.impl.ConnectionBase: void <init>(io.vertx.core.impl.ContextInternal,io.netty.channel.ChannelHandlerContext)>(v1, v2);
+return;
+}
+void handleWsFrame(io.netty.handler.codec.http.websocketx.WebSocketFrame)
+{
+java.lang.Throwable v4;
+io.netty.handler.codec.http.websocketx.WebSocketFrame v1;
+io.vertx.core.http.impl.ws.WebSocketFrameInternal v2;
+io.vertx.core.impl.ContextInternal v5;
+io.vertx.core.Handler v6;
+io.vertx.core.http.impl.Http1xConnectionBase v0;
+io.vertx.core.http.impl.WebSocketImplBase v3;
+v0 := @this: io.vertx.core.http.impl.Http1xConnectionBase;
+v1 := @parameter0: io.netty.handler.codec.http.websocketx.WebSocketFrame;
+v2 = specialinvoke v0.<io.vertx.core.http.impl.Http1xConnectionBase: io.vertx.core.http.impl.ws.WebSocketFrameInternal decodeFrame(io.netty.handler.codec.http.websocketx.WebSocketFrame)>(v1);
+entermonitor v0;
+label1:
+v3 = v0.<io.vertx.core.http.impl.Http1xConnectionBase: io.vertx.core.http.impl.WebSocketImplBase webSocket>;
+exitmonitor v0;
+label2:
+goto label4;
+label3:
+v4 := @caughtexception;
+exitmonitor v0;
+throw v4;
+label4:
+if v3 == null goto label5;
+v5 = v3.<io.vertx.core.http.impl.WebSocketImplBase: io.vertx.core.impl.ContextInternal context>;
+virtualinvoke v3.<java.lang.Object: java.lang.Class getClass()>();
+v6 = staticinvoke <io.vertx.core.http.impl.Http1xConnectionBase$handleFrame__1017: io.vertx.core.Handler bootstrap$(io.vertx.core.http.impl.WebSocketImplBase)>(v3);
+interfaceinvoke v5.<io.vertx.core.impl.ContextInternal: void execute(java.lang.Object,io.vertx.core.Handler)>(v2, v6);
+label5:
+return;
+catch java.lang.Throwable from label1 to label2 with label3;
+}
+private io.vertx.core.http.impl.ws.WebSocketFrameInternal decodeFrame(io.netty.handler.codec.http.websocketx.WebSocketFrame)
+{
+java.lang.IllegalStateException v12;
+io.netty.handler.codec.http.websocketx.WebSocketFrame v1;
+io.vertx.core.http.WebSocketFrameType v6;
+io.netty.buffer.ByteBuf v2, v3;
+io.vertx.core.http.impl.ws.WebSocketFrameImpl v14;
+java.lang.String v13;
+io.vertx.core.http.impl.Http1xConnectionBase v0;
+boolean v10, v11, v4, v5, v7, v8, v9;
+v0 := @this: io.vertx.core.http.impl.Http1xConnectionBase;
+v1 := @parameter0: io.netty.handler.codec.http.websocketx.WebSocketFrame;
+v2 = virtualinvoke v1.<io.netty.handler.codec.http.websocketx.WebSocketFrame: io.netty.buffer.ByteBuf content()>();
+v3 = staticinvoke <io.vertx.core.net.impl.VertxHandler: io.netty.buffer.ByteBuf safeBuffer(io.netty.buffer.ByteBuf)>(v2);
+v4 = virtualinvoke v1.<io.netty.handler.codec.http.websocketx.WebSocketFrame: boolean isFinalFragment()>();
+v5 = v1 instanceof io.netty.handler.codec.http.websocketx.BinaryWebSocketFrame;
+if v5 == 0 goto label1;
+v6 = <io.vertx.core.http.WebSocketFrameType: io.vertx.core.http.WebSocketFrameType BINARY>;
+goto label7;
+label1:
+v7 = v1 instanceof io.netty.handler.codec.http.websocketx.CloseWebSocketFrame;
+if v7 == 0 goto label2;
+v6 = <io.vertx.core.http.WebSocketFrameType: io.vertx.core.http.WebSocketFrameType CLOSE>;
+goto label7;
+label2:
+v8 = v1 instanceof io.netty.handler.codec.http.websocketx.PingWebSocketFrame;
+if v8 == 0 goto label3;
+v6 = <io.vertx.core.http.WebSocketFrameType: io.vertx.core.http.WebSocketFrameType PING>;
+goto label7;
+label3:
+v9 = v1 instanceof io.netty.handler.codec.http.websocketx.PongWebSocketFrame;
+if v9 == 0 goto label4;
+v6 = <io.vertx.core.http.WebSocketFrameType: io.vertx.core.http.WebSocketFrameType PONG>;
+goto label7;
+label4:
+v10 = v1 instanceof io.netty.handler.codec.http.websocketx.TextWebSocketFrame;
+if v10 == 0 goto label5;
+v6 = <io.vertx.core.http.WebSocketFrameType: io.vertx.core.http.WebSocketFrameType TEXT>;
+goto label7;
+label5:
+v11 = v1 instanceof io.netty.handler.codec.http.websocketx.ContinuationWebSocketFrame;
+if v11 == 0 goto label6;
+v6 = <io.vertx.core.http.WebSocketFrameType: io.vertx.core.http.WebSocketFrameType CONTINUATION>;
+goto label7;
+label6:
+v12 = new java.lang.IllegalStateException;
+v13 = dynamicinvoke "makeConcatWithConstants" <java.lang.String (io.netty.handler.codec.http.websocketx.WebSocketFrame)>(v1) <java.lang.invoke.StringConcatFactory: java.lang.invoke.CallSite makeConcatWithConstants(java.lang.invoke.MethodHandles$Lookup,java.lang.String,java.lang.invoke.MethodType,java.lang.String,java.lang.Object[])>("Unsupported WebSocket msg \u0001");
+specialinvoke v12.<java.lang.IllegalStateException: void <init>(java.lang.String)>(v13);
+throw v12;
+label7:
+v14 = new io.vertx.core.http.impl.ws.WebSocketFrameImpl;
+specialinvoke v14.<io.vertx.core.http.impl.ws.WebSocketFrameImpl: void <init>(io.vertx.core.http.WebSocketFrameType,io.netty.buffer.ByteBuf,boolean)>(v6, v3, v4);
+return v14;
+}
+public io.vertx.core.Future close()
+{
+java.lang.Throwable v2;
+io.vertx.core.http.impl.Http1xConnectionBase v0;
+io.vertx.core.Future v3, v4;
+io.vertx.core.http.impl.WebSocketImplBase v1;
+v0 := @this: io.vertx.core.http.impl.Http1xConnectionBase;
+entermonitor v0;
+label1:
+v1 = v0.<io.vertx.core.http.impl.Http1xConnectionBase: io.vertx.core.http.impl.WebSocketImplBase webSocket>;
+exitmonitor v0;
+label2:
+goto label4;
+label3:
+v2 := @caughtexception;
+exitmonitor v0;
+throw v2;
+label4:
+if v1 != null goto label5;
+v3 = specialinvoke v0.<io.vertx.core.net.impl.ConnectionBase: io.vertx.core.Future close()>();
+return v3;
+label5:
+virtualinvoke v1.<io.vertx.core.http.impl.WebSocketImplBase: io.vertx.core.Future close()>();
+v4 = virtualinvoke v0.<io.vertx.core.http.impl.Http1xConnectionBase: io.vertx.core.Future closeFuture()>();
+return v4;
+catch java.lang.Throwable from label1 to label2 with label3;
+}
+public io.vertx.core.http.impl.Http1xConnectionBase closeHandler(io.vertx.core.Handler)
+{
+io.vertx.core.Handler v1;
+io.vertx.core.http.impl.Http1xConnectionBase v0;
+io.vertx.core.net.impl.ConnectionBase v2;
+v0 := @this: io.vertx.core.http.impl.Http1xConnectionBase;
+v1 := @parameter0: io.vertx.core.Handler;
+v2 = specialinvoke v0.<io.vertx.core.net.impl.ConnectionBase: io.vertx.core.net.impl.ConnectionBase closeHandler(io.vertx.core.Handler)>(v1);
+return v2;
+}
+public io.vertx.core.http.impl.Http1xConnectionBase exceptionHandler(io.vertx.core.Handler)
+{
+io.vertx.core.Handler v1;
+io.vertx.core.http.impl.Http1xConnectionBase v0;
+io.vertx.core.net.impl.ConnectionBase v2;
+v0 := @this: io.vertx.core.http.impl.Http1xConnectionBase;
+v1 := @parameter0: io.vertx.core.Handler;
+v2 = specialinvoke v0.<io.vertx.core.net.impl.ConnectionBase: io.vertx.core.net.impl.ConnectionBase exceptionHandler(io.vertx.core.Handler)>(v1);
+return v2;
+}
+public io.vertx.core.http.HttpConnection goAway(long, int, io.vertx.core.buffer.Buffer)
+{
+java.lang.UnsupportedOperationException v4;
+io.vertx.core.buffer.Buffer v3;
+int v2;
+long v1;
+io.vertx.core.http.impl.Http1xConnectionBase v0;
+v0 := @this: io.vertx.core.http.impl.Http1xConnectionBase;
+v1 := @parameter0: long;
+v2 := @parameter1: int;
+v3 := @parameter2: io.vertx.core.buffer.Buffer;
+v4 = new java.lang.UnsupportedOperationException;
+specialinvoke v4.<java.lang.UnsupportedOperationException: void <init>(java.lang.String)>("HTTP/1.x connections don\'t support GOAWAY");
+throw v4;
+}
+public io.vertx.core.http.HttpConnection goAwayHandler(io.vertx.core.Handler)
+{
+java.lang.UnsupportedOperationException v2;
+io.vertx.core.Handler v1;
+io.vertx.core.http.impl.Http1xConnectionBase v0;
+v0 := @this: io.vertx.core.http.impl.Http1xConnectionBase;
+v1 := @parameter0: io.vertx.core.Handler;
+v2 = new java.lang.UnsupportedOperationException;
+specialinvoke v2.<java.lang.UnsupportedOperationException: void <init>(java.lang.String)>("HTTP/1.x connections don\'t support GOAWAY");
+throw v2;
+}
+public io.vertx.core.http.HttpConnection shutdownHandler(io.vertx.core.Handler)
+{
+java.lang.UnsupportedOperationException v2;
+io.vertx.core.Handler v1;
+io.vertx.core.http.impl.Http1xConnectionBase v0;
+v0 := @this: io.vertx.core.http.impl.Http1xConnectionBase;
+v1 := @parameter0: io.vertx.core.Handler;
+v2 = new java.lang.UnsupportedOperationException;
+specialinvoke v2.<java.lang.UnsupportedOperationException: void <init>(java.lang.String)>("HTTP/1.x connections cannot be shutdown");
+throw v2;
+}
+public void shutdown(long, io.vertx.core.Handler)
+{
+java.lang.UnsupportedOperationException v3;
+long v1;
+io.vertx.core.Handler v2;
+io.vertx.core.http.impl.Http1xConnectionBase v0;
+v0 := @this: io.vertx.core.http.impl.Http1xConnectionBase;
+v1 := @parameter0: long;
+v2 := @parameter1: io.vertx.core.Handler;
+v3 = new java.lang.UnsupportedOperationException;
+specialinvoke v3.<java.lang.UnsupportedOperationException: void <init>(java.lang.String)>("HTTP/1.x connections cannot be shutdown");
+throw v3;
+}
+public io.vertx.core.Future shutdown(long)
+{
+java.lang.UnsupportedOperationException v2;
+long v1;
+io.vertx.core.http.impl.Http1xConnectionBase v0;
+v0 := @this: io.vertx.core.http.impl.Http1xConnectionBase;
+v1 := @parameter0: long;
+v2 = new java.lang.UnsupportedOperationException;
+specialinvoke v2.<java.lang.UnsupportedOperationException: void <init>(java.lang.String)>("HTTP/1.x connections cannot be shutdown");
+throw v2;
+}
+public io.vertx.core.http.Http2Settings settings()
+{
+java.lang.UnsupportedOperationException v1;
+io.vertx.core.http.impl.Http1xConnectionBase v0;
+v0 := @this: io.vertx.core.http.impl.Http1xConnectionBase;
+v1 = new java.lang.UnsupportedOperationException;
+specialinvoke v1.<java.lang.UnsupportedOperationException: void <init>(java.lang.String)>("HTTP/1.x connections don\'t support SETTINGS");
+throw v1;
+}
+public io.vertx.core.Future updateSettings(io.vertx.core.http.Http2Settings)
+{
+java.lang.UnsupportedOperationException v2;
+io.vertx.core.http.Http2Settings v1;
+io.vertx.core.http.impl.Http1xConnectionBase v0;
+v0 := @this: io.vertx.core.http.impl.Http1xConnectionBase;
+v1 := @parameter0: io.vertx.core.http.Http2Settings;
+v2 = new java.lang.UnsupportedOperationException;
+specialinvoke v2.<java.lang.UnsupportedOperationException: void <init>(java.lang.String)>("HTTP/1.x connections don\'t support SETTINGS");
+throw v2;
+}
+public io.vertx.core.http.HttpConnection updateSettings(io.vertx.core.http.Http2Settings, io.vertx.core.Handler)
+{
+java.lang.UnsupportedOperationException v3;
+io.vertx.core.http.Http2Settings v1;
+io.vertx.core.Handler v2;
+io.vertx.core.http.impl.Http1xConnectionBase v0;
+v0 := @this: io.vertx.core.http.impl.Http1xConnectionBase;
+v1 := @parameter0: io.vertx.core.http.Http2Settings;
+v2 := @parameter1: io.vertx.core.Handler;
+v3 = new java.lang.UnsupportedOperationException;
+specialinvoke v3.<java.lang.UnsupportedOperationException: void <init>(java.lang.String)>("HTTP/1.x connections don\'t support SETTINGS");
+throw v3;
+}
+public io.vertx.core.http.Http2Settings remoteSettings()
+{
+java.lang.UnsupportedOperationException v1;
+io.vertx.core.http.impl.Http1xConnectionBase v0;
+v0 := @this: io.vertx.core.http.impl.Http1xConnectionBase;
+v1 = new java.lang.UnsupportedOperationException;
+specialinvoke v1.<java.lang.UnsupportedOperationException: void <init>(java.lang.String)>("HTTP/1.x connections don\'t support SETTINGS");
+throw v1;
+}
+public io.vertx.core.http.HttpConnection remoteSettingsHandler(io.vertx.core.Handler)
+{
+java.lang.UnsupportedOperationException v2;
+io.vertx.core.Handler v1;
+io.vertx.core.http.impl.Http1xConnectionBase v0;
+v0 := @this: io.vertx.core.http.impl.Http1xConnectionBase;
+v1 := @parameter0: io.vertx.core.Handler;
+v2 = new java.lang.UnsupportedOperationException;
+specialinvoke v2.<java.lang.UnsupportedOperationException: void <init>(java.lang.String)>("HTTP/1.x connections don\'t support SETTINGS");
+throw v2;
+}
+public io.vertx.core.http.HttpConnection ping(io.vertx.core.buffer.Buffer, io.vertx.core.Handler)
+{
+java.lang.UnsupportedOperationException v3;
+io.vertx.core.buffer.Buffer v1;
+io.vertx.core.Handler v2;
+io.vertx.core.http.impl.Http1xConnectionBase v0;
+v0 := @this: io.vertx.core.http.impl.Http1xConnectionBase;
+v1 := @parameter0: io.vertx.core.buffer.Buffer;
+v2 := @parameter1: io.vertx.core.Handler;
+v3 = new java.lang.UnsupportedOperationException;
+specialinvoke v3.<java.lang.UnsupportedOperationException: void <init>(java.lang.String)>("HTTP/1.x connections don\'t support PING");
+throw v3;
+}
+public io.vertx.core.http.HttpConnection pingHandler(io.vertx.core.Handler)
+{
+java.lang.UnsupportedOperationException v2;
+io.vertx.core.Handler v1;
+io.vertx.core.http.impl.Http1xConnectionBase v0;
+v0 := @this: io.vertx.core.http.impl.Http1xConnectionBase;
+v1 := @parameter0: io.vertx.core.Handler;
+v2 = new java.lang.UnsupportedOperationException;
+specialinvoke v2.<java.lang.UnsupportedOperationException: void <init>(java.lang.String)>("HTTP/1.x connections don\'t support PING");
+throw v2;
+}
+public io.vertx.core.Future ping(io.vertx.core.buffer.Buffer)
+{
+java.lang.UnsupportedOperationException v2;
+io.vertx.core.buffer.Buffer v1;
+io.vertx.core.http.impl.Http1xConnectionBase v0;
+v0 := @this: io.vertx.core.http.impl.Http1xConnectionBase;
+v1 := @parameter0: io.vertx.core.buffer.Buffer;
+v2 = new java.lang.UnsupportedOperationException;
+specialinvoke v2.<java.lang.UnsupportedOperationException: void <init>(java.lang.String)>("HTTP/1.x connections don\'t support PING");
+throw v2;
+}
+protected long sizeof(java.lang.Object)
+{
+long v24, v26, v27, v28;
+io.netty.handler.codec.http.LastHttpContent v3;
+io.netty.buffer.ByteBuf v12, v15, v18, v2, v21, v5;
+int v10, v13, v16, v19, v22, v6, v8;
+io.vertx.core.http.impl.Http1xConnectionBase v0;
+boolean v11, v14, v17, v20, v23, v25, v4, v7, v9;
+java.lang.Object v1;
+v0 := @this: io.vertx.core.http.impl.Http1xConnectionBase;
+v1 := @parameter0: java.lang.Object;
+v2 = <io.netty.buffer.Unpooled: io.netty.buffer.ByteBuf EMPTY_BUFFER>;
+if v1 == v2 goto label01;
+v3 = <io.netty.handler.codec.http.LastHttpContent: io.netty.handler.codec.http.LastHttpContent EMPTY_LAST_CONTENT>;
+if v1 != v3 goto label02;
+label01:
+return 0L;
+label02:
+v4 = v1 instanceof io.vertx.core.http.impl.AssembledHttpResponse;
+if v4 == 0 goto label03;
+v5 = virtualinvoke v1.<io.vertx.core.http.impl.AssembledHttpResponse: io.netty.buffer.ByteBuf content()>();
+v6 = virtualinvoke v5.<io.netty.buffer.ByteBuf: int readableBytes()>();
+return v6;
+label03:
+v7 = v1 instanceof io.vertx.core.buffer.Buffer;
+if v7 == 0 goto label04;
+v8 = interfaceinvoke v1.<io.vertx.core.buffer.Buffer: int length()>();
+return v8;
+label04:
+v9 = v1 instanceof io.netty.buffer.ByteBuf;
+if v9 == 0 goto label05;
+v10 = virtualinvoke v1.<io.netty.buffer.ByteBuf: int readableBytes()>();
+return v10;
+label05:
+v11 = v1 instanceof io.netty.handler.codec.http.FullHttpMessage;
+if v11 == 0 goto label06;
+v12 = interfaceinvoke v1.<io.netty.handler.codec.http.FullHttpMessage: io.netty.buffer.ByteBuf content()>();
+v13 = virtualinvoke v12.<io.netty.buffer.ByteBuf: int readableBytes()>();
+return v13;
+label06:
+v14 = v1 instanceof io.netty.handler.codec.http.LastHttpContent;
+if v14 == 0 goto label07;
+v15 = interfaceinvoke v1.<io.netty.handler.codec.http.LastHttpContent: io.netty.buffer.ByteBuf content()>();
+v16 = virtualinvoke v15.<io.netty.buffer.ByteBuf: int readableBytes()>();
+return v16;
+label07:
+v17 = v1 instanceof io.netty.handler.codec.http.HttpContent;
+if v17 == 0 goto label08;
+v18 = interfaceinvoke v1.<io.netty.handler.codec.http.HttpContent: io.netty.buffer.ByteBuf content()>();
+v19 = virtualinvoke v18.<io.netty.buffer.ByteBuf: int readableBytes()>();
+return v19;
+label08:
+v20 = v1 instanceof io.netty.handler.codec.http.websocketx.WebSocketFrame;
+if v20 == 0 goto label09;
+v21 = virtualinvoke v1.<io.netty.handler.codec.http.websocketx.WebSocketFrame: io.netty.buffer.ByteBuf content()>();
+v22 = virtualinvoke v21.<io.netty.buffer.ByteBuf: int readableBytes()>();
+return v22;
+label09:
+v23 = v1 instanceof io.netty.channel.FileRegion;
+if v23 == 0 goto label10;
+v24 = interfaceinvoke v1.<io.netty.channel.FileRegion: long count()>();
+return v24;
+label10:
+v25 = v1 instanceof io.netty.handler.stream.ChunkedFile;
+if v25 == 0 goto label11;
+v26 = virtualinvoke v1.<io.netty.handler.stream.ChunkedFile: long endOffset()>();
+v27 = virtualinvoke v1.<io.netty.handler.stream.ChunkedFile: long startOffset()>();
+v28 = v26 - v27;
+return v28;
+label11:
+return 0L;
+}
+}

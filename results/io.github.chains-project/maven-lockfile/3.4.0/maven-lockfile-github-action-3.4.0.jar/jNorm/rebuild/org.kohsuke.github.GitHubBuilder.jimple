@@ -1,0 +1,423 @@
+public class org.kohsuke.github.GitHubBuilder extends java.lang.Object implements java.lang.Cloneable
+{
+static java.io.File HOME_DIRECTORY;
+java.lang.String endpoint;
+private org.kohsuke.github.connector.GitHubConnector connector;
+private org.kohsuke.github.GitHubRateLimitHandler rateLimitHandler;
+private org.kohsuke.github.GitHubAbuseLimitHandler abuseLimitHandler;
+private org.kohsuke.github.GitHubRateLimitChecker rateLimitChecker;
+org.kohsuke.github.authorization.AuthorizationProvider authorizationProvider;
+public void <init>()
+{
+org.kohsuke.github.GitHubRateLimitChecker v3;
+org.kohsuke.github.RateLimitHandler v1;
+org.kohsuke.github.AbuseLimitHandler v2;
+org.kohsuke.github.GitHubBuilder v0;
+org.kohsuke.github.authorization.AuthorizationProvider v4;
+v0 := @this: org.kohsuke.github.GitHubBuilder;
+specialinvoke v0.<java.lang.Object: void <init>()>();
+v0.<org.kohsuke.github.GitHubBuilder: java.lang.String endpoint> = "https://api.github.com";
+v1 = <org.kohsuke.github.RateLimitHandler: org.kohsuke.github.RateLimitHandler WAIT>;
+v0.<org.kohsuke.github.GitHubBuilder: org.kohsuke.github.GitHubRateLimitHandler rateLimitHandler> = v1;
+v2 = <org.kohsuke.github.AbuseLimitHandler: org.kohsuke.github.AbuseLimitHandler WAIT>;
+v0.<org.kohsuke.github.GitHubBuilder: org.kohsuke.github.GitHubAbuseLimitHandler abuseLimitHandler> = v2;
+v3 = new org.kohsuke.github.GitHubRateLimitChecker;
+specialinvoke v3.<org.kohsuke.github.GitHubRateLimitChecker: void <init>()>();
+v0.<org.kohsuke.github.GitHubBuilder: org.kohsuke.github.GitHubRateLimitChecker rateLimitChecker> = v3;
+v4 = <org.kohsuke.github.authorization.AuthorizationProvider: org.kohsuke.github.authorization.AuthorizationProvider ANONYMOUS>;
+v0.<org.kohsuke.github.GitHubBuilder: org.kohsuke.github.authorization.AuthorizationProvider authorizationProvider> = v4;
+return;
+}
+static org.kohsuke.github.GitHubBuilder fromCredentials() throws java.io.IOException
+{
+java.lang.Throwable v9;
+java.io.IOException v8;
+java.io.FileNotFoundException v0, v7;
+org.kohsuke.github.GitHubBuilder v1, v4;
+org.kohsuke.github.authorization.AuthorizationProvider v2, v3, v5, v6;
+v0 = null;
+v1 = staticinvoke <org.kohsuke.github.GitHubBuilder: org.kohsuke.github.GitHubBuilder fromEnvironment()>();
+v2 = v1.<org.kohsuke.github.GitHubBuilder: org.kohsuke.github.authorization.AuthorizationProvider authorizationProvider>;
+v3 = <org.kohsuke.github.authorization.AuthorizationProvider: org.kohsuke.github.authorization.AuthorizationProvider ANONYMOUS>;
+if v2 == v3 goto label1;
+return v1;
+label1:
+v4 = staticinvoke <org.kohsuke.github.GitHubBuilder: org.kohsuke.github.GitHubBuilder fromPropertyFile()>();
+v5 = v4.<org.kohsuke.github.GitHubBuilder: org.kohsuke.github.authorization.AuthorizationProvider authorizationProvider>;
+v6 = <org.kohsuke.github.authorization.AuthorizationProvider: org.kohsuke.github.authorization.AuthorizationProvider ANONYMOUS>;
+if v5 == v6 goto label4;
+label2:
+return v4;
+label3:
+v7 := @caughtexception;
+v0 = v7;
+label4:
+v8 = new java.io.IOException;
+specialinvoke v8.<java.io.IOException: void <init>(java.lang.String)>("Failed to resolve credentials from ~/.github or the environment.");
+v9 = virtualinvoke v8.<java.io.IOException: java.lang.Throwable initCause(java.lang.Throwable)>(v0);
+throw v9;
+catch java.io.FileNotFoundException from label1 to label2 with label3;
+}
+public static org.kohsuke.github.GitHubBuilder fromEnvironment(java.lang.String, java.lang.String, java.lang.String) throws java.io.IOException
+{
+java.lang.String v0, v1, v2;
+org.kohsuke.github.GitHubBuilder v3;
+v0 := @parameter0: java.lang.String;
+v1 := @parameter1: java.lang.String;
+v2 := @parameter2: java.lang.String;
+v3 = staticinvoke <org.kohsuke.github.GitHubBuilder: org.kohsuke.github.GitHubBuilder fromEnvironment(java.lang.String,java.lang.String,java.lang.String,java.lang.String)>(v0, v1, v2, "");
+return v3;
+}
+private static void loadIfSet(java.lang.String, java.util.Properties, java.lang.String)
+{
+java.util.Properties v1;
+java.lang.String v0, v2, v3;
+v0 := @parameter0: java.lang.String;
+v1 := @parameter1: java.util.Properties;
+v2 := @parameter2: java.lang.String;
+v3 = staticinvoke <java.lang.System: java.lang.String getenv(java.lang.String)>(v0);
+if v3 == null goto label1;
+virtualinvoke v1.<java.util.Properties: java.lang.Object put(java.lang.Object,java.lang.Object)>(v2, v3);
+label1:
+return;
+}
+public static org.kohsuke.github.GitHubBuilder fromEnvironment(java.lang.String, java.lang.String, java.lang.String, java.lang.String) throws java.io.IOException
+{
+java.util.Properties v4;
+java.lang.String v0, v1, v2, v3;
+org.kohsuke.github.GitHubBuilder v5;
+v0 := @parameter0: java.lang.String;
+v1 := @parameter1: java.lang.String;
+v2 := @parameter2: java.lang.String;
+v3 := @parameter3: java.lang.String;
+v4 = new java.util.Properties;
+specialinvoke v4.<java.util.Properties: void <init>()>();
+staticinvoke <org.kohsuke.github.GitHubBuilder: void loadIfSet(java.lang.String,java.util.Properties,java.lang.String)>(v0, v4, "login");
+staticinvoke <org.kohsuke.github.GitHubBuilder: void loadIfSet(java.lang.String,java.util.Properties,java.lang.String)>(v1, v4, "password");
+staticinvoke <org.kohsuke.github.GitHubBuilder: void loadIfSet(java.lang.String,java.util.Properties,java.lang.String)>(v2, v4, "oauth");
+staticinvoke <org.kohsuke.github.GitHubBuilder: void loadIfSet(java.lang.String,java.util.Properties,java.lang.String)>(v3, v4, "endpoint");
+v5 = staticinvoke <org.kohsuke.github.GitHubBuilder: org.kohsuke.github.GitHubBuilder fromProperties(java.util.Properties)>(v4);
+return v5;
+}
+public static org.kohsuke.github.GitHubBuilder fromEnvironment() throws java.io.IOException
+{
+java.util.Properties v0;
+java.util.Iterator v3;
+java.util.Set v2;
+org.kohsuke.github.GitHubBuilder v11;
+java.util.Locale v7;
+java.util.Map v1;
+java.lang.Object v10, v5, v6;
+java.lang.String v8;
+boolean v4, v9;
+v0 = new java.util.Properties;
+specialinvoke v0.<java.util.Properties: void <init>()>();
+v1 = staticinvoke <java.lang.System: java.util.Map getenv()>();
+v2 = interfaceinvoke v1.<java.util.Map: java.util.Set entrySet()>();
+v3 = interfaceinvoke v2.<java.util.Set: java.util.Iterator iterator()>();
+label1:
+v4 = interfaceinvoke v3.<java.util.Iterator: boolean hasNext()>();
+if v4 == 0 goto label3;
+v5 = interfaceinvoke v3.<java.util.Iterator: java.lang.Object next()>();
+v6 = interfaceinvoke v5.<java.util.Map$Entry: java.lang.Object getKey()>();
+v7 = <java.util.Locale: java.util.Locale ENGLISH>;
+v8 = virtualinvoke v6.<java.lang.String: java.lang.String toLowerCase(java.util.Locale)>(v7);
+v9 = virtualinvoke v8.<java.lang.String: boolean startsWith(java.lang.String)>("github_");
+if v9 == 0 goto label2;
+v8 = virtualinvoke v8.<java.lang.String: java.lang.String substring(int)>(7);
+label2:
+v10 = interfaceinvoke v5.<java.util.Map$Entry: java.lang.Object getValue()>();
+virtualinvoke v0.<java.util.Properties: java.lang.Object put(java.lang.Object,java.lang.Object)>(v8, v10);
+goto label1;
+label3:
+v11 = staticinvoke <org.kohsuke.github.GitHubBuilder: org.kohsuke.github.GitHubBuilder fromProperties(java.util.Properties)>(v0);
+return v11;
+}
+public static org.kohsuke.github.GitHubBuilder fromPropertyFile() throws java.io.IOException
+{
+java.lang.String v2, v4;
+java.io.File v0, v1, v3;
+org.kohsuke.github.GitHubBuilder v5;
+v0 = <org.kohsuke.github.GitHubBuilder: java.io.File HOME_DIRECTORY>;
+if v0 == null goto label1;
+v1 = <org.kohsuke.github.GitHubBuilder: java.io.File HOME_DIRECTORY>;
+goto label2;
+label1:
+v1 = new java.io.File;
+v2 = staticinvoke <java.lang.System: java.lang.String getProperty(java.lang.String)>("user.home");
+specialinvoke v1.<java.io.File: void <init>(java.lang.String)>(v2);
+label2:
+v3 = new java.io.File;
+specialinvoke v3.<java.io.File: void <init>(java.io.File,java.lang.String)>(v1, ".github");
+v4 = virtualinvoke v3.<java.io.File: java.lang.String getPath()>();
+v5 = staticinvoke <org.kohsuke.github.GitHubBuilder: org.kohsuke.github.GitHubBuilder fromPropertyFile(java.lang.String)>(v4);
+return v5;
+}
+public static org.kohsuke.github.GitHubBuilder fromPropertyFile(java.lang.String) throws java.io.IOException
+{
+java.lang.Throwable v4;
+java.util.Properties v1;
+java.io.FileInputStream v2, v3;
+java.lang.String v0;
+org.kohsuke.github.GitHubBuilder v5;
+v0 := @parameter0: java.lang.String;
+v1 = new java.util.Properties;
+specialinvoke v1.<java.util.Properties: void <init>()>();
+v2 = null;
+label1:
+v3 = new java.io.FileInputStream;
+specialinvoke v3.<java.io.FileInputStream: void <init>(java.lang.String)>(v0);
+v2 = v3;
+virtualinvoke v1.<java.util.Properties: void load(java.io.InputStream)>(v3);
+label2:
+staticinvoke <org.apache.commons.io.IOUtils: void closeQuietly(java.io.InputStream)>(v3);
+goto label4;
+label3:
+v4 := @caughtexception;
+staticinvoke <org.apache.commons.io.IOUtils: void closeQuietly(java.io.InputStream)>(v2);
+throw v4;
+label4:
+v5 = staticinvoke <org.kohsuke.github.GitHubBuilder: org.kohsuke.github.GitHubBuilder fromProperties(java.util.Properties)>(v1);
+return v5;
+catch java.lang.Throwable from label1 to label2 with label3;
+}
+public static org.kohsuke.github.GitHubBuilder fromProperties(java.util.Properties)
+{
+java.util.Properties v0;
+java.lang.String v2, v3, v4, v5, v6;
+org.kohsuke.github.GitHubBuilder v1;
+v0 := @parameter0: java.util.Properties;
+v1 = new org.kohsuke.github.GitHubBuilder;
+specialinvoke v1.<org.kohsuke.github.GitHubBuilder: void <init>()>();
+v2 = virtualinvoke v0.<java.util.Properties: java.lang.String getProperty(java.lang.String)>("oauth");
+v3 = virtualinvoke v0.<java.util.Properties: java.lang.String getProperty(java.lang.String)>("jwt");
+v4 = virtualinvoke v0.<java.util.Properties: java.lang.String getProperty(java.lang.String)>("login");
+v5 = virtualinvoke v0.<java.util.Properties: java.lang.String getProperty(java.lang.String)>("password");
+if v2 == null goto label1;
+virtualinvoke v1.<org.kohsuke.github.GitHubBuilder: org.kohsuke.github.GitHubBuilder withOAuthToken(java.lang.String,java.lang.String)>(v2, v4);
+label1:
+if v3 == null goto label2;
+virtualinvoke v1.<org.kohsuke.github.GitHubBuilder: org.kohsuke.github.GitHubBuilder withJwtToken(java.lang.String)>(v3);
+label2:
+if v5 == null goto label3;
+virtualinvoke v1.<org.kohsuke.github.GitHubBuilder: org.kohsuke.github.GitHubBuilder withPassword(java.lang.String,java.lang.String)>(v4, v5);
+label3:
+v6 = virtualinvoke v0.<java.util.Properties: java.lang.String getProperty(java.lang.String,java.lang.String)>("endpoint", "https://api.github.com");
+virtualinvoke v1.<org.kohsuke.github.GitHubBuilder: org.kohsuke.github.GitHubBuilder withEndpoint(java.lang.String)>(v6);
+return v1;
+}
+public org.kohsuke.github.GitHubBuilder withEndpoint(java.lang.String)
+{
+java.lang.String v1;
+org.kohsuke.github.GitHubBuilder v0;
+v0 := @this: org.kohsuke.github.GitHubBuilder;
+v1 := @parameter0: java.lang.String;
+v0.<org.kohsuke.github.GitHubBuilder: java.lang.String endpoint> = v1;
+return v0;
+}
+public org.kohsuke.github.GitHubBuilder withPassword(java.lang.String, java.lang.String)
+{
+java.lang.String v1, v2;
+org.kohsuke.github.GitHubBuilder v0, v4;
+org.kohsuke.github.authorization.AuthorizationProvider v3;
+v0 := @this: org.kohsuke.github.GitHubBuilder;
+v1 := @parameter0: java.lang.String;
+v2 := @parameter1: java.lang.String;
+v3 = staticinvoke <org.kohsuke.github.authorization.ImmutableAuthorizationProvider: org.kohsuke.github.authorization.AuthorizationProvider fromLoginAndPassword(java.lang.String,java.lang.String)>(v1, v2);
+v4 = virtualinvoke v0.<org.kohsuke.github.GitHubBuilder: org.kohsuke.github.GitHubBuilder withAuthorizationProvider(org.kohsuke.github.authorization.AuthorizationProvider)>(v3);
+return v4;
+}
+public org.kohsuke.github.GitHubBuilder withOAuthToken(java.lang.String)
+{
+java.lang.String v1;
+org.kohsuke.github.GitHubBuilder v0, v3;
+org.kohsuke.github.authorization.AuthorizationProvider v2;
+v0 := @this: org.kohsuke.github.GitHubBuilder;
+v1 := @parameter0: java.lang.String;
+v2 = staticinvoke <org.kohsuke.github.authorization.ImmutableAuthorizationProvider: org.kohsuke.github.authorization.AuthorizationProvider fromOauthToken(java.lang.String)>(v1);
+v3 = virtualinvoke v0.<org.kohsuke.github.GitHubBuilder: org.kohsuke.github.GitHubBuilder withAuthorizationProvider(org.kohsuke.github.authorization.AuthorizationProvider)>(v2);
+return v3;
+}
+public org.kohsuke.github.GitHubBuilder withOAuthToken(java.lang.String, java.lang.String)
+{
+java.lang.String v1, v2;
+org.kohsuke.github.GitHubBuilder v0, v4;
+org.kohsuke.github.authorization.AuthorizationProvider v3;
+v0 := @this: org.kohsuke.github.GitHubBuilder;
+v1 := @parameter0: java.lang.String;
+v2 := @parameter1: java.lang.String;
+v3 = staticinvoke <org.kohsuke.github.authorization.ImmutableAuthorizationProvider: org.kohsuke.github.authorization.AuthorizationProvider fromOauthToken(java.lang.String,java.lang.String)>(v1, v2);
+v4 = virtualinvoke v0.<org.kohsuke.github.GitHubBuilder: org.kohsuke.github.GitHubBuilder withAuthorizationProvider(org.kohsuke.github.authorization.AuthorizationProvider)>(v3);
+return v4;
+}
+public org.kohsuke.github.GitHubBuilder withAuthorizationProvider(org.kohsuke.github.authorization.AuthorizationProvider)
+{
+org.kohsuke.github.GitHubBuilder v0;
+org.kohsuke.github.authorization.AuthorizationProvider v1;
+v0 := @this: org.kohsuke.github.GitHubBuilder;
+v1 := @parameter0: org.kohsuke.github.authorization.AuthorizationProvider;
+v0.<org.kohsuke.github.GitHubBuilder: org.kohsuke.github.authorization.AuthorizationProvider authorizationProvider> = v1;
+return v0;
+}
+public org.kohsuke.github.GitHubBuilder withAppInstallationToken(java.lang.String)
+{
+java.lang.String v1;
+org.kohsuke.github.GitHubBuilder v0, v3;
+org.kohsuke.github.authorization.AuthorizationProvider v2;
+v0 := @this: org.kohsuke.github.GitHubBuilder;
+v1 := @parameter0: java.lang.String;
+v2 = staticinvoke <org.kohsuke.github.authorization.ImmutableAuthorizationProvider: org.kohsuke.github.authorization.AuthorizationProvider fromAppInstallationToken(java.lang.String)>(v1);
+v3 = virtualinvoke v0.<org.kohsuke.github.GitHubBuilder: org.kohsuke.github.GitHubBuilder withAuthorizationProvider(org.kohsuke.github.authorization.AuthorizationProvider)>(v2);
+return v3;
+}
+public org.kohsuke.github.GitHubBuilder withJwtToken(java.lang.String)
+{
+java.lang.String v1;
+org.kohsuke.github.GitHubBuilder v0, v3;
+org.kohsuke.github.authorization.AuthorizationProvider v2;
+v0 := @this: org.kohsuke.github.GitHubBuilder;
+v1 := @parameter0: java.lang.String;
+v2 = staticinvoke <org.kohsuke.github.authorization.ImmutableAuthorizationProvider: org.kohsuke.github.authorization.AuthorizationProvider fromJwtToken(java.lang.String)>(v1);
+v3 = virtualinvoke v0.<org.kohsuke.github.GitHubBuilder: org.kohsuke.github.GitHubBuilder withAuthorizationProvider(org.kohsuke.github.authorization.AuthorizationProvider)>(v2);
+return v3;
+}
+public org.kohsuke.github.GitHubBuilder withConnector(org.kohsuke.github.HttpConnector)
+{
+org.kohsuke.github.HttpConnector v1;
+org.kohsuke.github.connector.GitHubConnector v2;
+org.kohsuke.github.GitHubBuilder v0, v3;
+v0 := @this: org.kohsuke.github.GitHubBuilder;
+v1 := @parameter0: org.kohsuke.github.HttpConnector;
+v2 = staticinvoke <org.kohsuke.github.internal.GitHubConnectorHttpConnectorAdapter: org.kohsuke.github.connector.GitHubConnector adapt(org.kohsuke.github.HttpConnector)>(v1);
+v3 = virtualinvoke v0.<org.kohsuke.github.GitHubBuilder: org.kohsuke.github.GitHubBuilder withConnector(org.kohsuke.github.connector.GitHubConnector)>(v2);
+return v3;
+}
+public org.kohsuke.github.GitHubBuilder withConnector(org.kohsuke.github.connector.GitHubConnector)
+{
+org.kohsuke.github.connector.GitHubConnector v1;
+org.kohsuke.github.GitHubBuilder v0;
+v0 := @this: org.kohsuke.github.GitHubBuilder;
+v1 := @parameter0: org.kohsuke.github.connector.GitHubConnector;
+v0.<org.kohsuke.github.GitHubBuilder: org.kohsuke.github.connector.GitHubConnector connector> = v1;
+return v0;
+}
+public org.kohsuke.github.GitHubBuilder withRateLimitHandler(org.kohsuke.github.RateLimitHandler)
+{
+org.kohsuke.github.RateLimitHandler v1;
+org.kohsuke.github.GitHubBuilder v0, v2;
+v0 := @this: org.kohsuke.github.GitHubBuilder;
+v1 := @parameter0: org.kohsuke.github.RateLimitHandler;
+v2 = virtualinvoke v0.<org.kohsuke.github.GitHubBuilder: org.kohsuke.github.GitHubBuilder withRateLimitHandler(org.kohsuke.github.GitHubRateLimitHandler)>(v1);
+return v2;
+}
+public org.kohsuke.github.GitHubBuilder withRateLimitHandler(org.kohsuke.github.GitHubRateLimitHandler)
+{
+org.kohsuke.github.GitHubRateLimitHandler v1;
+org.kohsuke.github.GitHubBuilder v0;
+v0 := @this: org.kohsuke.github.GitHubBuilder;
+v1 := @parameter0: org.kohsuke.github.GitHubRateLimitHandler;
+v0.<org.kohsuke.github.GitHubBuilder: org.kohsuke.github.GitHubRateLimitHandler rateLimitHandler> = v1;
+return v0;
+}
+public org.kohsuke.github.GitHubBuilder withAbuseLimitHandler(org.kohsuke.github.AbuseLimitHandler)
+{
+org.kohsuke.github.AbuseLimitHandler v1;
+org.kohsuke.github.GitHubBuilder v0, v2;
+v0 := @this: org.kohsuke.github.GitHubBuilder;
+v1 := @parameter0: org.kohsuke.github.AbuseLimitHandler;
+v2 = virtualinvoke v0.<org.kohsuke.github.GitHubBuilder: org.kohsuke.github.GitHubBuilder withAbuseLimitHandler(org.kohsuke.github.GitHubAbuseLimitHandler)>(v1);
+return v2;
+}
+public org.kohsuke.github.GitHubBuilder withAbuseLimitHandler(org.kohsuke.github.GitHubAbuseLimitHandler)
+{
+org.kohsuke.github.GitHubAbuseLimitHandler v1;
+org.kohsuke.github.GitHubBuilder v0;
+v0 := @this: org.kohsuke.github.GitHubBuilder;
+v1 := @parameter0: org.kohsuke.github.GitHubAbuseLimitHandler;
+v0.<org.kohsuke.github.GitHubBuilder: org.kohsuke.github.GitHubAbuseLimitHandler abuseLimitHandler> = v1;
+return v0;
+}
+public org.kohsuke.github.GitHubBuilder withRateLimitChecker(org.kohsuke.github.RateLimitChecker)
+{
+org.kohsuke.github.RateLimitChecker v1;
+org.kohsuke.github.RateLimitTarget v2;
+org.kohsuke.github.GitHubBuilder v0, v3;
+v0 := @this: org.kohsuke.github.GitHubBuilder;
+v1 := @parameter0: org.kohsuke.github.RateLimitChecker;
+v2 = <org.kohsuke.github.RateLimitTarget: org.kohsuke.github.RateLimitTarget CORE>;
+v3 = virtualinvoke v0.<org.kohsuke.github.GitHubBuilder: org.kohsuke.github.GitHubBuilder withRateLimitChecker(org.kohsuke.github.RateLimitChecker,org.kohsuke.github.RateLimitTarget)>(v1, v2);
+return v3;
+}
+public org.kohsuke.github.GitHubBuilder withRateLimitChecker(org.kohsuke.github.RateLimitChecker, org.kohsuke.github.RateLimitTarget)
+{
+org.kohsuke.github.RateLimitChecker v1;
+org.kohsuke.github.GitHubRateLimitChecker v3, v4;
+org.kohsuke.github.RateLimitTarget v2;
+org.kohsuke.github.GitHubBuilder v0;
+v0 := @this: org.kohsuke.github.GitHubBuilder;
+v1 := @parameter0: org.kohsuke.github.RateLimitChecker;
+v2 := @parameter1: org.kohsuke.github.RateLimitTarget;
+v3 = v0.<org.kohsuke.github.GitHubBuilder: org.kohsuke.github.GitHubRateLimitChecker rateLimitChecker>;
+v4 = virtualinvoke v3.<org.kohsuke.github.GitHubRateLimitChecker: org.kohsuke.github.GitHubRateLimitChecker 'with'(org.kohsuke.github.RateLimitChecker,org.kohsuke.github.RateLimitTarget)>(v1, v2);
+v0.<org.kohsuke.github.GitHubBuilder: org.kohsuke.github.GitHubRateLimitChecker rateLimitChecker> = v4;
+return v0;
+}
+public org.kohsuke.github.GitHubBuilder withProxy(java.net.Proxy)
+{
+org.kohsuke.github.HttpConnector v3;
+java.net.Proxy v1;
+org.kohsuke.github.GitHubBuilder v0, v4;
+org.kohsuke.github.extras.ImpatientHttpConnector v2;
+v0 := @this: org.kohsuke.github.GitHubBuilder;
+v1 := @parameter0: java.net.Proxy;
+v2 = new org.kohsuke.github.extras.ImpatientHttpConnector;
+v3 = staticinvoke <org.kohsuke.github.GitHubBuilder$lambda_withProxy_0__61: org.kohsuke.github.HttpConnector bootstrap$(java.net.Proxy)>(v1);
+specialinvoke v2.<org.kohsuke.github.extras.ImpatientHttpConnector: void <init>(org.kohsuke.github.HttpConnector)>(v3);
+v4 = virtualinvoke v0.<org.kohsuke.github.GitHubBuilder: org.kohsuke.github.GitHubBuilder withConnector(org.kohsuke.github.HttpConnector)>(v2);
+return v4;
+}
+public org.kohsuke.github.GitHub build() throws java.io.IOException
+{
+org.kohsuke.github.GitHubRateLimitHandler v4;
+org.kohsuke.github.GitHubRateLimitChecker v6;
+org.kohsuke.github.GitHubAbuseLimitHandler v5;
+org.kohsuke.github.connector.GitHubConnector v3;
+org.kohsuke.github.GitHubBuilder v0;
+org.kohsuke.github.authorization.AuthorizationProvider v7;
+java.lang.String v2;
+org.kohsuke.github.GitHub v1;
+v0 := @this: org.kohsuke.github.GitHubBuilder;
+v1 = new org.kohsuke.github.GitHub;
+v2 = v0.<org.kohsuke.github.GitHubBuilder: java.lang.String endpoint>;
+v3 = v0.<org.kohsuke.github.GitHubBuilder: org.kohsuke.github.connector.GitHubConnector connector>;
+v4 = v0.<org.kohsuke.github.GitHubBuilder: org.kohsuke.github.GitHubRateLimitHandler rateLimitHandler>;
+v5 = v0.<org.kohsuke.github.GitHubBuilder: org.kohsuke.github.GitHubAbuseLimitHandler abuseLimitHandler>;
+v6 = v0.<org.kohsuke.github.GitHubBuilder: org.kohsuke.github.GitHubRateLimitChecker rateLimitChecker>;
+v7 = v0.<org.kohsuke.github.GitHubBuilder: org.kohsuke.github.authorization.AuthorizationProvider authorizationProvider>;
+specialinvoke v1.<org.kohsuke.github.GitHub: void <init>(java.lang.String,org.kohsuke.github.connector.GitHubConnector,org.kohsuke.github.GitHubRateLimitHandler,org.kohsuke.github.GitHubAbuseLimitHandler,org.kohsuke.github.GitHubRateLimitChecker,org.kohsuke.github.authorization.AuthorizationProvider)>(v2, v3, v4, v5, v6, v7);
+return v1;
+}
+public org.kohsuke.github.GitHubBuilder clone()
+{
+java.lang.Object v1;
+java.lang.RuntimeException v3;
+java.lang.CloneNotSupportedException v2;
+org.kohsuke.github.GitHubBuilder v0;
+v0 := @this: org.kohsuke.github.GitHubBuilder;
+label1:
+v1 = specialinvoke v0.<java.lang.Object: java.lang.Object clone()>();
+label2:
+return v1;
+label3:
+v2 := @caughtexception;
+v3 = new java.lang.RuntimeException;
+specialinvoke v3.<java.lang.RuntimeException: void <init>(java.lang.String,java.lang.Throwable)>("Clone should be supported", v2);
+throw v3;
+catch java.lang.CloneNotSupportedException from label1 to label2 with label3;
+}
+static void <clinit>()
+{
+<org.kohsuke.github.GitHubBuilder: java.io.File HOME_DIRECTORY> = null;
+return;
+}
+}

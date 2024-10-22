@@ -1,0 +1,330 @@
+public final class io.netty.util.internal.MacAddressUtil extends java.lang.Object
+{
+private static final io.netty.util.internal.logging.InternalLogger logger;
+private static final int EUI64_MAC_ADDRESS_LENGTH;
+private static final int EUI48_MAC_ADDRESS_LENGTH;
+public static byte[] bestAvailableMac()
+{
+byte[] v0, v18, v26, v28, v29;
+java.util.Enumeration v7;
+java.net.InetAddress v1;
+java.util.LinkedHashMap v2;
+java.net.SocketException v19;
+int v22, v23, v24, v25, v27;
+boolean v10, v13, v17, v21, v5, v8;
+java.util.Iterator v12, v4;
+java.util.Collection v3;
+java.util.Set v11;
+io.netty.util.internal.logging.InternalLogger v20;
+java.lang.Object v14, v15, v16, v6, v9;
+v0 = <io.netty.util.internal.EmptyArrays: byte[] EMPTY_BYTES>;
+v1 = <io.netty.util.NetUtil: java.net.Inet4Address LOCALHOST4>;
+v2 = new java.util.LinkedHashMap;
+specialinvoke v2.<java.util.LinkedHashMap: void <init>()>();
+v3 = <io.netty.util.NetUtil: java.util.Collection NETWORK_INTERFACES>;
+v4 = interfaceinvoke v3.<java.util.Collection: java.util.Iterator iterator()>();
+label01:
+v5 = interfaceinvoke v4.<java.util.Iterator: boolean hasNext()>();
+if v5 == 0 goto label02;
+v6 = interfaceinvoke v4.<java.util.Iterator: java.lang.Object next()>();
+v7 = staticinvoke <io.netty.util.internal.SocketUtils: java.util.Enumeration addressesFromNetworkInterface(java.net.NetworkInterface)>(v6);
+v8 = interfaceinvoke v7.<java.util.Enumeration: boolean hasMoreElements()>();
+if v8 == 0 goto label01;
+v9 = interfaceinvoke v7.<java.util.Enumeration: java.lang.Object nextElement()>();
+v10 = virtualinvoke v9.<java.net.InetAddress: boolean isLoopbackAddress()>();
+if v10 != 0 goto label01;
+interfaceinvoke v2.<java.util.Map: java.lang.Object put(java.lang.Object,java.lang.Object)>(v6, v9);
+goto label01;
+label02:
+v11 = interfaceinvoke v2.<java.util.Map: java.util.Set entrySet()>();
+v12 = interfaceinvoke v11.<java.util.Set: java.util.Iterator iterator()>();
+label03:
+v13 = interfaceinvoke v12.<java.util.Iterator: boolean hasNext()>();
+if v13 == 0 goto label11;
+v14 = interfaceinvoke v12.<java.util.Iterator: java.lang.Object next()>();
+v15 = interfaceinvoke v14.<java.util.Map$Entry: java.lang.Object getKey()>();
+v16 = interfaceinvoke v14.<java.util.Map$Entry: java.lang.Object getValue()>();
+v17 = virtualinvoke v15.<java.net.NetworkInterface: boolean isVirtual()>();
+if v17 != 0 goto label03;
+label04:
+v18 = staticinvoke <io.netty.util.internal.SocketUtils: byte[] hardwareAddressFromNetworkInterface(java.net.NetworkInterface)>(v15);
+label05:
+goto label07;
+label06:
+v19 := @caughtexception;
+v20 = <io.netty.util.internal.MacAddressUtil: io.netty.util.internal.logging.InternalLogger logger>;
+interfaceinvoke v20.<io.netty.util.internal.logging.InternalLogger: void debug(java.lang.String,java.lang.Object,java.lang.Object)>("Failed to get the hardware address of a network interface: {}", v15, v19);
+goto label03;
+label07:
+v21 = 0;
+v22 = staticinvoke <io.netty.util.internal.MacAddressUtil: int compareAddresses(byte[],byte[])>(v0, v18);
+if v22 >= 0 goto label08;
+v21 = 1;
+goto label10;
+label08:
+if v22 != 0 goto label10;
+v23 = staticinvoke <io.netty.util.internal.MacAddressUtil: int compareAddresses(java.net.InetAddress,java.net.InetAddress)>(v1, v16);
+if v23 >= 0 goto label09;
+v21 = 1;
+goto label10;
+label09:
+if v23 != 0 goto label10;
+v24 = lengthof v0;
+v25 = lengthof v18;
+if v24 >= v25 goto label10;
+v21 = 1;
+label10:
+if v21 == 0 goto label03;
+v0 = v18;
+v1 = v16;
+goto label03;
+label11:
+v26 = <io.netty.util.internal.EmptyArrays: byte[] EMPTY_BYTES>;
+if v0 != v26 goto label12;
+return null;
+label12:
+v27 = lengthof v0;
+if v27 != 6 goto label13;
+v28 = newarray (byte)[8];
+staticinvoke <java.lang.System: void arraycopy(java.lang.Object,int,java.lang.Object,int,int)>(v0, 0, v28, 0, 3);
+v28[3] = -1;
+v28[4] = -2;
+staticinvoke <java.lang.System: void arraycopy(java.lang.Object,int,java.lang.Object,int,int)>(v0, 3, v28, 5, 3);
+v29 = v28;
+goto label14;
+label13:
+v29 = staticinvoke <java.util.Arrays: byte[] copyOf(byte[],int)>(v0, 8);
+label14:
+return v29;
+catch java.net.SocketException from label04 to label05 with label06;
+}
+public static byte[] defaultMachineId()
+{
+byte[] v0;
+io.netty.util.internal.logging.InternalLogger v2;
+java.util.Random v1;
+java.lang.String v3;
+v0 = staticinvoke <io.netty.util.internal.MacAddressUtil: byte[] bestAvailableMac()>();
+if v0 != null goto label1;
+v0 = newarray (byte)[8];
+v1 = staticinvoke <io.netty.util.internal.PlatformDependent: java.util.Random threadLocalRandom()>();
+virtualinvoke v1.<java.util.Random: void nextBytes(byte[])>(v0);
+v2 = <io.netty.util.internal.MacAddressUtil: io.netty.util.internal.logging.InternalLogger logger>;
+v3 = staticinvoke <io.netty.util.internal.MacAddressUtil: java.lang.String formatAddress(byte[])>(v0);
+interfaceinvoke v2.<io.netty.util.internal.logging.InternalLogger: void warn(java.lang.String,java.lang.Object)>("Failed to find a usable hardware address from the network interfaces; using random bytes: {}", v3);
+label1:
+return v0;
+}
+public static byte[] parseMAC(java.lang.String)
+{
+byte[] v3;
+byte v10, v15;
+int v1, v5, v6, v7, v8, v9;
+java.lang.String v0, v14;
+char v11, v13, v2;
+java.lang.IllegalArgumentException v12, v4;
+v0 := @parameter0: java.lang.String;
+v1 = virtualinvoke v0.<java.lang.String: int length()>();
+lookupswitch(v1)
+{
+case 17: goto label1;
+case 23: goto label2;
+default: goto label3;
+};
+label1:
+v2 = virtualinvoke v0.<java.lang.String: char charAt(int)>(2);
+staticinvoke <io.netty.util.internal.MacAddressUtil: void validateMacSeparator(char)>(v2);
+v3 = newarray (byte)[6];
+goto label4;
+label2:
+v2 = virtualinvoke v0.<java.lang.String: char charAt(int)>(2);
+staticinvoke <io.netty.util.internal.MacAddressUtil: void validateMacSeparator(char)>(v2);
+v3 = newarray (byte)[8];
+goto label4;
+label3:
+v4 = new java.lang.IllegalArgumentException;
+specialinvoke v4.<java.lang.IllegalArgumentException: void <init>(java.lang.String)>("value is not supported [MAC-48, EUI-48, EUI-64]");
+throw v4;
+label4:
+v5 = lengthof v3;
+v6 = v5 - 1;
+v7 = 0;
+v8 = 0;
+label5:
+if v8 >= v6 goto label7;
+v9 = v7 + 2;
+v10 = staticinvoke <io.netty.util.internal.StringUtil: byte decodeHexByte(java.lang.CharSequence,int)>(v0, v7);
+v3[v8] = v10;
+v11 = virtualinvoke v0.<java.lang.String: char charAt(int)>(v9);
+if v11 == v2 goto label6;
+v12 = new java.lang.IllegalArgumentException;
+v13 = virtualinvoke v0.<java.lang.String: char charAt(int)>(v9);
+v14 = dynamicinvoke "makeConcatWithConstants" <java.lang.String (char,char,int)>(v2, v13, v9) <java.lang.invoke.StringConcatFactory: java.lang.invoke.CallSite makeConcatWithConstants(java.lang.invoke.MethodHandles$Lookup,java.lang.String,java.lang.invoke.MethodType,java.lang.String,java.lang.Object[])>("expected separator \'\u0001 but got \'\u0001\' at index: \u0001");
+specialinvoke v12.<java.lang.IllegalArgumentException: void <init>(java.lang.String)>(v14);
+throw v12;
+label6:
+v8 = v8 + 1;
+v7 = v7 + 3;
+goto label5;
+label7:
+v15 = staticinvoke <io.netty.util.internal.StringUtil: byte decodeHexByte(java.lang.CharSequence,int)>(v0, v7);
+v3[v6] = v15;
+return v3;
+}
+private static void validateMacSeparator(char)
+{
+char v0;
+java.lang.String v2;
+java.lang.IllegalArgumentException v1;
+v0 := @parameter0: char;
+if v0 == 58 goto label1;
+if v0 == 45 goto label1;
+v1 = new java.lang.IllegalArgumentException;
+v2 = dynamicinvoke "makeConcatWithConstants" <java.lang.String (char)>(v0) <java.lang.invoke.StringConcatFactory: java.lang.invoke.CallSite makeConcatWithConstants(java.lang.invoke.MethodHandles$Lookup,java.lang.String,java.lang.invoke.MethodType,java.lang.String,java.lang.Object[])>("unsupported separator: \u0001 (expected: [:-])");
+specialinvoke v1.<java.lang.IllegalArgumentException: void <init>(java.lang.String)>(v2);
+throw v1;
+label1:
+return;
+}
+public static java.lang.String formatAddress(byte[])
+{
+byte[] v0;
+java.lang.Object[] v5;
+java.lang.Integer v7;
+short v6;
+byte v4;
+int v10, v2, v3, v9;
+java.lang.StringBuilder v1;
+java.lang.String v11, v8;
+v0 := @parameter0: byte[];
+v1 = new java.lang.StringBuilder;
+specialinvoke v1.<java.lang.StringBuilder: void <init>(int)>(24);
+v2 = lengthof v0;
+v3 = 0;
+label1:
+if v3 >= v2 goto label2;
+v4 = v0[v3];
+v5 = newarray (java.lang.Object)[1];
+v6 = v4 & 255;
+v7 = staticinvoke <java.lang.Integer: java.lang.Integer valueOf(int)>(v6);
+v5[0] = v7;
+v8 = staticinvoke <java.lang.String: java.lang.String format(java.lang.String,java.lang.Object[])>("%02x:", v5);
+virtualinvoke v1.<java.lang.StringBuilder: java.lang.StringBuilder append(java.lang.String)>(v8);
+v3 = v3 + 1;
+goto label1;
+label2:
+v9 = virtualinvoke v1.<java.lang.StringBuilder: int length()>();
+v10 = v9 - 1;
+v11 = virtualinvoke v1.<java.lang.StringBuilder: java.lang.String substring(int,int)>(0, v10);
+return v11;
+}
+static int compareAddresses(byte[], byte[])
+{
+byte[] v0, v1;
+byte v10, v12, v13, v16, v17, v6, v7, v8, v9;
+int v11, v14, v15, v2, v4, v5;
+boolean v3;
+v0 := @parameter0: byte[];
+v1 := @parameter1: byte[];
+if v1 == null goto label01;
+v2 = lengthof v1;
+if v2 >= 6 goto label02;
+label01:
+return 1;
+label02:
+v3 = 1;
+v4 = lengthof v1;
+v5 = 0;
+label03:
+if v5 >= v4 goto label05;
+v6 = v1[v5];
+if v6 == 0 goto label04;
+if v6 == 1 goto label04;
+v3 = 0;
+goto label05;
+label04:
+v5 = v5 + 1;
+goto label03;
+label05:
+if v3 == 0 goto label06;
+return 1;
+label06:
+v7 = v1[0];
+v8 = v7 & 1;
+if v8 == 0 goto label07;
+return 1;
+label07:
+v9 = v1[0];
+v10 = v9 & 2;
+if v10 != 0 goto label09;
+v11 = lengthof v0;
+if v11 == 0 goto label08;
+v12 = v0[0];
+v13 = v12 & 2;
+if v13 != 0 goto label08;
+return 0;
+label08:
+v14 = (int) -1;
+return v14;
+label09:
+v15 = lengthof v0;
+if v15 == 0 goto label10;
+v16 = v0[0];
+v17 = v16 & 2;
+if v17 != 0 goto label10;
+return 1;
+label10:
+return 0;
+}
+private static int compareAddresses(java.net.InetAddress, java.net.InetAddress)
+{
+java.net.InetAddress v0, v1;
+int v2, v3, v4;
+v0 := @parameter0: java.net.InetAddress;
+v1 := @parameter1: java.net.InetAddress;
+v2 = staticinvoke <io.netty.util.internal.MacAddressUtil: int scoreAddress(java.net.InetAddress)>(v0);
+v3 = staticinvoke <io.netty.util.internal.MacAddressUtil: int scoreAddress(java.net.InetAddress)>(v1);
+v4 = v2 - v3;
+return v4;
+}
+private static int scoreAddress(java.net.InetAddress)
+{
+java.net.InetAddress v0;
+boolean v1, v2, v3, v4, v5;
+v0 := @parameter0: java.net.InetAddress;
+v1 = virtualinvoke v0.<java.net.InetAddress: boolean isAnyLocalAddress()>();
+if v1 != 0 goto label1;
+v2 = virtualinvoke v0.<java.net.InetAddress: boolean isLoopbackAddress()>();
+if v2 == 0 goto label2;
+label1:
+return 0;
+label2:
+v3 = virtualinvoke v0.<java.net.InetAddress: boolean isMulticastAddress()>();
+if v3 == 0 goto label3;
+return 1;
+label3:
+v4 = virtualinvoke v0.<java.net.InetAddress: boolean isLinkLocalAddress()>();
+if v4 == 0 goto label4;
+return 2;
+label4:
+v5 = virtualinvoke v0.<java.net.InetAddress: boolean isSiteLocalAddress()>();
+if v5 == 0 goto label5;
+return 3;
+label5:
+return 4;
+}
+private void <init>()
+{
+io.netty.util.internal.MacAddressUtil v0;
+v0 := @this: io.netty.util.internal.MacAddressUtil;
+specialinvoke v0.<java.lang.Object: void <init>()>();
+return;
+}
+static void <clinit>()
+{
+io.netty.util.internal.logging.InternalLogger v0;
+v0 = staticinvoke <io.netty.util.internal.logging.InternalLoggerFactory: io.netty.util.internal.logging.InternalLogger getInstance(java.lang.Class)>(class "Lio/netty/util/internal/MacAddressUtil;");
+<io.netty.util.internal.MacAddressUtil: io.netty.util.internal.logging.InternalLogger logger> = v0;
+return;
+}
+}

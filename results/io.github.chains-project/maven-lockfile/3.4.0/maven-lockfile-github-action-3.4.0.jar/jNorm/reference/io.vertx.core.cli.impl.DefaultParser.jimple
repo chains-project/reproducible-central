@@ -1,0 +1,961 @@
+public class io.vertx.core.cli.impl.DefaultParser extends java.lang.Object
+{
+protected java.lang.String token;
+protected io.vertx.core.cli.Option current;
+protected java.util.List expectedOpts;
+private io.vertx.core.cli.impl.DefaultCommandLine commandLine;
+private boolean skipParsing;
+private io.vertx.core.cli.CLI cli;
+public void <init>()
+{
+io.vertx.core.cli.impl.DefaultParser v0;
+v0 := @this: io.vertx.core.cli.impl.DefaultParser;
+specialinvoke v0.<java.lang.Object: void <init>()>();
+return;
+}
+static java.lang.String stripLeadingHyphens(java.lang.String)
+{
+int v2, v5;
+java.lang.String v0, v3, v6;
+boolean v1, v4;
+v0 := @parameter0: java.lang.String;
+if v0 != null goto label1;
+return null;
+label1:
+v1 = virtualinvoke v0.<java.lang.String: boolean startsWith(java.lang.String)>("--");
+if v1 == 0 goto label2;
+v2 = virtualinvoke v0.<java.lang.String: int length()>();
+v3 = virtualinvoke v0.<java.lang.String: java.lang.String substring(int,int)>(2, v2);
+return v3;
+label2:
+v4 = virtualinvoke v0.<java.lang.String: boolean startsWith(java.lang.String)>("-");
+if v4 == 0 goto label3;
+v5 = virtualinvoke v0.<java.lang.String: int length()>();
+v6 = virtualinvoke v0.<java.lang.String: java.lang.String substring(int,int)>(1, v5);
+return v6;
+label3:
+return v0;
+}
+static java.lang.String stripLeadingAndTrailingQuotes(java.lang.String)
+{
+int v1, v4, v6, v7, v8;
+java.lang.String v0, v5;
+boolean v2, v3;
+v0 := @parameter0: java.lang.String;
+v1 = virtualinvoke v0.<java.lang.String: int length()>();
+if v1 <= 1 goto label1;
+v2 = virtualinvoke v0.<java.lang.String: boolean startsWith(java.lang.String)>("\"");
+if v2 == 0 goto label1;
+v3 = virtualinvoke v0.<java.lang.String: boolean endsWith(java.lang.String)>("\"");
+if v3 == 0 goto label1;
+v4 = v1 - 1;
+v5 = virtualinvoke v0.<java.lang.String: java.lang.String substring(int,int)>(1, v4);
+v6 = virtualinvoke v5.<java.lang.String: int indexOf(int)>(34);
+v7 = (int) -1;
+if v6 != v7 goto label1;
+v8 = v1 - 1;
+v0 = virtualinvoke v0.<java.lang.String: java.lang.String substring(int,int)>(1, v8);
+label1:
+return v0;
+}
+public io.vertx.core.cli.CommandLine parse(io.vertx.core.cli.CLI, java.util.List) throws io.vertx.core.cli.CLIException
+{
+io.vertx.core.cli.impl.DefaultParser v0;
+java.util.List v2;
+io.vertx.core.cli.CommandLine v3;
+io.vertx.core.cli.CLI v1;
+v0 := @this: io.vertx.core.cli.impl.DefaultParser;
+v1 := @parameter0: io.vertx.core.cli.CLI;
+v2 := @parameter1: java.util.List;
+v3 = virtualinvoke v0.<io.vertx.core.cli.impl.DefaultParser: io.vertx.core.cli.CommandLine parse(io.vertx.core.cli.CLI,java.util.List,boolean)>(v1, v2, 1);
+return v3;
+}
+public io.vertx.core.cli.CommandLine parse(io.vertx.core.cli.CLI, java.util.List, boolean) throws io.vertx.core.cli.CLIException
+{
+io.vertx.core.cli.impl.DefaultParser v0;
+io.vertx.core.cli.CommandLine v4;
+int v10, v11, v12, v5;
+boolean v26, v3, v8;
+io.vertx.core.cli.CLIException v24;
+java.util.Iterator v7;
+java.util.function.Consumer v17, v20, v22;
+java.util.List v13, v15, v18, v2, v21, v6;
+java.util.stream.Stream v16, v19;
+io.vertx.core.cli.CLI v1;
+io.vertx.core.cli.impl.DefaultCommandLine v23, v25, v27, v28;
+java.lang.Object v9;
+java.util.Comparator v14;
+v0 := @this: io.vertx.core.cli.impl.DefaultParser;
+v1 := @parameter0: io.vertx.core.cli.CLI;
+v2 := @parameter1: java.util.List;
+v3 := @parameter2: boolean;
+v4 = staticinvoke <io.vertx.core.cli.CommandLine: io.vertx.core.cli.CommandLine create(io.vertx.core.cli.CLI)>(v1);
+v0.<io.vertx.core.cli.impl.DefaultParser: io.vertx.core.cli.impl.DefaultCommandLine commandLine> = v4;
+v0.<io.vertx.core.cli.impl.DefaultParser: io.vertx.core.cli.Option current> = null;
+v0.<io.vertx.core.cli.impl.DefaultParser: boolean skipParsing> = 0;
+v0.<io.vertx.core.cli.impl.DefaultParser: io.vertx.core.cli.CLI cli> = v1;
+v5 = 0;
+v6 = interfaceinvoke v1.<io.vertx.core.cli.CLI: java.util.List getArguments()>();
+v7 = interfaceinvoke v6.<java.util.List: java.util.Iterator iterator()>();
+label1:
+v8 = interfaceinvoke v7.<java.util.Iterator: boolean hasNext()>();
+if v8 == 0 goto label3;
+v9 = interfaceinvoke v7.<java.util.Iterator: java.lang.Object next()>();
+v10 = virtualinvoke v9.<io.vertx.core.cli.Argument: int getIndex()>();
+v11 = (int) -1;
+if v10 != v11 goto label2;
+virtualinvoke v9.<io.vertx.core.cli.Argument: io.vertx.core.cli.Argument setIndex(int)>(v5);
+v5 = v5 + 1;
+goto label1;
+label2:
+v12 = virtualinvoke v9.<io.vertx.core.cli.Argument: int getIndex()>();
+v5 = v12 + 1;
+goto label1;
+label3:
+v13 = interfaceinvoke v1.<io.vertx.core.cli.CLI: java.util.List getArguments()>();
+v14 = staticinvoke <io.vertx.core.cli.impl.DefaultParser$lambda_parse_0__1224: java.util.Comparator bootstrap$()>();
+interfaceinvoke v13.<java.util.List: void sort(java.util.Comparator)>(v14);
+v15 = interfaceinvoke v1.<io.vertx.core.cli.CLI: java.util.List getOptions()>();
+v16 = interfaceinvoke v15.<java.util.List: java.util.stream.Stream stream()>();
+v17 = staticinvoke <io.vertx.core.cli.impl.DefaultParser$ensureValidity__1225: java.util.function.Consumer bootstrap$()>();
+interfaceinvoke v16.<java.util.stream.Stream: void forEach(java.util.function.Consumer)>(v17);
+v18 = interfaceinvoke v1.<io.vertx.core.cli.CLI: java.util.List getArguments()>();
+v19 = interfaceinvoke v18.<java.util.List: java.util.stream.Stream stream()>();
+v20 = staticinvoke <io.vertx.core.cli.impl.DefaultParser$ensureValidity__1226: java.util.function.Consumer bootstrap$()>();
+interfaceinvoke v19.<java.util.stream.Stream: void forEach(java.util.function.Consumer)>(v20);
+v21 = specialinvoke v0.<io.vertx.core.cli.impl.DefaultParser: java.util.List getRequiredOptions()>();
+v0.<io.vertx.core.cli.impl.DefaultParser: java.util.List expectedOpts> = v21;
+if v2 == null goto label4;
+v22 = staticinvoke <io.vertx.core.cli.impl.DefaultParser$visit__1227: java.util.function.Consumer bootstrap$(io.vertx.core.cli.impl.DefaultParser)>(v0);
+interfaceinvoke v2.<java.util.List: void forEach(java.util.function.Consumer)>(v22);
+label4:
+specialinvoke v0.<io.vertx.core.cli.impl.DefaultParser: void checkRequiredValues()>();
+specialinvoke v0.<io.vertx.core.cli.impl.DefaultParser: void checkRequiredOptions()>();
+virtualinvoke v0.<io.vertx.core.cli.impl.DefaultParser: void validate()>();
+v23 = v0.<io.vertx.core.cli.impl.DefaultParser: io.vertx.core.cli.impl.DefaultCommandLine commandLine>;
+virtualinvoke v23.<io.vertx.core.cli.impl.DefaultCommandLine: void setValidity(boolean)>(1);
+label5:
+goto label8;
+label6:
+v24 := @caughtexception;
+if v3 == 0 goto label7;
+v25 = v0.<io.vertx.core.cli.impl.DefaultParser: io.vertx.core.cli.impl.DefaultCommandLine commandLine>;
+v26 = virtualinvoke v25.<io.vertx.core.cli.impl.DefaultCommandLine: boolean isAskingForHelp()>();
+if v26 != 0 goto label7;
+throw v24;
+label7:
+v27 = v0.<io.vertx.core.cli.impl.DefaultParser: io.vertx.core.cli.impl.DefaultCommandLine commandLine>;
+virtualinvoke v27.<io.vertx.core.cli.impl.DefaultCommandLine: void setValidity(boolean)>(0);
+label8:
+v28 = v0.<io.vertx.core.cli.impl.DefaultParser: io.vertx.core.cli.impl.DefaultCommandLine commandLine>;
+return v28;
+catch io.vertx.core.cli.CLIException from label4 to label5 with label6;
+}
+protected void validate() throws io.vertx.core.cli.CLIException
+{
+io.vertx.core.cli.impl.DefaultParser v0;
+java.lang.Integer v15, v9;
+io.vertx.core.cli.MissingValueException v38;
+boolean v1, v10, v20, v25, v28, v29, v33, v35, v37, v6;
+java.util.List v18, v23, v31, v4;
+io.vertx.core.cli.CLI v17, v3, v30;
+io.vertx.core.cli.impl.DefaultCommandLine v22, v27, v36;
+java.util.ArrayList v2;
+int v12, v14, v8;
+java.lang.String v13;
+io.vertx.core.cli.CLIException v11, v16;
+java.util.Iterator v19, v24, v32, v5;
+java.lang.Object v21, v26, v34, v7;
+v0 := @this: io.vertx.core.cli.impl.DefaultParser;
+v1 = 0;
+v2 = new java.util.ArrayList;
+specialinvoke v2.<java.util.ArrayList: void <init>()>();
+v3 = v0.<io.vertx.core.cli.impl.DefaultParser: io.vertx.core.cli.CLI cli>;
+v4 = interfaceinvoke v3.<io.vertx.core.cli.CLI: java.util.List getArguments()>();
+v5 = interfaceinvoke v4.<java.util.List: java.util.Iterator iterator()>();
+label01:
+v6 = interfaceinvoke v5.<java.util.Iterator: boolean hasNext()>();
+if v6 == 0 goto label04;
+v7 = interfaceinvoke v5.<java.util.Iterator: java.lang.Object next()>();
+v8 = virtualinvoke v7.<io.vertx.core.cli.Argument: int getIndex()>();
+v9 = staticinvoke <java.lang.Integer: java.lang.Integer valueOf(int)>(v8);
+v10 = interfaceinvoke v2.<java.util.List: boolean contains(java.lang.Object)>(v9);
+if v10 == 0 goto label02;
+v11 = new io.vertx.core.cli.CLIException;
+v12 = virtualinvoke v7.<io.vertx.core.cli.Argument: int getIndex()>();
+v13 = dynamicinvoke "makeConcatWithConstants" <java.lang.String (int)>(v12) <java.lang.invoke.StringConcatFactory: java.lang.invoke.CallSite makeConcatWithConstants(java.lang.invoke.MethodHandles$Lookup,java.lang.String,java.lang.invoke.MethodType,java.lang.String,java.lang.Object[])>("Only one argument can use the index \u0001");
+specialinvoke v11.<io.vertx.core.cli.CLIException: void <init>(java.lang.String)>(v13);
+throw v11;
+label02:
+v14 = virtualinvoke v7.<io.vertx.core.cli.Argument: int getIndex()>();
+v15 = staticinvoke <java.lang.Integer: java.lang.Integer valueOf(int)>(v14);
+interfaceinvoke v2.<java.util.List: boolean add(java.lang.Object)>(v15);
+if v1 == 0 goto label03;
+v16 = new io.vertx.core.cli.CLIException;
+specialinvoke v16.<io.vertx.core.cli.CLIException: void <init>(java.lang.String)>("Only the last argument can be multi-valued");
+throw v16;
+label03:
+v1 = virtualinvoke v7.<io.vertx.core.cli.Argument: boolean isMultiValued()>();
+goto label01;
+label04:
+v17 = v0.<io.vertx.core.cli.impl.DefaultParser: io.vertx.core.cli.CLI cli>;
+v18 = interfaceinvoke v17.<io.vertx.core.cli.CLI: java.util.List getArguments()>();
+v19 = interfaceinvoke v18.<java.util.List: java.util.Iterator iterator()>();
+v20 = interfaceinvoke v19.<java.util.Iterator: boolean hasNext()>();
+if v20 == 0 goto label05;
+v21 = interfaceinvoke v19.<java.util.Iterator: java.lang.Object next()>();
+label05:
+v22 = v0.<io.vertx.core.cli.impl.DefaultParser: io.vertx.core.cli.impl.DefaultCommandLine commandLine>;
+v23 = virtualinvoke v22.<io.vertx.core.cli.impl.DefaultCommandLine: java.util.List allArguments()>();
+v24 = interfaceinvoke v23.<java.util.List: java.util.Iterator iterator()>();
+label06:
+v25 = interfaceinvoke v24.<java.util.Iterator: boolean hasNext()>();
+if v25 == 0 goto label08;
+v26 = interfaceinvoke v24.<java.util.Iterator: java.lang.Object next()>();
+if v21 == null goto label06;
+v27 = v0.<io.vertx.core.cli.impl.DefaultParser: io.vertx.core.cli.impl.DefaultCommandLine commandLine>;
+virtualinvoke v27.<io.vertx.core.cli.impl.DefaultCommandLine: io.vertx.core.cli.impl.DefaultCommandLine setRawValue(io.vertx.core.cli.Argument,java.lang.String)>(v21, v26);
+v28 = virtualinvoke v21.<io.vertx.core.cli.Argument: boolean isMultiValued()>();
+if v28 != 0 goto label06;
+v29 = interfaceinvoke v19.<java.util.Iterator: boolean hasNext()>();
+if v29 == 0 goto label07;
+interfaceinvoke v19.<java.util.Iterator: java.lang.Object next()>();
+goto label06;
+label07:
+v21 = null;
+goto label06;
+label08:
+v30 = v0.<io.vertx.core.cli.impl.DefaultParser: io.vertx.core.cli.CLI cli>;
+v31 = interfaceinvoke v30.<io.vertx.core.cli.CLI: java.util.List getArguments()>();
+v32 = interfaceinvoke v31.<java.util.List: java.util.Iterator iterator()>();
+label09:
+v33 = interfaceinvoke v32.<java.util.Iterator: boolean hasNext()>();
+if v33 == 0 goto label10;
+v34 = interfaceinvoke v32.<java.util.Iterator: java.lang.Object next()>();
+v35 = virtualinvoke v34.<io.vertx.core.cli.Argument: boolean isRequired()>();
+if v35 == 0 goto label09;
+v36 = v0.<io.vertx.core.cli.impl.DefaultParser: io.vertx.core.cli.impl.DefaultCommandLine commandLine>;
+v37 = virtualinvoke v36.<io.vertx.core.cli.impl.DefaultCommandLine: boolean isArgumentAssigned(io.vertx.core.cli.Argument)>(v34);
+if v37 != 0 goto label09;
+v38 = new io.vertx.core.cli.MissingValueException;
+specialinvoke v38.<io.vertx.core.cli.MissingValueException: void <init>(io.vertx.core.cli.Argument)>(v34);
+throw v38;
+label10:
+return;
+}
+private java.util.List getRequiredOptions()
+{
+io.vertx.core.cli.impl.DefaultParser v0;
+java.util.function.Predicate v4;
+java.util.List v2;
+java.util.stream.Stream v3, v5;
+io.vertx.core.cli.CLI v1;
+java.lang.Object v7;
+java.util.stream.Collector v6;
+v0 := @this: io.vertx.core.cli.impl.DefaultParser;
+v1 = v0.<io.vertx.core.cli.impl.DefaultParser: io.vertx.core.cli.CLI cli>;
+v2 = interfaceinvoke v1.<io.vertx.core.cli.CLI: java.util.List getOptions()>();
+v3 = interfaceinvoke v2.<java.util.List: java.util.stream.Stream stream()>();
+v4 = staticinvoke <io.vertx.core.cli.impl.DefaultParser$isRequired__1228: java.util.function.Predicate bootstrap$()>();
+v5 = interfaceinvoke v3.<java.util.stream.Stream: java.util.stream.Stream filter(java.util.function.Predicate)>(v4);
+v6 = staticinvoke <java.util.stream.Collectors: java.util.stream.Collector toList()>();
+v7 = interfaceinvoke v5.<java.util.stream.Stream: java.lang.Object collect(java.util.stream.Collector)>(v6);
+return v7;
+}
+private void checkRequiredOptions() throws io.vertx.core.cli.MissingOptionException
+{
+io.vertx.core.cli.impl.DefaultParser v0;
+java.util.List v1, v4;
+io.vertx.core.cli.MissingOptionException v3;
+boolean v2;
+v0 := @this: io.vertx.core.cli.impl.DefaultParser;
+v1 = v0.<io.vertx.core.cli.impl.DefaultParser: java.util.List expectedOpts>;
+v2 = interfaceinvoke v1.<java.util.List: boolean isEmpty()>();
+if v2 != 0 goto label1;
+v3 = new io.vertx.core.cli.MissingOptionException;
+v4 = v0.<io.vertx.core.cli.impl.DefaultParser: java.util.List expectedOpts>;
+specialinvoke v3.<io.vertx.core.cli.MissingOptionException: void <init>(java.util.Collection)>(v4);
+throw v3;
+label1:
+return;
+}
+private void checkRequiredValues() throws io.vertx.core.cli.MissingValueException
+{
+io.vertx.core.cli.impl.DefaultParser v0;
+io.vertx.core.cli.Option v1, v10, v2, v5, v7;
+io.vertx.core.cli.impl.DefaultCommandLine v4;
+io.vertx.core.cli.MissingValueException v9;
+boolean v3, v6, v8;
+v0 := @this: io.vertx.core.cli.impl.DefaultParser;
+v1 = v0.<io.vertx.core.cli.impl.DefaultParser: io.vertx.core.cli.Option current>;
+if v1 == null goto label1;
+v2 = v0.<io.vertx.core.cli.impl.DefaultParser: io.vertx.core.cli.Option current>;
+v3 = virtualinvoke v2.<io.vertx.core.cli.Option: boolean acceptValue()>();
+if v3 == 0 goto label1;
+v4 = v0.<io.vertx.core.cli.impl.DefaultParser: io.vertx.core.cli.impl.DefaultCommandLine commandLine>;
+v5 = v0.<io.vertx.core.cli.impl.DefaultParser: io.vertx.core.cli.Option current>;
+v6 = virtualinvoke v4.<io.vertx.core.cli.impl.DefaultCommandLine: boolean isOptionAssigned(io.vertx.core.cli.Option)>(v5);
+if v6 != 0 goto label1;
+v7 = v0.<io.vertx.core.cli.impl.DefaultParser: io.vertx.core.cli.Option current>;
+v8 = virtualinvoke v7.<io.vertx.core.cli.Option: boolean isFlag()>();
+if v8 != 0 goto label1;
+v9 = new io.vertx.core.cli.MissingValueException;
+v10 = v0.<io.vertx.core.cli.impl.DefaultParser: io.vertx.core.cli.Option current>;
+specialinvoke v9.<io.vertx.core.cli.MissingValueException: void <init>(io.vertx.core.cli.Option)>(v10);
+throw v9;
+label1:
+return;
+}
+public void visit(java.lang.String) throws io.vertx.core.cli.CLIException
+{
+io.vertx.core.cli.impl.DefaultParser v0;
+io.vertx.core.cli.Option v10, v16, v18, v5, v6;
+java.lang.String v1, v11, v14;
+boolean v12, v13, v15, v19, v2, v4, v7, v8;
+io.vertx.core.cli.impl.DefaultCommandLine v17, v3, v9;
+v0 := @this: io.vertx.core.cli.impl.DefaultParser;
+v1 := @parameter0: java.lang.String;
+v0.<io.vertx.core.cli.impl.DefaultParser: java.lang.String token> = v1;
+v2 = v0.<io.vertx.core.cli.impl.DefaultParser: boolean skipParsing>;
+if v2 == 0 goto label1;
+v3 = v0.<io.vertx.core.cli.impl.DefaultParser: io.vertx.core.cli.impl.DefaultCommandLine commandLine>;
+virtualinvoke v3.<io.vertx.core.cli.impl.DefaultCommandLine: io.vertx.core.cli.CommandLine addArgumentValue(java.lang.String)>(v1);
+goto label6;
+label1:
+v4 = virtualinvoke v1.<java.lang.String: boolean equals(java.lang.Object)>("--");
+if v4 == 0 goto label2;
+v0.<io.vertx.core.cli.impl.DefaultParser: boolean skipParsing> = 1;
+goto label6;
+label2:
+v5 = v0.<io.vertx.core.cli.impl.DefaultParser: io.vertx.core.cli.Option current>;
+if v5 == null goto label3;
+v6 = v0.<io.vertx.core.cli.impl.DefaultParser: io.vertx.core.cli.Option current>;
+v7 = virtualinvoke v6.<io.vertx.core.cli.Option: boolean acceptValue()>();
+if v7 == 0 goto label3;
+v8 = specialinvoke v0.<io.vertx.core.cli.impl.DefaultParser: boolean isValue(java.lang.String)>(v1);
+if v8 == 0 goto label3;
+v9 = v0.<io.vertx.core.cli.impl.DefaultParser: io.vertx.core.cli.impl.DefaultCommandLine commandLine>;
+v10 = v0.<io.vertx.core.cli.impl.DefaultParser: io.vertx.core.cli.Option current>;
+v11 = staticinvoke <io.vertx.core.cli.impl.DefaultParser: java.lang.String stripLeadingAndTrailingQuotes(java.lang.String)>(v1);
+virtualinvoke v9.<io.vertx.core.cli.impl.DefaultCommandLine: io.vertx.core.cli.impl.DefaultCommandLine addRawValue(io.vertx.core.cli.Option,java.lang.String)>(v10, v11);
+goto label6;
+label3:
+v12 = virtualinvoke v1.<java.lang.String: boolean startsWith(java.lang.String)>("--");
+if v12 == 0 goto label4;
+specialinvoke v0.<io.vertx.core.cli.impl.DefaultParser: void handleLongOption(java.lang.String)>(v1);
+goto label6;
+label4:
+v13 = virtualinvoke v1.<java.lang.String: boolean startsWith(java.lang.String)>("-");
+if v13 == 0 goto label5;
+v14 = "-";
+v15 = virtualinvoke v14.<java.lang.String: boolean equals(java.lang.Object)>(v1);
+if v15 != 0 goto label5;
+specialinvoke v0.<io.vertx.core.cli.impl.DefaultParser: void handleShortAndLongOption(java.lang.String)>(v1);
+goto label6;
+label5:
+specialinvoke v0.<io.vertx.core.cli.impl.DefaultParser: void handleArgument(java.lang.String)>(v1);
+label6:
+v16 = v0.<io.vertx.core.cli.impl.DefaultParser: io.vertx.core.cli.Option current>;
+if v16 == null goto label7;
+v17 = v0.<io.vertx.core.cli.impl.DefaultParser: io.vertx.core.cli.impl.DefaultCommandLine commandLine>;
+v18 = v0.<io.vertx.core.cli.impl.DefaultParser: io.vertx.core.cli.Option current>;
+v19 = virtualinvoke v17.<io.vertx.core.cli.impl.DefaultCommandLine: boolean acceptMoreValues(io.vertx.core.cli.Option)>(v18);
+if v19 != 0 goto label7;
+v0.<io.vertx.core.cli.impl.DefaultParser: io.vertx.core.cli.Option current> = null;
+label7:
+return;
+}
+private boolean isValue(java.lang.String)
+{
+io.vertx.core.cli.impl.DefaultParser v0;
+java.lang.String v1;
+boolean v2, v3, v4;
+v0 := @this: io.vertx.core.cli.impl.DefaultParser;
+v1 := @parameter0: java.lang.String;
+v2 = specialinvoke v0.<io.vertx.core.cli.impl.DefaultParser: boolean isOption(java.lang.String)>(v1);
+if v2 == 0 goto label1;
+v3 = specialinvoke v0.<io.vertx.core.cli.impl.DefaultParser: boolean isNegativeNumber(java.lang.String)>(v1);
+if v3 == 0 goto label2;
+label1:
+v4 = 1;
+goto label3;
+label2:
+v4 = 0;
+label3:
+return v4;
+}
+private boolean isNegativeNumber(java.lang.String)
+{
+io.vertx.core.cli.impl.DefaultParser v0;
+java.lang.NumberFormatException v2;
+java.lang.String v1;
+v0 := @this: io.vertx.core.cli.impl.DefaultParser;
+v1 := @parameter0: java.lang.String;
+label1:
+staticinvoke <java.lang.Double: double parseDouble(java.lang.String)>(v1);
+label2:
+return 1;
+label3:
+v2 := @caughtexception;
+return 0;
+catch java.lang.NumberFormatException from label1 to label2 with label3;
+}
+private boolean isOption(java.lang.String)
+{
+io.vertx.core.cli.impl.DefaultParser v0;
+java.lang.String v1;
+boolean v2, v3, v4;
+v0 := @this: io.vertx.core.cli.impl.DefaultParser;
+v1 := @parameter0: java.lang.String;
+v2 = specialinvoke v0.<io.vertx.core.cli.impl.DefaultParser: boolean isLongOption(java.lang.String)>(v1);
+if v2 != 0 goto label1;
+v3 = specialinvoke v0.<io.vertx.core.cli.impl.DefaultParser: boolean isShortOption(java.lang.String)>(v1);
+if v3 == 0 goto label2;
+label1:
+v4 = 1;
+goto label3;
+label2:
+v4 = 0;
+label3:
+return v4;
+}
+private boolean isShortOption(java.lang.String)
+{
+io.vertx.core.cli.impl.DefaultParser v0;
+int v3;
+java.lang.String v1, v4;
+boolean v2, v5, v6;
+v0 := @this: io.vertx.core.cli.impl.DefaultParser;
+v1 := @parameter0: java.lang.String;
+v2 = virtualinvoke v1.<java.lang.String: boolean startsWith(java.lang.String)>("-");
+if v2 == 0 goto label1;
+v3 = virtualinvoke v1.<java.lang.String: int length()>();
+if v3 < 2 goto label1;
+v4 = virtualinvoke v1.<java.lang.String: java.lang.String substring(int,int)>(1, 2);
+v5 = specialinvoke v0.<io.vertx.core.cli.impl.DefaultParser: boolean hasOptionWithShortName(java.lang.String)>(v4);
+if v5 == 0 goto label1;
+v6 = 1;
+goto label2;
+label1:
+v6 = 0;
+label2:
+return v6;
+}
+private boolean isLongOption(java.lang.String)
+{
+io.vertx.core.cli.impl.DefaultParser v0;
+java.util.List v7;
+int v3, v4, v5;
+java.lang.String v1, v6, v9;
+boolean v10, v2, v8;
+v0 := @this: io.vertx.core.cli.impl.DefaultParser;
+v1 := @parameter0: java.lang.String;
+v2 = virtualinvoke v1.<java.lang.String: boolean startsWith(java.lang.String)>("-");
+if v2 == 0 goto label1;
+v3 = virtualinvoke v1.<java.lang.String: int length()>();
+if v3 != 1 goto label2;
+label1:
+return 0;
+label2:
+v4 = virtualinvoke v1.<java.lang.String: int indexOf(java.lang.String)>("=");
+v5 = (int) -1;
+if v4 != v5 goto label3;
+v6 = v1;
+goto label4;
+label3:
+v6 = virtualinvoke v1.<java.lang.String: java.lang.String substring(int,int)>(0, v4);
+label4:
+v7 = virtualinvoke v0.<io.vertx.core.cli.impl.DefaultParser: java.util.List getMatchingOptions(java.lang.String)>(v6);
+v8 = interfaceinvoke v7.<java.util.List: boolean isEmpty()>();
+if v8 != 0 goto label5;
+return 1;
+label5:
+v9 = specialinvoke v0.<io.vertx.core.cli.impl.DefaultParser: java.lang.String getLongPrefix(java.lang.String)>(v1);
+if v9 == null goto label6;
+v10 = virtualinvoke v1.<java.lang.String: boolean startsWith(java.lang.String)>("--");
+if v10 != 0 goto label6;
+return 1;
+label6:
+return 0;
+}
+private void handleArgument(java.lang.String)
+{
+io.vertx.core.cli.impl.DefaultParser v0;
+java.lang.String v1;
+io.vertx.core.cli.impl.DefaultCommandLine v2;
+v0 := @this: io.vertx.core.cli.impl.DefaultParser;
+v1 := @parameter0: java.lang.String;
+v2 = v0.<io.vertx.core.cli.impl.DefaultParser: io.vertx.core.cli.impl.DefaultCommandLine commandLine>;
+virtualinvoke v2.<io.vertx.core.cli.impl.DefaultCommandLine: io.vertx.core.cli.CommandLine addArgumentValue(java.lang.String)>(v1);
+return;
+}
+private void handleLongOption(java.lang.String) throws io.vertx.core.cli.CLIException
+{
+io.vertx.core.cli.impl.DefaultParser v0;
+int v2, v3;
+java.lang.String v1;
+v0 := @this: io.vertx.core.cli.impl.DefaultParser;
+v1 := @parameter0: java.lang.String;
+v2 = virtualinvoke v1.<java.lang.String: int indexOf(int)>(61);
+v3 = (int) -1;
+if v2 != v3 goto label1;
+specialinvoke v0.<io.vertx.core.cli.impl.DefaultParser: void handleLongOptionWithoutEqual(java.lang.String)>(v1);
+goto label2;
+label1:
+specialinvoke v0.<io.vertx.core.cli.impl.DefaultParser: void handleLongOptionWithEqual(java.lang.String)>(v1);
+label2:
+return;
+}
+private void handleLongOptionWithoutEqual(java.lang.String) throws io.vertx.core.cli.CLIException
+{
+io.vertx.core.cli.impl.DefaultParser v0;
+java.util.List v2;
+int v4;
+io.vertx.core.cli.AmbiguousOptionException v5;
+java.lang.Object v6;
+java.lang.String v1;
+boolean v3;
+v0 := @this: io.vertx.core.cli.impl.DefaultParser;
+v1 := @parameter0: java.lang.String;
+v2 = virtualinvoke v0.<io.vertx.core.cli.impl.DefaultParser: java.util.List getMatchingOptions(java.lang.String)>(v1);
+v3 = interfaceinvoke v2.<java.util.List: boolean isEmpty()>();
+if v3 == 0 goto label1;
+specialinvoke v0.<io.vertx.core.cli.impl.DefaultParser: void handleArgument(java.lang.String)>(v1);
+goto label3;
+label1:
+v4 = interfaceinvoke v2.<java.util.List: int size()>();
+if v4 <= 1 goto label2;
+v5 = new io.vertx.core.cli.AmbiguousOptionException;
+specialinvoke v5.<io.vertx.core.cli.AmbiguousOptionException: void <init>(java.lang.String,java.util.List)>(v1, v2);
+throw v5;
+label2:
+v6 = interfaceinvoke v2.<java.util.List: java.lang.Object get(int)>(0);
+specialinvoke v0.<io.vertx.core.cli.impl.DefaultParser: void handleOption(io.vertx.core.cli.Option)>(v6);
+label3:
+return;
+}
+private void handleLongOptionWithEqual(java.lang.String) throws io.vertx.core.cli.CLIException
+{
+io.vertx.core.cli.impl.DefaultParser v0;
+io.vertx.core.cli.InvalidValueException v14;
+io.vertx.core.cli.AmbiguousOptionException v9;
+java.util.List v6;
+io.vertx.core.cli.impl.DefaultCommandLine v11, v13;
+int v2, v3, v8;
+java.lang.Object v10;
+java.lang.String v1, v4, v5;
+boolean v12, v7;
+v0 := @this: io.vertx.core.cli.impl.DefaultParser;
+v1 := @parameter0: java.lang.String;
+v2 = virtualinvoke v1.<java.lang.String: int indexOf(int)>(61);
+v3 = v2 + 1;
+v4 = virtualinvoke v1.<java.lang.String: java.lang.String substring(int)>(v3);
+v5 = virtualinvoke v1.<java.lang.String: java.lang.String substring(int,int)>(0, v2);
+v6 = virtualinvoke v0.<io.vertx.core.cli.impl.DefaultParser: java.util.List getMatchingOptions(java.lang.String)>(v5);
+v7 = interfaceinvoke v6.<java.util.List: boolean isEmpty()>();
+if v7 == 0 goto label1;
+specialinvoke v0.<io.vertx.core.cli.impl.DefaultParser: void handleArgument(java.lang.String)>(v1);
+goto label4;
+label1:
+v8 = interfaceinvoke v6.<java.util.List: int size()>();
+if v8 <= 1 goto label2;
+v9 = new io.vertx.core.cli.AmbiguousOptionException;
+specialinvoke v9.<io.vertx.core.cli.AmbiguousOptionException: void <init>(java.lang.String,java.util.List)>(v5, v6);
+throw v9;
+label2:
+v10 = interfaceinvoke v6.<java.util.List: java.lang.Object get(int)>(0);
+v11 = v0.<io.vertx.core.cli.impl.DefaultParser: io.vertx.core.cli.impl.DefaultCommandLine commandLine>;
+v12 = virtualinvoke v11.<io.vertx.core.cli.impl.DefaultCommandLine: boolean acceptMoreValues(io.vertx.core.cli.Option)>(v10);
+if v12 == 0 goto label3;
+specialinvoke v0.<io.vertx.core.cli.impl.DefaultParser: void handleOption(io.vertx.core.cli.Option)>(v10);
+v13 = v0.<io.vertx.core.cli.impl.DefaultParser: io.vertx.core.cli.impl.DefaultCommandLine commandLine>;
+virtualinvoke v13.<io.vertx.core.cli.impl.DefaultCommandLine: io.vertx.core.cli.impl.DefaultCommandLine addRawValue(io.vertx.core.cli.Option,java.lang.String)>(v10, v4);
+v0.<io.vertx.core.cli.impl.DefaultParser: io.vertx.core.cli.Option current> = null;
+goto label4;
+label3:
+v14 = new io.vertx.core.cli.InvalidValueException;
+specialinvoke v14.<io.vertx.core.cli.InvalidValueException: void <init>(io.vertx.core.cli.Option,java.lang.String)>(v10, v4);
+throw v14;
+label4:
+return;
+}
+private void handleShortAndLongOption(java.lang.String) throws io.vertx.core.cli.CLIException
+{
+io.vertx.core.cli.impl.DefaultParser v0;
+io.vertx.core.cli.Option v14, v16, v18, v22, v27, v29, v35, v43, v45, v6, v9;
+boolean v11, v15, v25, v37, v40, v41, v5, v8;
+java.util.List v10;
+io.vertx.core.cli.impl.DefaultCommandLine v13, v17, v28, v36, v38, v44;
+io.vertx.core.cli.InvalidValueException v21, v39;
+int v19, v23, v3, v32, v34, v4, v7;
+java.lang.String v1, v12, v2, v20, v24, v26, v30, v31, v33, v42, v46, v47;
+v0 := @this: io.vertx.core.cli.impl.DefaultParser;
+v1 := @parameter0: java.lang.String;
+v2 = staticinvoke <io.vertx.core.cli.impl.DefaultParser: java.lang.String stripLeadingHyphens(java.lang.String)>(v1);
+v3 = virtualinvoke v2.<java.lang.String: int indexOf(int)>(61);
+v4 = virtualinvoke v2.<java.lang.String: int length()>();
+if v4 != 1 goto label02;
+v5 = specialinvoke v0.<io.vertx.core.cli.impl.DefaultParser: boolean hasOptionWithShortName(java.lang.String)>(v2);
+if v5 == 0 goto label01;
+v6 = virtualinvoke v0.<io.vertx.core.cli.impl.DefaultParser: io.vertx.core.cli.Option getOption(java.lang.String)>(v2);
+specialinvoke v0.<io.vertx.core.cli.impl.DefaultParser: void handleOption(io.vertx.core.cli.Option)>(v6);
+goto label13;
+label01:
+specialinvoke v0.<io.vertx.core.cli.impl.DefaultParser: void handleArgument(java.lang.String)>(v1);
+goto label13;
+label02:
+v7 = (int) -1;
+if v3 != v7 goto label08;
+v8 = specialinvoke v0.<io.vertx.core.cli.impl.DefaultParser: boolean hasOptionWithShortName(java.lang.String)>(v2);
+if v8 == 0 goto label03;
+v9 = virtualinvoke v0.<io.vertx.core.cli.impl.DefaultParser: io.vertx.core.cli.Option getOption(java.lang.String)>(v2);
+specialinvoke v0.<io.vertx.core.cli.impl.DefaultParser: void handleOption(io.vertx.core.cli.Option)>(v9);
+goto label13;
+label03:
+v10 = virtualinvoke v0.<io.vertx.core.cli.impl.DefaultParser: java.util.List getMatchingOptions(java.lang.String)>(v2);
+v11 = interfaceinvoke v10.<java.util.List: boolean isEmpty()>();
+if v11 != 0 goto label04;
+specialinvoke v0.<io.vertx.core.cli.impl.DefaultParser: void handleLongOptionWithoutEqual(java.lang.String)>(v1);
+goto label13;
+label04:
+v12 = specialinvoke v0.<io.vertx.core.cli.impl.DefaultParser: java.lang.String getLongPrefix(java.lang.String)>(v2);
+if v12 == null goto label06;
+v13 = v0.<io.vertx.core.cli.impl.DefaultParser: io.vertx.core.cli.impl.DefaultCommandLine commandLine>;
+v14 = virtualinvoke v0.<io.vertx.core.cli.impl.DefaultParser: io.vertx.core.cli.Option getOption(java.lang.String)>(v12);
+v15 = virtualinvoke v13.<io.vertx.core.cli.impl.DefaultCommandLine: boolean acceptMoreValues(io.vertx.core.cli.Option)>(v14);
+if v15 == 0 goto label05;
+v16 = virtualinvoke v0.<io.vertx.core.cli.impl.DefaultParser: io.vertx.core.cli.Option getOption(java.lang.String)>(v12);
+specialinvoke v0.<io.vertx.core.cli.impl.DefaultParser: void handleOption(io.vertx.core.cli.Option)>(v16);
+v17 = v0.<io.vertx.core.cli.impl.DefaultParser: io.vertx.core.cli.impl.DefaultCommandLine commandLine>;
+v18 = virtualinvoke v0.<io.vertx.core.cli.impl.DefaultParser: io.vertx.core.cli.Option getOption(java.lang.String)>(v12);
+v19 = virtualinvoke v12.<java.lang.String: int length()>();
+v20 = virtualinvoke v2.<java.lang.String: java.lang.String substring(int)>(v19);
+virtualinvoke v17.<io.vertx.core.cli.impl.DefaultCommandLine: io.vertx.core.cli.impl.DefaultCommandLine addRawValue(io.vertx.core.cli.Option,java.lang.String)>(v18, v20);
+v0.<io.vertx.core.cli.impl.DefaultParser: io.vertx.core.cli.Option current> = null;
+goto label13;
+label05:
+v21 = new io.vertx.core.cli.InvalidValueException;
+v22 = virtualinvoke v0.<io.vertx.core.cli.impl.DefaultParser: io.vertx.core.cli.Option getOption(java.lang.String)>(v12);
+v23 = virtualinvoke v12.<java.lang.String: int length()>();
+v24 = virtualinvoke v2.<java.lang.String: java.lang.String substring(int)>(v23);
+specialinvoke v21.<io.vertx.core.cli.InvalidValueException: void <init>(io.vertx.core.cli.Option,java.lang.String)>(v22, v24);
+throw v21;
+label06:
+v25 = specialinvoke v0.<io.vertx.core.cli.impl.DefaultParser: boolean isAValidShortOption(java.lang.String)>(v2);
+if v25 == 0 goto label07;
+v26 = virtualinvoke v2.<java.lang.String: java.lang.String substring(int,int)>(0, 1);
+v27 = virtualinvoke v0.<io.vertx.core.cli.impl.DefaultParser: io.vertx.core.cli.Option getOption(java.lang.String)>(v26);
+specialinvoke v0.<io.vertx.core.cli.impl.DefaultParser: void handleOption(io.vertx.core.cli.Option)>(v27);
+v28 = v0.<io.vertx.core.cli.impl.DefaultParser: io.vertx.core.cli.impl.DefaultCommandLine commandLine>;
+v29 = v0.<io.vertx.core.cli.impl.DefaultParser: io.vertx.core.cli.Option current>;
+v30 = virtualinvoke v2.<java.lang.String: java.lang.String substring(int)>(1);
+virtualinvoke v28.<io.vertx.core.cli.impl.DefaultCommandLine: io.vertx.core.cli.impl.DefaultCommandLine addRawValue(io.vertx.core.cli.Option,java.lang.String)>(v29, v30);
+v0.<io.vertx.core.cli.impl.DefaultParser: io.vertx.core.cli.Option current> = null;
+goto label13;
+label07:
+virtualinvoke v0.<io.vertx.core.cli.impl.DefaultParser: void handleConcatenatedOptions(java.lang.String)>(v1);
+goto label13;
+label08:
+v31 = virtualinvoke v2.<java.lang.String: java.lang.String substring(int,int)>(0, v3);
+v32 = v3 + 1;
+v33 = virtualinvoke v2.<java.lang.String: java.lang.String substring(int)>(v32);
+v34 = virtualinvoke v31.<java.lang.String: int length()>();
+if v34 != 1 goto label11;
+v35 = virtualinvoke v0.<io.vertx.core.cli.impl.DefaultParser: io.vertx.core.cli.Option getOption(java.lang.String)>(v31);
+if v35 == null goto label10;
+v36 = v0.<io.vertx.core.cli.impl.DefaultParser: io.vertx.core.cli.impl.DefaultCommandLine commandLine>;
+v37 = virtualinvoke v36.<io.vertx.core.cli.impl.DefaultCommandLine: boolean acceptMoreValues(io.vertx.core.cli.Option)>(v35);
+if v37 == 0 goto label09;
+specialinvoke v0.<io.vertx.core.cli.impl.DefaultParser: void handleOption(io.vertx.core.cli.Option)>(v35);
+v38 = v0.<io.vertx.core.cli.impl.DefaultParser: io.vertx.core.cli.impl.DefaultCommandLine commandLine>;
+virtualinvoke v38.<io.vertx.core.cli.impl.DefaultCommandLine: io.vertx.core.cli.impl.DefaultCommandLine addRawValue(io.vertx.core.cli.Option,java.lang.String)>(v35, v33);
+v0.<io.vertx.core.cli.impl.DefaultParser: io.vertx.core.cli.Option current> = null;
+goto label13;
+label09:
+v39 = new io.vertx.core.cli.InvalidValueException;
+specialinvoke v39.<io.vertx.core.cli.InvalidValueException: void <init>(io.vertx.core.cli.Option,java.lang.String)>(v35, v33);
+throw v39;
+label10:
+specialinvoke v0.<io.vertx.core.cli.impl.DefaultParser: void handleArgument(java.lang.String)>(v1);
+goto label13;
+label11:
+v40 = specialinvoke v0.<io.vertx.core.cli.impl.DefaultParser: boolean isAValidShortOption(java.lang.String)>(v31);
+if v40 == 0 goto label12;
+v41 = specialinvoke v0.<io.vertx.core.cli.impl.DefaultParser: boolean hasOptionWithLongName(java.lang.String)>(v31);
+if v41 != 0 goto label12;
+v42 = virtualinvoke v31.<java.lang.String: java.lang.String substring(int,int)>(0, 1);
+v43 = virtualinvoke v0.<io.vertx.core.cli.impl.DefaultParser: io.vertx.core.cli.Option getOption(java.lang.String)>(v42);
+specialinvoke v0.<io.vertx.core.cli.impl.DefaultParser: void handleOption(io.vertx.core.cli.Option)>(v43);
+v44 = v0.<io.vertx.core.cli.impl.DefaultParser: io.vertx.core.cli.impl.DefaultCommandLine commandLine>;
+v45 = v0.<io.vertx.core.cli.impl.DefaultParser: io.vertx.core.cli.Option current>;
+v46 = virtualinvoke v31.<java.lang.String: java.lang.String substring(int)>(1);
+v47 = dynamicinvoke "makeConcatWithConstants" <java.lang.String (java.lang.String,java.lang.String)>(v46, v33) <java.lang.invoke.StringConcatFactory: java.lang.invoke.CallSite makeConcatWithConstants(java.lang.invoke.MethodHandles$Lookup,java.lang.String,java.lang.invoke.MethodType,java.lang.String,java.lang.Object[])>("\u0001=\u0001");
+virtualinvoke v44.<io.vertx.core.cli.impl.DefaultCommandLine: io.vertx.core.cli.impl.DefaultCommandLine addRawValue(io.vertx.core.cli.Option,java.lang.String)>(v45, v47);
+v0.<io.vertx.core.cli.impl.DefaultParser: io.vertx.core.cli.Option current> = null;
+goto label13;
+label12:
+specialinvoke v0.<io.vertx.core.cli.impl.DefaultParser: void handleLongOptionWithEqual(java.lang.String)>(v1);
+label13:
+return;
+}
+private java.lang.String getLongPrefix(java.lang.String)
+{
+io.vertx.core.cli.impl.DefaultParser v0;
+int v4, v5;
+java.lang.String v1, v2, v3, v6;
+boolean v7;
+v0 := @this: io.vertx.core.cli.impl.DefaultParser;
+v1 := @parameter0: java.lang.String;
+v2 = staticinvoke <io.vertx.core.cli.impl.DefaultParser: java.lang.String stripLeadingHyphens(java.lang.String)>(v1);
+v3 = null;
+v4 = virtualinvoke v2.<java.lang.String: int length()>();
+v5 = v4 - 2;
+label1:
+if v5 <= 1 goto label3;
+v6 = virtualinvoke v2.<java.lang.String: java.lang.String substring(int,int)>(0, v5);
+v7 = specialinvoke v0.<io.vertx.core.cli.impl.DefaultParser: boolean hasOptionWithLongName(java.lang.String)>(v6);
+if v7 == 0 goto label2;
+v3 = v6;
+goto label3;
+label2:
+v5 = v5 - 1;
+goto label1;
+label3:
+return v3;
+}
+private boolean hasOptionWithLongName(java.lang.String)
+{
+io.vertx.core.cli.impl.DefaultParser v0;
+java.util.Iterator v4;
+java.util.List v3;
+io.vertx.core.cli.CLI v2;
+java.lang.Object v6;
+java.lang.String v1, v7;
+boolean v5, v8;
+v0 := @this: io.vertx.core.cli.impl.DefaultParser;
+v1 := @parameter0: java.lang.String;
+v2 = v0.<io.vertx.core.cli.impl.DefaultParser: io.vertx.core.cli.CLI cli>;
+v3 = interfaceinvoke v2.<io.vertx.core.cli.CLI: java.util.List getOptions()>();
+v4 = interfaceinvoke v3.<java.util.List: java.util.Iterator iterator()>();
+label1:
+v5 = interfaceinvoke v4.<java.util.Iterator: boolean hasNext()>();
+if v5 == 0 goto label2;
+v6 = interfaceinvoke v4.<java.util.Iterator: java.lang.Object next()>();
+v7 = virtualinvoke v6.<io.vertx.core.cli.Option: java.lang.String getLongName()>();
+v8 = virtualinvoke v1.<java.lang.String: boolean equals(java.lang.Object)>(v7);
+if v8 == 0 goto label1;
+return 1;
+label2:
+return 0;
+}
+private boolean hasOptionWithShortName(java.lang.String)
+{
+io.vertx.core.cli.impl.DefaultParser v0;
+java.util.Iterator v4;
+java.util.List v3;
+io.vertx.core.cli.CLI v2;
+java.lang.Object v6;
+java.lang.String v1, v7;
+boolean v5, v8;
+v0 := @this: io.vertx.core.cli.impl.DefaultParser;
+v1 := @parameter0: java.lang.String;
+v2 = v0.<io.vertx.core.cli.impl.DefaultParser: io.vertx.core.cli.CLI cli>;
+v3 = interfaceinvoke v2.<io.vertx.core.cli.CLI: java.util.List getOptions()>();
+v4 = interfaceinvoke v3.<java.util.List: java.util.Iterator iterator()>();
+label1:
+v5 = interfaceinvoke v4.<java.util.Iterator: boolean hasNext()>();
+if v5 == 0 goto label2;
+v6 = interfaceinvoke v4.<java.util.Iterator: java.lang.Object next()>();
+v7 = virtualinvoke v6.<io.vertx.core.cli.Option: java.lang.String getShortName()>();
+v8 = virtualinvoke v1.<java.lang.String: boolean equals(java.lang.Object)>(v7);
+if v8 == 0 goto label1;
+return 1;
+label2:
+return 0;
+}
+private void handleOption(io.vertx.core.cli.Option) throws io.vertx.core.cli.CLIException
+{
+io.vertx.core.cli.Option v1;
+io.vertx.core.cli.impl.DefaultParser v0;
+io.vertx.core.cli.impl.DefaultCommandLine v2, v3;
+boolean v4;
+v0 := @this: io.vertx.core.cli.impl.DefaultParser;
+v1 := @parameter0: io.vertx.core.cli.Option;
+specialinvoke v0.<io.vertx.core.cli.impl.DefaultParser: void checkRequiredValues()>();
+specialinvoke v0.<io.vertx.core.cli.impl.DefaultParser: void updateRequiredOptions(io.vertx.core.cli.Option)>(v1);
+v2 = v0.<io.vertx.core.cli.impl.DefaultParser: io.vertx.core.cli.impl.DefaultCommandLine commandLine>;
+virtualinvoke v2.<io.vertx.core.cli.impl.DefaultCommandLine: io.vertx.core.cli.impl.DefaultCommandLine setSeenInCommandLine(io.vertx.core.cli.Option)>(v1);
+v3 = v0.<io.vertx.core.cli.impl.DefaultParser: io.vertx.core.cli.impl.DefaultCommandLine commandLine>;
+v4 = virtualinvoke v3.<io.vertx.core.cli.impl.DefaultCommandLine: boolean acceptMoreValues(io.vertx.core.cli.Option)>(v1);
+if v4 == 0 goto label1;
+v0.<io.vertx.core.cli.impl.DefaultParser: io.vertx.core.cli.Option current> = v1;
+goto label2;
+label1:
+v0.<io.vertx.core.cli.impl.DefaultParser: io.vertx.core.cli.Option current> = null;
+label2:
+return;
+}
+private void updateRequiredOptions(io.vertx.core.cli.Option)
+{
+io.vertx.core.cli.Option v1;
+io.vertx.core.cli.impl.DefaultParser v0;
+java.util.List v3;
+boolean v2;
+v0 := @this: io.vertx.core.cli.impl.DefaultParser;
+v1 := @parameter0: io.vertx.core.cli.Option;
+v2 = virtualinvoke v1.<io.vertx.core.cli.Option: boolean isRequired()>();
+if v2 == 0 goto label1;
+v3 = v0.<io.vertx.core.cli.impl.DefaultParser: java.util.List expectedOpts>;
+interfaceinvoke v3.<java.util.List: boolean remove(java.lang.Object)>(v1);
+label1:
+return;
+}
+public io.vertx.core.cli.Option getOption(java.lang.String)
+{
+io.vertx.core.cli.impl.DefaultParser v0;
+java.util.Iterator v5;
+java.util.List v4;
+io.vertx.core.cli.CLI v3;
+java.lang.Object v7;
+java.lang.String v1, v10, v2, v8;
+boolean v11, v6, v9;
+v0 := @this: io.vertx.core.cli.impl.DefaultParser;
+v1 := @parameter0: java.lang.String;
+v2 = staticinvoke <io.vertx.core.cli.impl.DefaultParser: java.lang.String stripLeadingHyphens(java.lang.String)>(v1);
+v3 = v0.<io.vertx.core.cli.impl.DefaultParser: io.vertx.core.cli.CLI cli>;
+v4 = interfaceinvoke v3.<io.vertx.core.cli.CLI: java.util.List getOptions()>();
+v5 = interfaceinvoke v4.<java.util.List: java.util.Iterator iterator()>();
+label1:
+v6 = interfaceinvoke v5.<java.util.Iterator: boolean hasNext()>();
+if v6 == 0 goto label3;
+v7 = interfaceinvoke v5.<java.util.Iterator: java.lang.Object next()>();
+v8 = virtualinvoke v7.<io.vertx.core.cli.Option: java.lang.String getShortName()>();
+v9 = virtualinvoke v2.<java.lang.String: boolean equals(java.lang.Object)>(v8);
+if v9 != 0 goto label2;
+v10 = virtualinvoke v7.<io.vertx.core.cli.Option: java.lang.String getLongName()>();
+v11 = virtualinvoke v2.<java.lang.String: boolean equalsIgnoreCase(java.lang.String)>(v10);
+if v11 == 0 goto label1;
+label2:
+return v7;
+label3:
+return null;
+}
+private boolean isAValidShortOption(java.lang.String)
+{
+io.vertx.core.cli.Option v3;
+io.vertx.core.cli.impl.DefaultParser v0;
+io.vertx.core.cli.impl.DefaultCommandLine v4;
+java.lang.String v1, v2;
+boolean v5, v6;
+v0 := @this: io.vertx.core.cli.impl.DefaultParser;
+v1 := @parameter0: java.lang.String;
+v2 = virtualinvoke v1.<java.lang.String: java.lang.String substring(int,int)>(0, 1);
+v3 = virtualinvoke v0.<io.vertx.core.cli.impl.DefaultParser: io.vertx.core.cli.Option getOption(java.lang.String)>(v2);
+if v3 == null goto label1;
+v4 = v0.<io.vertx.core.cli.impl.DefaultParser: io.vertx.core.cli.impl.DefaultCommandLine commandLine>;
+v5 = virtualinvoke v4.<io.vertx.core.cli.impl.DefaultCommandLine: boolean acceptMoreValues(io.vertx.core.cli.Option)>(v3);
+if v5 == 0 goto label1;
+v6 = 1;
+goto label2;
+label1:
+v6 = 0;
+label2:
+return v6;
+}
+public java.util.List getMatchingOptions(java.lang.String)
+{
+io.vertx.core.cli.impl.DefaultParser v0;
+java.util.ArrayList v3;
+java.lang.String v1, v15, v2, v20, v21, v9;
+boolean v10, v13, v16, v18, v22, v7;
+java.util.Iterator v12, v17, v6;
+java.util.List v11, v5;
+io.vertx.core.cli.CLI v4;
+java.lang.Object v14, v19, v8;
+v0 := @this: io.vertx.core.cli.impl.DefaultParser;
+v1 := @parameter0: java.lang.String;
+virtualinvoke v1.<java.lang.Object: java.lang.Class getClass()>();
+v2 = staticinvoke <io.vertx.core.cli.impl.DefaultParser: java.lang.String stripLeadingHyphens(java.lang.String)>(v1);
+v3 = new java.util.ArrayList;
+specialinvoke v3.<java.util.ArrayList: void <init>()>();
+v4 = v0.<io.vertx.core.cli.impl.DefaultParser: io.vertx.core.cli.CLI cli>;
+v5 = interfaceinvoke v4.<io.vertx.core.cli.CLI: java.util.List getOptions()>();
+v6 = interfaceinvoke v5.<java.util.List: java.util.Iterator iterator()>();
+label1:
+v7 = interfaceinvoke v6.<java.util.Iterator: boolean hasNext()>();
+if v7 == 0 goto label2;
+v8 = interfaceinvoke v6.<java.util.Iterator: java.lang.Object next()>();
+v9 = virtualinvoke v8.<io.vertx.core.cli.Option: java.lang.String getLongName()>();
+v10 = virtualinvoke v2.<java.lang.String: boolean equals(java.lang.Object)>(v9);
+if v10 == 0 goto label1;
+v11 = staticinvoke <java.util.Collections: java.util.List singletonList(java.lang.Object)>(v8);
+return v11;
+label2:
+v12 = interfaceinvoke v5.<java.util.List: java.util.Iterator iterator()>();
+label3:
+v13 = interfaceinvoke v12.<java.util.Iterator: boolean hasNext()>();
+if v13 == 0 goto label4;
+v14 = interfaceinvoke v12.<java.util.Iterator: java.lang.Object next()>();
+v15 = virtualinvoke v14.<io.vertx.core.cli.Option: java.lang.String getLongName()>();
+v16 = virtualinvoke v2.<java.lang.String: boolean equalsIgnoreCase(java.lang.String)>(v15);
+if v16 == 0 goto label3;
+interfaceinvoke v3.<java.util.List: boolean add(java.lang.Object)>(v14);
+goto label3;
+label4:
+v17 = interfaceinvoke v5.<java.util.List: java.util.Iterator iterator()>();
+label5:
+v18 = interfaceinvoke v17.<java.util.Iterator: boolean hasNext()>();
+if v18 == 0 goto label6;
+v19 = interfaceinvoke v17.<java.util.Iterator: java.lang.Object next()>();
+v20 = virtualinvoke v19.<io.vertx.core.cli.Option: java.lang.String getLongName()>();
+if v20 == null goto label5;
+v21 = virtualinvoke v19.<io.vertx.core.cli.Option: java.lang.String getLongName()>();
+v22 = virtualinvoke v21.<java.lang.String: boolean startsWith(java.lang.String)>(v2);
+if v22 == 0 goto label5;
+interfaceinvoke v3.<java.util.List: boolean add(java.lang.Object)>(v19);
+goto label5;
+label6:
+return v3;
+}
+protected void handleConcatenatedOptions(java.lang.String) throws io.vertx.core.cli.CLIException
+{
+io.vertx.core.cli.impl.DefaultParser v0;
+char v4;
+io.vertx.core.cli.Option v12, v7, v8;
+io.vertx.core.cli.impl.DefaultCommandLine v11;
+int v10, v13, v2, v3, v9;
+java.lang.String v1, v14, v5;
+boolean v6;
+v0 := @this: io.vertx.core.cli.impl.DefaultParser;
+v1 := @parameter0: java.lang.String;
+v2 = 1;
+label1:
+v3 = virtualinvoke v1.<java.lang.String: int length()>();
+if v2 >= v3 goto label4;
+v4 = virtualinvoke v1.<java.lang.String: char charAt(int)>(v2);
+v5 = staticinvoke <java.lang.String: java.lang.String valueOf(char)>(v4);
+v6 = specialinvoke v0.<io.vertx.core.cli.impl.DefaultParser: boolean hasOptionWithShortName(java.lang.String)>(v5);
+if v6 == 0 goto label2;
+v7 = virtualinvoke v0.<io.vertx.core.cli.impl.DefaultParser: io.vertx.core.cli.Option getOption(java.lang.String)>(v5);
+specialinvoke v0.<io.vertx.core.cli.impl.DefaultParser: void handleOption(io.vertx.core.cli.Option)>(v7);
+v8 = v0.<io.vertx.core.cli.impl.DefaultParser: io.vertx.core.cli.Option current>;
+if v8 == null goto label3;
+v9 = virtualinvoke v1.<java.lang.String: int length()>();
+v10 = v2 + 1;
+if v9 == v10 goto label3;
+v11 = v0.<io.vertx.core.cli.impl.DefaultParser: io.vertx.core.cli.impl.DefaultCommandLine commandLine>;
+v12 = v0.<io.vertx.core.cli.impl.DefaultParser: io.vertx.core.cli.Option current>;
+v13 = v2 + 1;
+v14 = virtualinvoke v1.<java.lang.String: java.lang.String substring(int)>(v13);
+virtualinvoke v11.<io.vertx.core.cli.impl.DefaultCommandLine: io.vertx.core.cli.impl.DefaultCommandLine addRawValue(io.vertx.core.cli.Option,java.lang.String)>(v12, v14);
+goto label4;
+label2:
+specialinvoke v0.<io.vertx.core.cli.impl.DefaultParser: void handleArgument(java.lang.String)>(v1);
+goto label4;
+label3:
+v2 = v2 + 1;
+goto label1;
+label4:
+return;
+}
+}

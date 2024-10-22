@@ -1,0 +1,616 @@
+public final class io.netty.util.internal.InternalThreadLocalMap extends io.netty.util.internal.UnpaddedInternalThreadLocalMap
+{
+private static final java.lang.ThreadLocal slowThreadLocalMap;
+private static final java.util.concurrent.atomic.AtomicInteger nextIndex;
+public static final int VARIABLES_TO_REMOVE_INDEX;
+private static final int DEFAULT_ARRAY_LIST_INITIAL_CAPACITY;
+private static final int ARRAY_LIST_CAPACITY_EXPAND_THRESHOLD;
+private static final int ARRAY_LIST_CAPACITY_MAX_SIZE;
+private static final int HANDLER_SHARABLE_CACHE_INITIAL_CAPACITY;
+private static final int INDEXED_VARIABLE_TABLE_INITIAL_SIZE;
+private static final int STRING_BUILDER_INITIAL_SIZE;
+private static final int STRING_BUILDER_MAX_SIZE;
+private static final io.netty.util.internal.logging.InternalLogger logger;
+public static final java.lang.Object UNSET;
+private java.lang.Object[] indexedVariables;
+private int futureListenerStackDepth;
+private int localChannelReaderStackDepth;
+private java.util.Map handlerSharableCache;
+private io.netty.util.internal.IntegerHolder counterHashCode;
+private io.netty.util.internal.ThreadLocalRandom random;
+private java.util.Map typeParameterMatcherGetCache;
+private java.util.Map typeParameterMatcherFindCache;
+private java.lang.StringBuilder stringBuilder;
+private java.util.Map charsetEncoderCache;
+private java.util.Map charsetDecoderCache;
+private java.util.ArrayList arrayList;
+private java.util.BitSet cleanerFlags;
+public long rp1;
+public long rp2;
+public long rp3;
+public long rp4;
+public long rp5;
+public long rp6;
+public long rp7;
+public long rp8;
+public static io.netty.util.internal.InternalThreadLocalMap getIfSet()
+{
+java.lang.ThreadLocal v3;
+java.lang.Thread v0;
+io.netty.util.internal.InternalThreadLocalMap v2;
+java.lang.Object v4;
+boolean v1;
+v0 = staticinvoke <java.lang.Thread: java.lang.Thread currentThread()>();
+v1 = v0 instanceof io.netty.util.concurrent.FastThreadLocalThread;
+if v1 == 0 goto label1;
+v2 = virtualinvoke v0.<io.netty.util.concurrent.FastThreadLocalThread: io.netty.util.internal.InternalThreadLocalMap threadLocalMap()>();
+return v2;
+label1:
+v3 = <io.netty.util.internal.InternalThreadLocalMap: java.lang.ThreadLocal slowThreadLocalMap>;
+v4 = virtualinvoke v3.<java.lang.ThreadLocal: java.lang.Object get()>();
+return v4;
+}
+public static io.netty.util.internal.InternalThreadLocalMap get()
+{
+java.lang.Thread v0;
+io.netty.util.internal.InternalThreadLocalMap v2, v3;
+boolean v1;
+v0 = staticinvoke <java.lang.Thread: java.lang.Thread currentThread()>();
+v1 = v0 instanceof io.netty.util.concurrent.FastThreadLocalThread;
+if v1 == 0 goto label1;
+v2 = staticinvoke <io.netty.util.internal.InternalThreadLocalMap: io.netty.util.internal.InternalThreadLocalMap fastGet(io.netty.util.concurrent.FastThreadLocalThread)>(v0);
+return v2;
+label1:
+v3 = staticinvoke <io.netty.util.internal.InternalThreadLocalMap: io.netty.util.internal.InternalThreadLocalMap slowGet()>();
+return v3;
+}
+private static io.netty.util.internal.InternalThreadLocalMap fastGet(io.netty.util.concurrent.FastThreadLocalThread)
+{
+io.netty.util.internal.InternalThreadLocalMap v1, v2;
+io.netty.util.concurrent.FastThreadLocalThread v0;
+v0 := @parameter0: io.netty.util.concurrent.FastThreadLocalThread;
+v1 = virtualinvoke v0.<io.netty.util.concurrent.FastThreadLocalThread: io.netty.util.internal.InternalThreadLocalMap threadLocalMap()>();
+if v1 != null goto label1;
+v2 = new io.netty.util.internal.InternalThreadLocalMap;
+specialinvoke v2.<io.netty.util.internal.InternalThreadLocalMap: void <init>()>();
+v1 = v2;
+virtualinvoke v0.<io.netty.util.concurrent.FastThreadLocalThread: void setThreadLocalMap(io.netty.util.internal.InternalThreadLocalMap)>(v2);
+label1:
+return v1;
+}
+private static io.netty.util.internal.InternalThreadLocalMap slowGet()
+{
+java.lang.ThreadLocal v0, v3;
+io.netty.util.internal.InternalThreadLocalMap v2;
+java.lang.Object v1;
+v0 = <io.netty.util.internal.InternalThreadLocalMap: java.lang.ThreadLocal slowThreadLocalMap>;
+v1 = virtualinvoke v0.<java.lang.ThreadLocal: java.lang.Object get()>();
+if v1 != null goto label1;
+v2 = new io.netty.util.internal.InternalThreadLocalMap;
+specialinvoke v2.<io.netty.util.internal.InternalThreadLocalMap: void <init>()>();
+v1 = v2;
+v3 = <io.netty.util.internal.InternalThreadLocalMap: java.lang.ThreadLocal slowThreadLocalMap>;
+virtualinvoke v3.<java.lang.ThreadLocal: void set(java.lang.Object)>(v2);
+label1:
+return v1;
+}
+public static void remove()
+{
+java.lang.ThreadLocal v2;
+boolean v1;
+java.lang.Thread v0;
+v0 = staticinvoke <java.lang.Thread: java.lang.Thread currentThread()>();
+v1 = v0 instanceof io.netty.util.concurrent.FastThreadLocalThread;
+if v1 == 0 goto label1;
+virtualinvoke v0.<io.netty.util.concurrent.FastThreadLocalThread: void setThreadLocalMap(io.netty.util.internal.InternalThreadLocalMap)>(null);
+goto label2;
+label1:
+v2 = <io.netty.util.internal.InternalThreadLocalMap: java.lang.ThreadLocal slowThreadLocalMap>;
+virtualinvoke v2.<java.lang.ThreadLocal: void remove()>();
+label2:
+return;
+}
+public static void destroy()
+{
+java.lang.ThreadLocal v0;
+v0 = <io.netty.util.internal.InternalThreadLocalMap: java.lang.ThreadLocal slowThreadLocalMap>;
+virtualinvoke v0.<java.lang.ThreadLocal: void remove()>();
+return;
+}
+public static int nextVariableIndex()
+{
+java.lang.IllegalStateException v3;
+java.util.concurrent.atomic.AtomicInteger v0, v2;
+int v1;
+v0 = <io.netty.util.internal.InternalThreadLocalMap: java.util.concurrent.atomic.AtomicInteger nextIndex>;
+v1 = virtualinvoke v0.<java.util.concurrent.atomic.AtomicInteger: int getAndIncrement()>();
+if v1 >= 2147483639 goto label1;
+if v1 >= 0 goto label2;
+label1:
+v2 = <io.netty.util.internal.InternalThreadLocalMap: java.util.concurrent.atomic.AtomicInteger nextIndex>;
+virtualinvoke v2.<java.util.concurrent.atomic.AtomicInteger: void set(int)>(2147483639);
+v3 = new java.lang.IllegalStateException;
+specialinvoke v3.<java.lang.IllegalStateException: void <init>(java.lang.String)>("too many thread-local indexed variables");
+throw v3;
+label2:
+return v1;
+}
+public static int lastVariableIndex()
+{
+int v1, v2;
+java.util.concurrent.atomic.AtomicInteger v0;
+v0 = <io.netty.util.internal.InternalThreadLocalMap: java.util.concurrent.atomic.AtomicInteger nextIndex>;
+v1 = virtualinvoke v0.<java.util.concurrent.atomic.AtomicInteger: int get()>();
+v2 = v1 - 1;
+return v2;
+}
+private void <init>()
+{
+io.netty.util.internal.InternalThreadLocalMap v0;
+java.lang.Object[] v1;
+v0 := @this: io.netty.util.internal.InternalThreadLocalMap;
+specialinvoke v0.<io.netty.util.internal.UnpaddedInternalThreadLocalMap: void <init>()>();
+v1 = staticinvoke <io.netty.util.internal.InternalThreadLocalMap: java.lang.Object[] newIndexedVariableTable()>();
+v0.<io.netty.util.internal.InternalThreadLocalMap: java.lang.Object[] indexedVariables> = v1;
+return;
+}
+private static java.lang.Object[] newIndexedVariableTable()
+{
+java.lang.Object v1;
+java.lang.Object[] v0;
+v0 = newarray (java.lang.Object)[32];
+v1 = <io.netty.util.internal.InternalThreadLocalMap: java.lang.Object UNSET>;
+staticinvoke <java.util.Arrays: void fill(java.lang.Object[],java.lang.Object)>(v0, v1);
+return v0;
+}
+public int size()
+{
+io.netty.util.internal.InternalThreadLocalMap v0;
+java.util.ArrayList v12;
+java.util.Map v10, v11, v4, v7, v8;
+int v1, v13, v16, v2, v3;
+io.netty.util.internal.ThreadLocalRandom v6;
+io.netty.util.internal.IntegerHolder v5;
+java.lang.Object v14, v15;
+java.lang.StringBuilder v9;
+v0 := @this: io.netty.util.internal.InternalThreadLocalMap;
+v1 = 0;
+v2 = v0.<io.netty.util.internal.InternalThreadLocalMap: int futureListenerStackDepth>;
+if v2 == 0 goto label01;
+v1 = 1;
+label01:
+v3 = v0.<io.netty.util.internal.InternalThreadLocalMap: int localChannelReaderStackDepth>;
+if v3 == 0 goto label02;
+v1 = v1 + 1;
+label02:
+v4 = v0.<io.netty.util.internal.InternalThreadLocalMap: java.util.Map handlerSharableCache>;
+if v4 == null goto label03;
+v1 = v1 + 1;
+label03:
+v5 = v0.<io.netty.util.internal.InternalThreadLocalMap: io.netty.util.internal.IntegerHolder counterHashCode>;
+if v5 == null goto label04;
+v1 = v1 + 1;
+label04:
+v6 = v0.<io.netty.util.internal.InternalThreadLocalMap: io.netty.util.internal.ThreadLocalRandom random>;
+if v6 == null goto label05;
+v1 = v1 + 1;
+label05:
+v7 = v0.<io.netty.util.internal.InternalThreadLocalMap: java.util.Map typeParameterMatcherGetCache>;
+if v7 == null goto label06;
+v1 = v1 + 1;
+label06:
+v8 = v0.<io.netty.util.internal.InternalThreadLocalMap: java.util.Map typeParameterMatcherFindCache>;
+if v8 == null goto label07;
+v1 = v1 + 1;
+label07:
+v9 = v0.<io.netty.util.internal.InternalThreadLocalMap: java.lang.StringBuilder stringBuilder>;
+if v9 == null goto label08;
+v1 = v1 + 1;
+label08:
+v10 = v0.<io.netty.util.internal.InternalThreadLocalMap: java.util.Map charsetEncoderCache>;
+if v10 == null goto label09;
+v1 = v1 + 1;
+label09:
+v11 = v0.<io.netty.util.internal.InternalThreadLocalMap: java.util.Map charsetDecoderCache>;
+if v11 == null goto label10;
+v1 = v1 + 1;
+label10:
+v12 = v0.<io.netty.util.internal.InternalThreadLocalMap: java.util.ArrayList arrayList>;
+if v12 == null goto label11;
+v1 = v1 + 1;
+label11:
+v13 = <io.netty.util.internal.InternalThreadLocalMap: int VARIABLES_TO_REMOVE_INDEX>;
+v14 = virtualinvoke v0.<io.netty.util.internal.InternalThreadLocalMap: java.lang.Object indexedVariable(int)>(v13);
+if v14 == null goto label12;
+v15 = <io.netty.util.internal.InternalThreadLocalMap: java.lang.Object UNSET>;
+if v14 == v15 goto label12;
+v16 = interfaceinvoke v14.<java.util.Set: int size()>();
+v1 = v1 + v16;
+label12:
+return v1;
+}
+public java.lang.StringBuilder stringBuilder()
+{
+int v3, v4, v5, v6;
+io.netty.util.internal.InternalThreadLocalMap v0;
+java.lang.StringBuilder v1, v2;
+v0 := @this: io.netty.util.internal.InternalThreadLocalMap;
+v1 = v0.<io.netty.util.internal.InternalThreadLocalMap: java.lang.StringBuilder stringBuilder>;
+if v1 != null goto label1;
+v2 = new java.lang.StringBuilder;
+v3 = <io.netty.util.internal.InternalThreadLocalMap: int STRING_BUILDER_INITIAL_SIZE>;
+specialinvoke v2.<java.lang.StringBuilder: void <init>(int)>(v3);
+v0.<io.netty.util.internal.InternalThreadLocalMap: java.lang.StringBuilder stringBuilder> = v2;
+return v2;
+label1:
+v4 = virtualinvoke v1.<java.lang.StringBuilder: int capacity()>();
+v5 = <io.netty.util.internal.InternalThreadLocalMap: int STRING_BUILDER_MAX_SIZE>;
+if v4 <= v5 goto label2;
+v6 = <io.netty.util.internal.InternalThreadLocalMap: int STRING_BUILDER_INITIAL_SIZE>;
+virtualinvoke v1.<java.lang.StringBuilder: void setLength(int)>(v6);
+virtualinvoke v1.<java.lang.StringBuilder: void trimToSize()>();
+label2:
+virtualinvoke v1.<java.lang.StringBuilder: void setLength(int)>(0);
+return v1;
+}
+public java.util.Map charsetEncoderCache()
+{
+io.netty.util.internal.InternalThreadLocalMap v0;
+java.util.IdentityHashMap v2;
+java.util.Map v1;
+v0 := @this: io.netty.util.internal.InternalThreadLocalMap;
+v1 = v0.<io.netty.util.internal.InternalThreadLocalMap: java.util.Map charsetEncoderCache>;
+if v1 != null goto label1;
+v2 = new java.util.IdentityHashMap;
+specialinvoke v2.<java.util.IdentityHashMap: void <init>()>();
+v1 = v2;
+v0.<io.netty.util.internal.InternalThreadLocalMap: java.util.Map charsetEncoderCache> = v2;
+label1:
+return v1;
+}
+public java.util.Map charsetDecoderCache()
+{
+io.netty.util.internal.InternalThreadLocalMap v0;
+java.util.IdentityHashMap v2;
+java.util.Map v1;
+v0 := @this: io.netty.util.internal.InternalThreadLocalMap;
+v1 = v0.<io.netty.util.internal.InternalThreadLocalMap: java.util.Map charsetDecoderCache>;
+if v1 != null goto label1;
+v2 = new java.util.IdentityHashMap;
+specialinvoke v2.<java.util.IdentityHashMap: void <init>()>();
+v1 = v2;
+v0.<io.netty.util.internal.InternalThreadLocalMap: java.util.Map charsetDecoderCache> = v2;
+label1:
+return v1;
+}
+public java.util.ArrayList arrayList()
+{
+io.netty.util.internal.InternalThreadLocalMap v0;
+java.util.ArrayList v1;
+v0 := @this: io.netty.util.internal.InternalThreadLocalMap;
+v1 = virtualinvoke v0.<io.netty.util.internal.InternalThreadLocalMap: java.util.ArrayList arrayList(int)>(8);
+return v1;
+}
+public java.util.ArrayList arrayList(int)
+{
+int v1;
+io.netty.util.internal.InternalThreadLocalMap v0;
+java.util.ArrayList v2, v3, v4;
+v0 := @this: io.netty.util.internal.InternalThreadLocalMap;
+v1 := @parameter0: int;
+v2 = v0.<io.netty.util.internal.InternalThreadLocalMap: java.util.ArrayList arrayList>;
+if v2 != null goto label1;
+v3 = new java.util.ArrayList;
+specialinvoke v3.<java.util.ArrayList: void <init>(int)>(v1);
+v0.<io.netty.util.internal.InternalThreadLocalMap: java.util.ArrayList arrayList> = v3;
+v4 = v0.<io.netty.util.internal.InternalThreadLocalMap: java.util.ArrayList arrayList>;
+return v4;
+label1:
+virtualinvoke v2.<java.util.ArrayList: void clear()>();
+virtualinvoke v2.<java.util.ArrayList: void ensureCapacity(int)>(v1);
+return v2;
+}
+public int futureListenerStackDepth()
+{
+int v1;
+io.netty.util.internal.InternalThreadLocalMap v0;
+v0 := @this: io.netty.util.internal.InternalThreadLocalMap;
+v1 = v0.<io.netty.util.internal.InternalThreadLocalMap: int futureListenerStackDepth>;
+return v1;
+}
+public void setFutureListenerStackDepth(int)
+{
+int v1;
+io.netty.util.internal.InternalThreadLocalMap v0;
+v0 := @this: io.netty.util.internal.InternalThreadLocalMap;
+v1 := @parameter0: int;
+v0.<io.netty.util.internal.InternalThreadLocalMap: int futureListenerStackDepth> = v1;
+return;
+}
+public io.netty.util.internal.ThreadLocalRandom random()
+{
+io.netty.util.internal.InternalThreadLocalMap v0;
+io.netty.util.internal.ThreadLocalRandom v1, v2;
+v0 := @this: io.netty.util.internal.InternalThreadLocalMap;
+v1 = v0.<io.netty.util.internal.InternalThreadLocalMap: io.netty.util.internal.ThreadLocalRandom random>;
+if v1 != null goto label1;
+v2 = new io.netty.util.internal.ThreadLocalRandom;
+specialinvoke v2.<io.netty.util.internal.ThreadLocalRandom: void <init>()>();
+v1 = v2;
+v0.<io.netty.util.internal.InternalThreadLocalMap: io.netty.util.internal.ThreadLocalRandom random> = v2;
+label1:
+return v1;
+}
+public java.util.Map typeParameterMatcherGetCache()
+{
+io.netty.util.internal.InternalThreadLocalMap v0;
+java.util.IdentityHashMap v2;
+java.util.Map v1;
+v0 := @this: io.netty.util.internal.InternalThreadLocalMap;
+v1 = v0.<io.netty.util.internal.InternalThreadLocalMap: java.util.Map typeParameterMatcherGetCache>;
+if v1 != null goto label1;
+v2 = new java.util.IdentityHashMap;
+specialinvoke v2.<java.util.IdentityHashMap: void <init>()>();
+v1 = v2;
+v0.<io.netty.util.internal.InternalThreadLocalMap: java.util.Map typeParameterMatcherGetCache> = v2;
+label1:
+return v1;
+}
+public java.util.Map typeParameterMatcherFindCache()
+{
+io.netty.util.internal.InternalThreadLocalMap v0;
+java.util.IdentityHashMap v2;
+java.util.Map v1;
+v0 := @this: io.netty.util.internal.InternalThreadLocalMap;
+v1 = v0.<io.netty.util.internal.InternalThreadLocalMap: java.util.Map typeParameterMatcherFindCache>;
+if v1 != null goto label1;
+v2 = new java.util.IdentityHashMap;
+specialinvoke v2.<java.util.IdentityHashMap: void <init>()>();
+v1 = v2;
+v0.<io.netty.util.internal.InternalThreadLocalMap: java.util.Map typeParameterMatcherFindCache> = v2;
+label1:
+return v1;
+}
+public io.netty.util.internal.IntegerHolder counterHashCode()
+{
+io.netty.util.internal.InternalThreadLocalMap v0;
+io.netty.util.internal.IntegerHolder v1;
+v0 := @this: io.netty.util.internal.InternalThreadLocalMap;
+v1 = v0.<io.netty.util.internal.InternalThreadLocalMap: io.netty.util.internal.IntegerHolder counterHashCode>;
+return v1;
+}
+public void setCounterHashCode(io.netty.util.internal.IntegerHolder)
+{
+io.netty.util.internal.InternalThreadLocalMap v0;
+io.netty.util.internal.IntegerHolder v1;
+v0 := @this: io.netty.util.internal.InternalThreadLocalMap;
+v1 := @parameter0: io.netty.util.internal.IntegerHolder;
+v0.<io.netty.util.internal.InternalThreadLocalMap: io.netty.util.internal.IntegerHolder counterHashCode> = v1;
+return;
+}
+public java.util.Map handlerSharableCache()
+{
+io.netty.util.internal.InternalThreadLocalMap v0;
+java.util.WeakHashMap v2;
+java.util.Map v1;
+v0 := @this: io.netty.util.internal.InternalThreadLocalMap;
+v1 = v0.<io.netty.util.internal.InternalThreadLocalMap: java.util.Map handlerSharableCache>;
+if v1 != null goto label1;
+v2 = new java.util.WeakHashMap;
+specialinvoke v2.<java.util.WeakHashMap: void <init>(int)>(4);
+v1 = v2;
+v0.<io.netty.util.internal.InternalThreadLocalMap: java.util.Map handlerSharableCache> = v2;
+label1:
+return v1;
+}
+public int localChannelReaderStackDepth()
+{
+int v1;
+io.netty.util.internal.InternalThreadLocalMap v0;
+v0 := @this: io.netty.util.internal.InternalThreadLocalMap;
+v1 = v0.<io.netty.util.internal.InternalThreadLocalMap: int localChannelReaderStackDepth>;
+return v1;
+}
+public void setLocalChannelReaderStackDepth(int)
+{
+int v1;
+io.netty.util.internal.InternalThreadLocalMap v0;
+v0 := @this: io.netty.util.internal.InternalThreadLocalMap;
+v1 := @parameter0: int;
+v0.<io.netty.util.internal.InternalThreadLocalMap: int localChannelReaderStackDepth> = v1;
+return;
+}
+public java.lang.Object indexedVariable(int)
+{
+java.lang.Object[] v2;
+int v1, v3;
+io.netty.util.internal.InternalThreadLocalMap v0;
+java.lang.Object v4;
+v0 := @this: io.netty.util.internal.InternalThreadLocalMap;
+v1 := @parameter0: int;
+v2 = v0.<io.netty.util.internal.InternalThreadLocalMap: java.lang.Object[] indexedVariables>;
+v3 = lengthof v2;
+if v1 >= v3 goto label1;
+v4 = v2[v1];
+goto label2;
+label1:
+v4 = <io.netty.util.internal.InternalThreadLocalMap: java.lang.Object UNSET>;
+label2:
+return v4;
+}
+public boolean setIndexedVariable(int, java.lang.Object)
+{
+java.lang.Object[] v3;
+io.netty.util.internal.InternalThreadLocalMap v0;
+int v1, v4;
+java.lang.Object v2, v5, v6;
+boolean v7;
+v0 := @this: io.netty.util.internal.InternalThreadLocalMap;
+v1 := @parameter0: int;
+v2 := @parameter1: java.lang.Object;
+v3 = v0.<io.netty.util.internal.InternalThreadLocalMap: java.lang.Object[] indexedVariables>;
+v4 = lengthof v3;
+if v1 >= v4 goto label3;
+v5 = v3[v1];
+v3[v1] = v2;
+v6 = <io.netty.util.internal.InternalThreadLocalMap: java.lang.Object UNSET>;
+if v5 != v6 goto label1;
+v7 = 1;
+goto label2;
+label1:
+v7 = 0;
+label2:
+return v7;
+label3:
+specialinvoke v0.<io.netty.util.internal.InternalThreadLocalMap: void expandIndexedVariableTableAndSet(int,java.lang.Object)>(v1, v2);
+return 1;
+}
+private void expandIndexedVariableTableAndSet(int, java.lang.Object)
+{
+java.lang.Object[] v16, v3;
+io.netty.util.internal.InternalThreadLocalMap v0;
+int v1, v10, v11, v12, v13, v14, v15, v17, v4, v5, v6, v7, v8, v9;
+java.lang.Object v18, v2;
+v0 := @this: io.netty.util.internal.InternalThreadLocalMap;
+v1 := @parameter0: int;
+v2 := @parameter1: java.lang.Object;
+v3 = v0.<io.netty.util.internal.InternalThreadLocalMap: java.lang.Object[] indexedVariables>;
+v4 = lengthof v3;
+if v1 >= 1073741824 goto label1;
+v5 = v1 >>> 1;
+v6 = v1 | v5;
+v7 = v6 >>> 2;
+v8 = v6 | v7;
+v9 = v8 >>> 4;
+v10 = v8 | v9;
+v11 = v10 >>> 8;
+v12 = v10 | v11;
+v13 = v12 >>> 16;
+v14 = v12 | v13;
+v15 = v14 + 1;
+goto label2;
+label1:
+v15 = 2147483639;
+label2:
+v16 = staticinvoke <java.util.Arrays: java.lang.Object[] copyOf(java.lang.Object[],int)>(v3, v15);
+v17 = lengthof v16;
+v18 = <io.netty.util.internal.InternalThreadLocalMap: java.lang.Object UNSET>;
+staticinvoke <java.util.Arrays: void fill(java.lang.Object[],int,int,java.lang.Object)>(v16, v4, v17, v18);
+v16[v1] = v2;
+v0.<io.netty.util.internal.InternalThreadLocalMap: java.lang.Object[] indexedVariables> = v16;
+return;
+}
+public java.lang.Object removeIndexedVariable(int)
+{
+java.lang.Object[] v2;
+int v1, v3;
+io.netty.util.internal.InternalThreadLocalMap v0;
+java.lang.Object v4, v5, v6;
+v0 := @this: io.netty.util.internal.InternalThreadLocalMap;
+v1 := @parameter0: int;
+v2 = v0.<io.netty.util.internal.InternalThreadLocalMap: java.lang.Object[] indexedVariables>;
+v3 = lengthof v2;
+if v1 >= v3 goto label1;
+v4 = v2[v1];
+v5 = <io.netty.util.internal.InternalThreadLocalMap: java.lang.Object UNSET>;
+v2[v1] = v5;
+return v4;
+label1:
+v6 = <io.netty.util.internal.InternalThreadLocalMap: java.lang.Object UNSET>;
+return v6;
+}
+public boolean isIndexedVariableSet(int)
+{
+java.lang.Object[] v2;
+int v1, v3;
+io.netty.util.internal.InternalThreadLocalMap v0;
+java.lang.Object v4, v5;
+boolean v6;
+v0 := @this: io.netty.util.internal.InternalThreadLocalMap;
+v1 := @parameter0: int;
+v2 = v0.<io.netty.util.internal.InternalThreadLocalMap: java.lang.Object[] indexedVariables>;
+v3 = lengthof v2;
+if v1 >= v3 goto label1;
+v4 = v2[v1];
+v5 = <io.netty.util.internal.InternalThreadLocalMap: java.lang.Object UNSET>;
+if v4 == v5 goto label1;
+v6 = 1;
+goto label2;
+label1:
+v6 = 0;
+label2:
+return v6;
+}
+public boolean isCleanerFlagSet(int)
+{
+int v1;
+io.netty.util.internal.InternalThreadLocalMap v0;
+java.util.BitSet v2, v3;
+boolean v4, v5;
+v0 := @this: io.netty.util.internal.InternalThreadLocalMap;
+v1 := @parameter0: int;
+v2 = v0.<io.netty.util.internal.InternalThreadLocalMap: java.util.BitSet cleanerFlags>;
+if v2 == null goto label1;
+v3 = v0.<io.netty.util.internal.InternalThreadLocalMap: java.util.BitSet cleanerFlags>;
+v4 = virtualinvoke v3.<java.util.BitSet: boolean get(int)>(v1);
+if v4 == 0 goto label1;
+v5 = 1;
+goto label2;
+label1:
+v5 = 0;
+label2:
+return v5;
+}
+public void setCleanerFlag(int)
+{
+int v1;
+io.netty.util.internal.InternalThreadLocalMap v0;
+java.util.BitSet v2, v3, v4;
+v0 := @this: io.netty.util.internal.InternalThreadLocalMap;
+v1 := @parameter0: int;
+v2 = v0.<io.netty.util.internal.InternalThreadLocalMap: java.util.BitSet cleanerFlags>;
+if v2 != null goto label1;
+v3 = new java.util.BitSet;
+specialinvoke v3.<java.util.BitSet: void <init>()>();
+v0.<io.netty.util.internal.InternalThreadLocalMap: java.util.BitSet cleanerFlags> = v3;
+label1:
+v4 = v0.<io.netty.util.internal.InternalThreadLocalMap: java.util.BitSet cleanerFlags>;
+virtualinvoke v4.<java.util.BitSet: void set(int)>(v1);
+return;
+}
+static void <clinit>()
+{
+java.lang.ThreadLocal v0;
+java.lang.Integer v12, v9;
+java.util.concurrent.atomic.AtomicInteger v1;
+io.netty.util.internal.logging.InternalLogger v10, v6, v7;
+int v11, v2, v4, v5, v8;
+java.lang.Object v3;
+v0 = new java.lang.ThreadLocal;
+specialinvoke v0.<java.lang.ThreadLocal: void <init>()>();
+<io.netty.util.internal.InternalThreadLocalMap: java.lang.ThreadLocal slowThreadLocalMap> = v0;
+v1 = new java.util.concurrent.atomic.AtomicInteger;
+specialinvoke v1.<java.util.concurrent.atomic.AtomicInteger: void <init>()>();
+<io.netty.util.internal.InternalThreadLocalMap: java.util.concurrent.atomic.AtomicInteger nextIndex> = v1;
+v2 = staticinvoke <io.netty.util.internal.InternalThreadLocalMap: int nextVariableIndex()>();
+<io.netty.util.internal.InternalThreadLocalMap: int VARIABLES_TO_REMOVE_INDEX> = v2;
+v3 = new java.lang.Object;
+specialinvoke v3.<java.lang.Object: void <init>()>();
+<io.netty.util.internal.InternalThreadLocalMap: java.lang.Object UNSET> = v3;
+v4 = staticinvoke <io.netty.util.internal.SystemPropertyUtil: int getInt(java.lang.String,int)>("io.netty.threadLocalMap.stringBuilder.initialSize", 1024);
+<io.netty.util.internal.InternalThreadLocalMap: int STRING_BUILDER_INITIAL_SIZE> = v4;
+v5 = staticinvoke <io.netty.util.internal.SystemPropertyUtil: int getInt(java.lang.String,int)>("io.netty.threadLocalMap.stringBuilder.maxSize", 4096);
+<io.netty.util.internal.InternalThreadLocalMap: int STRING_BUILDER_MAX_SIZE> = v5;
+v6 = staticinvoke <io.netty.util.internal.logging.InternalLoggerFactory: io.netty.util.internal.logging.InternalLogger getInstance(java.lang.Class)>(class "Lio/netty/util/internal/InternalThreadLocalMap;");
+<io.netty.util.internal.InternalThreadLocalMap: io.netty.util.internal.logging.InternalLogger logger> = v6;
+v7 = <io.netty.util.internal.InternalThreadLocalMap: io.netty.util.internal.logging.InternalLogger logger>;
+v8 = <io.netty.util.internal.InternalThreadLocalMap: int STRING_BUILDER_INITIAL_SIZE>;
+v9 = staticinvoke <java.lang.Integer: java.lang.Integer valueOf(int)>(v8);
+interfaceinvoke v7.<io.netty.util.internal.logging.InternalLogger: void debug(java.lang.String,java.lang.Object)>("-Dio.netty.threadLocalMap.stringBuilder.initialSize: {}", v9);
+v10 = <io.netty.util.internal.InternalThreadLocalMap: io.netty.util.internal.logging.InternalLogger logger>;
+v11 = <io.netty.util.internal.InternalThreadLocalMap: int STRING_BUILDER_MAX_SIZE>;
+v12 = staticinvoke <java.lang.Integer: java.lang.Integer valueOf(int)>(v11);
+interfaceinvoke v10.<io.netty.util.internal.logging.InternalLogger: void debug(java.lang.String,java.lang.Object)>("-Dio.netty.threadLocalMap.stringBuilder.maxSize: {}", v12);
+return;
+}
+}

@@ -1,0 +1,184 @@
+public class org.kohsuke.github.extras.authorization.JWTTokenProvider extends java.lang.Object implements org.kohsuke.github.authorization.AuthorizationProvider
+{
+private final java.security.PrivateKey privateKey;
+private java.time.Instant validUntil;
+private java.lang.String authorization;
+private final java.lang.String applicationId;
+public void <init>(java.lang.String, java.io.File) throws java.security.GeneralSecurityException, java.io.IOException
+{
+org.kohsuke.github.extras.authorization.JWTTokenProvider v0;
+java.lang.String v1;
+java.nio.file.Path v3;
+java.io.File v2;
+v0 := @this: org.kohsuke.github.extras.authorization.JWTTokenProvider;
+v1 := @parameter0: java.lang.String;
+v2 := @parameter1: java.io.File;
+v3 = virtualinvoke v2.<java.io.File: java.nio.file.Path toPath()>();
+specialinvoke v0.<org.kohsuke.github.extras.authorization.JWTTokenProvider: void <init>(java.lang.String,java.nio.file.Path)>(v1, v3);
+return;
+}
+public void <init>(java.lang.String, java.nio.file.Path) throws java.security.GeneralSecurityException, java.io.IOException
+{
+byte[] v4;
+java.nio.charset.Charset v5;
+org.kohsuke.github.extras.authorization.JWTTokenProvider v0;
+java.lang.String v1, v3;
+java.nio.file.Path v2;
+v0 := @this: org.kohsuke.github.extras.authorization.JWTTokenProvider;
+v1 := @parameter0: java.lang.String;
+v2 := @parameter1: java.nio.file.Path;
+v3 = new java.lang.String;
+v4 = staticinvoke <java.nio.file.Files: byte[] readAllBytes(java.nio.file.Path)>(v2);
+v5 = <java.nio.charset.StandardCharsets: java.nio.charset.Charset UTF_8>;
+specialinvoke v3.<java.lang.String: void <init>(byte[],java.nio.charset.Charset)>(v4, v5);
+specialinvoke v0.<org.kohsuke.github.extras.authorization.JWTTokenProvider: void <init>(java.lang.String,java.lang.String)>(v1, v3);
+return;
+}
+public void <init>(java.lang.String, java.lang.String) throws java.security.GeneralSecurityException
+{
+java.security.PrivateKey v3;
+org.kohsuke.github.extras.authorization.JWTTokenProvider v0;
+java.lang.String v1, v2;
+v0 := @this: org.kohsuke.github.extras.authorization.JWTTokenProvider;
+v1 := @parameter0: java.lang.String;
+v2 := @parameter1: java.lang.String;
+v3 = staticinvoke <org.kohsuke.github.extras.authorization.JWTTokenProvider: java.security.PrivateKey getPrivateKeyFromString(java.lang.String)>(v2);
+specialinvoke v0.<org.kohsuke.github.extras.authorization.JWTTokenProvider: void <init>(java.lang.String,java.security.PrivateKey)>(v1, v3);
+return;
+}
+public void <init>(java.lang.String, java.security.PrivateKey)
+{
+java.security.PrivateKey v2;
+org.kohsuke.github.extras.authorization.JWTTokenProvider v0;
+java.lang.String v1;
+java.time.Instant v3;
+v0 := @this: org.kohsuke.github.extras.authorization.JWTTokenProvider;
+v1 := @parameter0: java.lang.String;
+v2 := @parameter1: java.security.PrivateKey;
+specialinvoke v0.<java.lang.Object: void <init>()>();
+v3 = <java.time.Instant: java.time.Instant MIN>;
+v0.<org.kohsuke.github.extras.authorization.JWTTokenProvider: java.time.Instant validUntil> = v3;
+v0.<org.kohsuke.github.extras.authorization.JWTTokenProvider: java.security.PrivateKey privateKey> = v2;
+v0.<org.kohsuke.github.extras.authorization.JWTTokenProvider: java.lang.String applicationId> = v1;
+return;
+}
+public java.lang.String getEncodedAuthorization() throws java.io.IOException
+{
+java.lang.Throwable v6;
+java.lang.Object[] v3;
+org.kohsuke.github.extras.authorization.JWTTokenProvider v0;
+java.lang.String v2, v4, v5;
+boolean v1;
+v0 := @this: org.kohsuke.github.extras.authorization.JWTTokenProvider;
+entermonitor v0;
+label1:
+v1 = virtualinvoke v0.<org.kohsuke.github.extras.authorization.JWTTokenProvider: boolean isNotValid()>();
+if v1 == 0 goto label2;
+v2 = specialinvoke v0.<org.kohsuke.github.extras.authorization.JWTTokenProvider: java.lang.String refreshJWT()>();
+v3 = newarray (java.lang.Object)[1];
+v3[0] = v2;
+v4 = staticinvoke <java.lang.String: java.lang.String format(java.lang.String,java.lang.Object[])>("Bearer %s", v3);
+v0.<org.kohsuke.github.extras.authorization.JWTTokenProvider: java.lang.String authorization> = v4;
+label2:
+v5 = v0.<org.kohsuke.github.extras.authorization.JWTTokenProvider: java.lang.String authorization>;
+exitmonitor v0;
+label3:
+return v5;
+label4:
+v6 := @caughtexception;
+exitmonitor v0;
+throw v6;
+catch java.lang.Throwable from label1 to label3 with label4;
+}
+boolean isNotValid()
+{
+org.kohsuke.github.extras.authorization.JWTTokenProvider v0;
+java.time.Instant v1, v2;
+boolean v3;
+v0 := @this: org.kohsuke.github.extras.authorization.JWTTokenProvider;
+v1 = staticinvoke <java.time.Instant: java.time.Instant now()>();
+v2 = v0.<org.kohsuke.github.extras.authorization.JWTTokenProvider: java.time.Instant validUntil>;
+v3 = virtualinvoke v1.<java.time.Instant: boolean isAfter(java.time.Instant)>(v2);
+return v3;
+}
+private static java.security.PrivateKey getPrivateKeyFromString(java.lang.String) throws java.security.GeneralSecurityException
+{
+byte[] v7;
+java.security.spec.PKCS8EncodedKeySpec v8;
+java.util.Base64$Decoder v6;
+java.security.spec.InvalidKeySpecException v11, v2;
+java.lang.IllegalArgumentException v10;
+java.security.KeyFactory v5;
+java.security.PrivateKey v9;
+java.lang.String v0, v12, v13, v3, v4;
+boolean v1;
+v0 := @parameter0: java.lang.String;
+v1 = virtualinvoke v0.<java.lang.String: boolean contains(java.lang.CharSequence)>(" RSA ");
+if v1 == 0 goto label1;
+v2 = new java.security.spec.InvalidKeySpecException;
+specialinvoke v2.<java.security.spec.InvalidKeySpecException: void <init>(java.lang.String)>("Private key must be a PKCS#8 formatted string, to convert it from PKCS#1 use: openssl pkcs8 -topk8 -inform PEM -outform PEM -in current-key.pem -out new-key.pem -nocrypt");
+throw v2;
+label1:
+v3 = virtualinvoke v0.<java.lang.String: java.lang.String replaceAll(java.lang.String,java.lang.String)>("(?m)^--.*", "");
+v4 = virtualinvoke v3.<java.lang.String: java.lang.String replaceAll(java.lang.String,java.lang.String)>("\\s", "");
+v5 = staticinvoke <java.security.KeyFactory: java.security.KeyFactory getInstance(java.lang.String)>("RSA");
+label2:
+v6 = staticinvoke <java.util.Base64: java.util.Base64$Decoder getDecoder()>();
+v7 = virtualinvoke v6.<java.util.Base64$Decoder: byte[] decode(java.lang.String)>(v4);
+v8 = new java.security.spec.PKCS8EncodedKeySpec;
+specialinvoke v8.<java.security.spec.PKCS8EncodedKeySpec: void <init>(byte[])>(v7);
+v9 = virtualinvoke v5.<java.security.KeyFactory: java.security.PrivateKey generatePrivate(java.security.spec.KeySpec)>(v8);
+label3:
+return v9;
+label4:
+v10 := @caughtexception;
+v11 = new java.security.spec.InvalidKeySpecException;
+v12 = virtualinvoke v10.<java.lang.IllegalArgumentException: java.lang.String getMessage()>();
+v13 = dynamicinvoke "makeConcatWithConstants" <java.lang.String (java.lang.String)>(v12) <java.lang.invoke.StringConcatFactory: java.lang.invoke.CallSite makeConcatWithConstants(java.lang.invoke.MethodHandles$Lookup,java.lang.String,java.lang.invoke.MethodType,java.lang.String,java.lang.Object[])>("Failed to decode private key: \u0001");
+specialinvoke v11.<java.security.spec.InvalidKeySpecException: void <init>(java.lang.String,java.lang.Throwable)>(v13, v10);
+throw v11;
+catch java.lang.IllegalArgumentException from label2 to label3 with label4;
+}
+private java.lang.String refreshJWT()
+{
+java.util.Date v6, v8;
+io.jsonwebtoken.JwtBuilder v11, v14, v5, v7, v9;
+java.time.Duration v15, v2;
+io.jsonwebtoken.SignatureAlgorithm v13;
+org.kohsuke.github.extras.authorization.JWTTokenProvider v0;
+java.lang.String v10, v17;
+java.time.Instant v1, v16, v3, v4;
+java.security.PrivateKey v12;
+v0 := @this: org.kohsuke.github.extras.authorization.JWTTokenProvider;
+v1 = staticinvoke <java.time.Instant: java.time.Instant now()>();
+v2 = staticinvoke <java.time.Duration: java.time.Duration ofMinutes(long)>(8L);
+v3 = virtualinvoke v1.<java.time.Instant: java.time.Instant plus(java.time.temporal.TemporalAmount)>(v2);
+v4 = virtualinvoke v0.<org.kohsuke.github.extras.authorization.JWTTokenProvider: java.time.Instant getIssuedAt(java.time.Instant)>(v1);
+v5 = staticinvoke <io.jsonwebtoken.Jwts: io.jsonwebtoken.JwtBuilder builder()>();
+v6 = staticinvoke <java.util.Date: java.util.Date 'from'(java.time.Instant)>(v4);
+v7 = interfaceinvoke v5.<io.jsonwebtoken.JwtBuilder: io.jsonwebtoken.JwtBuilder setIssuedAt(java.util.Date)>(v6);
+v8 = staticinvoke <java.util.Date: java.util.Date 'from'(java.time.Instant)>(v3);
+v9 = interfaceinvoke v7.<io.jsonwebtoken.JwtBuilder: io.jsonwebtoken.JwtBuilder setExpiration(java.util.Date)>(v8);
+v10 = v0.<org.kohsuke.github.extras.authorization.JWTTokenProvider: java.lang.String applicationId>;
+v11 = interfaceinvoke v9.<io.jsonwebtoken.JwtBuilder: io.jsonwebtoken.JwtBuilder setIssuer(java.lang.String)>(v10);
+v12 = v0.<org.kohsuke.github.extras.authorization.JWTTokenProvider: java.security.PrivateKey privateKey>;
+v13 = <io.jsonwebtoken.SignatureAlgorithm: io.jsonwebtoken.SignatureAlgorithm RS256>;
+v14 = interfaceinvoke v11.<io.jsonwebtoken.JwtBuilder: io.jsonwebtoken.JwtBuilder signWith(java.security.Key,io.jsonwebtoken.SignatureAlgorithm)>(v12, v13);
+v15 = staticinvoke <java.time.Duration: java.time.Duration ofMinutes(long)>(2L);
+v16 = virtualinvoke v3.<java.time.Instant: java.time.Instant minus(java.time.temporal.TemporalAmount)>(v15);
+v0.<org.kohsuke.github.extras.authorization.JWTTokenProvider: java.time.Instant validUntil> = v16;
+v17 = interfaceinvoke v14.<io.jsonwebtoken.JwtBuilder: java.lang.String compact()>();
+return v17;
+}
+java.time.Instant getIssuedAt(java.time.Instant)
+{
+java.time.Duration v2;
+org.kohsuke.github.extras.authorization.JWTTokenProvider v0;
+java.time.Instant v1, v3;
+v0 := @this: org.kohsuke.github.extras.authorization.JWTTokenProvider;
+v1 := @parameter0: java.time.Instant;
+v2 = staticinvoke <java.time.Duration: java.time.Duration ofMinutes(long)>(2L);
+v3 = virtualinvoke v1.<java.time.Instant: java.time.Instant minus(java.time.temporal.TemporalAmount)>(v2);
+return v3;
+}
+}

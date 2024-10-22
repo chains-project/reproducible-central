@@ -1,0 +1,262 @@
+public class io.vertx.core.http.impl.Http1xUpgradeToH2CHandler extends io.netty.channel.ChannelInboundHandlerAdapter
+{
+private final io.vertx.core.http.impl.HttpServerWorker initializer;
+private final io.vertx.core.net.impl.SslChannelProvider sslChannelProvider;
+private io.vertx.core.http.impl.VertxHttp2ConnectionHandler handler;
+private final boolean isCompressionSupported;
+private final boolean isDecompressionSupported;
+void <init>(io.vertx.core.http.impl.HttpServerWorker, io.vertx.core.net.impl.SslChannelProvider, boolean, boolean)
+{
+io.vertx.core.http.impl.Http1xUpgradeToH2CHandler v0;
+io.vertx.core.net.impl.SslChannelProvider v2;
+io.vertx.core.http.impl.HttpServerWorker v1;
+boolean v3, v4;
+v0 := @this: io.vertx.core.http.impl.Http1xUpgradeToH2CHandler;
+v1 := @parameter0: io.vertx.core.http.impl.HttpServerWorker;
+v2 := @parameter1: io.vertx.core.net.impl.SslChannelProvider;
+v3 := @parameter2: boolean;
+v4 := @parameter3: boolean;
+specialinvoke v0.<io.netty.channel.ChannelInboundHandlerAdapter: void <init>()>();
+v0.<io.vertx.core.http.impl.Http1xUpgradeToH2CHandler: io.vertx.core.http.impl.HttpServerWorker initializer> = v1;
+v0.<io.vertx.core.http.impl.Http1xUpgradeToH2CHandler: io.vertx.core.net.impl.SslChannelProvider sslChannelProvider> = v2;
+v0.<io.vertx.core.http.impl.Http1xUpgradeToH2CHandler: boolean isCompressionSupported> = v3;
+v0.<io.vertx.core.http.impl.Http1xUpgradeToH2CHandler: boolean isDecompressionSupported> = v4;
+return;
+}
+public void channelRead(io.netty.channel.ChannelHandlerContext, java.lang.Object) throws java.lang.Exception
+{
+io.netty.handler.codec.http.HttpHeaders v23, v36, v39, v4, v56, v58, v59, v60, v69, v8;
+io.netty.util.AsciiString v37, v38, v40, v70, v71;
+io.netty.handler.codec.http2.DefaultHttp2DataFrame v81;
+byte v11;
+io.vertx.core.impl.logging.Logger v63;
+io.vertx.core.http.impl.Http1xUpgradeToH2CHandler v0;
+java.lang.CharSequence v24, v41, v5, v6, v9;
+io.netty.channel.ChannelPipeline v30, v73, v75, v82;
+io.vertx.core.net.impl.SslChannelProvider v74;
+io.netty.handler.codec.http.DefaultFullHttpResponse v32, v65;
+java.lang.StringBuilder v13;
+java.lang.String v10, v25, v54, v55, v57;
+io.netty.handler.codec.http2.DefaultHttp2HeadersFrame v62;
+io.netty.handler.codec.http2.Http2Settings v26;
+io.vertx.core.impl.EventLoopContext v28, v46;
+io.vertx.core.http.impl.HttpServerWorker v27, v44, v45, v47, v72, v89;
+boolean v29, v3, v42, v43, v7, v77, v80, v84, v87;
+io.netty.handler.codec.http.HttpResponseStatus v34, v67;
+io.netty.handler.codec.http.HttpVersion v33, v66;
+io.netty.channel.ChannelHandlerContext v1;
+io.netty.buffer.ByteBuf v35, v68, v78, v79;
+int v12, v14, v15, v16, v19, v20, v21, v22;
+io.vertx.core.http.impl.VertxHttp2ConnectionHandler v49, v50, v51, v64, v76;
+java.util.Iterator v83;
+io.netty.handler.codec.http.HttpMethod v53;
+char v17, v18;
+java.util.function.Consumer v61;
+io.netty.channel.ChannelHandler v31;
+java.lang.Object v2, v85, v86, v88;
+io.vertx.core.Handler v48;
+io.netty.handler.codec.http2.DefaultHttp2Headers v52;
+v0 := @this: io.vertx.core.http.impl.Http1xUpgradeToH2CHandler;
+v1 := @parameter0: io.netty.channel.ChannelHandlerContext;
+v2 := @parameter1: java.lang.Object;
+v3 = v2 instanceof io.netty.handler.codec.http.HttpRequest;
+if v3 == 0 goto label13;
+v4 = interfaceinvoke v2.<io.netty.handler.codec.http.HttpRequest: io.netty.handler.codec.http.HttpHeaders headers()>();
+v5 = <io.vertx.core.http.HttpHeaders: java.lang.CharSequence UPGRADE>;
+v6 = <io.netty.handler.codec.http2.Http2CodecUtil: java.lang.CharSequence HTTP_UPGRADE_PROTOCOL_NAME>;
+v7 = virtualinvoke v4.<io.netty.handler.codec.http.HttpHeaders: boolean contains(java.lang.CharSequence,java.lang.CharSequence,boolean)>(v5, v6, 1);
+if v7 == 0 goto label12;
+v8 = interfaceinvoke v2.<io.netty.handler.codec.http.HttpRequest: io.netty.handler.codec.http.HttpHeaders headers()>();
+v9 = <io.vertx.core.http.HttpHeaders: java.lang.CharSequence CONNECTION>;
+v10 = virtualinvoke v8.<io.netty.handler.codec.http.HttpHeaders: java.lang.String get(java.lang.CharSequence)>(v9);
+v11 = 0;
+if v10 == null goto label06;
+v12 = virtualinvoke v10.<java.lang.String: int length()>();
+if v12 <= 0 goto label06;
+v13 = new java.lang.StringBuilder;
+specialinvoke v13.<java.lang.StringBuilder: void <init>()>();
+v14 = 0;
+v15 = virtualinvoke v10.<java.lang.String: int length()>();
+label01:
+if v14 >= v15 goto label06;
+v16 = v14;
+v14 = v14 + 1;
+v17 = virtualinvoke v10.<java.lang.String: char charAt(int)>(v16);
+if v17 == 32 goto label02;
+if v17 == 44 goto label03;
+v18 = staticinvoke <java.lang.Character: char toLowerCase(char)>(v17);
+virtualinvoke v13.<java.lang.StringBuilder: java.lang.StringBuilder append(char)>(v18);
+label02:
+if v17 == 44 goto label03;
+if v14 != v15 goto label01;
+label03:
+v19 = virtualinvoke v13.<java.lang.StringBuilder: int indexOf(java.lang.String)>("upgrade");
+if v19 != 0 goto label04;
+v20 = virtualinvoke v13.<java.lang.StringBuilder: int length()>();
+if v20 != 7 goto label04;
+v11 = v11 | 1;
+goto label05;
+label04:
+v21 = virtualinvoke v13.<java.lang.StringBuilder: int indexOf(java.lang.String)>("http2-settings");
+if v21 != 0 goto label05;
+v22 = virtualinvoke v13.<java.lang.StringBuilder: int length()>();
+if v22 != 14 goto label05;
+v11 = v11 | 2;
+label05:
+virtualinvoke v13.<java.lang.StringBuilder: void setLength(int)>(0);
+goto label01;
+label06:
+if v11 != 3 goto label11;
+v23 = interfaceinvoke v2.<io.netty.handler.codec.http.HttpRequest: io.netty.handler.codec.http.HttpHeaders headers()>();
+v24 = <io.netty.handler.codec.http2.Http2CodecUtil: java.lang.CharSequence HTTP_UPGRADE_SETTINGS_HEADER>;
+v25 = virtualinvoke v23.<io.netty.handler.codec.http.HttpHeaders: java.lang.String get(java.lang.CharSequence)>(v24);
+if v25 == null goto label11;
+v26 = staticinvoke <io.vertx.core.http.impl.HttpUtils: io.netty.handler.codec.http2.Http2Settings decodeSettings(java.lang.String)>(v25);
+if v26 == null goto label11;
+v27 = v0.<io.vertx.core.http.impl.Http1xUpgradeToH2CHandler: io.vertx.core.http.impl.HttpServerWorker initializer>;
+v28 = v27.<io.vertx.core.http.impl.HttpServerWorker: io.vertx.core.impl.EventLoopContext context>;
+v29 = virtualinvoke v28.<io.vertx.core.impl.EventLoopContext: boolean isEventLoopContext()>();
+if v29 == 0 goto label10;
+v30 = interfaceinvoke v1.<io.netty.channel.ChannelHandlerContext: io.netty.channel.ChannelPipeline pipeline()>();
+v31 = interfaceinvoke v30.<io.netty.channel.ChannelPipeline: io.netty.channel.ChannelHandler get(java.lang.String)>("chunkedWriter");
+if v31 == null goto label07;
+interfaceinvoke v30.<io.netty.channel.ChannelPipeline: io.netty.channel.ChannelHandler remove(java.lang.String)>("chunkedWriter");
+label07:
+v32 = new io.netty.handler.codec.http.DefaultFullHttpResponse;
+v33 = <io.netty.handler.codec.http.HttpVersion: io.netty.handler.codec.http.HttpVersion HTTP_1_1>;
+v34 = <io.netty.handler.codec.http.HttpResponseStatus: io.netty.handler.codec.http.HttpResponseStatus SWITCHING_PROTOCOLS>;
+v35 = <io.netty.buffer.Unpooled: io.netty.buffer.ByteBuf EMPTY_BUFFER>;
+specialinvoke v32.<io.netty.handler.codec.http.DefaultFullHttpResponse: void <init>(io.netty.handler.codec.http.HttpVersion,io.netty.handler.codec.http.HttpResponseStatus,io.netty.buffer.ByteBuf,boolean)>(v33, v34, v35, 0);
+v36 = virtualinvoke v32.<io.netty.handler.codec.http.DefaultFullHttpResponse: io.netty.handler.codec.http.HttpHeaders headers()>();
+v37 = <io.netty.handler.codec.http.HttpHeaderNames: io.netty.util.AsciiString CONNECTION>;
+v38 = <io.netty.handler.codec.http.HttpHeaderValues: io.netty.util.AsciiString UPGRADE>;
+virtualinvoke v36.<io.netty.handler.codec.http.HttpHeaders: io.netty.handler.codec.http.HttpHeaders add(java.lang.CharSequence,java.lang.Object)>(v37, v38);
+v39 = virtualinvoke v32.<io.netty.handler.codec.http.DefaultFullHttpResponse: io.netty.handler.codec.http.HttpHeaders headers()>();
+v40 = <io.netty.handler.codec.http.HttpHeaderNames: io.netty.util.AsciiString UPGRADE>;
+v41 = <io.netty.handler.codec.http2.Http2CodecUtil: java.lang.CharSequence HTTP_UPGRADE_PROTOCOL_NAME>;
+virtualinvoke v39.<io.netty.handler.codec.http.HttpHeaders: io.netty.handler.codec.http.HttpHeaders add(java.lang.CharSequence,java.lang.Object)>(v40, v41);
+interfaceinvoke v1.<io.netty.channel.ChannelHandlerContext: io.netty.channel.ChannelFuture write(java.lang.Object)>(v32);
+interfaceinvoke v30.<io.netty.channel.ChannelPipeline: io.netty.channel.ChannelHandler remove(java.lang.String)>("httpEncoder");
+v42 = v0.<io.vertx.core.http.impl.Http1xUpgradeToH2CHandler: boolean isCompressionSupported>;
+if v42 == 0 goto label08;
+interfaceinvoke v30.<io.netty.channel.ChannelPipeline: io.netty.channel.ChannelHandler remove(java.lang.String)>("deflater");
+label08:
+v43 = v0.<io.vertx.core.http.impl.Http1xUpgradeToH2CHandler: boolean isDecompressionSupported>;
+if v43 == 0 goto label09;
+interfaceinvoke v30.<io.netty.channel.ChannelPipeline: io.netty.channel.ChannelHandler remove(java.lang.String)>("inflater");
+label09:
+v44 = v0.<io.vertx.core.http.impl.Http1xUpgradeToH2CHandler: io.vertx.core.http.impl.HttpServerWorker initializer>;
+v45 = v0.<io.vertx.core.http.impl.Http1xUpgradeToH2CHandler: io.vertx.core.http.impl.HttpServerWorker initializer>;
+v46 = v45.<io.vertx.core.http.impl.HttpServerWorker: io.vertx.core.impl.EventLoopContext context>;
+v47 = v0.<io.vertx.core.http.impl.Http1xUpgradeToH2CHandler: io.vertx.core.http.impl.HttpServerWorker initializer>;
+v48 = v47.<io.vertx.core.http.impl.HttpServerWorker: io.vertx.core.Handler connectionHandler>;
+v49 = virtualinvoke v44.<io.vertx.core.http.impl.HttpServerWorker: io.vertx.core.http.impl.VertxHttp2ConnectionHandler buildHttp2ConnectionHandler(io.vertx.core.impl.EventLoopContext,io.vertx.core.Handler)>(v46, v48);
+v0.<io.vertx.core.http.impl.Http1xUpgradeToH2CHandler: io.vertx.core.http.impl.VertxHttp2ConnectionHandler handler> = v49;
+v50 = v0.<io.vertx.core.http.impl.Http1xUpgradeToH2CHandler: io.vertx.core.http.impl.VertxHttp2ConnectionHandler handler>;
+interfaceinvoke v30.<io.netty.channel.ChannelPipeline: io.netty.channel.ChannelPipeline addLast(java.lang.String,io.netty.channel.ChannelHandler)>("handler", v50);
+v51 = v0.<io.vertx.core.http.impl.Http1xUpgradeToH2CHandler: io.vertx.core.http.impl.VertxHttp2ConnectionHandler handler>;
+virtualinvoke v51.<io.vertx.core.http.impl.VertxHttp2ConnectionHandler: void serverUpgrade(io.netty.channel.ChannelHandlerContext,io.netty.handler.codec.http2.Http2Settings)>(v1, v26);
+v52 = new io.netty.handler.codec.http2.DefaultHttp2Headers;
+specialinvoke v52.<io.netty.handler.codec.http2.DefaultHttp2Headers: void <init>()>();
+v53 = interfaceinvoke v2.<io.netty.handler.codec.http.HttpRequest: io.netty.handler.codec.http.HttpMethod method()>();
+v54 = virtualinvoke v53.<io.netty.handler.codec.http.HttpMethod: java.lang.String name()>();
+virtualinvoke v52.<io.netty.handler.codec.http2.DefaultHttp2Headers: io.netty.handler.codec.http2.Http2Headers method(java.lang.CharSequence)>(v54);
+v55 = interfaceinvoke v2.<io.netty.handler.codec.http.HttpRequest: java.lang.String uri()>();
+virtualinvoke v52.<io.netty.handler.codec.http2.DefaultHttp2Headers: io.netty.handler.codec.http2.Http2Headers path(java.lang.CharSequence)>(v55);
+v56 = interfaceinvoke v2.<io.netty.handler.codec.http.HttpRequest: io.netty.handler.codec.http.HttpHeaders headers()>();
+v57 = virtualinvoke v56.<io.netty.handler.codec.http.HttpHeaders: java.lang.String get(java.lang.String)>("host");
+virtualinvoke v52.<io.netty.handler.codec.http2.DefaultHttp2Headers: io.netty.handler.codec.http2.Http2Headers authority(java.lang.CharSequence)>(v57);
+virtualinvoke v52.<io.netty.handler.codec.http2.DefaultHttp2Headers: io.netty.handler.codec.http2.Http2Headers scheme(java.lang.CharSequence)>("http");
+v58 = interfaceinvoke v2.<io.netty.handler.codec.http.HttpRequest: io.netty.handler.codec.http.HttpHeaders headers()>();
+virtualinvoke v58.<io.netty.handler.codec.http.HttpHeaders: io.netty.handler.codec.http.HttpHeaders remove(java.lang.String)>("http2-settings");
+v59 = interfaceinvoke v2.<io.netty.handler.codec.http.HttpRequest: io.netty.handler.codec.http.HttpHeaders headers()>();
+virtualinvoke v59.<io.netty.handler.codec.http.HttpHeaders: io.netty.handler.codec.http.HttpHeaders remove(java.lang.String)>("host");
+v60 = interfaceinvoke v2.<io.netty.handler.codec.http.HttpRequest: io.netty.handler.codec.http.HttpHeaders headers()>();
+v61 = staticinvoke <io.vertx.core.http.impl.Http1xUpgradeToH2CHandler$lambda_channelRead_0__1139: java.util.function.Consumer bootstrap$(io.netty.handler.codec.http2.DefaultHttp2Headers)>(v52);
+virtualinvoke v60.<io.netty.handler.codec.http.HttpHeaders: void forEach(java.util.function.Consumer)>(v61);
+v62 = new io.netty.handler.codec.http2.DefaultHttp2HeadersFrame;
+specialinvoke v62.<io.netty.handler.codec.http2.DefaultHttp2HeadersFrame: void <init>(io.netty.handler.codec.http2.Http2Headers,boolean)>(v52, 0);
+interfaceinvoke v1.<io.netty.channel.ChannelHandlerContext: io.netty.channel.ChannelHandlerContext fireChannelRead(java.lang.Object)>(v62);
+goto label11;
+label10:
+v63 = <io.vertx.core.http.impl.HttpServerImpl: io.vertx.core.impl.logging.Logger log>;
+interfaceinvoke v63.<io.vertx.core.impl.logging.Logger: void warn(java.lang.Object)>("Cannot perform HTTP/2 upgrade in a worker verticle");
+label11:
+v64 = v0.<io.vertx.core.http.impl.Http1xUpgradeToH2CHandler: io.vertx.core.http.impl.VertxHttp2ConnectionHandler handler>;
+if v64 != null goto label17;
+v65 = new io.netty.handler.codec.http.DefaultFullHttpResponse;
+v66 = <io.netty.handler.codec.http.HttpVersion: io.netty.handler.codec.http.HttpVersion HTTP_1_1>;
+v67 = <io.netty.handler.codec.http.HttpResponseStatus: io.netty.handler.codec.http.HttpResponseStatus BAD_REQUEST>;
+v68 = <io.netty.buffer.Unpooled: io.netty.buffer.ByteBuf EMPTY_BUFFER>;
+specialinvoke v65.<io.netty.handler.codec.http.DefaultFullHttpResponse: void <init>(io.netty.handler.codec.http.HttpVersion,io.netty.handler.codec.http.HttpResponseStatus,io.netty.buffer.ByteBuf,boolean)>(v66, v67, v68, 0);
+v69 = virtualinvoke v65.<io.netty.handler.codec.http.DefaultFullHttpResponse: io.netty.handler.codec.http.HttpHeaders headers()>();
+v70 = <io.netty.handler.codec.http.HttpHeaderNames: io.netty.util.AsciiString CONNECTION>;
+v71 = <io.netty.handler.codec.http.HttpHeaderValues: io.netty.util.AsciiString CLOSE>;
+virtualinvoke v69.<io.netty.handler.codec.http.HttpHeaders: io.netty.handler.codec.http.HttpHeaders set(java.lang.CharSequence,java.lang.Object)>(v70, v71);
+interfaceinvoke v1.<io.netty.channel.ChannelHandlerContext: io.netty.channel.ChannelFuture writeAndFlush(java.lang.Object)>(v65);
+goto label17;
+label12:
+v72 = v0.<io.vertx.core.http.impl.Http1xUpgradeToH2CHandler: io.vertx.core.http.impl.HttpServerWorker initializer>;
+v73 = interfaceinvoke v1.<io.netty.channel.ChannelHandlerContext: io.netty.channel.ChannelPipeline pipeline()>();
+v74 = v0.<io.vertx.core.http.impl.Http1xUpgradeToH2CHandler: io.vertx.core.net.impl.SslChannelProvider sslChannelProvider>;
+virtualinvoke v72.<io.vertx.core.http.impl.HttpServerWorker: void configureHttp1(io.netty.channel.ChannelPipeline,io.vertx.core.net.impl.SslChannelProvider)>(v73, v74);
+interfaceinvoke v1.<io.netty.channel.ChannelHandlerContext: io.netty.channel.ChannelHandlerContext fireChannelRead(java.lang.Object)>(v2);
+v75 = interfaceinvoke v1.<io.netty.channel.ChannelHandlerContext: io.netty.channel.ChannelPipeline pipeline()>();
+interfaceinvoke v75.<io.netty.channel.ChannelPipeline: io.netty.channel.ChannelPipeline remove(io.netty.channel.ChannelHandler)>(v0);
+goto label17;
+label13:
+v76 = v0.<io.vertx.core.http.impl.Http1xUpgradeToH2CHandler: io.vertx.core.http.impl.VertxHttp2ConnectionHandler handler>;
+if v76 == null goto label17;
+v77 = v2 instanceof io.netty.handler.codec.http.HttpContent;
+if v77 == 0 goto label16;
+v78 = interfaceinvoke v2.<io.netty.handler.codec.http.HttpContent: io.netty.buffer.ByteBuf content()>();
+v79 = staticinvoke <io.vertx.core.net.impl.VertxHandler: io.netty.buffer.ByteBuf safeBuffer(io.netty.buffer.ByteBuf)>(v78);
+v80 = v2 instanceof io.netty.handler.codec.http.LastHttpContent;
+v81 = new io.netty.handler.codec.http2.DefaultHttp2DataFrame;
+specialinvoke v81.<io.netty.handler.codec.http2.DefaultHttp2DataFrame: void <init>(io.netty.buffer.ByteBuf,boolean,int)>(v79, v80, 0);
+interfaceinvoke v1.<io.netty.channel.ChannelHandlerContext: io.netty.channel.ChannelHandlerContext fireChannelRead(java.lang.Object)>(v81);
+if v80 == 0 goto label17;
+v82 = interfaceinvoke v1.<io.netty.channel.ChannelHandlerContext: io.netty.channel.ChannelPipeline pipeline()>();
+v83 = interfaceinvoke v82.<io.netty.channel.ChannelPipeline: java.util.Iterator iterator()>();
+label14:
+v84 = interfaceinvoke v83.<java.util.Iterator: boolean hasNext()>();
+if v84 == 0 goto label15;
+v85 = interfaceinvoke v83.<java.util.Iterator: java.lang.Object next()>();
+v86 = interfaceinvoke v85.<java.util.Map$Entry: java.lang.Object getValue()>();
+v87 = v86 instanceof io.netty.handler.codec.http2.Http2ConnectionHandler;
+if v87 != 0 goto label14;
+v88 = interfaceinvoke v85.<java.util.Map$Entry: java.lang.Object getKey()>();
+interfaceinvoke v82.<io.netty.channel.ChannelPipeline: io.netty.channel.ChannelHandler remove(java.lang.String)>(v88);
+goto label14;
+label15:
+v89 = v0.<io.vertx.core.http.impl.Http1xUpgradeToH2CHandler: io.vertx.core.http.impl.HttpServerWorker initializer>;
+virtualinvoke v89.<io.vertx.core.http.impl.HttpServerWorker: void configureHttp2(io.netty.channel.ChannelPipeline)>(v82);
+goto label17;
+label16:
+specialinvoke v0.<io.netty.channel.ChannelInboundHandlerAdapter: void channelRead(io.netty.channel.ChannelHandlerContext,java.lang.Object)>(v1, v2);
+label17:
+return;
+}
+public void userEventTriggered(io.netty.channel.ChannelHandlerContext, java.lang.Object) throws java.lang.Exception
+{
+io.netty.channel.ChannelHandlerContext v1;
+io.vertx.core.http.impl.Http1xUpgradeToH2CHandler v0;
+io.netty.handler.timeout.IdleState v4, v5;
+java.lang.Object v2;
+boolean v3;
+v0 := @this: io.vertx.core.http.impl.Http1xUpgradeToH2CHandler;
+v1 := @parameter0: io.netty.channel.ChannelHandlerContext;
+v2 := @parameter1: java.lang.Object;
+v3 = v2 instanceof io.netty.handler.timeout.IdleStateEvent;
+if v3 == 0 goto label1;
+v4 = virtualinvoke v2.<io.netty.handler.timeout.IdleStateEvent: io.netty.handler.timeout.IdleState state()>();
+v5 = <io.netty.handler.timeout.IdleState: io.netty.handler.timeout.IdleState ALL_IDLE>;
+if v4 != v5 goto label1;
+interfaceinvoke v1.<io.netty.channel.ChannelHandlerContext: io.netty.channel.ChannelFuture close()>();
+goto label2;
+label1:
+interfaceinvoke v1.<io.netty.channel.ChannelHandlerContext: io.netty.channel.ChannelHandlerContext fireUserEventTriggered(java.lang.Object)>(v2);
+label2:
+return;
+}
+}

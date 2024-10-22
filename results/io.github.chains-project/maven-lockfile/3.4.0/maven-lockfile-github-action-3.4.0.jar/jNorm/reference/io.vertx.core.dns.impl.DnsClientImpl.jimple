@@ -1,0 +1,621 @@
+public final class io.vertx.core.dns.impl.DnsClientImpl extends java.lang.Object implements io.vertx.core.dns.DnsClient
+{
+private static final char[] HEX_TABLE;
+private final io.vertx.core.impl.VertxInternal vertx;
+private final io.netty.util.collection.LongObjectMap inProgressMap;
+private final java.net.InetSocketAddress dnsServer;
+private final io.vertx.core.impl.ContextInternal actualCtx;
+private final io.netty.channel.socket.DatagramChannel channel;
+private final io.vertx.core.dns.DnsClientOptions options;
+public void <init>(io.vertx.core.impl.VertxInternal, io.vertx.core.dns.DnsClientOptions)
+{
+io.netty.util.collection.LongObjectHashMap v3;
+java.net.InetAddress v15;
+io.netty.channel.socket.DatagramChannel v18, v19, v23, v26, v31, v33, v37, v41, v45;
+io.netty.handler.logging.ByteBufFormat v36;
+io.netty.channel.socket.InternetProtocolFamily v17;
+boolean v10, v16, v32;
+io.vertx.core.dns.impl.DnsClientImpl$1 v48;
+io.netty.channel.ChannelPipeline v34, v38, v42, v46;
+io.netty.channel.RecvByteBufAllocator v25;
+io.netty.channel.EventLoop v30;
+io.vertx.core.buffer.impl.PartialPooledByteBufAllocator v28;
+java.net.InetSocketAddress v14, v6, v9;
+io.netty.handler.codec.dns.DatagramDnsResponseDecoder v44;
+io.netty.handler.codec.dns.DatagramDnsQueryEncoder v40;
+io.netty.channel.ChannelOption v21;
+io.netty.handler.logging.LoggingHandler v35;
+io.vertx.core.dns.impl.DnsClientImpl v0;
+io.vertx.core.dns.DnsClientOptions v2, v5;
+io.vertx.core.impl.ContextInternal v13, v29;
+io.vertx.core.spi.transport.Transport v12;
+io.netty.channel.socket.DatagramChannelConfig v20, v24, v27;
+int v8;
+java.lang.Boolean v22;
+java.lang.String v4, v7;
+io.vertx.core.impl.VertxInternal v1;
+java.lang.IllegalArgumentException v11;
+io.netty.channel.ChannelHandler[] v39, v43, v47;
+v0 := @this: io.vertx.core.dns.impl.DnsClientImpl;
+v1 := @parameter0: io.vertx.core.impl.VertxInternal;
+v2 := @parameter1: io.vertx.core.dns.DnsClientOptions;
+specialinvoke v0.<java.lang.Object: void <init>()>();
+v3 = new io.netty.util.collection.LongObjectHashMap;
+specialinvoke v3.<io.netty.util.collection.LongObjectHashMap: void <init>()>();
+v0.<io.vertx.core.dns.impl.DnsClientImpl: io.netty.util.collection.LongObjectMap inProgressMap> = v3;
+staticinvoke <java.util.Objects: java.lang.Object requireNonNull(java.lang.Object,java.lang.String)>(v2, "no null options accepted");
+v4 = virtualinvoke v2.<io.vertx.core.dns.DnsClientOptions: java.lang.String getHost()>();
+staticinvoke <java.util.Objects: java.lang.Object requireNonNull(java.lang.Object,java.lang.String)>(v4, "no null host accepted");
+v5 = new io.vertx.core.dns.DnsClientOptions;
+specialinvoke v5.<io.vertx.core.dns.DnsClientOptions: void <init>(io.vertx.core.dns.DnsClientOptions)>(v2);
+v0.<io.vertx.core.dns.impl.DnsClientImpl: io.vertx.core.dns.DnsClientOptions options> = v5;
+interfaceinvoke v1.<io.vertx.core.impl.VertxInternal: io.vertx.core.impl.ContextInternal getContext()>();
+v6 = new java.net.InetSocketAddress;
+v7 = virtualinvoke v2.<io.vertx.core.dns.DnsClientOptions: java.lang.String getHost()>();
+v8 = virtualinvoke v2.<io.vertx.core.dns.DnsClientOptions: int getPort()>();
+specialinvoke v6.<java.net.InetSocketAddress: void <init>(java.lang.String,int)>(v7, v8);
+v0.<io.vertx.core.dns.impl.DnsClientImpl: java.net.InetSocketAddress dnsServer> = v6;
+v9 = v0.<io.vertx.core.dns.impl.DnsClientImpl: java.net.InetSocketAddress dnsServer>;
+v10 = virtualinvoke v9.<java.net.InetSocketAddress: boolean isUnresolved()>();
+if v10 == 0 goto label1;
+v11 = new java.lang.IllegalArgumentException;
+specialinvoke v11.<java.lang.IllegalArgumentException: void <init>(java.lang.String)>("Cannot resolve the host to a valid ip address");
+throw v11;
+label1:
+v0.<io.vertx.core.dns.impl.DnsClientImpl: io.vertx.core.impl.VertxInternal vertx> = v1;
+v12 = interfaceinvoke v1.<io.vertx.core.impl.VertxInternal: io.vertx.core.spi.transport.Transport transport()>();
+v13 = interfaceinvoke v1.<io.vertx.core.impl.VertxInternal: io.vertx.core.impl.ContextInternal getOrCreateContext()>();
+v0.<io.vertx.core.dns.impl.DnsClientImpl: io.vertx.core.impl.ContextInternal actualCtx> = v13;
+v14 = v0.<io.vertx.core.dns.impl.DnsClientImpl: java.net.InetSocketAddress dnsServer>;
+v15 = virtualinvoke v14.<java.net.InetSocketAddress: java.net.InetAddress getAddress()>();
+v16 = v15 instanceof java.net.Inet4Address;
+if v16 == 0 goto label2;
+v17 = <io.netty.channel.socket.InternetProtocolFamily: io.netty.channel.socket.InternetProtocolFamily IPv4>;
+goto label3;
+label2:
+v17 = <io.netty.channel.socket.InternetProtocolFamily: io.netty.channel.socket.InternetProtocolFamily IPv6>;
+label3:
+v18 = interfaceinvoke v12.<io.vertx.core.spi.transport.Transport: io.netty.channel.socket.DatagramChannel datagramChannel(io.netty.channel.socket.InternetProtocolFamily)>(v17);
+v0.<io.vertx.core.dns.impl.DnsClientImpl: io.netty.channel.socket.DatagramChannel channel> = v18;
+v19 = v0.<io.vertx.core.dns.impl.DnsClientImpl: io.netty.channel.socket.DatagramChannel channel>;
+v20 = interfaceinvoke v19.<io.netty.channel.socket.DatagramChannel: io.netty.channel.socket.DatagramChannelConfig config()>();
+v21 = <io.netty.channel.ChannelOption: io.netty.channel.ChannelOption DATAGRAM_CHANNEL_ACTIVE_ON_REGISTRATION>;
+v22 = staticinvoke <java.lang.Boolean: java.lang.Boolean valueOf(boolean)>(1);
+interfaceinvoke v20.<io.netty.channel.socket.DatagramChannelConfig: boolean setOption(io.netty.channel.ChannelOption,java.lang.Object)>(v21, v22);
+v23 = v0.<io.vertx.core.dns.impl.DnsClientImpl: io.netty.channel.socket.DatagramChannel channel>;
+v24 = interfaceinvoke v23.<io.netty.channel.socket.DatagramChannel: io.netty.channel.socket.DatagramChannelConfig config()>();
+v25 = interfaceinvoke v24.<io.netty.channel.socket.DatagramChannelConfig: io.netty.channel.RecvByteBufAllocator getRecvByteBufAllocator()>();
+interfaceinvoke v25.<io.netty.channel.MaxMessagesRecvByteBufAllocator: io.netty.channel.MaxMessagesRecvByteBufAllocator maxMessagesPerRead(int)>(1);
+v26 = v0.<io.vertx.core.dns.impl.DnsClientImpl: io.netty.channel.socket.DatagramChannel channel>;
+v27 = interfaceinvoke v26.<io.netty.channel.socket.DatagramChannel: io.netty.channel.socket.DatagramChannelConfig config()>();
+v28 = <io.vertx.core.buffer.impl.PartialPooledByteBufAllocator: io.vertx.core.buffer.impl.PartialPooledByteBufAllocator INSTANCE>;
+interfaceinvoke v27.<io.netty.channel.socket.DatagramChannelConfig: io.netty.channel.socket.DatagramChannelConfig setAllocator(io.netty.buffer.ByteBufAllocator)>(v28);
+v29 = v0.<io.vertx.core.dns.impl.DnsClientImpl: io.vertx.core.impl.ContextInternal actualCtx>;
+v30 = interfaceinvoke v29.<io.vertx.core.impl.ContextInternal: io.netty.channel.EventLoop nettyEventLoop()>();
+v31 = v0.<io.vertx.core.dns.impl.DnsClientImpl: io.netty.channel.socket.DatagramChannel channel>;
+interfaceinvoke v30.<io.netty.channel.EventLoop: io.netty.channel.ChannelFuture register(io.netty.channel.Channel)>(v31);
+v32 = virtualinvoke v2.<io.vertx.core.dns.DnsClientOptions: boolean getLogActivity()>();
+if v32 == 0 goto label4;
+v33 = v0.<io.vertx.core.dns.impl.DnsClientImpl: io.netty.channel.socket.DatagramChannel channel>;
+v34 = interfaceinvoke v33.<io.netty.channel.socket.DatagramChannel: io.netty.channel.ChannelPipeline pipeline()>();
+v35 = new io.netty.handler.logging.LoggingHandler;
+v36 = virtualinvoke v2.<io.vertx.core.dns.DnsClientOptions: io.netty.handler.logging.ByteBufFormat getActivityLogFormat()>();
+specialinvoke v35.<io.netty.handler.logging.LoggingHandler: void <init>(io.netty.handler.logging.ByteBufFormat)>(v36);
+interfaceinvoke v34.<io.netty.channel.ChannelPipeline: io.netty.channel.ChannelPipeline addLast(java.lang.String,io.netty.channel.ChannelHandler)>("logging", v35);
+label4:
+v37 = v0.<io.vertx.core.dns.impl.DnsClientImpl: io.netty.channel.socket.DatagramChannel channel>;
+v38 = interfaceinvoke v37.<io.netty.channel.socket.DatagramChannel: io.netty.channel.ChannelPipeline pipeline()>();
+v39 = newarray (io.netty.channel.ChannelHandler)[1];
+v40 = new io.netty.handler.codec.dns.DatagramDnsQueryEncoder;
+specialinvoke v40.<io.netty.handler.codec.dns.DatagramDnsQueryEncoder: void <init>()>();
+v39[0] = v40;
+interfaceinvoke v38.<io.netty.channel.ChannelPipeline: io.netty.channel.ChannelPipeline addLast(io.netty.channel.ChannelHandler[])>(v39);
+v41 = v0.<io.vertx.core.dns.impl.DnsClientImpl: io.netty.channel.socket.DatagramChannel channel>;
+v42 = interfaceinvoke v41.<io.netty.channel.socket.DatagramChannel: io.netty.channel.ChannelPipeline pipeline()>();
+v43 = newarray (io.netty.channel.ChannelHandler)[1];
+v44 = new io.netty.handler.codec.dns.DatagramDnsResponseDecoder;
+specialinvoke v44.<io.netty.handler.codec.dns.DatagramDnsResponseDecoder: void <init>()>();
+v43[0] = v44;
+interfaceinvoke v42.<io.netty.channel.ChannelPipeline: io.netty.channel.ChannelPipeline addLast(io.netty.channel.ChannelHandler[])>(v43);
+v45 = v0.<io.vertx.core.dns.impl.DnsClientImpl: io.netty.channel.socket.DatagramChannel channel>;
+v46 = interfaceinvoke v45.<io.netty.channel.socket.DatagramChannel: io.netty.channel.ChannelPipeline pipeline()>();
+v47 = newarray (io.netty.channel.ChannelHandler)[1];
+v48 = new io.vertx.core.dns.impl.DnsClientImpl$1;
+specialinvoke v48.<io.vertx.core.dns.impl.DnsClientImpl$1: void <init>(io.vertx.core.dns.impl.DnsClientImpl)>(v0);
+v47[0] = v48;
+interfaceinvoke v46.<io.netty.channel.ChannelPipeline: io.netty.channel.ChannelPipeline addLast(io.netty.channel.ChannelHandler[])>(v47);
+return;
+}
+public io.vertx.core.dns.DnsClient lookup4(java.lang.String, io.vertx.core.Handler)
+{
+io.vertx.core.dns.impl.DnsClientImpl v0;
+java.lang.String v1;
+io.vertx.core.Handler v2;
+io.vertx.core.Future v3;
+v0 := @this: io.vertx.core.dns.impl.DnsClientImpl;
+v1 := @parameter0: java.lang.String;
+v2 := @parameter1: io.vertx.core.Handler;
+v3 = virtualinvoke v0.<io.vertx.core.dns.impl.DnsClientImpl: io.vertx.core.Future lookup4(java.lang.String)>(v1);
+interfaceinvoke v3.<io.vertx.core.Future: io.vertx.core.Future onComplete(io.vertx.core.Handler)>(v2);
+return v0;
+}
+public io.vertx.core.Future lookup4(java.lang.String)
+{
+io.netty.handler.codec.dns.DnsRecordType v3;
+io.vertx.core.dns.impl.DnsClientImpl v0;
+io.netty.handler.codec.dns.DnsRecordType[] v2;
+java.lang.String v1;
+io.vertx.core.Future v4;
+v0 := @this: io.vertx.core.dns.impl.DnsClientImpl;
+v1 := @parameter0: java.lang.String;
+v2 = newarray (io.netty.handler.codec.dns.DnsRecordType)[1];
+v3 = <io.netty.handler.codec.dns.DnsRecordType: io.netty.handler.codec.dns.DnsRecordType A>;
+v2[0] = v3;
+v4 = specialinvoke v0.<io.vertx.core.dns.impl.DnsClientImpl: io.vertx.core.Future lookupSingle(java.lang.String,io.netty.handler.codec.dns.DnsRecordType[])>(v1, v2);
+return v4;
+}
+public io.vertx.core.dns.DnsClient lookup6(java.lang.String, io.vertx.core.Handler)
+{
+io.vertx.core.dns.impl.DnsClientImpl v0;
+java.lang.String v1;
+io.vertx.core.Handler v2;
+io.vertx.core.Future v3;
+v0 := @this: io.vertx.core.dns.impl.DnsClientImpl;
+v1 := @parameter0: java.lang.String;
+v2 := @parameter1: io.vertx.core.Handler;
+v3 = virtualinvoke v0.<io.vertx.core.dns.impl.DnsClientImpl: io.vertx.core.Future lookup6(java.lang.String)>(v1);
+interfaceinvoke v3.<io.vertx.core.Future: io.vertx.core.Future onComplete(io.vertx.core.Handler)>(v2);
+return v0;
+}
+public io.vertx.core.Future lookup6(java.lang.String)
+{
+io.netty.handler.codec.dns.DnsRecordType v3;
+io.vertx.core.dns.impl.DnsClientImpl v0;
+io.netty.handler.codec.dns.DnsRecordType[] v2;
+java.lang.String v1;
+io.vertx.core.Future v4;
+v0 := @this: io.vertx.core.dns.impl.DnsClientImpl;
+v1 := @parameter0: java.lang.String;
+v2 = newarray (io.netty.handler.codec.dns.DnsRecordType)[1];
+v3 = <io.netty.handler.codec.dns.DnsRecordType: io.netty.handler.codec.dns.DnsRecordType AAAA>;
+v2[0] = v3;
+v4 = specialinvoke v0.<io.vertx.core.dns.impl.DnsClientImpl: io.vertx.core.Future lookupSingle(java.lang.String,io.netty.handler.codec.dns.DnsRecordType[])>(v1, v2);
+return v4;
+}
+public io.vertx.core.dns.DnsClient lookup(java.lang.String, io.vertx.core.Handler)
+{
+io.vertx.core.dns.impl.DnsClientImpl v0;
+java.lang.String v1;
+io.vertx.core.Handler v2;
+io.vertx.core.Future v3;
+v0 := @this: io.vertx.core.dns.impl.DnsClientImpl;
+v1 := @parameter0: java.lang.String;
+v2 := @parameter1: io.vertx.core.Handler;
+v3 = virtualinvoke v0.<io.vertx.core.dns.impl.DnsClientImpl: io.vertx.core.Future lookup(java.lang.String)>(v1);
+interfaceinvoke v3.<io.vertx.core.Future: io.vertx.core.Future onComplete(io.vertx.core.Handler)>(v2);
+return v0;
+}
+public io.vertx.core.Future lookup(java.lang.String)
+{
+io.netty.handler.codec.dns.DnsRecordType v3, v4;
+io.vertx.core.dns.impl.DnsClientImpl v0;
+io.netty.handler.codec.dns.DnsRecordType[] v2;
+java.lang.String v1;
+io.vertx.core.Future v5;
+v0 := @this: io.vertx.core.dns.impl.DnsClientImpl;
+v1 := @parameter0: java.lang.String;
+v2 = newarray (io.netty.handler.codec.dns.DnsRecordType)[2];
+v3 = <io.netty.handler.codec.dns.DnsRecordType: io.netty.handler.codec.dns.DnsRecordType A>;
+v2[0] = v3;
+v4 = <io.netty.handler.codec.dns.DnsRecordType: io.netty.handler.codec.dns.DnsRecordType AAAA>;
+v2[1] = v4;
+v5 = specialinvoke v0.<io.vertx.core.dns.impl.DnsClientImpl: io.vertx.core.Future lookupSingle(java.lang.String,io.netty.handler.codec.dns.DnsRecordType[])>(v1, v2);
+return v5;
+}
+public io.vertx.core.dns.DnsClient resolveA(java.lang.String, io.vertx.core.Handler)
+{
+io.vertx.core.dns.impl.DnsClientImpl v0;
+java.lang.String v1;
+io.vertx.core.Handler v2;
+io.vertx.core.Future v3;
+v0 := @this: io.vertx.core.dns.impl.DnsClientImpl;
+v1 := @parameter0: java.lang.String;
+v2 := @parameter1: io.vertx.core.Handler;
+v3 = virtualinvoke v0.<io.vertx.core.dns.impl.DnsClientImpl: io.vertx.core.Future resolveA(java.lang.String)>(v1);
+interfaceinvoke v3.<io.vertx.core.Future: io.vertx.core.Future onComplete(io.vertx.core.Handler)>(v2);
+return v0;
+}
+public io.vertx.core.Future resolveA(java.lang.String)
+{
+io.netty.handler.codec.dns.DnsRecordType v3;
+io.vertx.core.dns.impl.DnsClientImpl v0;
+io.netty.handler.codec.dns.DnsRecordType[] v2;
+java.lang.String v1;
+io.vertx.core.Future v4;
+v0 := @this: io.vertx.core.dns.impl.DnsClientImpl;
+v1 := @parameter0: java.lang.String;
+v2 = newarray (io.netty.handler.codec.dns.DnsRecordType)[1];
+v3 = <io.netty.handler.codec.dns.DnsRecordType: io.netty.handler.codec.dns.DnsRecordType A>;
+v2[0] = v3;
+v4 = specialinvoke v0.<io.vertx.core.dns.impl.DnsClientImpl: io.vertx.core.Future lookupList(java.lang.String,io.netty.handler.codec.dns.DnsRecordType[])>(v1, v2);
+return v4;
+}
+public io.vertx.core.dns.DnsClient resolveCNAME(java.lang.String, io.vertx.core.Handler)
+{
+io.vertx.core.dns.impl.DnsClientImpl v0;
+java.lang.String v1;
+io.vertx.core.Handler v2;
+io.vertx.core.Future v3;
+v0 := @this: io.vertx.core.dns.impl.DnsClientImpl;
+v1 := @parameter0: java.lang.String;
+v2 := @parameter1: io.vertx.core.Handler;
+v3 = virtualinvoke v0.<io.vertx.core.dns.impl.DnsClientImpl: io.vertx.core.Future resolveCNAME(java.lang.String)>(v1);
+interfaceinvoke v3.<io.vertx.core.Future: io.vertx.core.Future onComplete(io.vertx.core.Handler)>(v2);
+return v0;
+}
+public io.vertx.core.Future resolveCNAME(java.lang.String)
+{
+io.netty.handler.codec.dns.DnsRecordType v3;
+io.vertx.core.dns.impl.DnsClientImpl v0;
+io.netty.handler.codec.dns.DnsRecordType[] v2;
+java.lang.String v1;
+io.vertx.core.Future v4;
+v0 := @this: io.vertx.core.dns.impl.DnsClientImpl;
+v1 := @parameter0: java.lang.String;
+v2 = newarray (io.netty.handler.codec.dns.DnsRecordType)[1];
+v3 = <io.netty.handler.codec.dns.DnsRecordType: io.netty.handler.codec.dns.DnsRecordType CNAME>;
+v2[0] = v3;
+v4 = specialinvoke v0.<io.vertx.core.dns.impl.DnsClientImpl: io.vertx.core.Future lookupList(java.lang.String,io.netty.handler.codec.dns.DnsRecordType[])>(v1, v2);
+return v4;
+}
+public io.vertx.core.dns.DnsClient resolveMX(java.lang.String, io.vertx.core.Handler)
+{
+io.vertx.core.dns.impl.DnsClientImpl v0;
+java.lang.String v1;
+io.vertx.core.Handler v2;
+io.vertx.core.Future v3;
+v0 := @this: io.vertx.core.dns.impl.DnsClientImpl;
+v1 := @parameter0: java.lang.String;
+v2 := @parameter1: io.vertx.core.Handler;
+v3 = virtualinvoke v0.<io.vertx.core.dns.impl.DnsClientImpl: io.vertx.core.Future resolveMX(java.lang.String)>(v1);
+interfaceinvoke v3.<io.vertx.core.Future: io.vertx.core.Future onComplete(io.vertx.core.Handler)>(v2);
+return v0;
+}
+public io.vertx.core.Future resolveMX(java.lang.String)
+{
+io.netty.handler.codec.dns.DnsRecordType v3;
+io.vertx.core.dns.impl.DnsClientImpl v0;
+io.netty.handler.codec.dns.DnsRecordType[] v2;
+java.lang.String v1;
+io.vertx.core.Future v4;
+v0 := @this: io.vertx.core.dns.impl.DnsClientImpl;
+v1 := @parameter0: java.lang.String;
+v2 = newarray (io.netty.handler.codec.dns.DnsRecordType)[1];
+v3 = <io.netty.handler.codec.dns.DnsRecordType: io.netty.handler.codec.dns.DnsRecordType MX>;
+v2[0] = v3;
+v4 = specialinvoke v0.<io.vertx.core.dns.impl.DnsClientImpl: io.vertx.core.Future lookupList(java.lang.String,io.netty.handler.codec.dns.DnsRecordType[])>(v1, v2);
+return v4;
+}
+public io.vertx.core.Future resolveTXT(java.lang.String)
+{
+io.netty.handler.codec.dns.DnsRecordType v3;
+io.vertx.core.dns.impl.DnsClientImpl v0;
+io.netty.handler.codec.dns.DnsRecordType[] v2;
+java.lang.String v1;
+io.vertx.core.Future v4, v6;
+java.util.function.Function v5;
+v0 := @this: io.vertx.core.dns.impl.DnsClientImpl;
+v1 := @parameter0: java.lang.String;
+v2 = newarray (io.netty.handler.codec.dns.DnsRecordType)[1];
+v3 = <io.netty.handler.codec.dns.DnsRecordType: io.netty.handler.codec.dns.DnsRecordType TXT>;
+v2[0] = v3;
+v4 = specialinvoke v0.<io.vertx.core.dns.impl.DnsClientImpl: io.vertx.core.Future lookupList(java.lang.String,io.netty.handler.codec.dns.DnsRecordType[])>(v1, v2);
+v5 = staticinvoke <io.vertx.core.dns.impl.DnsClientImpl$lambda_resolveTXT_0__926: java.util.function.Function bootstrap$()>();
+v6 = interfaceinvoke v4.<io.vertx.core.Future: io.vertx.core.Future map(java.util.function.Function)>(v5);
+return v6;
+}
+public io.vertx.core.dns.DnsClient resolveTXT(java.lang.String, io.vertx.core.Handler)
+{
+io.vertx.core.dns.impl.DnsClientImpl v0;
+java.lang.String v1;
+io.vertx.core.Handler v2;
+io.vertx.core.Future v3;
+v0 := @this: io.vertx.core.dns.impl.DnsClientImpl;
+v1 := @parameter0: java.lang.String;
+v2 := @parameter1: io.vertx.core.Handler;
+v3 = virtualinvoke v0.<io.vertx.core.dns.impl.DnsClientImpl: io.vertx.core.Future resolveTXT(java.lang.String)>(v1);
+interfaceinvoke v3.<io.vertx.core.Future: io.vertx.core.Future onComplete(io.vertx.core.Handler)>(v2);
+return v0;
+}
+public io.vertx.core.Future resolvePTR(java.lang.String)
+{
+io.netty.handler.codec.dns.DnsRecordType v3;
+io.vertx.core.dns.impl.DnsClientImpl v0;
+io.netty.handler.codec.dns.DnsRecordType[] v2;
+java.lang.String v1;
+io.vertx.core.Future v4;
+v0 := @this: io.vertx.core.dns.impl.DnsClientImpl;
+v1 := @parameter0: java.lang.String;
+v2 = newarray (io.netty.handler.codec.dns.DnsRecordType)[1];
+v3 = <io.netty.handler.codec.dns.DnsRecordType: io.netty.handler.codec.dns.DnsRecordType PTR>;
+v2[0] = v3;
+v4 = specialinvoke v0.<io.vertx.core.dns.impl.DnsClientImpl: io.vertx.core.Future lookupSingle(java.lang.String,io.netty.handler.codec.dns.DnsRecordType[])>(v1, v2);
+return v4;
+}
+public io.vertx.core.dns.DnsClient resolvePTR(java.lang.String, io.vertx.core.Handler)
+{
+io.vertx.core.dns.impl.DnsClientImpl v0;
+java.lang.String v1;
+io.vertx.core.Handler v2;
+io.vertx.core.Future v3;
+v0 := @this: io.vertx.core.dns.impl.DnsClientImpl;
+v1 := @parameter0: java.lang.String;
+v2 := @parameter1: io.vertx.core.Handler;
+v3 = virtualinvoke v0.<io.vertx.core.dns.impl.DnsClientImpl: io.vertx.core.Future resolvePTR(java.lang.String)>(v1);
+interfaceinvoke v3.<io.vertx.core.Future: io.vertx.core.Future onComplete(io.vertx.core.Handler)>(v2);
+return v0;
+}
+public io.vertx.core.dns.DnsClient resolveAAAA(java.lang.String, io.vertx.core.Handler)
+{
+io.vertx.core.dns.impl.DnsClientImpl v0;
+java.lang.String v1;
+io.vertx.core.Handler v2;
+io.vertx.core.Future v3;
+v0 := @this: io.vertx.core.dns.impl.DnsClientImpl;
+v1 := @parameter0: java.lang.String;
+v2 := @parameter1: io.vertx.core.Handler;
+v3 = virtualinvoke v0.<io.vertx.core.dns.impl.DnsClientImpl: io.vertx.core.Future resolveAAAA(java.lang.String)>(v1);
+interfaceinvoke v3.<io.vertx.core.Future: io.vertx.core.Future onComplete(io.vertx.core.Handler)>(v2);
+return v0;
+}
+public io.vertx.core.Future resolveAAAA(java.lang.String)
+{
+io.netty.handler.codec.dns.DnsRecordType v3;
+io.vertx.core.dns.impl.DnsClientImpl v0;
+io.netty.handler.codec.dns.DnsRecordType[] v2;
+java.lang.String v1;
+io.vertx.core.Future v4;
+v0 := @this: io.vertx.core.dns.impl.DnsClientImpl;
+v1 := @parameter0: java.lang.String;
+v2 = newarray (io.netty.handler.codec.dns.DnsRecordType)[1];
+v3 = <io.netty.handler.codec.dns.DnsRecordType: io.netty.handler.codec.dns.DnsRecordType AAAA>;
+v2[0] = v3;
+v4 = specialinvoke v0.<io.vertx.core.dns.impl.DnsClientImpl: io.vertx.core.Future lookupList(java.lang.String,io.netty.handler.codec.dns.DnsRecordType[])>(v1, v2);
+return v4;
+}
+public io.vertx.core.Future resolveNS(java.lang.String)
+{
+io.netty.handler.codec.dns.DnsRecordType v3;
+io.vertx.core.dns.impl.DnsClientImpl v0;
+io.netty.handler.codec.dns.DnsRecordType[] v2;
+java.lang.String v1;
+io.vertx.core.Future v4;
+v0 := @this: io.vertx.core.dns.impl.DnsClientImpl;
+v1 := @parameter0: java.lang.String;
+v2 = newarray (io.netty.handler.codec.dns.DnsRecordType)[1];
+v3 = <io.netty.handler.codec.dns.DnsRecordType: io.netty.handler.codec.dns.DnsRecordType NS>;
+v2[0] = v3;
+v4 = specialinvoke v0.<io.vertx.core.dns.impl.DnsClientImpl: io.vertx.core.Future lookupList(java.lang.String,io.netty.handler.codec.dns.DnsRecordType[])>(v1, v2);
+return v4;
+}
+public io.vertx.core.dns.DnsClient resolveNS(java.lang.String, io.vertx.core.Handler)
+{
+io.vertx.core.dns.impl.DnsClientImpl v0;
+java.lang.String v1;
+io.vertx.core.Handler v2;
+io.vertx.core.Future v3;
+v0 := @this: io.vertx.core.dns.impl.DnsClientImpl;
+v1 := @parameter0: java.lang.String;
+v2 := @parameter1: io.vertx.core.Handler;
+v3 = virtualinvoke v0.<io.vertx.core.dns.impl.DnsClientImpl: io.vertx.core.Future resolveNS(java.lang.String)>(v1);
+interfaceinvoke v3.<io.vertx.core.Future: io.vertx.core.Future onComplete(io.vertx.core.Handler)>(v2);
+return v0;
+}
+public io.vertx.core.Future resolveSRV(java.lang.String)
+{
+io.netty.handler.codec.dns.DnsRecordType v3;
+io.vertx.core.dns.impl.DnsClientImpl v0;
+io.netty.handler.codec.dns.DnsRecordType[] v2;
+java.lang.String v1;
+io.vertx.core.Future v4;
+v0 := @this: io.vertx.core.dns.impl.DnsClientImpl;
+v1 := @parameter0: java.lang.String;
+v2 = newarray (io.netty.handler.codec.dns.DnsRecordType)[1];
+v3 = <io.netty.handler.codec.dns.DnsRecordType: io.netty.handler.codec.dns.DnsRecordType SRV>;
+v2[0] = v3;
+v4 = specialinvoke v0.<io.vertx.core.dns.impl.DnsClientImpl: io.vertx.core.Future lookupList(java.lang.String,io.netty.handler.codec.dns.DnsRecordType[])>(v1, v2);
+return v4;
+}
+public io.vertx.core.dns.DnsClient resolveSRV(java.lang.String, io.vertx.core.Handler)
+{
+io.vertx.core.dns.impl.DnsClientImpl v0;
+java.lang.String v1;
+io.vertx.core.Handler v2;
+io.vertx.core.Future v3;
+v0 := @this: io.vertx.core.dns.impl.DnsClientImpl;
+v1 := @parameter0: java.lang.String;
+v2 := @parameter1: io.vertx.core.Handler;
+v3 = virtualinvoke v0.<io.vertx.core.dns.impl.DnsClientImpl: io.vertx.core.Future resolveSRV(java.lang.String)>(v1);
+interfaceinvoke v3.<io.vertx.core.Future: io.vertx.core.Future onComplete(io.vertx.core.Handler)>(v2);
+return v0;
+}
+public io.vertx.core.Future reverseLookup(java.lang.String)
+{
+byte[] v3;
+java.net.InetAddress v2;
+byte v10, v14, v18, v23, v24, v28, v6;
+boolean v5;
+io.vertx.core.Future v33, v35;
+java.lang.StringBuilder v12, v13, v16, v17, v4, v8, v9;
+io.vertx.core.dns.impl.DnsClientImpl v0;
+short v11, v15, v19, v7;
+int v20, v22, v27, v29, v30;
+java.lang.String v1, v32;
+char v25, v31;
+java.net.UnknownHostException v34;
+char[] v21, v26;
+v0 := @this: io.vertx.core.dns.impl.DnsClientImpl;
+v1 := @parameter0: java.lang.String;
+label1:
+v2 = staticinvoke <java.net.InetAddress: java.net.InetAddress getByName(java.lang.String)>(v1);
+v3 = virtualinvoke v2.<java.net.InetAddress: byte[] getAddress()>();
+v4 = new java.lang.StringBuilder;
+specialinvoke v4.<java.lang.StringBuilder: void <init>(int)>(64);
+v5 = v2 instanceof java.net.Inet4Address;
+if v5 == 0 goto label2;
+v6 = v3[3];
+v7 = v6 & 255;
+v8 = virtualinvoke v4.<java.lang.StringBuilder: java.lang.StringBuilder append(int)>(v7);
+v9 = virtualinvoke v8.<java.lang.StringBuilder: java.lang.StringBuilder append(java.lang.String)>(".");
+v10 = v3[2];
+v11 = v10 & 255;
+v12 = virtualinvoke v9.<java.lang.StringBuilder: java.lang.StringBuilder append(int)>(v11);
+v13 = virtualinvoke v12.<java.lang.StringBuilder: java.lang.StringBuilder append(java.lang.String)>(".");
+v14 = v3[1];
+v15 = v14 & 255;
+v16 = virtualinvoke v13.<java.lang.StringBuilder: java.lang.StringBuilder append(int)>(v15);
+v17 = virtualinvoke v16.<java.lang.StringBuilder: java.lang.StringBuilder append(java.lang.String)>(".");
+v18 = v3[0];
+v19 = v18 & 255;
+virtualinvoke v17.<java.lang.StringBuilder: java.lang.StringBuilder append(int)>(v19);
+goto label5;
+label2:
+v20 = 0;
+label3:
+if v20 >= 16 goto label5;
+v21 = <io.vertx.core.dns.impl.DnsClientImpl: char[] HEX_TABLE>;
+v22 = 15 - v20;
+v23 = v3[v22];
+v24 = v23 & 15;
+v25 = v21[v24];
+virtualinvoke v4.<java.lang.StringBuilder: java.lang.StringBuilder append(char)>(v25);
+virtualinvoke v4.<java.lang.StringBuilder: java.lang.StringBuilder append(java.lang.String)>(".");
+v26 = <io.vertx.core.dns.impl.DnsClientImpl: char[] HEX_TABLE>;
+v27 = 15 - v20;
+v28 = v3[v27];
+v29 = v28 >> 4;
+v30 = v29 & 15;
+v31 = v26[v30];
+virtualinvoke v4.<java.lang.StringBuilder: java.lang.StringBuilder append(char)>(v31);
+if v20 == 15 goto label4;
+virtualinvoke v4.<java.lang.StringBuilder: java.lang.StringBuilder append(java.lang.String)>(".");
+label4:
+v20 = v20 + 1;
+goto label3;
+label5:
+virtualinvoke v4.<java.lang.StringBuilder: java.lang.StringBuilder append(java.lang.String)>(".in-addr.arpa");
+v32 = virtualinvoke v4.<java.lang.StringBuilder: java.lang.String toString()>();
+v33 = virtualinvoke v0.<io.vertx.core.dns.impl.DnsClientImpl: io.vertx.core.Future resolvePTR(java.lang.String)>(v32);
+label6:
+return v33;
+label7:
+v34 := @caughtexception;
+v35 = staticinvoke <io.vertx.core.Future: io.vertx.core.Future failedFuture(java.lang.Throwable)>(v34);
+return v35;
+catch java.net.UnknownHostException from label1 to label6 with label7;
+}
+public io.vertx.core.dns.DnsClient reverseLookup(java.lang.String, io.vertx.core.Handler)
+{
+io.vertx.core.dns.impl.DnsClientImpl v0;
+java.lang.String v1;
+io.vertx.core.Handler v2;
+io.vertx.core.Future v3;
+v0 := @this: io.vertx.core.dns.impl.DnsClientImpl;
+v1 := @parameter0: java.lang.String;
+v2 := @parameter1: io.vertx.core.Handler;
+v3 = virtualinvoke v0.<io.vertx.core.dns.impl.DnsClientImpl: io.vertx.core.Future reverseLookup(java.lang.String)>(v1);
+interfaceinvoke v3.<io.vertx.core.Future: io.vertx.core.Future onComplete(io.vertx.core.Handler)>(v2);
+return v0;
+}
+private transient io.vertx.core.Future lookupSingle(java.lang.String, io.netty.handler.codec.dns.DnsRecordType[])
+{
+io.vertx.core.dns.impl.DnsClientImpl v0;
+io.netty.handler.codec.dns.DnsRecordType[] v2;
+java.lang.String v1;
+io.vertx.core.Future v3, v5;
+java.util.function.Function v4;
+v0 := @this: io.vertx.core.dns.impl.DnsClientImpl;
+v1 := @parameter0: java.lang.String;
+v2 := @parameter1: io.netty.handler.codec.dns.DnsRecordType[];
+v3 = specialinvoke v0.<io.vertx.core.dns.impl.DnsClientImpl: io.vertx.core.Future lookupList(java.lang.String,io.netty.handler.codec.dns.DnsRecordType[])>(v1, v2);
+v4 = staticinvoke <io.vertx.core.dns.impl.DnsClientImpl$lambda_lookupSingle_1__927: java.util.function.Function bootstrap$()>();
+v5 = interfaceinvoke v3.<io.vertx.core.Future: io.vertx.core.Future map(java.util.function.Function)>(v4);
+return v5;
+}
+private transient io.vertx.core.Future lookupList(java.lang.String, io.netty.handler.codec.dns.DnsRecordType[])
+{
+io.vertx.core.impl.VertxInternal v3;
+io.vertx.core.impl.future.PromiseInternal v5;
+io.netty.util.concurrent.Promise v9;
+io.vertx.core.dns.impl.DnsClientImpl v0;
+io.vertx.core.dns.impl.DnsClientImpl$Query v8;
+io.vertx.core.impl.ContextInternal v4, v6;
+io.netty.handler.codec.dns.DnsRecordType[] v2;
+io.netty.channel.EventLoop v7;
+io.vertx.core.Future v12;
+java.lang.Runnable v11;
+java.lang.String v1;
+boolean v10;
+v0 := @this: io.vertx.core.dns.impl.DnsClientImpl;
+v1 := @parameter0: java.lang.String;
+v2 := @parameter1: io.netty.handler.codec.dns.DnsRecordType[];
+v3 = v0.<io.vertx.core.dns.impl.DnsClientImpl: io.vertx.core.impl.VertxInternal vertx>;
+v4 = interfaceinvoke v3.<io.vertx.core.impl.VertxInternal: io.vertx.core.impl.ContextInternal getOrCreateContext()>();
+v5 = interfaceinvoke v4.<io.vertx.core.impl.ContextInternal: io.vertx.core.impl.future.PromiseInternal promise()>();
+staticinvoke <java.util.Objects: java.lang.Object requireNonNull(java.lang.Object,java.lang.String)>(v1, "no null name accepted");
+v6 = v0.<io.vertx.core.dns.impl.DnsClientImpl: io.vertx.core.impl.ContextInternal actualCtx>;
+v7 = interfaceinvoke v6.<io.vertx.core.impl.ContextInternal: io.netty.channel.EventLoop nettyEventLoop()>();
+v8 = new io.vertx.core.dns.impl.DnsClientImpl$Query;
+specialinvoke v8.<io.vertx.core.dns.impl.DnsClientImpl$Query: void <init>(io.vertx.core.dns.impl.DnsClientImpl,java.lang.String,io.netty.handler.codec.dns.DnsRecordType[])>(v0, v1, v2);
+v9 = v8.<io.vertx.core.dns.impl.DnsClientImpl$Query: io.netty.util.concurrent.Promise promise>;
+interfaceinvoke v9.<io.netty.util.concurrent.Promise: io.netty.util.concurrent.Promise addListener(io.netty.util.concurrent.GenericFutureListener)>(v5);
+v10 = interfaceinvoke v7.<io.netty.channel.EventLoop: boolean inEventLoop()>();
+if v10 == 0 goto label1;
+virtualinvoke v8.<io.vertx.core.dns.impl.DnsClientImpl$Query: void run()>();
+goto label2;
+label1:
+virtualinvoke v8.<java.lang.Object: java.lang.Class getClass()>();
+v11 = staticinvoke <io.vertx.core.dns.impl.DnsClientImpl$run__928: java.lang.Runnable bootstrap$(io.vertx.core.dns.impl.DnsClientImpl$Query)>(v8);
+interfaceinvoke v7.<io.netty.channel.EventLoop: void execute(java.lang.Runnable)>(v11);
+label2:
+v12 = interfaceinvoke v5.<io.vertx.core.impl.future.PromiseInternal: io.vertx.core.Future future()>();
+return v12;
+}
+private long dnsMessageId(int, java.lang.String)
+{
+io.vertx.core.dns.impl.DnsClientImpl v0;
+long v4, v7;
+int v1, v3, v5, v6;
+java.lang.String v2;
+v0 := @this: io.vertx.core.dns.impl.DnsClientImpl;
+v1 := @parameter0: int;
+v2 := @parameter1: java.lang.String;
+v3 = virtualinvoke v2.<java.lang.String: int hashCode()>();
+v4 = v3 << 16;
+v5 = (int) 65535;
+v6 = v1 & v5;
+v7 = v4 + v6;
+return v7;
+}
+public void inProgressQueries(io.vertx.core.Handler)
+{
+io.vertx.core.dns.impl.DnsClientImpl v0;
+io.vertx.core.impl.ContextInternal v2;
+io.vertx.core.Handler v1, v3;
+v0 := @this: io.vertx.core.dns.impl.DnsClientImpl;
+v1 := @parameter0: io.vertx.core.Handler;
+v2 = v0.<io.vertx.core.dns.impl.DnsClientImpl: io.vertx.core.impl.ContextInternal actualCtx>;
+v3 = staticinvoke <io.vertx.core.dns.impl.DnsClientImpl$lambda_inProgressQueries_2__929: io.vertx.core.Handler bootstrap$(io.vertx.core.dns.impl.DnsClientImpl,io.vertx.core.Handler)>(v0, v1);
+interfaceinvoke v2.<io.vertx.core.impl.ContextInternal: void runOnContext(io.vertx.core.Handler)>(v3);
+return;
+}
+static void <clinit>()
+{
+char[] v1;
+java.lang.String v0;
+v0 = "0123456789abcdef";
+v1 = virtualinvoke v0.<java.lang.String: char[] toCharArray()>();
+<io.vertx.core.dns.impl.DnsClientImpl: char[] HEX_TABLE> = v1;
+return;
+}
+}

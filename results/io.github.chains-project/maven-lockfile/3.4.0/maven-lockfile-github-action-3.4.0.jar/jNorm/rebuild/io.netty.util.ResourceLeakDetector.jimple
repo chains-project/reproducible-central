@@ -1,0 +1,455 @@
+public class io.netty.util.ResourceLeakDetector extends java.lang.Object
+{
+private static final java.lang.String PROP_LEVEL_OLD;
+private static final java.lang.String PROP_LEVEL;
+private static final io.netty.util.ResourceLeakDetector$Level DEFAULT_LEVEL;
+private static final java.lang.String PROP_TARGET_RECORDS;
+private static final int DEFAULT_TARGET_RECORDS;
+private static final java.lang.String PROP_SAMPLING_INTERVAL;
+private static final int DEFAULT_SAMPLING_INTERVAL;
+private static final int TARGET_RECORDS;
+static final int SAMPLING_INTERVAL;
+private static io.netty.util.ResourceLeakDetector$Level level;
+private static final io.netty.util.internal.logging.InternalLogger logger;
+private final java.util.Set allLeaks;
+private final java.lang.ref.ReferenceQueue refQueue;
+private final java.util.Set reportedLeaks;
+private final java.lang.String resourceType;
+private final int samplingInterval;
+private static final java.util.concurrent.atomic.AtomicReference excludedMethods;
+public static void setEnabled(boolean)
+{
+io.netty.util.ResourceLeakDetector$Level v1;
+boolean v0;
+v0 := @parameter0: boolean;
+if v0 == 0 goto label1;
+v1 = <io.netty.util.ResourceLeakDetector$Level: io.netty.util.ResourceLeakDetector$Level SIMPLE>;
+goto label2;
+label1:
+v1 = <io.netty.util.ResourceLeakDetector$Level: io.netty.util.ResourceLeakDetector$Level DISABLED>;
+label2:
+staticinvoke <io.netty.util.ResourceLeakDetector: void setLevel(io.netty.util.ResourceLeakDetector$Level)>(v1);
+return;
+}
+public static boolean isEnabled()
+{
+io.netty.util.ResourceLeakDetector$Level v0, v2;
+int v1, v3;
+boolean v4;
+v0 = staticinvoke <io.netty.util.ResourceLeakDetector: io.netty.util.ResourceLeakDetector$Level getLevel()>();
+v1 = virtualinvoke v0.<io.netty.util.ResourceLeakDetector$Level: int ordinal()>();
+v2 = <io.netty.util.ResourceLeakDetector$Level: io.netty.util.ResourceLeakDetector$Level DISABLED>;
+v3 = virtualinvoke v2.<io.netty.util.ResourceLeakDetector$Level: int ordinal()>();
+if v1 <= v3 goto label1;
+v4 = 1;
+goto label2;
+label1:
+v4 = 0;
+label2:
+return v4;
+}
+public static void setLevel(io.netty.util.ResourceLeakDetector$Level)
+{
+java.lang.Object v1;
+io.netty.util.ResourceLeakDetector$Level v0;
+v0 := @parameter0: io.netty.util.ResourceLeakDetector$Level;
+v1 = staticinvoke <io.netty.util.internal.ObjectUtil: java.lang.Object checkNotNull(java.lang.Object,java.lang.String)>(v0, "level");
+<io.netty.util.ResourceLeakDetector: io.netty.util.ResourceLeakDetector$Level level> = v1;
+return;
+}
+public static io.netty.util.ResourceLeakDetector$Level getLevel()
+{
+io.netty.util.ResourceLeakDetector$Level v0;
+v0 = <io.netty.util.ResourceLeakDetector: io.netty.util.ResourceLeakDetector$Level level>;
+return v0;
+}
+public void <init>(java.lang.Class)
+{
+java.lang.Class v1;
+java.lang.String v2;
+io.netty.util.ResourceLeakDetector v0;
+v0 := @this: io.netty.util.ResourceLeakDetector;
+v1 := @parameter0: java.lang.Class;
+v2 = staticinvoke <io.netty.util.internal.StringUtil: java.lang.String simpleClassName(java.lang.Class)>(v1);
+specialinvoke v0.<io.netty.util.ResourceLeakDetector: void <init>(java.lang.String)>(v2);
+return;
+}
+public void <init>(java.lang.String)
+{
+java.lang.String v1;
+io.netty.util.ResourceLeakDetector v0;
+v0 := @this: io.netty.util.ResourceLeakDetector;
+v1 := @parameter0: java.lang.String;
+specialinvoke v0.<io.netty.util.ResourceLeakDetector: void <init>(java.lang.String,int,long)>(v1, 128, 9223372036854775807L);
+return;
+}
+public void <init>(java.lang.Class, int, long)
+{
+int v2;
+java.lang.Class v1;
+long v3;
+io.netty.util.ResourceLeakDetector v0;
+v0 := @this: io.netty.util.ResourceLeakDetector;
+v1 := @parameter0: java.lang.Class;
+v2 := @parameter1: int;
+v3 := @parameter2: long;
+specialinvoke v0.<io.netty.util.ResourceLeakDetector: void <init>(java.lang.Class,int)>(v1, v2);
+return;
+}
+public void <init>(java.lang.Class, int)
+{
+int v2;
+java.lang.Class v1;
+java.lang.String v3;
+io.netty.util.ResourceLeakDetector v0;
+v0 := @this: io.netty.util.ResourceLeakDetector;
+v1 := @parameter0: java.lang.Class;
+v2 := @parameter1: int;
+v3 = staticinvoke <io.netty.util.internal.StringUtil: java.lang.String simpleClassName(java.lang.Class)>(v1);
+specialinvoke v0.<io.netty.util.ResourceLeakDetector: void <init>(java.lang.String,int,long)>(v3, v2, 9223372036854775807L);
+return;
+}
+public void <init>(java.lang.String, int, long)
+{
+java.util.concurrent.ConcurrentHashMap v4, v7;
+java.util.Set v5, v8;
+long v3;
+io.netty.util.ResourceLeakDetector v0;
+java.lang.ref.ReferenceQueue v6;
+int v2;
+java.lang.Object v9;
+java.lang.String v1;
+v0 := @this: io.netty.util.ResourceLeakDetector;
+v1 := @parameter0: java.lang.String;
+v2 := @parameter1: int;
+v3 := @parameter2: long;
+specialinvoke v0.<java.lang.Object: void <init>()>();
+v4 = new java.util.concurrent.ConcurrentHashMap;
+specialinvoke v4.<java.util.concurrent.ConcurrentHashMap: void <init>()>();
+v5 = staticinvoke <java.util.Collections: java.util.Set newSetFromMap(java.util.Map)>(v4);
+v0.<io.netty.util.ResourceLeakDetector: java.util.Set allLeaks> = v5;
+v6 = new java.lang.ref.ReferenceQueue;
+specialinvoke v6.<java.lang.ref.ReferenceQueue: void <init>()>();
+v0.<io.netty.util.ResourceLeakDetector: java.lang.ref.ReferenceQueue refQueue> = v6;
+v7 = new java.util.concurrent.ConcurrentHashMap;
+specialinvoke v7.<java.util.concurrent.ConcurrentHashMap: void <init>()>();
+v8 = staticinvoke <java.util.Collections: java.util.Set newSetFromMap(java.util.Map)>(v7);
+v0.<io.netty.util.ResourceLeakDetector: java.util.Set reportedLeaks> = v8;
+v9 = staticinvoke <io.netty.util.internal.ObjectUtil: java.lang.Object checkNotNull(java.lang.Object,java.lang.String)>(v1, "resourceType");
+v0.<io.netty.util.ResourceLeakDetector: java.lang.String resourceType> = v9;
+v0.<io.netty.util.ResourceLeakDetector: int samplingInterval> = v2;
+return;
+}
+public final io.netty.util.ResourceLeak open(java.lang.Object)
+{
+java.lang.Object v1;
+io.netty.util.ResourceLeakDetector$DefaultResourceLeak v2;
+io.netty.util.ResourceLeakDetector v0;
+v0 := @this: io.netty.util.ResourceLeakDetector;
+v1 := @parameter0: java.lang.Object;
+v2 = specialinvoke v0.<io.netty.util.ResourceLeakDetector: io.netty.util.ResourceLeakDetector$DefaultResourceLeak track0(java.lang.Object)>(v1);
+return v2;
+}
+public final io.netty.util.ResourceLeakTracker track(java.lang.Object)
+{
+java.lang.Object v1;
+io.netty.util.ResourceLeakDetector$DefaultResourceLeak v2;
+io.netty.util.ResourceLeakDetector v0;
+v0 := @this: io.netty.util.ResourceLeakDetector;
+v1 := @parameter0: java.lang.Object;
+v2 = specialinvoke v0.<io.netty.util.ResourceLeakDetector: io.netty.util.ResourceLeakDetector$DefaultResourceLeak track0(java.lang.Object)>(v1);
+return v2;
+}
+private io.netty.util.ResourceLeakDetector$DefaultResourceLeak track0(java.lang.Object)
+{
+io.netty.util.ResourceLeakDetector$DefaultResourceLeak v10, v15;
+io.netty.util.ResourceLeakDetector$Level v2, v3, v5;
+java.util.Random v7;
+java.lang.ref.ReferenceQueue v11, v16;
+int v4, v6, v8, v9;
+java.lang.String v13, v18;
+java.util.Set v12, v17;
+io.netty.util.ResourceLeakDetector v0;
+java.lang.Object v1, v14, v19;
+v0 := @this: io.netty.util.ResourceLeakDetector;
+v1 := @parameter0: java.lang.Object;
+v2 = <io.netty.util.ResourceLeakDetector: io.netty.util.ResourceLeakDetector$Level level>;
+v3 = <io.netty.util.ResourceLeakDetector$Level: io.netty.util.ResourceLeakDetector$Level DISABLED>;
+if v2 != v3 goto label1;
+return null;
+label1:
+v4 = virtualinvoke v2.<io.netty.util.ResourceLeakDetector$Level: int ordinal()>();
+v5 = <io.netty.util.ResourceLeakDetector$Level: io.netty.util.ResourceLeakDetector$Level PARANOID>;
+v6 = virtualinvoke v5.<io.netty.util.ResourceLeakDetector$Level: int ordinal()>();
+if v4 >= v6 goto label3;
+v7 = staticinvoke <io.netty.util.internal.PlatformDependent: java.util.Random threadLocalRandom()>();
+v8 = v0.<io.netty.util.ResourceLeakDetector: int samplingInterval>;
+v9 = virtualinvoke v7.<java.util.Random: int nextInt(int)>(v8);
+if v9 != 0 goto label2;
+specialinvoke v0.<io.netty.util.ResourceLeakDetector: void reportLeak()>();
+v10 = new io.netty.util.ResourceLeakDetector$DefaultResourceLeak;
+v11 = v0.<io.netty.util.ResourceLeakDetector: java.lang.ref.ReferenceQueue refQueue>;
+v12 = v0.<io.netty.util.ResourceLeakDetector: java.util.Set allLeaks>;
+v13 = v0.<io.netty.util.ResourceLeakDetector: java.lang.String resourceType>;
+v14 = virtualinvoke v0.<io.netty.util.ResourceLeakDetector: java.lang.Object getInitialHint(java.lang.String)>(v13);
+specialinvoke v10.<io.netty.util.ResourceLeakDetector$DefaultResourceLeak: void <init>(java.lang.Object,java.lang.ref.ReferenceQueue,java.util.Set,java.lang.Object)>(v1, v11, v12, v14);
+return v10;
+label2:
+return null;
+label3:
+specialinvoke v0.<io.netty.util.ResourceLeakDetector: void reportLeak()>();
+v15 = new io.netty.util.ResourceLeakDetector$DefaultResourceLeak;
+v16 = v0.<io.netty.util.ResourceLeakDetector: java.lang.ref.ReferenceQueue refQueue>;
+v17 = v0.<io.netty.util.ResourceLeakDetector: java.util.Set allLeaks>;
+v18 = v0.<io.netty.util.ResourceLeakDetector: java.lang.String resourceType>;
+v19 = virtualinvoke v0.<io.netty.util.ResourceLeakDetector: java.lang.Object getInitialHint(java.lang.String)>(v18);
+specialinvoke v15.<io.netty.util.ResourceLeakDetector$DefaultResourceLeak: void <init>(java.lang.Object,java.lang.ref.ReferenceQueue,java.util.Set,java.lang.Object)>(v1, v16, v17, v19);
+return v15;
+}
+private void clearRefQueue()
+{
+java.lang.ref.Reference v2;
+io.netty.util.ResourceLeakDetector v0;
+java.lang.ref.ReferenceQueue v1;
+v0 := @this: io.netty.util.ResourceLeakDetector;
+label1:
+v1 = v0.<io.netty.util.ResourceLeakDetector: java.lang.ref.ReferenceQueue refQueue>;
+v2 = virtualinvoke v1.<java.lang.ref.ReferenceQueue: java.lang.ref.Reference poll()>();
+if v2 == null goto label2;
+virtualinvoke v2.<io.netty.util.ResourceLeakDetector$DefaultResourceLeak: boolean dispose()>();
+goto label1;
+label2:
+return;
+}
+protected boolean needReport()
+{
+io.netty.util.ResourceLeakDetector v0;
+boolean v2;
+io.netty.util.internal.logging.InternalLogger v1;
+v0 := @this: io.netty.util.ResourceLeakDetector;
+v1 = <io.netty.util.ResourceLeakDetector: io.netty.util.internal.logging.InternalLogger logger>;
+v2 = interfaceinvoke v1.<io.netty.util.internal.logging.InternalLogger: boolean isErrorEnabled()>();
+return v2;
+}
+private void reportLeak()
+{
+java.util.Set v6;
+io.netty.util.ResourceLeakDetector v0;
+java.lang.ref.ReferenceQueue v2;
+java.lang.ref.Reference v3;
+java.lang.String v10, v5, v9;
+boolean v1, v4, v7, v8;
+v0 := @this: io.netty.util.ResourceLeakDetector;
+v1 = virtualinvoke v0.<io.netty.util.ResourceLeakDetector: boolean needReport()>();
+if v1 != 0 goto label1;
+specialinvoke v0.<io.netty.util.ResourceLeakDetector: void clearRefQueue()>();
+return;
+label1:
+v2 = v0.<io.netty.util.ResourceLeakDetector: java.lang.ref.ReferenceQueue refQueue>;
+v3 = virtualinvoke v2.<java.lang.ref.ReferenceQueue: java.lang.ref.Reference poll()>();
+if v3 == null goto label3;
+v4 = virtualinvoke v3.<io.netty.util.ResourceLeakDetector$DefaultResourceLeak: boolean dispose()>();
+if v4 == 0 goto label1;
+v5 = virtualinvoke v3.<io.netty.util.ResourceLeakDetector$DefaultResourceLeak: java.lang.String getReportAndClearRecords()>();
+v6 = v0.<io.netty.util.ResourceLeakDetector: java.util.Set reportedLeaks>;
+v7 = interfaceinvoke v6.<java.util.Set: boolean add(java.lang.Object)>(v5);
+if v7 == 0 goto label1;
+v8 = virtualinvoke v5.<java.lang.String: boolean isEmpty()>();
+if v8 == 0 goto label2;
+v9 = v0.<io.netty.util.ResourceLeakDetector: java.lang.String resourceType>;
+virtualinvoke v0.<io.netty.util.ResourceLeakDetector: void reportUntracedLeak(java.lang.String)>(v9);
+goto label1;
+label2:
+v10 = v0.<io.netty.util.ResourceLeakDetector: java.lang.String resourceType>;
+virtualinvoke v0.<io.netty.util.ResourceLeakDetector: void reportTracedLeak(java.lang.String,java.lang.String)>(v10, v5);
+goto label1;
+label3:
+return;
+}
+protected void reportTracedLeak(java.lang.String, java.lang.String)
+{
+io.netty.util.internal.logging.InternalLogger v3;
+java.lang.String v1, v2;
+io.netty.util.ResourceLeakDetector v0;
+v0 := @this: io.netty.util.ResourceLeakDetector;
+v1 := @parameter0: java.lang.String;
+v2 := @parameter1: java.lang.String;
+v3 = <io.netty.util.ResourceLeakDetector: io.netty.util.internal.logging.InternalLogger logger>;
+interfaceinvoke v3.<io.netty.util.internal.logging.InternalLogger: void error(java.lang.String,java.lang.Object,java.lang.Object)>("LEAK: {}.release() was not called before it\'s garbage-collected. See https://netty.io/wiki/reference-counted-objects.html for more information.{}", v1, v2);
+return;
+}
+protected void reportUntracedLeak(java.lang.String)
+{
+java.lang.Object[] v3;
+io.netty.util.ResourceLeakDetector$Level v4;
+io.netty.util.ResourceLeakDetector v0;
+io.netty.util.internal.logging.InternalLogger v2;
+java.lang.String v1, v5, v6, v7;
+v0 := @this: io.netty.util.ResourceLeakDetector;
+v1 := @parameter0: java.lang.String;
+v2 = <io.netty.util.ResourceLeakDetector: io.netty.util.internal.logging.InternalLogger logger>;
+v3 = newarray (java.lang.Object)[4];
+v3[0] = v1;
+v3[1] = "io.netty.leakDetection.level";
+v4 = <io.netty.util.ResourceLeakDetector$Level: io.netty.util.ResourceLeakDetector$Level ADVANCED>;
+v5 = virtualinvoke v4.<io.netty.util.ResourceLeakDetector$Level: java.lang.String name()>();
+v6 = virtualinvoke v5.<java.lang.String: java.lang.String toLowerCase()>();
+v3[2] = v6;
+v7 = staticinvoke <io.netty.util.internal.StringUtil: java.lang.String simpleClassName(java.lang.Object)>(v0);
+v3[3] = v7;
+interfaceinvoke v2.<io.netty.util.internal.logging.InternalLogger: void error(java.lang.String,java.lang.Object[])>("LEAK: {}.release() was not called before it\'s garbage-collected. Enable advanced leak reporting to find out where the leak occurred. To enable advanced leak reporting, specify the JVM option \'-D{}={}\' or call {}.setLevel() See https://netty.io/wiki/reference-counted-objects.html for more information.", v3);
+return;
+}
+protected void reportInstancesLeak(java.lang.String)
+{
+java.lang.String v1;
+io.netty.util.ResourceLeakDetector v0;
+v0 := @this: io.netty.util.ResourceLeakDetector;
+v1 := @parameter0: java.lang.String;
+return;
+}
+protected java.lang.Object getInitialHint(java.lang.String)
+{
+java.lang.String v1;
+io.netty.util.ResourceLeakDetector v0;
+v0 := @this: io.netty.util.ResourceLeakDetector;
+v1 := @parameter0: java.lang.String;
+return null;
+}
+public static transient void addExclusions(java.lang.Class, java.lang.String[])
+{
+java.lang.reflect.Method[] v4;
+java.lang.reflect.Method v7;
+boolean v10, v11, v34, v9;
+java.util.List v3;
+java.lang.Object[] v21;
+java.lang.String[] v1;
+java.util.concurrent.atomic.AtomicReference v15, v33;
+java.util.HashSet v2;
+int v17, v18, v19, v20, v22, v23, v24, v25, v26, v28, v29, v30, v31, v5, v6;
+java.lang.String v13, v14, v27, v32, v8;
+java.lang.IllegalArgumentException v12;
+java.lang.Class v0;
+java.lang.Object v16;
+v0 := @parameter0: java.lang.Class;
+v1 := @parameter1: java.lang.String[];
+v2 = new java.util.HashSet;
+v3 = staticinvoke <java.util.Arrays: java.util.List asList(java.lang.Object[])>(v1);
+specialinvoke v2.<java.util.HashSet: void <init>(java.util.Collection)>(v3);
+v4 = virtualinvoke v0.<java.lang.Class: java.lang.reflect.Method[] getDeclaredMethods()>();
+v5 = lengthof v4;
+v6 = 0;
+label1:
+if v6 >= v5 goto label3;
+v7 = v4[v6];
+v8 = virtualinvoke v7.<java.lang.reflect.Method: java.lang.String getName()>();
+v9 = interfaceinvoke v2.<java.util.Set: boolean remove(java.lang.Object)>(v8);
+if v9 == 0 goto label2;
+v10 = interfaceinvoke v2.<java.util.Set: boolean isEmpty()>();
+if v10 != 0 goto label3;
+label2:
+v6 = v6 + 1;
+goto label1;
+label3:
+v11 = interfaceinvoke v2.<java.util.Set: boolean isEmpty()>();
+if v11 != 0 goto label4;
+v12 = new java.lang.IllegalArgumentException;
+v13 = virtualinvoke v0.<java.lang.Class: java.lang.String getName()>();
+v14 = dynamicinvoke "makeConcatWithConstants" <java.lang.String (java.util.HashSet,java.lang.String)>(v2, v13) <java.lang.invoke.StringConcatFactory: java.lang.invoke.CallSite makeConcatWithConstants(java.lang.invoke.MethodHandles$Lookup,java.lang.String,java.lang.invoke.MethodType,java.lang.String,java.lang.Object[])>("Can\'t find \'\u0001\' in \u0001");
+specialinvoke v12.<java.lang.IllegalArgumentException: void <init>(java.lang.String)>(v14);
+throw v12;
+label4:
+v15 = <io.netty.util.ResourceLeakDetector: java.util.concurrent.atomic.AtomicReference excludedMethods>;
+v16 = virtualinvoke v15.<java.util.concurrent.atomic.AtomicReference: java.lang.Object get()>();
+v17 = lengthof v16;
+v18 = lengthof v1;
+v19 = 2 * v18;
+v20 = v17 + v19;
+v21 = staticinvoke <java.util.Arrays: java.lang.Object[] copyOf(java.lang.Object[],int)>(v16, v20);
+v22 = 0;
+label5:
+v23 = lengthof v1;
+if v22 >= v23 goto label6;
+v24 = lengthof v16;
+v25 = v22 * 2;
+v26 = v24 + v25;
+v27 = virtualinvoke v0.<java.lang.Class: java.lang.String getName()>();
+v21[v26] = v27;
+v28 = lengthof v16;
+v29 = v22 * 2;
+v30 = v28 + v29;
+v31 = v30 + 1;
+v32 = v1[v22];
+v21[v31] = v32;
+v22 = v22 + 1;
+goto label5;
+label6:
+v33 = <io.netty.util.ResourceLeakDetector: java.util.concurrent.atomic.AtomicReference excludedMethods>;
+v34 = virtualinvoke v33.<java.util.concurrent.atomic.AtomicReference: boolean compareAndSet(java.lang.Object,java.lang.Object)>(v16, v21);
+if v34 == 0 goto label4;
+return;
+}
+static void <clinit>()
+{
+io.netty.util.ResourceLeakDetector$Level v0, v10, v14, v7;
+java.lang.String[] v26;
+java.lang.Integer v24;
+java.util.concurrent.atomic.AtomicReference v25;
+int v15, v16, v23;
+java.lang.Boolean v5;
+java.lang.String v11, v12, v13, v2, v20, v21, v8, v9;
+boolean v18, v3;
+io.netty.util.internal.logging.InternalLogger v1, v17, v19, v22, v4, v6;
+v0 = <io.netty.util.ResourceLeakDetector$Level: io.netty.util.ResourceLeakDetector$Level SIMPLE>;
+<io.netty.util.ResourceLeakDetector: io.netty.util.ResourceLeakDetector$Level DEFAULT_LEVEL> = v0;
+v1 = staticinvoke <io.netty.util.internal.logging.InternalLoggerFactory: io.netty.util.internal.logging.InternalLogger getInstance(java.lang.Class)>(class "Lio/netty/util/ResourceLeakDetector;");
+<io.netty.util.ResourceLeakDetector: io.netty.util.internal.logging.InternalLogger logger> = v1;
+v2 = staticinvoke <io.netty.util.internal.SystemPropertyUtil: java.lang.String get(java.lang.String)>("io.netty.noResourceLeakDetection");
+if v2 == null goto label1;
+v3 = staticinvoke <io.netty.util.internal.SystemPropertyUtil: boolean getBoolean(java.lang.String,boolean)>("io.netty.noResourceLeakDetection", 0);
+v4 = <io.netty.util.ResourceLeakDetector: io.netty.util.internal.logging.InternalLogger logger>;
+v5 = staticinvoke <java.lang.Boolean: java.lang.Boolean valueOf(boolean)>(v3);
+interfaceinvoke v4.<io.netty.util.internal.logging.InternalLogger: void debug(java.lang.String,java.lang.Object)>("-Dio.netty.noResourceLeakDetection: {}", v5);
+v6 = <io.netty.util.ResourceLeakDetector: io.netty.util.internal.logging.InternalLogger logger>;
+v7 = <io.netty.util.ResourceLeakDetector$Level: io.netty.util.ResourceLeakDetector$Level DISABLED>;
+v8 = virtualinvoke v7.<io.netty.util.ResourceLeakDetector$Level: java.lang.String name()>();
+v9 = virtualinvoke v8.<java.lang.String: java.lang.String toLowerCase()>();
+interfaceinvoke v6.<io.netty.util.internal.logging.InternalLogger: void warn(java.lang.String,java.lang.Object,java.lang.Object)>("-Dio.netty.noResourceLeakDetection is deprecated. Use \'-D{}={}\' instead.", "io.netty.leakDetection.level", v9);
+goto label2;
+label1:
+v3 = 0;
+label2:
+if v3 == 0 goto label3;
+v10 = <io.netty.util.ResourceLeakDetector$Level: io.netty.util.ResourceLeakDetector$Level DISABLED>;
+goto label4;
+label3:
+v10 = <io.netty.util.ResourceLeakDetector: io.netty.util.ResourceLeakDetector$Level DEFAULT_LEVEL>;
+label4:
+v11 = virtualinvoke v10.<io.netty.util.ResourceLeakDetector$Level: java.lang.String name()>();
+v12 = staticinvoke <io.netty.util.internal.SystemPropertyUtil: java.lang.String get(java.lang.String,java.lang.String)>("io.netty.leakDetectionLevel", v11);
+v13 = staticinvoke <io.netty.util.internal.SystemPropertyUtil: java.lang.String get(java.lang.String,java.lang.String)>("io.netty.leakDetection.level", v12);
+v14 = staticinvoke <io.netty.util.ResourceLeakDetector$Level: io.netty.util.ResourceLeakDetector$Level parseLevel(java.lang.String)>(v13);
+v15 = staticinvoke <io.netty.util.internal.SystemPropertyUtil: int getInt(java.lang.String,int)>("io.netty.leakDetection.targetRecords", 4);
+<io.netty.util.ResourceLeakDetector: int TARGET_RECORDS> = v15;
+v16 = staticinvoke <io.netty.util.internal.SystemPropertyUtil: int getInt(java.lang.String,int)>("io.netty.leakDetection.samplingInterval", 128);
+<io.netty.util.ResourceLeakDetector: int SAMPLING_INTERVAL> = v16;
+<io.netty.util.ResourceLeakDetector: io.netty.util.ResourceLeakDetector$Level level> = v14;
+v17 = <io.netty.util.ResourceLeakDetector: io.netty.util.internal.logging.InternalLogger logger>;
+v18 = interfaceinvoke v17.<io.netty.util.internal.logging.InternalLogger: boolean isDebugEnabled()>();
+if v18 == 0 goto label5;
+v19 = <io.netty.util.ResourceLeakDetector: io.netty.util.internal.logging.InternalLogger logger>;
+v20 = virtualinvoke v14.<io.netty.util.ResourceLeakDetector$Level: java.lang.String name()>();
+v21 = virtualinvoke v20.<java.lang.String: java.lang.String toLowerCase()>();
+interfaceinvoke v19.<io.netty.util.internal.logging.InternalLogger: void debug(java.lang.String,java.lang.Object,java.lang.Object)>("-D{}: {}", "io.netty.leakDetection.level", v21);
+v22 = <io.netty.util.ResourceLeakDetector: io.netty.util.internal.logging.InternalLogger logger>;
+v23 = <io.netty.util.ResourceLeakDetector: int TARGET_RECORDS>;
+v24 = staticinvoke <java.lang.Integer: java.lang.Integer valueOf(int)>(v23);
+interfaceinvoke v22.<io.netty.util.internal.logging.InternalLogger: void debug(java.lang.String,java.lang.Object,java.lang.Object)>("-D{}: {}", "io.netty.leakDetection.targetRecords", v24);
+label5:
+v25 = new java.util.concurrent.atomic.AtomicReference;
+v26 = <io.netty.util.internal.EmptyArrays: java.lang.String[] EMPTY_STRINGS>;
+specialinvoke v25.<java.util.concurrent.atomic.AtomicReference: void <init>(java.lang.Object)>(v26);
+<io.netty.util.ResourceLeakDetector: java.util.concurrent.atomic.AtomicReference excludedMethods> = v25;
+return;
+}
+}

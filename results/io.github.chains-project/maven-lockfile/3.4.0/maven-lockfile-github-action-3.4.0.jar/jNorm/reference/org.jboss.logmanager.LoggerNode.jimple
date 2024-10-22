@@ -1,0 +1,887 @@
+final class org.jboss.logmanager.LoggerNode extends java.lang.Object
+{
+private final org.jboss.logmanager.LogContext context;
+private final org.jboss.logmanager.LoggerNode parent;
+private final java.lang.String fullName;
+private final java.util.concurrent.ConcurrentMap children;
+private final java.util.concurrent.atomic.AtomicReference handlersRef;
+private volatile boolean useParentHandlers;
+private volatile java.util.logging.Filter filter;
+private volatile boolean useParentFilter;
+private volatile java.util.logging.Level level;
+private volatile int effectiveLevel;
+private final int effectiveMinLevel;
+private volatile boolean hasLogger;
+private final org.wildfly.common.lock.SpinLock attachmentLock;
+private java.lang.Object[] attArray;
+void <init>(org.jboss.logmanager.LogContext)
+{
+org.wildfly.common.lock.SpinLock v3;
+org.jboss.logmanager.LogContext v1;
+java.lang.Object[] v4;
+java.util.logging.Handler[] v18;
+org.jboss.logmanager.CopyOnWriteMap v19;
+java.util.concurrent.atomic.AtomicReference v16, v2;
+java.util.logging.Level v10, v11, v13, v7;
+int v12, v14, v15, v8;
+java.lang.String v17, v6, v9;
+org.jboss.logmanager.EmbeddedConfigurator v5;
+org.jboss.logmanager.LoggerNode v0;
+v0 := @this: org.jboss.logmanager.LoggerNode;
+v1 := @parameter0: org.jboss.logmanager.LogContext;
+specialinvoke v0.<java.lang.Object: void <init>()>();
+v2 = new java.util.concurrent.atomic.AtomicReference;
+specialinvoke v2.<java.util.concurrent.atomic.AtomicReference: void <init>()>();
+v0.<org.jboss.logmanager.LoggerNode: java.util.concurrent.atomic.AtomicReference handlersRef> = v2;
+v0.<org.jboss.logmanager.LoggerNode: boolean useParentHandlers> = 1;
+v0.<org.jboss.logmanager.LoggerNode: boolean useParentFilter> = 0;
+v3 = new org.wildfly.common.lock.SpinLock;
+specialinvoke v3.<org.wildfly.common.lock.SpinLock: void <init>()>();
+v0.<org.jboss.logmanager.LoggerNode: org.wildfly.common.lock.SpinLock attachmentLock> = v3;
+v4 = newarray (java.lang.Object)[1];
+v0.<org.jboss.logmanager.LoggerNode: java.lang.Object[] attArray> = v4;
+v5 = <org.jboss.logmanager.LogContext: org.jboss.logmanager.EmbeddedConfigurator CONFIGURATOR>;
+v0.<org.jboss.logmanager.LoggerNode: org.jboss.logmanager.LoggerNode parent> = null;
+v0.<org.jboss.logmanager.LoggerNode: java.lang.String fullName> = "";
+v6 = v0.<org.jboss.logmanager.LoggerNode: java.lang.String fullName>;
+v7 = interfaceinvoke v5.<org.jboss.logmanager.EmbeddedConfigurator: java.util.logging.Level getMinimumLevelOf(java.lang.String)>(v6);
+if v7 != null goto label1;
+v8 = <org.jboss.logmanager.Logger: int INFO_INT>;
+goto label2;
+label1:
+v8 = virtualinvoke v7.<java.util.logging.Level: int intValue()>();
+label2:
+v0.<org.jboss.logmanager.LoggerNode: int effectiveMinLevel> = v8;
+v9 = v0.<org.jboss.logmanager.LoggerNode: java.lang.String fullName>;
+v10 = interfaceinvoke v5.<org.jboss.logmanager.EmbeddedConfigurator: java.util.logging.Level getLevelOf(java.lang.String)>(v9);
+if v10 != null goto label3;
+v11 = <java.util.logging.Level: java.util.logging.Level INFO>;
+goto label4;
+label3:
+v11 = v10;
+label4:
+v0.<org.jboss.logmanager.LoggerNode: java.util.logging.Level level> = v11;
+v12 = v0.<org.jboss.logmanager.LoggerNode: int effectiveMinLevel>;
+v13 = v0.<org.jboss.logmanager.LoggerNode: java.util.logging.Level level>;
+v14 = virtualinvoke v13.<java.util.logging.Level: int intValue()>();
+v15 = staticinvoke <java.lang.Math: int max(int,int)>(v12, v14);
+v0.<org.jboss.logmanager.LoggerNode: int effectiveLevel> = v15;
+v16 = v0.<org.jboss.logmanager.LoggerNode: java.util.concurrent.atomic.AtomicReference handlersRef>;
+v17 = v0.<org.jboss.logmanager.LoggerNode: java.lang.String fullName>;
+v18 = interfaceinvoke v5.<org.jboss.logmanager.EmbeddedConfigurator: java.util.logging.Handler[] getHandlersOf(java.lang.String)>(v17);
+virtualinvoke v16.<java.util.concurrent.atomic.AtomicReference: void set(java.lang.Object)>(v18);
+v0.<org.jboss.logmanager.LoggerNode: org.jboss.logmanager.LogContext context> = v1;
+v19 = new org.jboss.logmanager.CopyOnWriteMap;
+specialinvoke v19.<org.jboss.logmanager.CopyOnWriteMap: void <init>()>();
+v0.<org.jboss.logmanager.LoggerNode: java.util.concurrent.ConcurrentMap children> = v19;
+return;
+}
+private void <init>(org.jboss.logmanager.LogContext, org.jboss.logmanager.LoggerNode, java.lang.String)
+{
+org.wildfly.common.lock.SpinLock v5;
+org.jboss.logmanager.LogContext v1;
+java.lang.Object[] v6;
+java.util.logging.Handler[] v27;
+org.jboss.logmanager.CopyOnWriteMap v28;
+java.util.concurrent.atomic.AtomicReference v25, v4;
+java.util.logging.Level v16, v19, v21, v23;
+int v17, v20, v22, v24, v9;
+java.lang.String v13, v14, v15, v18, v26, v3, v8;
+org.jboss.logmanager.EmbeddedConfigurator v7;
+boolean v12;
+java.lang.IllegalArgumentException v10;
+org.jboss.logmanager.LoggerNode v0, v11, v2;
+v0 := @this: org.jboss.logmanager.LoggerNode;
+v1 := @parameter0: org.jboss.logmanager.LogContext;
+v2 := @parameter1: org.jboss.logmanager.LoggerNode;
+v3 := @parameter2: java.lang.String;
+specialinvoke v0.<java.lang.Object: void <init>()>();
+v4 = new java.util.concurrent.atomic.AtomicReference;
+specialinvoke v4.<java.util.concurrent.atomic.AtomicReference: void <init>()>();
+v0.<org.jboss.logmanager.LoggerNode: java.util.concurrent.atomic.AtomicReference handlersRef> = v4;
+v0.<org.jboss.logmanager.LoggerNode: boolean useParentHandlers> = 1;
+v0.<org.jboss.logmanager.LoggerNode: boolean useParentFilter> = 0;
+v5 = new org.wildfly.common.lock.SpinLock;
+specialinvoke v5.<org.wildfly.common.lock.SpinLock: void <init>()>();
+v0.<org.jboss.logmanager.LoggerNode: org.wildfly.common.lock.SpinLock attachmentLock> = v5;
+v6 = newarray (java.lang.Object)[1];
+v0.<org.jboss.logmanager.LoggerNode: java.lang.Object[] attArray> = v6;
+v7 = <org.jboss.logmanager.LogContext: org.jboss.logmanager.EmbeddedConfigurator CONFIGURATOR>;
+v8 = virtualinvoke v3.<java.lang.String: java.lang.String trim()>();
+v9 = virtualinvoke v8.<java.lang.String: int length()>();
+if v9 != 0 goto label1;
+if v2 != null goto label1;
+v10 = new java.lang.IllegalArgumentException;
+specialinvoke v10.<java.lang.IllegalArgumentException: void <init>(java.lang.String)>("nodeName is empty, or just whitespace and has no parent");
+throw v10;
+label1:
+v0.<org.jboss.logmanager.LoggerNode: org.jboss.logmanager.LoggerNode parent> = v2;
+v11 = v2.<org.jboss.logmanager.LoggerNode: org.jboss.logmanager.LoggerNode parent>;
+if v11 != null goto label3;
+v12 = virtualinvoke v8.<java.lang.String: boolean isEmpty()>();
+if v12 == 0 goto label2;
+v0.<org.jboss.logmanager.LoggerNode: java.lang.String fullName> = ".";
+goto label4;
+label2:
+v0.<org.jboss.logmanager.LoggerNode: java.lang.String fullName> = v8;
+goto label4;
+label3:
+v13 = v2.<org.jboss.logmanager.LoggerNode: java.lang.String fullName>;
+v14 = dynamicinvoke "makeConcatWithConstants" <java.lang.String (java.lang.String,java.lang.String)>(v13, v8) <java.lang.invoke.StringConcatFactory: java.lang.invoke.CallSite makeConcatWithConstants(java.lang.invoke.MethodHandles$Lookup,java.lang.String,java.lang.invoke.MethodType,java.lang.String,java.lang.Object[])>("\u0001.\u0001");
+v0.<org.jboss.logmanager.LoggerNode: java.lang.String fullName> = v14;
+label4:
+v15 = v0.<org.jboss.logmanager.LoggerNode: java.lang.String fullName>;
+v16 = interfaceinvoke v7.<org.jboss.logmanager.EmbeddedConfigurator: java.util.logging.Level getMinimumLevelOf(java.lang.String)>(v15);
+if v16 != null goto label5;
+v17 = v2.<org.jboss.logmanager.LoggerNode: int effectiveMinLevel>;
+goto label6;
+label5:
+v17 = virtualinvoke v16.<java.util.logging.Level: int intValue()>();
+label6:
+v0.<org.jboss.logmanager.LoggerNode: int effectiveMinLevel> = v17;
+v18 = v0.<org.jboss.logmanager.LoggerNode: java.lang.String fullName>;
+v19 = interfaceinvoke v7.<org.jboss.logmanager.EmbeddedConfigurator: java.util.logging.Level getLevelOf(java.lang.String)>(v18);
+v0.<org.jboss.logmanager.LoggerNode: java.util.logging.Level level> = v19;
+v20 = v0.<org.jboss.logmanager.LoggerNode: int effectiveMinLevel>;
+v21 = v0.<org.jboss.logmanager.LoggerNode: java.util.logging.Level level>;
+if v21 != null goto label7;
+v22 = v2.<org.jboss.logmanager.LoggerNode: int effectiveLevel>;
+goto label8;
+label7:
+v23 = v0.<org.jboss.logmanager.LoggerNode: java.util.logging.Level level>;
+v22 = virtualinvoke v23.<java.util.logging.Level: int intValue()>();
+label8:
+v24 = staticinvoke <java.lang.Math: int max(int,int)>(v20, v22);
+v0.<org.jboss.logmanager.LoggerNode: int effectiveLevel> = v24;
+v25 = v0.<org.jboss.logmanager.LoggerNode: java.util.concurrent.atomic.AtomicReference handlersRef>;
+v26 = v0.<org.jboss.logmanager.LoggerNode: java.lang.String fullName>;
+v27 = interfaceinvoke v7.<org.jboss.logmanager.EmbeddedConfigurator: java.util.logging.Handler[] getHandlersOf(java.lang.String)>(v26);
+virtualinvoke v25.<java.util.concurrent.atomic.AtomicReference: void set(java.lang.Object)>(v27);
+v0.<org.jboss.logmanager.LoggerNode: org.jboss.logmanager.LogContext context> = v1;
+v28 = new org.jboss.logmanager.CopyOnWriteMap;
+specialinvoke v28.<org.jboss.logmanager.CopyOnWriteMap: void <init>()>();
+v0.<org.jboss.logmanager.LoggerNode: java.util.concurrent.ConcurrentMap children> = v28;
+return;
+}
+org.jboss.logmanager.LoggerNode getOrCreate(java.lang.String)
+{
+org.jboss.logmanager.LogContext v9;
+java.util.concurrent.ConcurrentMap v10, v6;
+int v12, v13, v2, v3, v4;
+java.lang.String v1, v14, v5;
+org.jboss.logmanager.LoggerNode v0, v15, v8;
+java.lang.Object v11, v7;
+v0 := @this: org.jboss.logmanager.LoggerNode;
+v1 := @parameter0: java.lang.String;
+if v1 == null goto label1;
+v2 = virtualinvoke v1.<java.lang.String: int length()>();
+if v2 != 0 goto label2;
+label1:
+return v0;
+label2:
+v3 = virtualinvoke v1.<java.lang.String: int indexOf(int)>(46);
+v4 = (int) -1;
+if v3 != v4 goto label3;
+v5 = v1;
+goto label4;
+label3:
+v5 = virtualinvoke v1.<java.lang.String: java.lang.String substring(int,int)>(0, v3);
+label4:
+v6 = v0.<org.jboss.logmanager.LoggerNode: java.util.concurrent.ConcurrentMap children>;
+v7 = interfaceinvoke v6.<java.util.concurrent.ConcurrentMap: java.lang.Object get(java.lang.Object)>(v5);
+if v7 != null goto label5;
+v8 = new org.jboss.logmanager.LoggerNode;
+v9 = v0.<org.jboss.logmanager.LoggerNode: org.jboss.logmanager.LogContext context>;
+specialinvoke v8.<org.jboss.logmanager.LoggerNode: void <init>(org.jboss.logmanager.LogContext,org.jboss.logmanager.LoggerNode,java.lang.String)>(v9, v0, v5);
+v7 = v8;
+v10 = v0.<org.jboss.logmanager.LoggerNode: java.util.concurrent.ConcurrentMap children>;
+v11 = interfaceinvoke v10.<java.util.concurrent.ConcurrentMap: java.lang.Object putIfAbsent(java.lang.Object,java.lang.Object)>(v5, v8);
+if v11 == null goto label5;
+v7 = v11;
+label5:
+v12 = (int) -1;
+if v3 != v12 goto label6;
+return v7;
+label6:
+v13 = v3 + 1;
+v14 = virtualinvoke v1.<java.lang.String: java.lang.String substring(int)>(v13);
+v15 = virtualinvoke v7.<org.jboss.logmanager.LoggerNode: org.jboss.logmanager.LoggerNode getOrCreate(java.lang.String)>(v14);
+return v15;
+}
+org.jboss.logmanager.LoggerNode getIfExists(java.lang.String)
+{
+java.util.concurrent.ConcurrentMap v6;
+org.jboss.logmanager.LoggerNode v0, v11;
+int v2, v3, v4, v8, v9;
+java.lang.Object v7;
+java.lang.String v1, v10, v5;
+v0 := @this: org.jboss.logmanager.LoggerNode;
+v1 := @parameter0: java.lang.String;
+if v1 == null goto label1;
+v2 = virtualinvoke v1.<java.lang.String: int length()>();
+if v2 != 0 goto label2;
+label1:
+return v0;
+label2:
+v3 = virtualinvoke v1.<java.lang.String: int indexOf(int)>(46);
+v4 = (int) -1;
+if v3 != v4 goto label3;
+v5 = v1;
+goto label4;
+label3:
+v5 = virtualinvoke v1.<java.lang.String: java.lang.String substring(int,int)>(0, v3);
+label4:
+v6 = v0.<org.jboss.logmanager.LoggerNode: java.util.concurrent.ConcurrentMap children>;
+v7 = interfaceinvoke v6.<java.util.concurrent.ConcurrentMap: java.lang.Object get(java.lang.Object)>(v5);
+if v7 != null goto label5;
+return null;
+label5:
+v8 = (int) -1;
+if v3 != v8 goto label6;
+return v7;
+label6:
+v9 = v3 + 1;
+v10 = virtualinvoke v1.<java.lang.String: java.lang.String substring(int)>(v9);
+v11 = virtualinvoke v7.<org.jboss.logmanager.LoggerNode: org.jboss.logmanager.LoggerNode getIfExists(java.lang.String)>(v10);
+return v11;
+}
+org.jboss.logmanager.Logger createLogger()
+{
+org.jboss.logmanager.Logger v1;
+java.lang.String v2;
+org.jboss.logmanager.LoggerNode v0;
+v0 := @this: org.jboss.logmanager.LoggerNode;
+v0.<org.jboss.logmanager.LoggerNode: boolean hasLogger> = 1;
+v1 = new org.jboss.logmanager.Logger;
+v2 = v0.<org.jboss.logmanager.LoggerNode: java.lang.String fullName>;
+specialinvoke v1.<org.jboss.logmanager.Logger: void <init>(org.jboss.logmanager.LoggerNode,java.lang.String)>(v0, v2);
+return v1;
+}
+java.util.Collection getChildren()
+{
+org.jboss.logmanager.LoggerNode v0;
+java.util.Collection v2;
+java.util.concurrent.ConcurrentMap v1;
+v0 := @this: org.jboss.logmanager.LoggerNode;
+v1 = v0.<org.jboss.logmanager.LoggerNode: java.util.concurrent.ConcurrentMap children>;
+v2 = interfaceinvoke v1.<java.util.concurrent.ConcurrentMap: java.util.Collection values()>();
+return v2;
+}
+org.jboss.logmanager.LogContext getContext()
+{
+org.jboss.logmanager.LogContext v1;
+org.jboss.logmanager.LoggerNode v0;
+v0 := @this: org.jboss.logmanager.LoggerNode;
+v1 = v0.<org.jboss.logmanager.LoggerNode: org.jboss.logmanager.LogContext context>;
+return v1;
+}
+void setEffectiveLevel(int)
+{
+java.util.Iterator v5;
+java.util.Collection v4;
+java.util.concurrent.ConcurrentMap v3;
+java.util.logging.Level v2;
+org.jboss.logmanager.LoggerNode v0;
+int v1;
+java.lang.Object v7;
+boolean v6;
+v0 := @this: org.jboss.logmanager.LoggerNode;
+v1 := @parameter0: int;
+v2 = v0.<org.jboss.logmanager.LoggerNode: java.util.logging.Level level>;
+if v2 != null goto label2;
+v0.<org.jboss.logmanager.LoggerNode: int effectiveLevel> = v1;
+v3 = v0.<org.jboss.logmanager.LoggerNode: java.util.concurrent.ConcurrentMap children>;
+v4 = interfaceinvoke v3.<java.util.concurrent.ConcurrentMap: java.util.Collection values()>();
+v5 = interfaceinvoke v4.<java.util.Collection: java.util.Iterator iterator()>();
+label1:
+v6 = interfaceinvoke v5.<java.util.Iterator: boolean hasNext()>();
+if v6 == 0 goto label2;
+v7 = interfaceinvoke v5.<java.util.Iterator: java.lang.Object next()>();
+if v7 == null goto label1;
+virtualinvoke v7.<org.jboss.logmanager.LoggerNode: void setEffectiveLevel(int)>(v1);
+goto label1;
+label2:
+return;
+}
+void setFilter(java.util.logging.Filter)
+{
+java.util.logging.Filter v1;
+org.jboss.logmanager.LoggerNode v0;
+v0 := @this: org.jboss.logmanager.LoggerNode;
+v1 := @parameter0: java.util.logging.Filter;
+v0.<org.jboss.logmanager.LoggerNode: java.util.logging.Filter filter> = v1;
+return;
+}
+java.util.logging.Filter getFilter()
+{
+java.util.logging.Filter v1;
+org.jboss.logmanager.LoggerNode v0;
+v0 := @this: org.jboss.logmanager.LoggerNode;
+v1 = v0.<org.jboss.logmanager.LoggerNode: java.util.logging.Filter filter>;
+return v1;
+}
+boolean getUseParentFilters()
+{
+org.jboss.logmanager.LoggerNode v0;
+boolean v1;
+v0 := @this: org.jboss.logmanager.LoggerNode;
+v1 = v0.<org.jboss.logmanager.LoggerNode: boolean useParentFilter>;
+return v1;
+}
+void setUseParentFilters(boolean)
+{
+org.jboss.logmanager.LoggerNode v0;
+boolean v1;
+v0 := @this: org.jboss.logmanager.LoggerNode;
+v1 := @parameter0: boolean;
+v0.<org.jboss.logmanager.LoggerNode: boolean useParentFilter> = v1;
+return;
+}
+int getEffectiveLevel()
+{
+int v1;
+org.jboss.logmanager.LoggerNode v0;
+v0 := @this: org.jboss.logmanager.LoggerNode;
+v1 = v0.<org.jboss.logmanager.LoggerNode: int effectiveLevel>;
+return v1;
+}
+boolean isLoggableLevel(int)
+{
+org.jboss.logmanager.LoggerNode v0;
+int v1, v2, v3, v4;
+boolean v5;
+v0 := @this: org.jboss.logmanager.LoggerNode;
+v1 := @parameter0: int;
+v2 = <org.jboss.logmanager.Logger: int OFF_INT>;
+if v1 == v2 goto label1;
+v3 = v0.<org.jboss.logmanager.LoggerNode: int effectiveMinLevel>;
+if v1 < v3 goto label1;
+v4 = v0.<org.jboss.logmanager.LoggerNode: int effectiveLevel>;
+if v1 < v4 goto label1;
+v5 = 1;
+goto label2;
+label1:
+v5 = 0;
+label2:
+return v5;
+}
+java.util.logging.Handler[] getHandlers()
+{
+java.lang.Throwable v6;
+org.jboss.logmanager.LoggerNode v0;
+java.lang.Object v2;
+java.lang.String v4;
+java.util.concurrent.atomic.AtomicReference v1, v5;
+org.jboss.logmanager.EmbeddedConfigurator v3;
+v0 := @this: org.jboss.logmanager.LoggerNode;
+v1 = v0.<org.jboss.logmanager.LoggerNode: java.util.concurrent.atomic.AtomicReference handlersRef>;
+v2 = virtualinvoke v1.<java.util.concurrent.atomic.AtomicReference: java.lang.Object get()>();
+if v2 != null goto label4;
+entermonitor v0;
+label1:
+v3 = <org.jboss.logmanager.LogContext: org.jboss.logmanager.EmbeddedConfigurator CONFIGURATOR>;
+v4 = v0.<org.jboss.logmanager.LoggerNode: java.lang.String fullName>;
+v2 = interfaceinvoke v3.<org.jboss.logmanager.EmbeddedConfigurator: java.util.logging.Handler[] getHandlersOf(java.lang.String)>(v4);
+v5 = v0.<org.jboss.logmanager.LoggerNode: java.util.concurrent.atomic.AtomicReference handlersRef>;
+virtualinvoke v5.<java.util.concurrent.atomic.AtomicReference: void set(java.lang.Object)>(v2);
+exitmonitor v0;
+label2:
+goto label4;
+label3:
+v6 := @caughtexception;
+exitmonitor v0;
+throw v6;
+label4:
+return v2;
+catch java.lang.Throwable from label1 to label2 with label3;
+}
+java.util.logging.Handler[] clearHandlers()
+{
+java.util.logging.Handler[] v1, v2;
+org.jboss.logmanager.LoggerNode v0;
+v0 := @this: org.jboss.logmanager.LoggerNode;
+v1 = <org.jboss.logmanager.EmbeddedConfigurator: java.util.logging.Handler[] NO_HANDLERS>;
+v2 = virtualinvoke v0.<org.jboss.logmanager.LoggerNode: java.util.logging.Handler[] setHandlers(java.util.logging.Handler[])>(v1);
+return v2;
+}
+void removeHandler(java.util.logging.Handler)
+{
+java.lang.Object[] v7;
+java.util.logging.Handler[] v2;
+org.jboss.logmanager.LoggerNode v0;
+int v10, v3, v4, v6, v8, v9;
+java.util.logging.Handler v1, v5;
+boolean v11;
+v0 := @this: org.jboss.logmanager.LoggerNode;
+v1 := @parameter0: java.util.logging.Handler;
+label1:
+v2 = virtualinvoke v0.<org.jboss.logmanager.LoggerNode: java.util.logging.Handler[] getHandlers()>();
+v3 = lengthof v2;
+v4 = 0;
+label2:
+if v4 >= v3 goto label4;
+v5 = v2[v4];
+if v5 != v1 goto label3;
+v6 = v3 - 1;
+v7 = staticinvoke <java.util.Arrays: java.lang.Object[] copyOf(java.lang.Object[],int)>(v2, v6);
+v8 = v4 + 1;
+v9 = v3 - v4;
+v10 = v9 - 1;
+staticinvoke <java.lang.System: void arraycopy(java.lang.Object,int,java.lang.Object,int,int)>(v2, v8, v7, v4, v10);
+v11 = virtualinvoke v0.<org.jboss.logmanager.LoggerNode: boolean compareAndSetHandlers(java.util.logging.Handler[],java.util.logging.Handler[])>(v2, v7);
+if v11 == 0 goto label1;
+return;
+label3:
+v4 = v4 + 1;
+goto label2;
+label4:
+return;
+}
+void addHandler(java.util.logging.Handler)
+{
+java.lang.Object[] v5;
+java.util.logging.Handler[] v2;
+java.util.concurrent.atomic.AtomicReference v6;
+org.jboss.logmanager.LoggerNode v0;
+int v3, v4;
+java.util.logging.Handler v1;
+boolean v7;
+v0 := @this: org.jboss.logmanager.LoggerNode;
+v1 := @parameter0: java.util.logging.Handler;
+label1:
+v2 = virtualinvoke v0.<org.jboss.logmanager.LoggerNode: java.util.logging.Handler[] getHandlers()>();
+v3 = lengthof v2;
+v4 = v3 + 1;
+v5 = staticinvoke <java.util.Arrays: java.lang.Object[] copyOf(java.lang.Object[],int)>(v2, v4);
+v5[v3] = v1;
+v6 = v0.<org.jboss.logmanager.LoggerNode: java.util.concurrent.atomic.AtomicReference handlersRef>;
+v7 = virtualinvoke v6.<java.util.concurrent.atomic.AtomicReference: boolean compareAndSet(java.lang.Object,java.lang.Object)>(v2, v5);
+if v7 == 0 goto label1;
+return;
+}
+java.util.logging.Handler[] setHandlers(java.util.logging.Handler[])
+{
+org.jboss.logmanager.LoggerNode v0;
+java.util.logging.Handler[] v1;
+java.lang.Object v3;
+java.util.concurrent.atomic.AtomicReference v2;
+v0 := @this: org.jboss.logmanager.LoggerNode;
+v1 := @parameter0: java.util.logging.Handler[];
+v2 = v0.<org.jboss.logmanager.LoggerNode: java.util.concurrent.atomic.AtomicReference handlersRef>;
+v3 = virtualinvoke v2.<java.util.concurrent.atomic.AtomicReference: java.lang.Object getAndSet(java.lang.Object)>(v1);
+return v3;
+}
+boolean compareAndSetHandlers(java.util.logging.Handler[], java.util.logging.Handler[])
+{
+org.jboss.logmanager.LoggerNode v0;
+java.util.logging.Handler[] v1, v2;
+java.util.concurrent.atomic.AtomicReference v3;
+boolean v4;
+v0 := @this: org.jboss.logmanager.LoggerNode;
+v1 := @parameter0: java.util.logging.Handler[];
+v2 := @parameter1: java.util.logging.Handler[];
+v3 = v0.<org.jboss.logmanager.LoggerNode: java.util.concurrent.atomic.AtomicReference handlersRef>;
+v4 = virtualinvoke v3.<java.util.concurrent.atomic.AtomicReference: boolean compareAndSet(java.lang.Object,java.lang.Object)>(v1, v2);
+return v4;
+}
+boolean getUseParentHandlers()
+{
+org.jboss.logmanager.LoggerNode v0;
+boolean v1;
+v0 := @this: org.jboss.logmanager.LoggerNode;
+v1 = v0.<org.jboss.logmanager.LoggerNode: boolean useParentHandlers>;
+return v1;
+}
+void setUseParentHandlers(boolean)
+{
+org.jboss.logmanager.LoggerNode v0;
+boolean v1;
+v0 := @this: org.jboss.logmanager.LoggerNode;
+v1 := @parameter0: boolean;
+v0.<org.jboss.logmanager.LoggerNode: boolean useParentHandlers> = v1;
+return;
+}
+void publish(org.jboss.logmanager.ExtLogRecord)
+{
+java.lang.Throwable v7;
+java.util.logging.Handler[] v2;
+org.jboss.logmanager.ExtLogRecord v1;
+java.lang.Exception v6;
+org.jboss.logmanager.LoggerNode v0, v9;
+int v3, v4;
+java.util.logging.Handler v5;
+boolean v8;
+v0 := @this: org.jboss.logmanager.LoggerNode;
+v1 := @parameter0: org.jboss.logmanager.ExtLogRecord;
+v2 = virtualinvoke v0.<org.jboss.logmanager.LoggerNode: java.util.logging.Handler[] getHandlers()>();
+v3 = lengthof v2;
+v4 = 0;
+label1:
+if v4 >= v3 goto label7;
+v5 = v2[v4];
+label2:
+virtualinvoke v5.<java.util.logging.Handler: void publish(java.util.logging.LogRecord)>(v1);
+label3:
+goto label6;
+label4:
+v6 := @caughtexception;
+staticinvoke <org.jboss.logmanager.ExtHandler: void reportError(java.util.logging.Handler,java.lang.String,java.lang.Exception,int)>(v5, "Handler publication threw an exception", v6, 1);
+goto label6;
+label5:
+v7 := @caughtexception;
+label6:
+v4 = v4 + 1;
+goto label1;
+label7:
+v8 = v0.<org.jboss.logmanager.LoggerNode: boolean useParentHandlers>;
+if v8 == 0 goto label8;
+v9 = v0.<org.jboss.logmanager.LoggerNode: org.jboss.logmanager.LoggerNode parent>;
+if v9 == null goto label8;
+virtualinvoke v9.<org.jboss.logmanager.LoggerNode: void publish(org.jboss.logmanager.ExtLogRecord)>(v1);
+label8:
+return;
+catch java.lang.Exception from label2 to label3 with label4;
+catch java.lang.Throwable from label2 to label3 with label5;
+}
+void setLevel(java.util.logging.Level)
+{
+java.lang.Throwable v13;
+org.jboss.logmanager.LogContext v2;
+java.util.Iterator v10;
+java.util.Collection v9;
+java.util.concurrent.ConcurrentMap v8;
+java.util.logging.Level v1, v7;
+org.jboss.logmanager.LoggerNode v0, v6;
+int v4, v5;
+java.lang.Object v12, v3;
+boolean v11;
+v0 := @this: org.jboss.logmanager.LoggerNode;
+v1 := @parameter0: java.util.logging.Level;
+v2 = v0.<org.jboss.logmanager.LoggerNode: org.jboss.logmanager.LogContext context>;
+v3 = v2.<org.jboss.logmanager.LogContext: java.lang.Object treeLock>;
+entermonitor v3;
+label1:
+v4 = v0.<org.jboss.logmanager.LoggerNode: int effectiveLevel>;
+if v1 == null goto label2;
+v0.<org.jboss.logmanager.LoggerNode: java.util.logging.Level level> = v1;
+v5 = virtualinvoke v1.<java.util.logging.Level: int intValue()>();
+goto label4;
+label2:
+v6 = v0.<org.jboss.logmanager.LoggerNode: org.jboss.logmanager.LoggerNode parent>;
+if v6 != null goto label3;
+v7 = <java.util.logging.Level: java.util.logging.Level INFO>;
+v0.<org.jboss.logmanager.LoggerNode: java.util.logging.Level level> = v7;
+v5 = <org.jboss.logmanager.Logger: int INFO_INT>;
+goto label4;
+label3:
+v0.<org.jboss.logmanager.LoggerNode: java.util.logging.Level level> = null;
+v5 = v6.<org.jboss.logmanager.LoggerNode: int effectiveLevel>;
+label4:
+v0.<org.jboss.logmanager.LoggerNode: int effectiveLevel> = v5;
+if v4 == v5 goto label6;
+v8 = v0.<org.jboss.logmanager.LoggerNode: java.util.concurrent.ConcurrentMap children>;
+v9 = interfaceinvoke v8.<java.util.concurrent.ConcurrentMap: java.util.Collection values()>();
+v10 = interfaceinvoke v9.<java.util.Collection: java.util.Iterator iterator()>();
+label5:
+v11 = interfaceinvoke v10.<java.util.Iterator: boolean hasNext()>();
+if v11 == 0 goto label6;
+v12 = interfaceinvoke v10.<java.util.Iterator: java.lang.Object next()>();
+if v12 == null goto label5;
+virtualinvoke v12.<org.jboss.logmanager.LoggerNode: void setEffectiveLevel(int)>(v5);
+goto label5;
+label6:
+exitmonitor v3;
+label7:
+goto label9;
+label8:
+v13 := @caughtexception;
+exitmonitor v3;
+throw v13;
+label9:
+return;
+catch java.lang.Throwable from label1 to label7 with label8;
+}
+java.util.logging.Level getLevel()
+{
+org.jboss.logmanager.LoggerNode v0;
+java.util.logging.Level v1;
+v0 := @this: org.jboss.logmanager.LoggerNode;
+v1 = v0.<org.jboss.logmanager.LoggerNode: java.util.logging.Level level>;
+return v1;
+}
+java.lang.Object[] getAttArray()
+{
+java.lang.Object[] v1;
+org.jboss.logmanager.LoggerNode v0;
+v0 := @this: org.jboss.logmanager.LoggerNode;
+v1 = v0.<org.jboss.logmanager.LoggerNode: java.lang.Object[] attArray>;
+return v1;
+}
+java.lang.Object getAttachment(org.jboss.logmanager.Logger$AttachmentKey)
+{
+java.lang.Throwable v10;
+org.wildfly.common.lock.SpinLock v3;
+java.lang.Object[] v5, v8;
+java.lang.NullPointerException v2;
+org.jboss.logmanager.LoggerNode v0;
+org.jboss.logmanager.Logger$AttachmentKey v1;
+int v4, v6, v9;
+java.lang.Object v7;
+v0 := @this: org.jboss.logmanager.LoggerNode;
+v1 := @parameter0: org.jboss.logmanager.Logger$AttachmentKey;
+if v1 != null goto label1;
+v2 = new java.lang.NullPointerException;
+specialinvoke v2.<java.lang.NullPointerException: void <init>(java.lang.String)>("key is null");
+throw v2;
+label1:
+v3 = v0.<org.jboss.logmanager.LoggerNode: org.wildfly.common.lock.SpinLock attachmentLock>;
+virtualinvoke v3.<org.wildfly.common.lock.SpinLock: void lock()>();
+label2:
+v4 = virtualinvoke v1.<org.jboss.logmanager.Logger$AttachmentKey: int getId()>();
+v5 = v0.<org.jboss.logmanager.LoggerNode: java.lang.Object[] attArray>;
+v6 = lengthof v5;
+if v4 < v6 goto label3;
+v7 = null;
+goto label4;
+label3:
+v8 = v0.<org.jboss.logmanager.LoggerNode: java.lang.Object[] attArray>;
+v9 = virtualinvoke v1.<org.jboss.logmanager.Logger$AttachmentKey: int getId()>();
+v7 = v8[v9];
+label4:
+virtualinvoke v3.<org.wildfly.common.lock.SpinLock: void unlock()>();
+return v7;
+label5:
+v10 := @caughtexception;
+virtualinvoke v3.<org.wildfly.common.lock.SpinLock: void unlock()>();
+throw v10;
+catch java.lang.Throwable from label2 to label4 with label5;
+}
+java.lang.Object attach(org.jboss.logmanager.Logger$AttachmentKey, java.lang.Object)
+{
+java.lang.Throwable v7;
+org.wildfly.common.lock.SpinLock v5;
+java.lang.NullPointerException v3, v4;
+org.jboss.logmanager.LoggerNode v0;
+org.jboss.logmanager.Logger$AttachmentKey v1;
+java.lang.Object v2, v6;
+v0 := @this: org.jboss.logmanager.LoggerNode;
+v1 := @parameter0: org.jboss.logmanager.Logger$AttachmentKey;
+v2 := @parameter1: java.lang.Object;
+if v1 != null goto label1;
+v3 = new java.lang.NullPointerException;
+specialinvoke v3.<java.lang.NullPointerException: void <init>(java.lang.String)>("key is null");
+throw v3;
+label1:
+if v2 != null goto label2;
+v4 = new java.lang.NullPointerException;
+specialinvoke v4.<java.lang.NullPointerException: void <init>(java.lang.String)>("value is null");
+throw v4;
+label2:
+v5 = v0.<org.jboss.logmanager.LoggerNode: org.wildfly.common.lock.SpinLock attachmentLock>;
+virtualinvoke v5.<org.wildfly.common.lock.SpinLock: void lock()>();
+label3:
+specialinvoke v0.<org.jboss.logmanager.LoggerNode: void extend(org.jboss.logmanager.Logger$AttachmentKey)>(v1);
+v6 = specialinvoke v0.<org.jboss.logmanager.LoggerNode: java.lang.Object put(org.jboss.logmanager.Logger$AttachmentKey,java.lang.Object)>(v1, v2);
+label4:
+virtualinvoke v5.<org.wildfly.common.lock.SpinLock: void unlock()>();
+return v6;
+label5:
+v7 := @caughtexception;
+virtualinvoke v5.<org.wildfly.common.lock.SpinLock: void unlock()>();
+throw v7;
+catch java.lang.Throwable from label3 to label4 with label5;
+}
+java.lang.Object attachIfAbsent(org.jboss.logmanager.Logger$AttachmentKey, java.lang.Object)
+{
+java.lang.Throwable v7;
+org.wildfly.common.lock.SpinLock v5;
+java.lang.NullPointerException v3, v4;
+org.jboss.logmanager.LoggerNode v0;
+org.jboss.logmanager.Logger$AttachmentKey v1;
+java.lang.Object v2, v6;
+v0 := @this: org.jboss.logmanager.LoggerNode;
+v1 := @parameter0: org.jboss.logmanager.Logger$AttachmentKey;
+v2 := @parameter1: java.lang.Object;
+if v1 != null goto label1;
+v3 = new java.lang.NullPointerException;
+specialinvoke v3.<java.lang.NullPointerException: void <init>(java.lang.String)>("key is null");
+throw v3;
+label1:
+if v2 != null goto label2;
+v4 = new java.lang.NullPointerException;
+specialinvoke v4.<java.lang.NullPointerException: void <init>(java.lang.String)>("value is null");
+throw v4;
+label2:
+v5 = v0.<org.jboss.logmanager.LoggerNode: org.wildfly.common.lock.SpinLock attachmentLock>;
+virtualinvoke v5.<org.wildfly.common.lock.SpinLock: void lock()>();
+label3:
+specialinvoke v0.<org.jboss.logmanager.LoggerNode: void extend(org.jboss.logmanager.Logger$AttachmentKey)>(v1);
+v6 = specialinvoke v0.<org.jboss.logmanager.LoggerNode: java.lang.Object put(org.jboss.logmanager.Logger$AttachmentKey,java.lang.Object)>(v1, v2);
+label4:
+virtualinvoke v5.<org.wildfly.common.lock.SpinLock: void unlock()>();
+return v6;
+label5:
+v7 := @caughtexception;
+virtualinvoke v5.<org.wildfly.common.lock.SpinLock: void unlock()>();
+throw v7;
+catch java.lang.Throwable from label3 to label4 with label5;
+}
+private void extend(org.jboss.logmanager.Logger$AttachmentKey)
+{
+java.lang.Object[] v3, v5, v8;
+org.jboss.logmanager.LoggerNode v0;
+org.jboss.logmanager.Logger$AttachmentKey v1;
+int v2, v4, v6, v7;
+v0 := @this: org.jboss.logmanager.LoggerNode;
+v1 := @parameter0: org.jboss.logmanager.Logger$AttachmentKey;
+v2 = virtualinvoke v1.<org.jboss.logmanager.Logger$AttachmentKey: int getId()>();
+v3 = v0.<org.jboss.logmanager.LoggerNode: java.lang.Object[] attArray>;
+v4 = lengthof v3;
+if v2 < v4 goto label1;
+v5 = v0.<org.jboss.logmanager.LoggerNode: java.lang.Object[] attArray>;
+v6 = virtualinvoke v1.<org.jboss.logmanager.Logger$AttachmentKey: int getId()>();
+v7 = v6 + 1;
+v8 = staticinvoke <java.util.Arrays: java.lang.Object[] copyOf(java.lang.Object[],int)>(v5, v7);
+v0.<org.jboss.logmanager.LoggerNode: java.lang.Object[] attArray> = v8;
+label1:
+return;
+}
+private java.lang.Object put(org.jboss.logmanager.Logger$AttachmentKey, java.lang.Object)
+{
+java.lang.Object[] v3, v6;
+org.jboss.logmanager.LoggerNode v0;
+org.jboss.logmanager.Logger$AttachmentKey v1;
+int v4, v7;
+java.lang.Object v2, v5;
+v0 := @this: org.jboss.logmanager.LoggerNode;
+v1 := @parameter0: org.jboss.logmanager.Logger$AttachmentKey;
+v2 := @parameter1: java.lang.Object;
+v3 = v0.<org.jboss.logmanager.LoggerNode: java.lang.Object[] attArray>;
+v4 = virtualinvoke v1.<org.jboss.logmanager.Logger$AttachmentKey: int getId()>();
+v5 = v3[v4];
+v6 = v0.<org.jboss.logmanager.LoggerNode: java.lang.Object[] attArray>;
+v7 = virtualinvoke v1.<org.jboss.logmanager.Logger$AttachmentKey: int getId()>();
+v6[v7] = v2;
+return v5;
+}
+public java.lang.Object detach(org.jboss.logmanager.Logger$AttachmentKey)
+{
+java.lang.Throwable v5;
+org.wildfly.common.lock.SpinLock v3;
+org.jboss.logmanager.LoggerNode v0;
+org.jboss.logmanager.Logger$AttachmentKey v1;
+java.lang.Object v4;
+java.lang.NullPointerException v2;
+v0 := @this: org.jboss.logmanager.LoggerNode;
+v1 := @parameter0: org.jboss.logmanager.Logger$AttachmentKey;
+if v1 != null goto label1;
+v2 = new java.lang.NullPointerException;
+specialinvoke v2.<java.lang.NullPointerException: void <init>(java.lang.String)>("key is null");
+throw v2;
+label1:
+v3 = v0.<org.jboss.logmanager.LoggerNode: org.wildfly.common.lock.SpinLock attachmentLock>;
+virtualinvoke v3.<org.wildfly.common.lock.SpinLock: void lock()>();
+label2:
+specialinvoke v0.<org.jboss.logmanager.LoggerNode: void extend(org.jboss.logmanager.Logger$AttachmentKey)>(v1);
+v4 = specialinvoke v0.<org.jboss.logmanager.LoggerNode: java.lang.Object put(org.jboss.logmanager.Logger$AttachmentKey,java.lang.Object)>(v1, null);
+label3:
+virtualinvoke v3.<org.wildfly.common.lock.SpinLock: void unlock()>();
+return v4;
+label4:
+v5 := @caughtexception;
+virtualinvoke v3.<org.wildfly.common.lock.SpinLock: void unlock()>();
+throw v5;
+catch java.lang.Throwable from label2 to label3 with label4;
+}
+org.jboss.logmanager.LoggerNode getParent()
+{
+org.jboss.logmanager.LoggerNode v0, v1;
+v0 := @this: org.jboss.logmanager.LoggerNode;
+v1 = v0.<org.jboss.logmanager.LoggerNode: org.jboss.logmanager.LoggerNode parent>;
+return v1;
+}
+boolean isLoggable(org.jboss.logmanager.ExtLogRecord)
+{
+java.lang.Throwable v9;
+org.jboss.logmanager.LogContext v6;
+java.util.logging.Filter v3;
+org.jboss.logmanager.ExtLogRecord v1;
+org.jboss.logmanager.LoggerNode v0;
+java.lang.Object v7;
+boolean v2, v4, v5, v8;
+v0 := @this: org.jboss.logmanager.LoggerNode;
+v1 := @parameter0: org.jboss.logmanager.ExtLogRecord;
+v2 = v0.<org.jboss.logmanager.LoggerNode: boolean useParentFilter>;
+if v2 != 0 goto label4;
+v3 = v0.<org.jboss.logmanager.LoggerNode: java.util.logging.Filter filter>;
+if v3 == null goto label1;
+v4 = interfaceinvoke v3.<java.util.logging.Filter: boolean isLoggable(java.util.logging.LogRecord)>(v1);
+if v4 == 0 goto label2;
+label1:
+v5 = 1;
+goto label3;
+label2:
+v5 = 0;
+label3:
+return v5;
+label4:
+v6 = v0.<org.jboss.logmanager.LoggerNode: org.jboss.logmanager.LogContext context>;
+v7 = v6.<org.jboss.logmanager.LogContext: java.lang.Object treeLock>;
+entermonitor v7;
+label5:
+v8 = staticinvoke <org.jboss.logmanager.LoggerNode: boolean isLoggable(org.jboss.logmanager.LoggerNode,org.jboss.logmanager.ExtLogRecord)>(v0, v1);
+exitmonitor v7;
+label6:
+return v8;
+label7:
+v9 := @caughtexception;
+exitmonitor v7;
+throw v9;
+catch java.lang.Throwable from label5 to label6 with label7;
+}
+private static boolean isLoggable(org.jboss.logmanager.LoggerNode, org.jboss.logmanager.ExtLogRecord)
+{
+java.util.logging.Filter v2;
+org.jboss.logmanager.ExtLogRecord v1;
+org.jboss.logmanager.LoggerNode v0, v5;
+boolean v3, v4, v6, v7;
+v0 := @parameter0: org.jboss.logmanager.LoggerNode;
+v1 := @parameter1: org.jboss.logmanager.ExtLogRecord;
+if v0 != null goto label1;
+return 1;
+label1:
+v2 = v0.<org.jboss.logmanager.LoggerNode: java.util.logging.Filter filter>;
+if v2 == null goto label2;
+v3 = interfaceinvoke v2.<java.util.logging.Filter: boolean isLoggable(java.util.logging.LogRecord)>(v1);
+if v3 == 0 goto label4;
+label2:
+v4 = v0.<org.jboss.logmanager.LoggerNode: boolean useParentFilter>;
+if v4 == 0 goto label3;
+v5 = virtualinvoke v0.<org.jboss.logmanager.LoggerNode: org.jboss.logmanager.LoggerNode getParent()>();
+v6 = staticinvoke <org.jboss.logmanager.LoggerNode: boolean isLoggable(org.jboss.logmanager.LoggerNode,org.jboss.logmanager.ExtLogRecord)>(v5, v1);
+if v6 == 0 goto label4;
+label3:
+v7 = 1;
+goto label5;
+label4:
+v7 = 0;
+label5:
+return v7;
+}
+public boolean hasLogger()
+{
+org.jboss.logmanager.LoggerNode v0;
+boolean v1;
+v0 := @this: org.jboss.logmanager.LoggerNode;
+v1 = v0.<org.jboss.logmanager.LoggerNode: boolean hasLogger>;
+return v1;
+}
+public java.lang.String getFullName()
+{
+java.lang.String v1;
+org.jboss.logmanager.LoggerNode v0;
+v0 := @this: org.jboss.logmanager.LoggerNode;
+v1 = v0.<org.jboss.logmanager.LoggerNode: java.lang.String fullName>;
+return v1;
+}
+}

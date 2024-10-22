@@ -1,0 +1,406 @@
+public abstract class io.netty.handler.codec.http.HttpContentDecoder extends io.netty.handler.codec.MessageToMessageDecoder
+{
+static final java.lang.String IDENTITY;
+protected io.netty.channel.ChannelHandlerContext ctx;
+private io.netty.channel.embedded.EmbeddedChannel decoder;
+private boolean continueResponse;
+private boolean needRead;
+public void <init>()
+{
+io.netty.handler.codec.http.HttpContentDecoder v0;
+v0 := @this: io.netty.handler.codec.http.HttpContentDecoder;
+specialinvoke v0.<io.netty.handler.codec.MessageToMessageDecoder: void <init>()>();
+v0.<io.netty.handler.codec.http.HttpContentDecoder: boolean needRead> = 1;
+return;
+}
+protected void decode(io.netty.channel.ChannelHandlerContext, io.netty.handler.codec.http.HttpObject, java.util.List) throws java.lang.Exception
+{
+io.netty.handler.codec.http.HttpHeaders v15, v53, v54;
+io.netty.handler.codec.http.HttpMessage v62;
+io.netty.util.AsciiString v16, v19, v28, v30, v31, v32, v34, v36, v37;
+io.netty.handler.codec.http.HttpObject v2;
+io.netty.handler.codec.http.DefaultHttpRequest v40;
+io.netty.handler.codec.CodecException v49;
+boolean v10, v11, v13, v14, v26, v27, v29, v35, v38, v39, v4, v45, v56, v59, v61, v7, v9;
+io.netty.handler.codec.http.HttpResponseStatus v48, v5;
+io.netty.handler.codec.DecoderResult v55;
+java.util.List v3;
+io.netty.handler.codec.http.DefaultHttpResponse v46;
+io.netty.handler.codec.http.DefaultHttpMessage v44;
+java.lang.Throwable v60;
+io.netty.handler.codec.http.HttpVersion v41, v47;
+io.netty.channel.ChannelHandlerContext v1;
+io.netty.handler.codec.http.HttpContentDecoder v0;
+int v21, v22, v6;
+java.lang.String v17, v18, v20, v23, v33, v43, v51, v52;
+io.netty.handler.codec.http.HttpContent v58;
+io.netty.channel.embedded.EmbeddedChannel v24, v25, v57;
+io.netty.handler.codec.http.HttpMethod v42;
+java.lang.Class v50;
+java.lang.Object v12, v8;
+v0 := @this: io.netty.handler.codec.http.HttpContentDecoder;
+v1 := @parameter0: io.netty.channel.ChannelHandlerContext;
+v2 := @parameter1: io.netty.handler.codec.http.HttpObject;
+v3 := @parameter2: java.util.List;
+label01:
+v4 = v2 instanceof io.netty.handler.codec.http.HttpResponse;
+if v4 == 0 goto label04;
+v5 = interfaceinvoke v2.<io.netty.handler.codec.http.HttpResponse: io.netty.handler.codec.http.HttpResponseStatus status()>();
+v6 = virtualinvoke v5.<io.netty.handler.codec.http.HttpResponseStatus: int code()>();
+if v6 != 100 goto label04;
+v7 = v2 instanceof io.netty.handler.codec.http.LastHttpContent;
+if v7 != 0 goto label02;
+v0.<io.netty.handler.codec.http.HttpContentDecoder: boolean continueResponse> = 1;
+label02:
+v8 = staticinvoke <io.netty.util.ReferenceCountUtil: java.lang.Object retain(java.lang.Object)>(v2);
+interfaceinvoke v3.<java.util.List: boolean add(java.lang.Object)>(v8);
+label03:
+v9 = interfaceinvoke v3.<java.util.List: boolean isEmpty()>();
+v0.<io.netty.handler.codec.http.HttpContentDecoder: boolean needRead> = v9;
+return;
+label04:
+v10 = v0.<io.netty.handler.codec.http.HttpContentDecoder: boolean continueResponse>;
+if v10 == 0 goto label07;
+v11 = v2 instanceof io.netty.handler.codec.http.LastHttpContent;
+if v11 == 0 goto label05;
+v0.<io.netty.handler.codec.http.HttpContentDecoder: boolean continueResponse> = 0;
+label05:
+v12 = staticinvoke <io.netty.util.ReferenceCountUtil: java.lang.Object retain(java.lang.Object)>(v2);
+interfaceinvoke v3.<java.util.List: boolean add(java.lang.Object)>(v12);
+label06:
+v13 = interfaceinvoke v3.<java.util.List: boolean isEmpty()>();
+v0.<io.netty.handler.codec.http.HttpContentDecoder: boolean needRead> = v13;
+return;
+label07:
+v14 = v2 instanceof io.netty.handler.codec.http.HttpMessage;
+if v14 == 0 goto label22;
+specialinvoke v0.<io.netty.handler.codec.http.HttpContentDecoder: void cleanup()>();
+v15 = interfaceinvoke v2.<io.netty.handler.codec.http.HttpMessage: io.netty.handler.codec.http.HttpHeaders headers()>();
+v16 = <io.netty.handler.codec.http.HttpHeaderNames: io.netty.util.AsciiString CONTENT_ENCODING>;
+v17 = virtualinvoke v15.<io.netty.handler.codec.http.HttpHeaders: java.lang.String get(java.lang.CharSequence)>(v16);
+if v17 == null goto label08;
+v18 = virtualinvoke v17.<java.lang.String: java.lang.String trim()>();
+goto label11;
+label08:
+v19 = <io.netty.handler.codec.http.HttpHeaderNames: io.netty.util.AsciiString TRANSFER_ENCODING>;
+v20 = virtualinvoke v15.<io.netty.handler.codec.http.HttpHeaders: java.lang.String get(java.lang.CharSequence)>(v19);
+if v20 == null goto label10;
+v21 = virtualinvoke v20.<java.lang.String: int indexOf(java.lang.String)>(",");
+v22 = (int) -1;
+if v21 == v22 goto label09;
+v23 = virtualinvoke v20.<java.lang.String: java.lang.String substring(int,int)>(0, v21);
+v18 = virtualinvoke v23.<java.lang.String: java.lang.String trim()>();
+goto label11;
+label09:
+v18 = virtualinvoke v20.<java.lang.String: java.lang.String trim()>();
+goto label11;
+label10:
+v18 = <io.netty.handler.codec.http.HttpContentDecoder: java.lang.String IDENTITY>;
+label11:
+v24 = virtualinvoke v0.<io.netty.handler.codec.http.HttpContentDecoder: io.netty.channel.embedded.EmbeddedChannel newContentDecoder(java.lang.String)>(v18);
+v0.<io.netty.handler.codec.http.HttpContentDecoder: io.netty.channel.embedded.EmbeddedChannel decoder> = v24;
+v25 = v0.<io.netty.handler.codec.http.HttpContentDecoder: io.netty.channel.embedded.EmbeddedChannel decoder>;
+if v25 != null goto label14;
+v26 = v2 instanceof io.netty.handler.codec.http.HttpContent;
+if v26 == 0 goto label12;
+interfaceinvoke v62.<io.netty.handler.codec.http.HttpContent: io.netty.handler.codec.http.HttpContent retain()>();
+label12:
+interfaceinvoke v3.<java.util.List: boolean add(java.lang.Object)>(v2);
+label13:
+v27 = interfaceinvoke v3.<java.util.List: boolean isEmpty()>();
+v0.<io.netty.handler.codec.http.HttpContentDecoder: boolean needRead> = v27;
+return;
+label14:
+v28 = <io.netty.handler.codec.http.HttpHeaderNames: io.netty.util.AsciiString CONTENT_LENGTH>;
+v29 = virtualinvoke v15.<io.netty.handler.codec.http.HttpHeaders: boolean contains(java.lang.CharSequence)>(v28);
+if v29 == 0 goto label15;
+v30 = <io.netty.handler.codec.http.HttpHeaderNames: io.netty.util.AsciiString CONTENT_LENGTH>;
+virtualinvoke v15.<io.netty.handler.codec.http.HttpHeaders: io.netty.handler.codec.http.HttpHeaders remove(java.lang.CharSequence)>(v30);
+v31 = <io.netty.handler.codec.http.HttpHeaderNames: io.netty.util.AsciiString TRANSFER_ENCODING>;
+v32 = <io.netty.handler.codec.http.HttpHeaderValues: io.netty.util.AsciiString CHUNKED>;
+virtualinvoke v15.<io.netty.handler.codec.http.HttpHeaders: io.netty.handler.codec.http.HttpHeaders set(java.lang.CharSequence,java.lang.Object)>(v31, v32);
+label15:
+v33 = virtualinvoke v0.<io.netty.handler.codec.http.HttpContentDecoder: java.lang.String getTargetContentEncoding(java.lang.String)>(v18);
+v34 = <io.netty.handler.codec.http.HttpHeaderValues: io.netty.util.AsciiString IDENTITY>;
+v35 = virtualinvoke v34.<io.netty.util.AsciiString: boolean contentEquals(java.lang.CharSequence)>(v33);
+if v35 == 0 goto label16;
+v36 = <io.netty.handler.codec.http.HttpHeaderNames: io.netty.util.AsciiString CONTENT_ENCODING>;
+virtualinvoke v15.<io.netty.handler.codec.http.HttpHeaders: io.netty.handler.codec.http.HttpHeaders remove(java.lang.CharSequence)>(v36);
+goto label17;
+label16:
+v37 = <io.netty.handler.codec.http.HttpHeaderNames: io.netty.util.AsciiString CONTENT_ENCODING>;
+virtualinvoke v15.<io.netty.handler.codec.http.HttpHeaders: io.netty.handler.codec.http.HttpHeaders set(java.lang.CharSequence,java.lang.Object)>(v37, v33);
+label17:
+v38 = v2 instanceof io.netty.handler.codec.http.HttpContent;
+if v38 == 0 goto label21;
+v39 = v2 instanceof io.netty.handler.codec.http.HttpRequest;
+if v39 == 0 goto label18;
+v40 = new io.netty.handler.codec.http.DefaultHttpRequest;
+v41 = interfaceinvoke v62.<io.netty.handler.codec.http.HttpRequest: io.netty.handler.codec.http.HttpVersion protocolVersion()>();
+v42 = interfaceinvoke v62.<io.netty.handler.codec.http.HttpRequest: io.netty.handler.codec.http.HttpMethod method()>();
+v43 = interfaceinvoke v62.<io.netty.handler.codec.http.HttpRequest: java.lang.String uri()>();
+specialinvoke v40.<io.netty.handler.codec.http.DefaultHttpRequest: void <init>(io.netty.handler.codec.http.HttpVersion,io.netty.handler.codec.http.HttpMethod,java.lang.String)>(v41, v42, v43);
+v44 = v40;
+goto label20;
+label18:
+v45 = v2 instanceof io.netty.handler.codec.http.HttpResponse;
+if v45 == 0 goto label19;
+v46 = new io.netty.handler.codec.http.DefaultHttpResponse;
+v47 = interfaceinvoke v62.<io.netty.handler.codec.http.HttpResponse: io.netty.handler.codec.http.HttpVersion protocolVersion()>();
+v48 = interfaceinvoke v62.<io.netty.handler.codec.http.HttpResponse: io.netty.handler.codec.http.HttpResponseStatus status()>();
+specialinvoke v46.<io.netty.handler.codec.http.DefaultHttpResponse: void <init>(io.netty.handler.codec.http.HttpVersion,io.netty.handler.codec.http.HttpResponseStatus)>(v47, v48);
+v44 = v46;
+goto label20;
+label19:
+v49 = new io.netty.handler.codec.CodecException;
+v50 = virtualinvoke v2.<java.lang.Object: java.lang.Class getClass()>();
+v51 = virtualinvoke v50.<java.lang.Class: java.lang.String getName()>();
+v52 = dynamicinvoke "makeConcatWithConstants" <java.lang.String (java.lang.String)>(v51) <java.lang.invoke.StringConcatFactory: java.lang.invoke.CallSite makeConcatWithConstants(java.lang.invoke.MethodHandles$Lookup,java.lang.String,java.lang.invoke.MethodType,java.lang.String,java.lang.Object[])>("Object of class \u0001 is not an HttpRequest or HttpResponse");
+specialinvoke v49.<io.netty.handler.codec.CodecException: void <init>(java.lang.String)>(v52);
+throw v49;
+label20:
+v53 = interfaceinvoke v44.<io.netty.handler.codec.http.HttpMessage: io.netty.handler.codec.http.HttpHeaders headers()>();
+v54 = interfaceinvoke v2.<io.netty.handler.codec.http.HttpMessage: io.netty.handler.codec.http.HttpHeaders headers()>();
+virtualinvoke v53.<io.netty.handler.codec.http.HttpHeaders: io.netty.handler.codec.http.HttpHeaders set(io.netty.handler.codec.http.HttpHeaders)>(v54);
+v55 = interfaceinvoke v2.<io.netty.handler.codec.http.HttpMessage: io.netty.handler.codec.DecoderResult decoderResult()>();
+interfaceinvoke v44.<io.netty.handler.codec.http.HttpMessage: void setDecoderResult(io.netty.handler.codec.DecoderResult)>(v55);
+interfaceinvoke v3.<java.util.List: boolean add(java.lang.Object)>(v44);
+goto label22;
+label21:
+interfaceinvoke v3.<java.util.List: boolean add(java.lang.Object)>(v2);
+label22:
+v56 = v2 instanceof io.netty.handler.codec.http.HttpContent;
+if v56 == 0 goto label24;
+v57 = v0.<io.netty.handler.codec.http.HttpContentDecoder: io.netty.channel.embedded.EmbeddedChannel decoder>;
+if v57 != null goto label23;
+v58 = interfaceinvoke v2.<io.netty.handler.codec.http.HttpContent: io.netty.handler.codec.http.HttpContent retain()>();
+interfaceinvoke v3.<java.util.List: boolean add(java.lang.Object)>(v58);
+goto label24;
+label23:
+specialinvoke v0.<io.netty.handler.codec.http.HttpContentDecoder: void decodeContent(io.netty.handler.codec.http.HttpContent,java.util.List)>(v2, v3);
+label24:
+v59 = interfaceinvoke v3.<java.util.List: boolean isEmpty()>();
+v0.<io.netty.handler.codec.http.HttpContentDecoder: boolean needRead> = v59;
+goto label26;
+label25:
+v60 := @caughtexception;
+v61 = interfaceinvoke v3.<java.util.List: boolean isEmpty()>();
+v0.<io.netty.handler.codec.http.HttpContentDecoder: boolean needRead> = v61;
+throw v60;
+label26:
+return;
+catch java.lang.Throwable from label01 to label03 with label25;
+catch java.lang.Throwable from label04 to label06 with label25;
+catch java.lang.Throwable from label07 to label13 with label25;
+catch java.lang.Throwable from label14 to label24 with label25;
+}
+private void decodeContent(io.netty.handler.codec.http.HttpContent, java.util.List)
+{
+io.netty.handler.codec.http.HttpContent v1;
+io.netty.handler.codec.http.HttpHeaders v5;
+io.netty.handler.codec.http.LastHttpContent v7;
+io.netty.handler.codec.http.HttpContentDecoder v0;
+io.netty.handler.codec.DecoderResult v9;
+java.util.List v2;
+io.netty.buffer.ByteBuf v3;
+io.netty.handler.codec.http.ComposedLastHttpContent v8;
+boolean v4, v6;
+v0 := @this: io.netty.handler.codec.http.HttpContentDecoder;
+v1 := @parameter0: io.netty.handler.codec.http.HttpContent;
+v2 := @parameter1: java.util.List;
+v3 = interfaceinvoke v1.<io.netty.handler.codec.http.HttpContent: io.netty.buffer.ByteBuf content()>();
+specialinvoke v0.<io.netty.handler.codec.http.HttpContentDecoder: void decode(io.netty.buffer.ByteBuf,java.util.List)>(v3, v2);
+v4 = v1 instanceof io.netty.handler.codec.http.LastHttpContent;
+if v4 == 0 goto label2;
+specialinvoke v0.<io.netty.handler.codec.http.HttpContentDecoder: void finishDecode(java.util.List)>(v2);
+v5 = interfaceinvoke v1.<io.netty.handler.codec.http.LastHttpContent: io.netty.handler.codec.http.HttpHeaders trailingHeaders()>();
+v6 = virtualinvoke v5.<io.netty.handler.codec.http.HttpHeaders: boolean isEmpty()>();
+if v6 == 0 goto label1;
+v7 = <io.netty.handler.codec.http.LastHttpContent: io.netty.handler.codec.http.LastHttpContent EMPTY_LAST_CONTENT>;
+interfaceinvoke v2.<java.util.List: boolean add(java.lang.Object)>(v7);
+goto label2;
+label1:
+v8 = new io.netty.handler.codec.http.ComposedLastHttpContent;
+v9 = <io.netty.handler.codec.DecoderResult: io.netty.handler.codec.DecoderResult SUCCESS>;
+specialinvoke v8.<io.netty.handler.codec.http.ComposedLastHttpContent: void <init>(io.netty.handler.codec.http.HttpHeaders,io.netty.handler.codec.DecoderResult)>(v5, v9);
+interfaceinvoke v2.<java.util.List: boolean add(java.lang.Object)>(v8);
+label2:
+return;
+}
+public void channelReadComplete(io.netty.channel.ChannelHandlerContext) throws java.lang.Exception
+{
+java.lang.Throwable v6;
+io.netty.channel.Channel v3, v7;
+io.netty.channel.ChannelHandlerContext v1;
+io.netty.handler.codec.http.HttpContentDecoder v0;
+io.netty.channel.ChannelConfig v4, v8;
+boolean v2, v5, v9;
+v0 := @this: io.netty.handler.codec.http.HttpContentDecoder;
+v1 := @parameter0: io.netty.channel.ChannelHandlerContext;
+v2 = v0.<io.netty.handler.codec.http.HttpContentDecoder: boolean needRead>;
+v0.<io.netty.handler.codec.http.HttpContentDecoder: boolean needRead> = 1;
+label1:
+interfaceinvoke v1.<io.netty.channel.ChannelHandlerContext: io.netty.channel.ChannelHandlerContext fireChannelReadComplete()>();
+label2:
+if v2 == 0 goto label5;
+v3 = interfaceinvoke v1.<io.netty.channel.ChannelHandlerContext: io.netty.channel.Channel channel()>();
+v4 = interfaceinvoke v3.<io.netty.channel.Channel: io.netty.channel.ChannelConfig config()>();
+v5 = interfaceinvoke v4.<io.netty.channel.ChannelConfig: boolean isAutoRead()>();
+if v5 != 0 goto label5;
+interfaceinvoke v1.<io.netty.channel.ChannelHandlerContext: io.netty.channel.ChannelHandlerContext read()>();
+goto label5;
+label3:
+v6 := @caughtexception;
+if v2 == 0 goto label4;
+v7 = interfaceinvoke v1.<io.netty.channel.ChannelHandlerContext: io.netty.channel.Channel channel()>();
+v8 = interfaceinvoke v7.<io.netty.channel.Channel: io.netty.channel.ChannelConfig config()>();
+v9 = interfaceinvoke v8.<io.netty.channel.ChannelConfig: boolean isAutoRead()>();
+if v9 != 0 goto label4;
+interfaceinvoke v1.<io.netty.channel.ChannelHandlerContext: io.netty.channel.ChannelHandlerContext read()>();
+label4:
+throw v6;
+label5:
+return;
+catch java.lang.Throwable from label1 to label2 with label3;
+}
+protected abstract io.netty.channel.embedded.EmbeddedChannel newContentDecoder(java.lang.String) throws java.lang.Exception;
+protected java.lang.String getTargetContentEncoding(java.lang.String) throws java.lang.Exception
+{
+io.netty.handler.codec.http.HttpContentDecoder v0;
+java.lang.String v1, v2;
+v0 := @this: io.netty.handler.codec.http.HttpContentDecoder;
+v1 := @parameter0: java.lang.String;
+v2 = <io.netty.handler.codec.http.HttpContentDecoder: java.lang.String IDENTITY>;
+return v2;
+}
+public void handlerRemoved(io.netty.channel.ChannelHandlerContext) throws java.lang.Exception
+{
+io.netty.channel.ChannelHandlerContext v1;
+io.netty.handler.codec.http.HttpContentDecoder v0;
+v0 := @this: io.netty.handler.codec.http.HttpContentDecoder;
+v1 := @parameter0: io.netty.channel.ChannelHandlerContext;
+specialinvoke v0.<io.netty.handler.codec.http.HttpContentDecoder: void cleanupSafely(io.netty.channel.ChannelHandlerContext)>(v1);
+specialinvoke v0.<io.netty.handler.codec.MessageToMessageDecoder: void handlerRemoved(io.netty.channel.ChannelHandlerContext)>(v1);
+return;
+}
+public void channelInactive(io.netty.channel.ChannelHandlerContext) throws java.lang.Exception
+{
+io.netty.channel.ChannelHandlerContext v1;
+io.netty.handler.codec.http.HttpContentDecoder v0;
+v0 := @this: io.netty.handler.codec.http.HttpContentDecoder;
+v1 := @parameter0: io.netty.channel.ChannelHandlerContext;
+specialinvoke v0.<io.netty.handler.codec.http.HttpContentDecoder: void cleanupSafely(io.netty.channel.ChannelHandlerContext)>(v1);
+specialinvoke v0.<io.netty.handler.codec.MessageToMessageDecoder: void channelInactive(io.netty.channel.ChannelHandlerContext)>(v1);
+return;
+}
+public void handlerAdded(io.netty.channel.ChannelHandlerContext) throws java.lang.Exception
+{
+io.netty.channel.ChannelHandlerContext v1;
+io.netty.handler.codec.http.HttpContentDecoder v0;
+v0 := @this: io.netty.handler.codec.http.HttpContentDecoder;
+v1 := @parameter0: io.netty.channel.ChannelHandlerContext;
+v0.<io.netty.handler.codec.http.HttpContentDecoder: io.netty.channel.ChannelHandlerContext ctx> = v1;
+specialinvoke v0.<io.netty.handler.codec.MessageToMessageDecoder: void handlerAdded(io.netty.channel.ChannelHandlerContext)>(v1);
+return;
+}
+private void cleanup()
+{
+io.netty.handler.codec.http.HttpContentDecoder v0;
+io.netty.channel.embedded.EmbeddedChannel v1, v2;
+v0 := @this: io.netty.handler.codec.http.HttpContentDecoder;
+v1 = v0.<io.netty.handler.codec.http.HttpContentDecoder: io.netty.channel.embedded.EmbeddedChannel decoder>;
+if v1 == null goto label1;
+v2 = v0.<io.netty.handler.codec.http.HttpContentDecoder: io.netty.channel.embedded.EmbeddedChannel decoder>;
+virtualinvoke v2.<io.netty.channel.embedded.EmbeddedChannel: boolean finishAndReleaseAll()>();
+v0.<io.netty.handler.codec.http.HttpContentDecoder: io.netty.channel.embedded.EmbeddedChannel decoder> = null;
+label1:
+return;
+}
+private void cleanupSafely(io.netty.channel.ChannelHandlerContext)
+{
+java.lang.Throwable v2;
+io.netty.channel.ChannelHandlerContext v1;
+io.netty.handler.codec.http.HttpContentDecoder v0;
+v0 := @this: io.netty.handler.codec.http.HttpContentDecoder;
+v1 := @parameter0: io.netty.channel.ChannelHandlerContext;
+label1:
+specialinvoke v0.<io.netty.handler.codec.http.HttpContentDecoder: void cleanup()>();
+label2:
+goto label4;
+label3:
+v2 := @caughtexception;
+interfaceinvoke v1.<io.netty.channel.ChannelHandlerContext: io.netty.channel.ChannelHandlerContext fireExceptionCaught(java.lang.Throwable)>(v2);
+label4:
+return;
+catch java.lang.Throwable from label1 to label2 with label3;
+}
+private void decode(io.netty.buffer.ByteBuf, java.util.List)
+{
+io.netty.handler.codec.http.HttpContentDecoder v0;
+java.util.List v2;
+java.lang.Object[] v4;
+io.netty.buffer.ByteBuf v1, v5;
+io.netty.channel.embedded.EmbeddedChannel v3;
+v0 := @this: io.netty.handler.codec.http.HttpContentDecoder;
+v1 := @parameter0: io.netty.buffer.ByteBuf;
+v2 := @parameter1: java.util.List;
+v3 = v0.<io.netty.handler.codec.http.HttpContentDecoder: io.netty.channel.embedded.EmbeddedChannel decoder>;
+v4 = newarray (java.lang.Object)[1];
+v5 = virtualinvoke v1.<io.netty.buffer.ByteBuf: io.netty.buffer.ByteBuf retain()>();
+v4[0] = v5;
+virtualinvoke v3.<io.netty.channel.embedded.EmbeddedChannel: boolean writeInbound(java.lang.Object[])>(v4);
+specialinvoke v0.<io.netty.handler.codec.http.HttpContentDecoder: void fetchDecoderOutput(java.util.List)>(v2);
+return;
+}
+private void finishDecode(java.util.List)
+{
+io.netty.handler.codec.http.HttpContentDecoder v0;
+java.util.List v1;
+io.netty.channel.embedded.EmbeddedChannel v2;
+boolean v3;
+v0 := @this: io.netty.handler.codec.http.HttpContentDecoder;
+v1 := @parameter0: java.util.List;
+v2 = v0.<io.netty.handler.codec.http.HttpContentDecoder: io.netty.channel.embedded.EmbeddedChannel decoder>;
+v3 = virtualinvoke v2.<io.netty.channel.embedded.EmbeddedChannel: boolean finish()>();
+if v3 == 0 goto label1;
+specialinvoke v0.<io.netty.handler.codec.http.HttpContentDecoder: void fetchDecoderOutput(java.util.List)>(v1);
+label1:
+v0.<io.netty.handler.codec.http.HttpContentDecoder: io.netty.channel.embedded.EmbeddedChannel decoder> = null;
+return;
+}
+private void fetchDecoderOutput(java.util.List)
+{
+io.netty.handler.codec.http.DefaultHttpContent v5;
+io.netty.handler.codec.http.HttpContentDecoder v0;
+java.util.List v1;
+io.netty.channel.embedded.EmbeddedChannel v2;
+java.lang.Object v3;
+boolean v4;
+v0 := @this: io.netty.handler.codec.http.HttpContentDecoder;
+v1 := @parameter0: java.util.List;
+label1:
+v2 = v0.<io.netty.handler.codec.http.HttpContentDecoder: io.netty.channel.embedded.EmbeddedChannel decoder>;
+v3 = virtualinvoke v2.<io.netty.channel.embedded.EmbeddedChannel: java.lang.Object readInbound()>();
+if v3 == null goto label3;
+v4 = virtualinvoke v3.<io.netty.buffer.ByteBuf: boolean isReadable()>();
+if v4 != 0 goto label2;
+virtualinvoke v3.<io.netty.buffer.ByteBuf: boolean release()>();
+goto label1;
+label2:
+v5 = new io.netty.handler.codec.http.DefaultHttpContent;
+specialinvoke v5.<io.netty.handler.codec.http.DefaultHttpContent: void <init>(io.netty.buffer.ByteBuf)>(v3);
+interfaceinvoke v1.<java.util.List: boolean add(java.lang.Object)>(v5);
+goto label1;
+label3:
+return;
+}
+static void <clinit>()
+{
+io.netty.util.AsciiString v0;
+java.lang.String v1;
+v0 = <io.netty.handler.codec.http.HttpHeaderValues: io.netty.util.AsciiString IDENTITY>;
+v1 = virtualinvoke v0.<io.netty.util.AsciiString: java.lang.String toString()>();
+<io.netty.handler.codec.http.HttpContentDecoder: java.lang.String IDENTITY> = v1;
+return;
+}
+}

@@ -1,0 +1,727 @@
+public class io.vertx.core.file.impl.FileResolverImpl extends java.lang.Object implements io.vertx.core.spi.file.FileResolver
+{
+public static final java.lang.String DISABLE_FILE_CACHING_PROP_NAME;
+public static final java.lang.String DISABLE_CP_RESOLVING_PROP_NAME;
+public static final java.lang.String CACHE_DIR_BASE_PROP_NAME;
+private static final boolean NON_UNIX_FILE_SEP;
+private static final java.lang.String JAR_URL_SEP;
+private final java.io.File cwd;
+private final boolean enableCaching;
+private final boolean enableCPResolving;
+private final io.vertx.core.file.impl.FileCache cache;
+public void <init>()
+{
+io.vertx.core.file.impl.FileResolverImpl v0;
+io.vertx.core.file.FileSystemOptions v1;
+v0 := @this: io.vertx.core.file.impl.FileResolverImpl;
+v1 = new io.vertx.core.file.FileSystemOptions;
+specialinvoke v1.<io.vertx.core.file.FileSystemOptions: void <init>()>();
+specialinvoke v0.<io.vertx.core.file.impl.FileResolverImpl: void <init>(io.vertx.core.file.FileSystemOptions)>(v1);
+return;
+}
+public void <init>(io.vertx.core.file.FileSystemOptions)
+{
+io.vertx.core.file.FileSystemOptions v1;
+java.io.File v8, v9;
+io.vertx.core.file.impl.FileCache v6;
+io.vertx.core.file.impl.FileResolverImpl v0;
+java.lang.String v5, v7;
+boolean v2, v3, v4;
+v0 := @this: io.vertx.core.file.impl.FileResolverImpl;
+v1 := @parameter0: io.vertx.core.file.FileSystemOptions;
+specialinvoke v0.<java.lang.Object: void <init>()>();
+v2 = virtualinvoke v1.<io.vertx.core.file.FileSystemOptions: boolean isFileCachingEnabled()>();
+v0.<io.vertx.core.file.impl.FileResolverImpl: boolean enableCaching> = v2;
+v3 = virtualinvoke v1.<io.vertx.core.file.FileSystemOptions: boolean isClassPathResolvingEnabled()>();
+v0.<io.vertx.core.file.impl.FileResolverImpl: boolean enableCPResolving> = v3;
+v4 = v0.<io.vertx.core.file.impl.FileResolverImpl: boolean enableCPResolving>;
+if v4 == 0 goto label1;
+v5 = virtualinvoke v1.<io.vertx.core.file.FileSystemOptions: java.lang.String getFileCacheDir()>();
+v6 = staticinvoke <io.vertx.core.file.impl.FileCache: io.vertx.core.file.impl.FileCache setupCache(java.lang.String)>(v5);
+v0.<io.vertx.core.file.impl.FileResolverImpl: io.vertx.core.file.impl.FileCache cache> = v6;
+goto label2;
+label1:
+v0.<io.vertx.core.file.impl.FileResolverImpl: io.vertx.core.file.impl.FileCache cache> = null;
+label2:
+v7 = staticinvoke <java.lang.System: java.lang.String getProperty(java.lang.String)>("vertx.cwd");
+if v7 == null goto label3;
+v8 = new java.io.File;
+specialinvoke v8.<java.io.File: void <init>(java.lang.String)>(v7);
+v9 = virtualinvoke v8.<java.io.File: java.io.File getAbsoluteFile()>();
+v0.<io.vertx.core.file.impl.FileResolverImpl: java.io.File cwd> = v9;
+goto label4;
+label3:
+v0.<io.vertx.core.file.impl.FileResolverImpl: java.io.File cwd> = null;
+label4:
+return;
+}
+public java.lang.String cacheDir()
+{
+io.vertx.core.file.impl.FileCache v1, v2;
+io.vertx.core.file.impl.FileResolverImpl v0;
+java.lang.String v3;
+v0 := @this: io.vertx.core.file.impl.FileResolverImpl;
+v1 = v0.<io.vertx.core.file.impl.FileResolverImpl: io.vertx.core.file.impl.FileCache cache>;
+if v1 == null goto label1;
+v2 = v0.<io.vertx.core.file.impl.FileResolverImpl: io.vertx.core.file.impl.FileCache cache>;
+v3 = virtualinvoke v2.<io.vertx.core.file.impl.FileCache: java.lang.String cacheDir()>();
+return v3;
+label1:
+return null;
+}
+io.vertx.core.file.impl.FileCache getFileCache()
+{
+io.vertx.core.file.impl.FileResolverImpl v0;
+io.vertx.core.file.impl.FileCache v1;
+v0 := @this: io.vertx.core.file.impl.FileResolverImpl;
+v1 = v0.<io.vertx.core.file.impl.FileResolverImpl: io.vertx.core.file.impl.FileCache cache>;
+return v1;
+}
+public void close() throws java.io.IOException
+{
+java.lang.Throwable v4;
+io.vertx.core.file.impl.FileCache v2, v3;
+io.vertx.core.file.impl.FileResolverImpl v0;
+boolean v1;
+v0 := @this: io.vertx.core.file.impl.FileResolverImpl;
+v1 = v0.<io.vertx.core.file.impl.FileResolverImpl: boolean enableCPResolving>;
+if v1 == 0 goto label4;
+v2 = v0.<io.vertx.core.file.impl.FileResolverImpl: io.vertx.core.file.impl.FileCache cache>;
+entermonitor v2;
+label1:
+v3 = v0.<io.vertx.core.file.impl.FileResolverImpl: io.vertx.core.file.impl.FileCache cache>;
+virtualinvoke v3.<io.vertx.core.file.impl.FileCache: void close()>();
+exitmonitor v2;
+label2:
+goto label4;
+label3:
+v4 := @caughtexception;
+exitmonitor v2;
+throw v4;
+label4:
+return;
+catch java.lang.Throwable from label1 to label2 with label3;
+}
+public java.io.File resolveFile(java.lang.String)
+{
+java.lang.Throwable v30;
+java.net.URL v25, v28;
+java.lang.String v1, v15, v16, v22;
+boolean v10, v17, v18, v23, v26, v4;
+char v24, v27;
+java.io.File v13, v19, v2, v21, v29, v3, v5, v6, v7, v8;
+io.vertx.core.file.impl.FileCache v11, v12, v14, v9;
+io.vertx.core.file.impl.FileResolverImpl v0;
+java.lang.ClassLoader v20;
+v0 := @this: io.vertx.core.file.impl.FileResolverImpl;
+v1 := @parameter0: java.lang.String;
+v2 = new java.io.File;
+specialinvoke v2.<java.io.File: void <init>(java.lang.String)>(v1);
+v3 = v2;
+v4 = virtualinvoke v2.<java.io.File: boolean isAbsolute()>();
+v5 = v0.<io.vertx.core.file.impl.FileResolverImpl: java.io.File cwd>;
+if v5 == null goto label01;
+if v4 != 0 goto label01;
+v6 = new java.io.File;
+v7 = v0.<io.vertx.core.file.impl.FileResolverImpl: java.io.File cwd>;
+specialinvoke v6.<java.io.File: void <init>(java.io.File,java.lang.String)>(v7, v1);
+v8 = v6;
+goto label02;
+label01:
+v8 = v2;
+label02:
+v9 = v0.<io.vertx.core.file.impl.FileResolverImpl: io.vertx.core.file.impl.FileCache cache>;
+if v9 != null goto label03;
+return v8;
+label03:
+v10 = virtualinvoke v8.<java.io.File: boolean exists()>();
+if v10 != 0 goto label19;
+v11 = v0.<io.vertx.core.file.impl.FileResolverImpl: io.vertx.core.file.impl.FileCache cache>;
+entermonitor v11;
+label04:
+v12 = v0.<io.vertx.core.file.impl.FileResolverImpl: io.vertx.core.file.impl.FileCache cache>;
+v13 = virtualinvoke v12.<io.vertx.core.file.impl.FileCache: java.io.File getCanonicalFile(java.io.File)>(v2);
+if v13 != null goto label06;
+exitmonitor v11;
+label05:
+return v2;
+label06:
+v14 = v0.<io.vertx.core.file.impl.FileResolverImpl: io.vertx.core.file.impl.FileCache cache>;
+v15 = virtualinvoke v13.<java.io.File: java.lang.String getPath()>();
+v16 = virtualinvoke v14.<io.vertx.core.file.impl.FileCache: java.lang.String relativize(java.lang.String)>(v15);
+if v16 == null goto label09;
+v17 = v0.<io.vertx.core.file.impl.FileResolverImpl: boolean enableCaching>;
+if v17 == 0 goto label08;
+v18 = virtualinvoke v13.<java.io.File: boolean exists()>();
+if v18 == 0 goto label08;
+exitmonitor v11;
+label07:
+return v13;
+label08:
+if v4 == 0 goto label09;
+v1 = v16;
+v19 = new java.io.File;
+specialinvoke v19.<java.io.File: void <init>(java.lang.String)>(v16);
+v3 = v19;
+v4 = 0;
+label09:
+if v4 != 0 goto label16;
+v20 = specialinvoke v0.<io.vertx.core.file.impl.FileResolverImpl: java.lang.ClassLoader getClassLoader()>();
+v21 = virtualinvoke v3.<java.io.File: java.io.File getParentFile()>();
+label10:
+if v21 == null goto label13;
+v22 = virtualinvoke v21.<java.io.File: java.lang.String getPath()>();
+v23 = <io.vertx.core.file.impl.FileResolverImpl: boolean NON_UNIX_FILE_SEP>;
+if v23 == 0 goto label11;
+v24 = <java.io.File: char separatorChar>;
+v22 = virtualinvoke v22.<java.lang.String: java.lang.String replace(char,char)>(v24, 47);
+label11:
+v25 = staticinvoke <io.vertx.core.file.impl.FileResolverImpl: java.net.URL getValidClassLoaderResource(java.lang.ClassLoader,java.lang.String)>(v20, v22);
+if v25 == null goto label12;
+specialinvoke v0.<io.vertx.core.file.impl.FileResolverImpl: java.io.File unpackUrlResource(java.net.URL,java.lang.String,java.lang.ClassLoader,boolean)>(v25, v22, v20, 1);
+label12:
+v21 = virtualinvoke v21.<java.io.File: java.io.File getParentFile()>();
+goto label10;
+label13:
+v26 = <io.vertx.core.file.impl.FileResolverImpl: boolean NON_UNIX_FILE_SEP>;
+if v26 == 0 goto label14;
+v27 = <java.io.File: char separatorChar>;
+v1 = virtualinvoke v1.<java.lang.String: java.lang.String replace(char,char)>(v27, 47);
+label14:
+v28 = staticinvoke <io.vertx.core.file.impl.FileResolverImpl: java.net.URL getValidClassLoaderResource(java.lang.ClassLoader,java.lang.String)>(v20, v1);
+if v28 == null goto label16;
+v29 = specialinvoke v0.<io.vertx.core.file.impl.FileResolverImpl: java.io.File unpackUrlResource(java.net.URL,java.lang.String,java.lang.ClassLoader,boolean)>(v28, v1, v20, 0);
+exitmonitor v11;
+label15:
+return v29;
+label16:
+exitmonitor v11;
+label17:
+goto label19;
+label18:
+v30 := @caughtexception;
+exitmonitor v11;
+throw v30;
+label19:
+return v3;
+catch java.lang.Throwable from label04 to label05 with label18;
+catch java.lang.Throwable from label06 to label07 with label18;
+catch java.lang.Throwable from label08 to label15 with label18;
+catch java.lang.Throwable from label16 to label17 with label18;
+}
+private static boolean isValidWindowsCachePath(char)
+{
+char v0;
+v0 := @parameter0: char;
+if v0 >= 32 goto label1;
+return 0;
+label1:
+lookupswitch(v0)
+{
+case 34: goto label2;
+case 42: goto label2;
+case 58: goto label2;
+case 60: goto label2;
+case 62: goto label2;
+case 63: goto label2;
+case 124: goto label2;
+default: goto label3;
+};
+label2:
+return 0;
+label3:
+return 1;
+}
+private static boolean isValidCachePath(java.lang.String)
+{
+char v4, v8;
+int v10, v2, v3, v6, v7, v9;
+java.lang.String v0;
+boolean v1, v11, v5;
+v0 := @parameter0: java.lang.String;
+v1 = staticinvoke <io.netty.util.internal.PlatformDependent: boolean isWindows()>();
+if v1 == 0 goto label6;
+v2 = virtualinvoke v0.<java.lang.String: int length()>();
+v3 = 0;
+label1:
+if v3 >= v2 goto label5;
+v4 = virtualinvoke v0.<java.lang.String: char charAt(int)>(v3);
+v5 = staticinvoke <io.vertx.core.file.impl.FileResolverImpl: boolean isValidWindowsCachePath(char)>(v4);
+if v5 != 0 goto label2;
+return 0;
+label2:
+if v4 != 32 goto label4;
+v6 = v3 + 1;
+if v6 == v2 goto label3;
+v7 = v3 + 1;
+v8 = virtualinvoke v0.<java.lang.String: char charAt(int)>(v7);
+if v8 != 47 goto label4;
+label3:
+return 0;
+label4:
+v3 = v3 + 1;
+goto label1;
+label5:
+return 1;
+label6:
+v9 = virtualinvoke v0.<java.lang.String: int indexOf(int)>(0);
+v10 = (int) -1;
+if v9 != v10 goto label7;
+v11 = 1;
+goto label8;
+label7:
+v11 = 0;
+label8:
+return v11;
+}
+private static java.net.URL getValidClassLoaderResource(java.lang.ClassLoader, java.lang.String)
+{
+java.net.URL v2;
+java.lang.ClassLoader v0;
+java.lang.String v1;
+boolean v3;
+v0 := @parameter0: java.lang.ClassLoader;
+v1 := @parameter1: java.lang.String;
+v2 = virtualinvoke v0.<java.lang.ClassLoader: java.net.URL getResource(java.lang.String)>(v1);
+if v2 == null goto label1;
+v3 = staticinvoke <io.vertx.core.file.impl.FileResolverImpl: boolean isValidCachePath(java.lang.String)>(v1);
+if v3 != 0 goto label1;
+return null;
+label1:
+return v2;
+}
+private java.io.File unpackUrlResource(java.net.URL, java.lang.String, java.lang.ClassLoader, boolean)
+{
+java.lang.IllegalStateException v19;
+java.net.URL v1;
+byte v6;
+int v7;
+java.lang.String v2, v20, v5;
+boolean v10, v11, v12, v13, v14, v15, v4, v8, v9;
+java.io.File v16, v17, v18;
+io.vertx.core.file.impl.FileResolverImpl v0;
+java.lang.ClassLoader v3;
+v0 := @this: io.vertx.core.file.impl.FileResolverImpl;
+v1 := @parameter0: java.net.URL;
+v2 := @parameter1: java.lang.String;
+v3 := @parameter2: java.lang.ClassLoader;
+v4 := @parameter3: boolean;
+v5 = virtualinvoke v1.<java.net.URL: java.lang.String getProtocol()>();
+v6 = -1;
+v7 = virtualinvoke v5.<java.lang.String: int hashCode()>();
+lookupswitch(v7)
+{
+case -1377881982: goto label03;
+case -341064690: goto label07;
+case -239609552: goto label04;
+case 104987: goto label02;
+case 105516: goto label06;
+case 116675: goto label08;
+case 3143036: goto label01;
+case 1780175504: goto label05;
+default: goto label09;
+};
+label01:
+v8 = virtualinvoke v5.<java.lang.String: boolean equals(java.lang.Object)>("file");
+if v8 == 0 goto label09;
+v6 = 0;
+goto label09;
+label02:
+v9 = virtualinvoke v5.<java.lang.String: boolean equals(java.lang.Object)>("jar");
+if v9 == 0 goto label09;
+v6 = 1;
+goto label09;
+label03:
+v10 = virtualinvoke v5.<java.lang.String: boolean equals(java.lang.Object)>("bundle");
+if v10 == 0 goto label09;
+v6 = 2;
+goto label09;
+label04:
+v11 = virtualinvoke v5.<java.lang.String: boolean equals(java.lang.Object)>("bundleentry");
+if v11 == 0 goto label09;
+v6 = 3;
+goto label09;
+label05:
+v12 = virtualinvoke v5.<java.lang.String: boolean equals(java.lang.Object)>("bundleresource");
+if v12 == 0 goto label09;
+v6 = 4;
+goto label09;
+label06:
+v13 = virtualinvoke v5.<java.lang.String: boolean equals(java.lang.Object)>("jrt");
+if v13 == 0 goto label09;
+v6 = 5;
+goto label09;
+label07:
+v14 = virtualinvoke v5.<java.lang.String: boolean equals(java.lang.Object)>("resource");
+if v14 == 0 goto label09;
+v6 = 6;
+goto label09;
+label08:
+v15 = virtualinvoke v5.<java.lang.String: boolean equals(java.lang.Object)>("vfs");
+if v15 == 0 goto label09;
+v6 = 7;
+label09:
+tableswitch(v6)
+{
+case 0: goto label10;
+case 1: goto label11;
+case 2: goto label12;
+case 3: goto label12;
+case 4: goto label12;
+case 5: goto label12;
+case 6: goto label12;
+case 7: goto label12;
+default: goto label13;
+};
+label10:
+v16 = specialinvoke v0.<io.vertx.core.file.impl.FileResolverImpl: java.io.File unpackFromFileURL(java.net.URL,java.lang.String,java.lang.ClassLoader)>(v1, v2, v3);
+return v16;
+label11:
+v17 = specialinvoke v0.<io.vertx.core.file.impl.FileResolverImpl: java.io.File unpackFromJarURL(java.net.URL,java.lang.String,java.lang.ClassLoader)>(v1, v2, v3);
+return v17;
+label12:
+v18 = specialinvoke v0.<io.vertx.core.file.impl.FileResolverImpl: java.io.File unpackFromBundleURL(java.net.URL,java.lang.String,boolean)>(v1, v2, v4);
+return v18;
+label13:
+v19 = new java.lang.IllegalStateException;
+v20 = dynamicinvoke "makeConcatWithConstants" <java.lang.String (java.lang.String)>(v5) <java.lang.invoke.StringConcatFactory: java.lang.invoke.CallSite makeConcatWithConstants(java.lang.invoke.MethodHandles$Lookup,java.lang.String,java.lang.invoke.MethodType,java.lang.String,java.lang.Object[])>("Invalid url protocol: \u0001");
+specialinvoke v19.<java.lang.IllegalStateException: void <init>(java.lang.String)>(v20);
+throw v19;
+}
+private java.io.File unpackFromFileURL(java.net.URL, java.lang.String, java.lang.ClassLoader)
+{
+io.vertx.core.VertxException v13, v22;
+java.net.URL v1, v21;
+java.lang.String[] v16;
+int v17, v18;
+java.lang.String v14, v15, v19, v2, v20, v23, v5, v6;
+boolean v10, v7, v9;
+java.io.IOException v12;
+java.io.File v11, v4;
+io.vertx.core.file.impl.FileCache v8;
+io.vertx.core.file.impl.FileResolverImpl v0;
+java.lang.ClassLoader v3;
+v0 := @this: io.vertx.core.file.impl.FileResolverImpl;
+v1 := @parameter0: java.net.URL;
+v2 := @parameter1: java.lang.String;
+v3 := @parameter2: java.lang.ClassLoader;
+v4 = new java.io.File;
+v5 = virtualinvoke v1.<java.net.URL: java.lang.String getPath()>();
+v6 = staticinvoke <io.vertx.core.net.impl.URIDecoder: java.lang.String decodeURIComponent(java.lang.String,boolean)>(v5, 0);
+specialinvoke v4.<java.io.File: void <init>(java.lang.String)>(v6);
+v7 = virtualinvoke v4.<java.io.File: boolean isDirectory()>();
+label1:
+v8 = v0.<io.vertx.core.file.impl.FileResolverImpl: io.vertx.core.file.impl.FileCache cache>;
+v9 = v0.<io.vertx.core.file.impl.FileResolverImpl: boolean enableCaching>;
+if v9 != 0 goto label2;
+v10 = 1;
+goto label3;
+label2:
+v10 = 0;
+label3:
+v11 = virtualinvoke v8.<io.vertx.core.file.impl.FileCache: java.io.File cacheFile(java.lang.String,java.io.File,boolean)>(v2, v4, v10);
+label4:
+goto label6;
+label5:
+v12 := @caughtexception;
+v13 = new io.vertx.core.VertxException;
+v14 = virtualinvoke v1.<java.net.URL: java.lang.String toString()>();
+v15 = staticinvoke <io.vertx.core.file.impl.FileSystemImpl: java.lang.String getFileAccessErrorMessage(java.lang.String,java.lang.String)>("unpack", v14);
+specialinvoke v13.<io.vertx.core.VertxException: void <init>(java.lang.String,java.lang.Throwable)>(v15, v12);
+throw v13;
+label6:
+if v7 == 0 goto label9;
+v16 = virtualinvoke v4.<java.io.File: java.lang.String[] list()>();
+if v16 == null goto label9;
+v17 = lengthof v16;
+v18 = 0;
+label7:
+if v18 >= v17 goto label9;
+v19 = v16[v18];
+v20 = dynamicinvoke "makeConcatWithConstants" <java.lang.String (java.lang.String,java.lang.String)>(v2, v19) <java.lang.invoke.StringConcatFactory: java.lang.invoke.CallSite makeConcatWithConstants(java.lang.invoke.MethodHandles$Lookup,java.lang.String,java.lang.invoke.MethodType,java.lang.String,java.lang.Object[])>("\u0001/\u0001");
+v21 = staticinvoke <io.vertx.core.file.impl.FileResolverImpl: java.net.URL getValidClassLoaderResource(java.lang.ClassLoader,java.lang.String)>(v3, v20);
+if v21 != null goto label8;
+v22 = new io.vertx.core.VertxException;
+v23 = dynamicinvoke "makeConcatWithConstants" <java.lang.String (java.lang.String)>(v20) <java.lang.invoke.StringConcatFactory: java.lang.invoke.CallSite makeConcatWithConstants(java.lang.invoke.MethodHandles$Lookup,java.lang.String,java.lang.invoke.MethodType,java.lang.String,java.lang.Object[])>("Invalid resource: \u0001");
+specialinvoke v22.<io.vertx.core.VertxException: void <init>(java.lang.String)>(v23);
+throw v22;
+label8:
+specialinvoke v0.<io.vertx.core.file.impl.FileResolverImpl: java.io.File unpackFromFileURL(java.net.URL,java.lang.String,java.lang.ClassLoader)>(v21, v20, v3);
+v18 = v18 + 1;
+goto label7;
+label9:
+return v11;
+catch java.io.IOException from label1 to label4 with label5;
+}
+private java.io.File unpackFromJarURL(java.net.URL, java.lang.String, java.lang.ClassLoader)
+{
+io.vertx.core.VertxException v52;
+java.util.Enumeration v32;
+java.net.URL v1;
+java.util.zip.ZipFile v17, v22, v4;
+boolean v33, v36, v39, v40, v44, v48, v49;
+io.vertx.core.file.impl.FileResolverImpl v0;
+java.lang.StringBuilder v25, v30;
+java.lang.ClassLoader v3;
+java.lang.Throwable v50, v55;
+int v10, v11, v12, v14, v18, v19, v23, v26, v28, v29, v42, v6, v7, v8, v9;
+java.lang.String v15, v16, v2, v20, v24, v27, v31, v34, v35, v38, v41, v43, v5, v53, v54;
+java.io.IOException v51;
+java.io.File v13, v21, v57;
+io.vertx.core.file.impl.FileCache v45, v47, v56;
+java.lang.Object v37;
+java.io.InputStream v46;
+v0 := @this: io.vertx.core.file.impl.FileResolverImpl;
+v1 := @parameter0: java.net.URL;
+v2 := @parameter1: java.lang.String;
+v3 := @parameter2: java.lang.ClassLoader;
+v4 = null;
+label01:
+v5 = virtualinvoke v1.<java.net.URL: java.lang.String getPath()>();
+v6 = virtualinvoke v5.<java.lang.String: int lastIndexOf(java.lang.String)>(".jar!");
+v7 = (int) -1;
+if v6 != v7 goto label02;
+v6 = virtualinvoke v5.<java.lang.String: int lastIndexOf(java.lang.String)>(".zip!");
+label02:
+v8 = v6 - 1;
+v9 = virtualinvoke v5.<java.lang.String: int lastIndexOf(java.lang.String,int)>(".jar!", v8);
+v10 = (int) -1;
+if v9 != v10 goto label03;
+v11 = v6 - 1;
+v9 = virtualinvoke v5.<java.lang.String: int lastIndexOf(java.lang.String,int)>(".zip!", v11);
+label03:
+v12 = (int) -1;
+if v9 != v12 goto label04;
+v13 = new java.io.File;
+v14 = v6 + 4;
+v15 = virtualinvoke v5.<java.lang.String: java.lang.String substring(int,int)>(5, v14);
+v16 = staticinvoke <io.vertx.core.net.impl.URIDecoder: java.lang.String decodeURIComponent(java.lang.String,boolean)>(v15, 0);
+specialinvoke v13.<java.io.File: void <init>(java.lang.String)>(v16);
+v17 = new java.util.zip.ZipFile;
+specialinvoke v17.<java.util.zip.ZipFile: void <init>(java.io.File)>(v13);
+v4 = v17;
+goto label05;
+label04:
+v18 = v9 + 6;
+v19 = v6 + 4;
+v20 = virtualinvoke v5.<java.lang.String: java.lang.String substring(int,int)>(v18, v19);
+v21 = virtualinvoke v0.<io.vertx.core.file.impl.FileResolverImpl: java.io.File resolveFile(java.lang.String)>(v20);
+v22 = new java.util.zip.ZipFile;
+specialinvoke v22.<java.util.zip.ZipFile: void <init>(java.io.File)>(v21);
+v4 = v22;
+label05:
+v23 = v6 + 6;
+v24 = virtualinvoke v5.<java.lang.String: java.lang.String substring(int)>(v23);
+v25 = new java.lang.StringBuilder;
+specialinvoke v25.<java.lang.StringBuilder: void <init>()>();
+v26 = 0;
+v27 = "!/";
+v28 = virtualinvoke v27.<java.lang.String: int length()>();
+label06:
+v29 = virtualinvoke v24.<java.lang.String: int indexOf(java.lang.String,int)>("!/", v26);
+if v29 < 0 goto label07;
+v30 = virtualinvoke v25.<java.lang.StringBuilder: java.lang.StringBuilder append(java.lang.CharSequence,int,int)>(v24, v26, v29);
+virtualinvoke v30.<java.lang.StringBuilder: java.lang.StringBuilder append(java.lang.String)>("/");
+v26 = v29 + v28;
+goto label06;
+label07:
+v31 = virtualinvoke v25.<java.lang.StringBuilder: java.lang.String toString()>();
+v32 = virtualinvoke v4.<java.util.zip.ZipFile: java.util.Enumeration entries()>();
+v33 = virtualinvoke v31.<java.lang.String: boolean isEmpty()>();
+if v33 == 0 goto label08;
+v34 = v2;
+goto label09;
+label08:
+v34 = dynamicinvoke "makeConcatWithConstants" <java.lang.String (java.lang.String,java.lang.String)>(v31, v2) <java.lang.invoke.StringConcatFactory: java.lang.invoke.CallSite makeConcatWithConstants(java.lang.invoke.MethodHandles$Lookup,java.lang.String,java.lang.invoke.MethodType,java.lang.String,java.lang.Object[])>("\u0001\u0001");
+label09:
+v35 = v34;
+label10:
+v36 = interfaceinvoke v32.<java.util.Enumeration: boolean hasMoreElements()>();
+if v36 == 0 goto label19;
+v37 = interfaceinvoke v32.<java.util.Enumeration: java.lang.Object nextElement()>();
+v38 = virtualinvoke v37.<java.util.zip.ZipEntry: java.lang.String getName()>();
+v39 = virtualinvoke v38.<java.lang.String: boolean startsWith(java.lang.String)>(v35);
+if v39 == 0 goto label10;
+v40 = virtualinvoke v31.<java.lang.String: boolean isEmpty()>();
+if v40 == 0 goto label11;
+v41 = v38;
+goto label12;
+label11:
+v42 = virtualinvoke v31.<java.lang.String: int length()>();
+v41 = virtualinvoke v38.<java.lang.String: java.lang.String substring(int)>(v42);
+label12:
+v43 = v41;
+v44 = virtualinvoke v38.<java.lang.String: boolean endsWith(java.lang.String)>("/");
+if v44 == 0 goto label13;
+v45 = v0.<io.vertx.core.file.impl.FileResolverImpl: io.vertx.core.file.impl.FileCache cache>;
+virtualinvoke v45.<io.vertx.core.file.impl.FileCache: void cacheDir(java.lang.String)>(v41);
+goto label10;
+label13:
+v46 = virtualinvoke v4.<java.util.zip.ZipFile: java.io.InputStream getInputStream(java.util.zip.ZipEntry)>(v37);
+label14:
+v47 = v0.<io.vertx.core.file.impl.FileResolverImpl: io.vertx.core.file.impl.FileCache cache>;
+v48 = v0.<io.vertx.core.file.impl.FileResolverImpl: boolean enableCaching>;
+if v48 != 0 goto label15;
+v49 = 1;
+goto label16;
+label15:
+v49 = 0;
+label16:
+virtualinvoke v47.<io.vertx.core.file.impl.FileCache: void cacheFile(java.lang.String,java.io.InputStream,boolean)>(v43, v46, v49);
+label17:
+if v46 == null goto label10;
+virtualinvoke v46.<java.io.InputStream: void close()>();
+goto label10;
+label18:
+v50 := @caughtexception;
+throw v50;
+label19:
+specialinvoke v0.<io.vertx.core.file.impl.FileResolverImpl: void closeQuietly(java.io.Closeable)>(v4);
+goto label22;
+label20:
+v51 := @caughtexception;
+v52 = new io.vertx.core.VertxException;
+v53 = virtualinvoke v1.<java.net.URL: java.lang.String toString()>();
+v54 = staticinvoke <io.vertx.core.file.impl.FileSystemImpl: java.lang.String getFileAccessErrorMessage(java.lang.String,java.lang.String)>("unpack", v53);
+specialinvoke v52.<io.vertx.core.VertxException: void <init>(java.lang.String,java.lang.Throwable)>(v54, v51);
+throw v52;
+label21:
+v55 := @caughtexception;
+specialinvoke v0.<io.vertx.core.file.impl.FileResolverImpl: void closeQuietly(java.io.Closeable)>(v4);
+throw v55;
+label22:
+v56 = v0.<io.vertx.core.file.impl.FileResolverImpl: io.vertx.core.file.impl.FileCache cache>;
+v57 = virtualinvoke v56.<io.vertx.core.file.impl.FileCache: java.io.File getFile(java.lang.String)>(v2);
+return v57;
+catch java.lang.Throwable from label14 to label17 with label18;
+catch java.io.IOException from label01 to label19 with label20;
+catch java.lang.Throwable from label01 to label19 with label21;
+}
+private void closeQuietly(java.io.Closeable)
+{
+io.vertx.core.file.impl.FileResolverImpl v0;
+java.io.Closeable v1;
+v0 := @this: io.vertx.core.file.impl.FileResolverImpl;
+v1 := @parameter0: java.io.Closeable;
+return;
+}
+private boolean isBundleUrlDirectory(java.net.URL)
+{
+java.net.URL v1, v8;
+io.vertx.core.file.impl.FileResolverImpl v0;
+java.lang.ClassLoader v4;
+java.lang.String v2, v5, v6, v7;
+boolean v3, v9;
+v0 := @this: io.vertx.core.file.impl.FileResolverImpl;
+v1 := @parameter0: java.net.URL;
+v2 = virtualinvoke v1.<java.net.URL: java.lang.String toExternalForm()>();
+v3 = virtualinvoke v2.<java.lang.String: boolean endsWith(java.lang.String)>("/");
+if v3 != 0 goto label1;
+v4 = specialinvoke v0.<io.vertx.core.file.impl.FileResolverImpl: java.lang.ClassLoader getClassLoader()>();
+v5 = virtualinvoke v1.<java.net.URL: java.lang.String getPath()>();
+v6 = virtualinvoke v5.<java.lang.String: java.lang.String substring(int)>(1);
+v7 = dynamicinvoke "makeConcatWithConstants" <java.lang.String (java.lang.String)>(v6) <java.lang.invoke.StringConcatFactory: java.lang.invoke.CallSite makeConcatWithConstants(java.lang.invoke.MethodHandles$Lookup,java.lang.String,java.lang.invoke.MethodType,java.lang.String,java.lang.Object[])>("\u0001/");
+v8 = staticinvoke <io.vertx.core.file.impl.FileResolverImpl: java.net.URL getValidClassLoaderResource(java.lang.ClassLoader,java.lang.String)>(v4, v7);
+if v8 == null goto label2;
+label1:
+v9 = 1;
+goto label3;
+label2:
+v9 = 0;
+label3:
+return v9;
+}
+private java.io.File unpackFromBundleURL(java.net.URL, java.lang.String, boolean)
+{
+io.vertx.core.VertxException v13;
+java.lang.Throwable v11;
+java.net.URL v1;
+java.lang.String v14, v15, v2;
+boolean v10, v3, v5, v9;
+java.io.IOException v12;
+java.io.File v17;
+io.vertx.core.file.impl.FileCache v16, v6, v8;
+io.vertx.core.file.impl.FileResolverImpl v0;
+java.lang.ClassLoader v4;
+java.io.InputStream v7;
+v0 := @this: io.vertx.core.file.impl.FileResolverImpl;
+v1 := @parameter0: java.net.URL;
+v2 := @parameter1: java.lang.String;
+v3 := @parameter2: boolean;
+label01:
+v4 = specialinvoke v0.<io.vertx.core.file.impl.FileResolverImpl: java.lang.ClassLoader getClassLoader()>();
+if v4 == null goto label02;
+v5 = specialinvoke v0.<io.vertx.core.file.impl.FileResolverImpl: boolean isBundleUrlDirectory(java.net.URL)>(v1);
+if v5 != 0 goto label03;
+label02:
+if v3 == 0 goto label04;
+label03:
+v6 = v0.<io.vertx.core.file.impl.FileResolverImpl: io.vertx.core.file.impl.FileCache cache>;
+virtualinvoke v6.<io.vertx.core.file.impl.FileCache: void cacheDir(java.lang.String)>(v2);
+goto label11;
+label04:
+v7 = virtualinvoke v1.<java.net.URL: java.io.InputStream openStream()>();
+label05:
+v8 = v0.<io.vertx.core.file.impl.FileResolverImpl: io.vertx.core.file.impl.FileCache cache>;
+v9 = v0.<io.vertx.core.file.impl.FileResolverImpl: boolean enableCaching>;
+if v9 != 0 goto label06;
+v10 = 1;
+goto label07;
+label06:
+v10 = 0;
+label07:
+virtualinvoke v8.<io.vertx.core.file.impl.FileCache: void cacheFile(java.lang.String,java.io.InputStream,boolean)>(v2, v7, v10);
+label08:
+if v7 == null goto label11;
+virtualinvoke v7.<java.io.InputStream: void close()>();
+goto label11;
+label09:
+v11 := @caughtexception;
+throw v11;
+label10:
+v12 := @caughtexception;
+v13 = new io.vertx.core.VertxException;
+v14 = virtualinvoke v1.<java.net.URL: java.lang.String toString()>();
+v15 = staticinvoke <io.vertx.core.file.impl.FileSystemImpl: java.lang.String getFileAccessErrorMessage(java.lang.String,java.lang.String)>("unpack", v14);
+specialinvoke v13.<io.vertx.core.VertxException: void <init>(java.lang.String,java.lang.Throwable)>(v15, v12);
+throw v13;
+label11:
+v16 = v0.<io.vertx.core.file.impl.FileResolverImpl: io.vertx.core.file.impl.FileCache cache>;
+v17 = virtualinvoke v16.<io.vertx.core.file.impl.FileCache: java.io.File getFile(java.lang.String)>(v2);
+return v17;
+catch java.lang.Throwable from label05 to label08 with label09;
+catch java.io.IOException from label01 to label10 with label10;
+}
+private java.lang.ClassLoader getClassLoader()
+{
+java.lang.Thread v1;
+io.vertx.core.file.impl.FileResolverImpl v0;
+java.lang.Class v3, v4;
+java.lang.ClassLoader v2;
+v0 := @this: io.vertx.core.file.impl.FileResolverImpl;
+v1 = staticinvoke <java.lang.Thread: java.lang.Thread currentThread()>();
+v2 = virtualinvoke v1.<java.lang.Thread: java.lang.ClassLoader getContextClassLoader()>();
+if v2 != null goto label1;
+v3 = virtualinvoke v0.<java.lang.Object: java.lang.Class getClass()>();
+v2 = virtualinvoke v3.<java.lang.Class: java.lang.ClassLoader getClassLoader()>();
+if v2 != null goto label1;
+v4 = class "Ljava/lang/Object;";
+v2 = virtualinvoke v4.<java.lang.Class: java.lang.ClassLoader getClassLoader()>();
+label1:
+return v2;
+}
+static void <clinit>()
+{
+char v0;
+boolean v1;
+v0 = <java.io.File: char separatorChar>;
+if v0 == 47 goto label1;
+v1 = 1;
+goto label2;
+label1:
+v1 = 0;
+label2:
+<io.vertx.core.file.impl.FileResolverImpl: boolean NON_UNIX_FILE_SEP> = v1;
+return;
+}
+}

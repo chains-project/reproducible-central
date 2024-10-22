@@ -1,0 +1,150 @@
+final class io.netty.handler.codec.dns.DnsCodecUtil extends java.lang.Object
+{
+private void <init>()
+{
+io.netty.handler.codec.dns.DnsCodecUtil v0;
+v0 := @this: io.netty.handler.codec.dns.DnsCodecUtil;
+specialinvoke v0.<java.lang.Object: void <init>()>();
+return;
+}
+static void encodeDomainName(java.lang.String, io.netty.buffer.ByteBuf)
+{
+java.lang.String[] v4;
+io.netty.buffer.ByteBuf v1;
+int v5, v6, v8;
+java.lang.String v0, v2, v7;
+boolean v3;
+v0 := @parameter0: java.lang.String;
+v1 := @parameter1: io.netty.buffer.ByteBuf;
+v2 = ".";
+v3 = virtualinvoke v2.<java.lang.String: boolean equals(java.lang.Object)>(v0);
+if v3 == 0 goto label1;
+virtualinvoke v1.<io.netty.buffer.ByteBuf: io.netty.buffer.ByteBuf writeByte(int)>(0);
+return;
+label1:
+v4 = virtualinvoke v0.<java.lang.String: java.lang.String[] split(java.lang.String)>("\\.");
+v5 = lengthof v4;
+v6 = 0;
+label2:
+if v6 >= v5 goto label3;
+v7 = v4[v6];
+v8 = virtualinvoke v7.<java.lang.String: int length()>();
+if v8 == 0 goto label3;
+virtualinvoke v1.<io.netty.buffer.ByteBuf: io.netty.buffer.ByteBuf writeByte(int)>(v8);
+staticinvoke <io.netty.buffer.ByteBufUtil: int writeAscii(io.netty.buffer.ByteBuf,java.lang.CharSequence)>(v1, v7);
+v6 = v6 + 1;
+goto label2;
+label3:
+virtualinvoke v1.<io.netty.buffer.ByteBuf: io.netty.buffer.ByteBuf writeByte(int)>(0);
+return;
+}
+static java.lang.String decodeDomainName(io.netty.buffer.ByteBuf)
+{
+boolean v11, v14, v22, v8;
+java.lang.StringBuilder v27, v6;
+short v10, v16, v18, v9;
+io.netty.buffer.ByteBuf v0;
+java.nio.charset.Charset v25;
+int v1, v12, v13, v17, v19, v2, v24, v28, v29, v3, v30, v31, v4, v5, v7;
+java.lang.String v26, v33;
+char v32;
+io.netty.handler.codec.CorruptedFrameException v15, v20, v21, v23;
+v0 := @parameter0: io.netty.buffer.ByteBuf;
+v1 = (int) -1;
+v2 = v1;
+v3 = 0;
+v4 = virtualinvoke v0.<io.netty.buffer.ByteBuf: int writerIndex()>();
+v5 = virtualinvoke v0.<io.netty.buffer.ByteBuf: int readableBytes()>();
+if v5 != 0 goto label01;
+return ".";
+label01:
+v6 = new java.lang.StringBuilder;
+v7 = v5 << 1;
+specialinvoke v6.<java.lang.StringBuilder: void <init>(int)>(v7);
+label02:
+v8 = virtualinvoke v0.<io.netty.buffer.ByteBuf: boolean isReadable()>();
+if v8 == 0 goto label10;
+v9 = virtualinvoke v0.<io.netty.buffer.ByteBuf: short readUnsignedByte()>();
+v10 = v9 & 192;
+if v10 != 192 goto label03;
+v11 = 1;
+goto label04;
+label03:
+v11 = 0;
+label04:
+if v11 == 0 goto label08;
+v12 = (int) -1;
+if v2 != v12 goto label05;
+v13 = virtualinvoke v0.<io.netty.buffer.ByteBuf: int readerIndex()>();
+v2 = v13 + 1;
+label05:
+v14 = virtualinvoke v0.<io.netty.buffer.ByteBuf: boolean isReadable()>();
+if v14 != 0 goto label06;
+v15 = new io.netty.handler.codec.CorruptedFrameException;
+specialinvoke v15.<io.netty.handler.codec.CorruptedFrameException: void <init>(java.lang.String)>("truncated pointer in a name");
+throw v15;
+label06:
+v16 = v9 & 63;
+v17 = v16 << 8;
+v18 = virtualinvoke v0.<io.netty.buffer.ByteBuf: short readUnsignedByte()>();
+v19 = v17 | v18;
+if v19 < v4 goto label07;
+v20 = new io.netty.handler.codec.CorruptedFrameException;
+specialinvoke v20.<io.netty.handler.codec.CorruptedFrameException: void <init>(java.lang.String)>("name has an out-of-range pointer");
+throw v20;
+label07:
+virtualinvoke v0.<io.netty.buffer.ByteBuf: io.netty.buffer.ByteBuf readerIndex(int)>(v19);
+v3 = v3 + 2;
+if v3 < v4 goto label02;
+v21 = new io.netty.handler.codec.CorruptedFrameException;
+specialinvoke v21.<io.netty.handler.codec.CorruptedFrameException: void <init>(java.lang.String)>("name contains a loop.");
+throw v21;
+label08:
+if v9 == 0 goto label10;
+v22 = virtualinvoke v0.<io.netty.buffer.ByteBuf: boolean isReadable(int)>(v9);
+if v22 != 0 goto label09;
+v23 = new io.netty.handler.codec.CorruptedFrameException;
+specialinvoke v23.<io.netty.handler.codec.CorruptedFrameException: void <init>(java.lang.String)>("truncated label in a name");
+throw v23;
+label09:
+v24 = virtualinvoke v0.<io.netty.buffer.ByteBuf: int readerIndex()>();
+v25 = <io.netty.util.CharsetUtil: java.nio.charset.Charset UTF_8>;
+v26 = virtualinvoke v0.<io.netty.buffer.ByteBuf: java.lang.String toString(int,int,java.nio.charset.Charset)>(v24, v9, v25);
+v27 = virtualinvoke v6.<java.lang.StringBuilder: java.lang.StringBuilder append(java.lang.String)>(v26);
+virtualinvoke v27.<java.lang.StringBuilder: java.lang.StringBuilder append(char)>(46);
+virtualinvoke v0.<io.netty.buffer.ByteBuf: io.netty.buffer.ByteBuf skipBytes(int)>(v9);
+goto label02;
+label10:
+v28 = (int) -1;
+if v2 == v28 goto label11;
+virtualinvoke v0.<io.netty.buffer.ByteBuf: io.netty.buffer.ByteBuf readerIndex(int)>(v2);
+label11:
+v29 = virtualinvoke v6.<java.lang.StringBuilder: int length()>();
+if v29 != 0 goto label12;
+return ".";
+label12:
+v30 = virtualinvoke v6.<java.lang.StringBuilder: int length()>();
+v31 = v30 - 1;
+v32 = virtualinvoke v6.<java.lang.StringBuilder: char charAt(int)>(v31);
+if v32 == 46 goto label13;
+virtualinvoke v6.<java.lang.StringBuilder: java.lang.StringBuilder append(char)>(46);
+label13:
+v33 = virtualinvoke v6.<java.lang.StringBuilder: java.lang.String toString()>();
+return v33;
+}
+static io.netty.buffer.ByteBuf decompressDomainName(io.netty.buffer.ByteBuf)
+{
+io.netty.buffer.ByteBuf v0, v5;
+io.netty.buffer.ByteBufAllocator v2;
+int v3, v4;
+java.lang.String v1;
+v0 := @parameter0: io.netty.buffer.ByteBuf;
+v1 = staticinvoke <io.netty.handler.codec.dns.DnsCodecUtil: java.lang.String decodeDomainName(io.netty.buffer.ByteBuf)>(v0);
+v2 = virtualinvoke v0.<io.netty.buffer.ByteBuf: io.netty.buffer.ByteBufAllocator alloc()>();
+v3 = virtualinvoke v1.<java.lang.String: int length()>();
+v4 = v3 << 1;
+v5 = interfaceinvoke v2.<io.netty.buffer.ByteBufAllocator: io.netty.buffer.ByteBuf buffer(int)>(v4);
+staticinvoke <io.netty.handler.codec.dns.DnsCodecUtil: void encodeDomainName(java.lang.String,io.netty.buffer.ByteBuf)>(v1, v5);
+return v5;
+}
+}

@@ -1,0 +1,107 @@
+public class io.netty.handler.traffic.GlobalChannelTrafficCounter extends io.netty.handler.traffic.TrafficCounter
+{
+public void <init>(io.netty.handler.traffic.GlobalChannelTrafficShapingHandler, java.util.concurrent.ScheduledExecutorService, java.lang.String, long)
+{
+io.netty.handler.traffic.GlobalChannelTrafficShapingHandler v1;
+java.util.concurrent.ScheduledExecutorService v2;
+long v4;
+java.lang.String v3;
+io.netty.handler.traffic.GlobalChannelTrafficCounter v0;
+v0 := @this: io.netty.handler.traffic.GlobalChannelTrafficCounter;
+v1 := @parameter0: io.netty.handler.traffic.GlobalChannelTrafficShapingHandler;
+v2 := @parameter1: java.util.concurrent.ScheduledExecutorService;
+v3 := @parameter2: java.lang.String;
+v4 := @parameter3: long;
+specialinvoke v0.<io.netty.handler.traffic.TrafficCounter: void <init>(io.netty.handler.traffic.AbstractTrafficShapingHandler,java.util.concurrent.ScheduledExecutorService,java.lang.String,long)>(v1, v2, v3, v4);
+staticinvoke <io.netty.util.internal.ObjectUtil: java.lang.Object checkNotNullWithIAE(java.lang.Object,java.lang.String)>(v2, "executor");
+return;
+}
+public synchronized void start()
+{
+java.util.concurrent.ScheduledFuture v12;
+io.netty.handler.traffic.AbstractTrafficShapingHandler v8;
+long v3, v5;
+java.lang.Runnable v10;
+io.netty.handler.traffic.GlobalChannelTrafficCounter$MixedTrafficMonitoringTask v7;
+java.util.concurrent.TimeUnit v11;
+java.util.concurrent.atomic.AtomicLong v2, v4;
+byte v6;
+java.util.concurrent.ScheduledExecutorService v9;
+io.netty.handler.traffic.GlobalChannelTrafficCounter v0;
+boolean v1;
+v0 := @this: io.netty.handler.traffic.GlobalChannelTrafficCounter;
+v1 = v0.<io.netty.handler.traffic.GlobalChannelTrafficCounter: boolean monitorActive>;
+if v1 == 0 goto label1;
+return;
+label1:
+v2 = v0.<io.netty.handler.traffic.GlobalChannelTrafficCounter: java.util.concurrent.atomic.AtomicLong lastTime>;
+v3 = staticinvoke <io.netty.handler.traffic.GlobalChannelTrafficCounter: long milliSecondFromNano()>();
+virtualinvoke v2.<java.util.concurrent.atomic.AtomicLong: void set(long)>(v3);
+v4 = v0.<io.netty.handler.traffic.GlobalChannelTrafficCounter: java.util.concurrent.atomic.AtomicLong checkInterval>;
+v5 = virtualinvoke v4.<java.util.concurrent.atomic.AtomicLong: long get()>();
+v6 = v5 cmp 0L;
+if v6 <= 0 goto label2;
+v0.<io.netty.handler.traffic.GlobalChannelTrafficCounter: boolean monitorActive> = 1;
+v7 = new io.netty.handler.traffic.GlobalChannelTrafficCounter$MixedTrafficMonitoringTask;
+v8 = v0.<io.netty.handler.traffic.GlobalChannelTrafficCounter: io.netty.handler.traffic.AbstractTrafficShapingHandler trafficShapingHandler>;
+specialinvoke v7.<io.netty.handler.traffic.GlobalChannelTrafficCounter$MixedTrafficMonitoringTask: void <init>(io.netty.handler.traffic.GlobalChannelTrafficShapingHandler,io.netty.handler.traffic.TrafficCounter)>(v8, v0);
+v0.<io.netty.handler.traffic.GlobalChannelTrafficCounter: java.lang.Runnable monitor> = v7;
+v9 = v0.<io.netty.handler.traffic.GlobalChannelTrafficCounter: java.util.concurrent.ScheduledExecutorService executor>;
+v10 = v0.<io.netty.handler.traffic.GlobalChannelTrafficCounter: java.lang.Runnable monitor>;
+v11 = <java.util.concurrent.TimeUnit: java.util.concurrent.TimeUnit MILLISECONDS>;
+v12 = interfaceinvoke v9.<java.util.concurrent.ScheduledExecutorService: java.util.concurrent.ScheduledFuture scheduleAtFixedRate(java.lang.Runnable,long,long,java.util.concurrent.TimeUnit)>(v10, 0L, v5, v11);
+v0.<io.netty.handler.traffic.GlobalChannelTrafficCounter: java.util.concurrent.ScheduledFuture scheduledFuture> = v12;
+label2:
+return;
+}
+public synchronized void stop()
+{
+java.util.concurrent.ScheduledFuture v4, v5;
+io.netty.handler.traffic.AbstractTrafficShapingHandler v3;
+long v2;
+io.netty.handler.traffic.GlobalChannelTrafficCounter v0;
+boolean v1;
+v0 := @this: io.netty.handler.traffic.GlobalChannelTrafficCounter;
+v1 = v0.<io.netty.handler.traffic.GlobalChannelTrafficCounter: boolean monitorActive>;
+if v1 != 0 goto label1;
+return;
+label1:
+v0.<io.netty.handler.traffic.GlobalChannelTrafficCounter: boolean monitorActive> = 0;
+v2 = staticinvoke <io.netty.handler.traffic.GlobalChannelTrafficCounter: long milliSecondFromNano()>();
+virtualinvoke v0.<io.netty.handler.traffic.GlobalChannelTrafficCounter: void resetAccounting(long)>(v2);
+v3 = v0.<io.netty.handler.traffic.GlobalChannelTrafficCounter: io.netty.handler.traffic.AbstractTrafficShapingHandler trafficShapingHandler>;
+virtualinvoke v3.<io.netty.handler.traffic.AbstractTrafficShapingHandler: void doAccounting(io.netty.handler.traffic.TrafficCounter)>(v0);
+v4 = v0.<io.netty.handler.traffic.GlobalChannelTrafficCounter: java.util.concurrent.ScheduledFuture scheduledFuture>;
+if v4 == null goto label2;
+v5 = v0.<io.netty.handler.traffic.GlobalChannelTrafficCounter: java.util.concurrent.ScheduledFuture scheduledFuture>;
+interfaceinvoke v5.<java.util.concurrent.ScheduledFuture: boolean cancel(boolean)>(1);
+label2:
+return;
+}
+public void resetCumulativeTime()
+{
+io.netty.handler.traffic.TrafficCounter v7;
+java.util.Iterator v4;
+io.netty.handler.traffic.AbstractTrafficShapingHandler v1;
+java.util.Collection v3;
+java.util.concurrent.ConcurrentMap v2;
+java.lang.Object v6;
+io.netty.handler.traffic.GlobalChannelTrafficCounter v0;
+boolean v5;
+v0 := @this: io.netty.handler.traffic.GlobalChannelTrafficCounter;
+v1 = v0.<io.netty.handler.traffic.GlobalChannelTrafficCounter: io.netty.handler.traffic.AbstractTrafficShapingHandler trafficShapingHandler>;
+v2 = v1.<io.netty.handler.traffic.GlobalChannelTrafficShapingHandler: java.util.concurrent.ConcurrentMap channelQueues>;
+v3 = interfaceinvoke v2.<java.util.concurrent.ConcurrentMap: java.util.Collection values()>();
+v4 = interfaceinvoke v3.<java.util.Collection: java.util.Iterator iterator()>();
+label1:
+v5 = interfaceinvoke v4.<java.util.Iterator: boolean hasNext()>();
+if v5 == 0 goto label2;
+v6 = interfaceinvoke v4.<java.util.Iterator: java.lang.Object next()>();
+v7 = v6.<io.netty.handler.traffic.GlobalChannelTrafficShapingHandler$PerChannel: io.netty.handler.traffic.TrafficCounter channelTrafficCounter>;
+virtualinvoke v7.<io.netty.handler.traffic.TrafficCounter: void resetCumulativeTime()>();
+goto label1;
+label2:
+specialinvoke v0.<io.netty.handler.traffic.TrafficCounter: void resetCumulativeTime()>();
+return;
+}
+}

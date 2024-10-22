@@ -1,0 +1,1411 @@
+public class io.netty.channel.unix.Socket extends io.netty.channel.unix.FileDescriptor
+{
+private static volatile boolean isIpv6Preferred;
+public static final int UDS_SUN_PATH_SIZE;
+protected final boolean ipv6;
+public void <init>(int)
+{
+int v1;
+io.netty.channel.unix.Socket v0;
+boolean v2;
+v0 := @this: io.netty.channel.unix.Socket;
+v1 := @parameter0: int;
+specialinvoke v0.<io.netty.channel.unix.FileDescriptor: void <init>(int)>(v1);
+v2 = staticinvoke <io.netty.channel.unix.Socket: boolean isIPv6(int)>(v1);
+v0.<io.netty.channel.unix.Socket: boolean ipv6> = v2;
+return;
+}
+private boolean useIpv6(java.net.InetAddress)
+{
+java.net.InetAddress v1;
+io.netty.channel.unix.Socket v0;
+boolean v2;
+v0 := @this: io.netty.channel.unix.Socket;
+v1 := @parameter0: java.net.InetAddress;
+v2 = staticinvoke <io.netty.channel.unix.Socket: boolean useIpv6(io.netty.channel.unix.Socket,java.net.InetAddress)>(v0, v1);
+return v2;
+}
+protected static boolean useIpv6(io.netty.channel.unix.Socket, java.net.InetAddress)
+{
+java.net.InetAddress v1;
+io.netty.channel.unix.Socket v0;
+boolean v2, v3, v4;
+v0 := @parameter0: io.netty.channel.unix.Socket;
+v1 := @parameter1: java.net.InetAddress;
+v2 = v0.<io.netty.channel.unix.Socket: boolean ipv6>;
+if v2 != 0 goto label1;
+v3 = v1 instanceof java.net.Inet6Address;
+if v3 == 0 goto label2;
+label1:
+v4 = 1;
+goto label3;
+label2:
+v4 = 0;
+label3:
+return v4;
+}
+public final void shutdown() throws java.io.IOException
+{
+io.netty.channel.unix.Socket v0;
+v0 := @this: io.netty.channel.unix.Socket;
+virtualinvoke v0.<io.netty.channel.unix.Socket: void shutdown(boolean,boolean)>(1, 1);
+return;
+}
+public final void shutdown(boolean, boolean) throws java.io.IOException
+{
+java.nio.channels.ClosedChannelException v5;
+io.netty.channel.unix.Socket v0;
+int v10, v11, v3, v6;
+boolean v1, v2, v4, v7, v8, v9;
+v0 := @this: io.netty.channel.unix.Socket;
+v1 := @parameter0: boolean;
+v2 := @parameter1: boolean;
+label1:
+v3 = v0.<io.netty.channel.unix.Socket: int state>;
+v4 = staticinvoke <io.netty.channel.unix.Socket: boolean isClosed(int)>(v3);
+if v4 == 0 goto label2;
+v5 = new java.nio.channels.ClosedChannelException;
+specialinvoke v5.<java.nio.channels.ClosedChannelException: void <init>()>();
+throw v5;
+label2:
+v6 = v3;
+if v1 == 0 goto label3;
+v7 = staticinvoke <io.netty.channel.unix.Socket: boolean isInputShutdown(int)>(v3);
+if v7 != 0 goto label3;
+v6 = staticinvoke <io.netty.channel.unix.Socket: int inputShutdown(int)>(v3);
+label3:
+if v2 == 0 goto label4;
+v8 = staticinvoke <io.netty.channel.unix.Socket: boolean isOutputShutdown(int)>(v6);
+if v8 != 0 goto label4;
+v6 = staticinvoke <io.netty.channel.unix.Socket: int outputShutdown(int)>(v6);
+label4:
+if v6 != v3 goto label5;
+return;
+label5:
+v9 = virtualinvoke v0.<io.netty.channel.unix.Socket: boolean casState(int,int)>(v3, v6);
+if v9 == 0 goto label1;
+v10 = v0.<io.netty.channel.unix.Socket: int fd>;
+v11 = staticinvoke <io.netty.channel.unix.Socket: int shutdown(int,boolean,boolean)>(v10, v1, v2);
+if v11 >= 0 goto label6;
+staticinvoke <io.netty.channel.unix.Errors: int ioResult(java.lang.String,int)>("shutdown", v11);
+label6:
+return;
+}
+public final boolean isShutdown()
+{
+io.netty.channel.unix.Socket v0;
+int v1;
+boolean v2, v3, v4;
+v0 := @this: io.netty.channel.unix.Socket;
+v1 = v0.<io.netty.channel.unix.Socket: int state>;
+v2 = staticinvoke <io.netty.channel.unix.Socket: boolean isInputShutdown(int)>(v1);
+if v2 == 0 goto label1;
+v3 = staticinvoke <io.netty.channel.unix.Socket: boolean isOutputShutdown(int)>(v1);
+if v3 == 0 goto label1;
+v4 = 1;
+goto label2;
+label1:
+v4 = 0;
+label2:
+return v4;
+}
+public final boolean isInputShutdown()
+{
+int v1;
+io.netty.channel.unix.Socket v0;
+boolean v2;
+v0 := @this: io.netty.channel.unix.Socket;
+v1 = v0.<io.netty.channel.unix.Socket: int state>;
+v2 = staticinvoke <io.netty.channel.unix.Socket: boolean isInputShutdown(int)>(v1);
+return v2;
+}
+public final boolean isOutputShutdown()
+{
+int v1;
+io.netty.channel.unix.Socket v0;
+boolean v2;
+v0 := @this: io.netty.channel.unix.Socket;
+v1 = v0.<io.netty.channel.unix.Socket: int state>;
+v2 = staticinvoke <io.netty.channel.unix.Socket: boolean isOutputShutdown(int)>(v1);
+return v2;
+}
+public final int sendTo(java.nio.ByteBuffer, int, int, java.net.InetAddress, int) throws java.io.IOException
+{
+java.net.InetAddress v4;
+io.netty.channel.unix.Socket v0;
+int v2, v3, v5, v6;
+java.nio.ByteBuffer v1;
+v0 := @this: io.netty.channel.unix.Socket;
+v1 := @parameter0: java.nio.ByteBuffer;
+v2 := @parameter1: int;
+v3 := @parameter2: int;
+v4 := @parameter3: java.net.InetAddress;
+v5 := @parameter4: int;
+v6 = virtualinvoke v0.<io.netty.channel.unix.Socket: int sendTo(java.nio.ByteBuffer,int,int,java.net.InetAddress,int,boolean)>(v1, v2, v3, v4, v5, 0);
+return v6;
+}
+public final int sendTo(java.nio.ByteBuffer, int, int, java.net.InetAddress, int, boolean) throws java.io.IOException
+{
+byte[] v10, v8;
+java.nio.ByteBuffer v1;
+java.net.InetAddress v4;
+io.netty.channel.unix.Socket v0;
+int v11, v12, v14, v15, v16, v18, v2, v3, v5, v9;
+java.net.PortUnreachableException v17;
+boolean v13, v6, v7;
+v0 := @this: io.netty.channel.unix.Socket;
+v1 := @parameter0: java.nio.ByteBuffer;
+v2 := @parameter1: int;
+v3 := @parameter2: int;
+v4 := @parameter3: java.net.InetAddress;
+v5 := @parameter4: int;
+v6 := @parameter5: boolean;
+v7 = v4 instanceof java.net.Inet6Address;
+if v7 == 0 goto label1;
+v8 = virtualinvoke v4.<java.net.InetAddress: byte[] getAddress()>();
+v9 = virtualinvoke v4.<java.net.Inet6Address: int getScopeId()>();
+goto label2;
+label1:
+v9 = 0;
+v10 = virtualinvoke v4.<java.net.InetAddress: byte[] getAddress()>();
+v8 = staticinvoke <io.netty.channel.unix.NativeInetAddress: byte[] ipv4MappedIpv6Address(byte[])>(v10);
+label2:
+if v6 == 0 goto label3;
+v11 = staticinvoke <io.netty.channel.unix.Socket: int msgFastopen()>();
+goto label4;
+label3:
+v11 = 0;
+label4:
+v12 = v0.<io.netty.channel.unix.Socket: int fd>;
+v13 = specialinvoke v0.<io.netty.channel.unix.Socket: boolean useIpv6(java.net.InetAddress)>(v4);
+v14 = staticinvoke <io.netty.channel.unix.Socket: int sendTo(int,boolean,java.nio.ByteBuffer,int,int,byte[],int,int,int)>(v12, v13, v1, v2, v3, v8, v9, v5, v11);
+if v14 < 0 goto label5;
+return v14;
+label5:
+v15 = <io.netty.channel.unix.Errors: int ERRNO_EINPROGRESS_NEGATIVE>;
+if v14 != v15 goto label6;
+if v6 == 0 goto label6;
+return 0;
+label6:
+v16 = <io.netty.channel.unix.Errors: int ERROR_ECONNREFUSED_NEGATIVE>;
+if v14 != v16 goto label7;
+v17 = new java.net.PortUnreachableException;
+specialinvoke v17.<java.net.PortUnreachableException: void <init>(java.lang.String)>("sendTo failed");
+throw v17;
+label7:
+v18 = staticinvoke <io.netty.channel.unix.Errors: int ioResult(java.lang.String,int)>("sendTo", v14);
+return v18;
+}
+public final int sendToDomainSocket(java.nio.ByteBuffer, int, int, byte[]) throws java.io.IOException
+{
+byte[] v4;
+java.nio.ByteBuffer v1;
+io.netty.channel.unix.Socket v0;
+int v2, v3, v5, v6, v7;
+v0 := @this: io.netty.channel.unix.Socket;
+v1 := @parameter0: java.nio.ByteBuffer;
+v2 := @parameter1: int;
+v3 := @parameter2: int;
+v4 := @parameter3: byte[];
+v5 = v0.<io.netty.channel.unix.Socket: int fd>;
+v6 = staticinvoke <io.netty.channel.unix.Socket: int sendToDomainSocket(int,java.nio.ByteBuffer,int,int,byte[])>(v5, v1, v2, v3, v4);
+if v6 < 0 goto label1;
+return v6;
+label1:
+v7 = staticinvoke <io.netty.channel.unix.Errors: int ioResult(java.lang.String,int)>("sendToDomainSocket", v6);
+return v7;
+}
+public final int sendToAddress(long, int, int, java.net.InetAddress, int) throws java.io.IOException
+{
+java.net.InetAddress v4;
+io.netty.channel.unix.Socket v0;
+int v2, v3, v5, v6;
+long v1;
+v0 := @this: io.netty.channel.unix.Socket;
+v1 := @parameter0: long;
+v2 := @parameter1: int;
+v3 := @parameter2: int;
+v4 := @parameter3: java.net.InetAddress;
+v5 := @parameter4: int;
+v6 = virtualinvoke v0.<io.netty.channel.unix.Socket: int sendToAddress(long,int,int,java.net.InetAddress,int,boolean)>(v1, v2, v3, v4, v5, 0);
+return v6;
+}
+public final int sendToAddress(long, int, int, java.net.InetAddress, int, boolean) throws java.io.IOException
+{
+byte[] v10, v8;
+long v1;
+java.net.InetAddress v4;
+io.netty.channel.unix.Socket v0;
+int v11, v12, v14, v15, v16, v18, v2, v3, v5, v9;
+java.net.PortUnreachableException v17;
+boolean v13, v6, v7;
+v0 := @this: io.netty.channel.unix.Socket;
+v1 := @parameter0: long;
+v2 := @parameter1: int;
+v3 := @parameter2: int;
+v4 := @parameter3: java.net.InetAddress;
+v5 := @parameter4: int;
+v6 := @parameter5: boolean;
+v7 = v4 instanceof java.net.Inet6Address;
+if v7 == 0 goto label1;
+v8 = virtualinvoke v4.<java.net.InetAddress: byte[] getAddress()>();
+v9 = virtualinvoke v4.<java.net.Inet6Address: int getScopeId()>();
+goto label2;
+label1:
+v9 = 0;
+v10 = virtualinvoke v4.<java.net.InetAddress: byte[] getAddress()>();
+v8 = staticinvoke <io.netty.channel.unix.NativeInetAddress: byte[] ipv4MappedIpv6Address(byte[])>(v10);
+label2:
+if v6 == 0 goto label3;
+v11 = staticinvoke <io.netty.channel.unix.Socket: int msgFastopen()>();
+goto label4;
+label3:
+v11 = 0;
+label4:
+v12 = v0.<io.netty.channel.unix.Socket: int fd>;
+v13 = specialinvoke v0.<io.netty.channel.unix.Socket: boolean useIpv6(java.net.InetAddress)>(v4);
+v14 = staticinvoke <io.netty.channel.unix.Socket: int sendToAddress(int,boolean,long,int,int,byte[],int,int,int)>(v12, v13, v1, v2, v3, v8, v9, v5, v11);
+if v14 < 0 goto label5;
+return v14;
+label5:
+v15 = <io.netty.channel.unix.Errors: int ERRNO_EINPROGRESS_NEGATIVE>;
+if v14 != v15 goto label6;
+if v6 == 0 goto label6;
+return 0;
+label6:
+v16 = <io.netty.channel.unix.Errors: int ERROR_ECONNREFUSED_NEGATIVE>;
+if v14 != v16 goto label7;
+v17 = new java.net.PortUnreachableException;
+specialinvoke v17.<java.net.PortUnreachableException: void <init>(java.lang.String)>("sendToAddress failed");
+throw v17;
+label7:
+v18 = staticinvoke <io.netty.channel.unix.Errors: int ioResult(java.lang.String,int)>("sendToAddress", v14);
+return v18;
+}
+public final int sendToAddressDomainSocket(long, int, int, byte[]) throws java.io.IOException
+{
+byte[] v4;
+long v1;
+io.netty.channel.unix.Socket v0;
+int v2, v3, v5, v6, v7;
+v0 := @this: io.netty.channel.unix.Socket;
+v1 := @parameter0: long;
+v2 := @parameter1: int;
+v3 := @parameter2: int;
+v4 := @parameter3: byte[];
+v5 = v0.<io.netty.channel.unix.Socket: int fd>;
+v6 = staticinvoke <io.netty.channel.unix.Socket: int sendToAddressDomainSocket(int,long,int,int,byte[])>(v5, v1, v2, v3, v4);
+if v6 < 0 goto label1;
+return v6;
+label1:
+v7 = staticinvoke <io.netty.channel.unix.Errors: int ioResult(java.lang.String,int)>("sendToAddressDomainSocket", v6);
+return v7;
+}
+public final int sendToAddresses(long, int, java.net.InetAddress, int) throws java.io.IOException
+{
+java.net.InetAddress v3;
+io.netty.channel.unix.Socket v0;
+int v2, v4, v5;
+long v1;
+v0 := @this: io.netty.channel.unix.Socket;
+v1 := @parameter0: long;
+v2 := @parameter1: int;
+v3 := @parameter2: java.net.InetAddress;
+v4 := @parameter3: int;
+v5 = virtualinvoke v0.<io.netty.channel.unix.Socket: int sendToAddresses(long,int,java.net.InetAddress,int,boolean)>(v1, v2, v3, v4, 0);
+return v5;
+}
+public final int sendToAddresses(long, int, java.net.InetAddress, int, boolean) throws java.io.IOException
+{
+byte[] v7, v9;
+long v1;
+java.net.InetAddress v3;
+io.netty.channel.unix.Socket v0;
+int v10, v11, v13, v14, v15, v17, v2, v4, v8;
+java.net.PortUnreachableException v16;
+boolean v12, v5, v6;
+v0 := @this: io.netty.channel.unix.Socket;
+v1 := @parameter0: long;
+v2 := @parameter1: int;
+v3 := @parameter2: java.net.InetAddress;
+v4 := @parameter3: int;
+v5 := @parameter4: boolean;
+v6 = v3 instanceof java.net.Inet6Address;
+if v6 == 0 goto label1;
+v7 = virtualinvoke v3.<java.net.InetAddress: byte[] getAddress()>();
+v8 = virtualinvoke v3.<java.net.Inet6Address: int getScopeId()>();
+goto label2;
+label1:
+v8 = 0;
+v9 = virtualinvoke v3.<java.net.InetAddress: byte[] getAddress()>();
+v7 = staticinvoke <io.netty.channel.unix.NativeInetAddress: byte[] ipv4MappedIpv6Address(byte[])>(v9);
+label2:
+if v5 == 0 goto label3;
+v10 = staticinvoke <io.netty.channel.unix.Socket: int msgFastopen()>();
+goto label4;
+label3:
+v10 = 0;
+label4:
+v11 = v0.<io.netty.channel.unix.Socket: int fd>;
+v12 = specialinvoke v0.<io.netty.channel.unix.Socket: boolean useIpv6(java.net.InetAddress)>(v3);
+v13 = staticinvoke <io.netty.channel.unix.Socket: int sendToAddresses(int,boolean,long,int,byte[],int,int,int)>(v11, v12, v1, v2, v7, v8, v4, v10);
+if v13 < 0 goto label5;
+return v13;
+label5:
+v14 = <io.netty.channel.unix.Errors: int ERRNO_EINPROGRESS_NEGATIVE>;
+if v13 != v14 goto label6;
+if v5 == 0 goto label6;
+return 0;
+label6:
+v15 = <io.netty.channel.unix.Errors: int ERROR_ECONNREFUSED_NEGATIVE>;
+if v13 != v15 goto label7;
+v16 = new java.net.PortUnreachableException;
+specialinvoke v16.<java.net.PortUnreachableException: void <init>(java.lang.String)>("sendToAddresses failed");
+throw v16;
+label7:
+v17 = staticinvoke <io.netty.channel.unix.Errors: int ioResult(java.lang.String,int)>("sendToAddresses", v13);
+return v17;
+}
+public final int sendToAddressesDomainSocket(long, int, byte[]) throws java.io.IOException
+{
+byte[] v3;
+io.netty.channel.unix.Socket v0;
+int v2, v4, v5, v6;
+long v1;
+v0 := @this: io.netty.channel.unix.Socket;
+v1 := @parameter0: long;
+v2 := @parameter1: int;
+v3 := @parameter2: byte[];
+v4 = v0.<io.netty.channel.unix.Socket: int fd>;
+v5 = staticinvoke <io.netty.channel.unix.Socket: int sendToAddressesDomainSocket(int,long,int,byte[])>(v4, v1, v2, v3);
+if v5 < 0 goto label1;
+return v5;
+label1:
+v6 = staticinvoke <io.netty.channel.unix.Errors: int ioResult(java.lang.String,int)>("sendToAddressesDomainSocket", v5);
+return v6;
+}
+public final io.netty.channel.unix.DatagramSocketAddress recvFrom(java.nio.ByteBuffer, int, int) throws java.io.IOException
+{
+io.netty.channel.unix.Socket v0;
+io.netty.channel.unix.DatagramSocketAddress v5;
+int v2, v3, v4;
+java.nio.ByteBuffer v1;
+v0 := @this: io.netty.channel.unix.Socket;
+v1 := @parameter0: java.nio.ByteBuffer;
+v2 := @parameter1: int;
+v3 := @parameter2: int;
+v4 = v0.<io.netty.channel.unix.Socket: int fd>;
+v5 = staticinvoke <io.netty.channel.unix.Socket: io.netty.channel.unix.DatagramSocketAddress recvFrom(int,java.nio.ByteBuffer,int,int)>(v4, v1, v2, v3);
+return v5;
+}
+public final io.netty.channel.unix.DatagramSocketAddress recvFromAddress(long, int, int) throws java.io.IOException
+{
+io.netty.channel.unix.Socket v0;
+io.netty.channel.unix.DatagramSocketAddress v5;
+int v2, v3, v4;
+long v1;
+v0 := @this: io.netty.channel.unix.Socket;
+v1 := @parameter0: long;
+v2 := @parameter1: int;
+v3 := @parameter2: int;
+v4 = v0.<io.netty.channel.unix.Socket: int fd>;
+v5 = staticinvoke <io.netty.channel.unix.Socket: io.netty.channel.unix.DatagramSocketAddress recvFromAddress(int,long,int,int)>(v4, v1, v2, v3);
+return v5;
+}
+public final io.netty.channel.unix.DomainDatagramSocketAddress recvFromDomainSocket(java.nio.ByteBuffer, int, int) throws java.io.IOException
+{
+io.netty.channel.unix.Socket v0;
+io.netty.channel.unix.DomainDatagramSocketAddress v5;
+int v2, v3, v4;
+java.nio.ByteBuffer v1;
+v0 := @this: io.netty.channel.unix.Socket;
+v1 := @parameter0: java.nio.ByteBuffer;
+v2 := @parameter1: int;
+v3 := @parameter2: int;
+v4 = v0.<io.netty.channel.unix.Socket: int fd>;
+v5 = staticinvoke <io.netty.channel.unix.Socket: io.netty.channel.unix.DomainDatagramSocketAddress recvFromDomainSocket(int,java.nio.ByteBuffer,int,int)>(v4, v1, v2, v3);
+return v5;
+}
+public final io.netty.channel.unix.DomainDatagramSocketAddress recvFromAddressDomainSocket(long, int, int) throws java.io.IOException
+{
+io.netty.channel.unix.Socket v0;
+io.netty.channel.unix.DomainDatagramSocketAddress v5;
+int v2, v3, v4;
+long v1;
+v0 := @this: io.netty.channel.unix.Socket;
+v1 := @parameter0: long;
+v2 := @parameter1: int;
+v3 := @parameter2: int;
+v4 = v0.<io.netty.channel.unix.Socket: int fd>;
+v5 = staticinvoke <io.netty.channel.unix.Socket: io.netty.channel.unix.DomainDatagramSocketAddress recvFromAddressDomainSocket(int,long,int,int)>(v4, v1, v2, v3);
+return v5;
+}
+public int recv(java.nio.ByteBuffer, int, int) throws java.io.IOException
+{
+java.nio.ByteBuffer v1;
+io.netty.channel.unix.Socket v0;
+int v2, v3, v4, v5, v6, v7;
+v0 := @this: io.netty.channel.unix.Socket;
+v1 := @parameter0: java.nio.ByteBuffer;
+v2 := @parameter1: int;
+v3 := @parameter2: int;
+v4 = virtualinvoke v0.<io.netty.channel.unix.Socket: int intValue()>();
+v5 = staticinvoke <io.netty.channel.unix.Socket: int recv(int,java.nio.ByteBuffer,int,int)>(v4, v1, v2, v3);
+if v5 <= 0 goto label1;
+return v5;
+label1:
+if v5 != 0 goto label2;
+v6 = (int) -1;
+return v6;
+label2:
+v7 = staticinvoke <io.netty.channel.unix.Errors: int ioResult(java.lang.String,int)>("recv", v5);
+return v7;
+}
+public int recvAddress(long, int, int) throws java.io.IOException
+{
+long v1;
+io.netty.channel.unix.Socket v0;
+int v2, v3, v4, v5, v6, v7;
+v0 := @this: io.netty.channel.unix.Socket;
+v1 := @parameter0: long;
+v2 := @parameter1: int;
+v3 := @parameter2: int;
+v4 = virtualinvoke v0.<io.netty.channel.unix.Socket: int intValue()>();
+v5 = staticinvoke <io.netty.channel.unix.Socket: int recvAddress(int,long,int,int)>(v4, v1, v2, v3);
+if v5 <= 0 goto label1;
+return v5;
+label1:
+if v5 != 0 goto label2;
+v6 = (int) -1;
+return v6;
+label2:
+v7 = staticinvoke <io.netty.channel.unix.Errors: int ioResult(java.lang.String,int)>("recvAddress", v5);
+return v7;
+}
+public int send(java.nio.ByteBuffer, int, int) throws java.io.IOException
+{
+io.netty.channel.unix.Socket v0;
+int v2, v3, v4, v5, v6;
+java.nio.ByteBuffer v1;
+v0 := @this: io.netty.channel.unix.Socket;
+v1 := @parameter0: java.nio.ByteBuffer;
+v2 := @parameter1: int;
+v3 := @parameter2: int;
+v4 = virtualinvoke v0.<io.netty.channel.unix.Socket: int intValue()>();
+v5 = staticinvoke <io.netty.channel.unix.Socket: int send(int,java.nio.ByteBuffer,int,int)>(v4, v1, v2, v3);
+if v5 < 0 goto label1;
+return v5;
+label1:
+v6 = staticinvoke <io.netty.channel.unix.Errors: int ioResult(java.lang.String,int)>("send", v5);
+return v6;
+}
+public int sendAddress(long, int, int) throws java.io.IOException
+{
+io.netty.channel.unix.Socket v0;
+int v2, v3, v4, v5, v6;
+long v1;
+v0 := @this: io.netty.channel.unix.Socket;
+v1 := @parameter0: long;
+v2 := @parameter1: int;
+v3 := @parameter2: int;
+v4 = virtualinvoke v0.<io.netty.channel.unix.Socket: int intValue()>();
+v5 = staticinvoke <io.netty.channel.unix.Socket: int sendAddress(int,long,int,int)>(v4, v1, v2, v3);
+if v5 < 0 goto label1;
+return v5;
+label1:
+v6 = staticinvoke <io.netty.channel.unix.Errors: int ioResult(java.lang.String,int)>("sendAddress", v5);
+return v6;
+}
+public final int recvFd() throws java.io.IOException
+{
+io.netty.channel.unix.Errors$NativeIoException v6;
+io.netty.channel.unix.Socket v0;
+int v1, v2, v3, v4, v5;
+v0 := @this: io.netty.channel.unix.Socket;
+v1 = v0.<io.netty.channel.unix.Socket: int fd>;
+v2 = staticinvoke <io.netty.channel.unix.Socket: int recvFd(int)>(v1);
+if v2 <= 0 goto label1;
+return v2;
+label1:
+if v2 != 0 goto label2;
+v3 = (int) -1;
+return v3;
+label2:
+v4 = <io.netty.channel.unix.Errors: int ERRNO_EAGAIN_NEGATIVE>;
+if v2 == v4 goto label3;
+v5 = <io.netty.channel.unix.Errors: int ERRNO_EWOULDBLOCK_NEGATIVE>;
+if v2 != v5 goto label4;
+label3:
+return 0;
+label4:
+v6 = staticinvoke <io.netty.channel.unix.Errors: io.netty.channel.unix.Errors$NativeIoException newIOException(java.lang.String,int)>("recvFd", v2);
+throw v6;
+}
+public final int sendFd(int) throws java.io.IOException
+{
+io.netty.channel.unix.Errors$NativeIoException v7;
+io.netty.channel.unix.Socket v0;
+int v1, v2, v3, v4, v5, v6;
+v0 := @this: io.netty.channel.unix.Socket;
+v1 := @parameter0: int;
+v2 = v0.<io.netty.channel.unix.Socket: int fd>;
+v3 = staticinvoke <io.netty.channel.unix.Socket: int sendFd(int,int)>(v2, v1);
+if v3 < 0 goto label1;
+return v3;
+label1:
+v4 = <io.netty.channel.unix.Errors: int ERRNO_EAGAIN_NEGATIVE>;
+if v3 == v4 goto label2;
+v5 = <io.netty.channel.unix.Errors: int ERRNO_EWOULDBLOCK_NEGATIVE>;
+if v3 != v5 goto label3;
+label2:
+v6 = (int) -1;
+return v6;
+label3:
+v7 = staticinvoke <io.netty.channel.unix.Errors: io.netty.channel.unix.Errors$NativeIoException newIOException(java.lang.String,int)>("sendFd", v3);
+throw v7;
+}
+public final boolean connect(java.net.SocketAddress) throws java.io.IOException
+{
+byte[] v15, v7;
+java.net.SocketAddress v1;
+java.lang.Error v16;
+java.net.InetAddress v3;
+io.netty.channel.unix.Socket v0;
+java.nio.charset.Charset v14;
+int v10, v12, v5, v8, v9;
+java.lang.String v13, v17;
+boolean v11, v18, v2, v6;
+io.netty.channel.unix.NativeInetAddress v4;
+v0 := @this: io.netty.channel.unix.Socket;
+v1 := @parameter0: java.net.SocketAddress;
+v2 = v1 instanceof java.net.InetSocketAddress;
+if v2 == 0 goto label1;
+v3 = virtualinvoke v1.<java.net.InetSocketAddress: java.net.InetAddress getAddress()>();
+v4 = staticinvoke <io.netty.channel.unix.NativeInetAddress: io.netty.channel.unix.NativeInetAddress newInstance(java.net.InetAddress)>(v3);
+v5 = v0.<io.netty.channel.unix.Socket: int fd>;
+v6 = specialinvoke v0.<io.netty.channel.unix.Socket: boolean useIpv6(java.net.InetAddress)>(v3);
+v7 = v4.<io.netty.channel.unix.NativeInetAddress: byte[] address>;
+v8 = v4.<io.netty.channel.unix.NativeInetAddress: int scopeId>;
+v9 = virtualinvoke v1.<java.net.InetSocketAddress: int getPort()>();
+v10 = staticinvoke <io.netty.channel.unix.Socket: int connect(int,boolean,byte[],int,int)>(v5, v6, v7, v8, v9);
+goto label3;
+label1:
+v11 = v1 instanceof io.netty.channel.unix.DomainSocketAddress;
+if v11 == 0 goto label2;
+v12 = v0.<io.netty.channel.unix.Socket: int fd>;
+v13 = virtualinvoke v1.<io.netty.channel.unix.DomainSocketAddress: java.lang.String path()>();
+v14 = <io.netty.util.CharsetUtil: java.nio.charset.Charset UTF_8>;
+v15 = virtualinvoke v13.<java.lang.String: byte[] getBytes(java.nio.charset.Charset)>(v14);
+v10 = staticinvoke <io.netty.channel.unix.Socket: int connectDomainSocket(int,byte[])>(v12, v15);
+goto label3;
+label2:
+v16 = new java.lang.Error;
+v17 = dynamicinvoke "makeConcatWithConstants" <java.lang.String (java.net.SocketAddress)>(v1) <java.lang.invoke.StringConcatFactory: java.lang.invoke.CallSite makeConcatWithConstants(java.lang.invoke.MethodHandles$Lookup,java.lang.String,java.lang.invoke.MethodType,java.lang.String,java.lang.Object[])>("Unexpected SocketAddress implementation \u0001");
+specialinvoke v16.<java.lang.Error: void <init>(java.lang.String)>(v17);
+throw v16;
+label3:
+if v10 >= 0 goto label4;
+v18 = staticinvoke <io.netty.channel.unix.Errors: boolean handleConnectErrno(java.lang.String,int)>("connect", v10);
+return v18;
+label4:
+return 1;
+}
+public final boolean finishConnect() throws java.io.IOException
+{
+io.netty.channel.unix.Socket v0;
+int v1, v2;
+boolean v3;
+v0 := @this: io.netty.channel.unix.Socket;
+v1 = v0.<io.netty.channel.unix.Socket: int fd>;
+v2 = staticinvoke <io.netty.channel.unix.Socket: int finishConnect(int)>(v1);
+if v2 >= 0 goto label1;
+v3 = staticinvoke <io.netty.channel.unix.Errors: boolean handleConnectErrno(java.lang.String,int)>("finishConnect", v2);
+return v3;
+label1:
+return 1;
+}
+public final void disconnect() throws java.io.IOException
+{
+io.netty.channel.unix.Socket v0;
+int v1, v3;
+boolean v2;
+v0 := @this: io.netty.channel.unix.Socket;
+v1 = v0.<io.netty.channel.unix.Socket: int fd>;
+v2 = v0.<io.netty.channel.unix.Socket: boolean ipv6>;
+v3 = staticinvoke <io.netty.channel.unix.Socket: int disconnect(int,boolean)>(v1, v2);
+if v3 >= 0 goto label1;
+staticinvoke <io.netty.channel.unix.Errors: boolean handleConnectErrno(java.lang.String,int)>("disconnect", v3);
+label1:
+return;
+}
+public final void bind(java.net.SocketAddress) throws java.io.IOException
+{
+byte[] v16, v7;
+io.netty.channel.unix.Errors$NativeIoException v11, v18;
+java.net.SocketAddress v1;
+java.lang.Error v19;
+java.net.InetAddress v3;
+io.netty.channel.unix.Socket v0;
+java.nio.charset.Charset v15;
+int v10, v13, v17, v5, v8, v9;
+java.lang.String v14, v20;
+boolean v12, v2, v6;
+io.netty.channel.unix.NativeInetAddress v4;
+v0 := @this: io.netty.channel.unix.Socket;
+v1 := @parameter0: java.net.SocketAddress;
+v2 = v1 instanceof java.net.InetSocketAddress;
+if v2 == 0 goto label1;
+v3 = virtualinvoke v1.<java.net.InetSocketAddress: java.net.InetAddress getAddress()>();
+v4 = staticinvoke <io.netty.channel.unix.NativeInetAddress: io.netty.channel.unix.NativeInetAddress newInstance(java.net.InetAddress)>(v3);
+v5 = v0.<io.netty.channel.unix.Socket: int fd>;
+v6 = specialinvoke v0.<io.netty.channel.unix.Socket: boolean useIpv6(java.net.InetAddress)>(v3);
+v7 = v4.<io.netty.channel.unix.NativeInetAddress: byte[] address>;
+v8 = v4.<io.netty.channel.unix.NativeInetAddress: int scopeId>;
+v9 = virtualinvoke v1.<java.net.InetSocketAddress: int getPort()>();
+v10 = staticinvoke <io.netty.channel.unix.Socket: int bind(int,boolean,byte[],int,int)>(v5, v6, v7, v8, v9);
+if v10 >= 0 goto label3;
+v11 = staticinvoke <io.netty.channel.unix.Errors: io.netty.channel.unix.Errors$NativeIoException newIOException(java.lang.String,int)>("bind", v10);
+throw v11;
+label1:
+v12 = v1 instanceof io.netty.channel.unix.DomainSocketAddress;
+if v12 == 0 goto label2;
+v13 = v0.<io.netty.channel.unix.Socket: int fd>;
+v14 = virtualinvoke v1.<io.netty.channel.unix.DomainSocketAddress: java.lang.String path()>();
+v15 = <io.netty.util.CharsetUtil: java.nio.charset.Charset UTF_8>;
+v16 = virtualinvoke v14.<java.lang.String: byte[] getBytes(java.nio.charset.Charset)>(v15);
+v17 = staticinvoke <io.netty.channel.unix.Socket: int bindDomainSocket(int,byte[])>(v13, v16);
+if v17 >= 0 goto label3;
+v18 = staticinvoke <io.netty.channel.unix.Errors: io.netty.channel.unix.Errors$NativeIoException newIOException(java.lang.String,int)>("bind", v17);
+throw v18;
+label2:
+v19 = new java.lang.Error;
+v20 = dynamicinvoke "makeConcatWithConstants" <java.lang.String (java.net.SocketAddress)>(v1) <java.lang.invoke.StringConcatFactory: java.lang.invoke.CallSite makeConcatWithConstants(java.lang.invoke.MethodHandles$Lookup,java.lang.String,java.lang.invoke.MethodType,java.lang.String,java.lang.Object[])>("Unexpected SocketAddress implementation \u0001");
+specialinvoke v19.<java.lang.Error: void <init>(java.lang.String)>(v20);
+throw v19;
+label3:
+return;
+}
+public final void listen(int) throws java.io.IOException
+{
+io.netty.channel.unix.Errors$NativeIoException v4;
+io.netty.channel.unix.Socket v0;
+int v1, v2, v3;
+v0 := @this: io.netty.channel.unix.Socket;
+v1 := @parameter0: int;
+v2 = v0.<io.netty.channel.unix.Socket: int fd>;
+v3 = staticinvoke <io.netty.channel.unix.Socket: int listen(int,int)>(v2, v1);
+if v3 >= 0 goto label1;
+v4 = staticinvoke <io.netty.channel.unix.Errors: io.netty.channel.unix.Errors$NativeIoException newIOException(java.lang.String,int)>("listen", v3);
+throw v4;
+label1:
+return;
+}
+public final int accept(byte[]) throws java.io.IOException
+{
+byte[] v1;
+io.netty.channel.unix.Errors$NativeIoException v7;
+io.netty.channel.unix.Socket v0;
+int v2, v3, v4, v5, v6;
+v0 := @this: io.netty.channel.unix.Socket;
+v1 := @parameter0: byte[];
+v2 = v0.<io.netty.channel.unix.Socket: int fd>;
+v3 = staticinvoke <io.netty.channel.unix.Socket: int accept(int,byte[])>(v2, v1);
+if v3 < 0 goto label1;
+return v3;
+label1:
+v4 = <io.netty.channel.unix.Errors: int ERRNO_EAGAIN_NEGATIVE>;
+if v3 == v4 goto label2;
+v5 = <io.netty.channel.unix.Errors: int ERRNO_EWOULDBLOCK_NEGATIVE>;
+if v3 != v5 goto label3;
+label2:
+v6 = (int) -1;
+return v6;
+label3:
+v7 = staticinvoke <io.netty.channel.unix.Errors: io.netty.channel.unix.Errors$NativeIoException newIOException(java.lang.String,int)>("accept", v3);
+throw v7;
+}
+public final java.net.InetSocketAddress remoteAddress()
+{
+byte[] v2;
+io.netty.channel.unix.Socket v0;
+int v1, v4;
+java.net.InetSocketAddress v3;
+v0 := @this: io.netty.channel.unix.Socket;
+v1 = v0.<io.netty.channel.unix.Socket: int fd>;
+v2 = staticinvoke <io.netty.channel.unix.Socket: byte[] remoteAddress(int)>(v1);
+if v2 != null goto label1;
+v3 = null;
+goto label2;
+label1:
+v4 = lengthof v2;
+v3 = staticinvoke <io.netty.channel.unix.NativeInetAddress: java.net.InetSocketAddress address(byte[],int,int)>(v2, 0, v4);
+label2:
+return v3;
+}
+public final io.netty.channel.unix.DomainSocketAddress remoteDomainSocketAddress()
+{
+byte[] v2;
+io.netty.channel.unix.Socket v0;
+io.netty.channel.unix.DomainSocketAddress v3;
+int v1;
+java.lang.String v4;
+v0 := @this: io.netty.channel.unix.Socket;
+v1 = v0.<io.netty.channel.unix.Socket: int fd>;
+v2 = staticinvoke <io.netty.channel.unix.Socket: byte[] remoteDomainSocketAddress(int)>(v1);
+if v2 != null goto label1;
+v3 = null;
+goto label2;
+label1:
+v3 = new io.netty.channel.unix.DomainSocketAddress;
+v4 = new java.lang.String;
+specialinvoke v4.<java.lang.String: void <init>(byte[])>(v2);
+specialinvoke v3.<io.netty.channel.unix.DomainSocketAddress: void <init>(java.lang.String)>(v4);
+label2:
+return v3;
+}
+public final java.net.InetSocketAddress localAddress()
+{
+byte[] v2;
+io.netty.channel.unix.Socket v0;
+int v1, v4;
+java.net.InetSocketAddress v3;
+v0 := @this: io.netty.channel.unix.Socket;
+v1 = v0.<io.netty.channel.unix.Socket: int fd>;
+v2 = staticinvoke <io.netty.channel.unix.Socket: byte[] localAddress(int)>(v1);
+if v2 != null goto label1;
+v3 = null;
+goto label2;
+label1:
+v4 = lengthof v2;
+v3 = staticinvoke <io.netty.channel.unix.NativeInetAddress: java.net.InetSocketAddress address(byte[],int,int)>(v2, 0, v4);
+label2:
+return v3;
+}
+public final io.netty.channel.unix.DomainSocketAddress localDomainSocketAddress()
+{
+byte[] v2;
+io.netty.channel.unix.Socket v0;
+io.netty.channel.unix.DomainSocketAddress v3;
+int v1;
+java.lang.String v4;
+v0 := @this: io.netty.channel.unix.Socket;
+v1 = v0.<io.netty.channel.unix.Socket: int fd>;
+v2 = staticinvoke <io.netty.channel.unix.Socket: byte[] localDomainSocketAddress(int)>(v1);
+if v2 != null goto label1;
+v3 = null;
+goto label2;
+label1:
+v3 = new io.netty.channel.unix.DomainSocketAddress;
+v4 = new java.lang.String;
+specialinvoke v4.<java.lang.String: void <init>(byte[])>(v2);
+specialinvoke v3.<io.netty.channel.unix.DomainSocketAddress: void <init>(java.lang.String)>(v4);
+label2:
+return v3;
+}
+public final int getReceiveBufferSize() throws java.io.IOException
+{
+int v1, v2;
+io.netty.channel.unix.Socket v0;
+v0 := @this: io.netty.channel.unix.Socket;
+v1 = v0.<io.netty.channel.unix.Socket: int fd>;
+v2 = staticinvoke <io.netty.channel.unix.Socket: int getReceiveBufferSize(int)>(v1);
+return v2;
+}
+public final int getSendBufferSize() throws java.io.IOException
+{
+int v1, v2;
+io.netty.channel.unix.Socket v0;
+v0 := @this: io.netty.channel.unix.Socket;
+v1 = v0.<io.netty.channel.unix.Socket: int fd>;
+v2 = staticinvoke <io.netty.channel.unix.Socket: int getSendBufferSize(int)>(v1);
+return v2;
+}
+public final boolean isKeepAlive() throws java.io.IOException
+{
+io.netty.channel.unix.Socket v0;
+int v1, v2;
+boolean v3;
+v0 := @this: io.netty.channel.unix.Socket;
+v1 = v0.<io.netty.channel.unix.Socket: int fd>;
+v2 = staticinvoke <io.netty.channel.unix.Socket: int isKeepAlive(int)>(v1);
+if v2 == 0 goto label1;
+v3 = 1;
+goto label2;
+label1:
+v3 = 0;
+label2:
+return v3;
+}
+public final boolean isTcpNoDelay() throws java.io.IOException
+{
+io.netty.channel.unix.Socket v0;
+int v1, v2;
+boolean v3;
+v0 := @this: io.netty.channel.unix.Socket;
+v1 = v0.<io.netty.channel.unix.Socket: int fd>;
+v2 = staticinvoke <io.netty.channel.unix.Socket: int isTcpNoDelay(int)>(v1);
+if v2 == 0 goto label1;
+v3 = 1;
+goto label2;
+label1:
+v3 = 0;
+label2:
+return v3;
+}
+public final boolean isReuseAddress() throws java.io.IOException
+{
+io.netty.channel.unix.Socket v0;
+int v1, v2;
+boolean v3;
+v0 := @this: io.netty.channel.unix.Socket;
+v1 = v0.<io.netty.channel.unix.Socket: int fd>;
+v2 = staticinvoke <io.netty.channel.unix.Socket: int isReuseAddress(int)>(v1);
+if v2 == 0 goto label1;
+v3 = 1;
+goto label2;
+label1:
+v3 = 0;
+label2:
+return v3;
+}
+public final boolean isReusePort() throws java.io.IOException
+{
+io.netty.channel.unix.Socket v0;
+int v1, v2;
+boolean v3;
+v0 := @this: io.netty.channel.unix.Socket;
+v1 = v0.<io.netty.channel.unix.Socket: int fd>;
+v2 = staticinvoke <io.netty.channel.unix.Socket: int isReusePort(int)>(v1);
+if v2 == 0 goto label1;
+v3 = 1;
+goto label2;
+label1:
+v3 = 0;
+label2:
+return v3;
+}
+public final boolean isBroadcast() throws java.io.IOException
+{
+io.netty.channel.unix.Socket v0;
+int v1, v2;
+boolean v3;
+v0 := @this: io.netty.channel.unix.Socket;
+v1 = v0.<io.netty.channel.unix.Socket: int fd>;
+v2 = staticinvoke <io.netty.channel.unix.Socket: int isBroadcast(int)>(v1);
+if v2 == 0 goto label1;
+v3 = 1;
+goto label2;
+label1:
+v3 = 0;
+label2:
+return v3;
+}
+public final int getSoLinger() throws java.io.IOException
+{
+int v1, v2;
+io.netty.channel.unix.Socket v0;
+v0 := @this: io.netty.channel.unix.Socket;
+v1 = v0.<io.netty.channel.unix.Socket: int fd>;
+v2 = staticinvoke <io.netty.channel.unix.Socket: int getSoLinger(int)>(v1);
+return v2;
+}
+public final int getSoError() throws java.io.IOException
+{
+int v1, v2;
+io.netty.channel.unix.Socket v0;
+v0 := @this: io.netty.channel.unix.Socket;
+v1 = v0.<io.netty.channel.unix.Socket: int fd>;
+v2 = staticinvoke <io.netty.channel.unix.Socket: int getSoError(int)>(v1);
+return v2;
+}
+public final int getTrafficClass() throws java.io.IOException
+{
+io.netty.channel.unix.Socket v0;
+int v1, v3;
+boolean v2;
+v0 := @this: io.netty.channel.unix.Socket;
+v1 = v0.<io.netty.channel.unix.Socket: int fd>;
+v2 = v0.<io.netty.channel.unix.Socket: boolean ipv6>;
+v3 = staticinvoke <io.netty.channel.unix.Socket: int getTrafficClass(int,boolean)>(v1, v2);
+return v3;
+}
+public final void setKeepAlive(boolean) throws java.io.IOException
+{
+io.netty.channel.unix.Socket v0;
+byte v3;
+int v2;
+boolean v1;
+v0 := @this: io.netty.channel.unix.Socket;
+v1 := @parameter0: boolean;
+v2 = v0.<io.netty.channel.unix.Socket: int fd>;
+if v1 == 0 goto label1;
+v3 = 1;
+goto label2;
+label1:
+v3 = 0;
+label2:
+staticinvoke <io.netty.channel.unix.Socket: void setKeepAlive(int,int)>(v2, v3);
+return;
+}
+public final void setReceiveBufferSize(int) throws java.io.IOException
+{
+int v1, v2;
+io.netty.channel.unix.Socket v0;
+v0 := @this: io.netty.channel.unix.Socket;
+v1 := @parameter0: int;
+v2 = v0.<io.netty.channel.unix.Socket: int fd>;
+staticinvoke <io.netty.channel.unix.Socket: void setReceiveBufferSize(int,int)>(v2, v1);
+return;
+}
+public final void setSendBufferSize(int) throws java.io.IOException
+{
+int v1, v2;
+io.netty.channel.unix.Socket v0;
+v0 := @this: io.netty.channel.unix.Socket;
+v1 := @parameter0: int;
+v2 = v0.<io.netty.channel.unix.Socket: int fd>;
+staticinvoke <io.netty.channel.unix.Socket: void setSendBufferSize(int,int)>(v2, v1);
+return;
+}
+public final void setTcpNoDelay(boolean) throws java.io.IOException
+{
+io.netty.channel.unix.Socket v0;
+byte v3;
+int v2;
+boolean v1;
+v0 := @this: io.netty.channel.unix.Socket;
+v1 := @parameter0: boolean;
+v2 = v0.<io.netty.channel.unix.Socket: int fd>;
+if v1 == 0 goto label1;
+v3 = 1;
+goto label2;
+label1:
+v3 = 0;
+label2:
+staticinvoke <io.netty.channel.unix.Socket: void setTcpNoDelay(int,int)>(v2, v3);
+return;
+}
+public final void setSoLinger(int) throws java.io.IOException
+{
+int v1, v2;
+io.netty.channel.unix.Socket v0;
+v0 := @this: io.netty.channel.unix.Socket;
+v1 := @parameter0: int;
+v2 = v0.<io.netty.channel.unix.Socket: int fd>;
+staticinvoke <io.netty.channel.unix.Socket: void setSoLinger(int,int)>(v2, v1);
+return;
+}
+public final void setReuseAddress(boolean) throws java.io.IOException
+{
+io.netty.channel.unix.Socket v0;
+byte v3;
+int v2;
+boolean v1;
+v0 := @this: io.netty.channel.unix.Socket;
+v1 := @parameter0: boolean;
+v2 = v0.<io.netty.channel.unix.Socket: int fd>;
+if v1 == 0 goto label1;
+v3 = 1;
+goto label2;
+label1:
+v3 = 0;
+label2:
+staticinvoke <io.netty.channel.unix.Socket: void setReuseAddress(int,int)>(v2, v3);
+return;
+}
+public final void setReusePort(boolean) throws java.io.IOException
+{
+io.netty.channel.unix.Socket v0;
+byte v3;
+int v2;
+boolean v1;
+v0 := @this: io.netty.channel.unix.Socket;
+v1 := @parameter0: boolean;
+v2 = v0.<io.netty.channel.unix.Socket: int fd>;
+if v1 == 0 goto label1;
+v3 = 1;
+goto label2;
+label1:
+v3 = 0;
+label2:
+staticinvoke <io.netty.channel.unix.Socket: void setReusePort(int,int)>(v2, v3);
+return;
+}
+public final void setBroadcast(boolean) throws java.io.IOException
+{
+io.netty.channel.unix.Socket v0;
+byte v3;
+int v2;
+boolean v1;
+v0 := @this: io.netty.channel.unix.Socket;
+v1 := @parameter0: boolean;
+v2 = v0.<io.netty.channel.unix.Socket: int fd>;
+if v1 == 0 goto label1;
+v3 = 1;
+goto label2;
+label1:
+v3 = 0;
+label2:
+staticinvoke <io.netty.channel.unix.Socket: void setBroadcast(int,int)>(v2, v3);
+return;
+}
+public final void setTrafficClass(int) throws java.io.IOException
+{
+io.netty.channel.unix.Socket v0;
+int v1, v2;
+boolean v3;
+v0 := @this: io.netty.channel.unix.Socket;
+v1 := @parameter0: int;
+v2 = v0.<io.netty.channel.unix.Socket: int fd>;
+v3 = v0.<io.netty.channel.unix.Socket: boolean ipv6>;
+staticinvoke <io.netty.channel.unix.Socket: void setTrafficClass(int,boolean,int)>(v2, v3, v1);
+return;
+}
+public void setIntOpt(int, int, int) throws java.io.IOException
+{
+io.netty.channel.unix.Socket v0;
+int v1, v2, v3, v4;
+v0 := @this: io.netty.channel.unix.Socket;
+v1 := @parameter0: int;
+v2 := @parameter1: int;
+v3 := @parameter2: int;
+v4 = v0.<io.netty.channel.unix.Socket: int fd>;
+staticinvoke <io.netty.channel.unix.Socket: void setIntOpt(int,int,int,int)>(v4, v1, v2, v3);
+return;
+}
+public void setRawOpt(int, int, java.nio.ByteBuffer) throws java.io.IOException
+{
+byte[] v13, v19;
+long v7, v9;
+java.nio.ByteBuffer v20, v3;
+io.netty.channel.unix.Socket v0;
+int v1, v10, v12, v14, v15, v16, v17, v18, v2, v21, v22, v4, v6, v8;
+boolean v11, v5;
+v0 := @this: io.netty.channel.unix.Socket;
+v1 := @parameter0: int;
+v2 := @parameter1: int;
+v3 := @parameter2: java.nio.ByteBuffer;
+v4 = virtualinvoke v3.<java.nio.ByteBuffer: int limit()>();
+v5 = virtualinvoke v3.<java.nio.ByteBuffer: boolean isDirect()>();
+if v5 == 0 goto label1;
+v6 = v0.<io.netty.channel.unix.Socket: int fd>;
+v7 = staticinvoke <io.netty.channel.unix.Buffer: long memoryAddress(java.nio.ByteBuffer)>(v3);
+v8 = virtualinvoke v3.<java.nio.ByteBuffer: int position()>();
+v9 = v7 + v8;
+v10 = virtualinvoke v3.<java.nio.ByteBuffer: int remaining()>();
+staticinvoke <io.netty.channel.unix.Socket: void setRawOptAddress(int,int,int,long,int)>(v6, v1, v2, v9, v10);
+goto label3;
+label1:
+v11 = virtualinvoke v3.<java.nio.ByteBuffer: boolean hasArray()>();
+if v11 == 0 goto label2;
+v12 = v0.<io.netty.channel.unix.Socket: int fd>;
+v13 = virtualinvoke v3.<java.nio.ByteBuffer: byte[] array()>();
+v14 = virtualinvoke v3.<java.nio.ByteBuffer: int arrayOffset()>();
+v15 = virtualinvoke v3.<java.nio.ByteBuffer: int position()>();
+v16 = v14 + v15;
+v17 = virtualinvoke v3.<java.nio.ByteBuffer: int remaining()>();
+staticinvoke <io.netty.channel.unix.Socket: void setRawOptArray(int,int,int,byte[],int,int)>(v12, v1, v2, v13, v16, v17);
+goto label3;
+label2:
+v18 = virtualinvoke v3.<java.nio.ByteBuffer: int remaining()>();
+v19 = newarray (byte)[v18];
+v20 = virtualinvoke v3.<java.nio.ByteBuffer: java.nio.ByteBuffer duplicate()>();
+virtualinvoke v20.<java.nio.ByteBuffer: java.nio.ByteBuffer get(byte[])>(v19);
+v21 = v0.<io.netty.channel.unix.Socket: int fd>;
+v22 = lengthof v19;
+staticinvoke <io.netty.channel.unix.Socket: void setRawOptArray(int,int,int,byte[],int,int)>(v21, v1, v2, v19, 0, v22);
+label3:
+virtualinvoke v3.<java.nio.ByteBuffer: java.nio.Buffer position(int)>(v4);
+return;
+}
+public int getIntOpt(int, int) throws java.io.IOException
+{
+io.netty.channel.unix.Socket v0;
+int v1, v2, v3, v4;
+v0 := @this: io.netty.channel.unix.Socket;
+v1 := @parameter0: int;
+v2 := @parameter1: int;
+v3 = v0.<io.netty.channel.unix.Socket: int fd>;
+v4 = staticinvoke <io.netty.channel.unix.Socket: int getIntOpt(int,int,int)>(v3, v1, v2);
+return v4;
+}
+public void getRawOpt(int, int, java.nio.ByteBuffer) throws java.io.IOException
+{
+byte[] v12, v18;
+long v6, v8;
+java.nio.ByteBuffer v3;
+io.netty.channel.unix.Socket v0;
+int v1, v11, v13, v14, v15, v16, v17, v19, v2, v20, v21, v5, v7, v9;
+boolean v10, v4;
+v0 := @this: io.netty.channel.unix.Socket;
+v1 := @parameter0: int;
+v2 := @parameter1: int;
+v3 := @parameter2: java.nio.ByteBuffer;
+v4 = virtualinvoke v3.<java.nio.ByteBuffer: boolean isDirect()>();
+if v4 == 0 goto label1;
+v5 = v0.<io.netty.channel.unix.Socket: int fd>;
+v6 = staticinvoke <io.netty.channel.unix.Buffer: long memoryAddress(java.nio.ByteBuffer)>(v3);
+v7 = virtualinvoke v3.<java.nio.ByteBuffer: int position()>();
+v8 = v6 + v7;
+v9 = virtualinvoke v3.<java.nio.ByteBuffer: int remaining()>();
+staticinvoke <io.netty.channel.unix.Socket: void getRawOptAddress(int,int,int,long,int)>(v5, v1, v2, v8, v9);
+goto label3;
+label1:
+v10 = virtualinvoke v3.<java.nio.ByteBuffer: boolean hasArray()>();
+if v10 == 0 goto label2;
+v11 = v0.<io.netty.channel.unix.Socket: int fd>;
+v12 = virtualinvoke v3.<java.nio.ByteBuffer: byte[] array()>();
+v13 = virtualinvoke v3.<java.nio.ByteBuffer: int position()>();
+v14 = virtualinvoke v3.<java.nio.ByteBuffer: int arrayOffset()>();
+v15 = v13 + v14;
+v16 = virtualinvoke v3.<java.nio.ByteBuffer: int remaining()>();
+staticinvoke <io.netty.channel.unix.Socket: void getRawOptArray(int,int,int,byte[],int,int)>(v11, v1, v2, v12, v15, v16);
+goto label3;
+label2:
+v17 = virtualinvoke v3.<java.nio.ByteBuffer: int remaining()>();
+v18 = newarray (byte)[v17];
+v19 = v0.<io.netty.channel.unix.Socket: int fd>;
+v20 = lengthof v18;
+staticinvoke <io.netty.channel.unix.Socket: void getRawOptArray(int,int,int,byte[],int,int)>(v19, v1, v2, v18, 0, v20);
+virtualinvoke v3.<java.nio.ByteBuffer: java.nio.ByteBuffer put(byte[])>(v18);
+label3:
+v21 = virtualinvoke v3.<java.nio.ByteBuffer: int limit()>();
+virtualinvoke v3.<java.nio.ByteBuffer: java.nio.ByteBuffer position(int)>(v21);
+return;
+}
+public static boolean isIPv6Preferred()
+{
+boolean v0;
+v0 = <io.netty.channel.unix.Socket: boolean isIpv6Preferred>;
+return v0;
+}
+public static boolean shouldUseIpv6(io.netty.channel.socket.InternetProtocolFamily)
+{
+io.netty.channel.socket.InternetProtocolFamily v0, v2;
+boolean v1;
+v0 := @parameter0: io.netty.channel.socket.InternetProtocolFamily;
+if v0 != null goto label1;
+v1 = staticinvoke <io.netty.channel.unix.Socket: boolean isIPv6Preferred()>();
+goto label3;
+label1:
+v2 = <io.netty.channel.socket.InternetProtocolFamily: io.netty.channel.socket.InternetProtocolFamily IPv6>;
+if v0 != v2 goto label2;
+v1 = 1;
+goto label3;
+label2:
+v1 = 0;
+label3:
+return v1;
+}
+private static native boolean isIPv6Preferred0(boolean);
+private static native boolean isIPv6(int);
+public java.lang.String toString()
+{
+int v1;
+io.netty.channel.unix.Socket v0;
+java.lang.String v2;
+v0 := @this: io.netty.channel.unix.Socket;
+v1 = v0.<io.netty.channel.unix.Socket: int fd>;
+v2 = dynamicinvoke "makeConcatWithConstants" <java.lang.String (int)>(v1) <java.lang.invoke.StringConcatFactory: java.lang.invoke.CallSite makeConcatWithConstants(java.lang.invoke.MethodHandles$Lookup,java.lang.String,java.lang.invoke.MethodType,java.lang.String,java.lang.Object[])>("Socket{fd=\u0001}");
+return v2;
+}
+public static io.netty.channel.unix.Socket newSocketStream()
+{
+int v1;
+io.netty.channel.unix.Socket v0;
+v0 = new io.netty.channel.unix.Socket;
+v1 = staticinvoke <io.netty.channel.unix.Socket: int newSocketStream0()>();
+specialinvoke v0.<io.netty.channel.unix.Socket: void <init>(int)>(v1);
+return v0;
+}
+public static io.netty.channel.unix.Socket newSocketDgram()
+{
+int v1;
+io.netty.channel.unix.Socket v0;
+v0 = new io.netty.channel.unix.Socket;
+v1 = staticinvoke <io.netty.channel.unix.Socket: int newSocketDgram0()>();
+specialinvoke v0.<io.netty.channel.unix.Socket: void <init>(int)>(v1);
+return v0;
+}
+public static io.netty.channel.unix.Socket newSocketDomain()
+{
+int v1;
+io.netty.channel.unix.Socket v0;
+v0 = new io.netty.channel.unix.Socket;
+v1 = staticinvoke <io.netty.channel.unix.Socket: int newSocketDomain0()>();
+specialinvoke v0.<io.netty.channel.unix.Socket: void <init>(int)>(v1);
+return v0;
+}
+public static io.netty.channel.unix.Socket newSocketDomainDgram()
+{
+int v1;
+io.netty.channel.unix.Socket v0;
+v0 = new io.netty.channel.unix.Socket;
+v1 = staticinvoke <io.netty.channel.unix.Socket: int newSocketDomainDgram0()>();
+specialinvoke v0.<io.netty.channel.unix.Socket: void <init>(int)>(v1);
+return v0;
+}
+public static void initialize()
+{
+boolean v0, v1;
+v0 = staticinvoke <io.netty.util.NetUtil: boolean isIpV4StackPreferred()>();
+v1 = staticinvoke <io.netty.channel.unix.Socket: boolean isIPv6Preferred0(boolean)>(v0);
+<io.netty.channel.unix.Socket: boolean isIpv6Preferred> = v1;
+return;
+}
+protected static int newSocketStream0()
+{
+int v1;
+boolean v0;
+v0 = staticinvoke <io.netty.channel.unix.Socket: boolean isIPv6Preferred()>();
+v1 = staticinvoke <io.netty.channel.unix.Socket: int newSocketStream0(boolean)>(v0);
+return v1;
+}
+protected static int newSocketStream0(io.netty.channel.socket.InternetProtocolFamily)
+{
+int v2;
+io.netty.channel.socket.InternetProtocolFamily v0;
+boolean v1;
+v0 := @parameter0: io.netty.channel.socket.InternetProtocolFamily;
+v1 = staticinvoke <io.netty.channel.unix.Socket: boolean shouldUseIpv6(io.netty.channel.socket.InternetProtocolFamily)>(v0);
+v2 = staticinvoke <io.netty.channel.unix.Socket: int newSocketStream0(boolean)>(v1);
+return v2;
+}
+protected static int newSocketStream0(boolean)
+{
+io.netty.channel.unix.Errors$NativeIoException v3;
+io.netty.channel.ChannelException v2;
+int v1;
+boolean v0;
+v0 := @parameter0: boolean;
+v1 = staticinvoke <io.netty.channel.unix.Socket: int newSocketStreamFd(boolean)>(v0);
+if v1 >= 0 goto label1;
+v2 = new io.netty.channel.ChannelException;
+v3 = staticinvoke <io.netty.channel.unix.Errors: io.netty.channel.unix.Errors$NativeIoException newIOException(java.lang.String,int)>("newSocketStream", v1);
+specialinvoke v2.<io.netty.channel.ChannelException: void <init>(java.lang.Throwable)>(v3);
+throw v2;
+label1:
+return v1;
+}
+protected static int newSocketDgram0()
+{
+int v1;
+boolean v0;
+v0 = staticinvoke <io.netty.channel.unix.Socket: boolean isIPv6Preferred()>();
+v1 = staticinvoke <io.netty.channel.unix.Socket: int newSocketDgram0(boolean)>(v0);
+return v1;
+}
+protected static int newSocketDgram0(io.netty.channel.socket.InternetProtocolFamily)
+{
+int v2;
+io.netty.channel.socket.InternetProtocolFamily v0;
+boolean v1;
+v0 := @parameter0: io.netty.channel.socket.InternetProtocolFamily;
+v1 = staticinvoke <io.netty.channel.unix.Socket: boolean shouldUseIpv6(io.netty.channel.socket.InternetProtocolFamily)>(v0);
+v2 = staticinvoke <io.netty.channel.unix.Socket: int newSocketDgram0(boolean)>(v1);
+return v2;
+}
+protected static int newSocketDgram0(boolean)
+{
+io.netty.channel.unix.Errors$NativeIoException v3;
+io.netty.channel.ChannelException v2;
+int v1;
+boolean v0;
+v0 := @parameter0: boolean;
+v1 = staticinvoke <io.netty.channel.unix.Socket: int newSocketDgramFd(boolean)>(v0);
+if v1 >= 0 goto label1;
+v2 = new io.netty.channel.ChannelException;
+v3 = staticinvoke <io.netty.channel.unix.Errors: io.netty.channel.unix.Errors$NativeIoException newIOException(java.lang.String,int)>("newSocketDgram", v1);
+specialinvoke v2.<io.netty.channel.ChannelException: void <init>(java.lang.Throwable)>(v3);
+throw v2;
+label1:
+return v1;
+}
+protected static int newSocketDomain0()
+{
+int v0;
+io.netty.channel.unix.Errors$NativeIoException v2;
+io.netty.channel.ChannelException v1;
+v0 = staticinvoke <io.netty.channel.unix.Socket: int newSocketDomainFd()>();
+if v0 >= 0 goto label1;
+v1 = new io.netty.channel.ChannelException;
+v2 = staticinvoke <io.netty.channel.unix.Errors: io.netty.channel.unix.Errors$NativeIoException newIOException(java.lang.String,int)>("newSocketDomain", v0);
+specialinvoke v1.<io.netty.channel.ChannelException: void <init>(java.lang.Throwable)>(v2);
+throw v1;
+label1:
+return v0;
+}
+protected static int newSocketDomainDgram0()
+{
+int v0;
+io.netty.channel.unix.Errors$NativeIoException v2;
+io.netty.channel.ChannelException v1;
+v0 = staticinvoke <io.netty.channel.unix.Socket: int newSocketDomainDgramFd()>();
+if v0 >= 0 goto label1;
+v1 = new io.netty.channel.ChannelException;
+v2 = staticinvoke <io.netty.channel.unix.Errors: io.netty.channel.unix.Errors$NativeIoException newIOException(java.lang.String,int)>("newSocketDomainDgram", v0);
+specialinvoke v1.<io.netty.channel.ChannelException: void <init>(java.lang.Throwable)>(v2);
+throw v1;
+label1:
+return v0;
+}
+private static native int shutdown(int, boolean, boolean);
+private static native int connect(int, boolean, byte[], int, int);
+private static native int connectDomainSocket(int, byte[]);
+private static native int finishConnect(int);
+private static native int disconnect(int, boolean);
+private static native int bind(int, boolean, byte[], int, int);
+private static native int bindDomainSocket(int, byte[]);
+private static native int listen(int, int);
+private static native int accept(int, byte[]);
+private static native byte[] remoteAddress(int);
+private static native byte[] remoteDomainSocketAddress(int);
+private static native byte[] localAddress(int);
+private static native byte[] localDomainSocketAddress(int);
+private static native int send(int, java.nio.ByteBuffer, int, int);
+private static native int sendAddress(int, long, int, int);
+private static native int recv(int, java.nio.ByteBuffer, int, int);
+private static native int recvAddress(int, long, int, int);
+private static native int sendTo(int, boolean, java.nio.ByteBuffer, int, int, byte[], int, int, int);
+private static native int sendToAddress(int, boolean, long, int, int, byte[], int, int, int);
+private static native int sendToAddresses(int, boolean, long, int, byte[], int, int, int);
+private static native int sendToDomainSocket(int, java.nio.ByteBuffer, int, int, byte[]);
+private static native int sendToAddressDomainSocket(int, long, int, int, byte[]);
+private static native int sendToAddressesDomainSocket(int, long, int, byte[]);
+private static native io.netty.channel.unix.DatagramSocketAddress recvFrom(int, java.nio.ByteBuffer, int, int) throws java.io.IOException;
+private static native io.netty.channel.unix.DatagramSocketAddress recvFromAddress(int, long, int, int) throws java.io.IOException;
+private static native io.netty.channel.unix.DomainDatagramSocketAddress recvFromDomainSocket(int, java.nio.ByteBuffer, int, int) throws java.io.IOException;
+private static native io.netty.channel.unix.DomainDatagramSocketAddress recvFromAddressDomainSocket(int, long, int, int) throws java.io.IOException;
+private static native int recvFd(int);
+private static native int sendFd(int, int);
+private static native int msgFastopen();
+private static native int newSocketStreamFd(boolean);
+private static native int newSocketDgramFd(boolean);
+private static native int newSocketDomainFd();
+private static native int newSocketDomainDgramFd();
+private static native int isReuseAddress(int) throws java.io.IOException;
+private static native int isReusePort(int) throws java.io.IOException;
+private static native int getReceiveBufferSize(int) throws java.io.IOException;
+private static native int getSendBufferSize(int) throws java.io.IOException;
+private static native int isKeepAlive(int) throws java.io.IOException;
+private static native int isTcpNoDelay(int) throws java.io.IOException;
+private static native int isBroadcast(int) throws java.io.IOException;
+private static native int getSoLinger(int) throws java.io.IOException;
+private static native int getSoError(int) throws java.io.IOException;
+private static native int getTrafficClass(int, boolean) throws java.io.IOException;
+private static native void setReuseAddress(int, int) throws java.io.IOException;
+private static native void setReusePort(int, int) throws java.io.IOException;
+private static native void setKeepAlive(int, int) throws java.io.IOException;
+private static native void setReceiveBufferSize(int, int) throws java.io.IOException;
+private static native void setSendBufferSize(int, int) throws java.io.IOException;
+private static native void setTcpNoDelay(int, int) throws java.io.IOException;
+private static native void setSoLinger(int, int) throws java.io.IOException;
+private static native void setBroadcast(int, int) throws java.io.IOException;
+private static native void setTrafficClass(int, boolean, int) throws java.io.IOException;
+private static native void setIntOpt(int, int, int, int) throws java.io.IOException;
+private static native void setRawOptArray(int, int, int, byte[], int, int) throws java.io.IOException;
+private static native void setRawOptAddress(int, int, int, long, int) throws java.io.IOException;
+private static native int getIntOpt(int, int, int) throws java.io.IOException;
+private static native void getRawOptArray(int, int, int, byte[], int, int) throws java.io.IOException;
+private static native void getRawOptAddress(int, int, int, long, int) throws java.io.IOException;
+}

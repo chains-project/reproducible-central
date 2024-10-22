@@ -1,0 +1,1122 @@
+public final class io.netty.handler.pcap.PcapWriteHandler extends io.netty.channel.ChannelDuplexHandler implements java.io.Closeable
+{
+private final io.netty.util.internal.logging.InternalLogger logger;
+private io.netty.handler.pcap.PcapWriter pCapWriter;
+private final java.io.OutputStream outputStream;
+private final boolean captureZeroByte;
+private final boolean writePcapGlobalHeader;
+private final boolean sharedOutputStream;
+private int sendSegmentNumber;
+private int receiveSegmentNumber;
+private io.netty.handler.pcap.PcapWriteHandler$ChannelType channelType;
+private java.net.InetSocketAddress initiatorAddr;
+private java.net.InetSocketAddress handlerAddr;
+private boolean isServerPipeline;
+private final java.util.concurrent.atomic.AtomicReference state;
+public void <init>(java.io.OutputStream)
+{
+java.io.OutputStream v1;
+io.netty.handler.pcap.PcapWriteHandler v0;
+v0 := @this: io.netty.handler.pcap.PcapWriteHandler;
+v1 := @parameter0: java.io.OutputStream;
+specialinvoke v0.<io.netty.handler.pcap.PcapWriteHandler: void <init>(java.io.OutputStream,boolean,boolean)>(v1, 0, 1);
+return;
+}
+public void <init>(java.io.OutputStream, boolean, boolean)
+{
+java.io.OutputStream v1;
+java.util.concurrent.atomic.AtomicReference v5;
+io.netty.handler.pcap.State v6;
+io.netty.util.internal.logging.InternalLogger v4;
+java.lang.Object v7;
+io.netty.handler.pcap.PcapWriteHandler v0;
+boolean v2, v3;
+v0 := @this: io.netty.handler.pcap.PcapWriteHandler;
+v1 := @parameter0: java.io.OutputStream;
+v2 := @parameter1: boolean;
+v3 := @parameter2: boolean;
+specialinvoke v0.<io.netty.channel.ChannelDuplexHandler: void <init>()>();
+v4 = staticinvoke <io.netty.util.internal.logging.InternalLoggerFactory: io.netty.util.internal.logging.InternalLogger getInstance(java.lang.Class)>(class "Lio/netty/handler/pcap/PcapWriteHandler;");
+v0.<io.netty.handler.pcap.PcapWriteHandler: io.netty.util.internal.logging.InternalLogger logger> = v4;
+v0.<io.netty.handler.pcap.PcapWriteHandler: int sendSegmentNumber> = 1;
+v0.<io.netty.handler.pcap.PcapWriteHandler: int receiveSegmentNumber> = 1;
+v5 = new java.util.concurrent.atomic.AtomicReference;
+v6 = <io.netty.handler.pcap.State: io.netty.handler.pcap.State INIT>;
+specialinvoke v5.<java.util.concurrent.atomic.AtomicReference: void <init>(java.lang.Object)>(v6);
+v0.<io.netty.handler.pcap.PcapWriteHandler: java.util.concurrent.atomic.AtomicReference state> = v5;
+v7 = staticinvoke <io.netty.util.internal.ObjectUtil: java.lang.Object checkNotNull(java.lang.Object,java.lang.String)>(v1, "OutputStream");
+v0.<io.netty.handler.pcap.PcapWriteHandler: java.io.OutputStream outputStream> = v7;
+v0.<io.netty.handler.pcap.PcapWriteHandler: boolean captureZeroByte> = v2;
+v0.<io.netty.handler.pcap.PcapWriteHandler: boolean writePcapGlobalHeader> = v3;
+v0.<io.netty.handler.pcap.PcapWriteHandler: boolean sharedOutputStream> = 0;
+return;
+}
+private void <init>(io.netty.handler.pcap.PcapWriteHandler$Builder, java.io.OutputStream)
+{
+java.io.OutputStream v2;
+io.netty.handler.pcap.PcapWriteHandler$ChannelType v9;
+java.net.InetSocketAddress v10, v11;
+java.util.concurrent.atomic.AtomicReference v4;
+io.netty.handler.pcap.State v5;
+io.netty.util.internal.logging.InternalLogger v3;
+io.netty.handler.pcap.PcapWriteHandler$Builder v1;
+io.netty.handler.pcap.PcapWriteHandler v0;
+boolean v12, v6, v7, v8;
+v0 := @this: io.netty.handler.pcap.PcapWriteHandler;
+v1 := @parameter0: io.netty.handler.pcap.PcapWriteHandler$Builder;
+v2 := @parameter1: java.io.OutputStream;
+specialinvoke v0.<io.netty.channel.ChannelDuplexHandler: void <init>()>();
+v3 = staticinvoke <io.netty.util.internal.logging.InternalLoggerFactory: io.netty.util.internal.logging.InternalLogger getInstance(java.lang.Class)>(class "Lio/netty/handler/pcap/PcapWriteHandler;");
+v0.<io.netty.handler.pcap.PcapWriteHandler: io.netty.util.internal.logging.InternalLogger logger> = v3;
+v0.<io.netty.handler.pcap.PcapWriteHandler: int sendSegmentNumber> = 1;
+v0.<io.netty.handler.pcap.PcapWriteHandler: int receiveSegmentNumber> = 1;
+v4 = new java.util.concurrent.atomic.AtomicReference;
+v5 = <io.netty.handler.pcap.State: io.netty.handler.pcap.State INIT>;
+specialinvoke v4.<java.util.concurrent.atomic.AtomicReference: void <init>(java.lang.Object)>(v5);
+v0.<io.netty.handler.pcap.PcapWriteHandler: java.util.concurrent.atomic.AtomicReference state> = v4;
+v0.<io.netty.handler.pcap.PcapWriteHandler: java.io.OutputStream outputStream> = v2;
+v6 = v1.<io.netty.handler.pcap.PcapWriteHandler$Builder: boolean captureZeroByte>;
+v0.<io.netty.handler.pcap.PcapWriteHandler: boolean captureZeroByte> = v6;
+v7 = v1.<io.netty.handler.pcap.PcapWriteHandler$Builder: boolean sharedOutputStream>;
+v0.<io.netty.handler.pcap.PcapWriteHandler: boolean sharedOutputStream> = v7;
+v8 = v1.<io.netty.handler.pcap.PcapWriteHandler$Builder: boolean writePcapGlobalHeader>;
+v0.<io.netty.handler.pcap.PcapWriteHandler: boolean writePcapGlobalHeader> = v8;
+v9 = v1.<io.netty.handler.pcap.PcapWriteHandler$Builder: io.netty.handler.pcap.PcapWriteHandler$ChannelType channelType>;
+v0.<io.netty.handler.pcap.PcapWriteHandler: io.netty.handler.pcap.PcapWriteHandler$ChannelType channelType> = v9;
+v10 = v1.<io.netty.handler.pcap.PcapWriteHandler$Builder: java.net.InetSocketAddress handlerAddr>;
+v0.<io.netty.handler.pcap.PcapWriteHandler: java.net.InetSocketAddress handlerAddr> = v10;
+v11 = v1.<io.netty.handler.pcap.PcapWriteHandler$Builder: java.net.InetSocketAddress initiatorAddr>;
+v0.<io.netty.handler.pcap.PcapWriteHandler: java.net.InetSocketAddress initiatorAddr> = v11;
+v12 = v1.<io.netty.handler.pcap.PcapWriteHandler$Builder: boolean isServerPipeline>;
+v0.<io.netty.handler.pcap.PcapWriteHandler: boolean isServerPipeline> = v12;
+return;
+}
+public static void writeGlobalHeader(java.io.OutputStream) throws java.io.IOException
+{
+java.io.OutputStream v0;
+v0 := @parameter0: java.io.OutputStream;
+staticinvoke <io.netty.handler.pcap.PcapHeaders: void writeGlobalHeader(java.io.OutputStream)>(v0);
+return;
+}
+private void initializeIfNecessary(io.netty.channel.ChannelHandlerContext) throws java.lang.Exception
+{
+io.netty.handler.pcap.PcapWriteHandler v0;
+io.netty.handler.pcap.TCPPacket$TCPFlag v40, v49, v50, v59;
+io.netty.util.internal.logging.InternalLogger v32, v64;
+io.netty.handler.pcap.TCPPacket$TCPFlag[] v39, v48, v58;
+java.lang.Throwable v63;
+io.netty.channel.Channel v10, v11, v13, v15, v17, v19, v21, v24, v26, v28, v7;
+java.net.SocketAddress v14, v16, v18, v20, v27, v29;
+io.netty.buffer.ByteBufAllocator v33, v43, v53, v62;
+io.netty.handler.pcap.PcapWriteHandler$ChannelType v23, v30, v31, v6, v9;
+io.netty.handler.pcap.State v4, v66;
+boolean v12, v22, v25, v8;
+java.net.InetSocketAddress v35, v37, v41, v42, v44, v46, v51, v52, v54, v56, v60, v61;
+io.netty.handler.pcap.PcapWriter v5;
+java.util.concurrent.atomic.AtomicReference v2, v65;
+io.netty.channel.ChannelHandlerContext v1;
+io.netty.buffer.ByteBuf v34;
+int v36, v38, v45, v47, v55, v57;
+java.lang.Object v3;
+v0 := @this: io.netty.handler.pcap.PcapWriteHandler;
+v1 := @parameter0: io.netty.channel.ChannelHandlerContext;
+v2 = v0.<io.netty.handler.pcap.PcapWriteHandler: java.util.concurrent.atomic.AtomicReference state>;
+v3 = virtualinvoke v2.<java.util.concurrent.atomic.AtomicReference: java.lang.Object get()>();
+v4 = <io.netty.handler.pcap.State: io.netty.handler.pcap.State INIT>;
+if v3 == v4 goto label1;
+return;
+label1:
+v5 = new io.netty.handler.pcap.PcapWriter;
+specialinvoke v5.<io.netty.handler.pcap.PcapWriter: void <init>(io.netty.handler.pcap.PcapWriteHandler)>(v0);
+v0.<io.netty.handler.pcap.PcapWriteHandler: io.netty.handler.pcap.PcapWriter pCapWriter> = v5;
+v6 = v0.<io.netty.handler.pcap.PcapWriteHandler: io.netty.handler.pcap.PcapWriteHandler$ChannelType channelType>;
+if v6 != null goto label4;
+v7 = interfaceinvoke v1.<io.netty.channel.ChannelHandlerContext: io.netty.channel.Channel channel()>();
+v8 = v7 instanceof io.netty.channel.socket.SocketChannel;
+if v8 == 0 goto label3;
+v9 = <io.netty.handler.pcap.PcapWriteHandler$ChannelType: io.netty.handler.pcap.PcapWriteHandler$ChannelType TCP>;
+v0.<io.netty.handler.pcap.PcapWriteHandler: io.netty.handler.pcap.PcapWriteHandler$ChannelType channelType> = v9;
+v10 = interfaceinvoke v1.<io.netty.channel.ChannelHandlerContext: io.netty.channel.Channel channel()>();
+v11 = interfaceinvoke v10.<io.netty.channel.Channel: io.netty.channel.Channel parent()>();
+v12 = v11 instanceof io.netty.channel.socket.ServerSocketChannel;
+if v12 == 0 goto label2;
+v0.<io.netty.handler.pcap.PcapWriteHandler: boolean isServerPipeline> = 1;
+v13 = interfaceinvoke v1.<io.netty.channel.ChannelHandlerContext: io.netty.channel.Channel channel()>();
+v14 = interfaceinvoke v13.<io.netty.channel.Channel: java.net.SocketAddress remoteAddress()>();
+v0.<io.netty.handler.pcap.PcapWriteHandler: java.net.InetSocketAddress initiatorAddr> = v14;
+v15 = interfaceinvoke v1.<io.netty.channel.ChannelHandlerContext: io.netty.channel.Channel channel()>();
+v16 = interfaceinvoke v15.<io.netty.channel.Channel: java.net.SocketAddress localAddress()>();
+v0.<io.netty.handler.pcap.PcapWriteHandler: java.net.InetSocketAddress handlerAddr> = v16;
+goto label4;
+label2:
+v0.<io.netty.handler.pcap.PcapWriteHandler: boolean isServerPipeline> = 0;
+v17 = interfaceinvoke v1.<io.netty.channel.ChannelHandlerContext: io.netty.channel.Channel channel()>();
+v18 = interfaceinvoke v17.<io.netty.channel.Channel: java.net.SocketAddress localAddress()>();
+v0.<io.netty.handler.pcap.PcapWriteHandler: java.net.InetSocketAddress initiatorAddr> = v18;
+v19 = interfaceinvoke v1.<io.netty.channel.ChannelHandlerContext: io.netty.channel.Channel channel()>();
+v20 = interfaceinvoke v19.<io.netty.channel.Channel: java.net.SocketAddress remoteAddress()>();
+v0.<io.netty.handler.pcap.PcapWriteHandler: java.net.InetSocketAddress handlerAddr> = v20;
+goto label4;
+label3:
+v21 = interfaceinvoke v1.<io.netty.channel.ChannelHandlerContext: io.netty.channel.Channel channel()>();
+v22 = v21 instanceof io.netty.channel.socket.DatagramChannel;
+if v22 == 0 goto label4;
+v23 = <io.netty.handler.pcap.PcapWriteHandler$ChannelType: io.netty.handler.pcap.PcapWriteHandler$ChannelType UDP>;
+v0.<io.netty.handler.pcap.PcapWriteHandler: io.netty.handler.pcap.PcapWriteHandler$ChannelType channelType> = v23;
+v24 = interfaceinvoke v1.<io.netty.channel.ChannelHandlerContext: io.netty.channel.Channel channel()>();
+v25 = interfaceinvoke v24.<io.netty.channel.socket.DatagramChannel: boolean isConnected()>();
+if v25 == 0 goto label4;
+v26 = interfaceinvoke v1.<io.netty.channel.ChannelHandlerContext: io.netty.channel.Channel channel()>();
+v27 = interfaceinvoke v26.<io.netty.channel.Channel: java.net.SocketAddress localAddress()>();
+v0.<io.netty.handler.pcap.PcapWriteHandler: java.net.InetSocketAddress initiatorAddr> = v27;
+v28 = interfaceinvoke v1.<io.netty.channel.ChannelHandlerContext: io.netty.channel.Channel channel()>();
+v29 = interfaceinvoke v28.<io.netty.channel.Channel: java.net.SocketAddress remoteAddress()>();
+v0.<io.netty.handler.pcap.PcapWriteHandler: java.net.InetSocketAddress handlerAddr> = v29;
+label4:
+v30 = v0.<io.netty.handler.pcap.PcapWriteHandler: io.netty.handler.pcap.PcapWriteHandler$ChannelType channelType>;
+v31 = <io.netty.handler.pcap.PcapWriteHandler$ChannelType: io.netty.handler.pcap.PcapWriteHandler$ChannelType TCP>;
+if v30 != v31 goto label9;
+v32 = v0.<io.netty.handler.pcap.PcapWriteHandler: io.netty.util.internal.logging.InternalLogger logger>;
+interfaceinvoke v32.<io.netty.util.internal.logging.InternalLogger: void debug(java.lang.String)>("Initiating Fake TCP 3-Way Handshake");
+v33 = interfaceinvoke v1.<io.netty.channel.ChannelHandlerContext: io.netty.buffer.ByteBufAllocator alloc()>();
+v34 = interfaceinvoke v33.<io.netty.buffer.ByteBufAllocator: io.netty.buffer.ByteBuf buffer()>();
+label5:
+v35 = v0.<io.netty.handler.pcap.PcapWriteHandler: java.net.InetSocketAddress initiatorAddr>;
+v36 = virtualinvoke v35.<java.net.InetSocketAddress: int getPort()>();
+v37 = v0.<io.netty.handler.pcap.PcapWriteHandler: java.net.InetSocketAddress handlerAddr>;
+v38 = virtualinvoke v37.<java.net.InetSocketAddress: int getPort()>();
+v39 = newarray (io.netty.handler.pcap.TCPPacket$TCPFlag)[1];
+v40 = <io.netty.handler.pcap.TCPPacket$TCPFlag: io.netty.handler.pcap.TCPPacket$TCPFlag SYN>;
+v39[0] = v40;
+staticinvoke <io.netty.handler.pcap.TCPPacket: void writePacket(io.netty.buffer.ByteBuf,io.netty.buffer.ByteBuf,int,int,int,int,io.netty.handler.pcap.TCPPacket$TCPFlag[])>(v34, null, 0, 0, v36, v38, v39);
+v41 = v0.<io.netty.handler.pcap.PcapWriteHandler: java.net.InetSocketAddress initiatorAddr>;
+v42 = v0.<io.netty.handler.pcap.PcapWriteHandler: java.net.InetSocketAddress handlerAddr>;
+v43 = interfaceinvoke v1.<io.netty.channel.ChannelHandlerContext: io.netty.buffer.ByteBufAllocator alloc()>();
+specialinvoke v0.<io.netty.handler.pcap.PcapWriteHandler: void completeTCPWrite(java.net.InetSocketAddress,java.net.InetSocketAddress,io.netty.buffer.ByteBuf,io.netty.buffer.ByteBufAllocator,io.netty.channel.ChannelHandlerContext)>(v41, v42, v34, v43, v1);
+v44 = v0.<io.netty.handler.pcap.PcapWriteHandler: java.net.InetSocketAddress handlerAddr>;
+v45 = virtualinvoke v44.<java.net.InetSocketAddress: int getPort()>();
+v46 = v0.<io.netty.handler.pcap.PcapWriteHandler: java.net.InetSocketAddress initiatorAddr>;
+v47 = virtualinvoke v46.<java.net.InetSocketAddress: int getPort()>();
+v48 = newarray (io.netty.handler.pcap.TCPPacket$TCPFlag)[2];
+v49 = <io.netty.handler.pcap.TCPPacket$TCPFlag: io.netty.handler.pcap.TCPPacket$TCPFlag SYN>;
+v48[0] = v49;
+v50 = <io.netty.handler.pcap.TCPPacket$TCPFlag: io.netty.handler.pcap.TCPPacket$TCPFlag ACK>;
+v48[1] = v50;
+staticinvoke <io.netty.handler.pcap.TCPPacket: void writePacket(io.netty.buffer.ByteBuf,io.netty.buffer.ByteBuf,int,int,int,int,io.netty.handler.pcap.TCPPacket$TCPFlag[])>(v34, null, 0, 1, v45, v47, v48);
+v51 = v0.<io.netty.handler.pcap.PcapWriteHandler: java.net.InetSocketAddress handlerAddr>;
+v52 = v0.<io.netty.handler.pcap.PcapWriteHandler: java.net.InetSocketAddress initiatorAddr>;
+v53 = interfaceinvoke v1.<io.netty.channel.ChannelHandlerContext: io.netty.buffer.ByteBufAllocator alloc()>();
+specialinvoke v0.<io.netty.handler.pcap.PcapWriteHandler: void completeTCPWrite(java.net.InetSocketAddress,java.net.InetSocketAddress,io.netty.buffer.ByteBuf,io.netty.buffer.ByteBufAllocator,io.netty.channel.ChannelHandlerContext)>(v51, v52, v34, v53, v1);
+v54 = v0.<io.netty.handler.pcap.PcapWriteHandler: java.net.InetSocketAddress initiatorAddr>;
+v55 = virtualinvoke v54.<java.net.InetSocketAddress: int getPort()>();
+v56 = v0.<io.netty.handler.pcap.PcapWriteHandler: java.net.InetSocketAddress handlerAddr>;
+v57 = virtualinvoke v56.<java.net.InetSocketAddress: int getPort()>();
+v58 = newarray (io.netty.handler.pcap.TCPPacket$TCPFlag)[1];
+v59 = <io.netty.handler.pcap.TCPPacket$TCPFlag: io.netty.handler.pcap.TCPPacket$TCPFlag ACK>;
+v58[0] = v59;
+staticinvoke <io.netty.handler.pcap.TCPPacket: void writePacket(io.netty.buffer.ByteBuf,io.netty.buffer.ByteBuf,int,int,int,int,io.netty.handler.pcap.TCPPacket$TCPFlag[])>(v34, null, 1, 1, v55, v57, v58);
+v60 = v0.<io.netty.handler.pcap.PcapWriteHandler: java.net.InetSocketAddress initiatorAddr>;
+v61 = v0.<io.netty.handler.pcap.PcapWriteHandler: java.net.InetSocketAddress handlerAddr>;
+v62 = interfaceinvoke v1.<io.netty.channel.ChannelHandlerContext: io.netty.buffer.ByteBufAllocator alloc()>();
+specialinvoke v0.<io.netty.handler.pcap.PcapWriteHandler: void completeTCPWrite(java.net.InetSocketAddress,java.net.InetSocketAddress,io.netty.buffer.ByteBuf,io.netty.buffer.ByteBufAllocator,io.netty.channel.ChannelHandlerContext)>(v60, v61, v34, v62, v1);
+label6:
+virtualinvoke v34.<io.netty.buffer.ByteBuf: boolean release()>();
+goto label8;
+label7:
+v63 := @caughtexception;
+virtualinvoke v34.<io.netty.buffer.ByteBuf: boolean release()>();
+throw v63;
+label8:
+v64 = v0.<io.netty.handler.pcap.PcapWriteHandler: io.netty.util.internal.logging.InternalLogger logger>;
+interfaceinvoke v64.<io.netty.util.internal.logging.InternalLogger: void debug(java.lang.String)>("Finished Fake TCP 3-Way Handshake");
+label9:
+v65 = v0.<io.netty.handler.pcap.PcapWriteHandler: java.util.concurrent.atomic.AtomicReference state>;
+v66 = <io.netty.handler.pcap.State: io.netty.handler.pcap.State WRITING>;
+virtualinvoke v65.<java.util.concurrent.atomic.AtomicReference: void set(java.lang.Object)>(v66);
+return;
+catch java.lang.Throwable from label5 to label6 with label7;
+}
+public void channelActive(io.netty.channel.ChannelHandlerContext) throws java.lang.Exception
+{
+io.netty.channel.ChannelHandlerContext v1;
+io.netty.handler.pcap.PcapWriteHandler v0;
+v0 := @this: io.netty.handler.pcap.PcapWriteHandler;
+v1 := @parameter0: io.netty.channel.ChannelHandlerContext;
+specialinvoke v0.<io.netty.handler.pcap.PcapWriteHandler: void initializeIfNecessary(io.netty.channel.ChannelHandlerContext)>(v1);
+specialinvoke v0.<io.netty.channel.ChannelDuplexHandler: void channelActive(io.netty.channel.ChannelHandlerContext)>(v1);
+return;
+}
+public void channelRead(io.netty.channel.ChannelHandlerContext, java.lang.Object) throws java.lang.Exception
+{
+io.netty.handler.pcap.PcapWriteHandler$ChannelType v10, v11, v12, v9;
+java.util.concurrent.atomic.AtomicReference v3, v6;
+io.netty.channel.ChannelHandlerContext v1;
+io.netty.handler.pcap.State v5, v8;
+java.lang.Object v2, v4, v7;
+io.netty.handler.pcap.PcapWriteHandler v0;
+v0 := @this: io.netty.handler.pcap.PcapWriteHandler;
+v1 := @parameter0: io.netty.channel.ChannelHandlerContext;
+v2 := @parameter1: java.lang.Object;
+v3 = v0.<io.netty.handler.pcap.PcapWriteHandler: java.util.concurrent.atomic.AtomicReference state>;
+v4 = virtualinvoke v3.<java.util.concurrent.atomic.AtomicReference: java.lang.Object get()>();
+v5 = <io.netty.handler.pcap.State: io.netty.handler.pcap.State INIT>;
+if v4 != v5 goto label1;
+specialinvoke v0.<io.netty.handler.pcap.PcapWriteHandler: void initializeIfNecessary(io.netty.channel.ChannelHandlerContext)>(v1);
+label1:
+v6 = v0.<io.netty.handler.pcap.PcapWriteHandler: java.util.concurrent.atomic.AtomicReference state>;
+v7 = virtualinvoke v6.<java.util.concurrent.atomic.AtomicReference: java.lang.Object get()>();
+v8 = <io.netty.handler.pcap.State: io.netty.handler.pcap.State WRITING>;
+if v7 != v8 goto label4;
+v9 = v0.<io.netty.handler.pcap.PcapWriteHandler: io.netty.handler.pcap.PcapWriteHandler$ChannelType channelType>;
+v10 = <io.netty.handler.pcap.PcapWriteHandler$ChannelType: io.netty.handler.pcap.PcapWriteHandler$ChannelType TCP>;
+if v9 != v10 goto label2;
+specialinvoke v0.<io.netty.handler.pcap.PcapWriteHandler: void handleTCP(io.netty.channel.ChannelHandlerContext,java.lang.Object,boolean)>(v1, v2, 0);
+goto label4;
+label2:
+v11 = v0.<io.netty.handler.pcap.PcapWriteHandler: io.netty.handler.pcap.PcapWriteHandler$ChannelType channelType>;
+v12 = <io.netty.handler.pcap.PcapWriteHandler$ChannelType: io.netty.handler.pcap.PcapWriteHandler$ChannelType UDP>;
+if v11 != v12 goto label3;
+specialinvoke v0.<io.netty.handler.pcap.PcapWriteHandler: void handleUDP(io.netty.channel.ChannelHandlerContext,java.lang.Object)>(v1, v2);
+goto label4;
+label3:
+specialinvoke v0.<io.netty.handler.pcap.PcapWriteHandler: void logDiscard()>();
+label4:
+specialinvoke v0.<io.netty.channel.ChannelDuplexHandler: void channelRead(io.netty.channel.ChannelHandlerContext,java.lang.Object)>(v1, v2);
+return;
+}
+public void write(io.netty.channel.ChannelHandlerContext, java.lang.Object, io.netty.channel.ChannelPromise) throws java.lang.Exception
+{
+io.netty.handler.pcap.PcapWriteHandler$ChannelType v10, v11, v12, v13;
+java.util.concurrent.atomic.AtomicReference v4, v7;
+io.netty.channel.ChannelHandlerContext v1;
+io.netty.handler.pcap.State v6, v9;
+io.netty.channel.ChannelPromise v3;
+java.lang.Object v2, v5, v8;
+io.netty.handler.pcap.PcapWriteHandler v0;
+v0 := @this: io.netty.handler.pcap.PcapWriteHandler;
+v1 := @parameter0: io.netty.channel.ChannelHandlerContext;
+v2 := @parameter1: java.lang.Object;
+v3 := @parameter2: io.netty.channel.ChannelPromise;
+v4 = v0.<io.netty.handler.pcap.PcapWriteHandler: java.util.concurrent.atomic.AtomicReference state>;
+v5 = virtualinvoke v4.<java.util.concurrent.atomic.AtomicReference: java.lang.Object get()>();
+v6 = <io.netty.handler.pcap.State: io.netty.handler.pcap.State INIT>;
+if v5 != v6 goto label1;
+specialinvoke v0.<io.netty.handler.pcap.PcapWriteHandler: void initializeIfNecessary(io.netty.channel.ChannelHandlerContext)>(v1);
+label1:
+v7 = v0.<io.netty.handler.pcap.PcapWriteHandler: java.util.concurrent.atomic.AtomicReference state>;
+v8 = virtualinvoke v7.<java.util.concurrent.atomic.AtomicReference: java.lang.Object get()>();
+v9 = <io.netty.handler.pcap.State: io.netty.handler.pcap.State WRITING>;
+if v8 != v9 goto label4;
+v10 = v0.<io.netty.handler.pcap.PcapWriteHandler: io.netty.handler.pcap.PcapWriteHandler$ChannelType channelType>;
+v11 = <io.netty.handler.pcap.PcapWriteHandler$ChannelType: io.netty.handler.pcap.PcapWriteHandler$ChannelType TCP>;
+if v10 != v11 goto label2;
+specialinvoke v0.<io.netty.handler.pcap.PcapWriteHandler: void handleTCP(io.netty.channel.ChannelHandlerContext,java.lang.Object,boolean)>(v1, v2, 1);
+goto label4;
+label2:
+v12 = v0.<io.netty.handler.pcap.PcapWriteHandler: io.netty.handler.pcap.PcapWriteHandler$ChannelType channelType>;
+v13 = <io.netty.handler.pcap.PcapWriteHandler$ChannelType: io.netty.handler.pcap.PcapWriteHandler$ChannelType UDP>;
+if v12 != v13 goto label3;
+specialinvoke v0.<io.netty.handler.pcap.PcapWriteHandler: void handleUDP(io.netty.channel.ChannelHandlerContext,java.lang.Object)>(v1, v2);
+goto label4;
+label3:
+specialinvoke v0.<io.netty.handler.pcap.PcapWriteHandler: void logDiscard()>();
+label4:
+specialinvoke v0.<io.netty.channel.ChannelDuplexHandler: void write(io.netty.channel.ChannelHandlerContext,java.lang.Object,io.netty.channel.ChannelPromise)>(v1, v2, v3);
+return;
+}
+private void handleTCP(io.netty.channel.ChannelHandlerContext, java.lang.Object, boolean)
+{
+io.netty.buffer.ByteBufAllocator v9;
+io.netty.handler.pcap.PcapWriteHandler v0;
+boolean v13, v3, v34, v4, v6;
+io.netty.handler.pcap.TCPPacket$TCPFlag v21, v31, v42, v52;
+java.net.InetSocketAddress v14, v15, v35, v36;
+io.netty.util.internal.logging.InternalLogger v56, v7;
+io.netty.handler.pcap.TCPPacket$TCPFlag[] v20, v30, v41, v51;
+java.lang.Throwable v55;
+io.netty.channel.ChannelHandlerContext v1;
+io.netty.buffer.ByteBuf v10, v11;
+int v12, v16, v17, v18, v19, v22, v23, v24, v25, v26, v27, v28, v29, v32, v33, v37, v38, v39, v40, v43, v44, v45, v46, v47, v48, v49, v5, v50, v53, v54;
+java.lang.Boolean v8;
+java.lang.Object v2;
+v0 := @this: io.netty.handler.pcap.PcapWriteHandler;
+v1 := @parameter0: io.netty.channel.ChannelHandlerContext;
+v2 := @parameter1: java.lang.Object;
+v3 := @parameter2: boolean;
+v4 = v2 instanceof io.netty.buffer.ByteBuf;
+if v4 == 0 goto label10;
+v5 = virtualinvoke v2.<io.netty.buffer.ByteBuf: int readableBytes()>();
+if v5 != 0 goto label01;
+v6 = v0.<io.netty.handler.pcap.PcapWriteHandler: boolean captureZeroByte>;
+if v6 != 0 goto label01;
+v7 = v0.<io.netty.handler.pcap.PcapWriteHandler: io.netty.util.internal.logging.InternalLogger logger>;
+v8 = staticinvoke <java.lang.Boolean: java.lang.Boolean valueOf(boolean)>(v3);
+interfaceinvoke v7.<io.netty.util.internal.logging.InternalLogger: void debug(java.lang.String,java.lang.Object)>("Discarding Zero Byte TCP Packet. isWriteOperation {}", v8);
+return;
+label01:
+v9 = interfaceinvoke v1.<io.netty.channel.ChannelHandlerContext: io.netty.buffer.ByteBufAllocator alloc()>();
+v10 = virtualinvoke v2.<io.netty.buffer.ByteBuf: io.netty.buffer.ByteBuf duplicate()>();
+v11 = interfaceinvoke v9.<io.netty.buffer.ByteBufAllocator: io.netty.buffer.ByteBuf buffer()>();
+v12 = virtualinvoke v10.<io.netty.buffer.ByteBuf: int readableBytes()>();
+label02:
+if v3 == 0 goto label05;
+v13 = v0.<io.netty.handler.pcap.PcapWriteHandler: boolean isServerPipeline>;
+if v13 == 0 goto label03;
+v14 = v0.<io.netty.handler.pcap.PcapWriteHandler: java.net.InetSocketAddress handlerAddr>;
+v15 = v0.<io.netty.handler.pcap.PcapWriteHandler: java.net.InetSocketAddress initiatorAddr>;
+goto label04;
+label03:
+v14 = v0.<io.netty.handler.pcap.PcapWriteHandler: java.net.InetSocketAddress initiatorAddr>;
+v15 = v0.<io.netty.handler.pcap.PcapWriteHandler: java.net.InetSocketAddress handlerAddr>;
+label04:
+v16 = v0.<io.netty.handler.pcap.PcapWriteHandler: int sendSegmentNumber>;
+v17 = v0.<io.netty.handler.pcap.PcapWriteHandler: int receiveSegmentNumber>;
+v18 = virtualinvoke v14.<java.net.InetSocketAddress: int getPort()>();
+v19 = virtualinvoke v15.<java.net.InetSocketAddress: int getPort()>();
+v20 = newarray (io.netty.handler.pcap.TCPPacket$TCPFlag)[1];
+v21 = <io.netty.handler.pcap.TCPPacket$TCPFlag: io.netty.handler.pcap.TCPPacket$TCPFlag ACK>;
+v20[0] = v21;
+staticinvoke <io.netty.handler.pcap.TCPPacket: void writePacket(io.netty.buffer.ByteBuf,io.netty.buffer.ByteBuf,int,int,int,int,io.netty.handler.pcap.TCPPacket$TCPFlag[])>(v11, v10, v16, v17, v18, v19, v20);
+specialinvoke v0.<io.netty.handler.pcap.PcapWriteHandler: void completeTCPWrite(java.net.InetSocketAddress,java.net.InetSocketAddress,io.netty.buffer.ByteBuf,io.netty.buffer.ByteBufAllocator,io.netty.channel.ChannelHandlerContext)>(v14, v15, v11, v9, v1);
+v22 = v0.<io.netty.handler.pcap.PcapWriteHandler: int sendSegmentNumber>;
+v23 = v0.<io.netty.handler.pcap.PcapWriteHandler: int receiveSegmentNumber>;
+specialinvoke v0.<io.netty.handler.pcap.PcapWriteHandler: void logTCP(boolean,int,int,int,java.net.InetSocketAddress,java.net.InetSocketAddress,boolean)>(1, v12, v22, v23, v14, v15, 0);
+v24 = v0.<io.netty.handler.pcap.PcapWriteHandler: int sendSegmentNumber>;
+v25 = v24 + v12;
+v0.<io.netty.handler.pcap.PcapWriteHandler: int sendSegmentNumber> = v25;
+v26 = v0.<io.netty.handler.pcap.PcapWriteHandler: int receiveSegmentNumber>;
+v27 = v0.<io.netty.handler.pcap.PcapWriteHandler: int sendSegmentNumber>;
+v28 = virtualinvoke v15.<java.net.InetSocketAddress: int getPort()>();
+v29 = virtualinvoke v14.<java.net.InetSocketAddress: int getPort()>();
+v30 = newarray (io.netty.handler.pcap.TCPPacket$TCPFlag)[1];
+v31 = <io.netty.handler.pcap.TCPPacket$TCPFlag: io.netty.handler.pcap.TCPPacket$TCPFlag ACK>;
+v30[0] = v31;
+staticinvoke <io.netty.handler.pcap.TCPPacket: void writePacket(io.netty.buffer.ByteBuf,io.netty.buffer.ByteBuf,int,int,int,int,io.netty.handler.pcap.TCPPacket$TCPFlag[])>(v11, null, v26, v27, v28, v29, v30);
+specialinvoke v0.<io.netty.handler.pcap.PcapWriteHandler: void completeTCPWrite(java.net.InetSocketAddress,java.net.InetSocketAddress,io.netty.buffer.ByteBuf,io.netty.buffer.ByteBufAllocator,io.netty.channel.ChannelHandlerContext)>(v15, v14, v11, v9, v1);
+v32 = v0.<io.netty.handler.pcap.PcapWriteHandler: int sendSegmentNumber>;
+v33 = v0.<io.netty.handler.pcap.PcapWriteHandler: int receiveSegmentNumber>;
+specialinvoke v0.<io.netty.handler.pcap.PcapWriteHandler: void logTCP(boolean,int,int,int,java.net.InetSocketAddress,java.net.InetSocketAddress,boolean)>(1, v12, v32, v33, v15, v14, 1);
+goto label08;
+label05:
+v34 = v0.<io.netty.handler.pcap.PcapWriteHandler: boolean isServerPipeline>;
+if v34 == 0 goto label06;
+v35 = v0.<io.netty.handler.pcap.PcapWriteHandler: java.net.InetSocketAddress initiatorAddr>;
+v36 = v0.<io.netty.handler.pcap.PcapWriteHandler: java.net.InetSocketAddress handlerAddr>;
+goto label07;
+label06:
+v35 = v0.<io.netty.handler.pcap.PcapWriteHandler: java.net.InetSocketAddress handlerAddr>;
+v36 = v0.<io.netty.handler.pcap.PcapWriteHandler: java.net.InetSocketAddress initiatorAddr>;
+label07:
+v37 = v0.<io.netty.handler.pcap.PcapWriteHandler: int receiveSegmentNumber>;
+v38 = v0.<io.netty.handler.pcap.PcapWriteHandler: int sendSegmentNumber>;
+v39 = virtualinvoke v35.<java.net.InetSocketAddress: int getPort()>();
+v40 = virtualinvoke v36.<java.net.InetSocketAddress: int getPort()>();
+v41 = newarray (io.netty.handler.pcap.TCPPacket$TCPFlag)[1];
+v42 = <io.netty.handler.pcap.TCPPacket$TCPFlag: io.netty.handler.pcap.TCPPacket$TCPFlag ACK>;
+v41[0] = v42;
+staticinvoke <io.netty.handler.pcap.TCPPacket: void writePacket(io.netty.buffer.ByteBuf,io.netty.buffer.ByteBuf,int,int,int,int,io.netty.handler.pcap.TCPPacket$TCPFlag[])>(v11, v10, v37, v38, v39, v40, v41);
+specialinvoke v0.<io.netty.handler.pcap.PcapWriteHandler: void completeTCPWrite(java.net.InetSocketAddress,java.net.InetSocketAddress,io.netty.buffer.ByteBuf,io.netty.buffer.ByteBufAllocator,io.netty.channel.ChannelHandlerContext)>(v35, v36, v11, v9, v1);
+v43 = v0.<io.netty.handler.pcap.PcapWriteHandler: int receiveSegmentNumber>;
+v44 = v0.<io.netty.handler.pcap.PcapWriteHandler: int sendSegmentNumber>;
+specialinvoke v0.<io.netty.handler.pcap.PcapWriteHandler: void logTCP(boolean,int,int,int,java.net.InetSocketAddress,java.net.InetSocketAddress,boolean)>(0, v12, v43, v44, v35, v36, 0);
+v45 = v0.<io.netty.handler.pcap.PcapWriteHandler: int receiveSegmentNumber>;
+v46 = v45 + v12;
+v0.<io.netty.handler.pcap.PcapWriteHandler: int receiveSegmentNumber> = v46;
+v47 = v0.<io.netty.handler.pcap.PcapWriteHandler: int sendSegmentNumber>;
+v48 = v0.<io.netty.handler.pcap.PcapWriteHandler: int receiveSegmentNumber>;
+v49 = virtualinvoke v36.<java.net.InetSocketAddress: int getPort()>();
+v50 = virtualinvoke v35.<java.net.InetSocketAddress: int getPort()>();
+v51 = newarray (io.netty.handler.pcap.TCPPacket$TCPFlag)[1];
+v52 = <io.netty.handler.pcap.TCPPacket$TCPFlag: io.netty.handler.pcap.TCPPacket$TCPFlag ACK>;
+v51[0] = v52;
+staticinvoke <io.netty.handler.pcap.TCPPacket: void writePacket(io.netty.buffer.ByteBuf,io.netty.buffer.ByteBuf,int,int,int,int,io.netty.handler.pcap.TCPPacket$TCPFlag[])>(v11, null, v47, v48, v49, v50, v51);
+specialinvoke v0.<io.netty.handler.pcap.PcapWriteHandler: void completeTCPWrite(java.net.InetSocketAddress,java.net.InetSocketAddress,io.netty.buffer.ByteBuf,io.netty.buffer.ByteBufAllocator,io.netty.channel.ChannelHandlerContext)>(v36, v35, v11, v9, v1);
+v53 = v0.<io.netty.handler.pcap.PcapWriteHandler: int sendSegmentNumber>;
+v54 = v0.<io.netty.handler.pcap.PcapWriteHandler: int receiveSegmentNumber>;
+specialinvoke v0.<io.netty.handler.pcap.PcapWriteHandler: void logTCP(boolean,int,int,int,java.net.InetSocketAddress,java.net.InetSocketAddress,boolean)>(0, v12, v53, v54, v36, v35, 1);
+label08:
+virtualinvoke v11.<io.netty.buffer.ByteBuf: boolean release()>();
+goto label11;
+label09:
+v55 := @caughtexception;
+virtualinvoke v11.<io.netty.buffer.ByteBuf: boolean release()>();
+throw v55;
+label10:
+v56 = v0.<io.netty.handler.pcap.PcapWriteHandler: io.netty.util.internal.logging.InternalLogger logger>;
+interfaceinvoke v56.<io.netty.util.internal.logging.InternalLogger: void debug(java.lang.String,java.lang.Object)>("Discarding Pcap Write for TCP Object: {}", v2);
+label11:
+return;
+catch java.lang.Throwable from label02 to label08 with label09;
+}
+private void completeTCPWrite(java.net.InetSocketAddress, java.net.InetSocketAddress, io.netty.buffer.ByteBuf, io.netty.buffer.ByteBufAllocator, io.netty.channel.ChannelHandlerContext)
+{
+byte[] v22, v24;
+io.netty.buffer.ByteBufAllocator v4;
+java.net.InetAddress v11, v13, v15, v17, v19, v21, v23, v26, v27, v9;
+io.netty.handler.pcap.PcapWriteHandler v0;
+boolean v10, v12, v18, v20;
+java.net.InetSocketAddress v1, v2;
+io.netty.handler.pcap.PcapWriter v28;
+io.netty.util.internal.logging.InternalLogger v25, v30;
+java.lang.Throwable v31;
+io.netty.channel.ChannelHandlerContext v5;
+io.netty.buffer.ByteBuf v3, v6, v7, v8;
+int v14, v16;
+java.io.IOException v29;
+v0 := @this: io.netty.handler.pcap.PcapWriteHandler;
+v1 := @parameter0: java.net.InetSocketAddress;
+v2 := @parameter1: java.net.InetSocketAddress;
+v3 := @parameter2: io.netty.buffer.ByteBuf;
+v4 := @parameter3: io.netty.buffer.ByteBufAllocator;
+v5 := @parameter4: io.netty.channel.ChannelHandlerContext;
+v6 = interfaceinvoke v4.<io.netty.buffer.ByteBufAllocator: io.netty.buffer.ByteBuf buffer()>();
+v7 = interfaceinvoke v4.<io.netty.buffer.ByteBufAllocator: io.netty.buffer.ByteBuf buffer()>();
+v8 = interfaceinvoke v4.<io.netty.buffer.ByteBufAllocator: io.netty.buffer.ByteBuf buffer()>();
+label01:
+v9 = virtualinvoke v1.<java.net.InetSocketAddress: java.net.InetAddress getAddress()>();
+v10 = v9 instanceof java.net.Inet4Address;
+if v10 == 0 goto label02;
+v11 = virtualinvoke v2.<java.net.InetSocketAddress: java.net.InetAddress getAddress()>();
+v12 = v11 instanceof java.net.Inet4Address;
+if v12 == 0 goto label02;
+v13 = virtualinvoke v1.<java.net.InetSocketAddress: java.net.InetAddress getAddress()>();
+v14 = staticinvoke <io.netty.util.NetUtil: int ipv4AddressToInt(java.net.Inet4Address)>(v13);
+v15 = virtualinvoke v2.<java.net.InetSocketAddress: java.net.InetAddress getAddress()>();
+v16 = staticinvoke <io.netty.util.NetUtil: int ipv4AddressToInt(java.net.Inet4Address)>(v15);
+staticinvoke <io.netty.handler.pcap.IPPacket: void writeTCPv4(io.netty.buffer.ByteBuf,io.netty.buffer.ByteBuf,int,int)>(v6, v3, v14, v16);
+staticinvoke <io.netty.handler.pcap.EthernetPacket: void writeIPv4(io.netty.buffer.ByteBuf,io.netty.buffer.ByteBuf)>(v7, v6);
+goto label05;
+label02:
+v17 = virtualinvoke v1.<java.net.InetSocketAddress: java.net.InetAddress getAddress()>();
+v18 = v17 instanceof java.net.Inet6Address;
+if v18 == 0 goto label03;
+v19 = virtualinvoke v2.<java.net.InetSocketAddress: java.net.InetAddress getAddress()>();
+v20 = v19 instanceof java.net.Inet6Address;
+if v20 == 0 goto label03;
+v21 = virtualinvoke v1.<java.net.InetSocketAddress: java.net.InetAddress getAddress()>();
+v22 = virtualinvoke v21.<java.net.InetAddress: byte[] getAddress()>();
+v23 = virtualinvoke v2.<java.net.InetSocketAddress: java.net.InetAddress getAddress()>();
+v24 = virtualinvoke v23.<java.net.InetAddress: byte[] getAddress()>();
+staticinvoke <io.netty.handler.pcap.IPPacket: void writeTCPv6(io.netty.buffer.ByteBuf,io.netty.buffer.ByteBuf,byte[],byte[])>(v6, v3, v22, v24);
+staticinvoke <io.netty.handler.pcap.EthernetPacket: void writeIPv6(io.netty.buffer.ByteBuf,io.netty.buffer.ByteBuf)>(v7, v6);
+goto label05;
+label03:
+v25 = v0.<io.netty.handler.pcap.PcapWriteHandler: io.netty.util.internal.logging.InternalLogger logger>;
+v26 = virtualinvoke v1.<java.net.InetSocketAddress: java.net.InetAddress getAddress()>();
+v27 = virtualinvoke v2.<java.net.InetSocketAddress: java.net.InetAddress getAddress()>();
+interfaceinvoke v25.<io.netty.util.internal.logging.InternalLogger: void error(java.lang.String,java.lang.Object,java.lang.Object)>("Source and Destination IP Address versions are not same. Source Address: {}, Destination Address: {}", v26, v27);
+label04:
+virtualinvoke v6.<io.netty.buffer.ByteBuf: boolean release()>();
+virtualinvoke v7.<io.netty.buffer.ByteBuf: boolean release()>();
+virtualinvoke v8.<io.netty.buffer.ByteBuf: boolean release()>();
+return;
+label05:
+v28 = v0.<io.netty.handler.pcap.PcapWriteHandler: io.netty.handler.pcap.PcapWriter pCapWriter>;
+virtualinvoke v28.<io.netty.handler.pcap.PcapWriter: void writePacket(io.netty.buffer.ByteBuf,io.netty.buffer.ByteBuf)>(v8, v7);
+label06:
+virtualinvoke v6.<io.netty.buffer.ByteBuf: boolean release()>();
+virtualinvoke v7.<io.netty.buffer.ByteBuf: boolean release()>();
+virtualinvoke v8.<io.netty.buffer.ByteBuf: boolean release()>();
+goto label10;
+label07:
+v29 := @caughtexception;
+v30 = v0.<io.netty.handler.pcap.PcapWriteHandler: io.netty.util.internal.logging.InternalLogger logger>;
+interfaceinvoke v30.<io.netty.util.internal.logging.InternalLogger: void error(java.lang.String,java.lang.Throwable)>("Caught Exception While Writing Packet into Pcap", v29);
+interfaceinvoke v5.<io.netty.channel.ChannelHandlerContext: io.netty.channel.ChannelHandlerContext fireExceptionCaught(java.lang.Throwable)>(v29);
+label08:
+virtualinvoke v6.<io.netty.buffer.ByteBuf: boolean release()>();
+virtualinvoke v7.<io.netty.buffer.ByteBuf: boolean release()>();
+virtualinvoke v8.<io.netty.buffer.ByteBuf: boolean release()>();
+goto label10;
+label09:
+v31 := @caughtexception;
+virtualinvoke v6.<io.netty.buffer.ByteBuf: boolean release()>();
+virtualinvoke v7.<io.netty.buffer.ByteBuf: boolean release()>();
+virtualinvoke v8.<io.netty.buffer.ByteBuf: boolean release()>();
+throw v31;
+label10:
+return;
+catch java.io.IOException from label01 to label04 with label07;
+catch java.io.IOException from label05 to label06 with label07;
+catch java.lang.Throwable from label01 to label04 with label09;
+catch java.lang.Throwable from label05 to label06 with label09;
+catch java.lang.Throwable from label07 to label08 with label09;
+}
+private void handleUDP(io.netty.channel.ChannelHandlerContext, java.lang.Object)
+{
+java.net.SocketAddress v11, v12;
+io.netty.buffer.ByteBufAllocator v22, v3, v44;
+java.lang.Integer v18, v35;
+io.netty.channel.socket.DatagramPacket v10;
+io.netty.handler.pcap.PcapWriteHandler v0;
+boolean v23, v25, v27, v29, v5, v8;
+java.net.InetSocketAddress v36, v37, v38, v40, v42, v43;
+io.netty.util.internal.logging.InternalLogger v14, v30, v32, v45, v9;
+java.lang.Throwable v46;
+java.lang.Object[] v15, v33;
+io.netty.channel.ChannelHandlerContext v1;
+io.netty.buffer.ByteBuf v31, v4;
+int v17, v20, v21, v28, v34, v39, v41, v7;
+io.netty.channel.Channel v13, v24, v26;
+java.lang.Object v16, v19, v2, v6;
+v0 := @this: io.netty.handler.pcap.PcapWriteHandler;
+v1 := @parameter0: io.netty.channel.ChannelHandlerContext;
+v2 := @parameter1: java.lang.Object;
+v3 = interfaceinvoke v1.<io.netty.channel.ChannelHandlerContext: io.netty.buffer.ByteBufAllocator alloc()>();
+v4 = interfaceinvoke v3.<io.netty.buffer.ByteBufAllocator: io.netty.buffer.ByteBuf buffer()>();
+label01:
+v5 = v2 instanceof io.netty.channel.socket.DatagramPacket;
+if v5 == 0 goto label05;
+v6 = virtualinvoke v2.<io.netty.channel.socket.DatagramPacket: java.lang.Object content()>();
+v7 = virtualinvoke v6.<io.netty.buffer.ByteBuf: int readableBytes()>();
+if v7 != 0 goto label03;
+v8 = v0.<io.netty.handler.pcap.PcapWriteHandler: boolean captureZeroByte>;
+if v8 != 0 goto label03;
+v9 = v0.<io.netty.handler.pcap.PcapWriteHandler: io.netty.util.internal.logging.InternalLogger logger>;
+interfaceinvoke v9.<io.netty.util.internal.logging.InternalLogger: void debug(java.lang.String)>("Discarding Zero Byte UDP Packet");
+label02:
+virtualinvoke v4.<io.netty.buffer.ByteBuf: boolean release()>();
+return;
+label03:
+v10 = virtualinvoke v2.<io.netty.channel.socket.DatagramPacket: io.netty.channel.socket.DatagramPacket duplicate()>();
+v11 = virtualinvoke v10.<io.netty.channel.socket.DatagramPacket: java.net.SocketAddress sender()>();
+v12 = virtualinvoke v10.<io.netty.channel.socket.DatagramPacket: java.net.SocketAddress recipient()>();
+if v11 != null goto label04;
+v13 = interfaceinvoke v1.<io.netty.channel.ChannelHandlerContext: io.netty.channel.Channel channel()>();
+interfaceinvoke v13.<io.netty.channel.Channel: java.net.SocketAddress localAddress()>();
+label04:
+v14 = v0.<io.netty.handler.pcap.PcapWriteHandler: io.netty.util.internal.logging.InternalLogger logger>;
+v15 = newarray (java.lang.Object)[3];
+v16 = virtualinvoke v10.<io.netty.channel.socket.DatagramPacket: java.lang.Object content()>();
+v17 = virtualinvoke v16.<io.netty.buffer.ByteBuf: int readableBytes()>();
+v18 = staticinvoke <java.lang.Integer: java.lang.Integer valueOf(int)>(v17);
+v15[0] = v18;
+v15[1] = v11;
+v15[2] = v12;
+interfaceinvoke v14.<io.netty.util.internal.logging.InternalLogger: void debug(java.lang.String,java.lang.Object[])>("Writing UDP Data of {} Bytes, Src Addr {}, Dst Addr {}", v15);
+v19 = virtualinvoke v10.<io.netty.channel.socket.DatagramPacket: java.lang.Object content()>();
+v20 = virtualinvoke v11.<java.net.InetSocketAddress: int getPort()>();
+v21 = virtualinvoke v12.<java.net.InetSocketAddress: int getPort()>();
+staticinvoke <io.netty.handler.pcap.UDPPacket: void writePacket(io.netty.buffer.ByteBuf,io.netty.buffer.ByteBuf,int,int)>(v4, v19, v20, v21);
+v22 = interfaceinvoke v1.<io.netty.channel.ChannelHandlerContext: io.netty.buffer.ByteBufAllocator alloc()>();
+specialinvoke v0.<io.netty.handler.pcap.PcapWriteHandler: void completeUDPWrite(java.net.InetSocketAddress,java.net.InetSocketAddress,io.netty.buffer.ByteBuf,io.netty.buffer.ByteBufAllocator,io.netty.channel.ChannelHandlerContext)>(v11, v12, v4, v22, v1);
+goto label10;
+label05:
+v23 = v2 instanceof io.netty.buffer.ByteBuf;
+if v23 == 0 goto label09;
+v24 = interfaceinvoke v1.<io.netty.channel.ChannelHandlerContext: io.netty.channel.Channel channel()>();
+v25 = v24 instanceof io.netty.channel.socket.DatagramChannel;
+if v25 == 0 goto label06;
+v26 = interfaceinvoke v1.<io.netty.channel.ChannelHandlerContext: io.netty.channel.Channel channel()>();
+v27 = interfaceinvoke v26.<io.netty.channel.socket.DatagramChannel: boolean isConnected()>();
+if v27 == 0 goto label09;
+label06:
+v28 = virtualinvoke v2.<io.netty.buffer.ByteBuf: int readableBytes()>();
+if v28 != 0 goto label08;
+v29 = v0.<io.netty.handler.pcap.PcapWriteHandler: boolean captureZeroByte>;
+if v29 != 0 goto label08;
+v30 = v0.<io.netty.handler.pcap.PcapWriteHandler: io.netty.util.internal.logging.InternalLogger logger>;
+interfaceinvoke v30.<io.netty.util.internal.logging.InternalLogger: void debug(java.lang.String)>("Discarding Zero Byte UDP Packet");
+label07:
+virtualinvoke v4.<io.netty.buffer.ByteBuf: boolean release()>();
+return;
+label08:
+v31 = virtualinvoke v2.<io.netty.buffer.ByteBuf: io.netty.buffer.ByteBuf duplicate()>();
+v32 = v0.<io.netty.handler.pcap.PcapWriteHandler: io.netty.util.internal.logging.InternalLogger logger>;
+v33 = newarray (java.lang.Object)[3];
+v34 = virtualinvoke v31.<io.netty.buffer.ByteBuf: int readableBytes()>();
+v35 = staticinvoke <java.lang.Integer: java.lang.Integer valueOf(int)>(v34);
+v33[0] = v35;
+v36 = v0.<io.netty.handler.pcap.PcapWriteHandler: java.net.InetSocketAddress initiatorAddr>;
+v33[1] = v36;
+v37 = v0.<io.netty.handler.pcap.PcapWriteHandler: java.net.InetSocketAddress handlerAddr>;
+v33[2] = v37;
+interfaceinvoke v32.<io.netty.util.internal.logging.InternalLogger: void debug(java.lang.String,java.lang.Object[])>("Writing UDP Data of {} Bytes, Src Addr {}, Dst Addr {}", v33);
+v38 = v0.<io.netty.handler.pcap.PcapWriteHandler: java.net.InetSocketAddress initiatorAddr>;
+v39 = virtualinvoke v38.<java.net.InetSocketAddress: int getPort()>();
+v40 = v0.<io.netty.handler.pcap.PcapWriteHandler: java.net.InetSocketAddress handlerAddr>;
+v41 = virtualinvoke v40.<java.net.InetSocketAddress: int getPort()>();
+staticinvoke <io.netty.handler.pcap.UDPPacket: void writePacket(io.netty.buffer.ByteBuf,io.netty.buffer.ByteBuf,int,int)>(v4, v31, v39, v41);
+v42 = v0.<io.netty.handler.pcap.PcapWriteHandler: java.net.InetSocketAddress initiatorAddr>;
+v43 = v0.<io.netty.handler.pcap.PcapWriteHandler: java.net.InetSocketAddress handlerAddr>;
+v44 = interfaceinvoke v1.<io.netty.channel.ChannelHandlerContext: io.netty.buffer.ByteBufAllocator alloc()>();
+specialinvoke v0.<io.netty.handler.pcap.PcapWriteHandler: void completeUDPWrite(java.net.InetSocketAddress,java.net.InetSocketAddress,io.netty.buffer.ByteBuf,io.netty.buffer.ByteBufAllocator,io.netty.channel.ChannelHandlerContext)>(v42, v43, v4, v44, v1);
+goto label10;
+label09:
+v45 = v0.<io.netty.handler.pcap.PcapWriteHandler: io.netty.util.internal.logging.InternalLogger logger>;
+interfaceinvoke v45.<io.netty.util.internal.logging.InternalLogger: void debug(java.lang.String,java.lang.Object)>("Discarding Pcap Write for UDP Object: {}", v2);
+label10:
+virtualinvoke v4.<io.netty.buffer.ByteBuf: boolean release()>();
+goto label12;
+label11:
+v46 := @caughtexception;
+virtualinvoke v4.<io.netty.buffer.ByteBuf: boolean release()>();
+throw v46;
+label12:
+return;
+catch java.lang.Throwable from label01 to label02 with label11;
+catch java.lang.Throwable from label03 to label07 with label11;
+catch java.lang.Throwable from label08 to label10 with label11;
+}
+private void completeUDPWrite(java.net.InetSocketAddress, java.net.InetSocketAddress, io.netty.buffer.ByteBuf, io.netty.buffer.ByteBufAllocator, io.netty.channel.ChannelHandlerContext)
+{
+byte[] v22, v24;
+io.netty.buffer.ByteBufAllocator v4;
+java.net.InetAddress v11, v13, v15, v17, v19, v21, v23, v26, v27, v9;
+io.netty.handler.pcap.PcapWriteHandler v0;
+boolean v10, v12, v18, v20;
+java.net.InetSocketAddress v1, v2;
+io.netty.handler.pcap.PcapWriter v28;
+io.netty.util.internal.logging.InternalLogger v25, v30;
+java.lang.Throwable v31;
+io.netty.channel.ChannelHandlerContext v5;
+io.netty.buffer.ByteBuf v3, v6, v7, v8;
+int v14, v16;
+java.io.IOException v29;
+v0 := @this: io.netty.handler.pcap.PcapWriteHandler;
+v1 := @parameter0: java.net.InetSocketAddress;
+v2 := @parameter1: java.net.InetSocketAddress;
+v3 := @parameter2: io.netty.buffer.ByteBuf;
+v4 := @parameter3: io.netty.buffer.ByteBufAllocator;
+v5 := @parameter4: io.netty.channel.ChannelHandlerContext;
+v6 = interfaceinvoke v4.<io.netty.buffer.ByteBufAllocator: io.netty.buffer.ByteBuf buffer()>();
+v7 = interfaceinvoke v4.<io.netty.buffer.ByteBufAllocator: io.netty.buffer.ByteBuf buffer()>();
+v8 = interfaceinvoke v4.<io.netty.buffer.ByteBufAllocator: io.netty.buffer.ByteBuf buffer()>();
+label01:
+v9 = virtualinvoke v1.<java.net.InetSocketAddress: java.net.InetAddress getAddress()>();
+v10 = v9 instanceof java.net.Inet4Address;
+if v10 == 0 goto label02;
+v11 = virtualinvoke v2.<java.net.InetSocketAddress: java.net.InetAddress getAddress()>();
+v12 = v11 instanceof java.net.Inet4Address;
+if v12 == 0 goto label02;
+v13 = virtualinvoke v1.<java.net.InetSocketAddress: java.net.InetAddress getAddress()>();
+v14 = staticinvoke <io.netty.util.NetUtil: int ipv4AddressToInt(java.net.Inet4Address)>(v13);
+v15 = virtualinvoke v2.<java.net.InetSocketAddress: java.net.InetAddress getAddress()>();
+v16 = staticinvoke <io.netty.util.NetUtil: int ipv4AddressToInt(java.net.Inet4Address)>(v15);
+staticinvoke <io.netty.handler.pcap.IPPacket: void writeUDPv4(io.netty.buffer.ByteBuf,io.netty.buffer.ByteBuf,int,int)>(v6, v3, v14, v16);
+staticinvoke <io.netty.handler.pcap.EthernetPacket: void writeIPv4(io.netty.buffer.ByteBuf,io.netty.buffer.ByteBuf)>(v7, v6);
+goto label05;
+label02:
+v17 = virtualinvoke v1.<java.net.InetSocketAddress: java.net.InetAddress getAddress()>();
+v18 = v17 instanceof java.net.Inet6Address;
+if v18 == 0 goto label03;
+v19 = virtualinvoke v2.<java.net.InetSocketAddress: java.net.InetAddress getAddress()>();
+v20 = v19 instanceof java.net.Inet6Address;
+if v20 == 0 goto label03;
+v21 = virtualinvoke v1.<java.net.InetSocketAddress: java.net.InetAddress getAddress()>();
+v22 = virtualinvoke v21.<java.net.InetAddress: byte[] getAddress()>();
+v23 = virtualinvoke v2.<java.net.InetSocketAddress: java.net.InetAddress getAddress()>();
+v24 = virtualinvoke v23.<java.net.InetAddress: byte[] getAddress()>();
+staticinvoke <io.netty.handler.pcap.IPPacket: void writeUDPv6(io.netty.buffer.ByteBuf,io.netty.buffer.ByteBuf,byte[],byte[])>(v6, v3, v22, v24);
+staticinvoke <io.netty.handler.pcap.EthernetPacket: void writeIPv6(io.netty.buffer.ByteBuf,io.netty.buffer.ByteBuf)>(v7, v6);
+goto label05;
+label03:
+v25 = v0.<io.netty.handler.pcap.PcapWriteHandler: io.netty.util.internal.logging.InternalLogger logger>;
+v26 = virtualinvoke v1.<java.net.InetSocketAddress: java.net.InetAddress getAddress()>();
+v27 = virtualinvoke v2.<java.net.InetSocketAddress: java.net.InetAddress getAddress()>();
+interfaceinvoke v25.<io.netty.util.internal.logging.InternalLogger: void error(java.lang.String,java.lang.Object,java.lang.Object)>("Source and Destination IP Address versions are not same. Source Address: {}, Destination Address: {}", v26, v27);
+label04:
+virtualinvoke v6.<io.netty.buffer.ByteBuf: boolean release()>();
+virtualinvoke v7.<io.netty.buffer.ByteBuf: boolean release()>();
+virtualinvoke v8.<io.netty.buffer.ByteBuf: boolean release()>();
+return;
+label05:
+v28 = v0.<io.netty.handler.pcap.PcapWriteHandler: io.netty.handler.pcap.PcapWriter pCapWriter>;
+virtualinvoke v28.<io.netty.handler.pcap.PcapWriter: void writePacket(io.netty.buffer.ByteBuf,io.netty.buffer.ByteBuf)>(v8, v7);
+label06:
+virtualinvoke v6.<io.netty.buffer.ByteBuf: boolean release()>();
+virtualinvoke v7.<io.netty.buffer.ByteBuf: boolean release()>();
+virtualinvoke v8.<io.netty.buffer.ByteBuf: boolean release()>();
+goto label10;
+label07:
+v29 := @caughtexception;
+v30 = v0.<io.netty.handler.pcap.PcapWriteHandler: io.netty.util.internal.logging.InternalLogger logger>;
+interfaceinvoke v30.<io.netty.util.internal.logging.InternalLogger: void error(java.lang.String,java.lang.Throwable)>("Caught Exception While Writing Packet into Pcap", v29);
+interfaceinvoke v5.<io.netty.channel.ChannelHandlerContext: io.netty.channel.ChannelHandlerContext fireExceptionCaught(java.lang.Throwable)>(v29);
+label08:
+virtualinvoke v6.<io.netty.buffer.ByteBuf: boolean release()>();
+virtualinvoke v7.<io.netty.buffer.ByteBuf: boolean release()>();
+virtualinvoke v8.<io.netty.buffer.ByteBuf: boolean release()>();
+goto label10;
+label09:
+v31 := @caughtexception;
+virtualinvoke v6.<io.netty.buffer.ByteBuf: boolean release()>();
+virtualinvoke v7.<io.netty.buffer.ByteBuf: boolean release()>();
+virtualinvoke v8.<io.netty.buffer.ByteBuf: boolean release()>();
+throw v31;
+label10:
+return;
+catch java.io.IOException from label01 to label04 with label07;
+catch java.io.IOException from label05 to label06 with label07;
+catch java.lang.Throwable from label01 to label04 with label09;
+catch java.lang.Throwable from label05 to label06 with label09;
+catch java.lang.Throwable from label07 to label08 with label09;
+}
+public void handlerRemoved(io.netty.channel.ChannelHandlerContext) throws java.lang.Exception
+{
+io.netty.buffer.ByteBufAllocator v5;
+io.netty.handler.pcap.PcapWriteHandler$ChannelType v2, v3;
+io.netty.handler.pcap.PcapWriteHandler v0;
+io.netty.handler.pcap.TCPPacket$TCPFlag v14, v15, v25, v26, v38;
+java.net.InetSocketAddress v11, v16, v17, v20, v22, v27, v28, v33, v35, v39, v40, v9;
+io.netty.util.internal.logging.InternalLogger v4, v42;
+io.netty.handler.pcap.TCPPacket$TCPFlag[] v13, v24, v37;
+java.lang.Throwable v41;
+io.netty.channel.ChannelHandlerContext v1;
+io.netty.buffer.ByteBuf v6;
+int v10, v12, v18, v19, v21, v23, v29, v30, v31, v32, v34, v36, v7, v8;
+v0 := @this: io.netty.handler.pcap.PcapWriteHandler;
+v1 := @parameter0: io.netty.channel.ChannelHandlerContext;
+v2 = v0.<io.netty.handler.pcap.PcapWriteHandler: io.netty.handler.pcap.PcapWriteHandler$ChannelType channelType>;
+v3 = <io.netty.handler.pcap.PcapWriteHandler$ChannelType: io.netty.handler.pcap.PcapWriteHandler$ChannelType TCP>;
+if v2 != v3 goto label5;
+v4 = v0.<io.netty.handler.pcap.PcapWriteHandler: io.netty.util.internal.logging.InternalLogger logger>;
+interfaceinvoke v4.<io.netty.util.internal.logging.InternalLogger: void debug(java.lang.String)>("Starting Fake TCP FIN+ACK Flow to close connection");
+v5 = interfaceinvoke v1.<io.netty.channel.ChannelHandlerContext: io.netty.buffer.ByteBufAllocator alloc()>();
+v6 = interfaceinvoke v5.<io.netty.buffer.ByteBufAllocator: io.netty.buffer.ByteBuf buffer()>();
+label1:
+v7 = v0.<io.netty.handler.pcap.PcapWriteHandler: int sendSegmentNumber>;
+v8 = v0.<io.netty.handler.pcap.PcapWriteHandler: int receiveSegmentNumber>;
+v9 = v0.<io.netty.handler.pcap.PcapWriteHandler: java.net.InetSocketAddress initiatorAddr>;
+v10 = virtualinvoke v9.<java.net.InetSocketAddress: int getPort()>();
+v11 = v0.<io.netty.handler.pcap.PcapWriteHandler: java.net.InetSocketAddress handlerAddr>;
+v12 = virtualinvoke v11.<java.net.InetSocketAddress: int getPort()>();
+v13 = newarray (io.netty.handler.pcap.TCPPacket$TCPFlag)[2];
+v14 = <io.netty.handler.pcap.TCPPacket$TCPFlag: io.netty.handler.pcap.TCPPacket$TCPFlag FIN>;
+v13[0] = v14;
+v15 = <io.netty.handler.pcap.TCPPacket$TCPFlag: io.netty.handler.pcap.TCPPacket$TCPFlag ACK>;
+v13[1] = v15;
+staticinvoke <io.netty.handler.pcap.TCPPacket: void writePacket(io.netty.buffer.ByteBuf,io.netty.buffer.ByteBuf,int,int,int,int,io.netty.handler.pcap.TCPPacket$TCPFlag[])>(v6, null, v7, v8, v10, v12, v13);
+v16 = v0.<io.netty.handler.pcap.PcapWriteHandler: java.net.InetSocketAddress initiatorAddr>;
+v17 = v0.<io.netty.handler.pcap.PcapWriteHandler: java.net.InetSocketAddress handlerAddr>;
+specialinvoke v0.<io.netty.handler.pcap.PcapWriteHandler: void completeTCPWrite(java.net.InetSocketAddress,java.net.InetSocketAddress,io.netty.buffer.ByteBuf,io.netty.buffer.ByteBufAllocator,io.netty.channel.ChannelHandlerContext)>(v16, v17, v6, v5, v1);
+v18 = v0.<io.netty.handler.pcap.PcapWriteHandler: int receiveSegmentNumber>;
+v19 = v0.<io.netty.handler.pcap.PcapWriteHandler: int sendSegmentNumber>;
+v20 = v0.<io.netty.handler.pcap.PcapWriteHandler: java.net.InetSocketAddress handlerAddr>;
+v21 = virtualinvoke v20.<java.net.InetSocketAddress: int getPort()>();
+v22 = v0.<io.netty.handler.pcap.PcapWriteHandler: java.net.InetSocketAddress initiatorAddr>;
+v23 = virtualinvoke v22.<java.net.InetSocketAddress: int getPort()>();
+v24 = newarray (io.netty.handler.pcap.TCPPacket$TCPFlag)[2];
+v25 = <io.netty.handler.pcap.TCPPacket$TCPFlag: io.netty.handler.pcap.TCPPacket$TCPFlag FIN>;
+v24[0] = v25;
+v26 = <io.netty.handler.pcap.TCPPacket$TCPFlag: io.netty.handler.pcap.TCPPacket$TCPFlag ACK>;
+v24[1] = v26;
+staticinvoke <io.netty.handler.pcap.TCPPacket: void writePacket(io.netty.buffer.ByteBuf,io.netty.buffer.ByteBuf,int,int,int,int,io.netty.handler.pcap.TCPPacket$TCPFlag[])>(v6, null, v18, v19, v21, v23, v24);
+v27 = v0.<io.netty.handler.pcap.PcapWriteHandler: java.net.InetSocketAddress handlerAddr>;
+v28 = v0.<io.netty.handler.pcap.PcapWriteHandler: java.net.InetSocketAddress initiatorAddr>;
+specialinvoke v0.<io.netty.handler.pcap.PcapWriteHandler: void completeTCPWrite(java.net.InetSocketAddress,java.net.InetSocketAddress,io.netty.buffer.ByteBuf,io.netty.buffer.ByteBufAllocator,io.netty.channel.ChannelHandlerContext)>(v27, v28, v6, v5, v1);
+v29 = v0.<io.netty.handler.pcap.PcapWriteHandler: int sendSegmentNumber>;
+v30 = v29 + 1;
+v31 = v0.<io.netty.handler.pcap.PcapWriteHandler: int receiveSegmentNumber>;
+v32 = v31 + 1;
+v33 = v0.<io.netty.handler.pcap.PcapWriteHandler: java.net.InetSocketAddress initiatorAddr>;
+v34 = virtualinvoke v33.<java.net.InetSocketAddress: int getPort()>();
+v35 = v0.<io.netty.handler.pcap.PcapWriteHandler: java.net.InetSocketAddress handlerAddr>;
+v36 = virtualinvoke v35.<java.net.InetSocketAddress: int getPort()>();
+v37 = newarray (io.netty.handler.pcap.TCPPacket$TCPFlag)[1];
+v38 = <io.netty.handler.pcap.TCPPacket$TCPFlag: io.netty.handler.pcap.TCPPacket$TCPFlag ACK>;
+v37[0] = v38;
+staticinvoke <io.netty.handler.pcap.TCPPacket: void writePacket(io.netty.buffer.ByteBuf,io.netty.buffer.ByteBuf,int,int,int,int,io.netty.handler.pcap.TCPPacket$TCPFlag[])>(v6, null, v30, v32, v34, v36, v37);
+v39 = v0.<io.netty.handler.pcap.PcapWriteHandler: java.net.InetSocketAddress initiatorAddr>;
+v40 = v0.<io.netty.handler.pcap.PcapWriteHandler: java.net.InetSocketAddress handlerAddr>;
+specialinvoke v0.<io.netty.handler.pcap.PcapWriteHandler: void completeTCPWrite(java.net.InetSocketAddress,java.net.InetSocketAddress,io.netty.buffer.ByteBuf,io.netty.buffer.ByteBufAllocator,io.netty.channel.ChannelHandlerContext)>(v39, v40, v6, v5, v1);
+label2:
+virtualinvoke v6.<io.netty.buffer.ByteBuf: boolean release()>();
+goto label4;
+label3:
+v41 := @caughtexception;
+virtualinvoke v6.<io.netty.buffer.ByteBuf: boolean release()>();
+throw v41;
+label4:
+v42 = v0.<io.netty.handler.pcap.PcapWriteHandler: io.netty.util.internal.logging.InternalLogger logger>;
+interfaceinvoke v42.<io.netty.util.internal.logging.InternalLogger: void debug(java.lang.String)>("Finished Fake TCP FIN+ACK Flow to close connection");
+label5:
+virtualinvoke v0.<io.netty.handler.pcap.PcapWriteHandler: void close()>();
+specialinvoke v0.<io.netty.channel.ChannelDuplexHandler: void handlerRemoved(io.netty.channel.ChannelHandlerContext)>(v1);
+return;
+catch java.lang.Throwable from label1 to label2 with label3;
+}
+public void exceptionCaught(io.netty.channel.ChannelHandlerContext, java.lang.Throwable) throws java.lang.Exception
+{
+java.lang.Throwable v19, v2;
+io.netty.buffer.ByteBufAllocator v18, v5;
+io.netty.handler.pcap.PcapWriteHandler$ChannelType v3, v4;
+io.netty.channel.ChannelHandlerContext v1;
+io.netty.buffer.ByteBuf v6;
+int v10, v12, v7, v8;
+io.netty.handler.pcap.PcapWriteHandler v0;
+io.netty.handler.pcap.TCPPacket$TCPFlag v14, v15;
+java.net.InetSocketAddress v11, v16, v17, v9;
+io.netty.util.internal.logging.InternalLogger v20;
+io.netty.handler.pcap.TCPPacket$TCPFlag[] v13;
+v0 := @this: io.netty.handler.pcap.PcapWriteHandler;
+v1 := @parameter0: io.netty.channel.ChannelHandlerContext;
+v2 := @parameter1: java.lang.Throwable;
+v3 = v0.<io.netty.handler.pcap.PcapWriteHandler: io.netty.handler.pcap.PcapWriteHandler$ChannelType channelType>;
+v4 = <io.netty.handler.pcap.PcapWriteHandler$ChannelType: io.netty.handler.pcap.PcapWriteHandler$ChannelType TCP>;
+if v3 != v4 goto label5;
+v5 = interfaceinvoke v1.<io.netty.channel.ChannelHandlerContext: io.netty.buffer.ByteBufAllocator alloc()>();
+v6 = interfaceinvoke v5.<io.netty.buffer.ByteBufAllocator: io.netty.buffer.ByteBuf buffer()>();
+label1:
+v7 = v0.<io.netty.handler.pcap.PcapWriteHandler: int sendSegmentNumber>;
+v8 = v0.<io.netty.handler.pcap.PcapWriteHandler: int receiveSegmentNumber>;
+v9 = v0.<io.netty.handler.pcap.PcapWriteHandler: java.net.InetSocketAddress initiatorAddr>;
+v10 = virtualinvoke v9.<java.net.InetSocketAddress: int getPort()>();
+v11 = v0.<io.netty.handler.pcap.PcapWriteHandler: java.net.InetSocketAddress handlerAddr>;
+v12 = virtualinvoke v11.<java.net.InetSocketAddress: int getPort()>();
+v13 = newarray (io.netty.handler.pcap.TCPPacket$TCPFlag)[2];
+v14 = <io.netty.handler.pcap.TCPPacket$TCPFlag: io.netty.handler.pcap.TCPPacket$TCPFlag RST>;
+v13[0] = v14;
+v15 = <io.netty.handler.pcap.TCPPacket$TCPFlag: io.netty.handler.pcap.TCPPacket$TCPFlag ACK>;
+v13[1] = v15;
+staticinvoke <io.netty.handler.pcap.TCPPacket: void writePacket(io.netty.buffer.ByteBuf,io.netty.buffer.ByteBuf,int,int,int,int,io.netty.handler.pcap.TCPPacket$TCPFlag[])>(v6, null, v7, v8, v10, v12, v13);
+v16 = v0.<io.netty.handler.pcap.PcapWriteHandler: java.net.InetSocketAddress initiatorAddr>;
+v17 = v0.<io.netty.handler.pcap.PcapWriteHandler: java.net.InetSocketAddress handlerAddr>;
+v18 = interfaceinvoke v1.<io.netty.channel.ChannelHandlerContext: io.netty.buffer.ByteBufAllocator alloc()>();
+specialinvoke v0.<io.netty.handler.pcap.PcapWriteHandler: void completeTCPWrite(java.net.InetSocketAddress,java.net.InetSocketAddress,io.netty.buffer.ByteBuf,io.netty.buffer.ByteBufAllocator,io.netty.channel.ChannelHandlerContext)>(v16, v17, v6, v18, v1);
+label2:
+virtualinvoke v6.<io.netty.buffer.ByteBuf: boolean release()>();
+goto label4;
+label3:
+v19 := @caughtexception;
+virtualinvoke v6.<io.netty.buffer.ByteBuf: boolean release()>();
+throw v19;
+label4:
+v20 = v0.<io.netty.handler.pcap.PcapWriteHandler: io.netty.util.internal.logging.InternalLogger logger>;
+interfaceinvoke v20.<io.netty.util.internal.logging.InternalLogger: void debug(java.lang.String)>("Sent Fake TCP RST to close connection");
+label5:
+virtualinvoke v0.<io.netty.handler.pcap.PcapWriteHandler: void close()>();
+interfaceinvoke v1.<io.netty.channel.ChannelHandlerContext: io.netty.channel.ChannelHandlerContext fireExceptionCaught(java.lang.Throwable)>(v2);
+return;
+catch java.lang.Throwable from label1 to label2 with label3;
+}
+private void logTCP(boolean, int, int, int, java.net.InetSocketAddress, java.net.InetSocketAddress, boolean)
+{
+java.lang.Object[] v11, v16;
+java.lang.Integer v13, v14, v17, v19, v20;
+int v2, v3, v4;
+java.lang.Boolean v12, v18;
+io.netty.handler.pcap.PcapWriteHandler v0;
+boolean v1, v7, v9;
+java.net.InetSocketAddress v5, v6;
+io.netty.util.internal.logging.InternalLogger v10, v15, v8;
+v0 := @this: io.netty.handler.pcap.PcapWriteHandler;
+v1 := @parameter0: boolean;
+v2 := @parameter1: int;
+v3 := @parameter2: int;
+v4 := @parameter3: int;
+v5 := @parameter4: java.net.InetSocketAddress;
+v6 := @parameter5: java.net.InetSocketAddress;
+v7 := @parameter6: boolean;
+v8 = v0.<io.netty.handler.pcap.PcapWriteHandler: io.netty.util.internal.logging.InternalLogger logger>;
+v9 = interfaceinvoke v8.<io.netty.util.internal.logging.InternalLogger: boolean isDebugEnabled()>();
+if v9 == 0 goto label2;
+if v7 == 0 goto label1;
+v10 = v0.<io.netty.handler.pcap.PcapWriteHandler: io.netty.util.internal.logging.InternalLogger logger>;
+v11 = newarray (java.lang.Object)[5];
+v12 = staticinvoke <java.lang.Boolean: java.lang.Boolean valueOf(boolean)>(v1);
+v11[0] = v12;
+v13 = staticinvoke <java.lang.Integer: java.lang.Integer valueOf(int)>(v3);
+v11[1] = v13;
+v14 = staticinvoke <java.lang.Integer: java.lang.Integer valueOf(int)>(v4);
+v11[2] = v14;
+v11[3] = v6;
+v11[4] = v5;
+interfaceinvoke v10.<io.netty.util.internal.logging.InternalLogger: void debug(java.lang.String,java.lang.Object[])>("Writing TCP ACK, isWriteOperation {}, Segment Number {}, Ack Number {}, Src Addr {}, Dst Addr {}", v11);
+goto label2;
+label1:
+v15 = v0.<io.netty.handler.pcap.PcapWriteHandler: io.netty.util.internal.logging.InternalLogger logger>;
+v16 = newarray (java.lang.Object)[6];
+v17 = staticinvoke <java.lang.Integer: java.lang.Integer valueOf(int)>(v2);
+v16[0] = v17;
+v18 = staticinvoke <java.lang.Boolean: java.lang.Boolean valueOf(boolean)>(v1);
+v16[1] = v18;
+v19 = staticinvoke <java.lang.Integer: java.lang.Integer valueOf(int)>(v3);
+v16[2] = v19;
+v20 = staticinvoke <java.lang.Integer: java.lang.Integer valueOf(int)>(v4);
+v16[3] = v20;
+v16[4] = v5;
+v16[5] = v6;
+interfaceinvoke v15.<io.netty.util.internal.logging.InternalLogger: void debug(java.lang.String,java.lang.Object[])>("Writing TCP Data of {} Bytes, isWriteOperation {}, Segment Number {}, Ack Number {}, Src Addr {}, Dst Addr {}", v16);
+label2:
+return;
+}
+java.io.OutputStream outputStream()
+{
+java.io.OutputStream v1;
+io.netty.handler.pcap.PcapWriteHandler v0;
+v0 := @this: io.netty.handler.pcap.PcapWriteHandler;
+v1 = v0.<io.netty.handler.pcap.PcapWriteHandler: java.io.OutputStream outputStream>;
+return v1;
+}
+boolean sharedOutputStream()
+{
+io.netty.handler.pcap.PcapWriteHandler v0;
+boolean v1;
+v0 := @this: io.netty.handler.pcap.PcapWriteHandler;
+v1 = v0.<io.netty.handler.pcap.PcapWriteHandler: boolean sharedOutputStream>;
+return v1;
+}
+public boolean isWriting()
+{
+io.netty.handler.pcap.State v3;
+java.lang.Object v2;
+java.util.concurrent.atomic.AtomicReference v1;
+io.netty.handler.pcap.PcapWriteHandler v0;
+boolean v4;
+v0 := @this: io.netty.handler.pcap.PcapWriteHandler;
+v1 = v0.<io.netty.handler.pcap.PcapWriteHandler: java.util.concurrent.atomic.AtomicReference state>;
+v2 = virtualinvoke v1.<java.util.concurrent.atomic.AtomicReference: java.lang.Object get()>();
+v3 = <io.netty.handler.pcap.State: io.netty.handler.pcap.State WRITING>;
+if v2 != v3 goto label1;
+v4 = 1;
+goto label2;
+label1:
+v4 = 0;
+label2:
+return v4;
+}
+io.netty.handler.pcap.State state()
+{
+java.lang.Object v2;
+java.util.concurrent.atomic.AtomicReference v1;
+io.netty.handler.pcap.PcapWriteHandler v0;
+v0 := @this: io.netty.handler.pcap.PcapWriteHandler;
+v1 = v0.<io.netty.handler.pcap.PcapWriteHandler: java.util.concurrent.atomic.AtomicReference state>;
+v2 = virtualinvoke v1.<java.util.concurrent.atomic.AtomicReference: java.lang.Object get()>();
+return v2;
+}
+public void pause()
+{
+java.lang.IllegalStateException v5;
+java.util.concurrent.atomic.AtomicReference v1, v6;
+io.netty.handler.pcap.State v2, v3;
+java.lang.String v7;
+io.netty.handler.pcap.PcapWriteHandler v0;
+boolean v4;
+v0 := @this: io.netty.handler.pcap.PcapWriteHandler;
+v1 = v0.<io.netty.handler.pcap.PcapWriteHandler: java.util.concurrent.atomic.AtomicReference state>;
+v2 = <io.netty.handler.pcap.State: io.netty.handler.pcap.State WRITING>;
+v3 = <io.netty.handler.pcap.State: io.netty.handler.pcap.State PAUSED>;
+v4 = virtualinvoke v1.<java.util.concurrent.atomic.AtomicReference: boolean compareAndSet(java.lang.Object,java.lang.Object)>(v2, v3);
+if v4 != 0 goto label1;
+v5 = new java.lang.IllegalStateException;
+v6 = v0.<io.netty.handler.pcap.PcapWriteHandler: java.util.concurrent.atomic.AtomicReference state>;
+v7 = dynamicinvoke "makeConcatWithConstants" <java.lang.String (java.util.concurrent.atomic.AtomicReference)>(v6) <java.lang.invoke.StringConcatFactory: java.lang.invoke.CallSite makeConcatWithConstants(java.lang.invoke.MethodHandles$Lookup,java.lang.String,java.lang.invoke.MethodType,java.lang.String,java.lang.Object[])>("State must be \'STARTED\' to pause but current state is: \u0001");
+specialinvoke v5.<java.lang.IllegalStateException: void <init>(java.lang.String)>(v7);
+throw v5;
+label1:
+return;
+}
+public void resume()
+{
+java.lang.IllegalStateException v5;
+java.util.concurrent.atomic.AtomicReference v1, v6;
+io.netty.handler.pcap.State v2, v3;
+java.lang.String v7;
+io.netty.handler.pcap.PcapWriteHandler v0;
+boolean v4;
+v0 := @this: io.netty.handler.pcap.PcapWriteHandler;
+v1 = v0.<io.netty.handler.pcap.PcapWriteHandler: java.util.concurrent.atomic.AtomicReference state>;
+v2 = <io.netty.handler.pcap.State: io.netty.handler.pcap.State PAUSED>;
+v3 = <io.netty.handler.pcap.State: io.netty.handler.pcap.State WRITING>;
+v4 = virtualinvoke v1.<java.util.concurrent.atomic.AtomicReference: boolean compareAndSet(java.lang.Object,java.lang.Object)>(v2, v3);
+if v4 != 0 goto label1;
+v5 = new java.lang.IllegalStateException;
+v6 = v0.<io.netty.handler.pcap.PcapWriteHandler: java.util.concurrent.atomic.AtomicReference state>;
+v7 = dynamicinvoke "makeConcatWithConstants" <java.lang.String (java.util.concurrent.atomic.AtomicReference)>(v6) <java.lang.invoke.StringConcatFactory: java.lang.invoke.CallSite makeConcatWithConstants(java.lang.invoke.MethodHandles$Lookup,java.lang.String,java.lang.invoke.MethodType,java.lang.String,java.lang.Object[])>("State must be \'PAUSED\' to resume but current state is: \u0001");
+specialinvoke v5.<java.lang.IllegalStateException: void <init>(java.lang.String)>(v7);
+throw v5;
+label1:
+return;
+}
+void markClosed()
+{
+io.netty.handler.pcap.State v3, v5;
+java.lang.Object v2;
+java.util.concurrent.atomic.AtomicReference v1, v4;
+io.netty.handler.pcap.PcapWriteHandler v0;
+v0 := @this: io.netty.handler.pcap.PcapWriteHandler;
+v1 = v0.<io.netty.handler.pcap.PcapWriteHandler: java.util.concurrent.atomic.AtomicReference state>;
+v2 = virtualinvoke v1.<java.util.concurrent.atomic.AtomicReference: java.lang.Object get()>();
+v3 = <io.netty.handler.pcap.State: io.netty.handler.pcap.State CLOSED>;
+if v2 == v3 goto label1;
+v4 = v0.<io.netty.handler.pcap.PcapWriteHandler: java.util.concurrent.atomic.AtomicReference state>;
+v5 = <io.netty.handler.pcap.State: io.netty.handler.pcap.State CLOSED>;
+virtualinvoke v4.<java.util.concurrent.atomic.AtomicReference: void set(java.lang.Object)>(v5);
+label1:
+return;
+}
+io.netty.handler.pcap.PcapWriter pCapWriter()
+{
+io.netty.handler.pcap.PcapWriteHandler v0;
+io.netty.handler.pcap.PcapWriter v1;
+v0 := @this: io.netty.handler.pcap.PcapWriteHandler;
+v1 = v0.<io.netty.handler.pcap.PcapWriteHandler: io.netty.handler.pcap.PcapWriter pCapWriter>;
+return v1;
+}
+private void logDiscard()
+{
+io.netty.handler.pcap.PcapWriteHandler v0;
+io.netty.util.internal.logging.InternalLogger v1;
+v0 := @this: io.netty.handler.pcap.PcapWriteHandler;
+v1 = v0.<io.netty.handler.pcap.PcapWriteHandler: io.netty.util.internal.logging.InternalLogger logger>;
+interfaceinvoke v1.<io.netty.util.internal.logging.InternalLogger: void warn(java.lang.String)>("Discarding pcap write because channel type is unknown. The channel this handler is registered on is not a SocketChannel or DatagramChannel, so the inference does not work. Please call forceTcpChannel or forceUdpChannel before registering the handler.");
+return;
+}
+public java.lang.String toString()
+{
+io.netty.handler.pcap.PcapWriteHandler$ChannelType v6;
+java.net.InetSocketAddress v7, v8;
+java.util.concurrent.atomic.AtomicReference v10;
+int v4, v5;
+java.lang.String v11;
+io.netty.handler.pcap.PcapWriteHandler v0;
+boolean v1, v2, v3, v9;
+v0 := @this: io.netty.handler.pcap.PcapWriteHandler;
+v1 = v0.<io.netty.handler.pcap.PcapWriteHandler: boolean captureZeroByte>;
+v2 = v0.<io.netty.handler.pcap.PcapWriteHandler: boolean writePcapGlobalHeader>;
+v3 = v0.<io.netty.handler.pcap.PcapWriteHandler: boolean sharedOutputStream>;
+v4 = v0.<io.netty.handler.pcap.PcapWriteHandler: int sendSegmentNumber>;
+v5 = v0.<io.netty.handler.pcap.PcapWriteHandler: int receiveSegmentNumber>;
+v6 = v0.<io.netty.handler.pcap.PcapWriteHandler: io.netty.handler.pcap.PcapWriteHandler$ChannelType channelType>;
+v7 = v0.<io.netty.handler.pcap.PcapWriteHandler: java.net.InetSocketAddress initiatorAddr>;
+v8 = v0.<io.netty.handler.pcap.PcapWriteHandler: java.net.InetSocketAddress handlerAddr>;
+v9 = v0.<io.netty.handler.pcap.PcapWriteHandler: boolean isServerPipeline>;
+v10 = v0.<io.netty.handler.pcap.PcapWriteHandler: java.util.concurrent.atomic.AtomicReference state>;
+v11 = dynamicinvoke "makeConcatWithConstants" <java.lang.String (boolean,boolean,boolean,int,int,io.netty.handler.pcap.PcapWriteHandler$ChannelType,java.net.InetSocketAddress,java.net.InetSocketAddress,boolean,java.util.concurrent.atomic.AtomicReference)>(v1, v2, v3, v4, v5, v6, v7, v8, v9, v10) <java.lang.invoke.StringConcatFactory: java.lang.invoke.CallSite makeConcatWithConstants(java.lang.invoke.MethodHandles$Lookup,java.lang.String,java.lang.invoke.MethodType,java.lang.String,java.lang.Object[])>("PcapWriteHandler{captureZeroByte=\u0001, writePcapGlobalHeader=\u0001, sharedOutputStream=\u0001, sendSegmentNumber=\u0001, receiveSegmentNumber=\u0001, channelType=\u0001, initiatorAddr=\u0001, handlerAddr=\u0001, isServerPipeline=\u0001, state=\u0001}");
+return v11;
+}
+public void close() throws java.io.IOException
+{
+io.netty.handler.pcap.State v3;
+io.netty.util.internal.logging.InternalLogger v4, v6;
+java.lang.Object v2;
+java.util.concurrent.atomic.AtomicReference v1;
+io.netty.handler.pcap.PcapWriteHandler v0;
+io.netty.handler.pcap.PcapWriter v5;
+v0 := @this: io.netty.handler.pcap.PcapWriteHandler;
+v1 = v0.<io.netty.handler.pcap.PcapWriteHandler: java.util.concurrent.atomic.AtomicReference state>;
+v2 = virtualinvoke v1.<java.util.concurrent.atomic.AtomicReference: java.lang.Object get()>();
+v3 = <io.netty.handler.pcap.State: io.netty.handler.pcap.State CLOSED>;
+if v2 != v3 goto label1;
+v4 = v0.<io.netty.handler.pcap.PcapWriteHandler: io.netty.util.internal.logging.InternalLogger logger>;
+interfaceinvoke v4.<io.netty.util.internal.logging.InternalLogger: void debug(java.lang.String)>("PcapWriterHandler is already closed");
+goto label2;
+label1:
+virtualinvoke v0.<io.netty.handler.pcap.PcapWriteHandler: void markClosed()>();
+v5 = v0.<io.netty.handler.pcap.PcapWriteHandler: io.netty.handler.pcap.PcapWriter pCapWriter>;
+virtualinvoke v5.<io.netty.handler.pcap.PcapWriter: void close()>();
+v6 = v0.<io.netty.handler.pcap.PcapWriteHandler: io.netty.util.internal.logging.InternalLogger logger>;
+interfaceinvoke v6.<io.netty.util.internal.logging.InternalLogger: void debug(java.lang.String)>("PcapWriterHandler is now closed");
+label2:
+return;
+}
+public static io.netty.handler.pcap.PcapWriteHandler$Builder builder()
+{
+io.netty.handler.pcap.PcapWriteHandler$Builder v0;
+v0 = new io.netty.handler.pcap.PcapWriteHandler$Builder;
+specialinvoke v0.<io.netty.handler.pcap.PcapWriteHandler$Builder: void <init>()>();
+return v0;
+}
+}

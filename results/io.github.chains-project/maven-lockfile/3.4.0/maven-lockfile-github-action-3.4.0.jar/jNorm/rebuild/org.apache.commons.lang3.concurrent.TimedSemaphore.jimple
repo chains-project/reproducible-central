@@ -1,0 +1,275 @@
+public class org.apache.commons.lang3.concurrent.TimedSemaphore extends java.lang.Object
+{
+public static final int NO_LIMIT;
+private static final int THREAD_POOL_SIZE;
+private final java.util.concurrent.ScheduledExecutorService executorService;
+private final long period;
+private final java.util.concurrent.TimeUnit unit;
+private final boolean ownExecutor;
+private java.util.concurrent.ScheduledFuture task;
+private long totalAcquireCount;
+private long periodCount;
+private int limit;
+private int acquireCount;
+private int lastCallsPerPeriod;
+private boolean shutdown;
+public void <init>(long, java.util.concurrent.TimeUnit, int)
+{
+java.util.concurrent.TimeUnit v2;
+org.apache.commons.lang3.concurrent.TimedSemaphore v0;
+int v3;
+long v1;
+v0 := @this: org.apache.commons.lang3.concurrent.TimedSemaphore;
+v1 := @parameter0: long;
+v2 := @parameter1: java.util.concurrent.TimeUnit;
+v3 := @parameter2: int;
+specialinvoke v0.<org.apache.commons.lang3.concurrent.TimedSemaphore: void <init>(java.util.concurrent.ScheduledExecutorService,long,java.util.concurrent.TimeUnit,int)>(null, v1, v2, v3);
+return;
+}
+public void <init>(java.util.concurrent.ScheduledExecutorService, long, java.util.concurrent.TimeUnit, int)
+{
+java.util.concurrent.TimeUnit v3;
+org.apache.commons.lang3.concurrent.TimedSemaphore v0;
+int v4;
+java.util.concurrent.ScheduledExecutorService v1;
+java.util.concurrent.ScheduledThreadPoolExecutor v5;
+long v2;
+v0 := @this: org.apache.commons.lang3.concurrent.TimedSemaphore;
+v1 := @parameter0: java.util.concurrent.ScheduledExecutorService;
+v2 := @parameter1: long;
+v3 := @parameter2: java.util.concurrent.TimeUnit;
+v4 := @parameter3: int;
+specialinvoke v0.<java.lang.Object: void <init>()>();
+staticinvoke <org.apache.commons.lang3.Validate: void inclusiveBetween(long,long,long,java.lang.String)>(1L, 9223372036854775807L, v2, "Time period must be greater than 0!");
+v0.<org.apache.commons.lang3.concurrent.TimedSemaphore: long period> = v2;
+v0.<org.apache.commons.lang3.concurrent.TimedSemaphore: java.util.concurrent.TimeUnit unit> = v3;
+if v1 == null goto label1;
+v0.<org.apache.commons.lang3.concurrent.TimedSemaphore: java.util.concurrent.ScheduledExecutorService executorService> = v1;
+v0.<org.apache.commons.lang3.concurrent.TimedSemaphore: boolean ownExecutor> = 0;
+goto label2;
+label1:
+v5 = new java.util.concurrent.ScheduledThreadPoolExecutor;
+specialinvoke v5.<java.util.concurrent.ScheduledThreadPoolExecutor: void <init>(int)>(1);
+virtualinvoke v5.<java.util.concurrent.ScheduledThreadPoolExecutor: void setContinueExistingPeriodicTasksAfterShutdownPolicy(boolean)>(0);
+virtualinvoke v5.<java.util.concurrent.ScheduledThreadPoolExecutor: void setExecuteExistingDelayedTasksAfterShutdownPolicy(boolean)>(0);
+v0.<org.apache.commons.lang3.concurrent.TimedSemaphore: java.util.concurrent.ScheduledExecutorService executorService> = v5;
+v0.<org.apache.commons.lang3.concurrent.TimedSemaphore: boolean ownExecutor> = 1;
+label2:
+virtualinvoke v0.<org.apache.commons.lang3.concurrent.TimedSemaphore: void setLimit(int)>(v4);
+return;
+}
+public final synchronized int getLimit()
+{
+int v1;
+org.apache.commons.lang3.concurrent.TimedSemaphore v0;
+v0 := @this: org.apache.commons.lang3.concurrent.TimedSemaphore;
+v1 = v0.<org.apache.commons.lang3.concurrent.TimedSemaphore: int limit>;
+return v1;
+}
+public final synchronized void setLimit(int)
+{
+int v1;
+org.apache.commons.lang3.concurrent.TimedSemaphore v0;
+v0 := @this: org.apache.commons.lang3.concurrent.TimedSemaphore;
+v1 := @parameter0: int;
+v0.<org.apache.commons.lang3.concurrent.TimedSemaphore: int limit> = v1;
+return;
+}
+public synchronized void shutdown()
+{
+java.util.concurrent.ScheduledFuture v4, v5;
+org.apache.commons.lang3.concurrent.TimedSemaphore v0;
+java.util.concurrent.ScheduledExecutorService v3;
+boolean v1, v2;
+v0 := @this: org.apache.commons.lang3.concurrent.TimedSemaphore;
+v1 = v0.<org.apache.commons.lang3.concurrent.TimedSemaphore: boolean shutdown>;
+if v1 != 0 goto label3;
+v2 = v0.<org.apache.commons.lang3.concurrent.TimedSemaphore: boolean ownExecutor>;
+if v2 == 0 goto label1;
+v3 = virtualinvoke v0.<org.apache.commons.lang3.concurrent.TimedSemaphore: java.util.concurrent.ScheduledExecutorService getExecutorService()>();
+interfaceinvoke v3.<java.util.concurrent.ScheduledExecutorService: java.util.List shutdownNow()>();
+label1:
+v4 = v0.<org.apache.commons.lang3.concurrent.TimedSemaphore: java.util.concurrent.ScheduledFuture task>;
+if v4 == null goto label2;
+v5 = v0.<org.apache.commons.lang3.concurrent.TimedSemaphore: java.util.concurrent.ScheduledFuture task>;
+interfaceinvoke v5.<java.util.concurrent.ScheduledFuture: boolean cancel(boolean)>(0);
+label2:
+v0.<org.apache.commons.lang3.concurrent.TimedSemaphore: boolean shutdown> = 1;
+label3:
+return;
+}
+public synchronized boolean isShutdown()
+{
+org.apache.commons.lang3.concurrent.TimedSemaphore v0;
+boolean v1;
+v0 := @this: org.apache.commons.lang3.concurrent.TimedSemaphore;
+v1 = v0.<org.apache.commons.lang3.concurrent.TimedSemaphore: boolean shutdown>;
+return v1;
+}
+public synchronized void acquire() throws java.lang.InterruptedException
+{
+org.apache.commons.lang3.concurrent.TimedSemaphore v0;
+boolean v1;
+v0 := @this: org.apache.commons.lang3.concurrent.TimedSemaphore;
+specialinvoke v0.<org.apache.commons.lang3.concurrent.TimedSemaphore: void prepareAcquire()>();
+label1:
+v1 = specialinvoke v0.<org.apache.commons.lang3.concurrent.TimedSemaphore: boolean acquirePermit()>();
+if v1 != 0 goto label2;
+virtualinvoke v0.<java.lang.Object: void wait()>();
+label2:
+if v1 == 0 goto label1;
+return;
+}
+public synchronized boolean tryAcquire()
+{
+org.apache.commons.lang3.concurrent.TimedSemaphore v0;
+boolean v1;
+v0 := @this: org.apache.commons.lang3.concurrent.TimedSemaphore;
+specialinvoke v0.<org.apache.commons.lang3.concurrent.TimedSemaphore: void prepareAcquire()>();
+v1 = specialinvoke v0.<org.apache.commons.lang3.concurrent.TimedSemaphore: boolean acquirePermit()>();
+return v1;
+}
+public synchronized int getLastAcquiresPerPeriod()
+{
+int v1;
+org.apache.commons.lang3.concurrent.TimedSemaphore v0;
+v0 := @this: org.apache.commons.lang3.concurrent.TimedSemaphore;
+v1 = v0.<org.apache.commons.lang3.concurrent.TimedSemaphore: int lastCallsPerPeriod>;
+return v1;
+}
+public synchronized int getAcquireCount()
+{
+int v1;
+org.apache.commons.lang3.concurrent.TimedSemaphore v0;
+v0 := @this: org.apache.commons.lang3.concurrent.TimedSemaphore;
+v1 = v0.<org.apache.commons.lang3.concurrent.TimedSemaphore: int acquireCount>;
+return v1;
+}
+public synchronized int getAvailablePermits()
+{
+org.apache.commons.lang3.concurrent.TimedSemaphore v0;
+int v1, v2, v3;
+v0 := @this: org.apache.commons.lang3.concurrent.TimedSemaphore;
+v1 = virtualinvoke v0.<org.apache.commons.lang3.concurrent.TimedSemaphore: int getLimit()>();
+v2 = virtualinvoke v0.<org.apache.commons.lang3.concurrent.TimedSemaphore: int getAcquireCount()>();
+v3 = v1 - v2;
+return v3;
+}
+public synchronized double getAverageCallsPerPeriod()
+{
+byte v2;
+org.apache.commons.lang3.concurrent.TimedSemaphore v0;
+long v1, v4, v5;
+double v3;
+v0 := @this: org.apache.commons.lang3.concurrent.TimedSemaphore;
+v1 = v0.<org.apache.commons.lang3.concurrent.TimedSemaphore: long periodCount>;
+v2 = v1 cmp 0L;
+if v2 != 0 goto label1;
+v3 = 0.0;
+goto label2;
+label1:
+v4 = v0.<org.apache.commons.lang3.concurrent.TimedSemaphore: long totalAcquireCount>;
+v5 = v0.<org.apache.commons.lang3.concurrent.TimedSemaphore: long periodCount>;
+v3 = v4 / v5;
+label2:
+return v3;
+}
+public long getPeriod()
+{
+long v1;
+org.apache.commons.lang3.concurrent.TimedSemaphore v0;
+v0 := @this: org.apache.commons.lang3.concurrent.TimedSemaphore;
+v1 = v0.<org.apache.commons.lang3.concurrent.TimedSemaphore: long period>;
+return v1;
+}
+public java.util.concurrent.TimeUnit getUnit()
+{
+java.util.concurrent.TimeUnit v1;
+org.apache.commons.lang3.concurrent.TimedSemaphore v0;
+v0 := @this: org.apache.commons.lang3.concurrent.TimedSemaphore;
+v1 = v0.<org.apache.commons.lang3.concurrent.TimedSemaphore: java.util.concurrent.TimeUnit unit>;
+return v1;
+}
+protected java.util.concurrent.ScheduledExecutorService getExecutorService()
+{
+java.util.concurrent.ScheduledExecutorService v1;
+org.apache.commons.lang3.concurrent.TimedSemaphore v0;
+v0 := @this: org.apache.commons.lang3.concurrent.TimedSemaphore;
+v1 = v0.<org.apache.commons.lang3.concurrent.TimedSemaphore: java.util.concurrent.ScheduledExecutorService executorService>;
+return v1;
+}
+protected java.util.concurrent.ScheduledFuture startTimer()
+{
+java.util.concurrent.TimeUnit v5;
+java.util.concurrent.ScheduledFuture v6;
+org.apache.commons.lang3.concurrent.TimedSemaphore v0;
+java.util.concurrent.ScheduledExecutorService v1;
+long v3, v4;
+java.lang.Runnable v2;
+v0 := @this: org.apache.commons.lang3.concurrent.TimedSemaphore;
+v1 = virtualinvoke v0.<org.apache.commons.lang3.concurrent.TimedSemaphore: java.util.concurrent.ScheduledExecutorService getExecutorService()>();
+v2 = staticinvoke <org.apache.commons.lang3.concurrent.TimedSemaphore$endOfPeriod__239: java.lang.Runnable bootstrap$(org.apache.commons.lang3.concurrent.TimedSemaphore)>(v0);
+v3 = virtualinvoke v0.<org.apache.commons.lang3.concurrent.TimedSemaphore: long getPeriod()>();
+v4 = virtualinvoke v0.<org.apache.commons.lang3.concurrent.TimedSemaphore: long getPeriod()>();
+v5 = virtualinvoke v0.<org.apache.commons.lang3.concurrent.TimedSemaphore: java.util.concurrent.TimeUnit getUnit()>();
+v6 = interfaceinvoke v1.<java.util.concurrent.ScheduledExecutorService: java.util.concurrent.ScheduledFuture scheduleAtFixedRate(java.lang.Runnable,long,long,java.util.concurrent.TimeUnit)>(v2, v3, v4, v5);
+return v6;
+}
+synchronized void endOfPeriod()
+{
+org.apache.commons.lang3.concurrent.TimedSemaphore v0;
+int v1, v3;
+long v2, v4, v5, v6;
+v0 := @this: org.apache.commons.lang3.concurrent.TimedSemaphore;
+v1 = v0.<org.apache.commons.lang3.concurrent.TimedSemaphore: int acquireCount>;
+v0.<org.apache.commons.lang3.concurrent.TimedSemaphore: int lastCallsPerPeriod> = v1;
+v2 = v0.<org.apache.commons.lang3.concurrent.TimedSemaphore: long totalAcquireCount>;
+v3 = v0.<org.apache.commons.lang3.concurrent.TimedSemaphore: int acquireCount>;
+v4 = v2 + v3;
+v0.<org.apache.commons.lang3.concurrent.TimedSemaphore: long totalAcquireCount> = v4;
+v5 = v0.<org.apache.commons.lang3.concurrent.TimedSemaphore: long periodCount>;
+v6 = v5 + 1L;
+v0.<org.apache.commons.lang3.concurrent.TimedSemaphore: long periodCount> = v6;
+v0.<org.apache.commons.lang3.concurrent.TimedSemaphore: int acquireCount> = 0;
+virtualinvoke v0.<java.lang.Object: void notifyAll()>();
+return;
+}
+private void prepareAcquire()
+{
+java.lang.IllegalStateException v2;
+java.util.concurrent.ScheduledFuture v3, v4;
+org.apache.commons.lang3.concurrent.TimedSemaphore v0;
+boolean v1;
+v0 := @this: org.apache.commons.lang3.concurrent.TimedSemaphore;
+v1 = virtualinvoke v0.<org.apache.commons.lang3.concurrent.TimedSemaphore: boolean isShutdown()>();
+if v1 == 0 goto label1;
+v2 = new java.lang.IllegalStateException;
+specialinvoke v2.<java.lang.IllegalStateException: void <init>(java.lang.String)>("TimedSemaphore is shut down!");
+throw v2;
+label1:
+v3 = v0.<org.apache.commons.lang3.concurrent.TimedSemaphore: java.util.concurrent.ScheduledFuture task>;
+if v3 != null goto label2;
+v4 = virtualinvoke v0.<org.apache.commons.lang3.concurrent.TimedSemaphore: java.util.concurrent.ScheduledFuture startTimer()>();
+v0.<org.apache.commons.lang3.concurrent.TimedSemaphore: java.util.concurrent.ScheduledFuture task> = v4;
+label2:
+return;
+}
+private boolean acquirePermit()
+{
+org.apache.commons.lang3.concurrent.TimedSemaphore v0;
+int v1, v2, v3, v4, v5;
+v0 := @this: org.apache.commons.lang3.concurrent.TimedSemaphore;
+v1 = virtualinvoke v0.<org.apache.commons.lang3.concurrent.TimedSemaphore: int getLimit()>();
+if v1 <= 0 goto label1;
+v2 = v0.<org.apache.commons.lang3.concurrent.TimedSemaphore: int acquireCount>;
+v3 = virtualinvoke v0.<org.apache.commons.lang3.concurrent.TimedSemaphore: int getLimit()>();
+if v2 >= v3 goto label2;
+label1:
+v4 = v0.<org.apache.commons.lang3.concurrent.TimedSemaphore: int acquireCount>;
+v5 = v4 + 1;
+v0.<org.apache.commons.lang3.concurrent.TimedSemaphore: int acquireCount> = v5;
+return 1;
+label2:
+return 0;
+}
+}

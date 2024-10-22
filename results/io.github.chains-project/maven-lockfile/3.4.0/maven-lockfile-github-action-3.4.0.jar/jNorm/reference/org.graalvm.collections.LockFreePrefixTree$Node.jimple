@@ -1,0 +1,416 @@
+public class org.graalvm.collections.LockFreePrefixTree$Node extends java.util.concurrent.atomic.AtomicLong
+{
+private static final long serialVersionUID;
+private static final org.graalvm.collections.LockFreePrefixTree$Node$FrozenNode FROZEN_NODE;
+private static final int INITIAL_LINEAR_NODE_SIZE;
+private static final int INITIAL_HASH_NODE_SIZE;
+private static final int MAX_LINEAR_NODE_SIZE;
+private static final int MAX_HASH_SKIPS;
+private static final java.util.concurrent.atomic.AtomicReferenceFieldUpdater CHILDREN_UPDATER;
+private final long key;
+private volatile java.util.concurrent.atomic.AtomicReferenceArray children;
+private void <init>(long)
+{
+org.graalvm.collections.LockFreePrefixTree$Node v0;
+long v1;
+v0 := @this: org.graalvm.collections.LockFreePrefixTree$Node;
+v1 := @parameter0: long;
+specialinvoke v0.<java.util.concurrent.atomic.AtomicLong: void <init>()>();
+v0.<org.graalvm.collections.LockFreePrefixTree$Node: long key> = v1;
+return;
+}
+public long value()
+{
+org.graalvm.collections.LockFreePrefixTree$Node v0;
+long v1;
+v0 := @this: org.graalvm.collections.LockFreePrefixTree$Node;
+v1 = virtualinvoke v0.<org.graalvm.collections.LockFreePrefixTree$Node: long get()>();
+return v1;
+}
+private long getKey()
+{
+org.graalvm.collections.LockFreePrefixTree$Node v0;
+long v1;
+v0 := @this: org.graalvm.collections.LockFreePrefixTree$Node;
+v1 = v0.<org.graalvm.collections.LockFreePrefixTree$Node: long key>;
+return v1;
+}
+public void setValue(long)
+{
+org.graalvm.collections.LockFreePrefixTree$Node v0;
+long v1;
+v0 := @this: org.graalvm.collections.LockFreePrefixTree$Node;
+v1 := @parameter0: long;
+virtualinvoke v0.<org.graalvm.collections.LockFreePrefixTree$Node: void set(long)>(v1);
+return;
+}
+public long incValue()
+{
+org.graalvm.collections.LockFreePrefixTree$Node v0;
+long v1;
+v0 := @this: org.graalvm.collections.LockFreePrefixTree$Node;
+v1 = virtualinvoke v0.<org.graalvm.collections.LockFreePrefixTree$Node: long incrementAndGet()>();
+return v1;
+}
+public org.graalvm.collections.LockFreePrefixTree$Node at(long)
+{
+org.graalvm.collections.LockFreePrefixTree$Node v0, v4, v5;
+long v1;
+boolean v3;
+java.util.concurrent.atomic.AtomicReferenceArray v2;
+v0 := @this: org.graalvm.collections.LockFreePrefixTree$Node;
+v1 := @parameter0: long;
+specialinvoke v0.<org.graalvm.collections.LockFreePrefixTree$Node: void ensureChildren()>();
+label1:
+v2 = specialinvoke v0.<org.graalvm.collections.LockFreePrefixTree$Node: java.util.concurrent.atomic.AtomicReferenceArray readChildren()>();
+v3 = v2 instanceof org.graalvm.collections.LockFreePrefixTree$Node$LinearChildren;
+if v3 == 0 goto label3;
+v4 = staticinvoke <org.graalvm.collections.LockFreePrefixTree$Node: org.graalvm.collections.LockFreePrefixTree$Node getOrAddLinear(long,java.util.concurrent.atomic.AtomicReferenceArray)>(v1, v2);
+if v4 == null goto label2;
+return v4;
+label2:
+specialinvoke v0.<org.graalvm.collections.LockFreePrefixTree$Node: void tryResizeLinear(java.util.concurrent.atomic.AtomicReferenceArray)>(v2);
+goto label1;
+label3:
+v5 = staticinvoke <org.graalvm.collections.LockFreePrefixTree$Node: org.graalvm.collections.LockFreePrefixTree$Node getOrAddHash(long,java.util.concurrent.atomic.AtomicReferenceArray)>(v1, v2);
+if v5 == null goto label4;
+return v5;
+label4:
+specialinvoke v0.<org.graalvm.collections.LockFreePrefixTree$Node: void tryResizeHash(java.util.concurrent.atomic.AtomicReferenceArray)>(v2);
+goto label1;
+}
+private static org.graalvm.collections.LockFreePrefixTree$Node getOrAddLinear(long, java.util.concurrent.atomic.AtomicReferenceArray)
+{
+org.graalvm.collections.LockFreePrefixTree$Node v4, v5, v7;
+long v0, v10, v8;
+java.util.concurrent.atomic.AtomicReferenceArray v1;
+byte v11, v9;
+int v2, v3;
+boolean v6;
+v0 := @parameter0: long;
+v1 := @parameter1: java.util.concurrent.atomic.AtomicReferenceArray;
+v2 = 0;
+label1:
+v3 = virtualinvoke v1.<java.util.concurrent.atomic.AtomicReferenceArray: int length()>();
+if v2 >= v3 goto label5;
+v4 = staticinvoke <org.graalvm.collections.LockFreePrefixTree$Node: org.graalvm.collections.LockFreePrefixTree$Node read(java.util.concurrent.atomic.AtomicReferenceArray,int)>(v1, v2);
+if v4 != null goto label3;
+v5 = new org.graalvm.collections.LockFreePrefixTree$Node;
+specialinvoke v5.<org.graalvm.collections.LockFreePrefixTree$Node: void <init>(long)>(v0);
+v6 = staticinvoke <org.graalvm.collections.LockFreePrefixTree$Node: boolean cas(java.util.concurrent.atomic.AtomicReferenceArray,int,org.graalvm.collections.LockFreePrefixTree$Node,org.graalvm.collections.LockFreePrefixTree$Node)>(v1, v2, null, v5);
+if v6 == 0 goto label2;
+return v5;
+label2:
+v7 = staticinvoke <org.graalvm.collections.LockFreePrefixTree$Node: org.graalvm.collections.LockFreePrefixTree$Node read(java.util.concurrent.atomic.AtomicReferenceArray,int)>(v1, v2);
+v8 = specialinvoke v7.<org.graalvm.collections.LockFreePrefixTree$Node: long getKey()>();
+v9 = v8 cmp v0;
+if v9 != 0 goto label4;
+return v7;
+label3:
+v10 = specialinvoke v4.<org.graalvm.collections.LockFreePrefixTree$Node: long getKey()>();
+v11 = v10 cmp v0;
+if v11 != 0 goto label4;
+return v4;
+label4:
+v2 = v2 + 1;
+goto label1;
+label5:
+return null;
+}
+private void tryResizeLinear(java.util.concurrent.atomic.AtomicReferenceArray)
+{
+java.util.concurrent.atomic.AtomicReferenceFieldUpdater v14;
+org.graalvm.collections.LockFreePrefixTree$Node v0, v13, v9;
+org.graalvm.collections.LockFreePrefixTree$Node$HashChildren v10;
+java.util.concurrent.atomic.AtomicReferenceArray v1, v6;
+org.graalvm.collections.LockFreePrefixTree$Node$LinearChildren v3;
+int v11, v12, v2, v4, v5, v7, v8;
+v0 := @this: org.graalvm.collections.LockFreePrefixTree$Node;
+v1 := @parameter0: java.util.concurrent.atomic.AtomicReferenceArray;
+v2 = virtualinvoke v1.<java.util.concurrent.atomic.AtomicReferenceArray: int length()>();
+if v2 >= 8 goto label2;
+v3 = new org.graalvm.collections.LockFreePrefixTree$Node$LinearChildren;
+v4 = virtualinvoke v1.<java.util.concurrent.atomic.AtomicReferenceArray: int length()>();
+v5 = 2 * v4;
+specialinvoke v3.<org.graalvm.collections.LockFreePrefixTree$Node$LinearChildren: void <init>(int)>(v5);
+v6 = v3;
+v7 = 0;
+label1:
+v8 = virtualinvoke v1.<java.util.concurrent.atomic.AtomicReferenceArray: int length()>();
+if v7 >= v8 goto label4;
+v9 = staticinvoke <org.graalvm.collections.LockFreePrefixTree$Node: org.graalvm.collections.LockFreePrefixTree$Node read(java.util.concurrent.atomic.AtomicReferenceArray,int)>(v1, v7);
+staticinvoke <org.graalvm.collections.LockFreePrefixTree$Node: void write(java.util.concurrent.atomic.AtomicReferenceArray,int,org.graalvm.collections.LockFreePrefixTree$Node)>(v3, v7, v9);
+v7 = v7 + 1;
+goto label1;
+label2:
+v10 = new org.graalvm.collections.LockFreePrefixTree$Node$HashChildren;
+specialinvoke v10.<org.graalvm.collections.LockFreePrefixTree$Node$HashChildren: void <init>(int)>(16);
+v6 = v10;
+v11 = 0;
+label3:
+v12 = virtualinvoke v1.<java.util.concurrent.atomic.AtomicReferenceArray: int length()>();
+if v11 >= v12 goto label4;
+v13 = staticinvoke <org.graalvm.collections.LockFreePrefixTree$Node: org.graalvm.collections.LockFreePrefixTree$Node read(java.util.concurrent.atomic.AtomicReferenceArray,int)>(v1, v11);
+staticinvoke <org.graalvm.collections.LockFreePrefixTree$Node: void addChildToLocalHash(org.graalvm.collections.LockFreePrefixTree$Node,java.util.concurrent.atomic.AtomicReferenceArray)>(v13, v10);
+v11 = v11 + 1;
+goto label3;
+label4:
+v14 = <org.graalvm.collections.LockFreePrefixTree$Node: java.util.concurrent.atomic.AtomicReferenceFieldUpdater CHILDREN_UPDATER>;
+virtualinvoke v14.<java.util.concurrent.atomic.AtomicReferenceFieldUpdater: boolean compareAndSet(java.lang.Object,java.lang.Object,java.lang.Object)>(v0, v1, v6);
+return;
+}
+private static org.graalvm.collections.LockFreePrefixTree$Node getOrAddHash(long, java.util.concurrent.atomic.AtomicReferenceArray)
+{
+org.graalvm.collections.LockFreePrefixTree$Node v6, v7;
+long v0, v10;
+java.util.concurrent.atomic.AtomicReferenceArray v1;
+org.graalvm.collections.LockFreePrefixTree$Node$FrozenNode v9;
+byte v11;
+int v12, v13, v2, v3, v4, v5;
+boolean v8;
+v0 := @parameter0: long;
+v1 := @parameter1: java.util.concurrent.atomic.AtomicReferenceArray;
+v2 = staticinvoke <org.graalvm.collections.LockFreePrefixTree$Node: int hash(long)>(v0);
+v3 = virtualinvoke v1.<java.util.concurrent.atomic.AtomicReferenceArray: int length()>();
+v4 = v2 % v3;
+v5 = 0;
+label1:
+v6 = staticinvoke <org.graalvm.collections.LockFreePrefixTree$Node: org.graalvm.collections.LockFreePrefixTree$Node read(java.util.concurrent.atomic.AtomicReferenceArray,int)>(v1, v4);
+if v6 != null goto label2;
+v7 = new org.graalvm.collections.LockFreePrefixTree$Node;
+specialinvoke v7.<org.graalvm.collections.LockFreePrefixTree$Node: void <init>(long)>(v0);
+v8 = staticinvoke <org.graalvm.collections.LockFreePrefixTree$Node: boolean cas(java.util.concurrent.atomic.AtomicReferenceArray,int,org.graalvm.collections.LockFreePrefixTree$Node,org.graalvm.collections.LockFreePrefixTree$Node)>(v1, v4, null, v7);
+if v8 == 0 goto label1;
+return v7;
+label2:
+v9 = <org.graalvm.collections.LockFreePrefixTree$Node: org.graalvm.collections.LockFreePrefixTree$Node$FrozenNode FROZEN_NODE>;
+if v6 == v9 goto label3;
+v10 = specialinvoke v6.<org.graalvm.collections.LockFreePrefixTree$Node: long getKey()>();
+v11 = v10 cmp v0;
+if v11 != 0 goto label3;
+return v6;
+label3:
+v12 = v4 + 1;
+v13 = virtualinvoke v1.<java.util.concurrent.atomic.AtomicReferenceArray: int length()>();
+v4 = v12 % v13;
+v5 = v5 + 1;
+if v5 <= 10 goto label1;
+return null;
+}
+private static void addChildToLocalHash(org.graalvm.collections.LockFreePrefixTree$Node, java.util.concurrent.atomic.AtomicReferenceArray)
+{
+org.graalvm.collections.LockFreePrefixTree$Node v0, v6;
+long v2;
+java.util.concurrent.atomic.AtomicReferenceArray v1;
+int v3, v4, v5, v7, v8;
+v0 := @parameter0: org.graalvm.collections.LockFreePrefixTree$Node;
+v1 := @parameter1: java.util.concurrent.atomic.AtomicReferenceArray;
+v2 = specialinvoke v0.<org.graalvm.collections.LockFreePrefixTree$Node: long getKey()>();
+v3 = staticinvoke <org.graalvm.collections.LockFreePrefixTree$Node: int hash(long)>(v2);
+v4 = virtualinvoke v1.<java.util.concurrent.atomic.AtomicReferenceArray: int length()>();
+v5 = v3 % v4;
+label1:
+v6 = staticinvoke <org.graalvm.collections.LockFreePrefixTree$Node: org.graalvm.collections.LockFreePrefixTree$Node read(java.util.concurrent.atomic.AtomicReferenceArray,int)>(v1, v5);
+if v6 == null goto label2;
+v7 = v5 + 1;
+v8 = virtualinvoke v1.<java.util.concurrent.atomic.AtomicReferenceArray: int length()>();
+v5 = v7 % v8;
+goto label1;
+label2:
+staticinvoke <org.graalvm.collections.LockFreePrefixTree$Node: void write(java.util.concurrent.atomic.AtomicReferenceArray,int,org.graalvm.collections.LockFreePrefixTree$Node)>(v1, v5, v0);
+return;
+}
+private void tryResizeHash(java.util.concurrent.atomic.AtomicReferenceArray)
+{
+org.graalvm.collections.LockFreePrefixTree$Node v0, v7;
+org.graalvm.collections.LockFreePrefixTree$Node$HashChildren v2;
+java.util.concurrent.atomic.AtomicReferenceArray v1;
+org.graalvm.collections.LockFreePrefixTree$Node$FrozenNode v8;
+int v3, v4, v5, v6;
+v0 := @this: org.graalvm.collections.LockFreePrefixTree$Node;
+v1 := @parameter0: java.util.concurrent.atomic.AtomicReferenceArray;
+staticinvoke <org.graalvm.collections.LockFreePrefixTree$Node: void freezeHash(java.util.concurrent.atomic.AtomicReferenceArray)>(v1);
+v2 = new org.graalvm.collections.LockFreePrefixTree$Node$HashChildren;
+v3 = virtualinvoke v1.<java.util.concurrent.atomic.AtomicReferenceArray: int length()>();
+v4 = 2 * v3;
+specialinvoke v2.<org.graalvm.collections.LockFreePrefixTree$Node$HashChildren: void <init>(int)>(v4);
+v5 = 0;
+label1:
+v6 = virtualinvoke v1.<java.util.concurrent.atomic.AtomicReferenceArray: int length()>();
+if v5 >= v6 goto label3;
+v7 = staticinvoke <org.graalvm.collections.LockFreePrefixTree$Node: org.graalvm.collections.LockFreePrefixTree$Node read(java.util.concurrent.atomic.AtomicReferenceArray,int)>(v1, v5);
+v8 = <org.graalvm.collections.LockFreePrefixTree$Node: org.graalvm.collections.LockFreePrefixTree$Node$FrozenNode FROZEN_NODE>;
+if v7 == v8 goto label2;
+staticinvoke <org.graalvm.collections.LockFreePrefixTree$Node: void addChildToLocalHash(org.graalvm.collections.LockFreePrefixTree$Node,java.util.concurrent.atomic.AtomicReferenceArray)>(v7, v2);
+label2:
+v5 = v5 + 1;
+goto label1;
+label3:
+specialinvoke v0.<org.graalvm.collections.LockFreePrefixTree$Node: boolean casChildren(java.util.concurrent.atomic.AtomicReferenceArray,java.util.concurrent.atomic.AtomicReferenceArray)>(v1, v2);
+return;
+}
+private static void freezeHash(java.util.concurrent.atomic.AtomicReferenceArray)
+{
+org.graalvm.collections.LockFreePrefixTree$Node$FrozenNode v4;
+int v1, v2;
+org.graalvm.collections.LockFreePrefixTree$Node v3;
+java.util.concurrent.atomic.AtomicReferenceArray v0;
+v0 := @parameter0: java.util.concurrent.atomic.AtomicReferenceArray;
+v1 = 0;
+label1:
+v2 = virtualinvoke v0.<java.util.concurrent.atomic.AtomicReferenceArray: int length()>();
+if v1 >= v2 goto label3;
+v3 = staticinvoke <org.graalvm.collections.LockFreePrefixTree$Node: org.graalvm.collections.LockFreePrefixTree$Node read(java.util.concurrent.atomic.AtomicReferenceArray,int)>(v0, v1);
+if v3 != null goto label2;
+v4 = <org.graalvm.collections.LockFreePrefixTree$Node: org.graalvm.collections.LockFreePrefixTree$Node$FrozenNode FROZEN_NODE>;
+staticinvoke <org.graalvm.collections.LockFreePrefixTree$Node: boolean cas(java.util.concurrent.atomic.AtomicReferenceArray,int,org.graalvm.collections.LockFreePrefixTree$Node,org.graalvm.collections.LockFreePrefixTree$Node)>(v0, v1, null, v4);
+label2:
+v1 = v1 + 1;
+goto label1;
+label3:
+return;
+}
+private static boolean cas(java.util.concurrent.atomic.AtomicReferenceArray, int, org.graalvm.collections.LockFreePrefixTree$Node, org.graalvm.collections.LockFreePrefixTree$Node)
+{
+int v1;
+org.graalvm.collections.LockFreePrefixTree$Node v2, v3;
+boolean v4;
+java.util.concurrent.atomic.AtomicReferenceArray v0;
+v0 := @parameter0: java.util.concurrent.atomic.AtomicReferenceArray;
+v1 := @parameter1: int;
+v2 := @parameter2: org.graalvm.collections.LockFreePrefixTree$Node;
+v3 := @parameter3: org.graalvm.collections.LockFreePrefixTree$Node;
+v4 = virtualinvoke v0.<java.util.concurrent.atomic.AtomicReferenceArray: boolean compareAndSet(int,java.lang.Object,java.lang.Object)>(v1, v2, v3);
+return v4;
+}
+private static org.graalvm.collections.LockFreePrefixTree$Node read(java.util.concurrent.atomic.AtomicReferenceArray, int)
+{
+int v1;
+java.lang.Object v2;
+java.util.concurrent.atomic.AtomicReferenceArray v0;
+v0 := @parameter0: java.util.concurrent.atomic.AtomicReferenceArray;
+v1 := @parameter1: int;
+v2 = virtualinvoke v0.<java.util.concurrent.atomic.AtomicReferenceArray: java.lang.Object get(int)>(v1);
+return v2;
+}
+private static void write(java.util.concurrent.atomic.AtomicReferenceArray, int, org.graalvm.collections.LockFreePrefixTree$Node)
+{
+int v1;
+org.graalvm.collections.LockFreePrefixTree$Node v2;
+java.util.concurrent.atomic.AtomicReferenceArray v0;
+v0 := @parameter0: java.util.concurrent.atomic.AtomicReferenceArray;
+v1 := @parameter1: int;
+v2 := @parameter2: org.graalvm.collections.LockFreePrefixTree$Node;
+virtualinvoke v0.<java.util.concurrent.atomic.AtomicReferenceArray: void set(int,java.lang.Object)>(v1, v2);
+return;
+}
+private void ensureChildren()
+{
+org.graalvm.collections.LockFreePrefixTree$Node v0;
+org.graalvm.collections.LockFreePrefixTree$Node$LinearChildren v2;
+java.util.concurrent.atomic.AtomicReferenceArray v1;
+v0 := @this: org.graalvm.collections.LockFreePrefixTree$Node;
+v1 = specialinvoke v0.<org.graalvm.collections.LockFreePrefixTree$Node: java.util.concurrent.atomic.AtomicReferenceArray readChildren()>();
+if v1 != null goto label1;
+v2 = new org.graalvm.collections.LockFreePrefixTree$Node$LinearChildren;
+specialinvoke v2.<org.graalvm.collections.LockFreePrefixTree$Node$LinearChildren: void <init>(int)>(2);
+specialinvoke v0.<org.graalvm.collections.LockFreePrefixTree$Node: boolean casChildren(java.util.concurrent.atomic.AtomicReferenceArray,java.util.concurrent.atomic.AtomicReferenceArray)>(null, v2);
+label1:
+return;
+}
+private boolean casChildren(java.util.concurrent.atomic.AtomicReferenceArray, java.util.concurrent.atomic.AtomicReferenceArray)
+{
+java.util.concurrent.atomic.AtomicReferenceFieldUpdater v3;
+org.graalvm.collections.LockFreePrefixTree$Node v0;
+boolean v4;
+java.util.concurrent.atomic.AtomicReferenceArray v1, v2;
+v0 := @this: org.graalvm.collections.LockFreePrefixTree$Node;
+v1 := @parameter0: java.util.concurrent.atomic.AtomicReferenceArray;
+v2 := @parameter1: java.util.concurrent.atomic.AtomicReferenceArray;
+v3 = <org.graalvm.collections.LockFreePrefixTree$Node: java.util.concurrent.atomic.AtomicReferenceFieldUpdater CHILDREN_UPDATER>;
+v4 = virtualinvoke v3.<java.util.concurrent.atomic.AtomicReferenceFieldUpdater: boolean compareAndSet(java.lang.Object,java.lang.Object,java.lang.Object)>(v0, v1, v2);
+return v4;
+}
+private java.util.concurrent.atomic.AtomicReferenceArray readChildren()
+{
+org.graalvm.collections.LockFreePrefixTree$Node v0;
+java.util.concurrent.atomic.AtomicReferenceArray v1;
+v0 := @this: org.graalvm.collections.LockFreePrefixTree$Node;
+v1 = v0.<org.graalvm.collections.LockFreePrefixTree$Node: java.util.concurrent.atomic.AtomicReferenceArray children>;
+return v1;
+}
+private static int hash(long)
+{
+int v6;
+long v0, v1, v2, v3, v4, v5;
+v0 := @parameter0: long;
+v1 = v0 * -7046033566014671411L;
+v2 = staticinvoke <java.lang.Long: long reverseBytes(long)>(v1);
+v3 = v2 * -7046033566014671411L;
+v4 = v3 >> 32;
+v5 = v3 ^ v4;
+v6 = 2147483647 & v5;
+return v6;
+}
+private void topDown(java.lang.Object, java.util.function.BiFunction, java.util.function.BiConsumer)
+{
+java.util.function.BiFunction v2;
+org.graalvm.collections.LockFreePrefixTree$Node v0, v9;
+long v11, v5;
+java.util.concurrent.atomic.AtomicReferenceArray v4;
+org.graalvm.collections.LockFreePrefixTree$Node$FrozenNode v10;
+java.lang.Long v12, v6;
+int v7, v8;
+java.util.function.BiConsumer v3;
+java.lang.Object v1, v13;
+v0 := @this: org.graalvm.collections.LockFreePrefixTree$Node;
+v1 := @parameter0: java.lang.Object;
+v2 := @parameter1: java.util.function.BiFunction;
+v3 := @parameter2: java.util.function.BiConsumer;
+v4 = specialinvoke v0.<org.graalvm.collections.LockFreePrefixTree$Node: java.util.concurrent.atomic.AtomicReferenceArray readChildren()>();
+v5 = virtualinvoke v0.<org.graalvm.collections.LockFreePrefixTree$Node: long get()>();
+v6 = staticinvoke <java.lang.Long: java.lang.Long valueOf(long)>(v5);
+interfaceinvoke v3.<java.util.function.BiConsumer: void accept(java.lang.Object,java.lang.Object)>(v1, v6);
+if v4 != null goto label1;
+return;
+label1:
+v7 = 0;
+label2:
+v8 = virtualinvoke v4.<java.util.concurrent.atomic.AtomicReferenceArray: int length()>();
+if v7 >= v8 goto label4;
+v9 = staticinvoke <org.graalvm.collections.LockFreePrefixTree$Node: org.graalvm.collections.LockFreePrefixTree$Node read(java.util.concurrent.atomic.AtomicReferenceArray,int)>(v4, v7);
+if v9 == null goto label3;
+v10 = <org.graalvm.collections.LockFreePrefixTree$Node: org.graalvm.collections.LockFreePrefixTree$Node$FrozenNode FROZEN_NODE>;
+if v9 == v10 goto label3;
+v11 = specialinvoke v9.<org.graalvm.collections.LockFreePrefixTree$Node: long getKey()>();
+v12 = staticinvoke <java.lang.Long: java.lang.Long valueOf(long)>(v11);
+v13 = interfaceinvoke v2.<java.util.function.BiFunction: java.lang.Object apply(java.lang.Object,java.lang.Object)>(v1, v12);
+specialinvoke v9.<org.graalvm.collections.LockFreePrefixTree$Node: void topDown(java.lang.Object,java.util.function.BiFunction,java.util.function.BiConsumer)>(v13, v2, v3);
+label3:
+v7 = v7 + 1;
+goto label2;
+label4:
+return;
+}
+public java.lang.String toString()
+{
+org.graalvm.collections.LockFreePrefixTree$Node v0;
+long v1;
+java.lang.String v2;
+v0 := @this: org.graalvm.collections.LockFreePrefixTree$Node;
+v1 = virtualinvoke v0.<org.graalvm.collections.LockFreePrefixTree$Node: long value()>();
+v2 = dynamicinvoke "makeConcatWithConstants" <java.lang.String (long)>(v1) <java.lang.invoke.StringConcatFactory: java.lang.invoke.CallSite makeConcatWithConstants(java.lang.invoke.MethodHandles$Lookup,java.lang.String,java.lang.invoke.MethodType,java.lang.String,java.lang.Object[])>("Node<\u0001>");
+return v2;
+}
+static void <clinit>()
+{
+org.graalvm.collections.LockFreePrefixTree$Node$FrozenNode v0;
+java.util.concurrent.atomic.AtomicReferenceFieldUpdater v1;
+v0 = new org.graalvm.collections.LockFreePrefixTree$Node$FrozenNode;
+specialinvoke v0.<org.graalvm.collections.LockFreePrefixTree$Node$FrozenNode: void <init>()>();
+<org.graalvm.collections.LockFreePrefixTree$Node: org.graalvm.collections.LockFreePrefixTree$Node$FrozenNode FROZEN_NODE> = v0;
+v1 = staticinvoke <java.util.concurrent.atomic.AtomicReferenceFieldUpdater: java.util.concurrent.atomic.AtomicReferenceFieldUpdater newUpdater(java.lang.Class,java.lang.Class,java.lang.String)>(class "Lorg/graalvm/collections/LockFreePrefixTree$Node;", class "Ljava/util/concurrent/atomic/AtomicReferenceArray;", "children");
+<org.graalvm.collections.LockFreePrefixTree$Node: java.util.concurrent.atomic.AtomicReferenceFieldUpdater CHILDREN_UPDATER> = v1;
+return;
+}
+}

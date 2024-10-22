@@ -1,0 +1,557 @@
+final class io.netty.buffer.PoolSubpage extends java.lang.Object implements io.netty.buffer.PoolSubpageMetric
+{
+final io.netty.buffer.PoolChunk chunk;
+final int elemSize;
+private final int pageShifts;
+private final int runOffset;
+private final int runSize;
+private final long[] bitmap;
+io.netty.buffer.PoolSubpage prev;
+io.netty.buffer.PoolSubpage next;
+boolean doNotDestroy;
+private int maxNumElems;
+private int bitmapLength;
+private int nextAvail;
+private int numAvail;
+private final java.util.concurrent.locks.ReentrantLock lock;
+static final boolean $assertionsDisabled;
+void <init>()
+{
+java.util.concurrent.locks.ReentrantLock v1;
+int v2, v3, v4, v5;
+io.netty.buffer.PoolSubpage v0;
+v0 := @this: io.netty.buffer.PoolSubpage;
+specialinvoke v0.<java.lang.Object: void <init>()>();
+v1 = new java.util.concurrent.locks.ReentrantLock;
+specialinvoke v1.<java.util.concurrent.locks.ReentrantLock: void <init>()>();
+v0.<io.netty.buffer.PoolSubpage: java.util.concurrent.locks.ReentrantLock lock> = v1;
+v0.<io.netty.buffer.PoolSubpage: io.netty.buffer.PoolChunk chunk> = null;
+v2 = (int) -1;
+v0.<io.netty.buffer.PoolSubpage: int pageShifts> = v2;
+v3 = (int) -1;
+v0.<io.netty.buffer.PoolSubpage: int runOffset> = v3;
+v4 = (int) -1;
+v0.<io.netty.buffer.PoolSubpage: int elemSize> = v4;
+v5 = (int) -1;
+v0.<io.netty.buffer.PoolSubpage: int runSize> = v5;
+v0.<io.netty.buffer.PoolSubpage: long[] bitmap> = null;
+return;
+}
+void <init>(io.netty.buffer.PoolSubpage, io.netty.buffer.PoolChunk, int, int, int, int)
+{
+io.netty.buffer.PoolSubpage v0, v1;
+long[] v9;
+int v10, v11, v12, v13, v14, v15, v16, v3, v4, v5, v6, v8;
+java.util.concurrent.locks.ReentrantLock v7;
+io.netty.buffer.PoolChunk v2;
+v0 := @this: io.netty.buffer.PoolSubpage;
+v1 := @parameter0: io.netty.buffer.PoolSubpage;
+v2 := @parameter1: io.netty.buffer.PoolChunk;
+v3 := @parameter2: int;
+v4 := @parameter3: int;
+v5 := @parameter4: int;
+v6 := @parameter5: int;
+specialinvoke v0.<java.lang.Object: void <init>()>();
+v7 = new java.util.concurrent.locks.ReentrantLock;
+specialinvoke v7.<java.util.concurrent.locks.ReentrantLock: void <init>()>();
+v0.<io.netty.buffer.PoolSubpage: java.util.concurrent.locks.ReentrantLock lock> = v7;
+v0.<io.netty.buffer.PoolSubpage: io.netty.buffer.PoolChunk chunk> = v2;
+v0.<io.netty.buffer.PoolSubpage: int pageShifts> = v3;
+v0.<io.netty.buffer.PoolSubpage: int runOffset> = v4;
+v0.<io.netty.buffer.PoolSubpage: int runSize> = v5;
+v0.<io.netty.buffer.PoolSubpage: int elemSize> = v6;
+v8 = v5 >>> 10;
+v9 = newarray (long)[v8];
+v0.<io.netty.buffer.PoolSubpage: long[] bitmap> = v9;
+v0.<io.netty.buffer.PoolSubpage: boolean doNotDestroy> = 1;
+if v6 == 0 goto label1;
+v10 = v5 / v6;
+v0.<io.netty.buffer.PoolSubpage: int numAvail> = v10;
+v0.<io.netty.buffer.PoolSubpage: int maxNumElems> = v10;
+v0.<io.netty.buffer.PoolSubpage: int nextAvail> = 0;
+v11 = v0.<io.netty.buffer.PoolSubpage: int maxNumElems>;
+v12 = v11 >>> 6;
+v0.<io.netty.buffer.PoolSubpage: int bitmapLength> = v12;
+v13 = v0.<io.netty.buffer.PoolSubpage: int maxNumElems>;
+v14 = v13 & 63;
+if v14 == 0 goto label1;
+v15 = v0.<io.netty.buffer.PoolSubpage: int bitmapLength>;
+v16 = v15 + 1;
+v0.<io.netty.buffer.PoolSubpage: int bitmapLength> = v16;
+label1:
+specialinvoke v0.<io.netty.buffer.PoolSubpage: void addToPool(io.netty.buffer.PoolSubpage)>(v1);
+return;
+}
+long allocate()
+{
+long v12, v13, v14, v18, v19, v20, v23;
+java.lang.AssertionError v16, v4;
+io.netty.buffer.PoolSubpage v0;
+long[] v11, v17;
+byte v15;
+int v1, v21, v22, v3, v5, v6, v8, v9;
+java.lang.String v7;
+boolean v10, v2;
+v0 := @this: io.netty.buffer.PoolSubpage;
+v1 = v0.<io.netty.buffer.PoolSubpage: int numAvail>;
+if v1 == 0 goto label1;
+v2 = v0.<io.netty.buffer.PoolSubpage: boolean doNotDestroy>;
+if v2 != 0 goto label2;
+label1:
+return -1L;
+label2:
+v3 = specialinvoke v0.<io.netty.buffer.PoolSubpage: int getNextAvail()>();
+if v3 >= 0 goto label3;
+specialinvoke v0.<io.netty.buffer.PoolSubpage: void removeFromPool()>();
+v4 = new java.lang.AssertionError;
+v5 = v0.<io.netty.buffer.PoolSubpage: int numAvail>;
+v6 = v0.<io.netty.buffer.PoolSubpage: int maxNumElems>;
+v7 = dynamicinvoke "makeConcatWithConstants" <java.lang.String (int,int,int)>(v3, v5, v6) <java.lang.invoke.StringConcatFactory: java.lang.invoke.CallSite makeConcatWithConstants(java.lang.invoke.MethodHandles$Lookup,java.lang.String,java.lang.invoke.MethodType,java.lang.String,java.lang.Object[])>("No next available bitmap index found (bitmapIdx = \u0001), even though there are supposed to be (numAvail = \u0001) out of (maxNumElems = \u0001) available indexes.");
+specialinvoke v4.<java.lang.AssertionError: void <init>(java.lang.Object)>(v7);
+throw v4;
+label3:
+v8 = v3 >>> 6;
+v9 = v3 & 63;
+v10 = <io.netty.buffer.PoolSubpage: boolean $assertionsDisabled>;
+if v10 != 0 goto label4;
+v11 = v0.<io.netty.buffer.PoolSubpage: long[] bitmap>;
+v12 = v11[v8];
+v13 = v12 >>> v9;
+v14 = v13 & 1L;
+v15 = v14 cmp 0L;
+if v15 == 0 goto label4;
+v16 = new java.lang.AssertionError;
+specialinvoke v16.<java.lang.AssertionError: void <init>()>();
+throw v16;
+label4:
+v17 = v0.<io.netty.buffer.PoolSubpage: long[] bitmap>;
+v18 = v17[v8];
+v19 = 1L << v9;
+v20 = v18 | v19;
+v17[v8] = v20;
+v21 = v0.<io.netty.buffer.PoolSubpage: int numAvail>;
+v22 = v21 - 1;
+v0.<io.netty.buffer.PoolSubpage: int numAvail> = v22;
+if v22 != 0 goto label5;
+specialinvoke v0.<io.netty.buffer.PoolSubpage: void removeFromPool()>();
+label5:
+v23 = specialinvoke v0.<io.netty.buffer.PoolSubpage: long toHandle(int)>(v3);
+return v23;
+}
+boolean free(io.netty.buffer.PoolSubpage, int)
+{
+long v10, v14, v15, v16, v8, v9;
+java.lang.AssertionError v12;
+io.netty.buffer.PoolSubpage v0, v1, v22, v23;
+long[] v13, v7;
+byte v11;
+int v17, v18, v19, v2, v20, v21, v3, v4, v5;
+boolean v6;
+v0 := @this: io.netty.buffer.PoolSubpage;
+v1 := @parameter0: io.netty.buffer.PoolSubpage;
+v2 := @parameter1: int;
+v3 = v0.<io.netty.buffer.PoolSubpage: int elemSize>;
+if v3 != 0 goto label1;
+return 1;
+label1:
+v4 = v2 >>> 6;
+v5 = v2 & 63;
+v6 = <io.netty.buffer.PoolSubpage: boolean $assertionsDisabled>;
+if v6 != 0 goto label2;
+v7 = v0.<io.netty.buffer.PoolSubpage: long[] bitmap>;
+v8 = v7[v4];
+v9 = v8 >>> v5;
+v10 = v9 & 1L;
+v11 = v10 cmp 0L;
+if v11 != 0 goto label2;
+v12 = new java.lang.AssertionError;
+specialinvoke v12.<java.lang.AssertionError: void <init>()>();
+throw v12;
+label2:
+v13 = v0.<io.netty.buffer.PoolSubpage: long[] bitmap>;
+v14 = v13[v4];
+v15 = 1L << v5;
+v16 = v14 ^ v15;
+v13[v4] = v16;
+specialinvoke v0.<io.netty.buffer.PoolSubpage: void setNextAvail(int)>(v2);
+v17 = v0.<io.netty.buffer.PoolSubpage: int numAvail>;
+v18 = v17 + 1;
+v0.<io.netty.buffer.PoolSubpage: int numAvail> = v18;
+if v17 != 0 goto label3;
+specialinvoke v0.<io.netty.buffer.PoolSubpage: void addToPool(io.netty.buffer.PoolSubpage)>(v1);
+v19 = v0.<io.netty.buffer.PoolSubpage: int maxNumElems>;
+if v19 <= 1 goto label3;
+return 1;
+label3:
+v20 = v0.<io.netty.buffer.PoolSubpage: int numAvail>;
+v21 = v0.<io.netty.buffer.PoolSubpage: int maxNumElems>;
+if v20 == v21 goto label4;
+return 1;
+label4:
+v22 = v0.<io.netty.buffer.PoolSubpage: io.netty.buffer.PoolSubpage prev>;
+v23 = v0.<io.netty.buffer.PoolSubpage: io.netty.buffer.PoolSubpage next>;
+if v22 != v23 goto label5;
+return 1;
+label5:
+v0.<io.netty.buffer.PoolSubpage: boolean doNotDestroy> = 0;
+specialinvoke v0.<io.netty.buffer.PoolSubpage: void removeFromPool()>();
+return 0;
+}
+private void addToPool(io.netty.buffer.PoolSubpage)
+{
+java.lang.AssertionError v5;
+io.netty.buffer.PoolSubpage v0, v1, v3, v4, v6, v7;
+boolean v2;
+v0 := @this: io.netty.buffer.PoolSubpage;
+v1 := @parameter0: io.netty.buffer.PoolSubpage;
+v2 = <io.netty.buffer.PoolSubpage: boolean $assertionsDisabled>;
+if v2 != 0 goto label2;
+v3 = v0.<io.netty.buffer.PoolSubpage: io.netty.buffer.PoolSubpage prev>;
+if v3 != null goto label1;
+v4 = v0.<io.netty.buffer.PoolSubpage: io.netty.buffer.PoolSubpage next>;
+if v4 == null goto label2;
+label1:
+v5 = new java.lang.AssertionError;
+specialinvoke v5.<java.lang.AssertionError: void <init>()>();
+throw v5;
+label2:
+v0.<io.netty.buffer.PoolSubpage: io.netty.buffer.PoolSubpage prev> = v1;
+v6 = v1.<io.netty.buffer.PoolSubpage: io.netty.buffer.PoolSubpage next>;
+v0.<io.netty.buffer.PoolSubpage: io.netty.buffer.PoolSubpage next> = v6;
+v7 = v0.<io.netty.buffer.PoolSubpage: io.netty.buffer.PoolSubpage next>;
+v7.<io.netty.buffer.PoolSubpage: io.netty.buffer.PoolSubpage prev> = v0;
+v1.<io.netty.buffer.PoolSubpage: io.netty.buffer.PoolSubpage next> = v0;
+return;
+}
+private void removeFromPool()
+{
+java.lang.AssertionError v4;
+io.netty.buffer.PoolSubpage v0, v2, v3, v5, v6, v7, v8;
+boolean v1;
+v0 := @this: io.netty.buffer.PoolSubpage;
+v1 = <io.netty.buffer.PoolSubpage: boolean $assertionsDisabled>;
+if v1 != 0 goto label2;
+v2 = v0.<io.netty.buffer.PoolSubpage: io.netty.buffer.PoolSubpage prev>;
+if v2 == null goto label1;
+v3 = v0.<io.netty.buffer.PoolSubpage: io.netty.buffer.PoolSubpage next>;
+if v3 != null goto label2;
+label1:
+v4 = new java.lang.AssertionError;
+specialinvoke v4.<java.lang.AssertionError: void <init>()>();
+throw v4;
+label2:
+v5 = v0.<io.netty.buffer.PoolSubpage: io.netty.buffer.PoolSubpage prev>;
+v6 = v0.<io.netty.buffer.PoolSubpage: io.netty.buffer.PoolSubpage next>;
+v5.<io.netty.buffer.PoolSubpage: io.netty.buffer.PoolSubpage next> = v6;
+v7 = v0.<io.netty.buffer.PoolSubpage: io.netty.buffer.PoolSubpage next>;
+v8 = v0.<io.netty.buffer.PoolSubpage: io.netty.buffer.PoolSubpage prev>;
+v7.<io.netty.buffer.PoolSubpage: io.netty.buffer.PoolSubpage prev> = v8;
+v0.<io.netty.buffer.PoolSubpage: io.netty.buffer.PoolSubpage next> = null;
+v0.<io.netty.buffer.PoolSubpage: io.netty.buffer.PoolSubpage prev> = null;
+return;
+}
+private void setNextAvail(int)
+{
+int v1;
+io.netty.buffer.PoolSubpage v0;
+v0 := @this: io.netty.buffer.PoolSubpage;
+v1 := @parameter0: int;
+v0.<io.netty.buffer.PoolSubpage: int nextAvail> = v1;
+return;
+}
+private int getNextAvail()
+{
+int v1, v2, v3;
+io.netty.buffer.PoolSubpage v0;
+v0 := @this: io.netty.buffer.PoolSubpage;
+v1 = v0.<io.netty.buffer.PoolSubpage: int nextAvail>;
+if v1 < 0 goto label1;
+v2 = (int) -1;
+v0.<io.netty.buffer.PoolSubpage: int nextAvail> = v2;
+return v1;
+label1:
+v3 = specialinvoke v0.<io.netty.buffer.PoolSubpage: int findNextAvail()>();
+return v3;
+}
+private int findNextAvail()
+{
+long v4, v5;
+io.netty.buffer.PoolSubpage v0;
+long[] v1;
+byte v6;
+int v2, v3, v7, v8;
+v0 := @this: io.netty.buffer.PoolSubpage;
+v1 = v0.<io.netty.buffer.PoolSubpage: long[] bitmap>;
+v2 = v0.<io.netty.buffer.PoolSubpage: int bitmapLength>;
+v3 = 0;
+label1:
+if v3 >= v2 goto label3;
+v4 = v1[v3];
+v5 = v4 ^ -1L;
+v6 = v5 cmp 0L;
+if v6 == 0 goto label2;
+v7 = specialinvoke v0.<io.netty.buffer.PoolSubpage: int findNextAvail0(int,long)>(v3, v4);
+return v7;
+label2:
+v3 = v3 + 1;
+goto label1;
+label3:
+v8 = (int) -1;
+return v8;
+}
+private int findNextAvail0(int, long)
+{
+long v2, v6;
+io.netty.buffer.PoolSubpage v0;
+byte v7;
+int v1, v3, v4, v5, v8, v9;
+v0 := @this: io.netty.buffer.PoolSubpage;
+v1 := @parameter0: int;
+v2 := @parameter1: long;
+v3 = v0.<io.netty.buffer.PoolSubpage: int maxNumElems>;
+v4 = v1 << 6;
+v5 = 0;
+label1:
+if v5 >= 64 goto label3;
+v6 = v2 & 1L;
+v7 = v6 cmp 0L;
+if v7 != 0 goto label2;
+v8 = v4 | v5;
+if v8 >= v3 goto label3;
+return v8;
+label2:
+v2 = v2 >>> 1;
+v5 = v5 + 1;
+goto label1;
+label3:
+v9 = (int) -1;
+return v9;
+}
+private long toHandle(int)
+{
+long v10, v11, v6, v7, v8, v9;
+io.netty.buffer.PoolSubpage v0;
+int v1, v2, v3, v4, v5;
+v0 := @this: io.netty.buffer.PoolSubpage;
+v1 := @parameter0: int;
+v2 = v0.<io.netty.buffer.PoolSubpage: int runSize>;
+v3 = v0.<io.netty.buffer.PoolSubpage: int pageShifts>;
+v4 = v2 >> v3;
+v5 = v0.<io.netty.buffer.PoolSubpage: int runOffset>;
+v6 = v5 << 49;
+v7 = v4 << 34;
+v8 = v6 | v7;
+v9 = v8 | 8589934592L;
+v10 = v9 | 4294967296L;
+v11 = v10 | v1;
+return v11;
+}
+public java.lang.String toString()
+{
+java.lang.Throwable v15;
+io.netty.buffer.PoolSubpage v0;
+int v10, v11, v12, v18, v20, v21, v22, v23, v3, v4, v5, v6;
+java.lang.String v19, v24;
+boolean v2, v9;
+io.netty.buffer.PoolArena v14, v17, v8;
+io.netty.buffer.PoolChunk v1, v13, v16, v7;
+v0 := @this: io.netty.buffer.PoolSubpage;
+v1 = v0.<io.netty.buffer.PoolSubpage: io.netty.buffer.PoolChunk chunk>;
+if v1 != null goto label1;
+v2 = 1;
+v3 = 0;
+v4 = 0;
+v5 = (int) -1;
+v6 = v5;
+goto label6;
+label1:
+v7 = v0.<io.netty.buffer.PoolSubpage: io.netty.buffer.PoolChunk chunk>;
+v8 = v7.<io.netty.buffer.PoolChunk: io.netty.buffer.PoolArena arena>;
+virtualinvoke v8.<io.netty.buffer.PoolArena: void lock()>();
+label2:
+v9 = v0.<io.netty.buffer.PoolSubpage: boolean doNotDestroy>;
+if v9 != 0 goto label3;
+v2 = 0;
+v10 = (int) -1;
+v6 = v10;
+v11 = (int) -1;
+v4 = v11;
+v12 = (int) -1;
+v3 = v12;
+goto label4;
+label3:
+v2 = 1;
+v3 = v0.<io.netty.buffer.PoolSubpage: int maxNumElems>;
+v4 = v0.<io.netty.buffer.PoolSubpage: int numAvail>;
+v6 = v0.<io.netty.buffer.PoolSubpage: int elemSize>;
+label4:
+v13 = v0.<io.netty.buffer.PoolSubpage: io.netty.buffer.PoolChunk chunk>;
+v14 = v13.<io.netty.buffer.PoolChunk: io.netty.buffer.PoolArena arena>;
+virtualinvoke v14.<io.netty.buffer.PoolArena: void unlock()>();
+goto label6;
+label5:
+v15 := @caughtexception;
+v16 = v0.<io.netty.buffer.PoolSubpage: io.netty.buffer.PoolChunk chunk>;
+v17 = v16.<io.netty.buffer.PoolChunk: io.netty.buffer.PoolArena arena>;
+virtualinvoke v17.<io.netty.buffer.PoolArena: void unlock()>();
+throw v15;
+label6:
+if v2 != 0 goto label7;
+v18 = v0.<io.netty.buffer.PoolSubpage: int runOffset>;
+v19 = dynamicinvoke "makeConcatWithConstants" <java.lang.String (int)>(v18) <java.lang.invoke.StringConcatFactory: java.lang.invoke.CallSite makeConcatWithConstants(java.lang.invoke.MethodHandles$Lookup,java.lang.String,java.lang.invoke.MethodType,java.lang.String,java.lang.Object[])>("(\u0001: not in use)");
+return v19;
+label7:
+v20 = v0.<io.netty.buffer.PoolSubpage: int runOffset>;
+v21 = v3 - v4;
+v22 = v0.<io.netty.buffer.PoolSubpage: int runOffset>;
+v23 = v0.<io.netty.buffer.PoolSubpage: int runSize>;
+v24 = dynamicinvoke "makeConcatWithConstants" <java.lang.String (int,int,int,int,int,int)>(v20, v21, v3, v22, v23, v6) <java.lang.invoke.StringConcatFactory: java.lang.invoke.CallSite makeConcatWithConstants(java.lang.invoke.MethodHandles$Lookup,java.lang.String,java.lang.invoke.MethodType,java.lang.String,java.lang.Object[])>("(\u0001: \u0001/\u0001, offset: \u0001, length: \u0001, elemSize: \u0001)");
+return v24;
+catch java.lang.Throwable from label2 to label4 with label5;
+}
+public int maxNumElements()
+{
+java.lang.Throwable v7;
+io.netty.buffer.PoolArena v3, v6, v9;
+io.netty.buffer.PoolSubpage v0;
+int v4;
+io.netty.buffer.PoolChunk v1, v2, v5, v8;
+v0 := @this: io.netty.buffer.PoolSubpage;
+v1 = v0.<io.netty.buffer.PoolSubpage: io.netty.buffer.PoolChunk chunk>;
+if v1 != null goto label1;
+return 0;
+label1:
+v2 = v0.<io.netty.buffer.PoolSubpage: io.netty.buffer.PoolChunk chunk>;
+v3 = v2.<io.netty.buffer.PoolChunk: io.netty.buffer.PoolArena arena>;
+virtualinvoke v3.<io.netty.buffer.PoolArena: void lock()>();
+label2:
+v4 = v0.<io.netty.buffer.PoolSubpage: int maxNumElems>;
+label3:
+v5 = v0.<io.netty.buffer.PoolSubpage: io.netty.buffer.PoolChunk chunk>;
+v6 = v5.<io.netty.buffer.PoolChunk: io.netty.buffer.PoolArena arena>;
+virtualinvoke v6.<io.netty.buffer.PoolArena: void unlock()>();
+return v4;
+label4:
+v7 := @caughtexception;
+v8 = v0.<io.netty.buffer.PoolSubpage: io.netty.buffer.PoolChunk chunk>;
+v9 = v8.<io.netty.buffer.PoolChunk: io.netty.buffer.PoolArena arena>;
+virtualinvoke v9.<io.netty.buffer.PoolArena: void unlock()>();
+throw v7;
+catch java.lang.Throwable from label2 to label3 with label4;
+}
+public int numAvailable()
+{
+java.lang.Throwable v7;
+io.netty.buffer.PoolArena v3, v6, v9;
+io.netty.buffer.PoolSubpage v0;
+int v4;
+io.netty.buffer.PoolChunk v1, v2, v5, v8;
+v0 := @this: io.netty.buffer.PoolSubpage;
+v1 = v0.<io.netty.buffer.PoolSubpage: io.netty.buffer.PoolChunk chunk>;
+if v1 != null goto label1;
+return 0;
+label1:
+v2 = v0.<io.netty.buffer.PoolSubpage: io.netty.buffer.PoolChunk chunk>;
+v3 = v2.<io.netty.buffer.PoolChunk: io.netty.buffer.PoolArena arena>;
+virtualinvoke v3.<io.netty.buffer.PoolArena: void lock()>();
+label2:
+v4 = v0.<io.netty.buffer.PoolSubpage: int numAvail>;
+label3:
+v5 = v0.<io.netty.buffer.PoolSubpage: io.netty.buffer.PoolChunk chunk>;
+v6 = v5.<io.netty.buffer.PoolChunk: io.netty.buffer.PoolArena arena>;
+virtualinvoke v6.<io.netty.buffer.PoolArena: void unlock()>();
+return v4;
+label4:
+v7 := @caughtexception;
+v8 = v0.<io.netty.buffer.PoolSubpage: io.netty.buffer.PoolChunk chunk>;
+v9 = v8.<io.netty.buffer.PoolChunk: io.netty.buffer.PoolArena arena>;
+virtualinvoke v9.<io.netty.buffer.PoolArena: void unlock()>();
+throw v7;
+catch java.lang.Throwable from label2 to label3 with label4;
+}
+public int elementSize()
+{
+java.lang.Throwable v8;
+io.netty.buffer.PoolArena v10, v4, v7;
+io.netty.buffer.PoolSubpage v0;
+int v2, v5;
+io.netty.buffer.PoolChunk v1, v3, v6, v9;
+v0 := @this: io.netty.buffer.PoolSubpage;
+v1 = v0.<io.netty.buffer.PoolSubpage: io.netty.buffer.PoolChunk chunk>;
+if v1 != null goto label1;
+v2 = (int) -1;
+return v2;
+label1:
+v3 = v0.<io.netty.buffer.PoolSubpage: io.netty.buffer.PoolChunk chunk>;
+v4 = v3.<io.netty.buffer.PoolChunk: io.netty.buffer.PoolArena arena>;
+virtualinvoke v4.<io.netty.buffer.PoolArena: void lock()>();
+label2:
+v5 = v0.<io.netty.buffer.PoolSubpage: int elemSize>;
+label3:
+v6 = v0.<io.netty.buffer.PoolSubpage: io.netty.buffer.PoolChunk chunk>;
+v7 = v6.<io.netty.buffer.PoolChunk: io.netty.buffer.PoolArena arena>;
+virtualinvoke v7.<io.netty.buffer.PoolArena: void unlock()>();
+return v5;
+label4:
+v8 := @caughtexception;
+v9 = v0.<io.netty.buffer.PoolSubpage: io.netty.buffer.PoolChunk chunk>;
+v10 = v9.<io.netty.buffer.PoolChunk: io.netty.buffer.PoolArena arena>;
+virtualinvoke v10.<io.netty.buffer.PoolArena: void unlock()>();
+throw v8;
+catch java.lang.Throwable from label2 to label3 with label4;
+}
+public int pageSize()
+{
+int v1, v2;
+io.netty.buffer.PoolSubpage v0;
+v0 := @this: io.netty.buffer.PoolSubpage;
+v1 = v0.<io.netty.buffer.PoolSubpage: int pageShifts>;
+v2 = 1 << v1;
+return v2;
+}
+void destroy()
+{
+io.netty.buffer.PoolChunk v1, v2;
+io.netty.buffer.PoolSubpage v0;
+v0 := @this: io.netty.buffer.PoolSubpage;
+v1 = v0.<io.netty.buffer.PoolSubpage: io.netty.buffer.PoolChunk chunk>;
+if v1 == null goto label1;
+v2 = v0.<io.netty.buffer.PoolSubpage: io.netty.buffer.PoolChunk chunk>;
+virtualinvoke v2.<io.netty.buffer.PoolChunk: void destroy()>();
+label1:
+return;
+}
+void lock()
+{
+java.util.concurrent.locks.ReentrantLock v1;
+io.netty.buffer.PoolSubpage v0;
+v0 := @this: io.netty.buffer.PoolSubpage;
+v1 = v0.<io.netty.buffer.PoolSubpage: java.util.concurrent.locks.ReentrantLock lock>;
+virtualinvoke v1.<java.util.concurrent.locks.ReentrantLock: void lock()>();
+return;
+}
+void unlock()
+{
+java.util.concurrent.locks.ReentrantLock v1;
+io.netty.buffer.PoolSubpage v0;
+v0 := @this: io.netty.buffer.PoolSubpage;
+v1 = v0.<io.netty.buffer.PoolSubpage: java.util.concurrent.locks.ReentrantLock lock>;
+virtualinvoke v1.<java.util.concurrent.locks.ReentrantLock: void unlock()>();
+return;
+}
+static void <clinit>()
+{
+java.lang.Class v0;
+boolean v1, v2;
+v0 = class "Lio/netty/buffer/PoolSubpage;";
+v1 = virtualinvoke v0.<java.lang.Class: boolean desiredAssertionStatus()>();
+if v1 != 0 goto label1;
+v2 = 1;
+goto label2;
+label1:
+v2 = 0;
+label2:
+<io.netty.buffer.PoolSubpage: boolean $assertionsDisabled> = v2;
+return;
+}
+}

@@ -1,0 +1,589 @@
+final class io.netty.handler.codec.http2.DefaultHttp2Connection$DefaultEndpoint extends java.lang.Object implements io.netty.handler.codec.http2.Http2Connection$Endpoint
+{
+private final boolean server;
+private int nextStreamIdToCreate;
+private int nextReservationStreamId;
+private int lastStreamKnownByPeer;
+private boolean pushToAllowed;
+private io.netty.handler.codec.http2.Http2FlowController flowController;
+private int maxStreams;
+private int maxActiveStreams;
+private final int maxReservedStreams;
+int numActiveStreams;
+int numStreams;
+static final boolean $assertionsDisabled;
+final io.netty.handler.codec.http2.DefaultHttp2Connection this$0;
+void <init>(io.netty.handler.codec.http2.DefaultHttp2Connection, boolean, int)
+{
+int v3, v4, v6;
+io.netty.handler.codec.http2.DefaultHttp2Connection$DefaultEndpoint v0;
+io.netty.handler.codec.http2.DefaultHttp2Connection v1;
+boolean v2, v5;
+v0 := @this: io.netty.handler.codec.http2.DefaultHttp2Connection$DefaultEndpoint;
+v1 := @parameter0: io.netty.handler.codec.http2.DefaultHttp2Connection;
+v2 := @parameter1: boolean;
+v3 := @parameter2: int;
+v0.<io.netty.handler.codec.http2.DefaultHttp2Connection$DefaultEndpoint: io.netty.handler.codec.http2.DefaultHttp2Connection this$0> = v1;
+specialinvoke v0.<java.lang.Object: void <init>()>();
+v4 = (int) -1;
+v0.<io.netty.handler.codec.http2.DefaultHttp2Connection$DefaultEndpoint: int lastStreamKnownByPeer> = v4;
+v0.<io.netty.handler.codec.http2.DefaultHttp2Connection$DefaultEndpoint: boolean server> = v2;
+if v2 == 0 goto label1;
+v0.<io.netty.handler.codec.http2.DefaultHttp2Connection$DefaultEndpoint: int nextStreamIdToCreate> = 2;
+v0.<io.netty.handler.codec.http2.DefaultHttp2Connection$DefaultEndpoint: int nextReservationStreamId> = 0;
+goto label2;
+label1:
+v0.<io.netty.handler.codec.http2.DefaultHttp2Connection$DefaultEndpoint: int nextStreamIdToCreate> = 1;
+v0.<io.netty.handler.codec.http2.DefaultHttp2Connection$DefaultEndpoint: int nextReservationStreamId> = 1;
+label2:
+if v2 != 0 goto label3;
+v5 = 1;
+goto label4;
+label3:
+v5 = 0;
+label4:
+v0.<io.netty.handler.codec.http2.DefaultHttp2Connection$DefaultEndpoint: boolean pushToAllowed> = v5;
+v0.<io.netty.handler.codec.http2.DefaultHttp2Connection$DefaultEndpoint: int maxActiveStreams> = 2147483647;
+v6 = staticinvoke <io.netty.util.internal.ObjectUtil: int checkPositiveOrZero(int,java.lang.String)>(v3, "maxReservedStreams");
+v0.<io.netty.handler.codec.http2.DefaultHttp2Connection$DefaultEndpoint: int maxReservedStreams> = v6;
+specialinvoke v0.<io.netty.handler.codec.http2.DefaultHttp2Connection$DefaultEndpoint: void updateMaxStreams()>();
+return;
+}
+public int incrementAndGetNextStreamId()
+{
+int v1, v2, v3;
+io.netty.handler.codec.http2.DefaultHttp2Connection$DefaultEndpoint v0;
+v0 := @this: io.netty.handler.codec.http2.DefaultHttp2Connection$DefaultEndpoint;
+v1 = v0.<io.netty.handler.codec.http2.DefaultHttp2Connection$DefaultEndpoint: int nextReservationStreamId>;
+if v1 < 0 goto label1;
+v2 = v0.<io.netty.handler.codec.http2.DefaultHttp2Connection$DefaultEndpoint: int nextReservationStreamId>;
+v3 = v2 + 2;
+v0.<io.netty.handler.codec.http2.DefaultHttp2Connection$DefaultEndpoint: int nextReservationStreamId> = v3;
+goto label2;
+label1:
+v3 = v0.<io.netty.handler.codec.http2.DefaultHttp2Connection$DefaultEndpoint: int nextReservationStreamId>;
+label2:
+return v3;
+}
+private void incrementExpectedStreamId(int)
+{
+int v1, v2, v3, v4, v5, v6;
+io.netty.handler.codec.http2.DefaultHttp2Connection$DefaultEndpoint v0;
+v0 := @this: io.netty.handler.codec.http2.DefaultHttp2Connection$DefaultEndpoint;
+v1 := @parameter0: int;
+v2 = v0.<io.netty.handler.codec.http2.DefaultHttp2Connection$DefaultEndpoint: int nextReservationStreamId>;
+if v1 <= v2 goto label1;
+v3 = v0.<io.netty.handler.codec.http2.DefaultHttp2Connection$DefaultEndpoint: int nextReservationStreamId>;
+if v3 < 0 goto label1;
+v0.<io.netty.handler.codec.http2.DefaultHttp2Connection$DefaultEndpoint: int nextReservationStreamId> = v1;
+label1:
+v4 = v1 + 2;
+v0.<io.netty.handler.codec.http2.DefaultHttp2Connection$DefaultEndpoint: int nextStreamIdToCreate> = v4;
+v5 = v0.<io.netty.handler.codec.http2.DefaultHttp2Connection$DefaultEndpoint: int numStreams>;
+v6 = v5 + 1;
+v0.<io.netty.handler.codec.http2.DefaultHttp2Connection$DefaultEndpoint: int numStreams> = v6;
+return;
+}
+public boolean isValidStreamId(int)
+{
+int v1, v3;
+io.netty.handler.codec.http2.DefaultHttp2Connection$DefaultEndpoint v0;
+boolean v2, v4, v5;
+v0 := @this: io.netty.handler.codec.http2.DefaultHttp2Connection$DefaultEndpoint;
+v1 := @parameter0: int;
+if v1 <= 0 goto label3;
+v2 = v0.<io.netty.handler.codec.http2.DefaultHttp2Connection$DefaultEndpoint: boolean server>;
+v3 = v1 & 1;
+if v3 != 0 goto label1;
+v4 = 1;
+goto label2;
+label1:
+v4 = 0;
+label2:
+if v2 != v4 goto label3;
+v5 = 1;
+goto label4;
+label3:
+v5 = 0;
+label4:
+return v5;
+}
+public boolean mayHaveCreatedStream(int)
+{
+int v1, v3;
+io.netty.handler.codec.http2.DefaultHttp2Connection$DefaultEndpoint v0;
+boolean v2, v4;
+v0 := @this: io.netty.handler.codec.http2.DefaultHttp2Connection$DefaultEndpoint;
+v1 := @parameter0: int;
+v2 = virtualinvoke v0.<io.netty.handler.codec.http2.DefaultHttp2Connection$DefaultEndpoint: boolean isValidStreamId(int)>(v1);
+if v2 == 0 goto label1;
+v3 = virtualinvoke v0.<io.netty.handler.codec.http2.DefaultHttp2Connection$DefaultEndpoint: int lastStreamCreated()>();
+if v1 > v3 goto label1;
+v4 = 1;
+goto label2;
+label1:
+v4 = 0;
+label2:
+return v4;
+}
+public boolean canOpenStream()
+{
+int v1, v2;
+io.netty.handler.codec.http2.DefaultHttp2Connection$DefaultEndpoint v0;
+boolean v3;
+v0 := @this: io.netty.handler.codec.http2.DefaultHttp2Connection$DefaultEndpoint;
+v1 = v0.<io.netty.handler.codec.http2.DefaultHttp2Connection$DefaultEndpoint: int numActiveStreams>;
+v2 = v0.<io.netty.handler.codec.http2.DefaultHttp2Connection$DefaultEndpoint: int maxActiveStreams>;
+if v1 >= v2 goto label1;
+v3 = 1;
+goto label2;
+label1:
+v3 = 0;
+label2:
+return v3;
+}
+public io.netty.handler.codec.http2.DefaultHttp2Connection$DefaultStream createStream(int, boolean) throws io.netty.handler.codec.http2.Http2Exception
+{
+io.netty.handler.codec.http2.Http2Stream$State v3, v5;
+io.netty.handler.codec.http2.DefaultHttp2Connection v7;
+io.netty.handler.codec.http2.DefaultHttp2Connection$DefaultStream v6;
+int v1;
+io.netty.handler.codec.http2.DefaultHttp2Connection$DefaultEndpoint v0;
+boolean v2, v4;
+v0 := @this: io.netty.handler.codec.http2.DefaultHttp2Connection$DefaultEndpoint;
+v1 := @parameter0: int;
+v2 := @parameter1: boolean;
+v3 = <io.netty.handler.codec.http2.Http2Stream$State: io.netty.handler.codec.http2.Http2Stream$State IDLE>;
+v4 = specialinvoke v0.<io.netty.handler.codec.http2.DefaultHttp2Connection$DefaultEndpoint: boolean isLocal()>();
+v5 = staticinvoke <io.netty.handler.codec.http2.DefaultHttp2Connection: io.netty.handler.codec.http2.Http2Stream$State activeState(int,io.netty.handler.codec.http2.Http2Stream$State,boolean,boolean)>(v1, v3, v4, v2);
+specialinvoke v0.<io.netty.handler.codec.http2.DefaultHttp2Connection$DefaultEndpoint: void checkNewStreamAllowed(int,io.netty.handler.codec.http2.Http2Stream$State)>(v1, v5);
+v6 = new io.netty.handler.codec.http2.DefaultHttp2Connection$DefaultStream;
+v7 = v0.<io.netty.handler.codec.http2.DefaultHttp2Connection$DefaultEndpoint: io.netty.handler.codec.http2.DefaultHttp2Connection this$0>;
+specialinvoke v6.<io.netty.handler.codec.http2.DefaultHttp2Connection$DefaultStream: void <init>(io.netty.handler.codec.http2.DefaultHttp2Connection,int,io.netty.handler.codec.http2.Http2Stream$State)>(v7, v1, v5);
+specialinvoke v0.<io.netty.handler.codec.http2.DefaultHttp2Connection$DefaultEndpoint: void incrementExpectedStreamId(int)>(v1);
+specialinvoke v0.<io.netty.handler.codec.http2.DefaultHttp2Connection$DefaultEndpoint: void addStream(io.netty.handler.codec.http2.DefaultHttp2Connection$DefaultStream)>(v6);
+virtualinvoke v6.<io.netty.handler.codec.http2.DefaultHttp2Connection$DefaultStream: void activate()>();
+return v6;
+}
+public boolean created(io.netty.handler.codec.http2.Http2Stream)
+{
+io.netty.handler.codec.http2.Http2Stream v1;
+io.netty.handler.codec.http2.DefaultHttp2Connection$DefaultEndpoint v0, v3;
+boolean v2, v4;
+v0 := @this: io.netty.handler.codec.http2.DefaultHttp2Connection$DefaultEndpoint;
+v1 := @parameter0: io.netty.handler.codec.http2.Http2Stream;
+v2 = v1 instanceof io.netty.handler.codec.http2.DefaultHttp2Connection$DefaultStream;
+if v2 == 0 goto label1;
+v3 = virtualinvoke v1.<io.netty.handler.codec.http2.DefaultHttp2Connection$DefaultStream: io.netty.handler.codec.http2.DefaultHttp2Connection$DefaultEndpoint createdBy()>();
+if v3 != v0 goto label1;
+v4 = 1;
+goto label2;
+label1:
+v4 = 0;
+label2:
+return v4;
+}
+public boolean isServer()
+{
+io.netty.handler.codec.http2.DefaultHttp2Connection$DefaultEndpoint v0;
+boolean v1;
+v0 := @this: io.netty.handler.codec.http2.DefaultHttp2Connection$DefaultEndpoint;
+v1 = v0.<io.netty.handler.codec.http2.DefaultHttp2Connection$DefaultEndpoint: boolean server>;
+return v1;
+}
+public io.netty.handler.codec.http2.DefaultHttp2Connection$DefaultStream reservePushStream(int, io.netty.handler.codec.http2.Http2Stream) throws io.netty.handler.codec.http2.Http2Exception
+{
+java.lang.Object[] v12, v19, v4;
+io.netty.handler.codec.http2.DefaultHttp2Connection v24;
+java.lang.Integer v14;
+io.netty.handler.codec.http2.DefaultHttp2Connection$DefaultStream v23;
+io.netty.handler.codec.http2.Http2Exception v15, v20, v5;
+int v1, v13;
+io.netty.handler.codec.http2.Http2Stream v2;
+boolean v10, v17, v21, v6, v8;
+io.netty.handler.codec.http2.Http2Connection$Endpoint v16;
+io.netty.handler.codec.http2.Http2Stream$State v22, v7, v9;
+io.netty.handler.codec.http2.Http2Error v11, v18, v3;
+io.netty.handler.codec.http2.DefaultHttp2Connection$DefaultEndpoint v0;
+v0 := @this: io.netty.handler.codec.http2.DefaultHttp2Connection$DefaultEndpoint;
+v1 := @parameter0: int;
+v2 := @parameter1: io.netty.handler.codec.http2.Http2Stream;
+if v2 != null goto label1;
+v3 = <io.netty.handler.codec.http2.Http2Error: io.netty.handler.codec.http2.Http2Error PROTOCOL_ERROR>;
+v4 = newarray (java.lang.Object)[0];
+v5 = staticinvoke <io.netty.handler.codec.http2.Http2Exception: io.netty.handler.codec.http2.Http2Exception connectionError(io.netty.handler.codec.http2.Http2Error,java.lang.String,java.lang.Object[])>(v3, "Parent stream missing", v4);
+throw v5;
+label1:
+v6 = specialinvoke v0.<io.netty.handler.codec.http2.DefaultHttp2Connection$DefaultEndpoint: boolean isLocal()>();
+if v6 == 0 goto label2;
+v7 = interfaceinvoke v2.<io.netty.handler.codec.http2.Http2Stream: io.netty.handler.codec.http2.Http2Stream$State state()>();
+v8 = virtualinvoke v7.<io.netty.handler.codec.http2.Http2Stream$State: boolean localSideOpen()>();
+if v8 != 0 goto label4;
+goto label3;
+label2:
+v9 = interfaceinvoke v2.<io.netty.handler.codec.http2.Http2Stream: io.netty.handler.codec.http2.Http2Stream$State state()>();
+v10 = virtualinvoke v9.<io.netty.handler.codec.http2.Http2Stream$State: boolean remoteSideOpen()>();
+if v10 != 0 goto label4;
+label3:
+v11 = <io.netty.handler.codec.http2.Http2Error: io.netty.handler.codec.http2.Http2Error PROTOCOL_ERROR>;
+v12 = newarray (java.lang.Object)[1];
+v13 = interfaceinvoke v2.<io.netty.handler.codec.http2.Http2Stream: int id()>();
+v14 = staticinvoke <java.lang.Integer: java.lang.Integer valueOf(int)>(v13);
+v12[0] = v14;
+v15 = staticinvoke <io.netty.handler.codec.http2.Http2Exception: io.netty.handler.codec.http2.Http2Exception connectionError(io.netty.handler.codec.http2.Http2Error,java.lang.String,java.lang.Object[])>(v11, "Stream %d is not open for sending push promise", v12);
+throw v15;
+label4:
+v16 = virtualinvoke v0.<io.netty.handler.codec.http2.DefaultHttp2Connection$DefaultEndpoint: io.netty.handler.codec.http2.Http2Connection$Endpoint opposite()>();
+v17 = interfaceinvoke v16.<io.netty.handler.codec.http2.Http2Connection$Endpoint: boolean allowPushTo()>();
+if v17 != 0 goto label5;
+v18 = <io.netty.handler.codec.http2.Http2Error: io.netty.handler.codec.http2.Http2Error PROTOCOL_ERROR>;
+v19 = newarray (java.lang.Object)[0];
+v20 = staticinvoke <io.netty.handler.codec.http2.Http2Exception: io.netty.handler.codec.http2.Http2Exception connectionError(io.netty.handler.codec.http2.Http2Error,java.lang.String,java.lang.Object[])>(v18, "Server push not allowed to opposite endpoint", v19);
+throw v20;
+label5:
+v21 = specialinvoke v0.<io.netty.handler.codec.http2.DefaultHttp2Connection$DefaultEndpoint: boolean isLocal()>();
+if v21 == 0 goto label6;
+v22 = <io.netty.handler.codec.http2.Http2Stream$State: io.netty.handler.codec.http2.Http2Stream$State RESERVED_LOCAL>;
+goto label7;
+label6:
+v22 = <io.netty.handler.codec.http2.Http2Stream$State: io.netty.handler.codec.http2.Http2Stream$State RESERVED_REMOTE>;
+label7:
+specialinvoke v0.<io.netty.handler.codec.http2.DefaultHttp2Connection$DefaultEndpoint: void checkNewStreamAllowed(int,io.netty.handler.codec.http2.Http2Stream$State)>(v1, v22);
+v23 = new io.netty.handler.codec.http2.DefaultHttp2Connection$DefaultStream;
+v24 = v0.<io.netty.handler.codec.http2.DefaultHttp2Connection$DefaultEndpoint: io.netty.handler.codec.http2.DefaultHttp2Connection this$0>;
+specialinvoke v23.<io.netty.handler.codec.http2.DefaultHttp2Connection$DefaultStream: void <init>(io.netty.handler.codec.http2.DefaultHttp2Connection,int,io.netty.handler.codec.http2.Http2Stream$State)>(v24, v1, v22);
+specialinvoke v0.<io.netty.handler.codec.http2.DefaultHttp2Connection$DefaultEndpoint: void incrementExpectedStreamId(int)>(v1);
+specialinvoke v0.<io.netty.handler.codec.http2.DefaultHttp2Connection$DefaultEndpoint: void addStream(io.netty.handler.codec.http2.DefaultHttp2Connection$DefaultStream)>(v23);
+return v23;
+}
+private void addStream(io.netty.handler.codec.http2.DefaultHttp2Connection$DefaultStream)
+{
+java.lang.Throwable v12;
+io.netty.handler.codec.http2.DefaultHttp2Connection v2, v6, v9;
+java.util.List v10, v7;
+io.netty.handler.codec.http2.DefaultHttp2Connection$DefaultStream v1;
+io.netty.util.collection.IntObjectMap v3;
+io.netty.util.internal.logging.InternalLogger v13;
+int v4, v5, v8;
+java.lang.Object v11;
+io.netty.handler.codec.http2.DefaultHttp2Connection$DefaultEndpoint v0;
+v0 := @this: io.netty.handler.codec.http2.DefaultHttp2Connection$DefaultEndpoint;
+v1 := @parameter0: io.netty.handler.codec.http2.DefaultHttp2Connection$DefaultStream;
+v2 = v0.<io.netty.handler.codec.http2.DefaultHttp2Connection$DefaultEndpoint: io.netty.handler.codec.http2.DefaultHttp2Connection this$0>;
+v3 = v2.<io.netty.handler.codec.http2.DefaultHttp2Connection: io.netty.util.collection.IntObjectMap streamMap>;
+v4 = virtualinvoke v1.<io.netty.handler.codec.http2.DefaultHttp2Connection$DefaultStream: int id()>();
+interfaceinvoke v3.<io.netty.util.collection.IntObjectMap: java.lang.Object put(int,java.lang.Object)>(v4, v1);
+v5 = 0;
+label1:
+v6 = v0.<io.netty.handler.codec.http2.DefaultHttp2Connection$DefaultEndpoint: io.netty.handler.codec.http2.DefaultHttp2Connection this$0>;
+v7 = v6.<io.netty.handler.codec.http2.DefaultHttp2Connection: java.util.List listeners>;
+v8 = interfaceinvoke v7.<java.util.List: int size()>();
+if v5 >= v8 goto label6;
+label2:
+v9 = v0.<io.netty.handler.codec.http2.DefaultHttp2Connection$DefaultEndpoint: io.netty.handler.codec.http2.DefaultHttp2Connection this$0>;
+v10 = v9.<io.netty.handler.codec.http2.DefaultHttp2Connection: java.util.List listeners>;
+v11 = interfaceinvoke v10.<java.util.List: java.lang.Object get(int)>(v5);
+interfaceinvoke v11.<io.netty.handler.codec.http2.Http2Connection$Listener: void onStreamAdded(io.netty.handler.codec.http2.Http2Stream)>(v1);
+label3:
+goto label5;
+label4:
+v12 := @caughtexception;
+v13 = <io.netty.handler.codec.http2.DefaultHttp2Connection: io.netty.util.internal.logging.InternalLogger logger>;
+interfaceinvoke v13.<io.netty.util.internal.logging.InternalLogger: void error(java.lang.String,java.lang.Throwable)>("Caught Throwable from listener onStreamAdded.", v12);
+label5:
+v5 = v5 + 1;
+goto label1;
+label6:
+return;
+catch java.lang.Throwable from label2 to label3 with label4;
+}
+public void allowPushTo(boolean)
+{
+io.netty.handler.codec.http2.DefaultHttp2Connection$DefaultEndpoint v0;
+java.lang.IllegalArgumentException v3;
+boolean v1, v2;
+v0 := @this: io.netty.handler.codec.http2.DefaultHttp2Connection$DefaultEndpoint;
+v1 := @parameter0: boolean;
+if v1 == 0 goto label1;
+v2 = v0.<io.netty.handler.codec.http2.DefaultHttp2Connection$DefaultEndpoint: boolean server>;
+if v2 == 0 goto label1;
+v3 = new java.lang.IllegalArgumentException;
+specialinvoke v3.<java.lang.IllegalArgumentException: void <init>(java.lang.String)>("Servers do not allow push");
+throw v3;
+label1:
+v0.<io.netty.handler.codec.http2.DefaultHttp2Connection$DefaultEndpoint: boolean pushToAllowed> = v1;
+return;
+}
+public boolean allowPushTo()
+{
+io.netty.handler.codec.http2.DefaultHttp2Connection$DefaultEndpoint v0;
+boolean v1;
+v0 := @this: io.netty.handler.codec.http2.DefaultHttp2Connection$DefaultEndpoint;
+v1 = v0.<io.netty.handler.codec.http2.DefaultHttp2Connection$DefaultEndpoint: boolean pushToAllowed>;
+return v1;
+}
+public int numActiveStreams()
+{
+int v1;
+io.netty.handler.codec.http2.DefaultHttp2Connection$DefaultEndpoint v0;
+v0 := @this: io.netty.handler.codec.http2.DefaultHttp2Connection$DefaultEndpoint;
+v1 = v0.<io.netty.handler.codec.http2.DefaultHttp2Connection$DefaultEndpoint: int numActiveStreams>;
+return v1;
+}
+public int maxActiveStreams()
+{
+int v1;
+io.netty.handler.codec.http2.DefaultHttp2Connection$DefaultEndpoint v0;
+v0 := @this: io.netty.handler.codec.http2.DefaultHttp2Connection$DefaultEndpoint;
+v1 = v0.<io.netty.handler.codec.http2.DefaultHttp2Connection$DefaultEndpoint: int maxActiveStreams>;
+return v1;
+}
+public void maxActiveStreams(int)
+{
+int v1;
+io.netty.handler.codec.http2.DefaultHttp2Connection$DefaultEndpoint v0;
+v0 := @this: io.netty.handler.codec.http2.DefaultHttp2Connection$DefaultEndpoint;
+v1 := @parameter0: int;
+v0.<io.netty.handler.codec.http2.DefaultHttp2Connection$DefaultEndpoint: int maxActiveStreams> = v1;
+specialinvoke v0.<io.netty.handler.codec.http2.DefaultHttp2Connection$DefaultEndpoint: void updateMaxStreams()>();
+return;
+}
+public int lastStreamCreated()
+{
+int v1, v2, v3;
+io.netty.handler.codec.http2.DefaultHttp2Connection$DefaultEndpoint v0;
+v0 := @this: io.netty.handler.codec.http2.DefaultHttp2Connection$DefaultEndpoint;
+v1 = v0.<io.netty.handler.codec.http2.DefaultHttp2Connection$DefaultEndpoint: int nextStreamIdToCreate>;
+if v1 <= 1 goto label1;
+v2 = v0.<io.netty.handler.codec.http2.DefaultHttp2Connection$DefaultEndpoint: int nextStreamIdToCreate>;
+v3 = v2 - 2;
+goto label2;
+label1:
+v3 = 0;
+label2:
+return v3;
+}
+public int lastStreamKnownByPeer()
+{
+int v1;
+io.netty.handler.codec.http2.DefaultHttp2Connection$DefaultEndpoint v0;
+v0 := @this: io.netty.handler.codec.http2.DefaultHttp2Connection$DefaultEndpoint;
+v1 = v0.<io.netty.handler.codec.http2.DefaultHttp2Connection$DefaultEndpoint: int lastStreamKnownByPeer>;
+return v1;
+}
+private void lastStreamKnownByPeer(int)
+{
+int v1;
+io.netty.handler.codec.http2.DefaultHttp2Connection$DefaultEndpoint v0;
+v0 := @this: io.netty.handler.codec.http2.DefaultHttp2Connection$DefaultEndpoint;
+v1 := @parameter0: int;
+v0.<io.netty.handler.codec.http2.DefaultHttp2Connection$DefaultEndpoint: int lastStreamKnownByPeer> = v1;
+return;
+}
+public io.netty.handler.codec.http2.Http2FlowController flowController()
+{
+io.netty.handler.codec.http2.DefaultHttp2Connection$DefaultEndpoint v0;
+io.netty.handler.codec.http2.Http2FlowController v1;
+v0 := @this: io.netty.handler.codec.http2.DefaultHttp2Connection$DefaultEndpoint;
+v1 = v0.<io.netty.handler.codec.http2.DefaultHttp2Connection$DefaultEndpoint: io.netty.handler.codec.http2.Http2FlowController flowController>;
+return v1;
+}
+public void flowController(io.netty.handler.codec.http2.Http2FlowController)
+{
+java.lang.Object v2;
+io.netty.handler.codec.http2.DefaultHttp2Connection$DefaultEndpoint v0;
+io.netty.handler.codec.http2.Http2FlowController v1;
+v0 := @this: io.netty.handler.codec.http2.DefaultHttp2Connection$DefaultEndpoint;
+v1 := @parameter0: io.netty.handler.codec.http2.Http2FlowController;
+v2 = staticinvoke <io.netty.util.internal.ObjectUtil: java.lang.Object checkNotNull(java.lang.Object,java.lang.String)>(v1, "flowController");
+v0.<io.netty.handler.codec.http2.DefaultHttp2Connection$DefaultEndpoint: io.netty.handler.codec.http2.Http2FlowController flowController> = v2;
+return;
+}
+public io.netty.handler.codec.http2.Http2Connection$Endpoint opposite()
+{
+io.netty.handler.codec.http2.DefaultHttp2Connection$DefaultEndpoint v0, v3;
+io.netty.handler.codec.http2.DefaultHttp2Connection v2, v4;
+boolean v1;
+v0 := @this: io.netty.handler.codec.http2.DefaultHttp2Connection$DefaultEndpoint;
+v1 = specialinvoke v0.<io.netty.handler.codec.http2.DefaultHttp2Connection$DefaultEndpoint: boolean isLocal()>();
+if v1 == 0 goto label1;
+v2 = v0.<io.netty.handler.codec.http2.DefaultHttp2Connection$DefaultEndpoint: io.netty.handler.codec.http2.DefaultHttp2Connection this$0>;
+v3 = v2.<io.netty.handler.codec.http2.DefaultHttp2Connection: io.netty.handler.codec.http2.DefaultHttp2Connection$DefaultEndpoint remoteEndpoint>;
+goto label2;
+label1:
+v4 = v0.<io.netty.handler.codec.http2.DefaultHttp2Connection$DefaultEndpoint: io.netty.handler.codec.http2.DefaultHttp2Connection this$0>;
+v3 = v4.<io.netty.handler.codec.http2.DefaultHttp2Connection: io.netty.handler.codec.http2.DefaultHttp2Connection$DefaultEndpoint localEndpoint>;
+label2:
+return v3;
+}
+private void updateMaxStreams()
+{
+int v1, v2;
+long v3, v4;
+io.netty.handler.codec.http2.DefaultHttp2Connection$DefaultEndpoint v0;
+v0 := @this: io.netty.handler.codec.http2.DefaultHttp2Connection$DefaultEndpoint;
+v1 = v0.<io.netty.handler.codec.http2.DefaultHttp2Connection$DefaultEndpoint: int maxActiveStreams>;
+v2 = v0.<io.netty.handler.codec.http2.DefaultHttp2Connection$DefaultEndpoint: int maxReservedStreams>;
+v3 = v1 + v2;
+v4 = staticinvoke <java.lang.Math: long min(long,long)>(2147483647L, v3);
+v0.<io.netty.handler.codec.http2.DefaultHttp2Connection$DefaultEndpoint: int maxStreams> = v4;
+return;
+}
+private void checkNewStreamAllowed(int, io.netty.handler.codec.http2.Http2Stream$State) throws io.netty.handler.codec.http2.Http2Exception
+{
+io.netty.handler.codec.http2.DefaultHttp2Connection v45;
+java.lang.Integer v10, v12, v18, v25, v27, v49;
+io.netty.handler.codec.http2.Http2Exception v13, v21, v28, v30, v44, v50;
+io.netty.handler.codec.http2.Http2NoMoreStreamIdsException v15;
+boolean v14, v19, v3, v35, v36, v37, v46;
+io.netty.handler.codec.http2.Http2Stream$State v2, v33, v34, v4;
+io.netty.handler.codec.http2.Http2Error v16, v23, v31, v40, v47, v8;
+io.netty.handler.codec.http2.DefaultHttp2Connection$DefaultEndpoint v0;
+java.lang.Object[] v17, v24, v43, v48, v9;
+java.lang.AssertionError v5;
+int v1, v11, v22, v26, v29, v38, v39, v41, v6, v7;
+java.lang.String v20, v42;
+io.netty.handler.codec.http2.Http2Exception$ShutdownHint v32;
+v0 := @this: io.netty.handler.codec.http2.DefaultHttp2Connection$DefaultEndpoint;
+v1 := @parameter0: int;
+v2 := @parameter1: io.netty.handler.codec.http2.Http2Stream$State;
+v3 = <io.netty.handler.codec.http2.DefaultHttp2Connection$DefaultEndpoint: boolean $assertionsDisabled>;
+if v3 != 0 goto label01;
+v4 = <io.netty.handler.codec.http2.Http2Stream$State: io.netty.handler.codec.http2.Http2Stream$State IDLE>;
+if v2 != v4 goto label01;
+v5 = new java.lang.AssertionError;
+specialinvoke v5.<java.lang.AssertionError: void <init>()>();
+throw v5;
+label01:
+v6 = v0.<io.netty.handler.codec.http2.DefaultHttp2Connection$DefaultEndpoint: int lastStreamKnownByPeer>;
+if v6 < 0 goto label02;
+v7 = v0.<io.netty.handler.codec.http2.DefaultHttp2Connection$DefaultEndpoint: int lastStreamKnownByPeer>;
+if v1 <= v7 goto label02;
+v8 = <io.netty.handler.codec.http2.Http2Error: io.netty.handler.codec.http2.Http2Error REFUSED_STREAM>;
+v9 = newarray (java.lang.Object)[2];
+v10 = staticinvoke <java.lang.Integer: java.lang.Integer valueOf(int)>(v1);
+v9[0] = v10;
+v11 = v0.<io.netty.handler.codec.http2.DefaultHttp2Connection$DefaultEndpoint: int lastStreamKnownByPeer>;
+v12 = staticinvoke <java.lang.Integer: java.lang.Integer valueOf(int)>(v11);
+v9[1] = v12;
+v13 = staticinvoke <io.netty.handler.codec.http2.Http2Exception: io.netty.handler.codec.http2.Http2Exception streamError(int,io.netty.handler.codec.http2.Http2Error,java.lang.String,java.lang.Object[])>(v1, v8, "Cannot create stream %d greater than Last-Stream-ID %d from GOAWAY.", v9);
+throw v13;
+label02:
+v14 = virtualinvoke v0.<io.netty.handler.codec.http2.DefaultHttp2Connection$DefaultEndpoint: boolean isValidStreamId(int)>(v1);
+if v14 != 0 goto label06;
+if v1 >= 0 goto label03;
+v15 = new io.netty.handler.codec.http2.Http2NoMoreStreamIdsException;
+specialinvoke v15.<io.netty.handler.codec.http2.Http2NoMoreStreamIdsException: void <init>()>();
+throw v15;
+label03:
+v16 = <io.netty.handler.codec.http2.Http2Error: io.netty.handler.codec.http2.Http2Error PROTOCOL_ERROR>;
+v17 = newarray (java.lang.Object)[2];
+v18 = staticinvoke <java.lang.Integer: java.lang.Integer valueOf(int)>(v1);
+v17[0] = v18;
+v19 = v0.<io.netty.handler.codec.http2.DefaultHttp2Connection$DefaultEndpoint: boolean server>;
+if v19 == 0 goto label04;
+v20 = "server";
+goto label05;
+label04:
+v20 = "client";
+label05:
+v17[1] = v20;
+v21 = staticinvoke <io.netty.handler.codec.http2.Http2Exception: io.netty.handler.codec.http2.Http2Exception connectionError(io.netty.handler.codec.http2.Http2Error,java.lang.String,java.lang.Object[])>(v16, "Request stream %d is not correct for %s connection", v17);
+throw v21;
+label06:
+v22 = v0.<io.netty.handler.codec.http2.DefaultHttp2Connection$DefaultEndpoint: int nextStreamIdToCreate>;
+if v1 >= v22 goto label07;
+v23 = <io.netty.handler.codec.http2.Http2Error: io.netty.handler.codec.http2.Http2Error PROTOCOL_ERROR>;
+v24 = newarray (java.lang.Object)[2];
+v25 = staticinvoke <java.lang.Integer: java.lang.Integer valueOf(int)>(v1);
+v24[0] = v25;
+v26 = v0.<io.netty.handler.codec.http2.DefaultHttp2Connection$DefaultEndpoint: int nextStreamIdToCreate>;
+v27 = staticinvoke <java.lang.Integer: java.lang.Integer valueOf(int)>(v26);
+v24[1] = v27;
+v28 = staticinvoke <io.netty.handler.codec.http2.Http2Exception: io.netty.handler.codec.http2.Http2Exception closedStreamError(io.netty.handler.codec.http2.Http2Error,java.lang.String,java.lang.Object[])>(v23, "Request stream %d is behind the next expected stream %d", v24);
+throw v28;
+label07:
+v29 = v0.<io.netty.handler.codec.http2.DefaultHttp2Connection$DefaultEndpoint: int nextStreamIdToCreate>;
+if v29 > 0 goto label08;
+v30 = new io.netty.handler.codec.http2.Http2Exception;
+v31 = <io.netty.handler.codec.http2.Http2Error: io.netty.handler.codec.http2.Http2Error REFUSED_STREAM>;
+v32 = <io.netty.handler.codec.http2.Http2Exception$ShutdownHint: io.netty.handler.codec.http2.Http2Exception$ShutdownHint GRACEFUL_SHUTDOWN>;
+specialinvoke v30.<io.netty.handler.codec.http2.Http2Exception: void <init>(io.netty.handler.codec.http2.Http2Error,java.lang.String,io.netty.handler.codec.http2.Http2Exception$ShutdownHint)>(v31, "Stream IDs are exhausted for this endpoint.", v32);
+throw v30;
+label08:
+v33 = <io.netty.handler.codec.http2.Http2Stream$State: io.netty.handler.codec.http2.Http2Stream$State RESERVED_LOCAL>;
+if v2 == v33 goto label09;
+v34 = <io.netty.handler.codec.http2.Http2Stream$State: io.netty.handler.codec.http2.Http2Stream$State RESERVED_REMOTE>;
+if v2 != v34 goto label10;
+label09:
+v35 = 1;
+goto label11;
+label10:
+v35 = 0;
+label11:
+v36 = v35;
+if v35 != 0 goto label12;
+v37 = virtualinvoke v0.<io.netty.handler.codec.http2.DefaultHttp2Connection$DefaultEndpoint: boolean canOpenStream()>();
+if v37 == 0 goto label13;
+label12:
+if v36 == 0 goto label16;
+v38 = v0.<io.netty.handler.codec.http2.DefaultHttp2Connection$DefaultEndpoint: int numStreams>;
+v39 = v0.<io.netty.handler.codec.http2.DefaultHttp2Connection$DefaultEndpoint: int maxStreams>;
+if v38 < v39 goto label16;
+label13:
+v40 = <io.netty.handler.codec.http2.Http2Error: io.netty.handler.codec.http2.Http2Error REFUSED_STREAM>;
+if v36 == 0 goto label14;
+v41 = v0.<io.netty.handler.codec.http2.DefaultHttp2Connection$DefaultEndpoint: int maxStreams>;
+goto label15;
+label14:
+v41 = v0.<io.netty.handler.codec.http2.DefaultHttp2Connection$DefaultEndpoint: int maxActiveStreams>;
+label15:
+v42 = dynamicinvoke "makeConcatWithConstants" <java.lang.String (int)>(v41) <java.lang.invoke.StringConcatFactory: java.lang.invoke.CallSite makeConcatWithConstants(java.lang.invoke.MethodHandles$Lookup,java.lang.String,java.lang.invoke.MethodType,java.lang.String,java.lang.Object[])>("Maximum active streams violated for this endpoint: \u0001");
+v43 = newarray (java.lang.Object)[0];
+v44 = staticinvoke <io.netty.handler.codec.http2.Http2Exception: io.netty.handler.codec.http2.Http2Exception streamError(int,io.netty.handler.codec.http2.Http2Error,java.lang.String,java.lang.Object[])>(v1, v40, v42, v43);
+throw v44;
+label16:
+v45 = v0.<io.netty.handler.codec.http2.DefaultHttp2Connection$DefaultEndpoint: io.netty.handler.codec.http2.DefaultHttp2Connection this$0>;
+v46 = virtualinvoke v45.<io.netty.handler.codec.http2.DefaultHttp2Connection: boolean isClosed()>();
+if v46 == 0 goto label17;
+v47 = <io.netty.handler.codec.http2.Http2Error: io.netty.handler.codec.http2.Http2Error INTERNAL_ERROR>;
+v48 = newarray (java.lang.Object)[1];
+v49 = staticinvoke <java.lang.Integer: java.lang.Integer valueOf(int)>(v1);
+v48[0] = v49;
+v50 = staticinvoke <io.netty.handler.codec.http2.Http2Exception: io.netty.handler.codec.http2.Http2Exception connectionError(io.netty.handler.codec.http2.Http2Error,java.lang.String,java.lang.Object[])>(v47, "Attempted to create stream id %d after connection was closed", v48);
+throw v50;
+label17:
+return;
+}
+private boolean isLocal()
+{
+io.netty.handler.codec.http2.DefaultHttp2Connection$DefaultEndpoint v0, v2;
+io.netty.handler.codec.http2.DefaultHttp2Connection v1;
+boolean v3;
+v0 := @this: io.netty.handler.codec.http2.DefaultHttp2Connection$DefaultEndpoint;
+v1 = v0.<io.netty.handler.codec.http2.DefaultHttp2Connection$DefaultEndpoint: io.netty.handler.codec.http2.DefaultHttp2Connection this$0>;
+v2 = v1.<io.netty.handler.codec.http2.DefaultHttp2Connection: io.netty.handler.codec.http2.DefaultHttp2Connection$DefaultEndpoint localEndpoint>;
+if v0 != v2 goto label1;
+v3 = 1;
+goto label2;
+label1:
+v3 = 0;
+label2:
+return v3;
+}
+static void <clinit>()
+{
+java.lang.Class v0;
+boolean v1, v2;
+v0 = class "Lio/netty/handler/codec/http2/DefaultHttp2Connection;";
+v1 = virtualinvoke v0.<java.lang.Class: boolean desiredAssertionStatus()>();
+if v1 != 0 goto label1;
+v2 = 1;
+goto label2;
+label1:
+v2 = 0;
+label2:
+<io.netty.handler.codec.http2.DefaultHttp2Connection$DefaultEndpoint: boolean $assertionsDisabled> = v2;
+return;
+}
+}

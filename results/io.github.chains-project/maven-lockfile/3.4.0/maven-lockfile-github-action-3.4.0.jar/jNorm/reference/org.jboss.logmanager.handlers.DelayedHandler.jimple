@@ -1,0 +1,243 @@
+public class org.jboss.logmanager.handlers.DelayedHandler extends org.jboss.logmanager.ExtHandler
+{
+private final java.util.Deque logRecords;
+private final int queueLimit;
+private volatile boolean activated;
+private volatile boolean callerCalculationRequired;
+public void <init>()
+{
+org.jboss.logmanager.handlers.DelayedHandler v0;
+v0 := @this: org.jboss.logmanager.handlers.DelayedHandler;
+specialinvoke v0.<org.jboss.logmanager.handlers.DelayedHandler: void <init>(int)>(8000);
+return;
+}
+public void <init>(int)
+{
+int v1;
+org.jboss.logmanager.handlers.DelayedHandler v0;
+java.util.ArrayDeque v2;
+v0 := @this: org.jboss.logmanager.handlers.DelayedHandler;
+v1 := @parameter0: int;
+specialinvoke v0.<org.jboss.logmanager.ExtHandler: void <init>()>();
+v2 = new java.util.ArrayDeque;
+specialinvoke v2.<java.util.ArrayDeque: void <init>()>();
+v0.<org.jboss.logmanager.handlers.DelayedHandler: java.util.Deque logRecords> = v2;
+v0.<org.jboss.logmanager.handlers.DelayedHandler: boolean activated> = 0;
+v0.<org.jboss.logmanager.handlers.DelayedHandler: boolean callerCalculationRequired> = 0;
+v0.<org.jboss.logmanager.handlers.DelayedHandler: int queueLimit> = v1;
+return;
+}
+protected void doPublish(org.jboss.logmanager.ExtLogRecord)
+{
+java.lang.Throwable v9;
+java.util.Deque v4, v8;
+org.jboss.logmanager.ExtLogRecord v1;
+org.jboss.logmanager.handlers.DelayedHandler v0;
+int v5, v6;
+boolean v2, v3, v7;
+v0 := @this: org.jboss.logmanager.handlers.DelayedHandler;
+v1 := @parameter0: org.jboss.logmanager.ExtLogRecord;
+v2 = v0.<org.jboss.logmanager.handlers.DelayedHandler: boolean activated>;
+if v2 == 0 goto label01;
+virtualinvoke v0.<org.jboss.logmanager.handlers.DelayedHandler: void publishToNestedHandlers(org.jboss.logmanager.ExtLogRecord)>(v1);
+specialinvoke v0.<org.jboss.logmanager.ExtHandler: void doPublish(org.jboss.logmanager.ExtLogRecord)>(v1);
+goto label11;
+label01:
+entermonitor v0;
+label02:
+v3 = v0.<org.jboss.logmanager.handlers.DelayedHandler: boolean activated>;
+if v3 == 0 goto label03;
+virtualinvoke v0.<org.jboss.logmanager.handlers.DelayedHandler: void publishToNestedHandlers(org.jboss.logmanager.ExtLogRecord)>(v1);
+specialinvoke v0.<org.jboss.logmanager.ExtHandler: void doPublish(org.jboss.logmanager.ExtLogRecord)>(v1);
+goto label08;
+label03:
+v4 = v0.<org.jboss.logmanager.handlers.DelayedHandler: java.util.Deque logRecords>;
+v5 = interfaceinvoke v4.<java.util.Deque: int size()>();
+v6 = v0.<org.jboss.logmanager.handlers.DelayedHandler: int queueLimit>;
+if v5 < v6 goto label05;
+virtualinvoke v0.<org.jboss.logmanager.handlers.DelayedHandler: void reportError(java.lang.String,java.lang.Exception,int)>("The delayed handler\'s queue was overrun and log record(s) were lost. Did you forget to configure logging?", null, 1);
+exitmonitor v0;
+label04:
+return;
+label05:
+v7 = virtualinvoke v0.<org.jboss.logmanager.handlers.DelayedHandler: boolean isCallerCalculationRequired()>();
+if v7 == 0 goto label06;
+virtualinvoke v1.<org.jboss.logmanager.ExtLogRecord: void copyAll()>();
+goto label07;
+label06:
+virtualinvoke v1.<org.jboss.logmanager.ExtLogRecord: void disableCallerCalculation()>();
+virtualinvoke v1.<org.jboss.logmanager.ExtLogRecord: void copyMdc()>();
+label07:
+v8 = v0.<org.jboss.logmanager.handlers.DelayedHandler: java.util.Deque logRecords>;
+interfaceinvoke v8.<java.util.Deque: void addLast(java.lang.Object)>(v1);
+label08:
+exitmonitor v0;
+label09:
+goto label11;
+label10:
+v9 := @caughtexception;
+exitmonitor v0;
+throw v9;
+label11:
+return;
+catch java.lang.Throwable from label02 to label04 with label10;
+catch java.lang.Throwable from label05 to label09 with label10;
+}
+public final void close() throws java.lang.SecurityException
+{
+java.lang.Throwable v8;
+org.jboss.logmanager.formatters.PatternFormatter v4;
+java.util.Deque v1, v5;
+java.util.logging.Formatter v3;
+org.jboss.logmanager.handlers.DelayedHandler v0;
+java.lang.Object v6;
+java.lang.String v7;
+boolean v2;
+v0 := @this: org.jboss.logmanager.handlers.DelayedHandler;
+entermonitor v0;
+label1:
+v1 = v0.<org.jboss.logmanager.handlers.DelayedHandler: java.util.Deque logRecords>;
+v2 = interfaceinvoke v1.<java.util.Deque: boolean isEmpty()>();
+if v2 != 0 goto label4;
+v3 = virtualinvoke v0.<org.jboss.logmanager.handlers.DelayedHandler: java.util.logging.Formatter getFormatter()>();
+if v3 != null goto label2;
+v4 = new org.jboss.logmanager.formatters.PatternFormatter;
+specialinvoke v4.<org.jboss.logmanager.formatters.PatternFormatter: void <init>(java.lang.String)>("%d{yyyy-MM-dd HH:mm:ss,SSS} %-5p [%c] (%t) %s%e%n");
+v3 = v4;
+label2:
+staticinvoke <org.jboss.logmanager.StandardOutputStreams: void printError(java.lang.String)>("The DelayedHandler was closed before any children handlers were configured. Messages will be written to stderr.");
+label3:
+v5 = v0.<org.jboss.logmanager.handlers.DelayedHandler: java.util.Deque logRecords>;
+v6 = interfaceinvoke v5.<java.util.Deque: java.lang.Object pollFirst()>();
+if v6 == null goto label4;
+v7 = virtualinvoke v3.<java.util.logging.Formatter: java.lang.String format(java.util.logging.LogRecord)>(v6);
+staticinvoke <org.jboss.logmanager.StandardOutputStreams: void printError(java.lang.String)>(v7);
+goto label3;
+label4:
+exitmonitor v0;
+label5:
+goto label7;
+label6:
+v8 := @caughtexception;
+exitmonitor v0;
+throw v8;
+label7:
+v0.<org.jboss.logmanager.handlers.DelayedHandler: boolean activated> = 0;
+specialinvoke v0.<org.jboss.logmanager.ExtHandler: void close()>();
+return;
+catch java.lang.Throwable from label1 to label5 with label6;
+}
+public void addHandler(java.util.logging.Handler) throws java.lang.SecurityException
+{
+org.jboss.logmanager.handlers.DelayedHandler v0;
+java.util.logging.Handler v1;
+v0 := @this: org.jboss.logmanager.handlers.DelayedHandler;
+v1 := @parameter0: java.util.logging.Handler;
+specialinvoke v0.<org.jboss.logmanager.ExtHandler: void addHandler(java.util.logging.Handler)>(v1);
+specialinvoke v0.<org.jboss.logmanager.handlers.DelayedHandler: void activate()>();
+return;
+}
+public java.util.logging.Handler[] setHandlers(java.util.logging.Handler[]) throws java.lang.SecurityException
+{
+java.util.logging.Handler[] v1, v2;
+org.jboss.logmanager.handlers.DelayedHandler v0;
+v0 := @this: org.jboss.logmanager.handlers.DelayedHandler;
+v1 := @parameter0: java.util.logging.Handler[];
+v2 = specialinvoke v0.<org.jboss.logmanager.ExtHandler: java.util.logging.Handler[] setHandlers(java.util.logging.Handler[])>(v1);
+specialinvoke v0.<org.jboss.logmanager.handlers.DelayedHandler: void activate()>();
+return v2;
+}
+public void removeHandler(java.util.logging.Handler) throws java.lang.SecurityException
+{
+org.jboss.logmanager.handlers.DelayedHandler v0;
+int v3;
+java.util.logging.Handler[] v2;
+java.util.logging.Handler v1;
+boolean v4;
+v0 := @this: org.jboss.logmanager.handlers.DelayedHandler;
+v1 := @parameter0: java.util.logging.Handler;
+specialinvoke v0.<org.jboss.logmanager.ExtHandler: void removeHandler(java.util.logging.Handler)>(v1);
+v2 = v0.<org.jboss.logmanager.handlers.DelayedHandler: java.util.logging.Handler[] handlers>;
+v3 = lengthof v2;
+if v3 == 0 goto label1;
+v4 = 1;
+goto label2;
+label1:
+v4 = 0;
+label2:
+v0.<org.jboss.logmanager.handlers.DelayedHandler: boolean activated> = v4;
+return;
+}
+public java.util.logging.Handler[] clearHandlers() throws java.lang.SecurityException
+{
+java.util.logging.Handler[] v1;
+org.jboss.logmanager.handlers.DelayedHandler v0;
+v0 := @this: org.jboss.logmanager.handlers.DelayedHandler;
+v0.<org.jboss.logmanager.handlers.DelayedHandler: boolean activated> = 0;
+v1 = specialinvoke v0.<org.jboss.logmanager.ExtHandler: java.util.logging.Handler[] clearHandlers()>();
+return v1;
+}
+public boolean isCallerCalculationRequired()
+{
+org.jboss.logmanager.handlers.DelayedHandler v0;
+boolean v1, v2, v3;
+v0 := @this: org.jboss.logmanager.handlers.DelayedHandler;
+v1 = v0.<org.jboss.logmanager.handlers.DelayedHandler: boolean callerCalculationRequired>;
+if v1 != 0 goto label1;
+v2 = specialinvoke v0.<org.jboss.logmanager.ExtHandler: boolean isCallerCalculationRequired()>();
+if v2 == 0 goto label2;
+label1:
+v3 = 1;
+goto label3;
+label2:
+v3 = 0;
+label3:
+return v3;
+}
+public void setCallerCalculationRequired(boolean)
+{
+org.jboss.logmanager.handlers.DelayedHandler v0;
+boolean v1;
+v0 := @this: org.jboss.logmanager.handlers.DelayedHandler;
+v1 := @parameter0: boolean;
+v0.<org.jboss.logmanager.handlers.DelayedHandler: boolean callerCalculationRequired> = v1;
+return;
+}
+public final boolean isActivated()
+{
+org.jboss.logmanager.handlers.DelayedHandler v0;
+boolean v1;
+v0 := @this: org.jboss.logmanager.handlers.DelayedHandler;
+v1 = v0.<org.jboss.logmanager.handlers.DelayedHandler: boolean activated>;
+return v1;
+}
+private synchronized void activate()
+{
+java.util.Deque v1;
+java.util.logging.Logger v6;
+java.util.logging.Level v7;
+org.jboss.logmanager.handlers.DelayedHandler v0;
+java.lang.Object v2;
+java.lang.String v5;
+boolean v3, v4, v8;
+v0 := @this: org.jboss.logmanager.handlers.DelayedHandler;
+label1:
+v1 = v0.<org.jboss.logmanager.handlers.DelayedHandler: java.util.Deque logRecords>;
+v2 = interfaceinvoke v1.<java.util.Deque: java.lang.Object pollFirst()>();
+if v2 == null goto label2;
+v3 = virtualinvoke v0.<org.jboss.logmanager.handlers.DelayedHandler: boolean isEnabled()>();
+if v3 == 0 goto label1;
+v4 = virtualinvoke v0.<org.jboss.logmanager.handlers.DelayedHandler: boolean isLoggable(java.util.logging.LogRecord)>(v2);
+if v4 == 0 goto label1;
+v5 = virtualinvoke v2.<org.jboss.logmanager.ExtLogRecord: java.lang.String getLoggerName()>();
+v6 = staticinvoke <java.util.logging.Logger: java.util.logging.Logger getLogger(java.lang.String)>(v5);
+v7 = virtualinvoke v2.<org.jboss.logmanager.ExtLogRecord: java.util.logging.Level getLevel()>();
+v8 = virtualinvoke v6.<java.util.logging.Logger: boolean isLoggable(java.util.logging.Level)>(v7);
+if v8 == 0 goto label1;
+virtualinvoke v0.<org.jboss.logmanager.handlers.DelayedHandler: void publishToNestedHandlers(org.jboss.logmanager.ExtLogRecord)>(v2);
+goto label1;
+label2:
+v0.<org.jboss.logmanager.handlers.DelayedHandler: boolean activated> = 1;
+return;
+}
+}

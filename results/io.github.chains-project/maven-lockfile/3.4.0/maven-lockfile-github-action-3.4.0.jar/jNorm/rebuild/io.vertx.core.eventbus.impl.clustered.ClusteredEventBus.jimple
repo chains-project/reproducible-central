@@ -1,0 +1,627 @@
+public class io.vertx.core.eventbus.impl.clustered.ClusteredEventBus extends io.vertx.core.eventbus.impl.EventBusImpl
+{
+private static final io.vertx.core.impl.logging.Logger log;
+private static final io.vertx.core.buffer.Buffer PONG;
+private final io.vertx.core.eventbus.EventBusOptions options;
+private final io.vertx.core.spi.cluster.ClusterManager clusterManager;
+private final io.vertx.core.spi.cluster.NodeSelector nodeSelector;
+private final java.util.concurrent.atomic.AtomicLong handlerSequence;
+private final io.vertx.core.net.NetClient client;
+private final java.util.concurrent.ConcurrentMap connections;
+private final io.vertx.core.impl.CloseFuture closeFuture;
+private final io.vertx.core.impl.EventLoopContext ebContext;
+private io.vertx.core.spi.cluster.NodeInfo nodeInfo;
+private java.lang.String nodeId;
+private io.vertx.core.net.NetServer server;
+public void <init>(io.vertx.core.impl.VertxInternal, io.vertx.core.VertxOptions, io.vertx.core.spi.cluster.ClusterManager, io.vertx.core.spi.cluster.NodeSelector)
+{
+java.lang.Thread v11;
+io.vertx.core.json.JsonObject v16;
+io.vertx.core.eventbus.EventBusOptions v15, v7;
+io.vertx.core.net.NetClient v18;
+io.vertx.core.impl.logging.Logger v9;
+io.vertx.core.impl.VertxInternal v1;
+io.vertx.core.spi.cluster.NodeSelector v4;
+io.vertx.core.spi.cluster.ClusterManager v3;
+java.util.concurrent.ConcurrentHashMap v6;
+io.vertx.core.VertxOptions v2;
+io.vertx.core.net.NetClientOptions v14;
+io.vertx.core.impl.EventLoopContext v13;
+java.util.concurrent.atomic.AtomicLong v5;
+io.vertx.core.impl.CloseFuture v10, v17, v8;
+io.vertx.core.eventbus.impl.clustered.ClusteredEventBus v0;
+java.lang.ClassLoader v12;
+v0 := @this: io.vertx.core.eventbus.impl.clustered.ClusteredEventBus;
+v1 := @parameter0: io.vertx.core.impl.VertxInternal;
+v2 := @parameter1: io.vertx.core.VertxOptions;
+v3 := @parameter2: io.vertx.core.spi.cluster.ClusterManager;
+v4 := @parameter3: io.vertx.core.spi.cluster.NodeSelector;
+specialinvoke v0.<io.vertx.core.eventbus.impl.EventBusImpl: void <init>(io.vertx.core.impl.VertxInternal)>(v1);
+v5 = new java.util.concurrent.atomic.AtomicLong;
+specialinvoke v5.<java.util.concurrent.atomic.AtomicLong: void <init>(long)>(0L);
+v0.<io.vertx.core.eventbus.impl.clustered.ClusteredEventBus: java.util.concurrent.atomic.AtomicLong handlerSequence> = v5;
+v6 = new java.util.concurrent.ConcurrentHashMap;
+specialinvoke v6.<java.util.concurrent.ConcurrentHashMap: void <init>()>();
+v0.<io.vertx.core.eventbus.impl.clustered.ClusteredEventBus: java.util.concurrent.ConcurrentMap connections> = v6;
+v7 = virtualinvoke v2.<io.vertx.core.VertxOptions: io.vertx.core.eventbus.EventBusOptions getEventBusOptions()>();
+v0.<io.vertx.core.eventbus.impl.clustered.ClusteredEventBus: io.vertx.core.eventbus.EventBusOptions options> = v7;
+v0.<io.vertx.core.eventbus.impl.clustered.ClusteredEventBus: io.vertx.core.spi.cluster.ClusterManager clusterManager> = v3;
+v0.<io.vertx.core.eventbus.impl.clustered.ClusteredEventBus: io.vertx.core.spi.cluster.NodeSelector nodeSelector> = v4;
+v8 = new io.vertx.core.impl.CloseFuture;
+v9 = <io.vertx.core.eventbus.impl.clustered.ClusteredEventBus: io.vertx.core.impl.logging.Logger log>;
+specialinvoke v8.<io.vertx.core.impl.CloseFuture: void <init>(io.vertx.core.impl.logging.Logger)>(v9);
+v0.<io.vertx.core.eventbus.impl.clustered.ClusteredEventBus: io.vertx.core.impl.CloseFuture closeFuture> = v8;
+v10 = v0.<io.vertx.core.eventbus.impl.clustered.ClusteredEventBus: io.vertx.core.impl.CloseFuture closeFuture>;
+v11 = staticinvoke <java.lang.Thread: java.lang.Thread currentThread()>();
+v12 = virtualinvoke v11.<java.lang.Thread: java.lang.ClassLoader getContextClassLoader()>();
+v13 = interfaceinvoke v1.<io.vertx.core.impl.VertxInternal: io.vertx.core.impl.EventLoopContext createEventLoopContext(io.vertx.core.impl.Deployment,io.vertx.core.impl.CloseFuture,io.vertx.core.impl.WorkerPool,java.lang.ClassLoader)>(null, v10, null, v12);
+v0.<io.vertx.core.eventbus.impl.clustered.ClusteredEventBus: io.vertx.core.impl.EventLoopContext ebContext> = v13;
+v14 = new io.vertx.core.net.NetClientOptions;
+v15 = v0.<io.vertx.core.eventbus.impl.clustered.ClusteredEventBus: io.vertx.core.eventbus.EventBusOptions options>;
+v16 = virtualinvoke v15.<io.vertx.core.eventbus.EventBusOptions: io.vertx.core.json.JsonObject toJson()>();
+specialinvoke v14.<io.vertx.core.net.NetClientOptions: void <init>(io.vertx.core.json.JsonObject)>(v16);
+v17 = v0.<io.vertx.core.eventbus.impl.clustered.ClusteredEventBus: io.vertx.core.impl.CloseFuture closeFuture>;
+v18 = specialinvoke v0.<io.vertx.core.eventbus.impl.clustered.ClusteredEventBus: io.vertx.core.net.NetClient createNetClient(io.vertx.core.impl.VertxInternal,io.vertx.core.net.NetClientOptions,io.vertx.core.impl.CloseFuture)>(v1, v14, v17);
+v0.<io.vertx.core.eventbus.impl.clustered.ClusteredEventBus: io.vertx.core.net.NetClient client> = v18;
+return;
+}
+private io.vertx.core.net.NetClient createNetClient(io.vertx.core.impl.VertxInternal, io.vertx.core.net.NetClientOptions, io.vertx.core.impl.CloseFuture)
+{
+io.vertx.core.impl.VertxInternal v1;
+io.vertx.core.net.impl.NetClientBuilder v4;
+io.vertx.core.spi.metrics.TCPMetrics v6;
+io.vertx.core.spi.metrics.VertxMetrics v5;
+io.vertx.core.net.NetClientOptions v2;
+io.vertx.core.impl.CloseFuture v3;
+io.vertx.core.eventbus.impl.clustered.ClusteredEventBus v0;
+io.vertx.core.net.NetClient v7;
+v0 := @this: io.vertx.core.eventbus.impl.clustered.ClusteredEventBus;
+v1 := @parameter0: io.vertx.core.impl.VertxInternal;
+v2 := @parameter1: io.vertx.core.net.NetClientOptions;
+v3 := @parameter2: io.vertx.core.impl.CloseFuture;
+v4 = new io.vertx.core.net.impl.NetClientBuilder;
+specialinvoke v4.<io.vertx.core.net.impl.NetClientBuilder: void <init>(io.vertx.core.impl.VertxInternal,io.vertx.core.net.NetClientOptions)>(v1, v2);
+v5 = interfaceinvoke v1.<io.vertx.core.impl.VertxInternal: io.vertx.core.spi.metrics.VertxMetrics metricsSPI()>();
+if v5 == null goto label1;
+v6 = interfaceinvoke v5.<io.vertx.core.spi.metrics.VertxMetrics: io.vertx.core.spi.metrics.TCPMetrics createNetClientMetrics(io.vertx.core.net.NetClientOptions)>(v2);
+virtualinvoke v4.<io.vertx.core.net.impl.NetClientBuilder: io.vertx.core.net.impl.NetClientBuilder metrics(io.vertx.core.spi.metrics.TCPMetrics)>(v6);
+label1:
+virtualinvoke v4.<io.vertx.core.net.impl.NetClientBuilder: io.vertx.core.net.impl.NetClientBuilder closeFuture(io.vertx.core.impl.CloseFuture)>(v3);
+v7 = virtualinvoke v4.<io.vertx.core.net.impl.NetClientBuilder: io.vertx.core.net.NetClient build()>();
+return v7;
+}
+io.vertx.core.net.NetClient client()
+{
+io.vertx.core.eventbus.impl.clustered.ClusteredEventBus v0;
+io.vertx.core.net.NetClient v1;
+v0 := @this: io.vertx.core.eventbus.impl.clustered.ClusteredEventBus;
+v1 = v0.<io.vertx.core.eventbus.impl.clustered.ClusteredEventBus: io.vertx.core.net.NetClient client>;
+return v1;
+}
+private io.vertx.core.net.NetServerOptions getServerOptions()
+{
+io.vertx.core.net.NetServerOptions v1;
+io.vertx.core.json.JsonObject v3;
+io.vertx.core.eventbus.EventBusOptions v2;
+io.vertx.core.eventbus.impl.clustered.ClusteredEventBus v0;
+v0 := @this: io.vertx.core.eventbus.impl.clustered.ClusteredEventBus;
+v1 = new io.vertx.core.net.NetServerOptions;
+v2 = v0.<io.vertx.core.eventbus.impl.clustered.ClusteredEventBus: io.vertx.core.eventbus.EventBusOptions options>;
+v3 = virtualinvoke v2.<io.vertx.core.eventbus.EventBusOptions: io.vertx.core.json.JsonObject toJson()>();
+specialinvoke v1.<io.vertx.core.net.NetServerOptions: void <init>(io.vertx.core.json.JsonObject)>(v3);
+return v1;
+}
+public void start(io.vertx.core.Promise)
+{
+io.vertx.core.impl.VertxInternal v3;
+io.vertx.core.Promise v1;
+io.vertx.core.impl.EventLoopContext v9;
+io.vertx.core.net.NetServerOptions v2;
+io.vertx.core.net.NetServer v4, v5;
+int v7;
+io.vertx.core.eventbus.impl.clustered.ClusteredEventBus v0;
+java.lang.String v8;
+io.vertx.core.Handler v10, v6;
+v0 := @this: io.vertx.core.eventbus.impl.clustered.ClusteredEventBus;
+v1 := @parameter0: io.vertx.core.Promise;
+v2 = specialinvoke v0.<io.vertx.core.eventbus.impl.clustered.ClusteredEventBus: io.vertx.core.net.NetServerOptions getServerOptions()>();
+v3 = v0.<io.vertx.core.eventbus.impl.clustered.ClusteredEventBus: io.vertx.core.impl.VertxInternal vertx>;
+v4 = interfaceinvoke v3.<io.vertx.core.impl.VertxInternal: io.vertx.core.net.NetServer createNetServer(io.vertx.core.net.NetServerOptions)>(v2);
+v0.<io.vertx.core.eventbus.impl.clustered.ClusteredEventBus: io.vertx.core.net.NetServer server> = v4;
+v5 = v0.<io.vertx.core.eventbus.impl.clustered.ClusteredEventBus: io.vertx.core.net.NetServer server>;
+v6 = specialinvoke v0.<io.vertx.core.eventbus.impl.clustered.ClusteredEventBus: io.vertx.core.Handler getServerHandler()>();
+interfaceinvoke v5.<io.vertx.core.net.NetServer: io.vertx.core.net.NetServer connectHandler(io.vertx.core.Handler)>(v6);
+v7 = specialinvoke v0.<io.vertx.core.eventbus.impl.clustered.ClusteredEventBus: int getClusterPort()>();
+v8 = specialinvoke v0.<io.vertx.core.eventbus.impl.clustered.ClusteredEventBus: java.lang.String getClusterHost()>();
+v9 = v0.<io.vertx.core.eventbus.impl.clustered.ClusteredEventBus: io.vertx.core.impl.EventLoopContext ebContext>;
+v10 = staticinvoke <io.vertx.core.eventbus.impl.clustered.ClusteredEventBus$lambda_start_2__1426: io.vertx.core.Handler bootstrap$(io.vertx.core.eventbus.impl.clustered.ClusteredEventBus,int,java.lang.String,io.vertx.core.Promise)>(v0, v7, v8, v1);
+virtualinvoke v9.<io.vertx.core.impl.EventLoopContext: void runOnContext(io.vertx.core.Handler)>(v10);
+return;
+}
+public void close(io.vertx.core.Promise)
+{
+io.vertx.core.Promise v1, v2;
+io.vertx.core.Future v3, v5, v7;
+java.util.function.Function v4;
+io.vertx.core.eventbus.impl.clustered.ClusteredEventBus v0;
+io.vertx.core.Handler v6;
+v0 := @this: io.vertx.core.eventbus.impl.clustered.ClusteredEventBus;
+v1 := @parameter0: io.vertx.core.Promise;
+v2 = staticinvoke <io.vertx.core.Promise: io.vertx.core.Promise promise()>();
+specialinvoke v0.<io.vertx.core.eventbus.impl.EventBusImpl: void close(io.vertx.core.Promise)>(v2);
+v3 = interfaceinvoke v2.<io.vertx.core.Promise: io.vertx.core.Future future()>();
+v4 = staticinvoke <io.vertx.core.eventbus.impl.clustered.ClusteredEventBus$lambda_close_3__1427: java.util.function.Function bootstrap$(io.vertx.core.eventbus.impl.clustered.ClusteredEventBus)>(v0);
+v5 = interfaceinvoke v3.<io.vertx.core.Future: io.vertx.core.Future transform(java.util.function.Function)>(v4);
+v6 = staticinvoke <io.vertx.core.eventbus.impl.clustered.ClusteredEventBus$lambda_close_4__1428: io.vertx.core.Handler bootstrap$(io.vertx.core.eventbus.impl.clustered.ClusteredEventBus)>(v0);
+v7 = interfaceinvoke v5.<io.vertx.core.Future: io.vertx.core.Future andThen(io.vertx.core.Handler)>(v6);
+interfaceinvoke v7.<io.vertx.core.Future: io.vertx.core.Future onComplete(io.vertx.core.Handler)>(v1);
+return;
+}
+public io.vertx.core.eventbus.impl.MessageImpl createMessage(boolean, java.lang.String, io.vertx.core.MultiMap, java.lang.Object, java.lang.String)
+{
+io.vertx.core.MultiMap v3;
+io.vertx.core.eventbus.MessageCodec v7;
+io.vertx.core.eventbus.impl.CodecManager v6;
+java.lang.Object v4;
+io.vertx.core.eventbus.impl.clustered.ClusteredEventBus v0;
+java.lang.String v2, v5, v9;
+boolean v1;
+io.vertx.core.eventbus.impl.clustered.ClusteredMessage v8;
+v0 := @this: io.vertx.core.eventbus.impl.clustered.ClusteredEventBus;
+v1 := @parameter0: boolean;
+v2 := @parameter1: java.lang.String;
+v3 := @parameter2: io.vertx.core.MultiMap;
+v4 := @parameter3: java.lang.Object;
+v5 := @parameter4: java.lang.String;
+staticinvoke <java.util.Objects: java.lang.Object requireNonNull(java.lang.Object,java.lang.String)>(v2, "no null address accepted");
+v6 = v0.<io.vertx.core.eventbus.impl.clustered.ClusteredEventBus: io.vertx.core.eventbus.impl.CodecManager codecManager>;
+v7 = virtualinvoke v6.<io.vertx.core.eventbus.impl.CodecManager: io.vertx.core.eventbus.MessageCodec lookupCodec(java.lang.Object,java.lang.String,boolean)>(v4, v5, 0);
+v8 = new io.vertx.core.eventbus.impl.clustered.ClusteredMessage;
+v9 = v0.<io.vertx.core.eventbus.impl.clustered.ClusteredEventBus: java.lang.String nodeId>;
+specialinvoke v8.<io.vertx.core.eventbus.impl.clustered.ClusteredMessage: void <init>(java.lang.String,java.lang.String,io.vertx.core.MultiMap,java.lang.Object,io.vertx.core.eventbus.MessageCodec,boolean,io.vertx.core.eventbus.impl.EventBusImpl)>(v9, v2, v3, v4, v7, v1, v0);
+return v8;
+}
+protected void onLocalRegistration(io.vertx.core.eventbus.impl.HandlerHolder, io.vertx.core.Promise)
+{
+io.vertx.core.spi.cluster.ClusterManager v8;
+io.vertx.core.Promise v2;
+long v6;
+io.vertx.core.spi.cluster.RegistrationInfo v4;
+io.vertx.core.eventbus.impl.HandlerRegistration v9;
+java.lang.Object v11;
+io.vertx.core.eventbus.impl.HandlerHolder v1;
+io.vertx.core.eventbus.impl.clustered.ClusteredEventBus v0;
+java.lang.String v10, v5;
+boolean v3, v7;
+v0 := @this: io.vertx.core.eventbus.impl.clustered.ClusteredEventBus;
+v1 := @parameter0: io.vertx.core.eventbus.impl.HandlerHolder;
+v2 := @parameter1: io.vertx.core.Promise;
+v3 = virtualinvoke v1.<io.vertx.core.eventbus.impl.HandlerHolder: boolean isReplyHandler()>();
+if v3 != 0 goto label1;
+v4 = new io.vertx.core.spi.cluster.RegistrationInfo;
+v5 = v0.<io.vertx.core.eventbus.impl.clustered.ClusteredEventBus: java.lang.String nodeId>;
+v6 = virtualinvoke v1.<io.vertx.core.eventbus.impl.HandlerHolder: long getSeq()>();
+v7 = virtualinvoke v1.<io.vertx.core.eventbus.impl.HandlerHolder: boolean isLocalOnly()>();
+specialinvoke v4.<io.vertx.core.spi.cluster.RegistrationInfo: void <init>(java.lang.String,long,boolean)>(v5, v6, v7);
+v8 = v0.<io.vertx.core.eventbus.impl.clustered.ClusteredEventBus: io.vertx.core.spi.cluster.ClusterManager clusterManager>;
+v9 = virtualinvoke v1.<io.vertx.core.eventbus.impl.HandlerHolder: io.vertx.core.eventbus.impl.HandlerRegistration getHandler()>();
+v10 = v9.<io.vertx.core.eventbus.impl.HandlerRegistration: java.lang.String address>;
+v11 = staticinvoke <java.util.Objects: java.lang.Object requireNonNull(java.lang.Object)>(v2);
+interfaceinvoke v8.<io.vertx.core.spi.cluster.ClusterManager: void addRegistration(java.lang.String,io.vertx.core.spi.cluster.RegistrationInfo,io.vertx.core.Promise)>(v10, v4, v11);
+goto label2;
+label1:
+if v2 == null goto label2;
+interfaceinvoke v2.<io.vertx.core.Promise: void complete()>();
+label2:
+return;
+}
+protected io.vertx.core.eventbus.impl.HandlerHolder createHandlerHolder(io.vertx.core.eventbus.impl.HandlerRegistration, boolean, boolean, io.vertx.core.impl.ContextInternal)
+{
+io.vertx.core.eventbus.impl.clustered.ClusteredHandlerHolder v5;
+io.vertx.core.impl.ContextInternal v4;
+long v7;
+java.util.concurrent.atomic.AtomicLong v6;
+io.vertx.core.eventbus.impl.HandlerRegistration v1;
+io.vertx.core.eventbus.impl.clustered.ClusteredEventBus v0;
+boolean v2, v3;
+v0 := @this: io.vertx.core.eventbus.impl.clustered.ClusteredEventBus;
+v1 := @parameter0: io.vertx.core.eventbus.impl.HandlerRegistration;
+v2 := @parameter1: boolean;
+v3 := @parameter2: boolean;
+v4 := @parameter3: io.vertx.core.impl.ContextInternal;
+v5 = new io.vertx.core.eventbus.impl.clustered.ClusteredHandlerHolder;
+v6 = v0.<io.vertx.core.eventbus.impl.clustered.ClusteredEventBus: java.util.concurrent.atomic.AtomicLong handlerSequence>;
+v7 = virtualinvoke v6.<java.util.concurrent.atomic.AtomicLong: long getAndIncrement()>();
+specialinvoke v5.<io.vertx.core.eventbus.impl.clustered.ClusteredHandlerHolder: void <init>(io.vertx.core.eventbus.impl.HandlerRegistration,boolean,boolean,io.vertx.core.impl.ContextInternal,long)>(v1, v2, v3, v4, v7);
+return v5;
+}
+protected void onLocalUnregistration(io.vertx.core.eventbus.impl.HandlerHolder, io.vertx.core.Promise)
+{
+io.vertx.core.spi.cluster.ClusterManager v9;
+io.vertx.core.Promise v2, v8;
+long v6;
+io.vertx.core.Future v12;
+io.vertx.core.spi.cluster.RegistrationInfo v4;
+io.vertx.core.eventbus.impl.HandlerRegistration v10;
+io.vertx.core.eventbus.impl.HandlerHolder v1;
+io.vertx.core.eventbus.impl.clustered.ClusteredEventBus v0;
+java.lang.String v11, v5;
+boolean v3, v7;
+v0 := @this: io.vertx.core.eventbus.impl.clustered.ClusteredEventBus;
+v1 := @parameter0: io.vertx.core.eventbus.impl.HandlerHolder;
+v2 := @parameter1: io.vertx.core.Promise;
+v3 = virtualinvoke v1.<io.vertx.core.eventbus.impl.HandlerHolder: boolean isReplyHandler()>();
+if v3 != 0 goto label1;
+v4 = new io.vertx.core.spi.cluster.RegistrationInfo;
+v5 = v0.<io.vertx.core.eventbus.impl.clustered.ClusteredEventBus: java.lang.String nodeId>;
+v6 = virtualinvoke v1.<io.vertx.core.eventbus.impl.HandlerHolder: long getSeq()>();
+v7 = virtualinvoke v1.<io.vertx.core.eventbus.impl.HandlerHolder: boolean isLocalOnly()>();
+specialinvoke v4.<io.vertx.core.spi.cluster.RegistrationInfo: void <init>(java.lang.String,long,boolean)>(v5, v6, v7);
+v8 = staticinvoke <io.vertx.core.Promise: io.vertx.core.Promise promise()>();
+v9 = v0.<io.vertx.core.eventbus.impl.clustered.ClusteredEventBus: io.vertx.core.spi.cluster.ClusterManager clusterManager>;
+v10 = virtualinvoke v1.<io.vertx.core.eventbus.impl.HandlerHolder: io.vertx.core.eventbus.impl.HandlerRegistration getHandler()>();
+v11 = v10.<io.vertx.core.eventbus.impl.HandlerRegistration: java.lang.String address>;
+interfaceinvoke v9.<io.vertx.core.spi.cluster.ClusterManager: void removeRegistration(java.lang.String,io.vertx.core.spi.cluster.RegistrationInfo,io.vertx.core.Promise)>(v11, v4, v8);
+v12 = interfaceinvoke v8.<io.vertx.core.Promise: io.vertx.core.Future future()>();
+interfaceinvoke v12.<io.vertx.core.Future: io.vertx.core.Future onComplete(io.vertx.core.Handler)>(v2);
+goto label2;
+label1:
+interfaceinvoke v2.<io.vertx.core.Promise: void complete()>();
+label2:
+return;
+}
+protected void sendOrPub(io.vertx.core.eventbus.impl.OutboundDeliveryContext)
+{
+io.vertx.core.eventbus.DeliveryOptions v6;
+io.vertx.core.impl.ContextInternal v12, v19, v8;
+io.vertx.core.eventbus.impl.clustered.Serializer v9;
+java.util.function.BiConsumer v16, v23;
+java.lang.String v3, v5;
+boolean v11, v7;
+io.vertx.core.eventbus.impl.OutboundDeliveryContext v1;
+io.vertx.core.impl.future.PromiseInternal v13, v20;
+io.vertx.core.spi.cluster.NodeSelector v15, v22;
+io.vertx.core.Future v17, v24;
+io.vertx.core.eventbus.impl.MessageImpl v10, v14, v2, v21, v4;
+io.vertx.core.eventbus.impl.clustered.ClusteredEventBus v0;
+io.vertx.core.Handler v18, v25;
+v0 := @this: io.vertx.core.eventbus.impl.clustered.ClusteredEventBus;
+v1 := @parameter0: io.vertx.core.eventbus.impl.OutboundDeliveryContext;
+v2 = v1.<io.vertx.core.eventbus.impl.OutboundDeliveryContext: io.vertx.core.eventbus.impl.MessageImpl message>;
+v3 = virtualinvoke v2.<io.vertx.core.eventbus.impl.clustered.ClusteredMessage: java.lang.String getRepliedTo()>();
+if v3 == null goto label1;
+v4 = v1.<io.vertx.core.eventbus.impl.OutboundDeliveryContext: io.vertx.core.eventbus.impl.MessageImpl message>;
+v5 = virtualinvoke v4.<io.vertx.core.eventbus.impl.clustered.ClusteredMessage: java.lang.String getRepliedTo()>();
+specialinvoke v0.<io.vertx.core.eventbus.impl.clustered.ClusteredEventBus: void clusteredSendReply(java.lang.String,io.vertx.core.eventbus.impl.OutboundDeliveryContext)>(v5, v1);
+goto label4;
+label1:
+v6 = v1.<io.vertx.core.eventbus.impl.OutboundDeliveryContext: io.vertx.core.eventbus.DeliveryOptions options>;
+v7 = virtualinvoke v6.<io.vertx.core.eventbus.DeliveryOptions: boolean isLocalOnly()>();
+if v7 == 0 goto label2;
+specialinvoke v0.<io.vertx.core.eventbus.impl.EventBusImpl: void sendOrPub(io.vertx.core.eventbus.impl.OutboundDeliveryContext)>(v1);
+goto label4;
+label2:
+v8 = v1.<io.vertx.core.eventbus.impl.OutboundDeliveryContext: io.vertx.core.impl.ContextInternal ctx>;
+v9 = staticinvoke <io.vertx.core.eventbus.impl.clustered.Serializer: io.vertx.core.eventbus.impl.clustered.Serializer get(io.vertx.core.impl.ContextInternal)>(v8);
+v10 = v1.<io.vertx.core.eventbus.impl.OutboundDeliveryContext: io.vertx.core.eventbus.impl.MessageImpl message>;
+v11 = virtualinvoke v10.<io.vertx.core.eventbus.impl.MessageImpl: boolean isSend()>();
+if v11 == 0 goto label3;
+v12 = v1.<io.vertx.core.eventbus.impl.OutboundDeliveryContext: io.vertx.core.impl.ContextInternal ctx>;
+v13 = interfaceinvoke v12.<io.vertx.core.impl.ContextInternal: io.vertx.core.impl.future.PromiseInternal promise()>();
+v14 = v1.<io.vertx.core.eventbus.impl.OutboundDeliveryContext: io.vertx.core.eventbus.impl.MessageImpl message>;
+v15 = v0.<io.vertx.core.eventbus.impl.clustered.ClusteredEventBus: io.vertx.core.spi.cluster.NodeSelector nodeSelector>;
+virtualinvoke v15.<java.lang.Object: java.lang.Class getClass()>();
+v16 = staticinvoke <io.vertx.core.eventbus.impl.clustered.ClusteredEventBus$selectForSend__1431: java.util.function.BiConsumer bootstrap$(io.vertx.core.spi.cluster.NodeSelector)>(v15);
+virtualinvoke v9.<io.vertx.core.eventbus.impl.clustered.Serializer: void queue(io.vertx.core.eventbus.Message,java.util.function.BiConsumer,io.vertx.core.Promise)>(v14, v16, v13);
+v17 = interfaceinvoke v13.<io.vertx.core.Promise: io.vertx.core.Future future()>();
+v18 = staticinvoke <io.vertx.core.eventbus.impl.clustered.ClusteredEventBus$lambda_sendOrPub_5__1432: io.vertx.core.Handler bootstrap$(io.vertx.core.eventbus.impl.clustered.ClusteredEventBus,io.vertx.core.eventbus.impl.OutboundDeliveryContext)>(v0, v1);
+interfaceinvoke v17.<io.vertx.core.Future: io.vertx.core.Future onComplete(io.vertx.core.Handler)>(v18);
+goto label4;
+label3:
+v19 = v1.<io.vertx.core.eventbus.impl.OutboundDeliveryContext: io.vertx.core.impl.ContextInternal ctx>;
+v20 = interfaceinvoke v19.<io.vertx.core.impl.ContextInternal: io.vertx.core.impl.future.PromiseInternal promise()>();
+v21 = v1.<io.vertx.core.eventbus.impl.OutboundDeliveryContext: io.vertx.core.eventbus.impl.MessageImpl message>;
+v22 = v0.<io.vertx.core.eventbus.impl.clustered.ClusteredEventBus: io.vertx.core.spi.cluster.NodeSelector nodeSelector>;
+virtualinvoke v22.<java.lang.Object: java.lang.Class getClass()>();
+v23 = staticinvoke <io.vertx.core.eventbus.impl.clustered.ClusteredEventBus$selectForPublish__1429: java.util.function.BiConsumer bootstrap$(io.vertx.core.spi.cluster.NodeSelector)>(v22);
+virtualinvoke v9.<io.vertx.core.eventbus.impl.clustered.Serializer: void queue(io.vertx.core.eventbus.Message,java.util.function.BiConsumer,io.vertx.core.Promise)>(v21, v23, v20);
+v24 = interfaceinvoke v20.<io.vertx.core.Promise: io.vertx.core.Future future()>();
+v25 = staticinvoke <io.vertx.core.eventbus.impl.clustered.ClusteredEventBus$lambda_sendOrPub_6__1430: io.vertx.core.Handler bootstrap$(io.vertx.core.eventbus.impl.clustered.ClusteredEventBus,io.vertx.core.eventbus.impl.OutboundDeliveryContext)>(v0, v1);
+interfaceinvoke v24.<io.vertx.core.Future: io.vertx.core.Future onComplete(io.vertx.core.Handler)>(v25);
+label4:
+return;
+}
+private void sendOrPublishFailed(io.vertx.core.eventbus.impl.OutboundDeliveryContext, java.lang.Throwable)
+{
+io.vertx.core.impl.logging.Logger v3, v5;
+java.lang.Throwable v2;
+io.vertx.core.eventbus.impl.OutboundDeliveryContext v1;
+io.vertx.core.eventbus.impl.clustered.ClusteredEventBus v0;
+boolean v4;
+v0 := @this: io.vertx.core.eventbus.impl.clustered.ClusteredEventBus;
+v1 := @parameter0: io.vertx.core.eventbus.impl.OutboundDeliveryContext;
+v2 := @parameter1: java.lang.Throwable;
+v3 = <io.vertx.core.eventbus.impl.clustered.ClusteredEventBus: io.vertx.core.impl.logging.Logger log>;
+v4 = interfaceinvoke v3.<io.vertx.core.impl.logging.Logger: boolean isDebugEnabled()>();
+if v4 == 0 goto label1;
+v5 = <io.vertx.core.eventbus.impl.clustered.ClusteredEventBus: io.vertx.core.impl.logging.Logger log>;
+interfaceinvoke v5.<io.vertx.core.impl.logging.Logger: void error(java.lang.Object,java.lang.Throwable)>("Failed to send message", v2);
+label1:
+virtualinvoke v1.<io.vertx.core.eventbus.impl.OutboundDeliveryContext: void written(java.lang.Throwable)>(v2);
+return;
+}
+protected java.lang.String generateReplyAddress()
+{
+io.vertx.core.eventbus.impl.clustered.ClusteredEventBus v0;
+java.lang.String v2, v3;
+java.util.UUID v1;
+v0 := @this: io.vertx.core.eventbus.impl.clustered.ClusteredEventBus;
+v1 = staticinvoke <java.util.UUID: java.util.UUID randomUUID()>();
+v2 = virtualinvoke v1.<java.util.UUID: java.lang.String toString()>();
+v3 = dynamicinvoke "makeConcatWithConstants" <java.lang.String (java.lang.String)>(v2) <java.lang.invoke.StringConcatFactory: java.lang.invoke.CallSite makeConcatWithConstants(java.lang.invoke.MethodHandles$Lookup,java.lang.String,java.lang.invoke.MethodType,java.lang.String,java.lang.Object[])>("__vertx.reply.\u0001");
+return v3;
+}
+protected boolean isMessageLocal(io.vertx.core.eventbus.impl.MessageImpl)
+{
+io.vertx.core.eventbus.impl.MessageImpl v1;
+io.vertx.core.eventbus.impl.clustered.ClusteredEventBus v0;
+boolean v2, v3;
+v0 := @this: io.vertx.core.eventbus.impl.clustered.ClusteredEventBus;
+v1 := @parameter0: io.vertx.core.eventbus.impl.MessageImpl;
+v2 = virtualinvoke v1.<io.vertx.core.eventbus.impl.clustered.ClusteredMessage: boolean isFromWire()>();
+if v2 != 0 goto label1;
+v3 = 1;
+goto label2;
+label1:
+v3 = 0;
+label2:
+return v3;
+}
+protected io.vertx.core.eventbus.impl.HandlerHolder nextHandler(io.vertx.core.impl.utils.ConcurrentCyclicSequence, boolean)
+{
+io.vertx.core.impl.utils.ConcurrentCyclicSequence v1;
+java.util.Iterator v4;
+java.lang.Object v3, v6;
+io.vertx.core.eventbus.impl.clustered.ClusteredEventBus v0;
+boolean v2, v5, v7, v8;
+v0 := @this: io.vertx.core.eventbus.impl.clustered.ClusteredEventBus;
+v1 := @parameter0: io.vertx.core.impl.utils.ConcurrentCyclicSequence;
+v2 := @parameter1: boolean;
+if v2 == 0 goto label1;
+v3 = virtualinvoke v1.<io.vertx.core.impl.utils.ConcurrentCyclicSequence: java.lang.Object next()>();
+goto label4;
+label1:
+v4 = virtualinvoke v1.<io.vertx.core.impl.utils.ConcurrentCyclicSequence: java.util.Iterator iterator(boolean)>(0);
+label2:
+v5 = interfaceinvoke v4.<java.util.Iterator: boolean hasNext()>();
+if v5 == 0 goto label4;
+v6 = interfaceinvoke v4.<java.util.Iterator: java.lang.Object next()>();
+v7 = virtualinvoke v6.<io.vertx.core.eventbus.impl.HandlerHolder: boolean isReplyHandler()>();
+if v7 != 0 goto label3;
+v8 = virtualinvoke v6.<io.vertx.core.eventbus.impl.HandlerHolder: boolean isLocalOnly()>();
+if v8 != 0 goto label2;
+label3:
+v3 = v6;
+label4:
+return v3;
+}
+private int getClusterPort()
+{
+int v2;
+io.vertx.core.eventbus.EventBusOptions v1;
+io.vertx.core.eventbus.impl.clustered.ClusteredEventBus v0;
+v0 := @this: io.vertx.core.eventbus.impl.clustered.ClusteredEventBus;
+v1 = v0.<io.vertx.core.eventbus.impl.clustered.ClusteredEventBus: io.vertx.core.eventbus.EventBusOptions options>;
+v2 = virtualinvoke v1.<io.vertx.core.eventbus.EventBusOptions: int getPort()>();
+return v2;
+}
+private java.lang.String getClusterHost()
+{
+io.vertx.core.spi.cluster.ClusterManager v3;
+io.vertx.core.eventbus.EventBusOptions v1;
+io.vertx.core.eventbus.impl.clustered.ClusteredEventBus v0;
+java.lang.String v2, v4, v5;
+v0 := @this: io.vertx.core.eventbus.impl.clustered.ClusteredEventBus;
+v1 = v0.<io.vertx.core.eventbus.impl.clustered.ClusteredEventBus: io.vertx.core.eventbus.EventBusOptions options>;
+v2 = virtualinvoke v1.<io.vertx.core.eventbus.EventBusOptions: java.lang.String getHost()>();
+if v2 == null goto label1;
+return v2;
+label1:
+v3 = v0.<io.vertx.core.eventbus.impl.clustered.ClusteredEventBus: io.vertx.core.spi.cluster.ClusterManager clusterManager>;
+v4 = interfaceinvoke v3.<io.vertx.core.spi.cluster.ClusterManager: java.lang.String clusterHost()>();
+if v4 == null goto label2;
+return v4;
+label2:
+v5 = staticinvoke <io.vertx.core.eventbus.AddressHelper: java.lang.String defaultAddress()>();
+return v5;
+}
+private int getClusterPublicPort(int)
+{
+int v1, v3, v4;
+io.vertx.core.eventbus.EventBusOptions v2;
+io.vertx.core.eventbus.impl.clustered.ClusteredEventBus v0;
+v0 := @this: io.vertx.core.eventbus.impl.clustered.ClusteredEventBus;
+v1 := @parameter0: int;
+v2 = v0.<io.vertx.core.eventbus.impl.clustered.ClusteredEventBus: io.vertx.core.eventbus.EventBusOptions options>;
+v3 = virtualinvoke v2.<io.vertx.core.eventbus.EventBusOptions: int getClusterPublicPort()>();
+if v3 <= 0 goto label1;
+v4 = v3;
+goto label2;
+label1:
+v4 = v1;
+label2:
+return v4;
+}
+private java.lang.String getClusterPublicHost(java.lang.String)
+{
+io.vertx.core.spi.cluster.ClusterManager v6;
+io.vertx.core.eventbus.EventBusOptions v2, v4;
+io.vertx.core.eventbus.impl.clustered.ClusteredEventBus v0;
+java.lang.String v1, v3, v5, v7;
+v0 := @this: io.vertx.core.eventbus.impl.clustered.ClusteredEventBus;
+v1 := @parameter0: java.lang.String;
+v2 = v0.<io.vertx.core.eventbus.impl.clustered.ClusteredEventBus: io.vertx.core.eventbus.EventBusOptions options>;
+v3 = virtualinvoke v2.<io.vertx.core.eventbus.EventBusOptions: java.lang.String getClusterPublicHost()>();
+if v3 == null goto label1;
+return v3;
+label1:
+v4 = v0.<io.vertx.core.eventbus.impl.clustered.ClusteredEventBus: io.vertx.core.eventbus.EventBusOptions options>;
+v5 = virtualinvoke v4.<io.vertx.core.eventbus.EventBusOptions: java.lang.String getHost()>();
+if v5 == null goto label2;
+return v5;
+label2:
+v6 = v0.<io.vertx.core.eventbus.impl.clustered.ClusteredEventBus: io.vertx.core.spi.cluster.ClusterManager clusterManager>;
+v7 = interfaceinvoke v6.<io.vertx.core.spi.cluster.ClusterManager: java.lang.String clusterPublicHost()>();
+if v7 == null goto label3;
+return v7;
+label3:
+return v1;
+}
+private io.vertx.core.Handler getServerHandler()
+{
+io.vertx.core.eventbus.impl.clustered.ClusteredEventBus v0;
+io.vertx.core.Handler v1;
+v0 := @this: io.vertx.core.eventbus.impl.clustered.ClusteredEventBus;
+v1 = staticinvoke <io.vertx.core.eventbus.impl.clustered.ClusteredEventBus$lambda_getServerHandler_7__1433: io.vertx.core.Handler bootstrap$(io.vertx.core.eventbus.impl.clustered.ClusteredEventBus)>(v0);
+return v1;
+}
+private void sendToNode(io.vertx.core.eventbus.impl.OutboundDeliveryContext, java.lang.String)
+{
+io.vertx.core.eventbus.impl.OutboundDeliveryContext v1;
+io.vertx.core.eventbus.impl.MessageImpl v5;
+io.vertx.core.eventbus.impl.clustered.ClusteredEventBus v0;
+java.lang.String v2, v3;
+boolean v4;
+v0 := @this: io.vertx.core.eventbus.impl.clustered.ClusteredEventBus;
+v1 := @parameter0: io.vertx.core.eventbus.impl.OutboundDeliveryContext;
+v2 := @parameter1: java.lang.String;
+if v2 == null goto label1;
+v3 = v0.<io.vertx.core.eventbus.impl.clustered.ClusteredEventBus: java.lang.String nodeId>;
+v4 = virtualinvoke v2.<java.lang.String: boolean equals(java.lang.Object)>(v3);
+if v4 != 0 goto label1;
+v5 = v1.<io.vertx.core.eventbus.impl.OutboundDeliveryContext: io.vertx.core.eventbus.impl.MessageImpl message>;
+specialinvoke v0.<io.vertx.core.eventbus.impl.clustered.ClusteredEventBus: void sendRemote(io.vertx.core.eventbus.impl.OutboundDeliveryContext,java.lang.String,io.vertx.core.eventbus.impl.MessageImpl)>(v1, v2, v5);
+goto label2;
+label1:
+specialinvoke v0.<io.vertx.core.eventbus.impl.EventBusImpl: void sendOrPub(io.vertx.core.eventbus.impl.OutboundDeliveryContext)>(v1);
+label2:
+return;
+}
+private void sendToNodes(io.vertx.core.eventbus.impl.OutboundDeliveryContext, java.lang.Iterable)
+{
+io.vertx.core.eventbus.impl.OutboundDeliveryContext v1;
+java.util.Iterator v4;
+java.lang.Object v6;
+io.vertx.core.eventbus.impl.clustered.ClusteredEventBus v0;
+java.lang.Iterable v2;
+boolean v3, v5;
+v0 := @this: io.vertx.core.eventbus.impl.clustered.ClusteredEventBus;
+v1 := @parameter0: io.vertx.core.eventbus.impl.OutboundDeliveryContext;
+v2 := @parameter1: java.lang.Iterable;
+v3 = 0;
+if v2 == null goto label3;
+v4 = interfaceinvoke v2.<java.lang.Iterable: java.util.Iterator iterator()>();
+label1:
+v5 = interfaceinvoke v4.<java.util.Iterator: boolean hasNext()>();
+if v5 == 0 goto label3;
+v6 = interfaceinvoke v4.<java.util.Iterator: java.lang.Object next()>();
+if v3 != 0 goto label2;
+v3 = 1;
+label2:
+specialinvoke v0.<io.vertx.core.eventbus.impl.clustered.ClusteredEventBus: void sendToNode(io.vertx.core.eventbus.impl.OutboundDeliveryContext,java.lang.String)>(v1, v6);
+goto label1;
+label3:
+if v3 != 0 goto label4;
+specialinvoke v0.<io.vertx.core.eventbus.impl.EventBusImpl: void sendOrPub(io.vertx.core.eventbus.impl.OutboundDeliveryContext)>(v1);
+label4:
+return;
+}
+private void clusteredSendReply(java.lang.String, io.vertx.core.eventbus.impl.OutboundDeliveryContext)
+{
+io.vertx.core.eventbus.impl.OutboundDeliveryContext v2;
+io.vertx.core.eventbus.impl.MessageImpl v3;
+io.vertx.core.eventbus.impl.clustered.ClusteredEventBus v0;
+java.lang.String v1, v4;
+boolean v5;
+v0 := @this: io.vertx.core.eventbus.impl.clustered.ClusteredEventBus;
+v1 := @parameter0: java.lang.String;
+v2 := @parameter1: io.vertx.core.eventbus.impl.OutboundDeliveryContext;
+v3 = v2.<io.vertx.core.eventbus.impl.OutboundDeliveryContext: io.vertx.core.eventbus.impl.MessageImpl message>;
+v4 = v0.<io.vertx.core.eventbus.impl.clustered.ClusteredEventBus: java.lang.String nodeId>;
+v5 = virtualinvoke v1.<java.lang.String: boolean equals(java.lang.Object)>(v4);
+if v5 != 0 goto label1;
+specialinvoke v0.<io.vertx.core.eventbus.impl.clustered.ClusteredEventBus: void sendRemote(io.vertx.core.eventbus.impl.OutboundDeliveryContext,java.lang.String,io.vertx.core.eventbus.impl.MessageImpl)>(v2, v1, v3);
+goto label2;
+label1:
+specialinvoke v0.<io.vertx.core.eventbus.impl.EventBusImpl: void sendOrPub(io.vertx.core.eventbus.impl.OutboundDeliveryContext)>(v2);
+label2:
+return;
+}
+private void sendRemote(io.vertx.core.eventbus.impl.OutboundDeliveryContext, java.lang.String, io.vertx.core.eventbus.impl.MessageImpl)
+{
+io.vertx.core.eventbus.impl.OutboundDeliveryContext v1;
+java.util.concurrent.ConcurrentMap v4, v7;
+io.vertx.core.eventbus.impl.MessageImpl v3;
+java.lang.Object v5, v8;
+io.vertx.core.eventbus.impl.clustered.ClusteredEventBus v0;
+io.vertx.core.eventbus.impl.clustered.ConnectionHolder v6;
+java.lang.String v2;
+v0 := @this: io.vertx.core.eventbus.impl.clustered.ClusteredEventBus;
+v1 := @parameter0: io.vertx.core.eventbus.impl.OutboundDeliveryContext;
+v2 := @parameter1: java.lang.String;
+v3 := @parameter2: io.vertx.core.eventbus.impl.MessageImpl;
+v4 = v0.<io.vertx.core.eventbus.impl.clustered.ClusteredEventBus: java.util.concurrent.ConcurrentMap connections>;
+v5 = interfaceinvoke v4.<java.util.concurrent.ConcurrentMap: java.lang.Object get(java.lang.Object)>(v2);
+if v5 != null goto label2;
+v6 = new io.vertx.core.eventbus.impl.clustered.ConnectionHolder;
+specialinvoke v6.<io.vertx.core.eventbus.impl.clustered.ConnectionHolder: void <init>(io.vertx.core.eventbus.impl.clustered.ClusteredEventBus,java.lang.String)>(v0, v2);
+v5 = v6;
+v7 = v0.<io.vertx.core.eventbus.impl.clustered.ClusteredEventBus: java.util.concurrent.ConcurrentMap connections>;
+v8 = interfaceinvoke v7.<java.util.concurrent.ConcurrentMap: java.lang.Object putIfAbsent(java.lang.Object,java.lang.Object)>(v2, v6);
+if v8 == null goto label1;
+v5 = v8;
+goto label2;
+label1:
+virtualinvoke v6.<io.vertx.core.eventbus.impl.clustered.ConnectionHolder: void connect()>();
+label2:
+virtualinvoke v5.<io.vertx.core.eventbus.impl.clustered.ConnectionHolder: void writeMessage(io.vertx.core.eventbus.impl.OutboundDeliveryContext)>(v1);
+return;
+}
+java.util.concurrent.ConcurrentMap connections()
+{
+io.vertx.core.eventbus.impl.clustered.ClusteredEventBus v0;
+java.util.concurrent.ConcurrentMap v1;
+v0 := @this: io.vertx.core.eventbus.impl.clustered.ClusteredEventBus;
+v1 = v0.<io.vertx.core.eventbus.impl.clustered.ClusteredEventBus: java.util.concurrent.ConcurrentMap connections>;
+return v1;
+}
+io.vertx.core.impl.VertxInternal vertx()
+{
+io.vertx.core.eventbus.impl.clustered.ClusteredEventBus v0;
+io.vertx.core.impl.VertxInternal v1;
+v0 := @this: io.vertx.core.eventbus.impl.clustered.ClusteredEventBus;
+v1 = v0.<io.vertx.core.eventbus.impl.clustered.ClusteredEventBus: io.vertx.core.impl.VertxInternal vertx>;
+return v1;
+}
+io.vertx.core.eventbus.EventBusOptions options()
+{
+io.vertx.core.eventbus.EventBusOptions v1;
+io.vertx.core.eventbus.impl.clustered.ClusteredEventBus v0;
+v0 := @this: io.vertx.core.eventbus.impl.clustered.ClusteredEventBus;
+v1 = v0.<io.vertx.core.eventbus.impl.clustered.ClusteredEventBus: io.vertx.core.eventbus.EventBusOptions options>;
+return v1;
+}
+static void <clinit>()
+{
+io.vertx.core.impl.logging.Logger v0;
+byte[] v1;
+io.vertx.core.buffer.Buffer v2;
+v0 = staticinvoke <io.vertx.core.impl.logging.LoggerFactory: io.vertx.core.impl.logging.Logger getLogger(java.lang.Class)>(class "Lio/vertx/core/eventbus/impl/clustered/ClusteredEventBus;");
+<io.vertx.core.eventbus.impl.clustered.ClusteredEventBus: io.vertx.core.impl.logging.Logger log> = v0;
+v1 = newarray (byte)[1];
+v1[0] = 1;
+v2 = staticinvoke <io.vertx.core.buffer.Buffer: io.vertx.core.buffer.Buffer buffer(byte[])>(v1);
+<io.vertx.core.eventbus.impl.clustered.ClusteredEventBus: io.vertx.core.buffer.Buffer PONG> = v2;
+return;
+}
+}

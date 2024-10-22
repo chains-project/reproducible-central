@@ -1,0 +1,1038 @@
+public class io.vertx.core.eventbus.impl.EventBusImpl extends java.lang.Object implements io.vertx.core.eventbus.impl.EventBusInternal, io.vertx.core.spi.metrics.MetricsProvider
+{
+private static final java.util.concurrent.atomic.AtomicReferenceFieldUpdater OUTBOUND_INTERCEPTORS_UPDATER;
+private static final java.util.concurrent.atomic.AtomicReferenceFieldUpdater INBOUND_INTERCEPTORS_UPDATER;
+private volatile io.vertx.core.Handler[] outboundInterceptors;
+private volatile io.vertx.core.Handler[] inboundInterceptors;
+private final java.util.concurrent.atomic.AtomicLong replySequence;
+protected final io.vertx.core.impl.VertxInternal vertx;
+protected final io.vertx.core.spi.metrics.EventBusMetrics metrics;
+protected final java.util.concurrent.ConcurrentMap handlerMap;
+protected final io.vertx.core.eventbus.impl.CodecManager codecManager;
+protected volatile boolean started;
+public void <init>(io.vertx.core.impl.VertxInternal)
+{
+io.vertx.core.eventbus.impl.EventBusImpl v0;
+io.vertx.core.impl.VertxInternal v1;
+io.vertx.core.spi.metrics.EventBusMetrics v8;
+java.util.concurrent.ConcurrentHashMap v5;
+io.vertx.core.spi.metrics.VertxMetrics v7;
+io.vertx.core.Handler[] v2, v3;
+java.util.concurrent.atomic.AtomicLong v4;
+io.vertx.core.eventbus.impl.CodecManager v6;
+v0 := @this: io.vertx.core.eventbus.impl.EventBusImpl;
+v1 := @parameter0: io.vertx.core.impl.VertxInternal;
+specialinvoke v0.<java.lang.Object: void <init>()>();
+v2 = newarray (io.vertx.core.Handler)[0];
+v0.<io.vertx.core.eventbus.impl.EventBusImpl: io.vertx.core.Handler[] outboundInterceptors> = v2;
+v3 = newarray (io.vertx.core.Handler)[0];
+v0.<io.vertx.core.eventbus.impl.EventBusImpl: io.vertx.core.Handler[] inboundInterceptors> = v3;
+v4 = new java.util.concurrent.atomic.AtomicLong;
+specialinvoke v4.<java.util.concurrent.atomic.AtomicLong: void <init>(long)>(0L);
+v0.<io.vertx.core.eventbus.impl.EventBusImpl: java.util.concurrent.atomic.AtomicLong replySequence> = v4;
+v5 = new java.util.concurrent.ConcurrentHashMap;
+specialinvoke v5.<java.util.concurrent.ConcurrentHashMap: void <init>()>();
+v0.<io.vertx.core.eventbus.impl.EventBusImpl: java.util.concurrent.ConcurrentMap handlerMap> = v5;
+v6 = new io.vertx.core.eventbus.impl.CodecManager;
+specialinvoke v6.<io.vertx.core.eventbus.impl.CodecManager: void <init>()>();
+v0.<io.vertx.core.eventbus.impl.EventBusImpl: io.vertx.core.eventbus.impl.CodecManager codecManager> = v6;
+v7 = interfaceinvoke v1.<io.vertx.core.impl.VertxInternal: io.vertx.core.spi.metrics.VertxMetrics metricsSPI()>();
+v0.<io.vertx.core.eventbus.impl.EventBusImpl: io.vertx.core.impl.VertxInternal vertx> = v1;
+if v7 == null goto label1;
+v8 = interfaceinvoke v7.<io.vertx.core.spi.metrics.VertxMetrics: io.vertx.core.spi.metrics.EventBusMetrics createEventBusMetrics()>();
+goto label2;
+label1:
+v8 = null;
+label2:
+v0.<io.vertx.core.eventbus.impl.EventBusImpl: io.vertx.core.spi.metrics.EventBusMetrics metrics> = v8;
+return;
+}
+public io.vertx.core.eventbus.EventBus addOutboundInterceptor(io.vertx.core.Handler)
+{
+io.vertx.core.eventbus.impl.EventBusImpl v0;
+java.util.concurrent.atomic.AtomicReferenceFieldUpdater v2;
+java.lang.Object v3;
+io.vertx.core.Handler v1;
+v0 := @this: io.vertx.core.eventbus.impl.EventBusImpl;
+v1 := @parameter0: io.vertx.core.Handler;
+v2 = <io.vertx.core.eventbus.impl.EventBusImpl: java.util.concurrent.atomic.AtomicReferenceFieldUpdater OUTBOUND_INTERCEPTORS_UPDATER>;
+v3 = staticinvoke <java.util.Objects: java.lang.Object requireNonNull(java.lang.Object)>(v1);
+specialinvoke v0.<io.vertx.core.eventbus.impl.EventBusImpl: void addInterceptor(java.util.concurrent.atomic.AtomicReferenceFieldUpdater,io.vertx.core.Handler)>(v2, v3);
+return v0;
+}
+public io.vertx.core.eventbus.EventBus addInboundInterceptor(io.vertx.core.Handler)
+{
+io.vertx.core.eventbus.impl.EventBusImpl v0;
+java.util.concurrent.atomic.AtomicReferenceFieldUpdater v2;
+java.lang.Object v3;
+io.vertx.core.Handler v1;
+v0 := @this: io.vertx.core.eventbus.impl.EventBusImpl;
+v1 := @parameter0: io.vertx.core.Handler;
+v2 = <io.vertx.core.eventbus.impl.EventBusImpl: java.util.concurrent.atomic.AtomicReferenceFieldUpdater INBOUND_INTERCEPTORS_UPDATER>;
+v3 = staticinvoke <java.util.Objects: java.lang.Object requireNonNull(java.lang.Object)>(v1);
+specialinvoke v0.<io.vertx.core.eventbus.impl.EventBusImpl: void addInterceptor(java.util.concurrent.atomic.AtomicReferenceFieldUpdater,io.vertx.core.Handler)>(v2, v3);
+return v0;
+}
+public io.vertx.core.eventbus.EventBus removeOutboundInterceptor(io.vertx.core.Handler)
+{
+io.vertx.core.eventbus.impl.EventBusImpl v0;
+java.util.concurrent.atomic.AtomicReferenceFieldUpdater v2;
+java.lang.Object v3;
+io.vertx.core.Handler v1;
+v0 := @this: io.vertx.core.eventbus.impl.EventBusImpl;
+v1 := @parameter0: io.vertx.core.Handler;
+v2 = <io.vertx.core.eventbus.impl.EventBusImpl: java.util.concurrent.atomic.AtomicReferenceFieldUpdater OUTBOUND_INTERCEPTORS_UPDATER>;
+v3 = staticinvoke <java.util.Objects: java.lang.Object requireNonNull(java.lang.Object)>(v1);
+specialinvoke v0.<io.vertx.core.eventbus.impl.EventBusImpl: void removeInterceptor(java.util.concurrent.atomic.AtomicReferenceFieldUpdater,io.vertx.core.Handler)>(v2, v3);
+return v0;
+}
+public io.vertx.core.eventbus.EventBus removeInboundInterceptor(io.vertx.core.Handler)
+{
+io.vertx.core.eventbus.impl.EventBusImpl v0;
+java.util.concurrent.atomic.AtomicReferenceFieldUpdater v2;
+java.lang.Object v3;
+io.vertx.core.Handler v1;
+v0 := @this: io.vertx.core.eventbus.impl.EventBusImpl;
+v1 := @parameter0: io.vertx.core.Handler;
+v2 = <io.vertx.core.eventbus.impl.EventBusImpl: java.util.concurrent.atomic.AtomicReferenceFieldUpdater INBOUND_INTERCEPTORS_UPDATER>;
+v3 = staticinvoke <java.util.Objects: java.lang.Object requireNonNull(java.lang.Object)>(v1);
+specialinvoke v0.<io.vertx.core.eventbus.impl.EventBusImpl: void removeInterceptor(java.util.concurrent.atomic.AtomicReferenceFieldUpdater,io.vertx.core.Handler)>(v2, v3);
+return v0;
+}
+io.vertx.core.Handler[] inboundInterceptors()
+{
+io.vertx.core.eventbus.impl.EventBusImpl v0;
+io.vertx.core.Handler[] v1;
+v0 := @this: io.vertx.core.eventbus.impl.EventBusImpl;
+v1 = v0.<io.vertx.core.eventbus.impl.EventBusImpl: io.vertx.core.Handler[] inboundInterceptors>;
+return v1;
+}
+io.vertx.core.Handler[] outboundInterceptors()
+{
+io.vertx.core.eventbus.impl.EventBusImpl v0;
+io.vertx.core.Handler[] v1;
+v0 := @this: io.vertx.core.eventbus.impl.EventBusImpl;
+v1 = v0.<io.vertx.core.eventbus.impl.EventBusImpl: io.vertx.core.Handler[] outboundInterceptors>;
+return v1;
+}
+public io.vertx.core.eventbus.EventBus clusterSerializableChecker(java.util.function.Function)
+{
+io.vertx.core.eventbus.impl.EventBusImpl v0;
+java.util.function.Function v1;
+io.vertx.core.eventbus.impl.CodecManager v2;
+v0 := @this: io.vertx.core.eventbus.impl.EventBusImpl;
+v1 := @parameter0: java.util.function.Function;
+v2 = v0.<io.vertx.core.eventbus.impl.EventBusImpl: io.vertx.core.eventbus.impl.CodecManager codecManager>;
+virtualinvoke v2.<io.vertx.core.eventbus.impl.CodecManager: void clusterSerializableCheck(java.util.function.Function)>(v1);
+return v0;
+}
+public io.vertx.core.eventbus.EventBus serializableChecker(java.util.function.Function)
+{
+io.vertx.core.eventbus.impl.EventBusImpl v0;
+java.util.function.Function v1;
+io.vertx.core.eventbus.impl.CodecManager v2;
+v0 := @this: io.vertx.core.eventbus.impl.EventBusImpl;
+v1 := @parameter0: java.util.function.Function;
+v2 = v0.<io.vertx.core.eventbus.impl.EventBusImpl: io.vertx.core.eventbus.impl.CodecManager codecManager>;
+virtualinvoke v2.<io.vertx.core.eventbus.impl.CodecManager: void serializableCheck(java.util.function.Function)>(v1);
+return v0;
+}
+public synchronized void start(io.vertx.core.Promise)
+{
+io.vertx.core.eventbus.impl.EventBusImpl v0;
+java.lang.IllegalStateException v3;
+io.vertx.core.Promise v1;
+boolean v2;
+v0 := @this: io.vertx.core.eventbus.impl.EventBusImpl;
+v1 := @parameter0: io.vertx.core.Promise;
+v2 = v0.<io.vertx.core.eventbus.impl.EventBusImpl: boolean started>;
+if v2 == 0 goto label1;
+v3 = new java.lang.IllegalStateException;
+specialinvoke v3.<java.lang.IllegalStateException: void <init>(java.lang.String)>("Already started");
+throw v3;
+label1:
+v0.<io.vertx.core.eventbus.impl.EventBusImpl: boolean started> = 1;
+interfaceinvoke v1.<io.vertx.core.Promise: void complete()>();
+return;
+}
+public io.vertx.core.eventbus.EventBus send(java.lang.String, java.lang.Object)
+{
+io.vertx.core.eventbus.impl.EventBusImpl v0;
+io.vertx.core.eventbus.DeliveryOptions v3;
+io.vertx.core.eventbus.EventBus v4;
+java.lang.Object v2;
+java.lang.String v1;
+v0 := @this: io.vertx.core.eventbus.impl.EventBusImpl;
+v1 := @parameter0: java.lang.String;
+v2 := @parameter1: java.lang.Object;
+v3 = new io.vertx.core.eventbus.DeliveryOptions;
+specialinvoke v3.<io.vertx.core.eventbus.DeliveryOptions: void <init>()>();
+v4 = virtualinvoke v0.<io.vertx.core.eventbus.impl.EventBusImpl: io.vertx.core.eventbus.EventBus send(java.lang.String,java.lang.Object,io.vertx.core.eventbus.DeliveryOptions)>(v1, v2, v3);
+return v4;
+}
+public io.vertx.core.eventbus.EventBus send(java.lang.String, java.lang.Object, io.vertx.core.eventbus.DeliveryOptions)
+{
+io.vertx.core.eventbus.impl.EventBusImpl v0;
+io.vertx.core.eventbus.DeliveryOptions v3;
+io.vertx.core.MultiMap v4;
+io.vertx.core.eventbus.impl.MessageImpl v6;
+java.lang.Object v2;
+java.lang.String v1, v5;
+v0 := @this: io.vertx.core.eventbus.impl.EventBusImpl;
+v1 := @parameter0: java.lang.String;
+v2 := @parameter1: java.lang.Object;
+v3 := @parameter2: io.vertx.core.eventbus.DeliveryOptions;
+v4 = virtualinvoke v3.<io.vertx.core.eventbus.DeliveryOptions: io.vertx.core.MultiMap getHeaders()>();
+v5 = virtualinvoke v3.<io.vertx.core.eventbus.DeliveryOptions: java.lang.String getCodecName()>();
+v6 = virtualinvoke v0.<io.vertx.core.eventbus.impl.EventBusImpl: io.vertx.core.eventbus.impl.MessageImpl createMessage(boolean,java.lang.String,io.vertx.core.MultiMap,java.lang.Object,java.lang.String)>(1, v1, v4, v2, v5);
+virtualinvoke v0.<io.vertx.core.eventbus.impl.EventBusImpl: void sendOrPubInternal(io.vertx.core.eventbus.impl.MessageImpl,io.vertx.core.eventbus.DeliveryOptions,io.vertx.core.eventbus.impl.ReplyHandler,io.vertx.core.Promise)>(v6, v3, null, null);
+return v0;
+}
+public io.vertx.core.Future request(java.lang.String, java.lang.Object, io.vertx.core.eventbus.DeliveryOptions)
+{
+io.vertx.core.eventbus.impl.EventBusImpl v0;
+io.vertx.core.eventbus.DeliveryOptions v3;
+io.vertx.core.MultiMap v4;
+io.vertx.core.Future v8;
+io.vertx.core.eventbus.impl.ReplyHandler v7;
+io.vertx.core.eventbus.impl.MessageImpl v6;
+java.lang.Object v2;
+java.lang.String v1, v5;
+v0 := @this: io.vertx.core.eventbus.impl.EventBusImpl;
+v1 := @parameter0: java.lang.String;
+v2 := @parameter1: java.lang.Object;
+v3 := @parameter2: io.vertx.core.eventbus.DeliveryOptions;
+v4 = virtualinvoke v3.<io.vertx.core.eventbus.DeliveryOptions: io.vertx.core.MultiMap getHeaders()>();
+v5 = virtualinvoke v3.<io.vertx.core.eventbus.DeliveryOptions: java.lang.String getCodecName()>();
+v6 = virtualinvoke v0.<io.vertx.core.eventbus.impl.EventBusImpl: io.vertx.core.eventbus.impl.MessageImpl createMessage(boolean,java.lang.String,io.vertx.core.MultiMap,java.lang.Object,java.lang.String)>(1, v1, v4, v2, v5);
+v7 = virtualinvoke v0.<io.vertx.core.eventbus.impl.EventBusImpl: io.vertx.core.eventbus.impl.ReplyHandler createReplyHandler(io.vertx.core.eventbus.impl.MessageImpl,boolean,io.vertx.core.eventbus.DeliveryOptions)>(v6, 1, v3);
+virtualinvoke v0.<io.vertx.core.eventbus.impl.EventBusImpl: void sendOrPubInternal(io.vertx.core.eventbus.impl.MessageImpl,io.vertx.core.eventbus.DeliveryOptions,io.vertx.core.eventbus.impl.ReplyHandler,io.vertx.core.Promise)>(v6, v3, v7, null);
+v8 = virtualinvoke v7.<io.vertx.core.eventbus.impl.ReplyHandler: io.vertx.core.Future result()>();
+return v8;
+}
+public io.vertx.core.eventbus.MessageProducer sender(java.lang.String)
+{
+io.vertx.core.eventbus.impl.EventBusImpl v0;
+io.vertx.core.eventbus.DeliveryOptions v4;
+io.vertx.core.impl.VertxInternal v3;
+java.lang.String v1;
+io.vertx.core.eventbus.impl.MessageProducerImpl v2;
+v0 := @this: io.vertx.core.eventbus.impl.EventBusImpl;
+v1 := @parameter0: java.lang.String;
+staticinvoke <java.util.Objects: java.lang.Object requireNonNull(java.lang.Object,java.lang.String)>(v1, "address");
+v2 = new io.vertx.core.eventbus.impl.MessageProducerImpl;
+v3 = v0.<io.vertx.core.eventbus.impl.EventBusImpl: io.vertx.core.impl.VertxInternal vertx>;
+v4 = new io.vertx.core.eventbus.DeliveryOptions;
+specialinvoke v4.<io.vertx.core.eventbus.DeliveryOptions: void <init>()>();
+specialinvoke v2.<io.vertx.core.eventbus.impl.MessageProducerImpl: void <init>(io.vertx.core.Vertx,java.lang.String,boolean,io.vertx.core.eventbus.DeliveryOptions)>(v3, v1, 1, v4);
+return v2;
+}
+public io.vertx.core.eventbus.MessageProducer sender(java.lang.String, io.vertx.core.eventbus.DeliveryOptions)
+{
+io.vertx.core.eventbus.impl.EventBusImpl v0;
+io.vertx.core.eventbus.DeliveryOptions v2;
+io.vertx.core.impl.VertxInternal v4;
+java.lang.String v1;
+io.vertx.core.eventbus.impl.MessageProducerImpl v3;
+v0 := @this: io.vertx.core.eventbus.impl.EventBusImpl;
+v1 := @parameter0: java.lang.String;
+v2 := @parameter1: io.vertx.core.eventbus.DeliveryOptions;
+staticinvoke <java.util.Objects: java.lang.Object requireNonNull(java.lang.Object,java.lang.String)>(v1, "address");
+staticinvoke <java.util.Objects: java.lang.Object requireNonNull(java.lang.Object,java.lang.String)>(v2, "options");
+v3 = new io.vertx.core.eventbus.impl.MessageProducerImpl;
+v4 = v0.<io.vertx.core.eventbus.impl.EventBusImpl: io.vertx.core.impl.VertxInternal vertx>;
+specialinvoke v3.<io.vertx.core.eventbus.impl.MessageProducerImpl: void <init>(io.vertx.core.Vertx,java.lang.String,boolean,io.vertx.core.eventbus.DeliveryOptions)>(v4, v1, 1, v2);
+return v3;
+}
+public io.vertx.core.eventbus.MessageProducer publisher(java.lang.String)
+{
+io.vertx.core.eventbus.impl.EventBusImpl v0;
+io.vertx.core.eventbus.DeliveryOptions v4;
+io.vertx.core.impl.VertxInternal v3;
+java.lang.String v1;
+io.vertx.core.eventbus.impl.MessageProducerImpl v2;
+v0 := @this: io.vertx.core.eventbus.impl.EventBusImpl;
+v1 := @parameter0: java.lang.String;
+staticinvoke <java.util.Objects: java.lang.Object requireNonNull(java.lang.Object,java.lang.String)>(v1, "address");
+v2 = new io.vertx.core.eventbus.impl.MessageProducerImpl;
+v3 = v0.<io.vertx.core.eventbus.impl.EventBusImpl: io.vertx.core.impl.VertxInternal vertx>;
+v4 = new io.vertx.core.eventbus.DeliveryOptions;
+specialinvoke v4.<io.vertx.core.eventbus.DeliveryOptions: void <init>()>();
+specialinvoke v2.<io.vertx.core.eventbus.impl.MessageProducerImpl: void <init>(io.vertx.core.Vertx,java.lang.String,boolean,io.vertx.core.eventbus.DeliveryOptions)>(v3, v1, 0, v4);
+return v2;
+}
+public io.vertx.core.eventbus.MessageProducer publisher(java.lang.String, io.vertx.core.eventbus.DeliveryOptions)
+{
+io.vertx.core.eventbus.impl.EventBusImpl v0;
+io.vertx.core.eventbus.DeliveryOptions v2;
+io.vertx.core.impl.VertxInternal v4;
+java.lang.String v1;
+io.vertx.core.eventbus.impl.MessageProducerImpl v3;
+v0 := @this: io.vertx.core.eventbus.impl.EventBusImpl;
+v1 := @parameter0: java.lang.String;
+v2 := @parameter1: io.vertx.core.eventbus.DeliveryOptions;
+staticinvoke <java.util.Objects: java.lang.Object requireNonNull(java.lang.Object,java.lang.String)>(v1, "address");
+staticinvoke <java.util.Objects: java.lang.Object requireNonNull(java.lang.Object,java.lang.String)>(v2, "options");
+v3 = new io.vertx.core.eventbus.impl.MessageProducerImpl;
+v4 = v0.<io.vertx.core.eventbus.impl.EventBusImpl: io.vertx.core.impl.VertxInternal vertx>;
+specialinvoke v3.<io.vertx.core.eventbus.impl.MessageProducerImpl: void <init>(io.vertx.core.Vertx,java.lang.String,boolean,io.vertx.core.eventbus.DeliveryOptions)>(v4, v1, 0, v2);
+return v3;
+}
+public io.vertx.core.eventbus.EventBus publish(java.lang.String, java.lang.Object)
+{
+io.vertx.core.eventbus.impl.EventBusImpl v0;
+io.vertx.core.eventbus.DeliveryOptions v3;
+io.vertx.core.eventbus.EventBus v4;
+java.lang.Object v2;
+java.lang.String v1;
+v0 := @this: io.vertx.core.eventbus.impl.EventBusImpl;
+v1 := @parameter0: java.lang.String;
+v2 := @parameter1: java.lang.Object;
+v3 = new io.vertx.core.eventbus.DeliveryOptions;
+specialinvoke v3.<io.vertx.core.eventbus.DeliveryOptions: void <init>()>();
+v4 = virtualinvoke v0.<io.vertx.core.eventbus.impl.EventBusImpl: io.vertx.core.eventbus.EventBus publish(java.lang.String,java.lang.Object,io.vertx.core.eventbus.DeliveryOptions)>(v1, v2, v3);
+return v4;
+}
+public io.vertx.core.eventbus.EventBus publish(java.lang.String, java.lang.Object, io.vertx.core.eventbus.DeliveryOptions)
+{
+io.vertx.core.eventbus.impl.EventBusImpl v0;
+io.vertx.core.eventbus.DeliveryOptions v3;
+io.vertx.core.MultiMap v4;
+io.vertx.core.eventbus.impl.MessageImpl v6;
+java.lang.Object v2;
+java.lang.String v1, v5;
+v0 := @this: io.vertx.core.eventbus.impl.EventBusImpl;
+v1 := @parameter0: java.lang.String;
+v2 := @parameter1: java.lang.Object;
+v3 := @parameter2: io.vertx.core.eventbus.DeliveryOptions;
+v4 = virtualinvoke v3.<io.vertx.core.eventbus.DeliveryOptions: io.vertx.core.MultiMap getHeaders()>();
+v5 = virtualinvoke v3.<io.vertx.core.eventbus.DeliveryOptions: java.lang.String getCodecName()>();
+v6 = virtualinvoke v0.<io.vertx.core.eventbus.impl.EventBusImpl: io.vertx.core.eventbus.impl.MessageImpl createMessage(boolean,java.lang.String,io.vertx.core.MultiMap,java.lang.Object,java.lang.String)>(0, v1, v4, v2, v5);
+virtualinvoke v0.<io.vertx.core.eventbus.impl.EventBusImpl: void sendOrPubInternal(io.vertx.core.eventbus.impl.MessageImpl,io.vertx.core.eventbus.DeliveryOptions,io.vertx.core.eventbus.impl.ReplyHandler,io.vertx.core.Promise)>(v6, v3, null, null);
+return v0;
+}
+public io.vertx.core.eventbus.MessageConsumer consumer(java.lang.String)
+{
+io.vertx.core.eventbus.impl.EventBusImpl v0;
+io.vertx.core.impl.VertxInternal v3, v4;
+io.vertx.core.eventbus.impl.MessageConsumerImpl v2;
+io.vertx.core.impl.ContextInternal v5;
+java.lang.String v1;
+v0 := @this: io.vertx.core.eventbus.impl.EventBusImpl;
+v1 := @parameter0: java.lang.String;
+virtualinvoke v0.<io.vertx.core.eventbus.impl.EventBusImpl: void checkStarted()>();
+staticinvoke <java.util.Objects: java.lang.Object requireNonNull(java.lang.Object,java.lang.String)>(v1, "address");
+v2 = new io.vertx.core.eventbus.impl.MessageConsumerImpl;
+v3 = v0.<io.vertx.core.eventbus.impl.EventBusImpl: io.vertx.core.impl.VertxInternal vertx>;
+v4 = v0.<io.vertx.core.eventbus.impl.EventBusImpl: io.vertx.core.impl.VertxInternal vertx>;
+v5 = interfaceinvoke v4.<io.vertx.core.impl.VertxInternal: io.vertx.core.impl.ContextInternal getOrCreateContext()>();
+specialinvoke v2.<io.vertx.core.eventbus.impl.MessageConsumerImpl: void <init>(io.vertx.core.Vertx,io.vertx.core.impl.ContextInternal,io.vertx.core.eventbus.impl.EventBusImpl,java.lang.String,boolean)>(v3, v5, v0, v1, 0);
+return v2;
+}
+public io.vertx.core.eventbus.MessageConsumer consumer(java.lang.String, io.vertx.core.Handler)
+{
+io.vertx.core.eventbus.impl.EventBusImpl v0;
+java.lang.String v1;
+io.vertx.core.Handler v2;
+io.vertx.core.eventbus.MessageConsumer v3;
+v0 := @this: io.vertx.core.eventbus.impl.EventBusImpl;
+v1 := @parameter0: java.lang.String;
+v2 := @parameter1: io.vertx.core.Handler;
+staticinvoke <java.util.Objects: java.lang.Object requireNonNull(java.lang.Object,java.lang.String)>(v2, "handler");
+v3 = virtualinvoke v0.<io.vertx.core.eventbus.impl.EventBusImpl: io.vertx.core.eventbus.MessageConsumer consumer(java.lang.String)>(v1);
+interfaceinvoke v3.<io.vertx.core.eventbus.MessageConsumer: io.vertx.core.eventbus.MessageConsumer handler(io.vertx.core.Handler)>(v2);
+return v3;
+}
+public io.vertx.core.eventbus.MessageConsumer localConsumer(java.lang.String)
+{
+io.vertx.core.eventbus.impl.EventBusImpl v0;
+io.vertx.core.impl.VertxInternal v3, v4;
+io.vertx.core.eventbus.impl.MessageConsumerImpl v2;
+io.vertx.core.impl.ContextInternal v5;
+java.lang.String v1;
+v0 := @this: io.vertx.core.eventbus.impl.EventBusImpl;
+v1 := @parameter0: java.lang.String;
+virtualinvoke v0.<io.vertx.core.eventbus.impl.EventBusImpl: void checkStarted()>();
+staticinvoke <java.util.Objects: java.lang.Object requireNonNull(java.lang.Object,java.lang.String)>(v1, "address");
+v2 = new io.vertx.core.eventbus.impl.MessageConsumerImpl;
+v3 = v0.<io.vertx.core.eventbus.impl.EventBusImpl: io.vertx.core.impl.VertxInternal vertx>;
+v4 = v0.<io.vertx.core.eventbus.impl.EventBusImpl: io.vertx.core.impl.VertxInternal vertx>;
+v5 = interfaceinvoke v4.<io.vertx.core.impl.VertxInternal: io.vertx.core.impl.ContextInternal getOrCreateContext()>();
+specialinvoke v2.<io.vertx.core.eventbus.impl.MessageConsumerImpl: void <init>(io.vertx.core.Vertx,io.vertx.core.impl.ContextInternal,io.vertx.core.eventbus.impl.EventBusImpl,java.lang.String,boolean)>(v3, v5, v0, v1, 1);
+return v2;
+}
+public io.vertx.core.eventbus.MessageConsumer localConsumer(java.lang.String, io.vertx.core.Handler)
+{
+io.vertx.core.eventbus.impl.EventBusImpl v0;
+java.lang.String v1;
+io.vertx.core.Handler v2;
+io.vertx.core.eventbus.MessageConsumer v3;
+v0 := @this: io.vertx.core.eventbus.impl.EventBusImpl;
+v1 := @parameter0: java.lang.String;
+v2 := @parameter1: io.vertx.core.Handler;
+staticinvoke <java.util.Objects: java.lang.Object requireNonNull(java.lang.Object,java.lang.String)>(v2, "handler");
+v3 = virtualinvoke v0.<io.vertx.core.eventbus.impl.EventBusImpl: io.vertx.core.eventbus.MessageConsumer localConsumer(java.lang.String)>(v1);
+interfaceinvoke v3.<io.vertx.core.eventbus.MessageConsumer: io.vertx.core.eventbus.MessageConsumer handler(io.vertx.core.Handler)>(v2);
+return v3;
+}
+public io.vertx.core.eventbus.EventBus registerCodec(io.vertx.core.eventbus.MessageCodec)
+{
+io.vertx.core.eventbus.impl.EventBusImpl v0;
+io.vertx.core.eventbus.MessageCodec v1;
+io.vertx.core.eventbus.impl.CodecManager v2;
+v0 := @this: io.vertx.core.eventbus.impl.EventBusImpl;
+v1 := @parameter0: io.vertx.core.eventbus.MessageCodec;
+v2 = v0.<io.vertx.core.eventbus.impl.EventBusImpl: io.vertx.core.eventbus.impl.CodecManager codecManager>;
+virtualinvoke v2.<io.vertx.core.eventbus.impl.CodecManager: void registerCodec(io.vertx.core.eventbus.MessageCodec)>(v1);
+return v0;
+}
+public io.vertx.core.eventbus.EventBus unregisterCodec(java.lang.String)
+{
+io.vertx.core.eventbus.impl.EventBusImpl v0;
+java.lang.String v1;
+io.vertx.core.eventbus.impl.CodecManager v2;
+v0 := @this: io.vertx.core.eventbus.impl.EventBusImpl;
+v1 := @parameter0: java.lang.String;
+v2 = v0.<io.vertx.core.eventbus.impl.EventBusImpl: io.vertx.core.eventbus.impl.CodecManager codecManager>;
+virtualinvoke v2.<io.vertx.core.eventbus.impl.CodecManager: void unregisterCodec(java.lang.String)>(v1);
+return v0;
+}
+public io.vertx.core.eventbus.EventBus registerDefaultCodec(java.lang.Class, io.vertx.core.eventbus.MessageCodec)
+{
+io.vertx.core.eventbus.impl.EventBusImpl v0;
+io.vertx.core.eventbus.MessageCodec v2;
+io.vertx.core.eventbus.impl.CodecManager v3;
+java.lang.Class v1;
+v0 := @this: io.vertx.core.eventbus.impl.EventBusImpl;
+v1 := @parameter0: java.lang.Class;
+v2 := @parameter1: io.vertx.core.eventbus.MessageCodec;
+v3 = v0.<io.vertx.core.eventbus.impl.EventBusImpl: io.vertx.core.eventbus.impl.CodecManager codecManager>;
+virtualinvoke v3.<io.vertx.core.eventbus.impl.CodecManager: void registerDefaultCodec(java.lang.Class,io.vertx.core.eventbus.MessageCodec)>(v1, v2);
+return v0;
+}
+public io.vertx.core.eventbus.EventBus unregisterDefaultCodec(java.lang.Class)
+{
+io.vertx.core.eventbus.impl.EventBusImpl v0;
+java.lang.Class v1;
+io.vertx.core.eventbus.impl.CodecManager v2;
+v0 := @this: io.vertx.core.eventbus.impl.EventBusImpl;
+v1 := @parameter0: java.lang.Class;
+v2 = v0.<io.vertx.core.eventbus.impl.EventBusImpl: io.vertx.core.eventbus.impl.CodecManager codecManager>;
+virtualinvoke v2.<io.vertx.core.eventbus.impl.CodecManager: void unregisterDefaultCodec(java.lang.Class)>(v1);
+return v0;
+}
+public io.vertx.core.eventbus.EventBus codecSelector(java.util.function.Function)
+{
+io.vertx.core.eventbus.impl.EventBusImpl v0;
+java.util.function.Function v1;
+io.vertx.core.eventbus.impl.CodecManager v2;
+v0 := @this: io.vertx.core.eventbus.impl.EventBusImpl;
+v1 := @parameter0: java.util.function.Function;
+v2 = v0.<io.vertx.core.eventbus.impl.EventBusImpl: io.vertx.core.eventbus.impl.CodecManager codecManager>;
+virtualinvoke v2.<io.vertx.core.eventbus.impl.CodecManager: void codecSelector(java.util.function.Function)>(v1);
+return v0;
+}
+public void close(io.vertx.core.Promise)
+{
+io.vertx.core.eventbus.impl.EventBusImpl v0;
+io.vertx.core.Promise v1;
+io.vertx.core.Handler v4;
+io.vertx.core.Future v3;
+boolean v2;
+v0 := @this: io.vertx.core.eventbus.impl.EventBusImpl;
+v1 := @parameter0: io.vertx.core.Promise;
+v2 = v0.<io.vertx.core.eventbus.impl.EventBusImpl: boolean started>;
+if v2 != 0 goto label1;
+interfaceinvoke v1.<io.vertx.core.Promise: void complete()>();
+return;
+label1:
+v3 = specialinvoke v0.<io.vertx.core.eventbus.impl.EventBusImpl: io.vertx.core.Future unregisterAll()>();
+v4 = staticinvoke <io.vertx.core.eventbus.impl.EventBusImpl$lambda_close_0__1421: io.vertx.core.Handler bootstrap$(io.vertx.core.eventbus.impl.EventBusImpl,io.vertx.core.Promise)>(v0, v1);
+interfaceinvoke v3.<io.vertx.core.Future: io.vertx.core.Future onComplete(io.vertx.core.Handler)>(v4);
+return;
+}
+public boolean isMetricsEnabled()
+{
+io.vertx.core.eventbus.impl.EventBusImpl v0;
+boolean v2;
+io.vertx.core.spi.metrics.EventBusMetrics v1;
+v0 := @this: io.vertx.core.eventbus.impl.EventBusImpl;
+v1 = v0.<io.vertx.core.eventbus.impl.EventBusImpl: io.vertx.core.spi.metrics.EventBusMetrics metrics>;
+if v1 == null goto label1;
+v2 = 1;
+goto label2;
+label1:
+v2 = 0;
+label2:
+return v2;
+}
+public io.vertx.core.spi.metrics.EventBusMetrics getMetrics()
+{
+io.vertx.core.eventbus.impl.EventBusImpl v0;
+io.vertx.core.spi.metrics.EventBusMetrics v1;
+v0 := @this: io.vertx.core.eventbus.impl.EventBusImpl;
+v1 = v0.<io.vertx.core.eventbus.impl.EventBusImpl: io.vertx.core.spi.metrics.EventBusMetrics metrics>;
+return v1;
+}
+public io.vertx.core.eventbus.impl.MessageImpl createMessage(boolean, java.lang.String, io.vertx.core.MultiMap, java.lang.Object, java.lang.String)
+{
+io.vertx.core.eventbus.impl.EventBusImpl v0;
+io.vertx.core.MultiMap v3;
+io.vertx.core.eventbus.MessageCodec v7;
+io.vertx.core.eventbus.impl.CodecManager v6;
+io.vertx.core.eventbus.impl.MessageImpl v8;
+java.lang.Object v4;
+java.lang.String v2, v5;
+boolean v1;
+v0 := @this: io.vertx.core.eventbus.impl.EventBusImpl;
+v1 := @parameter0: boolean;
+v2 := @parameter1: java.lang.String;
+v3 := @parameter2: io.vertx.core.MultiMap;
+v4 := @parameter3: java.lang.Object;
+v5 := @parameter4: java.lang.String;
+staticinvoke <java.util.Objects: java.lang.Object requireNonNull(java.lang.Object,java.lang.String)>(v2, "no null address accepted");
+v6 = v0.<io.vertx.core.eventbus.impl.EventBusImpl: io.vertx.core.eventbus.impl.CodecManager codecManager>;
+v7 = virtualinvoke v6.<io.vertx.core.eventbus.impl.CodecManager: io.vertx.core.eventbus.MessageCodec lookupCodec(java.lang.Object,java.lang.String,boolean)>(v4, v5, 1);
+v8 = new io.vertx.core.eventbus.impl.MessageImpl;
+specialinvoke v8.<io.vertx.core.eventbus.impl.MessageImpl: void <init>(java.lang.String,io.vertx.core.MultiMap,java.lang.Object,io.vertx.core.eventbus.MessageCodec,boolean,io.vertx.core.eventbus.impl.EventBusImpl)>(v2, v3, v4, v7, v1, v0);
+return v8;
+}
+protected io.vertx.core.eventbus.impl.HandlerHolder addRegistration(java.lang.String, io.vertx.core.eventbus.impl.HandlerRegistration, boolean, boolean, io.vertx.core.Promise)
+{
+io.vertx.core.eventbus.impl.EventBusImpl v0;
+io.vertx.core.Promise v5;
+io.vertx.core.eventbus.impl.HandlerRegistration v2;
+io.vertx.core.eventbus.impl.HandlerHolder v6;
+java.lang.String v1;
+boolean v3, v4;
+v0 := @this: io.vertx.core.eventbus.impl.EventBusImpl;
+v1 := @parameter0: java.lang.String;
+v2 := @parameter1: io.vertx.core.eventbus.impl.HandlerRegistration;
+v3 := @parameter2: boolean;
+v4 := @parameter3: boolean;
+v5 := @parameter4: io.vertx.core.Promise;
+v6 = specialinvoke v0.<io.vertx.core.eventbus.impl.EventBusImpl: io.vertx.core.eventbus.impl.HandlerHolder addLocalRegistration(java.lang.String,io.vertx.core.eventbus.impl.HandlerRegistration,boolean,boolean)>(v1, v2, v3, v4);
+virtualinvoke v0.<io.vertx.core.eventbus.impl.EventBusImpl: void onLocalRegistration(io.vertx.core.eventbus.impl.HandlerHolder,io.vertx.core.Promise)>(v6, v5);
+return v6;
+}
+protected void onLocalRegistration(io.vertx.core.eventbus.impl.HandlerHolder, io.vertx.core.Promise)
+{
+io.vertx.core.eventbus.impl.EventBusImpl v0;
+io.vertx.core.eventbus.impl.HandlerHolder v1;
+io.vertx.core.Promise v2;
+v0 := @this: io.vertx.core.eventbus.impl.EventBusImpl;
+v1 := @parameter0: io.vertx.core.eventbus.impl.HandlerHolder;
+v2 := @parameter1: io.vertx.core.Promise;
+if v2 == null goto label1;
+interfaceinvoke v2.<io.vertx.core.Promise: void complete()>();
+label1:
+return;
+}
+private io.vertx.core.eventbus.impl.HandlerHolder addLocalRegistration(java.lang.String, io.vertx.core.eventbus.impl.HandlerRegistration, boolean, boolean)
+{
+io.vertx.core.eventbus.impl.EventBusImpl v0;
+io.vertx.core.impl.utils.ConcurrentCyclicSequence v7, v8;
+java.util.function.BiFunction v10;
+io.vertx.core.impl.ContextInternal v5;
+java.util.concurrent.ConcurrentMap v9;
+io.vertx.core.eventbus.impl.HandlerRegistration v2;
+io.vertx.core.eventbus.impl.HandlerHolder v6;
+java.lang.String v1;
+boolean v11, v3, v4;
+v0 := @this: io.vertx.core.eventbus.impl.EventBusImpl;
+v1 := @parameter0: java.lang.String;
+v2 := @parameter1: io.vertx.core.eventbus.impl.HandlerRegistration;
+v3 := @parameter2: boolean;
+v4 := @parameter3: boolean;
+staticinvoke <java.util.Objects: java.lang.Object requireNonNull(java.lang.Object,java.lang.String)>(v1, "address");
+v5 = v2.<io.vertx.core.eventbus.impl.HandlerRegistration: io.vertx.core.impl.ContextInternal context>;
+v6 = virtualinvoke v0.<io.vertx.core.eventbus.impl.EventBusImpl: io.vertx.core.eventbus.impl.HandlerHolder createHandlerHolder(io.vertx.core.eventbus.impl.HandlerRegistration,boolean,boolean,io.vertx.core.impl.ContextInternal)>(v2, v3, v4, v5);
+v7 = new io.vertx.core.impl.utils.ConcurrentCyclicSequence;
+specialinvoke v7.<io.vertx.core.impl.utils.ConcurrentCyclicSequence: void <init>()>();
+v8 = virtualinvoke v7.<io.vertx.core.impl.utils.ConcurrentCyclicSequence: io.vertx.core.impl.utils.ConcurrentCyclicSequence add(java.lang.Object)>(v6);
+v9 = v0.<io.vertx.core.eventbus.impl.EventBusImpl: java.util.concurrent.ConcurrentMap handlerMap>;
+v10 = staticinvoke <io.vertx.core.eventbus.impl.EventBusImpl$lambda_addLocalRegistration_1__1422: java.util.function.BiFunction bootstrap$()>();
+interfaceinvoke v9.<java.util.concurrent.ConcurrentMap: java.lang.Object merge(java.lang.Object,java.lang.Object,java.util.function.BiFunction)>(v1, v8, v10);
+v11 = interfaceinvoke v5.<io.vertx.core.impl.ContextInternal: boolean isDeployment()>();
+if v11 == 0 goto label1;
+interfaceinvoke v5.<io.vertx.core.impl.ContextInternal: void addCloseHook(io.vertx.core.Closeable)>(v2);
+label1:
+return v6;
+}
+protected io.vertx.core.eventbus.impl.HandlerHolder createHandlerHolder(io.vertx.core.eventbus.impl.HandlerRegistration, boolean, boolean, io.vertx.core.impl.ContextInternal)
+{
+io.vertx.core.eventbus.impl.EventBusImpl v0;
+io.vertx.core.impl.ContextInternal v4;
+io.vertx.core.eventbus.impl.HandlerRegistration v1;
+io.vertx.core.eventbus.impl.HandlerHolder v5;
+boolean v2, v3;
+v0 := @this: io.vertx.core.eventbus.impl.EventBusImpl;
+v1 := @parameter0: io.vertx.core.eventbus.impl.HandlerRegistration;
+v2 := @parameter1: boolean;
+v3 := @parameter2: boolean;
+v4 := @parameter3: io.vertx.core.impl.ContextInternal;
+v5 = new io.vertx.core.eventbus.impl.HandlerHolder;
+specialinvoke v5.<io.vertx.core.eventbus.impl.HandlerHolder: void <init>(io.vertx.core.eventbus.impl.HandlerRegistration,boolean,boolean,io.vertx.core.impl.ContextInternal)>(v1, v2, v3, v4);
+return v5;
+}
+protected void removeRegistration(io.vertx.core.eventbus.impl.HandlerHolder, io.vertx.core.Promise)
+{
+io.vertx.core.eventbus.impl.EventBusImpl v0;
+io.vertx.core.eventbus.impl.HandlerHolder v1;
+io.vertx.core.Promise v2;
+v0 := @this: io.vertx.core.eventbus.impl.EventBusImpl;
+v1 := @parameter0: io.vertx.core.eventbus.impl.HandlerHolder;
+v2 := @parameter1: io.vertx.core.Promise;
+specialinvoke v0.<io.vertx.core.eventbus.impl.EventBusImpl: void removeLocalRegistration(io.vertx.core.eventbus.impl.HandlerHolder)>(v1);
+virtualinvoke v0.<io.vertx.core.eventbus.impl.EventBusImpl: void onLocalUnregistration(io.vertx.core.eventbus.impl.HandlerHolder,io.vertx.core.Promise)>(v1, v2);
+return;
+}
+protected void onLocalUnregistration(io.vertx.core.eventbus.impl.HandlerHolder, io.vertx.core.Promise)
+{
+io.vertx.core.eventbus.impl.EventBusImpl v0;
+io.vertx.core.eventbus.impl.HandlerHolder v1;
+io.vertx.core.Promise v2;
+v0 := @this: io.vertx.core.eventbus.impl.EventBusImpl;
+v1 := @parameter0: io.vertx.core.eventbus.impl.HandlerHolder;
+v2 := @parameter1: io.vertx.core.Promise;
+interfaceinvoke v2.<io.vertx.core.Promise: void complete()>();
+return;
+}
+private void removeLocalRegistration(io.vertx.core.eventbus.impl.HandlerHolder)
+{
+io.vertx.core.eventbus.impl.EventBusImpl v0;
+java.util.function.BiFunction v5;
+io.vertx.core.impl.ContextInternal v7, v9;
+java.util.concurrent.ConcurrentMap v4;
+io.vertx.core.eventbus.impl.HandlerRegistration v10, v2;
+io.vertx.core.eventbus.impl.HandlerHolder v1;
+java.lang.String v3, v8;
+boolean v6;
+v0 := @this: io.vertx.core.eventbus.impl.EventBusImpl;
+v1 := @parameter0: io.vertx.core.eventbus.impl.HandlerHolder;
+v2 = virtualinvoke v1.<io.vertx.core.eventbus.impl.HandlerHolder: io.vertx.core.eventbus.impl.HandlerRegistration getHandler()>();
+v3 = v2.<io.vertx.core.eventbus.impl.HandlerRegistration: java.lang.String address>;
+v4 = v0.<io.vertx.core.eventbus.impl.EventBusImpl: java.util.concurrent.ConcurrentMap handlerMap>;
+v5 = staticinvoke <io.vertx.core.eventbus.impl.EventBusImpl$lambda_removeLocalRegistration_2__1423: java.util.function.BiFunction bootstrap$(io.vertx.core.eventbus.impl.HandlerHolder)>(v1);
+interfaceinvoke v4.<java.util.concurrent.ConcurrentMap: java.lang.Object compute(java.lang.Object,java.util.function.BiFunction)>(v3, v5);
+v6 = virtualinvoke v1.<io.vertx.core.eventbus.impl.HandlerHolder: boolean setRemoved()>();
+if v6 == 0 goto label1;
+v7 = virtualinvoke v1.<io.vertx.core.eventbus.impl.HandlerHolder: io.vertx.core.impl.ContextInternal getContext()>();
+v8 = interfaceinvoke v7.<io.vertx.core.impl.ContextInternal: java.lang.String deploymentID()>();
+if v8 == null goto label1;
+v9 = virtualinvoke v1.<io.vertx.core.eventbus.impl.HandlerHolder: io.vertx.core.impl.ContextInternal getContext()>();
+v10 = virtualinvoke v1.<io.vertx.core.eventbus.impl.HandlerHolder: io.vertx.core.eventbus.impl.HandlerRegistration getHandler()>();
+interfaceinvoke v9.<io.vertx.core.impl.ContextInternal: void removeCloseHook(io.vertx.core.Closeable)>(v10);
+label1:
+return;
+}
+protected void sendReply(io.vertx.core.eventbus.impl.MessageImpl, io.vertx.core.eventbus.DeliveryOptions, io.vertx.core.eventbus.impl.ReplyHandler)
+{
+io.vertx.core.eventbus.impl.EventBusImpl v0;
+io.vertx.core.eventbus.impl.OutboundDeliveryContext v6;
+java.lang.IllegalStateException v5;
+io.vertx.core.eventbus.DeliveryOptions v2;
+io.vertx.core.impl.VertxInternal v7;
+io.vertx.core.impl.ContextInternal v8;
+io.vertx.core.eventbus.impl.ReplyHandler v3;
+io.vertx.core.eventbus.impl.MessageImpl v1;
+java.lang.String v4;
+v0 := @this: io.vertx.core.eventbus.impl.EventBusImpl;
+v1 := @parameter0: io.vertx.core.eventbus.impl.MessageImpl;
+v2 := @parameter1: io.vertx.core.eventbus.DeliveryOptions;
+v3 := @parameter2: io.vertx.core.eventbus.impl.ReplyHandler;
+v4 = virtualinvoke v1.<io.vertx.core.eventbus.impl.MessageImpl: java.lang.String address()>();
+if v4 != null goto label1;
+v5 = new java.lang.IllegalStateException;
+specialinvoke v5.<java.lang.IllegalStateException: void <init>(java.lang.String)>("address not specified");
+throw v5;
+label1:
+v6 = new io.vertx.core.eventbus.impl.OutboundDeliveryContext;
+v7 = v0.<io.vertx.core.eventbus.impl.EventBusImpl: io.vertx.core.impl.VertxInternal vertx>;
+v8 = interfaceinvoke v7.<io.vertx.core.impl.VertxInternal: io.vertx.core.impl.ContextInternal getOrCreateContext()>();
+specialinvoke v6.<io.vertx.core.eventbus.impl.OutboundDeliveryContext: void <init>(io.vertx.core.impl.ContextInternal,io.vertx.core.eventbus.impl.MessageImpl,io.vertx.core.eventbus.DeliveryOptions,io.vertx.core.eventbus.impl.ReplyHandler,io.vertx.core.Promise)>(v8, v1, v2, v3, null);
+virtualinvoke v0.<io.vertx.core.eventbus.impl.EventBusImpl: void sendOrPubInternal(io.vertx.core.eventbus.impl.OutboundDeliveryContext)>(v6);
+return;
+}
+protected void sendOrPub(io.vertx.core.eventbus.impl.OutboundDeliveryContext)
+{
+io.vertx.core.eventbus.impl.EventBusImpl v0;
+io.vertx.core.eventbus.impl.OutboundDeliveryContext v1;
+v0 := @this: io.vertx.core.eventbus.impl.EventBusImpl;
+v1 := @parameter0: io.vertx.core.eventbus.impl.OutboundDeliveryContext;
+specialinvoke v0.<io.vertx.core.eventbus.impl.EventBusImpl: void sendLocally(io.vertx.core.eventbus.impl.OutboundDeliveryContext)>(v1);
+return;
+}
+protected void callCompletionHandlerAsync(io.vertx.core.Handler)
+{
+io.vertx.core.eventbus.impl.EventBusImpl v0;
+io.vertx.core.impl.VertxInternal v2;
+io.vertx.core.Handler v1, v3;
+v0 := @this: io.vertx.core.eventbus.impl.EventBusImpl;
+v1 := @parameter0: io.vertx.core.Handler;
+if v1 == null goto label1;
+v2 = v0.<io.vertx.core.eventbus.impl.EventBusImpl: io.vertx.core.impl.VertxInternal vertx>;
+v3 = staticinvoke <io.vertx.core.eventbus.impl.EventBusImpl$lambda_callCompletionHandlerAsync_3__1424: io.vertx.core.Handler bootstrap$(io.vertx.core.Handler)>(v1);
+interfaceinvoke v2.<io.vertx.core.impl.VertxInternal: void runOnContext(io.vertx.core.Handler)>(v3);
+label1:
+return;
+}
+private void sendLocally(io.vertx.core.eventbus.impl.OutboundDeliveryContext)
+{
+io.vertx.core.eventbus.impl.EventBusImpl v0;
+io.vertx.core.eventbus.impl.OutboundDeliveryContext v1;
+io.vertx.core.eventbus.impl.MessageImpl v2;
+io.vertx.core.eventbus.ReplyException v3;
+v0 := @this: io.vertx.core.eventbus.impl.EventBusImpl;
+v1 := @parameter0: io.vertx.core.eventbus.impl.OutboundDeliveryContext;
+v2 = v1.<io.vertx.core.eventbus.impl.OutboundDeliveryContext: io.vertx.core.eventbus.impl.MessageImpl message>;
+v3 = virtualinvoke v0.<io.vertx.core.eventbus.impl.EventBusImpl: io.vertx.core.eventbus.ReplyException deliverMessageLocally(io.vertx.core.eventbus.impl.MessageImpl)>(v2);
+if v3 == null goto label1;
+virtualinvoke v1.<io.vertx.core.eventbus.impl.OutboundDeliveryContext: void written(java.lang.Throwable)>(v3);
+goto label2;
+label1:
+virtualinvoke v1.<io.vertx.core.eventbus.impl.OutboundDeliveryContext: void written(java.lang.Throwable)>(null);
+label2:
+return;
+}
+protected boolean isMessageLocal(io.vertx.core.eventbus.impl.MessageImpl)
+{
+io.vertx.core.eventbus.impl.EventBusImpl v0;
+io.vertx.core.eventbus.impl.MessageImpl v1;
+v0 := @this: io.vertx.core.eventbus.impl.EventBusImpl;
+v1 := @parameter0: io.vertx.core.eventbus.impl.MessageImpl;
+return 1;
+}
+protected io.vertx.core.eventbus.ReplyException deliverMessageLocally(io.vertx.core.eventbus.impl.MessageImpl)
+{
+io.vertx.core.spi.metrics.EventBusMetrics v16, v17, v28, v29, v8, v9;
+byte v13;
+boolean v11, v12, v19, v20, v23, v25, v31, v32, v5, v6;
+java.util.concurrent.ConcurrentMap v2;
+int v21;
+io.vertx.core.eventbus.ReplyFailure v34;
+io.vertx.core.eventbus.impl.HandlerRegistration v14, v26;
+java.lang.String v10, v18, v3, v30, v35, v36;
+io.vertx.core.eventbus.impl.EventBusImpl v0;
+java.util.Iterator v22;
+io.vertx.core.eventbus.impl.MessageImpl v1, v15, v27;
+java.lang.Object v24, v4;
+io.vertx.core.eventbus.impl.HandlerHolder v7;
+io.vertx.core.eventbus.ReplyException v33;
+v0 := @this: io.vertx.core.eventbus.impl.EventBusImpl;
+v1 := @parameter0: io.vertx.core.eventbus.impl.MessageImpl;
+v2 = v0.<io.vertx.core.eventbus.impl.EventBusImpl: java.util.concurrent.ConcurrentMap handlerMap>;
+v3 = virtualinvoke v1.<io.vertx.core.eventbus.impl.MessageImpl: java.lang.String address()>();
+v4 = interfaceinvoke v2.<java.util.concurrent.ConcurrentMap: java.lang.Object get(java.lang.Object)>(v3);
+v5 = virtualinvoke v0.<io.vertx.core.eventbus.impl.EventBusImpl: boolean isMessageLocal(io.vertx.core.eventbus.impl.MessageImpl)>(v1);
+if v4 == null goto label13;
+v6 = virtualinvoke v1.<io.vertx.core.eventbus.impl.MessageImpl: boolean isSend()>();
+if v6 == 0 goto label06;
+v7 = virtualinvoke v0.<io.vertx.core.eventbus.impl.EventBusImpl: io.vertx.core.eventbus.impl.HandlerHolder nextHandler(io.vertx.core.impl.utils.ConcurrentCyclicSequence,boolean)>(v4, v5);
+v8 = v0.<io.vertx.core.eventbus.impl.EventBusImpl: io.vertx.core.spi.metrics.EventBusMetrics metrics>;
+if v8 == null goto label05;
+v9 = v0.<io.vertx.core.eventbus.impl.EventBusImpl: io.vertx.core.spi.metrics.EventBusMetrics metrics>;
+v10 = virtualinvoke v1.<io.vertx.core.eventbus.impl.MessageImpl: java.lang.String address()>();
+v11 = virtualinvoke v1.<io.vertx.core.eventbus.impl.MessageImpl: boolean isSend()>();
+if v11 != 0 goto label01;
+v12 = 1;
+goto label02;
+label01:
+v12 = 0;
+label02:
+if v7 == null goto label03;
+v13 = 1;
+goto label04;
+label03:
+v13 = 0;
+label04:
+interfaceinvoke v9.<io.vertx.core.spi.metrics.EventBusMetrics: void messageReceived(java.lang.String,boolean,boolean,int)>(v10, v12, v5, v13);
+label05:
+if v7 == null goto label12;
+v14 = v7.<io.vertx.core.eventbus.impl.HandlerHolder: io.vertx.core.eventbus.impl.HandlerRegistration handler>;
+v15 = virtualinvoke v1.<io.vertx.core.eventbus.impl.MessageImpl: io.vertx.core.eventbus.impl.MessageImpl copyBeforeReceive()>();
+virtualinvoke v14.<io.vertx.core.eventbus.impl.HandlerRegistration: void receive(io.vertx.core.eventbus.impl.MessageImpl)>(v15);
+goto label12;
+label06:
+v16 = v0.<io.vertx.core.eventbus.impl.EventBusImpl: io.vertx.core.spi.metrics.EventBusMetrics metrics>;
+if v16 == null goto label09;
+v17 = v0.<io.vertx.core.eventbus.impl.EventBusImpl: io.vertx.core.spi.metrics.EventBusMetrics metrics>;
+v18 = virtualinvoke v1.<io.vertx.core.eventbus.impl.MessageImpl: java.lang.String address()>();
+v19 = virtualinvoke v1.<io.vertx.core.eventbus.impl.MessageImpl: boolean isSend()>();
+if v19 != 0 goto label07;
+v20 = 1;
+goto label08;
+label07:
+v20 = 0;
+label08:
+v21 = virtualinvoke v4.<io.vertx.core.impl.utils.ConcurrentCyclicSequence: int size()>();
+interfaceinvoke v17.<io.vertx.core.spi.metrics.EventBusMetrics: void messageReceived(java.lang.String,boolean,boolean,int)>(v18, v20, v5, v21);
+label09:
+v22 = virtualinvoke v4.<io.vertx.core.impl.utils.ConcurrentCyclicSequence: java.util.Iterator iterator()>();
+label10:
+v23 = interfaceinvoke v22.<java.util.Iterator: boolean hasNext()>();
+if v23 == 0 goto label12;
+v24 = interfaceinvoke v22.<java.util.Iterator: java.lang.Object next()>();
+if v5 != 0 goto label11;
+v25 = virtualinvoke v24.<io.vertx.core.eventbus.impl.HandlerHolder: boolean isLocalOnly()>();
+if v25 != 0 goto label10;
+label11:
+v26 = v24.<io.vertx.core.eventbus.impl.HandlerHolder: io.vertx.core.eventbus.impl.HandlerRegistration handler>;
+v27 = virtualinvoke v1.<io.vertx.core.eventbus.impl.MessageImpl: io.vertx.core.eventbus.impl.MessageImpl copyBeforeReceive()>();
+virtualinvoke v26.<io.vertx.core.eventbus.impl.HandlerRegistration: void receive(io.vertx.core.eventbus.impl.MessageImpl)>(v27);
+goto label10;
+label12:
+return null;
+label13:
+v28 = v0.<io.vertx.core.eventbus.impl.EventBusImpl: io.vertx.core.spi.metrics.EventBusMetrics metrics>;
+if v28 == null goto label16;
+v29 = v0.<io.vertx.core.eventbus.impl.EventBusImpl: io.vertx.core.spi.metrics.EventBusMetrics metrics>;
+v30 = virtualinvoke v1.<io.vertx.core.eventbus.impl.MessageImpl: java.lang.String address()>();
+v31 = virtualinvoke v1.<io.vertx.core.eventbus.impl.MessageImpl: boolean isSend()>();
+if v31 != 0 goto label14;
+v32 = 1;
+goto label15;
+label14:
+v32 = 0;
+label15:
+interfaceinvoke v29.<io.vertx.core.spi.metrics.EventBusMetrics: void messageReceived(java.lang.String,boolean,boolean,int)>(v30, v32, v5, 0);
+label16:
+v33 = new io.vertx.core.eventbus.ReplyException;
+v34 = <io.vertx.core.eventbus.ReplyFailure: io.vertx.core.eventbus.ReplyFailure NO_HANDLERS>;
+v35 = v1.<io.vertx.core.eventbus.impl.MessageImpl: java.lang.String address>;
+v36 = dynamicinvoke "makeConcatWithConstants" <java.lang.String (java.lang.String)>(v35) <java.lang.invoke.StringConcatFactory: java.lang.invoke.CallSite makeConcatWithConstants(java.lang.invoke.MethodHandles$Lookup,java.lang.String,java.lang.invoke.MethodType,java.lang.String,java.lang.Object[])>("No handlers for address \u0001");
+specialinvoke v33.<io.vertx.core.eventbus.ReplyException: void <init>(io.vertx.core.eventbus.ReplyFailure,java.lang.String)>(v34, v36);
+return v33;
+}
+protected io.vertx.core.eventbus.impl.HandlerHolder nextHandler(io.vertx.core.impl.utils.ConcurrentCyclicSequence, boolean)
+{
+io.vertx.core.eventbus.impl.EventBusImpl v0;
+io.vertx.core.impl.utils.ConcurrentCyclicSequence v1;
+java.lang.Object v3;
+boolean v2;
+v0 := @this: io.vertx.core.eventbus.impl.EventBusImpl;
+v1 := @parameter0: io.vertx.core.impl.utils.ConcurrentCyclicSequence;
+v2 := @parameter1: boolean;
+v3 = virtualinvoke v1.<io.vertx.core.impl.utils.ConcurrentCyclicSequence: java.lang.Object next()>();
+return v3;
+}
+protected void checkStarted()
+{
+io.vertx.core.eventbus.impl.EventBusImpl v0;
+java.lang.IllegalStateException v2;
+boolean v1;
+v0 := @this: io.vertx.core.eventbus.impl.EventBusImpl;
+v1 = v0.<io.vertx.core.eventbus.impl.EventBusImpl: boolean started>;
+if v1 != 0 goto label1;
+v2 = new java.lang.IllegalStateException;
+specialinvoke v2.<java.lang.IllegalStateException: void <init>(java.lang.String)>("Event Bus is not started");
+throw v2;
+label1:
+return;
+}
+protected java.lang.String generateReplyAddress()
+{
+io.vertx.core.eventbus.impl.EventBusImpl v0;
+java.util.concurrent.atomic.AtomicLong v1;
+long v2;
+java.lang.String v3, v4;
+v0 := @this: io.vertx.core.eventbus.impl.EventBusImpl;
+v1 = v0.<io.vertx.core.eventbus.impl.EventBusImpl: java.util.concurrent.atomic.AtomicLong replySequence>;
+v2 = virtualinvoke v1.<java.util.concurrent.atomic.AtomicLong: long incrementAndGet()>();
+v3 = staticinvoke <java.lang.Long: java.lang.String toString(long)>(v2);
+v4 = dynamicinvoke "makeConcatWithConstants" <java.lang.String (java.lang.String)>(v3) <java.lang.invoke.StringConcatFactory: java.lang.invoke.CallSite makeConcatWithConstants(java.lang.invoke.MethodHandles$Lookup,java.lang.String,java.lang.invoke.MethodType,java.lang.String,java.lang.Object[])>("__vertx.reply.\u0001");
+return v4;
+}
+io.vertx.core.eventbus.impl.ReplyHandler createReplyHandler(io.vertx.core.eventbus.impl.MessageImpl, boolean, io.vertx.core.eventbus.DeliveryOptions)
+{
+io.vertx.core.eventbus.impl.EventBusImpl v0;
+io.vertx.core.eventbus.DeliveryOptions v3;
+io.vertx.core.impl.VertxInternal v7;
+io.vertx.core.impl.ContextInternal v8;
+long v4;
+io.vertx.core.eventbus.impl.ReplyHandler v6;
+io.vertx.core.eventbus.impl.MessageImpl v1;
+java.lang.String v5, v9;
+boolean v2;
+v0 := @this: io.vertx.core.eventbus.impl.EventBusImpl;
+v1 := @parameter0: io.vertx.core.eventbus.impl.MessageImpl;
+v2 := @parameter1: boolean;
+v3 := @parameter2: io.vertx.core.eventbus.DeliveryOptions;
+v4 = virtualinvoke v3.<io.vertx.core.eventbus.DeliveryOptions: long getSendTimeout()>();
+v5 = virtualinvoke v0.<io.vertx.core.eventbus.impl.EventBusImpl: java.lang.String generateReplyAddress()>();
+virtualinvoke v1.<io.vertx.core.eventbus.impl.MessageImpl: void setReplyAddress(java.lang.String)>(v5);
+v6 = new io.vertx.core.eventbus.impl.ReplyHandler;
+v7 = v0.<io.vertx.core.eventbus.impl.EventBusImpl: io.vertx.core.impl.VertxInternal vertx>;
+v8 = interfaceinvoke v7.<io.vertx.core.impl.VertxInternal: io.vertx.core.impl.ContextInternal getOrCreateContext()>();
+v9 = v1.<io.vertx.core.eventbus.impl.MessageImpl: java.lang.String address>;
+specialinvoke v6.<io.vertx.core.eventbus.impl.ReplyHandler: void <init>(io.vertx.core.eventbus.impl.EventBusImpl,io.vertx.core.impl.ContextInternal,java.lang.String,java.lang.String,boolean,long)>(v0, v8, v5, v9, v2, v4);
+virtualinvoke v6.<io.vertx.core.eventbus.impl.ReplyHandler: void register()>();
+return v6;
+}
+public io.vertx.core.eventbus.impl.OutboundDeliveryContext newSendContext(io.vertx.core.eventbus.impl.MessageImpl, io.vertx.core.eventbus.DeliveryOptions, io.vertx.core.eventbus.impl.ReplyHandler, io.vertx.core.Promise)
+{
+io.vertx.core.eventbus.impl.EventBusImpl v0;
+io.vertx.core.eventbus.impl.OutboundDeliveryContext v5;
+io.vertx.core.eventbus.DeliveryOptions v2;
+io.vertx.core.impl.VertxInternal v6;
+io.vertx.core.Promise v4;
+io.vertx.core.impl.ContextInternal v7;
+io.vertx.core.eventbus.impl.ReplyHandler v3;
+io.vertx.core.eventbus.impl.MessageImpl v1;
+v0 := @this: io.vertx.core.eventbus.impl.EventBusImpl;
+v1 := @parameter0: io.vertx.core.eventbus.impl.MessageImpl;
+v2 := @parameter1: io.vertx.core.eventbus.DeliveryOptions;
+v3 := @parameter2: io.vertx.core.eventbus.impl.ReplyHandler;
+v4 := @parameter3: io.vertx.core.Promise;
+v5 = new io.vertx.core.eventbus.impl.OutboundDeliveryContext;
+v6 = v0.<io.vertx.core.eventbus.impl.EventBusImpl: io.vertx.core.impl.VertxInternal vertx>;
+v7 = interfaceinvoke v6.<io.vertx.core.impl.VertxInternal: io.vertx.core.impl.ContextInternal getOrCreateContext()>();
+specialinvoke v5.<io.vertx.core.eventbus.impl.OutboundDeliveryContext: void <init>(io.vertx.core.impl.ContextInternal,io.vertx.core.eventbus.impl.MessageImpl,io.vertx.core.eventbus.DeliveryOptions,io.vertx.core.eventbus.impl.ReplyHandler,io.vertx.core.Promise)>(v7, v1, v2, v3, v4);
+return v5;
+}
+public void sendOrPubInternal(io.vertx.core.eventbus.impl.OutboundDeliveryContext)
+{
+io.vertx.core.eventbus.impl.EventBusImpl v0;
+io.vertx.core.eventbus.impl.OutboundDeliveryContext v1;
+io.vertx.core.spi.metrics.EventBusMetrics v2;
+v0 := @this: io.vertx.core.eventbus.impl.EventBusImpl;
+v1 := @parameter0: io.vertx.core.eventbus.impl.OutboundDeliveryContext;
+virtualinvoke v0.<io.vertx.core.eventbus.impl.EventBusImpl: void checkStarted()>();
+v1.<io.vertx.core.eventbus.impl.OutboundDeliveryContext: io.vertx.core.eventbus.impl.EventBusImpl bus> = v0;
+v2 = v0.<io.vertx.core.eventbus.impl.EventBusImpl: io.vertx.core.spi.metrics.EventBusMetrics metrics>;
+v1.<io.vertx.core.eventbus.impl.OutboundDeliveryContext: io.vertx.core.spi.metrics.EventBusMetrics metrics> = v2;
+virtualinvoke v1.<io.vertx.core.eventbus.impl.OutboundDeliveryContext: void next()>();
+return;
+}
+public void sendOrPubInternal(io.vertx.core.eventbus.impl.MessageImpl, io.vertx.core.eventbus.DeliveryOptions, io.vertx.core.eventbus.impl.ReplyHandler, io.vertx.core.Promise)
+{
+io.vertx.core.eventbus.impl.EventBusImpl v0;
+io.vertx.core.eventbus.impl.OutboundDeliveryContext v5;
+io.vertx.core.eventbus.DeliveryOptions v2;
+io.vertx.core.Promise v4;
+io.vertx.core.eventbus.impl.ReplyHandler v3;
+io.vertx.core.eventbus.impl.MessageImpl v1;
+v0 := @this: io.vertx.core.eventbus.impl.EventBusImpl;
+v1 := @parameter0: io.vertx.core.eventbus.impl.MessageImpl;
+v2 := @parameter1: io.vertx.core.eventbus.DeliveryOptions;
+v3 := @parameter2: io.vertx.core.eventbus.impl.ReplyHandler;
+v4 := @parameter3: io.vertx.core.Promise;
+virtualinvoke v0.<io.vertx.core.eventbus.impl.EventBusImpl: void checkStarted()>();
+v5 = virtualinvoke v0.<io.vertx.core.eventbus.impl.EventBusImpl: io.vertx.core.eventbus.impl.OutboundDeliveryContext newSendContext(io.vertx.core.eventbus.impl.MessageImpl,io.vertx.core.eventbus.DeliveryOptions,io.vertx.core.eventbus.impl.ReplyHandler,io.vertx.core.Promise)>(v1, v2, v3, v4);
+virtualinvoke v0.<io.vertx.core.eventbus.impl.EventBusImpl: void sendOrPubInternal(io.vertx.core.eventbus.impl.OutboundDeliveryContext)>(v5);
+return;
+}
+private io.vertx.core.Future unregisterAll()
+{
+io.vertx.core.eventbus.impl.EventBusImpl v0;
+java.util.Iterator v4, v7;
+java.util.Collection v3;
+io.vertx.core.Future v11, v13;
+java.util.ArrayList v1;
+java.util.concurrent.ConcurrentMap v2;
+io.vertx.core.CompositeFuture v12;
+io.vertx.core.eventbus.impl.HandlerRegistration v10;
+java.lang.Object v6, v9;
+boolean v5, v8;
+v0 := @this: io.vertx.core.eventbus.impl.EventBusImpl;
+v1 = new java.util.ArrayList;
+specialinvoke v1.<java.util.ArrayList: void <init>()>();
+v2 = v0.<io.vertx.core.eventbus.impl.EventBusImpl: java.util.concurrent.ConcurrentMap handlerMap>;
+v3 = interfaceinvoke v2.<java.util.concurrent.ConcurrentMap: java.util.Collection values()>();
+v4 = interfaceinvoke v3.<java.util.Collection: java.util.Iterator iterator()>();
+label1:
+v5 = interfaceinvoke v4.<java.util.Iterator: boolean hasNext()>();
+if v5 == 0 goto label3;
+v6 = interfaceinvoke v4.<java.util.Iterator: java.lang.Object next()>();
+v7 = virtualinvoke v6.<io.vertx.core.impl.utils.ConcurrentCyclicSequence: java.util.Iterator iterator()>();
+label2:
+v8 = interfaceinvoke v7.<java.util.Iterator: boolean hasNext()>();
+if v8 == 0 goto label1;
+v9 = interfaceinvoke v7.<java.util.Iterator: java.lang.Object next()>();
+v10 = virtualinvoke v9.<io.vertx.core.eventbus.impl.HandlerHolder: io.vertx.core.eventbus.impl.HandlerRegistration getHandler()>();
+v11 = virtualinvoke v10.<io.vertx.core.eventbus.impl.HandlerRegistration: io.vertx.core.Future unregister()>();
+interfaceinvoke v1.<java.util.List: boolean add(java.lang.Object)>(v11);
+goto label2;
+label3:
+v12 = staticinvoke <io.vertx.core.CompositeFuture: io.vertx.core.CompositeFuture join(java.util.List)>(v1);
+v13 = interfaceinvoke v12.<io.vertx.core.CompositeFuture: io.vertx.core.Future mapEmpty()>();
+return v13;
+}
+private void addInterceptor(java.util.concurrent.atomic.AtomicReferenceFieldUpdater, io.vertx.core.Handler)
+{
+io.vertx.core.eventbus.impl.EventBusImpl v0;
+java.lang.Object[] v6;
+java.util.concurrent.atomic.AtomicReferenceFieldUpdater v1;
+int v4, v5, v7;
+java.lang.Object v3;
+io.vertx.core.Handler v2;
+boolean v8;
+v0 := @this: io.vertx.core.eventbus.impl.EventBusImpl;
+v1 := @parameter0: java.util.concurrent.atomic.AtomicReferenceFieldUpdater;
+v2 := @parameter1: io.vertx.core.Handler;
+label1:
+v3 = virtualinvoke v1.<java.util.concurrent.atomic.AtomicReferenceFieldUpdater: java.lang.Object get(java.lang.Object)>(v0);
+v4 = lengthof v3;
+v5 = v4 + 1;
+v6 = staticinvoke <java.util.Arrays: java.lang.Object[] copyOf(java.lang.Object[],int)>(v3, v5);
+v7 = lengthof v3;
+v6[v7] = v2;
+v8 = virtualinvoke v1.<java.util.concurrent.atomic.AtomicReferenceFieldUpdater: boolean compareAndSet(java.lang.Object,java.lang.Object,java.lang.Object)>(v0, v3, v6);
+if v8 == 0 goto label1;
+return;
+}
+private void removeInterceptor(java.util.concurrent.atomic.AtomicReferenceFieldUpdater, io.vertx.core.Handler)
+{
+int v10, v11, v12, v14, v15, v16, v4, v5, v6, v7;
+boolean v17, v9;
+io.vertx.core.eventbus.impl.EventBusImpl v0;
+java.util.concurrent.atomic.AtomicReferenceFieldUpdater v1;
+io.vertx.core.Handler[] v13;
+java.lang.Object v3;
+io.vertx.core.Handler v2, v8;
+v0 := @this: io.vertx.core.eventbus.impl.EventBusImpl;
+v1 := @parameter0: java.util.concurrent.atomic.AtomicReferenceFieldUpdater;
+v2 := @parameter1: io.vertx.core.Handler;
+label1:
+v3 = virtualinvoke v1.<java.util.concurrent.atomic.AtomicReferenceFieldUpdater: java.lang.Object get(java.lang.Object)>(v0);
+v4 = (int) -1;
+v5 = v4;
+v6 = 0;
+label2:
+v7 = lengthof v3;
+if v6 >= v7 goto label4;
+v8 = v3[v6];
+v9 = virtualinvoke v8.<java.lang.Object: boolean equals(java.lang.Object)>(v2);
+if v9 == 0 goto label3;
+v5 = v6;
+goto label4;
+label3:
+v6 = v6 + 1;
+goto label2;
+label4:
+v10 = (int) -1;
+if v5 != v10 goto label5;
+return;
+label5:
+v11 = lengthof v3;
+v12 = v11 - 1;
+v13 = newarray (io.vertx.core.Handler)[v12];
+staticinvoke <java.lang.System: void arraycopy(java.lang.Object,int,java.lang.Object,int,int)>(v3, 0, v13, 0, v5);
+v14 = v5 + 1;
+v15 = lengthof v13;
+v16 = v15 - v5;
+staticinvoke <java.lang.System: void arraycopy(java.lang.Object,int,java.lang.Object,int,int)>(v3, v14, v13, v5, v16);
+v17 = virtualinvoke v1.<java.util.concurrent.atomic.AtomicReferenceFieldUpdater: boolean compareAndSet(java.lang.Object,java.lang.Object,java.lang.Object)>(v0, v3, v13);
+if v17 == 0 goto label1;
+return;
+}
+static void <clinit>()
+{
+java.util.concurrent.atomic.AtomicReferenceFieldUpdater v0, v1;
+v0 = staticinvoke <java.util.concurrent.atomic.AtomicReferenceFieldUpdater: java.util.concurrent.atomic.AtomicReferenceFieldUpdater newUpdater(java.lang.Class,java.lang.Class,java.lang.String)>(class "Lio/vertx/core/eventbus/impl/EventBusImpl;", class "[Lio/vertx/core/Handler;", "outboundInterceptors");
+<io.vertx.core.eventbus.impl.EventBusImpl: java.util.concurrent.atomic.AtomicReferenceFieldUpdater OUTBOUND_INTERCEPTORS_UPDATER> = v0;
+v1 = staticinvoke <java.util.concurrent.atomic.AtomicReferenceFieldUpdater: java.util.concurrent.atomic.AtomicReferenceFieldUpdater newUpdater(java.lang.Class,java.lang.Class,java.lang.String)>(class "Lio/vertx/core/eventbus/impl/EventBusImpl;", class "[Lio/vertx/core/Handler;", "inboundInterceptors");
+<io.vertx.core.eventbus.impl.EventBusImpl: java.util.concurrent.atomic.AtomicReferenceFieldUpdater INBOUND_INTERCEPTORS_UPDATER> = v1;
+return;
+}
+}

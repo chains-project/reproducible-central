@@ -1,0 +1,662 @@
+public class io.netty.handler.codec.spdy.SpdyFrameCodec extends io.netty.handler.codec.ByteToMessageDecoder implements io.netty.handler.codec.spdy.SpdyFrameDecoderDelegate, io.netty.channel.ChannelOutboundHandler
+{
+private static final io.netty.handler.codec.spdy.SpdyProtocolException INVALID_FRAME;
+private final io.netty.handler.codec.spdy.SpdyFrameDecoder spdyFrameDecoder;
+private final io.netty.handler.codec.spdy.SpdyFrameEncoder spdyFrameEncoder;
+private final io.netty.handler.codec.spdy.SpdyHeaderBlockDecoder spdyHeaderBlockDecoder;
+private final io.netty.handler.codec.spdy.SpdyHeaderBlockEncoder spdyHeaderBlockEncoder;
+private io.netty.handler.codec.spdy.SpdyHeadersFrame spdyHeadersFrame;
+private io.netty.handler.codec.spdy.SpdySettingsFrame spdySettingsFrame;
+private io.netty.channel.ChannelHandlerContext ctx;
+private boolean read;
+private final boolean validateHeaders;
+public void <init>(io.netty.handler.codec.spdy.SpdyVersion)
+{
+io.netty.handler.codec.spdy.SpdyFrameCodec v0;
+io.netty.handler.codec.spdy.SpdyVersion v1;
+v0 := @this: io.netty.handler.codec.spdy.SpdyFrameCodec;
+v1 := @parameter0: io.netty.handler.codec.spdy.SpdyVersion;
+specialinvoke v0.<io.netty.handler.codec.spdy.SpdyFrameCodec: void <init>(io.netty.handler.codec.spdy.SpdyVersion,boolean)>(v1, 1);
+return;
+}
+public void <init>(io.netty.handler.codec.spdy.SpdyVersion, boolean)
+{
+io.netty.handler.codec.spdy.SpdyFrameCodec v0;
+io.netty.handler.codec.spdy.SpdyVersion v1;
+boolean v2;
+v0 := @this: io.netty.handler.codec.spdy.SpdyFrameCodec;
+v1 := @parameter0: io.netty.handler.codec.spdy.SpdyVersion;
+v2 := @parameter1: boolean;
+specialinvoke v0.<io.netty.handler.codec.spdy.SpdyFrameCodec: void <init>(io.netty.handler.codec.spdy.SpdyVersion,int,int,int,int,int,boolean)>(v1, 8192, 16384, 6, 15, 8, v2);
+return;
+}
+public void <init>(io.netty.handler.codec.spdy.SpdyVersion, int, int, int, int, int)
+{
+io.netty.handler.codec.spdy.SpdyFrameCodec v0;
+io.netty.handler.codec.spdy.SpdyVersion v1;
+int v2, v3, v4, v5, v6;
+v0 := @this: io.netty.handler.codec.spdy.SpdyFrameCodec;
+v1 := @parameter0: io.netty.handler.codec.spdy.SpdyVersion;
+v2 := @parameter1: int;
+v3 := @parameter2: int;
+v4 := @parameter3: int;
+v5 := @parameter4: int;
+v6 := @parameter5: int;
+specialinvoke v0.<io.netty.handler.codec.spdy.SpdyFrameCodec: void <init>(io.netty.handler.codec.spdy.SpdyVersion,int,int,int,int,int,boolean)>(v1, v2, v3, v4, v5, v6, 1);
+return;
+}
+public void <init>(io.netty.handler.codec.spdy.SpdyVersion, int, int, int, int, int, boolean)
+{
+io.netty.handler.codec.spdy.SpdyHeaderBlockEncoder v9;
+io.netty.handler.codec.spdy.SpdyVersion v1;
+io.netty.handler.codec.spdy.SpdyFrameCodec v0;
+int v2, v3, v4, v5, v6;
+io.netty.handler.codec.spdy.SpdyHeaderBlockDecoder v8;
+boolean v7;
+v0 := @this: io.netty.handler.codec.spdy.SpdyFrameCodec;
+v1 := @parameter0: io.netty.handler.codec.spdy.SpdyVersion;
+v2 := @parameter1: int;
+v3 := @parameter2: int;
+v4 := @parameter3: int;
+v5 := @parameter4: int;
+v6 := @parameter5: int;
+v7 := @parameter6: boolean;
+v8 = staticinvoke <io.netty.handler.codec.spdy.SpdyHeaderBlockDecoder: io.netty.handler.codec.spdy.SpdyHeaderBlockDecoder newInstance(io.netty.handler.codec.spdy.SpdyVersion,int)>(v1, v3);
+v9 = staticinvoke <io.netty.handler.codec.spdy.SpdyHeaderBlockEncoder: io.netty.handler.codec.spdy.SpdyHeaderBlockEncoder newInstance(io.netty.handler.codec.spdy.SpdyVersion,int,int,int)>(v1, v4, v5, v6);
+specialinvoke v0.<io.netty.handler.codec.spdy.SpdyFrameCodec: void <init>(io.netty.handler.codec.spdy.SpdyVersion,int,io.netty.handler.codec.spdy.SpdyHeaderBlockDecoder,io.netty.handler.codec.spdy.SpdyHeaderBlockEncoder,boolean)>(v1, v2, v8, v9, v7);
+return;
+}
+protected void <init>(io.netty.handler.codec.spdy.SpdyVersion, int, io.netty.handler.codec.spdy.SpdyHeaderBlockDecoder, io.netty.handler.codec.spdy.SpdyHeaderBlockEncoder, boolean)
+{
+io.netty.handler.codec.spdy.SpdyHeaderBlockEncoder v4;
+io.netty.handler.codec.spdy.SpdyVersion v1;
+io.netty.handler.codec.spdy.SpdyFrameDecoder v6;
+io.netty.handler.codec.spdy.SpdyFrameCodec v0;
+io.netty.handler.codec.spdy.SpdyFrameEncoder v7;
+int v2;
+io.netty.handler.codec.spdy.SpdyHeaderBlockDecoder v3;
+boolean v5;
+v0 := @this: io.netty.handler.codec.spdy.SpdyFrameCodec;
+v1 := @parameter0: io.netty.handler.codec.spdy.SpdyVersion;
+v2 := @parameter1: int;
+v3 := @parameter2: io.netty.handler.codec.spdy.SpdyHeaderBlockDecoder;
+v4 := @parameter3: io.netty.handler.codec.spdy.SpdyHeaderBlockEncoder;
+v5 := @parameter4: boolean;
+specialinvoke v0.<io.netty.handler.codec.ByteToMessageDecoder: void <init>()>();
+v6 = new io.netty.handler.codec.spdy.SpdyFrameDecoder;
+specialinvoke v6.<io.netty.handler.codec.spdy.SpdyFrameDecoder: void <init>(io.netty.handler.codec.spdy.SpdyVersion,io.netty.handler.codec.spdy.SpdyFrameDecoderDelegate,int)>(v1, v0, v2);
+v0.<io.netty.handler.codec.spdy.SpdyFrameCodec: io.netty.handler.codec.spdy.SpdyFrameDecoder spdyFrameDecoder> = v6;
+v7 = new io.netty.handler.codec.spdy.SpdyFrameEncoder;
+specialinvoke v7.<io.netty.handler.codec.spdy.SpdyFrameEncoder: void <init>(io.netty.handler.codec.spdy.SpdyVersion)>(v1);
+v0.<io.netty.handler.codec.spdy.SpdyFrameCodec: io.netty.handler.codec.spdy.SpdyFrameEncoder spdyFrameEncoder> = v7;
+v0.<io.netty.handler.codec.spdy.SpdyFrameCodec: io.netty.handler.codec.spdy.SpdyHeaderBlockDecoder spdyHeaderBlockDecoder> = v3;
+v0.<io.netty.handler.codec.spdy.SpdyFrameCodec: io.netty.handler.codec.spdy.SpdyHeaderBlockEncoder spdyHeaderBlockEncoder> = v4;
+v0.<io.netty.handler.codec.spdy.SpdyFrameCodec: boolean validateHeaders> = v5;
+return;
+}
+public void handlerAdded(io.netty.channel.ChannelHandlerContext) throws java.lang.Exception
+{
+io.netty.channel.Channel v2;
+io.netty.handler.codec.spdy.SpdyFrameCodec v0;
+io.netty.channel.ChannelHandlerContext v1;
+io.netty.handler.codec.spdy.SpdyFrameCodec$1 v4;
+io.netty.channel.ChannelFuture v3;
+v0 := @this: io.netty.handler.codec.spdy.SpdyFrameCodec;
+v1 := @parameter0: io.netty.channel.ChannelHandlerContext;
+specialinvoke v0.<io.netty.handler.codec.ByteToMessageDecoder: void handlerAdded(io.netty.channel.ChannelHandlerContext)>(v1);
+v0.<io.netty.handler.codec.spdy.SpdyFrameCodec: io.netty.channel.ChannelHandlerContext ctx> = v1;
+v2 = interfaceinvoke v1.<io.netty.channel.ChannelHandlerContext: io.netty.channel.Channel channel()>();
+v3 = interfaceinvoke v2.<io.netty.channel.Channel: io.netty.channel.ChannelFuture closeFuture()>();
+v4 = new io.netty.handler.codec.spdy.SpdyFrameCodec$1;
+specialinvoke v4.<io.netty.handler.codec.spdy.SpdyFrameCodec$1: void <init>(io.netty.handler.codec.spdy.SpdyFrameCodec)>(v0);
+interfaceinvoke v3.<io.netty.channel.ChannelFuture: io.netty.channel.ChannelFuture addListener(io.netty.util.concurrent.GenericFutureListener)>(v4);
+return;
+}
+protected void decode(io.netty.channel.ChannelHandlerContext, io.netty.buffer.ByteBuf, java.util.List) throws java.lang.Exception
+{
+io.netty.handler.codec.spdy.SpdyFrameCodec v0;
+io.netty.channel.ChannelHandlerContext v1;
+java.util.List v3;
+io.netty.buffer.ByteBuf v2;
+io.netty.handler.codec.spdy.SpdyFrameDecoder v4;
+v0 := @this: io.netty.handler.codec.spdy.SpdyFrameCodec;
+v1 := @parameter0: io.netty.channel.ChannelHandlerContext;
+v2 := @parameter1: io.netty.buffer.ByteBuf;
+v3 := @parameter2: java.util.List;
+v4 = v0.<io.netty.handler.codec.spdy.SpdyFrameCodec: io.netty.handler.codec.spdy.SpdyFrameDecoder spdyFrameDecoder>;
+virtualinvoke v4.<io.netty.handler.codec.spdy.SpdyFrameDecoder: void decode(io.netty.buffer.ByteBuf)>(v2);
+return;
+}
+public void channelReadComplete(io.netty.channel.ChannelHandlerContext) throws java.lang.Exception
+{
+io.netty.channel.Channel v3;
+io.netty.handler.codec.spdy.SpdyFrameCodec v0;
+io.netty.channel.ChannelHandlerContext v1;
+io.netty.channel.ChannelConfig v4;
+boolean v2, v5;
+v0 := @this: io.netty.handler.codec.spdy.SpdyFrameCodec;
+v1 := @parameter0: io.netty.channel.ChannelHandlerContext;
+v2 = v0.<io.netty.handler.codec.spdy.SpdyFrameCodec: boolean read>;
+if v2 != 0 goto label1;
+v3 = interfaceinvoke v1.<io.netty.channel.ChannelHandlerContext: io.netty.channel.Channel channel()>();
+v4 = interfaceinvoke v3.<io.netty.channel.Channel: io.netty.channel.ChannelConfig config()>();
+v5 = interfaceinvoke v4.<io.netty.channel.ChannelConfig: boolean isAutoRead()>();
+if v5 != 0 goto label1;
+interfaceinvoke v1.<io.netty.channel.ChannelHandlerContext: io.netty.channel.ChannelHandlerContext read()>();
+label1:
+v0.<io.netty.handler.codec.spdy.SpdyFrameCodec: boolean read> = 0;
+specialinvoke v0.<io.netty.handler.codec.ByteToMessageDecoder: void channelReadComplete(io.netty.channel.ChannelHandlerContext)>(v1);
+return;
+}
+public void bind(io.netty.channel.ChannelHandlerContext, java.net.SocketAddress, io.netty.channel.ChannelPromise) throws java.lang.Exception
+{
+io.netty.handler.codec.spdy.SpdyFrameCodec v0;
+io.netty.channel.ChannelHandlerContext v1;
+io.netty.channel.ChannelPromise v3;
+java.net.SocketAddress v2;
+v0 := @this: io.netty.handler.codec.spdy.SpdyFrameCodec;
+v1 := @parameter0: io.netty.channel.ChannelHandlerContext;
+v2 := @parameter1: java.net.SocketAddress;
+v3 := @parameter2: io.netty.channel.ChannelPromise;
+interfaceinvoke v1.<io.netty.channel.ChannelHandlerContext: io.netty.channel.ChannelFuture bind(java.net.SocketAddress,io.netty.channel.ChannelPromise)>(v2, v3);
+return;
+}
+public void connect(io.netty.channel.ChannelHandlerContext, java.net.SocketAddress, java.net.SocketAddress, io.netty.channel.ChannelPromise) throws java.lang.Exception
+{
+io.netty.handler.codec.spdy.SpdyFrameCodec v0;
+io.netty.channel.ChannelHandlerContext v1;
+io.netty.channel.ChannelPromise v4;
+java.net.SocketAddress v2, v3;
+v0 := @this: io.netty.handler.codec.spdy.SpdyFrameCodec;
+v1 := @parameter0: io.netty.channel.ChannelHandlerContext;
+v2 := @parameter1: java.net.SocketAddress;
+v3 := @parameter2: java.net.SocketAddress;
+v4 := @parameter3: io.netty.channel.ChannelPromise;
+interfaceinvoke v1.<io.netty.channel.ChannelHandlerContext: io.netty.channel.ChannelFuture connect(java.net.SocketAddress,java.net.SocketAddress,io.netty.channel.ChannelPromise)>(v2, v3, v4);
+return;
+}
+public void disconnect(io.netty.channel.ChannelHandlerContext, io.netty.channel.ChannelPromise) throws java.lang.Exception
+{
+io.netty.handler.codec.spdy.SpdyFrameCodec v0;
+io.netty.channel.ChannelHandlerContext v1;
+io.netty.channel.ChannelPromise v2;
+v0 := @this: io.netty.handler.codec.spdy.SpdyFrameCodec;
+v1 := @parameter0: io.netty.channel.ChannelHandlerContext;
+v2 := @parameter1: io.netty.channel.ChannelPromise;
+interfaceinvoke v1.<io.netty.channel.ChannelHandlerContext: io.netty.channel.ChannelFuture disconnect(io.netty.channel.ChannelPromise)>(v2);
+return;
+}
+public void close(io.netty.channel.ChannelHandlerContext, io.netty.channel.ChannelPromise) throws java.lang.Exception
+{
+io.netty.handler.codec.spdy.SpdyFrameCodec v0;
+io.netty.channel.ChannelHandlerContext v1;
+io.netty.channel.ChannelPromise v2;
+v0 := @this: io.netty.handler.codec.spdy.SpdyFrameCodec;
+v1 := @parameter0: io.netty.channel.ChannelHandlerContext;
+v2 := @parameter1: io.netty.channel.ChannelPromise;
+interfaceinvoke v1.<io.netty.channel.ChannelHandlerContext: io.netty.channel.ChannelFuture close(io.netty.channel.ChannelPromise)>(v2);
+return;
+}
+public void deregister(io.netty.channel.ChannelHandlerContext, io.netty.channel.ChannelPromise) throws java.lang.Exception
+{
+io.netty.handler.codec.spdy.SpdyFrameCodec v0;
+io.netty.channel.ChannelHandlerContext v1;
+io.netty.channel.ChannelPromise v2;
+v0 := @this: io.netty.handler.codec.spdy.SpdyFrameCodec;
+v1 := @parameter0: io.netty.channel.ChannelHandlerContext;
+v2 := @parameter1: io.netty.channel.ChannelPromise;
+interfaceinvoke v1.<io.netty.channel.ChannelHandlerContext: io.netty.channel.ChannelFuture deregister(io.netty.channel.ChannelPromise)>(v2);
+return;
+}
+public void read(io.netty.channel.ChannelHandlerContext) throws java.lang.Exception
+{
+io.netty.handler.codec.spdy.SpdyFrameCodec v0;
+io.netty.channel.ChannelHandlerContext v1;
+v0 := @this: io.netty.handler.codec.spdy.SpdyFrameCodec;
+v1 := @parameter0: io.netty.channel.ChannelHandlerContext;
+interfaceinvoke v1.<io.netty.channel.ChannelHandlerContext: io.netty.channel.ChannelHandlerContext read()>();
+return;
+}
+public void flush(io.netty.channel.ChannelHandlerContext) throws java.lang.Exception
+{
+io.netty.handler.codec.spdy.SpdyFrameCodec v0;
+io.netty.channel.ChannelHandlerContext v1;
+v0 := @this: io.netty.handler.codec.spdy.SpdyFrameCodec;
+v1 := @parameter0: io.netty.channel.ChannelHandlerContext;
+interfaceinvoke v1.<io.netty.channel.ChannelHandlerContext: io.netty.channel.ChannelHandlerContext flush()>();
+return;
+}
+public void write(io.netty.channel.ChannelHandlerContext, java.lang.Object, io.netty.channel.ChannelPromise) throws java.lang.Exception
+{
+io.netty.handler.codec.spdy.SpdyStreamStatus v38;
+io.netty.handler.codec.spdy.SpdyFrameCodec v0;
+byte v19;
+java.lang.Throwable v23, v33, v66;
+io.netty.handler.codec.spdy.SpdyFrameEncoder v15, v28, v35, v42, v46, v5, v51, v61, v68;
+java.lang.Class[] v74;
+io.netty.handler.codec.spdy.SpdyHeaderBlockEncoder v12, v25, v58;
+io.netty.buffer.ByteBufAllocator v13, v16, v26, v29, v36, v43, v47, v52, v59, v6, v62, v69;
+io.netty.channel.ChannelPromise v3;
+boolean v11, v20, v21, v24, v31, v34, v4, v41, v45, v50, v57, v64, v67, v8;
+io.netty.handler.codec.spdy.SpdySessionStatus v54;
+io.netty.channel.ChannelHandlerContext v1;
+io.netty.buffer.ByteBuf v10, v14, v22, v27, v32, v40, v44, v49, v56, v60, v65, v72, v9;
+int v17, v18, v30, v37, v39, v48, v53, v55, v63, v7, v70, v71;
+java.lang.Object v2;
+io.netty.handler.codec.UnsupportedMessageTypeException v73;
+v0 := @this: io.netty.handler.codec.spdy.SpdyFrameCodec;
+v1 := @parameter0: io.netty.channel.ChannelHandlerContext;
+v2 := @parameter1: java.lang.Object;
+v3 := @parameter2: io.netty.channel.ChannelPromise;
+v4 = v2 instanceof io.netty.handler.codec.spdy.SpdyDataFrame;
+if v4 == 0 goto label01;
+v5 = v0.<io.netty.handler.codec.spdy.SpdyFrameCodec: io.netty.handler.codec.spdy.SpdyFrameEncoder spdyFrameEncoder>;
+v6 = interfaceinvoke v1.<io.netty.channel.ChannelHandlerContext: io.netty.buffer.ByteBufAllocator alloc()>();
+v7 = interfaceinvoke v2.<io.netty.handler.codec.spdy.SpdyDataFrame: int streamId()>();
+v8 = interfaceinvoke v2.<io.netty.handler.codec.spdy.SpdyDataFrame: boolean isLast()>();
+v9 = interfaceinvoke v2.<io.netty.handler.codec.spdy.SpdyDataFrame: io.netty.buffer.ByteBuf content()>();
+v10 = virtualinvoke v5.<io.netty.handler.codec.spdy.SpdyFrameEncoder: io.netty.buffer.ByteBuf encodeDataFrame(io.netty.buffer.ByteBufAllocator,int,boolean,io.netty.buffer.ByteBuf)>(v6, v7, v8, v9);
+interfaceinvoke v2.<io.netty.handler.codec.spdy.SpdyDataFrame: boolean release()>();
+interfaceinvoke v1.<io.netty.channel.ChannelHandlerContext: io.netty.channel.ChannelFuture write(java.lang.Object,io.netty.channel.ChannelPromise)>(v10, v3);
+goto label22;
+label01:
+v11 = v2 instanceof io.netty.handler.codec.spdy.SpdySynStreamFrame;
+if v11 == 0 goto label06;
+v12 = v0.<io.netty.handler.codec.spdy.SpdyFrameCodec: io.netty.handler.codec.spdy.SpdyHeaderBlockEncoder spdyHeaderBlockEncoder>;
+v13 = interfaceinvoke v1.<io.netty.channel.ChannelHandlerContext: io.netty.buffer.ByteBufAllocator alloc()>();
+v14 = virtualinvoke v12.<io.netty.handler.codec.spdy.SpdyHeaderBlockEncoder: io.netty.buffer.ByteBuf encode(io.netty.buffer.ByteBufAllocator,io.netty.handler.codec.spdy.SpdyHeadersFrame)>(v13, v2);
+label02:
+v15 = v0.<io.netty.handler.codec.spdy.SpdyFrameCodec: io.netty.handler.codec.spdy.SpdyFrameEncoder spdyFrameEncoder>;
+v16 = interfaceinvoke v1.<io.netty.channel.ChannelHandlerContext: io.netty.buffer.ByteBufAllocator alloc()>();
+v17 = interfaceinvoke v2.<io.netty.handler.codec.spdy.SpdySynStreamFrame: int streamId()>();
+v18 = interfaceinvoke v2.<io.netty.handler.codec.spdy.SpdySynStreamFrame: int associatedStreamId()>();
+v19 = interfaceinvoke v2.<io.netty.handler.codec.spdy.SpdySynStreamFrame: byte priority()>();
+v20 = interfaceinvoke v2.<io.netty.handler.codec.spdy.SpdySynStreamFrame: boolean isLast()>();
+v21 = interfaceinvoke v2.<io.netty.handler.codec.spdy.SpdySynStreamFrame: boolean isUnidirectional()>();
+v22 = virtualinvoke v15.<io.netty.handler.codec.spdy.SpdyFrameEncoder: io.netty.buffer.ByteBuf encodeSynStreamFrame(io.netty.buffer.ByteBufAllocator,int,int,byte,boolean,boolean,io.netty.buffer.ByteBuf)>(v16, v17, v18, v19, v20, v21, v14);
+label03:
+virtualinvoke v14.<io.netty.buffer.ByteBuf: boolean release()>();
+goto label05;
+label04:
+v23 := @caughtexception;
+virtualinvoke v14.<io.netty.buffer.ByteBuf: boolean release()>();
+throw v23;
+label05:
+interfaceinvoke v1.<io.netty.channel.ChannelHandlerContext: io.netty.channel.ChannelFuture write(java.lang.Object,io.netty.channel.ChannelPromise)>(v22, v3);
+goto label22;
+label06:
+v24 = v2 instanceof io.netty.handler.codec.spdy.SpdySynReplyFrame;
+if v24 == 0 goto label11;
+v25 = v0.<io.netty.handler.codec.spdy.SpdyFrameCodec: io.netty.handler.codec.spdy.SpdyHeaderBlockEncoder spdyHeaderBlockEncoder>;
+v26 = interfaceinvoke v1.<io.netty.channel.ChannelHandlerContext: io.netty.buffer.ByteBufAllocator alloc()>();
+v27 = virtualinvoke v25.<io.netty.handler.codec.spdy.SpdyHeaderBlockEncoder: io.netty.buffer.ByteBuf encode(io.netty.buffer.ByteBufAllocator,io.netty.handler.codec.spdy.SpdyHeadersFrame)>(v26, v2);
+label07:
+v28 = v0.<io.netty.handler.codec.spdy.SpdyFrameCodec: io.netty.handler.codec.spdy.SpdyFrameEncoder spdyFrameEncoder>;
+v29 = interfaceinvoke v1.<io.netty.channel.ChannelHandlerContext: io.netty.buffer.ByteBufAllocator alloc()>();
+v30 = interfaceinvoke v2.<io.netty.handler.codec.spdy.SpdySynReplyFrame: int streamId()>();
+v31 = interfaceinvoke v2.<io.netty.handler.codec.spdy.SpdySynReplyFrame: boolean isLast()>();
+v32 = virtualinvoke v28.<io.netty.handler.codec.spdy.SpdyFrameEncoder: io.netty.buffer.ByteBuf encodeSynReplyFrame(io.netty.buffer.ByteBufAllocator,int,boolean,io.netty.buffer.ByteBuf)>(v29, v30, v31, v27);
+label08:
+virtualinvoke v27.<io.netty.buffer.ByteBuf: boolean release()>();
+goto label10;
+label09:
+v33 := @caughtexception;
+virtualinvoke v27.<io.netty.buffer.ByteBuf: boolean release()>();
+throw v33;
+label10:
+interfaceinvoke v1.<io.netty.channel.ChannelHandlerContext: io.netty.channel.ChannelFuture write(java.lang.Object,io.netty.channel.ChannelPromise)>(v32, v3);
+goto label22;
+label11:
+v34 = v2 instanceof io.netty.handler.codec.spdy.SpdyRstStreamFrame;
+if v34 == 0 goto label12;
+v35 = v0.<io.netty.handler.codec.spdy.SpdyFrameCodec: io.netty.handler.codec.spdy.SpdyFrameEncoder spdyFrameEncoder>;
+v36 = interfaceinvoke v1.<io.netty.channel.ChannelHandlerContext: io.netty.buffer.ByteBufAllocator alloc()>();
+v37 = interfaceinvoke v2.<io.netty.handler.codec.spdy.SpdyRstStreamFrame: int streamId()>();
+v38 = interfaceinvoke v2.<io.netty.handler.codec.spdy.SpdyRstStreamFrame: io.netty.handler.codec.spdy.SpdyStreamStatus status()>();
+v39 = virtualinvoke v38.<io.netty.handler.codec.spdy.SpdyStreamStatus: int code()>();
+v40 = virtualinvoke v35.<io.netty.handler.codec.spdy.SpdyFrameEncoder: io.netty.buffer.ByteBuf encodeRstStreamFrame(io.netty.buffer.ByteBufAllocator,int,int)>(v36, v37, v39);
+interfaceinvoke v1.<io.netty.channel.ChannelHandlerContext: io.netty.channel.ChannelFuture write(java.lang.Object,io.netty.channel.ChannelPromise)>(v40, v3);
+goto label22;
+label12:
+v41 = v2 instanceof io.netty.handler.codec.spdy.SpdySettingsFrame;
+if v41 == 0 goto label13;
+v42 = v0.<io.netty.handler.codec.spdy.SpdyFrameCodec: io.netty.handler.codec.spdy.SpdyFrameEncoder spdyFrameEncoder>;
+v43 = interfaceinvoke v1.<io.netty.channel.ChannelHandlerContext: io.netty.buffer.ByteBufAllocator alloc()>();
+v44 = virtualinvoke v42.<io.netty.handler.codec.spdy.SpdyFrameEncoder: io.netty.buffer.ByteBuf encodeSettingsFrame(io.netty.buffer.ByteBufAllocator,io.netty.handler.codec.spdy.SpdySettingsFrame)>(v43, v2);
+interfaceinvoke v1.<io.netty.channel.ChannelHandlerContext: io.netty.channel.ChannelFuture write(java.lang.Object,io.netty.channel.ChannelPromise)>(v44, v3);
+goto label22;
+label13:
+v45 = v2 instanceof io.netty.handler.codec.spdy.SpdyPingFrame;
+if v45 == 0 goto label14;
+v46 = v0.<io.netty.handler.codec.spdy.SpdyFrameCodec: io.netty.handler.codec.spdy.SpdyFrameEncoder spdyFrameEncoder>;
+v47 = interfaceinvoke v1.<io.netty.channel.ChannelHandlerContext: io.netty.buffer.ByteBufAllocator alloc()>();
+v48 = interfaceinvoke v2.<io.netty.handler.codec.spdy.SpdyPingFrame: int id()>();
+v49 = virtualinvoke v46.<io.netty.handler.codec.spdy.SpdyFrameEncoder: io.netty.buffer.ByteBuf encodePingFrame(io.netty.buffer.ByteBufAllocator,int)>(v47, v48);
+interfaceinvoke v1.<io.netty.channel.ChannelHandlerContext: io.netty.channel.ChannelFuture write(java.lang.Object,io.netty.channel.ChannelPromise)>(v49, v3);
+goto label22;
+label14:
+v50 = v2 instanceof io.netty.handler.codec.spdy.SpdyGoAwayFrame;
+if v50 == 0 goto label15;
+v51 = v0.<io.netty.handler.codec.spdy.SpdyFrameCodec: io.netty.handler.codec.spdy.SpdyFrameEncoder spdyFrameEncoder>;
+v52 = interfaceinvoke v1.<io.netty.channel.ChannelHandlerContext: io.netty.buffer.ByteBufAllocator alloc()>();
+v53 = interfaceinvoke v2.<io.netty.handler.codec.spdy.SpdyGoAwayFrame: int lastGoodStreamId()>();
+v54 = interfaceinvoke v2.<io.netty.handler.codec.spdy.SpdyGoAwayFrame: io.netty.handler.codec.spdy.SpdySessionStatus status()>();
+v55 = virtualinvoke v54.<io.netty.handler.codec.spdy.SpdySessionStatus: int code()>();
+v56 = virtualinvoke v51.<io.netty.handler.codec.spdy.SpdyFrameEncoder: io.netty.buffer.ByteBuf encodeGoAwayFrame(io.netty.buffer.ByteBufAllocator,int,int)>(v52, v53, v55);
+interfaceinvoke v1.<io.netty.channel.ChannelHandlerContext: io.netty.channel.ChannelFuture write(java.lang.Object,io.netty.channel.ChannelPromise)>(v56, v3);
+goto label22;
+label15:
+v57 = v2 instanceof io.netty.handler.codec.spdy.SpdyHeadersFrame;
+if v57 == 0 goto label20;
+v58 = v0.<io.netty.handler.codec.spdy.SpdyFrameCodec: io.netty.handler.codec.spdy.SpdyHeaderBlockEncoder spdyHeaderBlockEncoder>;
+v59 = interfaceinvoke v1.<io.netty.channel.ChannelHandlerContext: io.netty.buffer.ByteBufAllocator alloc()>();
+v60 = virtualinvoke v58.<io.netty.handler.codec.spdy.SpdyHeaderBlockEncoder: io.netty.buffer.ByteBuf encode(io.netty.buffer.ByteBufAllocator,io.netty.handler.codec.spdy.SpdyHeadersFrame)>(v59, v2);
+label16:
+v61 = v0.<io.netty.handler.codec.spdy.SpdyFrameCodec: io.netty.handler.codec.spdy.SpdyFrameEncoder spdyFrameEncoder>;
+v62 = interfaceinvoke v1.<io.netty.channel.ChannelHandlerContext: io.netty.buffer.ByteBufAllocator alloc()>();
+v63 = interfaceinvoke v2.<io.netty.handler.codec.spdy.SpdyHeadersFrame: int streamId()>();
+v64 = interfaceinvoke v2.<io.netty.handler.codec.spdy.SpdyHeadersFrame: boolean isLast()>();
+v65 = virtualinvoke v61.<io.netty.handler.codec.spdy.SpdyFrameEncoder: io.netty.buffer.ByteBuf encodeHeadersFrame(io.netty.buffer.ByteBufAllocator,int,boolean,io.netty.buffer.ByteBuf)>(v62, v63, v64, v60);
+label17:
+virtualinvoke v60.<io.netty.buffer.ByteBuf: boolean release()>();
+goto label19;
+label18:
+v66 := @caughtexception;
+virtualinvoke v60.<io.netty.buffer.ByteBuf: boolean release()>();
+throw v66;
+label19:
+interfaceinvoke v1.<io.netty.channel.ChannelHandlerContext: io.netty.channel.ChannelFuture write(java.lang.Object,io.netty.channel.ChannelPromise)>(v65, v3);
+goto label22;
+label20:
+v67 = v2 instanceof io.netty.handler.codec.spdy.SpdyWindowUpdateFrame;
+if v67 == 0 goto label21;
+v68 = v0.<io.netty.handler.codec.spdy.SpdyFrameCodec: io.netty.handler.codec.spdy.SpdyFrameEncoder spdyFrameEncoder>;
+v69 = interfaceinvoke v1.<io.netty.channel.ChannelHandlerContext: io.netty.buffer.ByteBufAllocator alloc()>();
+v70 = interfaceinvoke v2.<io.netty.handler.codec.spdy.SpdyWindowUpdateFrame: int streamId()>();
+v71 = interfaceinvoke v2.<io.netty.handler.codec.spdy.SpdyWindowUpdateFrame: int deltaWindowSize()>();
+v72 = virtualinvoke v68.<io.netty.handler.codec.spdy.SpdyFrameEncoder: io.netty.buffer.ByteBuf encodeWindowUpdateFrame(io.netty.buffer.ByteBufAllocator,int,int)>(v69, v70, v71);
+interfaceinvoke v1.<io.netty.channel.ChannelHandlerContext: io.netty.channel.ChannelFuture write(java.lang.Object,io.netty.channel.ChannelPromise)>(v72, v3);
+goto label22;
+label21:
+v73 = new io.netty.handler.codec.UnsupportedMessageTypeException;
+v74 = newarray (java.lang.Class)[0];
+specialinvoke v73.<io.netty.handler.codec.UnsupportedMessageTypeException: void <init>(java.lang.Object,java.lang.Class[])>(v2, v74);
+throw v73;
+label22:
+return;
+catch java.lang.Throwable from label02 to label03 with label04;
+catch java.lang.Throwable from label07 to label08 with label09;
+catch java.lang.Throwable from label16 to label17 with label18;
+}
+public void readDataFrame(int, boolean, io.netty.buffer.ByteBuf)
+{
+io.netty.handler.codec.spdy.SpdyFrameCodec v0;
+io.netty.channel.ChannelHandlerContext v5;
+io.netty.buffer.ByteBuf v3;
+int v1;
+io.netty.handler.codec.spdy.DefaultSpdyDataFrame v4;
+boolean v2;
+v0 := @this: io.netty.handler.codec.spdy.SpdyFrameCodec;
+v1 := @parameter0: int;
+v2 := @parameter1: boolean;
+v3 := @parameter2: io.netty.buffer.ByteBuf;
+v0.<io.netty.handler.codec.spdy.SpdyFrameCodec: boolean read> = 1;
+v4 = new io.netty.handler.codec.spdy.DefaultSpdyDataFrame;
+specialinvoke v4.<io.netty.handler.codec.spdy.DefaultSpdyDataFrame: void <init>(int,io.netty.buffer.ByteBuf)>(v1, v3);
+interfaceinvoke v4.<io.netty.handler.codec.spdy.SpdyDataFrame: io.netty.handler.codec.spdy.SpdyDataFrame setLast(boolean)>(v2);
+v5 = v0.<io.netty.handler.codec.spdy.SpdyFrameCodec: io.netty.channel.ChannelHandlerContext ctx>;
+interfaceinvoke v5.<io.netty.channel.ChannelHandlerContext: io.netty.channel.ChannelHandlerContext fireChannelRead(java.lang.Object)>(v4);
+return;
+}
+public void readSynStreamFrame(int, int, byte, boolean, boolean)
+{
+io.netty.handler.codec.spdy.SpdyFrameCodec v0;
+byte v3;
+int v1, v2;
+io.netty.handler.codec.spdy.DefaultSpdySynStreamFrame v6;
+boolean v4, v5, v7;
+v0 := @this: io.netty.handler.codec.spdy.SpdyFrameCodec;
+v1 := @parameter0: int;
+v2 := @parameter1: int;
+v3 := @parameter2: byte;
+v4 := @parameter3: boolean;
+v5 := @parameter4: boolean;
+v6 = new io.netty.handler.codec.spdy.DefaultSpdySynStreamFrame;
+v7 = v0.<io.netty.handler.codec.spdy.SpdyFrameCodec: boolean validateHeaders>;
+specialinvoke v6.<io.netty.handler.codec.spdy.DefaultSpdySynStreamFrame: void <init>(int,int,byte,boolean)>(v1, v2, v3, v7);
+interfaceinvoke v6.<io.netty.handler.codec.spdy.SpdySynStreamFrame: io.netty.handler.codec.spdy.SpdySynStreamFrame setLast(boolean)>(v4);
+interfaceinvoke v6.<io.netty.handler.codec.spdy.SpdySynStreamFrame: io.netty.handler.codec.spdy.SpdySynStreamFrame setUnidirectional(boolean)>(v5);
+v0.<io.netty.handler.codec.spdy.SpdyFrameCodec: io.netty.handler.codec.spdy.SpdyHeadersFrame spdyHeadersFrame> = v6;
+return;
+}
+public void readSynReplyFrame(int, boolean)
+{
+io.netty.handler.codec.spdy.SpdyFrameCodec v0;
+int v1;
+io.netty.handler.codec.spdy.DefaultSpdySynReplyFrame v3;
+boolean v2, v4;
+v0 := @this: io.netty.handler.codec.spdy.SpdyFrameCodec;
+v1 := @parameter0: int;
+v2 := @parameter1: boolean;
+v3 = new io.netty.handler.codec.spdy.DefaultSpdySynReplyFrame;
+v4 = v0.<io.netty.handler.codec.spdy.SpdyFrameCodec: boolean validateHeaders>;
+specialinvoke v3.<io.netty.handler.codec.spdy.DefaultSpdySynReplyFrame: void <init>(int,boolean)>(v1, v4);
+interfaceinvoke v3.<io.netty.handler.codec.spdy.SpdySynReplyFrame: io.netty.handler.codec.spdy.SpdySynReplyFrame setLast(boolean)>(v2);
+v0.<io.netty.handler.codec.spdy.SpdyFrameCodec: io.netty.handler.codec.spdy.SpdyHeadersFrame spdyHeadersFrame> = v3;
+return;
+}
+public void readRstStreamFrame(int, int)
+{
+io.netty.handler.codec.spdy.SpdyFrameCodec v0;
+io.netty.channel.ChannelHandlerContext v4;
+int v1, v2;
+io.netty.handler.codec.spdy.DefaultSpdyRstStreamFrame v3;
+v0 := @this: io.netty.handler.codec.spdy.SpdyFrameCodec;
+v1 := @parameter0: int;
+v2 := @parameter1: int;
+v0.<io.netty.handler.codec.spdy.SpdyFrameCodec: boolean read> = 1;
+v3 = new io.netty.handler.codec.spdy.DefaultSpdyRstStreamFrame;
+specialinvoke v3.<io.netty.handler.codec.spdy.DefaultSpdyRstStreamFrame: void <init>(int,int)>(v1, v2);
+v4 = v0.<io.netty.handler.codec.spdy.SpdyFrameCodec: io.netty.channel.ChannelHandlerContext ctx>;
+interfaceinvoke v4.<io.netty.channel.ChannelHandlerContext: io.netty.channel.ChannelHandlerContext fireChannelRead(java.lang.Object)>(v3);
+return;
+}
+public void readSettingsFrame(boolean)
+{
+io.netty.handler.codec.spdy.SpdyFrameCodec v0;
+io.netty.handler.codec.spdy.DefaultSpdySettingsFrame v2;
+boolean v1;
+io.netty.handler.codec.spdy.SpdySettingsFrame v3;
+v0 := @this: io.netty.handler.codec.spdy.SpdyFrameCodec;
+v1 := @parameter0: boolean;
+v0.<io.netty.handler.codec.spdy.SpdyFrameCodec: boolean read> = 1;
+v2 = new io.netty.handler.codec.spdy.DefaultSpdySettingsFrame;
+specialinvoke v2.<io.netty.handler.codec.spdy.DefaultSpdySettingsFrame: void <init>()>();
+v0.<io.netty.handler.codec.spdy.SpdyFrameCodec: io.netty.handler.codec.spdy.SpdySettingsFrame spdySettingsFrame> = v2;
+v3 = v0.<io.netty.handler.codec.spdy.SpdyFrameCodec: io.netty.handler.codec.spdy.SpdySettingsFrame spdySettingsFrame>;
+interfaceinvoke v3.<io.netty.handler.codec.spdy.SpdySettingsFrame: io.netty.handler.codec.spdy.SpdySettingsFrame setClearPreviouslyPersistedSettings(boolean)>(v1);
+return;
+}
+public void readSetting(int, int, boolean, boolean)
+{
+io.netty.handler.codec.spdy.SpdyFrameCodec v0;
+int v1, v2;
+boolean v3, v4;
+io.netty.handler.codec.spdy.SpdySettingsFrame v5;
+v0 := @this: io.netty.handler.codec.spdy.SpdyFrameCodec;
+v1 := @parameter0: int;
+v2 := @parameter1: int;
+v3 := @parameter2: boolean;
+v4 := @parameter3: boolean;
+v5 = v0.<io.netty.handler.codec.spdy.SpdyFrameCodec: io.netty.handler.codec.spdy.SpdySettingsFrame spdySettingsFrame>;
+interfaceinvoke v5.<io.netty.handler.codec.spdy.SpdySettingsFrame: io.netty.handler.codec.spdy.SpdySettingsFrame setValue(int,int,boolean,boolean)>(v1, v2, v3, v4);
+return;
+}
+public void readSettingsEnd()
+{
+io.netty.handler.codec.spdy.SpdyFrameCodec v0;
+io.netty.channel.ChannelHandlerContext v2;
+io.netty.handler.codec.spdy.SpdySettingsFrame v1;
+v0 := @this: io.netty.handler.codec.spdy.SpdyFrameCodec;
+v0.<io.netty.handler.codec.spdy.SpdyFrameCodec: boolean read> = 1;
+v1 = v0.<io.netty.handler.codec.spdy.SpdyFrameCodec: io.netty.handler.codec.spdy.SpdySettingsFrame spdySettingsFrame>;
+v0.<io.netty.handler.codec.spdy.SpdyFrameCodec: io.netty.handler.codec.spdy.SpdySettingsFrame spdySettingsFrame> = null;
+v2 = v0.<io.netty.handler.codec.spdy.SpdyFrameCodec: io.netty.channel.ChannelHandlerContext ctx>;
+interfaceinvoke v2.<io.netty.channel.ChannelHandlerContext: io.netty.channel.ChannelHandlerContext fireChannelRead(java.lang.Object)>(v1);
+return;
+}
+public void readPingFrame(int)
+{
+io.netty.handler.codec.spdy.SpdyFrameCodec v0;
+io.netty.channel.ChannelHandlerContext v3;
+int v1;
+io.netty.handler.codec.spdy.DefaultSpdyPingFrame v2;
+v0 := @this: io.netty.handler.codec.spdy.SpdyFrameCodec;
+v1 := @parameter0: int;
+v0.<io.netty.handler.codec.spdy.SpdyFrameCodec: boolean read> = 1;
+v2 = new io.netty.handler.codec.spdy.DefaultSpdyPingFrame;
+specialinvoke v2.<io.netty.handler.codec.spdy.DefaultSpdyPingFrame: void <init>(int)>(v1);
+v3 = v0.<io.netty.handler.codec.spdy.SpdyFrameCodec: io.netty.channel.ChannelHandlerContext ctx>;
+interfaceinvoke v3.<io.netty.channel.ChannelHandlerContext: io.netty.channel.ChannelHandlerContext fireChannelRead(java.lang.Object)>(v2);
+return;
+}
+public void readGoAwayFrame(int, int)
+{
+io.netty.handler.codec.spdy.SpdyFrameCodec v0;
+io.netty.channel.ChannelHandlerContext v4;
+io.netty.handler.codec.spdy.DefaultSpdyGoAwayFrame v3;
+int v1, v2;
+v0 := @this: io.netty.handler.codec.spdy.SpdyFrameCodec;
+v1 := @parameter0: int;
+v2 := @parameter1: int;
+v0.<io.netty.handler.codec.spdy.SpdyFrameCodec: boolean read> = 1;
+v3 = new io.netty.handler.codec.spdy.DefaultSpdyGoAwayFrame;
+specialinvoke v3.<io.netty.handler.codec.spdy.DefaultSpdyGoAwayFrame: void <init>(int,int)>(v1, v2);
+v4 = v0.<io.netty.handler.codec.spdy.SpdyFrameCodec: io.netty.channel.ChannelHandlerContext ctx>;
+interfaceinvoke v4.<io.netty.channel.ChannelHandlerContext: io.netty.channel.ChannelHandlerContext fireChannelRead(java.lang.Object)>(v3);
+return;
+}
+public void readHeadersFrame(int, boolean)
+{
+io.netty.handler.codec.spdy.SpdyFrameCodec v0;
+io.netty.handler.codec.spdy.SpdyHeadersFrame v5;
+int v1;
+io.netty.handler.codec.spdy.DefaultSpdyHeadersFrame v3;
+boolean v2, v4;
+v0 := @this: io.netty.handler.codec.spdy.SpdyFrameCodec;
+v1 := @parameter0: int;
+v2 := @parameter1: boolean;
+v3 = new io.netty.handler.codec.spdy.DefaultSpdyHeadersFrame;
+v4 = v0.<io.netty.handler.codec.spdy.SpdyFrameCodec: boolean validateHeaders>;
+specialinvoke v3.<io.netty.handler.codec.spdy.DefaultSpdyHeadersFrame: void <init>(int,boolean)>(v1, v4);
+v0.<io.netty.handler.codec.spdy.SpdyFrameCodec: io.netty.handler.codec.spdy.SpdyHeadersFrame spdyHeadersFrame> = v3;
+v5 = v0.<io.netty.handler.codec.spdy.SpdyFrameCodec: io.netty.handler.codec.spdy.SpdyHeadersFrame spdyHeadersFrame>;
+interfaceinvoke v5.<io.netty.handler.codec.spdy.SpdyHeadersFrame: io.netty.handler.codec.spdy.SpdyHeadersFrame setLast(boolean)>(v2);
+return;
+}
+public void readWindowUpdateFrame(int, int)
+{
+io.netty.handler.codec.spdy.SpdyFrameCodec v0;
+io.netty.channel.ChannelHandlerContext v4;
+io.netty.handler.codec.spdy.DefaultSpdyWindowUpdateFrame v3;
+int v1, v2;
+v0 := @this: io.netty.handler.codec.spdy.SpdyFrameCodec;
+v1 := @parameter0: int;
+v2 := @parameter1: int;
+v0.<io.netty.handler.codec.spdy.SpdyFrameCodec: boolean read> = 1;
+v3 = new io.netty.handler.codec.spdy.DefaultSpdyWindowUpdateFrame;
+specialinvoke v3.<io.netty.handler.codec.spdy.DefaultSpdyWindowUpdateFrame: void <init>(int,int)>(v1, v2);
+v4 = v0.<io.netty.handler.codec.spdy.SpdyFrameCodec: io.netty.channel.ChannelHandlerContext ctx>;
+interfaceinvoke v4.<io.netty.channel.ChannelHandlerContext: io.netty.channel.ChannelHandlerContext fireChannelRead(java.lang.Object)>(v3);
+return;
+}
+public void readHeaderBlock(io.netty.buffer.ByteBuf)
+{
+java.lang.Throwable v8;
+io.netty.handler.codec.spdy.SpdyHeadersFrame v5;
+io.netty.buffer.ByteBufAllocator v4;
+java.lang.Exception v6;
+io.netty.handler.codec.spdy.SpdyFrameCodec v0;
+io.netty.channel.ChannelHandlerContext v3, v7;
+io.netty.buffer.ByteBuf v1;
+io.netty.handler.codec.spdy.SpdyHeaderBlockDecoder v2;
+v0 := @this: io.netty.handler.codec.spdy.SpdyFrameCodec;
+v1 := @parameter0: io.netty.buffer.ByteBuf;
+label1:
+v2 = v0.<io.netty.handler.codec.spdy.SpdyFrameCodec: io.netty.handler.codec.spdy.SpdyHeaderBlockDecoder spdyHeaderBlockDecoder>;
+v3 = v0.<io.netty.handler.codec.spdy.SpdyFrameCodec: io.netty.channel.ChannelHandlerContext ctx>;
+v4 = interfaceinvoke v3.<io.netty.channel.ChannelHandlerContext: io.netty.buffer.ByteBufAllocator alloc()>();
+v5 = v0.<io.netty.handler.codec.spdy.SpdyFrameCodec: io.netty.handler.codec.spdy.SpdyHeadersFrame spdyHeadersFrame>;
+virtualinvoke v2.<io.netty.handler.codec.spdy.SpdyHeaderBlockDecoder: void decode(io.netty.buffer.ByteBufAllocator,io.netty.buffer.ByteBuf,io.netty.handler.codec.spdy.SpdyHeadersFrame)>(v4, v1, v5);
+label2:
+virtualinvoke v1.<io.netty.buffer.ByteBuf: boolean release()>();
+goto label6;
+label3:
+v6 := @caughtexception;
+v7 = v0.<io.netty.handler.codec.spdy.SpdyFrameCodec: io.netty.channel.ChannelHandlerContext ctx>;
+interfaceinvoke v7.<io.netty.channel.ChannelHandlerContext: io.netty.channel.ChannelHandlerContext fireExceptionCaught(java.lang.Throwable)>(v6);
+label4:
+virtualinvoke v1.<io.netty.buffer.ByteBuf: boolean release()>();
+goto label6;
+label5:
+v8 := @caughtexception;
+virtualinvoke v1.<io.netty.buffer.ByteBuf: boolean release()>();
+throw v8;
+label6:
+return;
+catch java.lang.Exception from label1 to label2 with label3;
+catch java.lang.Throwable from label1 to label2 with label5;
+catch java.lang.Throwable from label3 to label4 with label5;
+}
+public void readHeaderBlockEnd()
+{
+io.netty.handler.codec.spdy.SpdyFrameCodec v0;
+io.netty.channel.ChannelHandlerContext v5, v6;
+io.netty.handler.codec.spdy.SpdyHeadersFrame v1, v3;
+io.netty.handler.codec.spdy.SpdyHeaderBlockDecoder v2;
+java.lang.Exception v4;
+v0 := @this: io.netty.handler.codec.spdy.SpdyFrameCodec;
+v1 = null;
+label1:
+v2 = v0.<io.netty.handler.codec.spdy.SpdyFrameCodec: io.netty.handler.codec.spdy.SpdyHeaderBlockDecoder spdyHeaderBlockDecoder>;
+v3 = v0.<io.netty.handler.codec.spdy.SpdyFrameCodec: io.netty.handler.codec.spdy.SpdyHeadersFrame spdyHeadersFrame>;
+virtualinvoke v2.<io.netty.handler.codec.spdy.SpdyHeaderBlockDecoder: void endHeaderBlock(io.netty.handler.codec.spdy.SpdyHeadersFrame)>(v3);
+v1 = v0.<io.netty.handler.codec.spdy.SpdyFrameCodec: io.netty.handler.codec.spdy.SpdyHeadersFrame spdyHeadersFrame>;
+v0.<io.netty.handler.codec.spdy.SpdyFrameCodec: io.netty.handler.codec.spdy.SpdyHeadersFrame spdyHeadersFrame> = null;
+label2:
+goto label4;
+label3:
+v4 := @caughtexception;
+v5 = v0.<io.netty.handler.codec.spdy.SpdyFrameCodec: io.netty.channel.ChannelHandlerContext ctx>;
+interfaceinvoke v5.<io.netty.channel.ChannelHandlerContext: io.netty.channel.ChannelHandlerContext fireExceptionCaught(java.lang.Throwable)>(v4);
+label4:
+if v1 == null goto label5;
+v0.<io.netty.handler.codec.spdy.SpdyFrameCodec: boolean read> = 1;
+v6 = v0.<io.netty.handler.codec.spdy.SpdyFrameCodec: io.netty.channel.ChannelHandlerContext ctx>;
+interfaceinvoke v6.<io.netty.channel.ChannelHandlerContext: io.netty.channel.ChannelHandlerContext fireChannelRead(java.lang.Object)>(v1);
+label5:
+return;
+catch java.lang.Exception from label1 to label2 with label3;
+}
+public void readFrameError(java.lang.String)
+{
+io.netty.handler.codec.spdy.SpdyFrameCodec v0;
+io.netty.channel.ChannelHandlerContext v2;
+java.lang.String v1;
+io.netty.handler.codec.spdy.SpdyProtocolException v3;
+v0 := @this: io.netty.handler.codec.spdy.SpdyFrameCodec;
+v1 := @parameter0: java.lang.String;
+v2 = v0.<io.netty.handler.codec.spdy.SpdyFrameCodec: io.netty.channel.ChannelHandlerContext ctx>;
+v3 = <io.netty.handler.codec.spdy.SpdyFrameCodec: io.netty.handler.codec.spdy.SpdyProtocolException INVALID_FRAME>;
+interfaceinvoke v2.<io.netty.channel.ChannelHandlerContext: io.netty.channel.ChannelHandlerContext fireExceptionCaught(java.lang.Throwable)>(v3);
+return;
+}
+static void <clinit>()
+{
+io.netty.handler.codec.spdy.SpdyProtocolException v0;
+v0 = new io.netty.handler.codec.spdy.SpdyProtocolException;
+specialinvoke v0.<io.netty.handler.codec.spdy.SpdyProtocolException: void <init>(java.lang.String)>("Received invalid frame");
+<io.netty.handler.codec.spdy.SpdyFrameCodec: io.netty.handler.codec.spdy.SpdyProtocolException INVALID_FRAME> = v0;
+return;
+}
+}

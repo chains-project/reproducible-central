@@ -1,0 +1,1584 @@
+public final class io.netty.util.NetUtil extends java.lang.Object
+{
+public static final java.net.Inet4Address LOCALHOST4;
+public static final java.net.Inet6Address LOCALHOST6;
+public static final java.net.InetAddress LOCALHOST;
+public static final java.net.NetworkInterface LOOPBACK_IF;
+public static final java.util.Collection NETWORK_INTERFACES;
+public static final int SOMAXCONN;
+private static final int IPV6_WORD_COUNT;
+private static final int IPV6_MAX_CHAR_COUNT;
+private static final int IPV6_BYTE_COUNT;
+private static final int IPV6_MAX_CHAR_BETWEEN_SEPARATOR;
+private static final int IPV6_MIN_SEPARATORS;
+private static final int IPV6_MAX_SEPARATORS;
+private static final int IPV4_MAX_CHAR_BETWEEN_SEPARATOR;
+private static final int IPV4_SEPARATORS;
+private static final boolean IPV4_PREFERRED;
+private static final boolean IPV6_ADDRESSES_PREFERRED;
+private static final io.netty.util.internal.logging.InternalLogger logger;
+private static java.lang.Integer sysctlGetInt(java.lang.String) throws java.io.IOException
+{
+java.lang.Throwable v17, v18;
+java.lang.String[] v2;
+java.lang.Integer v16;
+int v10, v11, v14, v9;
+java.lang.ProcessBuilder v1;
+java.lang.String v0, v15, v7;
+boolean v13, v8;
+java.lang.Process v3;
+char v12;
+java.io.InputStreamReader v5;
+java.io.BufferedReader v6;
+java.io.InputStream v4;
+v0 := @parameter0: java.lang.String;
+v1 = new java.lang.ProcessBuilder;
+v2 = newarray (java.lang.String)[2];
+v2[0] = "sysctl";
+v2[1] = v0;
+specialinvoke v1.<java.lang.ProcessBuilder: void <init>(java.lang.String[])>(v2);
+v3 = virtualinvoke v1.<java.lang.ProcessBuilder: java.lang.Process start()>();
+label01:
+v4 = virtualinvoke v3.<java.lang.Process: java.io.InputStream getInputStream()>();
+v5 = new java.io.InputStreamReader;
+specialinvoke v5.<java.io.InputStreamReader: void <init>(java.io.InputStream)>(v4);
+v6 = new java.io.BufferedReader;
+specialinvoke v6.<java.io.BufferedReader: void <init>(java.io.Reader)>(v5);
+label02:
+v7 = virtualinvoke v6.<java.io.BufferedReader: java.lang.String readLine()>();
+if v7 == null goto label07;
+v8 = virtualinvoke v7.<java.lang.String: boolean startsWith(java.lang.String)>(v0);
+if v8 == 0 goto label07;
+v9 = virtualinvoke v7.<java.lang.String: int length()>();
+v10 = v9 - 1;
+label03:
+v11 = virtualinvoke v0.<java.lang.String: int length()>();
+if v10 <= v11 goto label07;
+v12 = virtualinvoke v7.<java.lang.String: char charAt(int)>(v10);
+v13 = staticinvoke <java.lang.Character: boolean isDigit(char)>(v12);
+if v13 != 0 goto label06;
+v14 = v10 + 1;
+v15 = virtualinvoke v7.<java.lang.String: java.lang.String substring(int)>(v14);
+v16 = staticinvoke <java.lang.Integer: java.lang.Integer valueOf(java.lang.String)>(v15);
+label04:
+virtualinvoke v6.<java.io.BufferedReader: void close()>();
+label05:
+virtualinvoke v3.<java.lang.Process: void destroy()>();
+return v16;
+label06:
+v10 = v10 - 1;
+goto label03;
+label07:
+virtualinvoke v6.<java.io.BufferedReader: void close()>();
+label08:
+virtualinvoke v3.<java.lang.Process: void destroy()>();
+return null;
+label09:
+v17 := @caughtexception;
+virtualinvoke v6.<java.io.BufferedReader: void close()>();
+throw v17;
+label10:
+v18 := @caughtexception;
+virtualinvoke v3.<java.lang.Process: void destroy()>();
+throw v18;
+catch java.lang.Throwable from label02 to label04 with label09;
+catch java.lang.Throwable from label06 to label07 with label09;
+catch java.lang.Throwable from label01 to label05 with label10;
+catch java.lang.Throwable from label06 to label08 with label10;
+}
+public static boolean isIpV4StackPreferred()
+{
+boolean v0;
+v0 = <io.netty.util.NetUtil: boolean IPV4_PREFERRED>;
+return v0;
+}
+public static boolean isIpV6AddressesPreferred()
+{
+boolean v0;
+v0 = <io.netty.util.NetUtil: boolean IPV6_ADDRESSES_PREFERRED>;
+return v0;
+}
+public static byte[] createByteArrayFromIpAddressString(java.lang.String)
+{
+byte[] v2, v8;
+char v4;
+int v5, v6, v7;
+java.lang.String v0;
+boolean v1, v3;
+v0 := @parameter0: java.lang.String;
+v1 = staticinvoke <io.netty.util.NetUtil: boolean isValidIpV4Address(java.lang.String)>(v0);
+if v1 == 0 goto label1;
+v2 = staticinvoke <io.netty.util.NetUtil: byte[] validIpV4ToBytes(java.lang.String)>(v0);
+return v2;
+label1:
+v3 = staticinvoke <io.netty.util.NetUtil: boolean isValidIpV6Address(java.lang.String)>(v0);
+if v3 == 0 goto label4;
+v4 = virtualinvoke v0.<java.lang.String: char charAt(int)>(0);
+if v4 != 91 goto label2;
+v5 = virtualinvoke v0.<java.lang.String: int length()>();
+v6 = v5 - 1;
+v0 = virtualinvoke v0.<java.lang.String: java.lang.String substring(int,int)>(1, v6);
+label2:
+v7 = virtualinvoke v0.<java.lang.String: int indexOf(int)>(37);
+if v7 < 0 goto label3;
+v0 = virtualinvoke v0.<java.lang.String: java.lang.String substring(int,int)>(0, v7);
+label3:
+v8 = staticinvoke <io.netty.util.NetUtil: byte[] getIPv6ByName(java.lang.CharSequence,boolean)>(v0, 1);
+return v8;
+label4:
+return null;
+}
+public static java.net.InetAddress createInetAddressFromIpAddressString(java.lang.String)
+{
+byte[] v15, v2, v20;
+java.lang.IllegalStateException v18, v23, v5;
+java.net.InetAddress v21, v3;
+int v10, v11, v13, v8, v9;
+java.lang.String v0, v12, v14;
+boolean v1, v6;
+char v7;
+java.lang.NumberFormatException v19;
+java.net.UnknownHostException v17, v22, v4;
+java.net.Inet6Address v16;
+v0 := @parameter0: java.lang.String;
+v1 = staticinvoke <io.netty.util.NetUtil: boolean isValidIpV4Address(java.lang.String)>(v0);
+if v1 == 0 goto label04;
+v2 = staticinvoke <io.netty.util.NetUtil: byte[] validIpV4ToBytes(java.lang.String)>(v0);
+label01:
+v3 = staticinvoke <java.net.InetAddress: java.net.InetAddress getByAddress(byte[])>(v2);
+label02:
+return v3;
+label03:
+v4 := @caughtexception;
+v5 = new java.lang.IllegalStateException;
+specialinvoke v5.<java.lang.IllegalStateException: void <init>(java.lang.Throwable)>(v4);
+throw v5;
+label04:
+v6 = staticinvoke <io.netty.util.NetUtil: boolean isValidIpV6Address(java.lang.String)>(v0);
+if v6 == 0 goto label16;
+v7 = virtualinvoke v0.<java.lang.String: char charAt(int)>(0);
+if v7 != 91 goto label05;
+v8 = virtualinvoke v0.<java.lang.String: int length()>();
+v9 = v8 - 1;
+v0 = virtualinvoke v0.<java.lang.String: java.lang.String substring(int,int)>(1, v9);
+label05:
+v10 = virtualinvoke v0.<java.lang.String: int indexOf(int)>(37);
+if v10 < 0 goto label12;
+label06:
+v11 = v10 + 1;
+v12 = virtualinvoke v0.<java.lang.String: java.lang.String substring(int)>(v11);
+v13 = staticinvoke <java.lang.Integer: int parseInt(java.lang.String)>(v12);
+v14 = virtualinvoke v0.<java.lang.String: java.lang.String substring(int,int)>(0, v10);
+v15 = staticinvoke <io.netty.util.NetUtil: byte[] getIPv6ByName(java.lang.CharSequence,boolean)>(v14, 1);
+if v15 != null goto label08;
+label07:
+return null;
+label08:
+v16 = staticinvoke <java.net.Inet6Address: java.net.Inet6Address getByAddress(java.lang.String,byte[],int)>(null, v15, v13);
+label09:
+return v16;
+label10:
+v17 := @caughtexception;
+v18 = new java.lang.IllegalStateException;
+specialinvoke v18.<java.lang.IllegalStateException: void <init>(java.lang.Throwable)>(v17);
+throw v18;
+label11:
+v19 := @caughtexception;
+return null;
+label12:
+v20 = staticinvoke <io.netty.util.NetUtil: byte[] getIPv6ByName(java.lang.CharSequence,boolean)>(v0, 1);
+if v20 != null goto label13;
+return null;
+label13:
+v21 = staticinvoke <java.net.InetAddress: java.net.InetAddress getByAddress(byte[])>(v20);
+label14:
+return v21;
+label15:
+v22 := @caughtexception;
+v23 = new java.lang.IllegalStateException;
+specialinvoke v23.<java.lang.IllegalStateException: void <init>(java.lang.Throwable)>(v22);
+throw v23;
+label16:
+return null;
+catch java.net.UnknownHostException from label01 to label02 with label03;
+catch java.net.UnknownHostException from label08 to label09 with label10;
+catch java.lang.NumberFormatException from label06 to label07 with label11;
+catch java.lang.NumberFormatException from label08 to label09 with label11;
+catch java.net.UnknownHostException from label13 to label14 with label15;
+}
+private static int decimalDigit(java.lang.String, int)
+{
+int v1, v3;
+char v2;
+java.lang.String v0;
+v0 := @parameter0: java.lang.String;
+v1 := @parameter1: int;
+v2 = virtualinvoke v0.<java.lang.String: char charAt(int)>(v1);
+v3 = v2 - 48;
+return v3;
+}
+private static byte ipv4WordToByte(java.lang.String, int, int)
+{
+int v1, v10, v11, v2, v3, v4, v5, v6, v7, v8, v9;
+java.lang.String v0;
+v0 := @parameter0: java.lang.String;
+v1 := @parameter1: int;
+v2 := @parameter2: int;
+v3 = staticinvoke <io.netty.util.NetUtil: int decimalDigit(java.lang.String,int)>(v0, v1);
+v4 = v1 + 1;
+if v4 != v2 goto label1;
+return v3;
+label1:
+v5 = v3 * 10;
+v6 = staticinvoke <io.netty.util.NetUtil: int decimalDigit(java.lang.String,int)>(v0, v4);
+v7 = v5 + v6;
+v8 = v4 + 1;
+if v8 != v2 goto label2;
+return v7;
+label2:
+v9 = v7 * 10;
+v10 = staticinvoke <io.netty.util.NetUtil: int decimalDigit(java.lang.String,int)>(v0, v8);
+v11 = v9 + v10;
+return v11;
+}
+static byte[] validIpV4ToBytes(java.lang.String)
+{
+byte[] v1;
+byte v11, v14, v3, v7;
+int v10, v12, v13, v2, v4, v5, v6, v8, v9;
+java.lang.String v0;
+v0 := @parameter0: java.lang.String;
+v1 = newarray (byte)[4];
+v2 = virtualinvoke v0.<java.lang.String: int indexOf(int,int)>(46, 1);
+v3 = staticinvoke <io.netty.util.NetUtil: byte ipv4WordToByte(java.lang.String,int,int)>(v0, 0, v2);
+v1[0] = v3;
+v4 = v2 + 1;
+v5 = v2 + 2;
+v6 = virtualinvoke v0.<java.lang.String: int indexOf(int,int)>(46, v5);
+v7 = staticinvoke <io.netty.util.NetUtil: byte ipv4WordToByte(java.lang.String,int,int)>(v0, v4, v6);
+v1[1] = v7;
+v8 = v6 + 1;
+v9 = v6 + 2;
+v10 = virtualinvoke v0.<java.lang.String: int indexOf(int,int)>(46, v9);
+v11 = staticinvoke <io.netty.util.NetUtil: byte ipv4WordToByte(java.lang.String,int,int)>(v0, v8, v10);
+v1[2] = v11;
+v12 = v10 + 1;
+v13 = virtualinvoke v0.<java.lang.String: int length()>();
+v14 = staticinvoke <io.netty.util.NetUtil: byte ipv4WordToByte(java.lang.String,int,int)>(v0, v12, v13);
+v1[3] = v14;
+return v1;
+}
+public static int ipv4AddressToInt(java.net.Inet4Address)
+{
+byte[] v1;
+short v10, v14, v3, v6;
+byte v13, v2, v5, v9;
+int v11, v12, v15, v4, v7, v8;
+java.net.Inet4Address v0;
+v0 := @parameter0: java.net.Inet4Address;
+v1 = virtualinvoke v0.<java.net.Inet4Address: byte[] getAddress()>();
+v2 = v1[0];
+v3 = v2 & 255;
+v4 = v3 << 24;
+v5 = v1[1];
+v6 = v5 & 255;
+v7 = v6 << 16;
+v8 = v4 | v7;
+v9 = v1[2];
+v10 = v9 & 255;
+v11 = v10 << 8;
+v12 = v8 | v11;
+v13 = v1[3];
+v14 = v13 & 255;
+v15 = v12 | v14;
+return v15;
+}
+public static java.lang.String intToIpAddress(int)
+{
+int v0, v2, v3, v4, v5, v6, v7, v8;
+java.lang.StringBuilder v1;
+java.lang.String v9;
+v0 := @parameter0: int;
+v1 = new java.lang.StringBuilder;
+specialinvoke v1.<java.lang.StringBuilder: void <init>(int)>(15);
+v2 = v0 >> 24;
+v3 = v2 & 255;
+virtualinvoke v1.<java.lang.StringBuilder: java.lang.StringBuilder append(int)>(v3);
+virtualinvoke v1.<java.lang.StringBuilder: java.lang.StringBuilder append(char)>(46);
+v4 = v0 >> 16;
+v5 = v4 & 255;
+virtualinvoke v1.<java.lang.StringBuilder: java.lang.StringBuilder append(int)>(v5);
+virtualinvoke v1.<java.lang.StringBuilder: java.lang.StringBuilder append(char)>(46);
+v6 = v0 >> 8;
+v7 = v6 & 255;
+virtualinvoke v1.<java.lang.StringBuilder: java.lang.StringBuilder append(int)>(v7);
+virtualinvoke v1.<java.lang.StringBuilder: java.lang.StringBuilder append(char)>(46);
+v8 = v0 & 255;
+virtualinvoke v1.<java.lang.StringBuilder: java.lang.StringBuilder append(int)>(v8);
+v9 = virtualinvoke v1.<java.lang.StringBuilder: java.lang.String toString()>();
+return v9;
+}
+public static java.lang.String bytesToIpAddress(byte[])
+{
+int v1;
+byte[] v0;
+java.lang.String v2;
+v0 := @parameter0: byte[];
+v1 = lengthof v0;
+v2 = staticinvoke <io.netty.util.NetUtil: java.lang.String bytesToIpAddress(byte[],int,int)>(v0, 0, v1);
+return v2;
+}
+public static java.lang.String bytesToIpAddress(byte[], int, int)
+{
+byte[] v0;
+short v10, v13, v4, v7;
+byte v12, v3, v6, v9;
+int v1, v11, v2, v5, v8;
+java.lang.String v14, v15, v17;
+java.lang.IllegalArgumentException v16;
+java.lang.StringBuilder v18;
+v0 := @parameter0: byte[];
+v1 := @parameter1: int;
+v2 := @parameter2: int;
+lookupswitch(v2)
+{
+case 4: goto label1;
+case 16: goto label2;
+default: goto label3;
+};
+label1:
+specialinvoke v18.<java.lang.StringBuilder: void <init>(int)>(15);
+v3 = v0[v1];
+v4 = v3 & 255;
+v5 = v1 + 1;
+v6 = v0[v5];
+v7 = v6 & 255;
+v8 = v1 + 2;
+v9 = v0[v8];
+v10 = v9 & 255;
+v11 = v1 + 3;
+v12 = v0[v11];
+v13 = v12 & 255;
+v14 = dynamicinvoke "makeConcatWithConstants" <java.lang.String (short,short,short,short)>(v4, v7, v10, v13) <java.lang.invoke.StringConcatFactory: java.lang.invoke.CallSite makeConcatWithConstants(java.lang.invoke.MethodHandles$Lookup,java.lang.String,java.lang.invoke.MethodType,java.lang.String,java.lang.Object[])>("\u0001.\u0001.\u0001.\u0001");
+return v14;
+label2:
+v15 = staticinvoke <io.netty.util.NetUtil: java.lang.String toAddressString(byte[],int,boolean)>(v0, v1, 0);
+return v15;
+label3:
+v16 = new java.lang.IllegalArgumentException;
+v17 = dynamicinvoke "makeConcatWithConstants" <java.lang.String (int)>(v2) <java.lang.invoke.StringConcatFactory: java.lang.invoke.CallSite makeConcatWithConstants(java.lang.invoke.MethodHandles$Lookup,java.lang.String,java.lang.invoke.MethodType,java.lang.String,java.lang.Object[])>("length: \u0001 (expected: 4 or 16)");
+specialinvoke v16.<java.lang.IllegalArgumentException: void <init>(java.lang.String)>(v17);
+throw v16;
+}
+public static boolean isValidIpV6Address(java.lang.String)
+{
+java.lang.String v0;
+boolean v1;
+v0 := @parameter0: java.lang.String;
+v1 = staticinvoke <io.netty.util.NetUtil: boolean isValidIpV6Address(java.lang.CharSequence)>(v0);
+return v1;
+}
+public static boolean isValidIpV6Address(java.lang.CharSequence)
+{
+boolean v13, v19, v22, v25, v28, v32, v33, v35;
+java.lang.CharSequence v0;
+int v1, v10, v11, v14, v16, v17, v20, v23, v26, v30, v31, v34, v4, v5, v7, v8, v9;
+char v12, v15, v18, v2, v21, v24, v27, v29, v3, v6;
+v0 := @parameter0: java.lang.CharSequence;
+v1 = interfaceinvoke v0.<java.lang.CharSequence: int length()>();
+if v1 >= 2 goto label01;
+return 0;
+label01:
+v2 = interfaceinvoke v0.<java.lang.CharSequence: char charAt(int)>(0);
+if v2 != 91 goto label03;
+v1 = v1 - 1;
+v3 = interfaceinvoke v0.<java.lang.CharSequence: char charAt(int)>(v1);
+if v3 == 93 goto label02;
+return 0;
+label02:
+v4 = 1;
+v2 = interfaceinvoke v0.<java.lang.CharSequence: char charAt(int)>(1);
+goto label04;
+label03:
+v4 = 0;
+label04:
+if v2 != 58 goto label06;
+v5 = v4 + 1;
+v6 = interfaceinvoke v0.<java.lang.CharSequence: char charAt(int)>(v5);
+if v6 == 58 goto label05;
+return 0;
+label05:
+v7 = 2;
+v8 = v4;
+v4 = v4 + 2;
+goto label07;
+label06:
+v7 = 0;
+v9 = (int) -1;
+v8 = v9;
+label07:
+v10 = 0;
+v11 = v4;
+label08:
+if v11 >= v1 goto label30;
+v12 = interfaceinvoke v0.<java.lang.CharSequence: char charAt(int)>(v11);
+v13 = staticinvoke <io.netty.util.NetUtil: boolean isValidHexChar(char)>(v12);
+if v13 == 0 goto label10;
+if v10 >= 4 goto label09;
+v10 = v10 + 1;
+goto label29;
+label09:
+return 0;
+label10:
+lookupswitch(v12)
+{
+case 37: goto label27;
+case 46: goto label16;
+case 58: goto label11;
+default: goto label28;
+};
+label11:
+if v7 <= 7 goto label12;
+return 0;
+label12:
+v14 = v11 - 1;
+v15 = interfaceinvoke v0.<java.lang.CharSequence: char charAt(int)>(v14);
+if v15 != 58 goto label14;
+if v8 < 0 goto label13;
+return 0;
+label13:
+v8 = v11 - 1;
+goto label15;
+label14:
+v10 = 0;
+label15:
+v7 = v7 + 1;
+goto label29;
+label16:
+if v8 >= 0 goto label17;
+if v7 != 6 goto label19;
+label17:
+if v7 != 7 goto label18;
+if v8 >= v4 goto label19;
+label18:
+if v7 <= 7 goto label20;
+label19:
+return 0;
+label20:
+v16 = v11 - v10;
+v17 = v16 - 2;
+v18 = interfaceinvoke v0.<java.lang.CharSequence: char charAt(int)>(v17);
+v19 = staticinvoke <io.netty.util.NetUtil: boolean isValidIPv4MappedChar(char)>(v18);
+if v19 == 0 goto label23;
+v20 = v17 - 1;
+v21 = interfaceinvoke v0.<java.lang.CharSequence: char charAt(int)>(v20);
+v22 = staticinvoke <io.netty.util.NetUtil: boolean isValidIPv4MappedChar(char)>(v21);
+if v22 == 0 goto label21;
+v23 = v17 - 2;
+v24 = interfaceinvoke v0.<java.lang.CharSequence: char charAt(int)>(v23);
+v25 = staticinvoke <io.netty.util.NetUtil: boolean isValidIPv4MappedChar(char)>(v24);
+if v25 == 0 goto label21;
+v26 = v17 - 3;
+v27 = interfaceinvoke v0.<java.lang.CharSequence: char charAt(int)>(v26);
+v28 = staticinvoke <io.netty.util.NetUtil: boolean isValidIPv4MappedChar(char)>(v27);
+if v28 != 0 goto label22;
+label21:
+return 0;
+label22:
+v17 = v17 - 5;
+label23:
+if v17 < v4 goto label25;
+v29 = interfaceinvoke v0.<java.lang.CharSequence: char charAt(int)>(v17);
+if v29 == 48 goto label24;
+if v29 == 58 goto label24;
+return 0;
+label24:
+v17 = v17 - 1;
+goto label23;
+label25:
+v30 = v16 + 7;
+v31 = staticinvoke <io.netty.util.AsciiString: int indexOf(java.lang.CharSequence,char,int)>(v0, 37, v30);
+if v31 >= 0 goto label26;
+v31 = v1;
+label26:
+v32 = staticinvoke <io.netty.util.NetUtil: boolean isValidIpV4Address(java.lang.CharSequence,int,int)>(v0, v16, v31);
+return v32;
+label27:
+v1 = v11;
+goto label30;
+label28:
+return 0;
+label29:
+v11 = v11 + 1;
+goto label08;
+label30:
+if v8 >= 0 goto label33;
+if v7 != 7 goto label31;
+if v10 <= 0 goto label31;
+v33 = 1;
+goto label32;
+label31:
+v33 = 0;
+label32:
+return v33;
+label33:
+v34 = v8 + 2;
+if v34 == v1 goto label34;
+if v10 <= 0 goto label35;
+if v7 < 8 goto label34;
+if v8 > v4 goto label35;
+label34:
+v35 = 1;
+goto label36;
+label35:
+v35 = 0;
+label36:
+return v35;
+}
+private static boolean isValidIpV4Word(java.lang.CharSequence, int, int)
+{
+java.lang.CharSequence v0;
+char v11, v4, v6, v8;
+int v1, v10, v2, v3, v5, v7;
+boolean v12, v13, v9;
+v0 := @parameter0: java.lang.CharSequence;
+v1 := @parameter1: int;
+v2 := @parameter2: int;
+v3 = v2 - v1;
+if v3 < 1 goto label01;
+if v3 > 3 goto label01;
+v4 = interfaceinvoke v0.<java.lang.CharSequence: char charAt(int)>(v1);
+if v4 >= 48 goto label02;
+label01:
+return 0;
+label02:
+if v3 != 3 goto label07;
+v5 = v1 + 1;
+v6 = interfaceinvoke v0.<java.lang.CharSequence: char charAt(int)>(v5);
+if v6 < 48 goto label05;
+v7 = v1 + 2;
+v8 = interfaceinvoke v0.<java.lang.CharSequence: char charAt(int)>(v7);
+if v8 < 48 goto label05;
+if v4 > 49 goto label03;
+if v6 > 57 goto label03;
+if v8 <= 57 goto label04;
+label03:
+if v4 != 50 goto label05;
+if v6 > 53 goto label05;
+if v8 <= 53 goto label04;
+if v6 >= 53 goto label05;
+if v8 > 57 goto label05;
+label04:
+v9 = 1;
+goto label06;
+label05:
+v9 = 0;
+label06:
+return v9;
+label07:
+if v4 > 57 goto label09;
+if v3 == 1 goto label08;
+v10 = v1 + 1;
+v11 = interfaceinvoke v0.<java.lang.CharSequence: char charAt(int)>(v10);
+v12 = staticinvoke <io.netty.util.NetUtil: boolean isValidNumericChar(char)>(v11);
+if v12 == 0 goto label09;
+label08:
+v13 = 1;
+goto label10;
+label09:
+v13 = 0;
+label10:
+return v13;
+}
+private static boolean isValidHexChar(char)
+{
+char v0;
+boolean v1;
+v0 := @parameter0: char;
+if v0 < 48 goto label1;
+if v0 <= 57 goto label3;
+label1:
+if v0 < 65 goto label2;
+if v0 <= 70 goto label3;
+label2:
+if v0 < 97 goto label4;
+if v0 > 102 goto label4;
+label3:
+v1 = 1;
+goto label5;
+label4:
+v1 = 0;
+label5:
+return v1;
+}
+private static boolean isValidNumericChar(char)
+{
+char v0;
+boolean v1;
+v0 := @parameter0: char;
+if v0 < 48 goto label1;
+if v0 > 57 goto label1;
+v1 = 1;
+goto label2;
+label1:
+v1 = 0;
+label2:
+return v1;
+}
+private static boolean isValidIPv4MappedChar(char)
+{
+char v0;
+boolean v1;
+v0 := @parameter0: char;
+if v0 == 102 goto label1;
+if v0 != 70 goto label2;
+label1:
+v1 = 1;
+goto label3;
+label2:
+v1 = 0;
+label3:
+return v1;
+}
+private static boolean isValidIPv4MappedSeparators(byte, byte, boolean)
+{
+byte v0, v1;
+int v3;
+boolean v2, v4;
+v0 := @parameter0: byte;
+v1 := @parameter1: byte;
+v2 := @parameter2: boolean;
+if v0 != v1 goto label2;
+if v0 == 0 goto label1;
+if v2 != 0 goto label2;
+v3 = (int) -1;
+if v1 != v3 goto label2;
+label1:
+v4 = 1;
+goto label3;
+label2:
+v4 = 0;
+label3:
+return v4;
+}
+private static boolean isValidIPv4Mapped(byte[], int, int, int)
+{
+byte[] v0;
+byte v10, v8;
+int v1, v12, v2, v3, v4, v7, v9;
+boolean v11, v13, v14, v5, v6;
+v0 := @parameter0: byte[];
+v1 := @parameter1: int;
+v2 := @parameter2: int;
+v3 := @parameter3: int;
+v4 = v2 + v3;
+if v4 < 14 goto label1;
+v5 = 1;
+goto label2;
+label1:
+v5 = 0;
+label2:
+v6 = v5;
+if v1 > 12 goto label4;
+if v1 < 2 goto label4;
+if v5 == 0 goto label3;
+if v2 >= 12 goto label4;
+label3:
+v7 = v1 - 1;
+v8 = v0[v7];
+v9 = v1 - 2;
+v10 = v0[v9];
+v11 = staticinvoke <io.netty.util.NetUtil: boolean isValidIPv4MappedSeparators(byte,byte,boolean)>(v8, v10, v6);
+if v11 == 0 goto label4;
+v12 = v1 - 3;
+v13 = staticinvoke <io.netty.util.internal.PlatformDependent: boolean isZero(byte[],int,int)>(v0, 0, v12);
+if v13 == 0 goto label4;
+v14 = 1;
+goto label5;
+label4:
+v14 = 0;
+label5:
+return v14;
+}
+public static boolean isValidIpV4Address(java.lang.CharSequence)
+{
+int v1;
+java.lang.CharSequence v0;
+boolean v2;
+v0 := @parameter0: java.lang.CharSequence;
+v1 = interfaceinvoke v0.<java.lang.CharSequence: int length()>();
+v2 = staticinvoke <io.netty.util.NetUtil: boolean isValidIpV4Address(java.lang.CharSequence,int,int)>(v0, 0, v1);
+return v2;
+}
+public static boolean isValidIpV4Address(java.lang.String)
+{
+int v1;
+java.lang.String v0;
+boolean v2;
+v0 := @parameter0: java.lang.String;
+v1 = virtualinvoke v0.<java.lang.String: int length()>();
+v2 = staticinvoke <io.netty.util.NetUtil: boolean isValidIpV4Address(java.lang.String,int,int)>(v0, 0, v1);
+return v2;
+}
+private static boolean isValidIpV4Address(java.lang.CharSequence, int, int)
+{
+java.lang.CharSequence v0;
+int v1, v2;
+boolean v3, v4, v5;
+v0 := @parameter0: java.lang.CharSequence;
+v1 := @parameter1: int;
+v2 := @parameter2: int;
+v3 = v0 instanceof java.lang.String;
+if v3 == 0 goto label1;
+v4 = staticinvoke <io.netty.util.NetUtil: boolean isValidIpV4Address(java.lang.String,int,int)>(v0, v1, v2);
+goto label3;
+label1:
+v5 = v0 instanceof io.netty.util.AsciiString;
+if v5 == 0 goto label2;
+v4 = staticinvoke <io.netty.util.NetUtil: boolean isValidIpV4Address(io.netty.util.AsciiString,int,int)>(v0, v1, v2);
+goto label3;
+label2:
+v4 = staticinvoke <io.netty.util.NetUtil: boolean isValidIpV4Address0(java.lang.CharSequence,int,int)>(v0, v1, v2);
+label3:
+return v4;
+}
+private static boolean isValidIpV4Address(java.lang.String, int, int)
+{
+int v1, v11, v12, v13, v15, v2, v3, v4, v5, v7, v8, v9;
+java.lang.String v0;
+boolean v10, v14, v16, v17, v6;
+v0 := @parameter0: java.lang.String;
+v1 := @parameter1: int;
+v2 := @parameter2: int;
+v3 = v2 - v1;
+if v3 > 15 goto label1;
+if v3 < 7 goto label1;
+v4 = v1 + 1;
+v5 = virtualinvoke v0.<java.lang.String: int indexOf(int,int)>(46, v4);
+if v5 <= 0 goto label1;
+v6 = staticinvoke <io.netty.util.NetUtil: boolean isValidIpV4Word(java.lang.CharSequence,int,int)>(v0, v1, v5);
+if v6 == 0 goto label1;
+v7 = v5 + 2;
+v8 = virtualinvoke v0.<java.lang.String: int indexOf(int,int)>(46, v7);
+if v8 <= 0 goto label1;
+v9 = v7 - 1;
+v10 = staticinvoke <io.netty.util.NetUtil: boolean isValidIpV4Word(java.lang.CharSequence,int,int)>(v0, v9, v8);
+if v10 == 0 goto label1;
+v11 = v8 + 2;
+v12 = virtualinvoke v0.<java.lang.String: int indexOf(int,int)>(46, v11);
+if v12 <= 0 goto label1;
+v13 = v11 - 1;
+v14 = staticinvoke <io.netty.util.NetUtil: boolean isValidIpV4Word(java.lang.CharSequence,int,int)>(v0, v13, v12);
+if v14 == 0 goto label1;
+v15 = v12 + 1;
+v16 = staticinvoke <io.netty.util.NetUtil: boolean isValidIpV4Word(java.lang.CharSequence,int,int)>(v0, v15, v2);
+if v16 == 0 goto label1;
+v17 = 1;
+goto label2;
+label1:
+v17 = 0;
+label2:
+return v17;
+}
+private static boolean isValidIpV4Address(io.netty.util.AsciiString, int, int)
+{
+io.netty.util.AsciiString v0;
+int v1, v11, v12, v13, v15, v2, v3, v4, v5, v7, v8, v9;
+boolean v10, v14, v16, v17, v6;
+v0 := @parameter0: io.netty.util.AsciiString;
+v1 := @parameter1: int;
+v2 := @parameter2: int;
+v3 = v2 - v1;
+if v3 > 15 goto label1;
+if v3 < 7 goto label1;
+v4 = v1 + 1;
+v5 = virtualinvoke v0.<io.netty.util.AsciiString: int indexOf(char,int)>(46, v4);
+if v5 <= 0 goto label1;
+v6 = staticinvoke <io.netty.util.NetUtil: boolean isValidIpV4Word(java.lang.CharSequence,int,int)>(v0, v1, v5);
+if v6 == 0 goto label1;
+v7 = v5 + 2;
+v8 = virtualinvoke v0.<io.netty.util.AsciiString: int indexOf(char,int)>(46, v7);
+if v8 <= 0 goto label1;
+v9 = v7 - 1;
+v10 = staticinvoke <io.netty.util.NetUtil: boolean isValidIpV4Word(java.lang.CharSequence,int,int)>(v0, v9, v8);
+if v10 == 0 goto label1;
+v11 = v8 + 2;
+v12 = virtualinvoke v0.<io.netty.util.AsciiString: int indexOf(char,int)>(46, v11);
+if v12 <= 0 goto label1;
+v13 = v11 - 1;
+v14 = staticinvoke <io.netty.util.NetUtil: boolean isValidIpV4Word(java.lang.CharSequence,int,int)>(v0, v13, v12);
+if v14 == 0 goto label1;
+v15 = v12 + 1;
+v16 = staticinvoke <io.netty.util.NetUtil: boolean isValidIpV4Word(java.lang.CharSequence,int,int)>(v0, v15, v2);
+if v16 == 0 goto label1;
+v17 = 1;
+goto label2;
+label1:
+v17 = 0;
+label2:
+return v17;
+}
+private static boolean isValidIpV4Address0(java.lang.CharSequence, int, int)
+{
+int v1, v11, v12, v13, v15, v2, v3, v4, v5, v7, v8, v9;
+boolean v10, v14, v16, v17, v6;
+java.lang.CharSequence v0;
+v0 := @parameter0: java.lang.CharSequence;
+v1 := @parameter1: int;
+v2 := @parameter2: int;
+v3 = v2 - v1;
+if v3 > 15 goto label1;
+if v3 < 7 goto label1;
+v4 = v1 + 1;
+v5 = staticinvoke <io.netty.util.AsciiString: int indexOf(java.lang.CharSequence,char,int)>(v0, 46, v4);
+if v5 <= 0 goto label1;
+v6 = staticinvoke <io.netty.util.NetUtil: boolean isValidIpV4Word(java.lang.CharSequence,int,int)>(v0, v1, v5);
+if v6 == 0 goto label1;
+v7 = v5 + 2;
+v8 = staticinvoke <io.netty.util.AsciiString: int indexOf(java.lang.CharSequence,char,int)>(v0, 46, v7);
+if v8 <= 0 goto label1;
+v9 = v7 - 1;
+v10 = staticinvoke <io.netty.util.NetUtil: boolean isValidIpV4Word(java.lang.CharSequence,int,int)>(v0, v9, v8);
+if v10 == 0 goto label1;
+v11 = v8 + 2;
+v12 = staticinvoke <io.netty.util.AsciiString: int indexOf(java.lang.CharSequence,char,int)>(v0, 46, v11);
+if v12 <= 0 goto label1;
+v13 = v11 - 1;
+v14 = staticinvoke <io.netty.util.NetUtil: boolean isValidIpV4Word(java.lang.CharSequence,int,int)>(v0, v13, v12);
+if v14 == 0 goto label1;
+v15 = v12 + 1;
+v16 = staticinvoke <io.netty.util.NetUtil: boolean isValidIpV4Word(java.lang.CharSequence,int,int)>(v0, v15, v2);
+if v16 == 0 goto label1;
+v17 = 1;
+goto label2;
+label1:
+v17 = 0;
+label2:
+return v17;
+}
+public static java.net.Inet6Address getByName(java.lang.CharSequence)
+{
+java.net.Inet6Address v1;
+java.lang.CharSequence v0;
+v0 := @parameter0: java.lang.CharSequence;
+v1 = staticinvoke <io.netty.util.NetUtil: java.net.Inet6Address getByName(java.lang.CharSequence,boolean)>(v0, 1);
+return v1;
+}
+public static java.net.Inet6Address getByName(java.lang.CharSequence, boolean)
+{
+byte[] v2;
+java.net.Inet6Address v4;
+java.lang.CharSequence v0;
+int v3;
+java.lang.RuntimeException v6;
+java.net.UnknownHostException v5;
+boolean v1;
+v0 := @parameter0: java.lang.CharSequence;
+v1 := @parameter1: boolean;
+v2 = staticinvoke <io.netty.util.NetUtil: byte[] getIPv6ByName(java.lang.CharSequence,boolean)>(v0, v1);
+if v2 != null goto label1;
+return null;
+label1:
+v3 = (int) -1;
+v4 = staticinvoke <java.net.Inet6Address: java.net.Inet6Address getByAddress(java.lang.String,byte[],int)>(null, v2, v3);
+label2:
+return v4;
+label3:
+v5 := @caughtexception;
+v6 = new java.lang.RuntimeException;
+specialinvoke v6.<java.lang.RuntimeException: void <init>(java.lang.Throwable)>(v5);
+throw v6;
+catch java.net.UnknownHostException from label1 to label2 with label3;
+}
+static byte[] getIPv6ByName(java.lang.CharSequence, boolean)
+{
+byte[] v2;
+java.lang.CharSequence v0;
+int v10, v100, v101, v102, v103, v104, v105, v106, v11, v111, v112, v113, v116, v117, v118, v119, v12, v120, v121, v122, v123, v124, v125, v126, v127, v128, v129, v130, v131, v132, v133, v134, v135, v14, v15, v16, v17, v18, v19, v20, v21, v22, v23, v24, v25, v26, v27, v28, v29, v3, v30, v31, v32, v33, v35, v37, v38, v39, v4, v40, v41, v42, v43, v45, v48, v5, v51, v54, v57, v6, v60, v63, v64, v65, v66, v67, v68, v69, v7, v70, v71, v72, v73, v74, v75, v76, v79, v8, v80, v81, v82, v83, v86, v87, v9, v90, v91, v92, v93, v94, v95, v96, v97, v98, v99;
+boolean v1, v44, v47, v50, v53, v56, v59, v62, v77, v78, v84, v85;
+char v107, v108, v109, v110, v114, v115, v13, v34, v36, v46, v49, v52, v55, v58, v61, v88, v89;
+v0 := @parameter0: java.lang.CharSequence;
+v1 := @parameter1: boolean;
+v2 = newarray (byte)[16];
+v3 = interfaceinvoke v0.<java.lang.CharSequence: int length()>();
+v4 = 0;
+v5 = 0;
+v6 = 0;
+v7 = 0;
+v8 = (int) -1;
+v9 = v8;
+v10 = 0;
+v11 = 0;
+v12 = 0;
+label01:
+if v10 >= v3 goto label23;
+v13 = interfaceinvoke v0.<java.lang.CharSequence: char charAt(int)>(v10);
+lookupswitch(v13)
+{
+case 46: goto label09;
+case 58: goto label02;
+default: goto label17;
+};
+label02:
+v11 = v11 + 1;
+v14 = v10 - v9;
+if v14 > 4 goto label03;
+if v12 > 0 goto label03;
+if v11 > 8 goto label03;
+v15 = v6 + 1;
+v16 = lengthof v2;
+if v15 < v16 goto label04;
+label03:
+return null;
+label04:
+v17 = v10 - v9;
+v18 = 4 - v17;
+v19 = v18 << 2;
+v20 = v7 << v19;
+if v5 <= 0 goto label05;
+v5 = v5 - 2;
+label05:
+v21 = v6 + 1;
+v22 = v20 & 15;
+v23 = v22 << 4;
+v24 = v20 >> 4;
+v25 = v24 & 15;
+v26 = v23 | v25;
+v2[v6] = v26;
+v6 = v21 + 1;
+v27 = v20 >> 8;
+v28 = v27 & 15;
+v29 = v28 << 4;
+v30 = v20 >> 12;
+v31 = v30 & 15;
+v32 = v29 | v31;
+v2[v21] = v32;
+v33 = v10 + 1;
+if v33 >= v3 goto label08;
+v34 = interfaceinvoke v0.<java.lang.CharSequence: char charAt(int)>(v33);
+if v34 != 58 goto label08;
+v35 = v33 + 1;
+if v4 != 0 goto label06;
+if v35 >= v3 goto label07;
+v36 = interfaceinvoke v0.<java.lang.CharSequence: char charAt(int)>(v35);
+if v36 != 58 goto label07;
+label06:
+return null;
+label07:
+v11 = v11 + 1;
+v4 = v6;
+v37 = lengthof v2;
+v38 = v37 - v6;
+v5 = v38 - 2;
+v10 = v10 + 1;
+label08:
+v7 = 0;
+v39 = (int) -1;
+v9 = v39;
+goto label22;
+label09:
+v12 = v12 + 1;
+v40 = v10 - v9;
+if v40 > 3 goto label14;
+if v9 < 0 goto label14;
+if v12 > 3 goto label14;
+if v11 <= 0 goto label10;
+v41 = v6 + v5;
+if v41 < 12 goto label14;
+label10:
+v42 = v10 + 1;
+if v42 >= v3 goto label14;
+v43 = lengthof v2;
+if v6 >= v43 goto label14;
+if v12 != 1 goto label15;
+if v1 == 0 goto label14;
+if v6 == 0 goto label11;
+v44 = staticinvoke <io.netty.util.NetUtil: boolean isValidIPv4Mapped(byte[],int,int,int)>(v2, v6, v4, v5);
+if v44 == 0 goto label14;
+label11:
+if v40 != 3 goto label12;
+v45 = v10 - 1;
+v46 = interfaceinvoke v0.<java.lang.CharSequence: char charAt(int)>(v45);
+v47 = staticinvoke <io.netty.util.NetUtil: boolean isValidNumericChar(char)>(v46);
+if v47 == 0 goto label14;
+v48 = v10 - 2;
+v49 = interfaceinvoke v0.<java.lang.CharSequence: char charAt(int)>(v48);
+v50 = staticinvoke <io.netty.util.NetUtil: boolean isValidNumericChar(char)>(v49);
+if v50 == 0 goto label14;
+v51 = v10 - 3;
+v52 = interfaceinvoke v0.<java.lang.CharSequence: char charAt(int)>(v51);
+v53 = staticinvoke <io.netty.util.NetUtil: boolean isValidNumericChar(char)>(v52);
+if v53 == 0 goto label14;
+label12:
+if v40 != 2 goto label13;
+v54 = v10 - 1;
+v55 = interfaceinvoke v0.<java.lang.CharSequence: char charAt(int)>(v54);
+v56 = staticinvoke <io.netty.util.NetUtil: boolean isValidNumericChar(char)>(v55);
+if v56 == 0 goto label14;
+v57 = v10 - 2;
+v58 = interfaceinvoke v0.<java.lang.CharSequence: char charAt(int)>(v57);
+v59 = staticinvoke <io.netty.util.NetUtil: boolean isValidNumericChar(char)>(v58);
+if v59 == 0 goto label14;
+label13:
+if v40 != 1 goto label15;
+v60 = v10 - 1;
+v61 = interfaceinvoke v0.<java.lang.CharSequence: char charAt(int)>(v60);
+v62 = staticinvoke <io.netty.util.NetUtil: boolean isValidNumericChar(char)>(v61);
+if v62 != 0 goto label15;
+label14:
+return null;
+label15:
+v63 = 3 - v40;
+v64 = v63 << 2;
+v65 = v7 << v64;
+v66 = v65 & 15;
+v67 = v66 * 100;
+v68 = v65 >> 4;
+v69 = v68 & 15;
+v70 = v69 * 10;
+v71 = v67 + v70;
+v72 = v65 >> 8;
+v73 = v72 & 15;
+v74 = v71 + v73;
+if v74 <= 255 goto label16;
+return null;
+label16:
+v75 = v6;
+v6 = v6 + 1;
+v2[v75] = v74;
+v7 = 0;
+v76 = (int) -1;
+v9 = v76;
+goto label22;
+label17:
+v77 = staticinvoke <io.netty.util.NetUtil: boolean isValidHexChar(char)>(v13);
+if v77 == 0 goto label18;
+if v12 <= 0 goto label19;
+v78 = staticinvoke <io.netty.util.NetUtil: boolean isValidNumericChar(char)>(v13);
+if v78 != 0 goto label19;
+label18:
+return null;
+label19:
+if v9 >= 0 goto label20;
+v9 = v10;
+goto label21;
+label20:
+v79 = v10 - v9;
+if v79 <= 4 goto label21;
+return null;
+label21:
+v80 = staticinvoke <io.netty.util.internal.StringUtil: int decodeHexNibble(char)>(v13);
+v81 = v10 - v9;
+v82 = v81 << 2;
+v83 = v80 << v82;
+v7 = v7 + v83;
+label22:
+v10 = v10 + 1;
+goto label01;
+label23:
+if v4 <= 0 goto label24;
+v84 = 1;
+goto label25;
+label24:
+v84 = 0;
+label25:
+v85 = v84;
+if v12 <= 0 goto label33;
+if v9 <= 0 goto label26;
+v86 = v10 - v9;
+if v86 > 3 goto label27;
+label26:
+if v12 != 3 goto label27;
+v87 = lengthof v2;
+if v6 < v87 goto label28;
+label27:
+return null;
+label28:
+if v11 == 0 goto label31;
+if v11 < 2 goto label30;
+if v85 != 0 goto label29;
+if v11 != 6 goto label29;
+v88 = interfaceinvoke v0.<java.lang.CharSequence: char charAt(int)>(0);
+if v88 != 58 goto label31;
+label29:
+if v85 == 0 goto label30;
+if v11 >= 8 goto label30;
+v89 = interfaceinvoke v0.<java.lang.CharSequence: char charAt(int)>(0);
+if v89 != 58 goto label31;
+if v4 <= 2 goto label31;
+label30:
+return null;
+label31:
+v90 = v10 - v9;
+v91 = 3 - v90;
+v92 = v91 << 2;
+v93 = v7 << v92;
+v94 = v93 & 15;
+v95 = v94 * 100;
+v96 = v93 >> 4;
+v97 = v96 & 15;
+v98 = v97 * 10;
+v99 = v95 + v98;
+v100 = v93 >> 8;
+v101 = v100 & 15;
+v102 = v99 + v101;
+if v102 <= 255 goto label32;
+return null;
+label32:
+v103 = v6 + 1;
+v2[v6] = v102;
+goto label42;
+label33:
+v104 = v3 - 1;
+if v9 <= 0 goto label34;
+v105 = v10 - v9;
+if v105 > 4 goto label39;
+label34:
+if v11 < 2 goto label39;
+if v85 != 0 goto label35;
+v106 = v11 + 1;
+if v106 != 8 goto label39;
+v107 = interfaceinvoke v0.<java.lang.CharSequence: char charAt(int)>(0);
+if v107 == 58 goto label39;
+v108 = interfaceinvoke v0.<java.lang.CharSequence: char charAt(int)>(v104);
+if v108 == 58 goto label39;
+label35:
+if v85 == 0 goto label37;
+if v11 > 8 goto label39;
+if v11 != 8 goto label37;
+if v4 > 2 goto label36;
+v109 = interfaceinvoke v0.<java.lang.CharSequence: char charAt(int)>(0);
+if v109 != 58 goto label39;
+label36:
+if v4 < 14 goto label37;
+v110 = interfaceinvoke v0.<java.lang.CharSequence: char charAt(int)>(v104);
+if v110 != 58 goto label39;
+label37:
+v111 = v6 + 1;
+v112 = lengthof v2;
+if v111 >= v112 goto label39;
+if v9 >= 0 goto label38;
+v113 = v104 - 1;
+v114 = interfaceinvoke v0.<java.lang.CharSequence: char charAt(int)>(v113);
+if v114 != 58 goto label39;
+label38:
+if v4 <= 2 goto label40;
+v115 = interfaceinvoke v0.<java.lang.CharSequence: char charAt(int)>(0);
+if v115 != 58 goto label40;
+label39:
+return null;
+label40:
+if v9 < 0 goto label41;
+v116 = v10 - v9;
+if v116 > 4 goto label41;
+v117 = v10 - v9;
+v118 = 4 - v117;
+v119 = v118 << 2;
+v7 = v7 << v119;
+label41:
+v120 = v6 + 1;
+v121 = v7 & 15;
+v122 = v121 << 4;
+v123 = v7 >> 4;
+v124 = v123 & 15;
+v125 = v122 | v124;
+v2[v6] = v125;
+v103 = v120 + 1;
+v126 = v7 >> 8;
+v127 = v126 & 15;
+v128 = v127 << 4;
+v129 = v7 >> 12;
+v130 = v129 & 15;
+v131 = v128 | v130;
+v2[v120] = v131;
+label42:
+v132 = lengthof v2;
+if v103 >= v132 goto label43;
+v133 = v103 - v4;
+v134 = lengthof v2;
+v135 = v134 - v133;
+staticinvoke <java.lang.System: void arraycopy(java.lang.Object,int,java.lang.Object,int,int)>(v2, v4, v2, v135, v133);
+staticinvoke <java.util.Arrays: void fill(byte[],int,int,byte)>(v2, v4, v135, 0);
+label43:
+if v12 <= 0 goto label44;
+v2[11] = -1;
+v2[10] = -1;
+label44:
+return v2;
+}
+public static java.lang.String toSocketAddressString(java.net.InetSocketAddress)
+{
+java.net.InetSocketAddress v0;
+java.net.InetAddress v8;
+int v1;
+java.lang.StringBuilder v11, v12, v7;
+java.lang.String v13, v2, v4, v9;
+boolean v10, v3, v5, v6;
+v0 := @parameter0: java.net.InetSocketAddress;
+v1 = virtualinvoke v0.<java.net.InetSocketAddress: int getPort()>();
+v2 = staticinvoke <java.lang.String: java.lang.String valueOf(int)>(v1);
+v3 = virtualinvoke v0.<java.net.InetSocketAddress: boolean isUnresolved()>();
+if v3 == 0 goto label3;
+v4 = staticinvoke <io.netty.util.NetUtil: java.lang.String getHostname(java.net.InetSocketAddress)>(v0);
+v5 = staticinvoke <io.netty.util.NetUtil: boolean isValidIpV6Address(java.lang.String)>(v4);
+if v5 != 0 goto label1;
+v6 = 1;
+goto label2;
+label1:
+v6 = 0;
+label2:
+v7 = staticinvoke <io.netty.util.NetUtil: java.lang.StringBuilder newSocketAddressStringBuilder(java.lang.String,java.lang.String,boolean)>(v4, v2, v6);
+goto label4;
+label3:
+v8 = virtualinvoke v0.<java.net.InetSocketAddress: java.net.InetAddress getAddress()>();
+v9 = staticinvoke <io.netty.util.NetUtil: java.lang.String toAddressString(java.net.InetAddress)>(v8);
+v10 = v8 instanceof java.net.Inet4Address;
+v7 = staticinvoke <io.netty.util.NetUtil: java.lang.StringBuilder newSocketAddressStringBuilder(java.lang.String,java.lang.String,boolean)>(v9, v2, v10);
+label4:
+v11 = virtualinvoke v7.<java.lang.StringBuilder: java.lang.StringBuilder append(char)>(58);
+v12 = virtualinvoke v11.<java.lang.StringBuilder: java.lang.StringBuilder append(java.lang.String)>(v2);
+v13 = virtualinvoke v12.<java.lang.StringBuilder: java.lang.String toString()>();
+return v13;
+}
+public static java.lang.String toSocketAddressString(java.lang.String, int)
+{
+int v1;
+java.lang.StringBuilder v5, v6, v7;
+java.lang.String v0, v2, v8;
+boolean v3, v4;
+v0 := @parameter0: java.lang.String;
+v1 := @parameter1: int;
+v2 = staticinvoke <java.lang.String: java.lang.String valueOf(int)>(v1);
+v3 = staticinvoke <io.netty.util.NetUtil: boolean isValidIpV6Address(java.lang.String)>(v0);
+if v3 != 0 goto label1;
+v4 = 1;
+goto label2;
+label1:
+v4 = 0;
+label2:
+v5 = staticinvoke <io.netty.util.NetUtil: java.lang.StringBuilder newSocketAddressStringBuilder(java.lang.String,java.lang.String,boolean)>(v0, v2, v4);
+v6 = virtualinvoke v5.<java.lang.StringBuilder: java.lang.StringBuilder append(char)>(58);
+v7 = virtualinvoke v6.<java.lang.StringBuilder: java.lang.StringBuilder append(java.lang.String)>(v2);
+v8 = virtualinvoke v7.<java.lang.StringBuilder: java.lang.String toString()>();
+return v8;
+}
+private static java.lang.StringBuilder newSocketAddressStringBuilder(java.lang.String, java.lang.String, boolean)
+{
+int v10, v11, v12, v14, v3, v5, v6, v7;
+java.lang.String v0, v1;
+boolean v2;
+char v13, v15;
+java.lang.StringBuilder v16, v17, v18, v19, v4, v8, v9;
+v0 := @parameter0: java.lang.String;
+v1 := @parameter1: java.lang.String;
+v2 := @parameter2: boolean;
+v3 = virtualinvoke v0.<java.lang.String: int length()>();
+if v2 == 0 goto label1;
+v4 = new java.lang.StringBuilder;
+v5 = v3 + 1;
+v6 = virtualinvoke v1.<java.lang.String: int length()>();
+v7 = v5 + v6;
+specialinvoke v4.<java.lang.StringBuilder: void <init>(int)>(v7);
+v8 = virtualinvoke v4.<java.lang.StringBuilder: java.lang.StringBuilder append(java.lang.String)>(v0);
+return v8;
+label1:
+v9 = new java.lang.StringBuilder;
+v10 = v3 + 3;
+v11 = virtualinvoke v1.<java.lang.String: int length()>();
+v12 = v10 + v11;
+specialinvoke v9.<java.lang.StringBuilder: void <init>(int)>(v12);
+if v3 <= 1 goto label2;
+v13 = virtualinvoke v0.<java.lang.String: char charAt(int)>(0);
+if v13 != 91 goto label2;
+v14 = v3 - 1;
+v15 = virtualinvoke v0.<java.lang.String: char charAt(int)>(v14);
+if v15 != 93 goto label2;
+v16 = virtualinvoke v9.<java.lang.StringBuilder: java.lang.StringBuilder append(java.lang.String)>(v0);
+return v16;
+label2:
+v17 = virtualinvoke v9.<java.lang.StringBuilder: java.lang.StringBuilder append(char)>(91);
+v18 = virtualinvoke v17.<java.lang.StringBuilder: java.lang.StringBuilder append(java.lang.String)>(v0);
+v19 = virtualinvoke v18.<java.lang.StringBuilder: java.lang.StringBuilder append(char)>(93);
+return v19;
+}
+public static java.lang.String toAddressString(java.net.InetAddress)
+{
+java.net.InetAddress v0;
+java.lang.String v1;
+v0 := @parameter0: java.net.InetAddress;
+v1 = staticinvoke <io.netty.util.NetUtil: java.lang.String toAddressString(java.net.InetAddress,boolean)>(v0, 0);
+return v1;
+}
+public static java.lang.String toAddressString(java.net.InetAddress, boolean)
+{
+byte[] v7;
+java.lang.IllegalArgumentException v5;
+java.net.InetAddress v0;
+java.lang.String v3, v6, v8;
+boolean v1, v2, v4;
+v0 := @parameter0: java.net.InetAddress;
+v1 := @parameter1: boolean;
+v2 = v0 instanceof java.net.Inet4Address;
+if v2 == 0 goto label1;
+v3 = virtualinvoke v0.<java.net.InetAddress: java.lang.String getHostAddress()>();
+return v3;
+label1:
+v4 = v0 instanceof java.net.Inet6Address;
+if v4 != 0 goto label2;
+v5 = new java.lang.IllegalArgumentException;
+v6 = dynamicinvoke "makeConcatWithConstants" <java.lang.String (java.net.InetAddress)>(v0) <java.lang.invoke.StringConcatFactory: java.lang.invoke.CallSite makeConcatWithConstants(java.lang.invoke.MethodHandles$Lookup,java.lang.String,java.lang.invoke.MethodType,java.lang.String,java.lang.Object[])>("Unhandled type: \u0001");
+specialinvoke v5.<java.lang.IllegalArgumentException: void <init>(java.lang.String)>(v6);
+throw v5;
+label2:
+v7 = virtualinvoke v0.<java.net.InetAddress: byte[] getAddress()>();
+v8 = staticinvoke <io.netty.util.NetUtil: java.lang.String toAddressString(byte[],int,boolean)>(v7, 0, v1);
+return v8;
+}
+private static java.lang.String toAddressString(byte[], int, boolean)
+{
+byte[] v0;
+byte v13, v8;
+int[] v3;
+boolean v2, v36, v39, v40, v45, v47, v55;
+java.lang.StringBuilder v29;
+short v14, v9;
+int v1, v10, v11, v12, v15, v16, v17, v18, v19, v20, v21, v22, v23, v24, v25, v26, v27, v28, v30, v32, v33, v34, v37, v38, v4, v41, v43, v44, v46, v48, v49, v5, v50, v51, v52, v54, v6, v7;
+java.lang.String v31, v35, v42, v53, v56;
+v0 := @parameter0: byte[];
+v1 := @parameter1: int;
+v2 := @parameter2: boolean;
+v3 = newarray (int)[8];
+v4 = lengthof v3;
+v5 = v1 + v4;
+v6 = v1;
+label01:
+if v6 >= v5 goto label02;
+v7 = v6 << 1;
+v8 = v0[v7];
+v9 = v8 & 255;
+v10 = v9 << 8;
+v11 = v6 << 1;
+v12 = v11 + 1;
+v13 = v0[v12];
+v14 = v13 & 255;
+v15 = v10 | v14;
+v3[v6] = v15;
+v6 = v6 + 1;
+goto label01;
+label02:
+v16 = (int) -1;
+v17 = v16;
+v18 = (int) -1;
+v19 = v18;
+v20 = 0;
+v21 = 0;
+label03:
+v22 = lengthof v3;
+if v21 >= v22 goto label07;
+v23 = v3[v21];
+if v23 != 0 goto label04;
+if v17 >= 0 goto label06;
+v17 = v21;
+goto label06;
+label04:
+if v17 < 0 goto label06;
+v24 = v21 - v17;
+if v24 <= v20 goto label05;
+v19 = v17;
+v20 = v24;
+label05:
+v25 = (int) -1;
+v17 = v25;
+label06:
+v21 = v21 + 1;
+goto label03;
+label07:
+if v17 < 0 goto label08;
+v26 = v21 - v17;
+if v26 <= v20 goto label08;
+v19 = v17;
+v20 = v26;
+label08:
+if v20 != 1 goto label09;
+v20 = 0;
+v27 = (int) -1;
+v19 = v27;
+label09:
+v28 = v19 + v20;
+v29 = new java.lang.StringBuilder;
+specialinvoke v29.<java.lang.StringBuilder: void <init>(int)>(39);
+if v28 >= 0 goto label11;
+v30 = v3[0];
+v31 = staticinvoke <java.lang.Integer: java.lang.String toHexString(int)>(v30);
+virtualinvoke v29.<java.lang.StringBuilder: java.lang.StringBuilder append(java.lang.String)>(v31);
+v32 = 1;
+label10:
+v33 = lengthof v3;
+if v32 >= v33 goto label23;
+virtualinvoke v29.<java.lang.StringBuilder: java.lang.StringBuilder append(char)>(58);
+v34 = v3[v32];
+v35 = staticinvoke <java.lang.Integer: java.lang.String toHexString(int)>(v34);
+virtualinvoke v29.<java.lang.StringBuilder: java.lang.StringBuilder append(java.lang.String)>(v35);
+v32 = v32 + 1;
+goto label10;
+label11:
+v36 = staticinvoke <io.netty.util.NetUtil: boolean inRangeEndExclusive(int,int,int)>(0, v19, v28);
+if v36 == 0 goto label14;
+virtualinvoke v29.<java.lang.StringBuilder: java.lang.StringBuilder append(java.lang.String)>("::");
+if v2 == 0 goto label12;
+if v28 != 5 goto label12;
+v37 = v3[5];
+v38 = (int) 65535;
+if v37 != v38 goto label12;
+v39 = 1;
+goto label13;
+label12:
+v39 = 0;
+label13:
+v40 = v39;
+goto label15;
+label14:
+v41 = v3[0];
+v42 = staticinvoke <java.lang.Integer: java.lang.String toHexString(int)>(v41);
+virtualinvoke v29.<java.lang.StringBuilder: java.lang.StringBuilder append(java.lang.String)>(v42);
+v40 = 0;
+label15:
+v43 = 1;
+label16:
+v44 = lengthof v3;
+if v43 >= v44 goto label23;
+v45 = staticinvoke <io.netty.util.NetUtil: boolean inRangeEndExclusive(int,int,int)>(v43, v19, v28);
+if v45 != 0 goto label21;
+v46 = v43 - 1;
+v47 = staticinvoke <io.netty.util.NetUtil: boolean inRangeEndExclusive(int,int,int)>(v46, v19, v28);
+if v47 != 0 goto label19;
+if v40 == 0 goto label17;
+if v43 != 6 goto label18;
+label17:
+virtualinvoke v29.<java.lang.StringBuilder: java.lang.StringBuilder append(char)>(58);
+goto label19;
+label18:
+virtualinvoke v29.<java.lang.StringBuilder: java.lang.StringBuilder append(char)>(46);
+label19:
+if v40 == 0 goto label20;
+if v43 <= 5 goto label20;
+v48 = v3[v43];
+v49 = v48 >> 8;
+virtualinvoke v29.<java.lang.StringBuilder: java.lang.StringBuilder append(int)>(v49);
+virtualinvoke v29.<java.lang.StringBuilder: java.lang.StringBuilder append(char)>(46);
+v50 = v3[v43];
+v51 = v50 & 255;
+virtualinvoke v29.<java.lang.StringBuilder: java.lang.StringBuilder append(int)>(v51);
+goto label22;
+label20:
+v52 = v3[v43];
+v53 = staticinvoke <java.lang.Integer: java.lang.String toHexString(int)>(v52);
+virtualinvoke v29.<java.lang.StringBuilder: java.lang.StringBuilder append(java.lang.String)>(v53);
+goto label22;
+label21:
+v54 = v43 - 1;
+v55 = staticinvoke <io.netty.util.NetUtil: boolean inRangeEndExclusive(int,int,int)>(v54, v19, v28);
+if v55 != 0 goto label22;
+virtualinvoke v29.<java.lang.StringBuilder: java.lang.StringBuilder append(java.lang.String)>("::");
+label22:
+v43 = v43 + 1;
+goto label16;
+label23:
+v56 = virtualinvoke v29.<java.lang.StringBuilder: java.lang.String toString()>();
+return v56;
+}
+public static java.lang.String getHostname(java.net.InetSocketAddress)
+{
+int v1;
+java.lang.String v2;
+java.net.InetSocketAddress v0;
+v0 := @parameter0: java.net.InetSocketAddress;
+v1 = staticinvoke <io.netty.util.internal.PlatformDependent: int javaVersion()>();
+if v1 < 7 goto label1;
+v2 = virtualinvoke v0.<java.net.InetSocketAddress: java.lang.String getHostString()>();
+goto label2;
+label1:
+v2 = virtualinvoke v0.<java.net.InetSocketAddress: java.lang.String getHostName()>();
+label2:
+return v2;
+}
+private static boolean inRangeEndExclusive(int, int, int)
+{
+int v0, v1, v2;
+boolean v3;
+v0 := @parameter0: int;
+v1 := @parameter1: int;
+v2 := @parameter2: int;
+if v0 < v1 goto label1;
+if v0 >= v2 goto label1;
+v3 = 1;
+goto label2;
+label1:
+v3 = 0;
+label2:
+return v3;
+}
+private void <init>()
+{
+io.netty.util.NetUtil v0;
+v0 := @this: io.netty.util.NetUtil;
+specialinvoke v0.<java.lang.Object: void <init>()>();
+return;
+}
+static void <clinit>()
+{
+java.net.InetAddress v18;
+int v21;
+java.lang.Boolean v8;
+io.netty.util.NetUtil$SoMaxConnAction v19;
+io.netty.util.NetUtilInitializations$NetworkIfaceAndInetAddress v16;
+java.lang.String v2, v3, v4;
+boolean v0, v5, v7;
+java.util.Collection v10, v13;
+java.net.NetworkInterface v17;
+java.net.Inet4Address v11, v14;
+java.net.Inet6Address v12, v15;
+io.netty.util.internal.logging.InternalLogger v1, v6, v9;
+java.lang.Object v20;
+v0 = staticinvoke <io.netty.util.internal.SystemPropertyUtil: boolean getBoolean(java.lang.String,boolean)>("java.net.preferIPv4Stack", 0);
+<io.netty.util.NetUtil: boolean IPV4_PREFERRED> = v0;
+v1 = staticinvoke <io.netty.util.internal.logging.InternalLoggerFactory: io.netty.util.internal.logging.InternalLogger getInstance(java.lang.Class)>(class "Lio/netty/util/NetUtil;");
+<io.netty.util.NetUtil: io.netty.util.internal.logging.InternalLogger logger> = v1;
+v2 = staticinvoke <io.netty.util.internal.SystemPropertyUtil: java.lang.String get(java.lang.String,java.lang.String)>("java.net.preferIPv6Addresses", "false");
+v3 = "true";
+v4 = virtualinvoke v2.<java.lang.String: java.lang.String trim()>();
+v5 = virtualinvoke v3.<java.lang.String: boolean equalsIgnoreCase(java.lang.String)>(v4);
+if v5 == 0 goto label1;
+<io.netty.util.NetUtil: boolean IPV6_ADDRESSES_PREFERRED> = 1;
+goto label2;
+label1:
+<io.netty.util.NetUtil: boolean IPV6_ADDRESSES_PREFERRED> = 0;
+label2:
+v6 = <io.netty.util.NetUtil: io.netty.util.internal.logging.InternalLogger logger>;
+v7 = <io.netty.util.NetUtil: boolean IPV4_PREFERRED>;
+v8 = staticinvoke <java.lang.Boolean: java.lang.Boolean valueOf(boolean)>(v7);
+interfaceinvoke v6.<io.netty.util.internal.logging.InternalLogger: void debug(java.lang.String,java.lang.Object)>("-Djava.net.preferIPv4Stack: {}", v8);
+v9 = <io.netty.util.NetUtil: io.netty.util.internal.logging.InternalLogger logger>;
+interfaceinvoke v9.<io.netty.util.internal.logging.InternalLogger: void debug(java.lang.String,java.lang.Object)>("-Djava.net.preferIPv6Addresses: {}", v2);
+v10 = staticinvoke <io.netty.util.NetUtilInitializations: java.util.Collection networkInterfaces()>();
+<io.netty.util.NetUtil: java.util.Collection NETWORK_INTERFACES> = v10;
+v11 = staticinvoke <io.netty.util.NetUtilInitializations: java.net.Inet4Address createLocalhost4()>();
+<io.netty.util.NetUtil: java.net.Inet4Address LOCALHOST4> = v11;
+v12 = staticinvoke <io.netty.util.NetUtilInitializations: java.net.Inet6Address createLocalhost6()>();
+<io.netty.util.NetUtil: java.net.Inet6Address LOCALHOST6> = v12;
+v13 = <io.netty.util.NetUtil: java.util.Collection NETWORK_INTERFACES>;
+v14 = <io.netty.util.NetUtil: java.net.Inet4Address LOCALHOST4>;
+v15 = <io.netty.util.NetUtil: java.net.Inet6Address LOCALHOST6>;
+v16 = staticinvoke <io.netty.util.NetUtilInitializations: io.netty.util.NetUtilInitializations$NetworkIfaceAndInetAddress determineLoopback(java.util.Collection,java.net.Inet4Address,java.net.Inet6Address)>(v13, v14, v15);
+v17 = virtualinvoke v16.<io.netty.util.NetUtilInitializations$NetworkIfaceAndInetAddress: java.net.NetworkInterface iface()>();
+<io.netty.util.NetUtil: java.net.NetworkInterface LOOPBACK_IF> = v17;
+v18 = virtualinvoke v16.<io.netty.util.NetUtilInitializations$NetworkIfaceAndInetAddress: java.net.InetAddress address()>();
+<io.netty.util.NetUtil: java.net.InetAddress LOCALHOST> = v18;
+v19 = new io.netty.util.NetUtil$SoMaxConnAction;
+specialinvoke v19.<io.netty.util.NetUtil$SoMaxConnAction: void <init>()>();
+v20 = staticinvoke <java.security.AccessController: java.lang.Object doPrivileged(java.security.PrivilegedAction)>(v19);
+v21 = virtualinvoke v20.<java.lang.Integer: int intValue()>();
+<io.netty.util.NetUtil: int SOMAXCONN> = v21;
+return;
+}
+}

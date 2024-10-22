@@ -1,0 +1,394 @@
+public class io.quarkus.bootstrap.runner.JarResource extends java.lang.Object implements io.quarkus.bootstrap.runner.ClassLoadingResource
+{
+private final io.quarkus.bootstrap.runner.ManifestInfo manifestInfo;
+private final java.nio.file.Path jarPath;
+private final java.util.concurrent.locks.Lock readLock;
+private final java.util.concurrent.locks.Lock writeLock;
+private volatile java.security.ProtectionDomain protectionDomain;
+private volatile java.util.jar.JarFile zipFile;
+public void <init>(io.quarkus.bootstrap.runner.ManifestInfo, java.nio.file.Path)
+{
+io.quarkus.bootstrap.runner.ManifestInfo v1;
+java.util.concurrent.locks.Lock v4, v5;
+java.util.concurrent.locks.ReentrantReadWriteLock v3;
+io.quarkus.bootstrap.runner.JarResource v0;
+java.nio.file.Path v2;
+v0 := @this: io.quarkus.bootstrap.runner.JarResource;
+v1 := @parameter0: io.quarkus.bootstrap.runner.ManifestInfo;
+v2 := @parameter1: java.nio.file.Path;
+specialinvoke v0.<java.lang.Object: void <init>()>();
+v0.<io.quarkus.bootstrap.runner.JarResource: io.quarkus.bootstrap.runner.ManifestInfo manifestInfo> = v1;
+v0.<io.quarkus.bootstrap.runner.JarResource: java.nio.file.Path jarPath> = v2;
+v3 = new java.util.concurrent.locks.ReentrantReadWriteLock;
+specialinvoke v3.<java.util.concurrent.locks.ReentrantReadWriteLock: void <init>()>();
+v4 = interfaceinvoke v3.<java.util.concurrent.locks.ReadWriteLock: java.util.concurrent.locks.Lock readLock()>();
+v0.<io.quarkus.bootstrap.runner.JarResource: java.util.concurrent.locks.Lock readLock> = v4;
+v5 = interfaceinvoke v3.<java.util.concurrent.locks.ReadWriteLock: java.util.concurrent.locks.Lock writeLock()>();
+v0.<io.quarkus.bootstrap.runner.JarResource: java.util.concurrent.locks.Lock writeLock> = v5;
+return;
+}
+public void init(java.lang.ClassLoader)
+{
+java.net.URL v7;
+java.lang.RuntimeException v9;
+java.lang.Exception v8;
+java.security.ProtectionDomain v12;
+java.security.cert.Certificate[] v14;
+java.lang.ClassLoader v1;
+java.lang.String v11, v4;
+java.net.URI v6;
+java.security.CodeSource v13;
+io.quarkus.bootstrap.runner.JarResource v0;
+java.nio.file.Path v10, v2, v3;
+boolean v5;
+v0 := @this: io.quarkus.bootstrap.runner.JarResource;
+v1 := @parameter0: java.lang.ClassLoader;
+label1:
+v2 = v0.<io.quarkus.bootstrap.runner.JarResource: java.nio.file.Path jarPath>;
+v3 = interfaceinvoke v2.<java.nio.file.Path: java.nio.file.Path toAbsolutePath()>();
+v4 = interfaceinvoke v3.<java.nio.file.Path: java.lang.String toString()>();
+v5 = virtualinvoke v4.<java.lang.String: boolean startsWith(java.lang.String)>("/");
+if v5 != 0 goto label2;
+v4 = dynamicinvoke "makeConcatWithConstants" <java.lang.String (java.lang.String)>(v4) <java.lang.invoke.StringConcatFactory: java.lang.invoke.CallSite makeConcatWithConstants(java.lang.invoke.MethodHandles$Lookup,java.lang.String,java.lang.invoke.MethodType,java.lang.String,java.lang.Object[])>("/\u0001");
+label2:
+v6 = new java.net.URI;
+specialinvoke v6.<java.net.URI: void <init>(java.lang.String,java.lang.String,java.lang.String,java.lang.String)>("file", null, v4, null);
+v7 = virtualinvoke v6.<java.net.URI: java.net.URL toURL()>();
+label3:
+goto label5;
+label4:
+v8 := @caughtexception;
+v9 = new java.lang.RuntimeException;
+v10 = v0.<io.quarkus.bootstrap.runner.JarResource: java.nio.file.Path jarPath>;
+v11 = dynamicinvoke "makeConcatWithConstants" <java.lang.String (java.nio.file.Path)>(v10) <java.lang.invoke.StringConcatFactory: java.lang.invoke.CallSite makeConcatWithConstants(java.lang.invoke.MethodHandles$Lookup,java.lang.String,java.lang.invoke.MethodType,java.lang.String,java.lang.Object[])>("Unable to create protection domain for \u0001");
+specialinvoke v9.<java.lang.RuntimeException: void <init>(java.lang.String,java.lang.Throwable)>(v11, v8);
+throw v9;
+label5:
+v12 = new java.security.ProtectionDomain;
+v13 = new java.security.CodeSource;
+v14 = (java.security.cert.Certificate[]) null;
+specialinvoke v13.<java.security.CodeSource: void <init>(java.net.URL,java.security.cert.Certificate[])>(v7, v14);
+specialinvoke v12.<java.security.ProtectionDomain: void <init>(java.security.CodeSource,java.security.PermissionCollection,java.lang.ClassLoader,java.security.Principal[])>(v13, null, v1, null);
+v0.<io.quarkus.bootstrap.runner.JarResource: java.security.ProtectionDomain protectionDomain> = v12;
+return;
+catch java.net.URISyntaxException from label1 to label3 with label4;
+catch java.net.MalformedURLException from label1 to label3 with label4;
+}
+public byte[] getResourceData(java.lang.String)
+{
+java.lang.Throwable v15, v19;
+byte[] v7;
+java.util.jar.JarFile v2;
+long v6;
+int v10, v11, v8, v9;
+java.lang.String v1, v13, v18;
+io.quarkus.bootstrap.runner.JarResource v0;
+java.util.zip.ZipEntry v3;
+java.io.IOException v16;
+java.lang.RuntimeException v12, v17;
+java.util.concurrent.locks.Lock v14, v20, v4;
+java.io.InputStream v5;
+v0 := @this: io.quarkus.bootstrap.runner.JarResource;
+v1 := @parameter0: java.lang.String;
+v2 = specialinvoke v0.<io.quarkus.bootstrap.runner.JarResource: java.util.jar.JarFile readLockAcquireAndGetJarReference()>();
+label01:
+v3 = virtualinvoke v2.<java.util.zip.ZipFile: java.util.zip.ZipEntry getEntry(java.lang.String)>(v1);
+if v3 != null goto label03;
+label02:
+v4 = v0.<io.quarkus.bootstrap.runner.JarResource: java.util.concurrent.locks.Lock readLock>;
+interfaceinvoke v4.<java.util.concurrent.locks.Lock: void unlock()>();
+return null;
+label03:
+v5 = virtualinvoke v2.<java.util.zip.ZipFile: java.io.InputStream getInputStream(java.util.zip.ZipEntry)>(v3);
+label04:
+v6 = virtualinvoke v3.<java.util.zip.ZipEntry: long getSize()>();
+v7 = newarray (byte)[v6];
+v8 = 0;
+v9 = lengthof v7;
+label05:
+if v9 <= 0 goto label07;
+v10 = virtualinvoke v5.<java.io.InputStream: int read(byte[],int,int)>(v7, v8, v9);
+v11 = (int) -1;
+if v10 != v11 goto label06;
+v12 = new java.lang.RuntimeException;
+v13 = dynamicinvoke "makeConcatWithConstants" <java.lang.String (java.lang.String)>(v1) <java.lang.invoke.StringConcatFactory: java.lang.invoke.CallSite makeConcatWithConstants(java.lang.invoke.MethodHandles$Lookup,java.lang.String,java.lang.invoke.MethodType,java.lang.String,java.lang.Object[])>("Failed to read all data for \u0001");
+specialinvoke v12.<java.lang.RuntimeException: void <init>(java.lang.String)>(v13);
+throw v12;
+label06:
+v8 = v8 + v10;
+v9 = v9 - v10;
+goto label05;
+label07:
+if v5 == null goto label08;
+virtualinvoke v5.<java.io.InputStream: void close()>();
+label08:
+v14 = v0.<io.quarkus.bootstrap.runner.JarResource: java.util.concurrent.locks.Lock readLock>;
+interfaceinvoke v14.<java.util.concurrent.locks.Lock: void unlock()>();
+return v7;
+label09:
+v15 := @caughtexception;
+throw v15;
+label10:
+v16 := @caughtexception;
+v17 = new java.lang.RuntimeException;
+v18 = dynamicinvoke "makeConcatWithConstants" <java.lang.String (java.lang.String)>(v1) <java.lang.invoke.StringConcatFactory: java.lang.invoke.CallSite makeConcatWithConstants(java.lang.invoke.MethodHandles$Lookup,java.lang.String,java.lang.invoke.MethodType,java.lang.String,java.lang.Object[])>("Failed to read zip entry \u0001");
+specialinvoke v17.<java.lang.RuntimeException: void <init>(java.lang.String,java.lang.Throwable)>(v18, v16);
+throw v17;
+label11:
+v19 := @caughtexception;
+v20 = v0.<io.quarkus.bootstrap.runner.JarResource: java.util.concurrent.locks.Lock readLock>;
+interfaceinvoke v20.<java.util.concurrent.locks.Lock: void unlock()>();
+throw v19;
+catch java.lang.Throwable from label04 to label07 with label09;
+catch java.io.IOException from label03 to label08 with label10;
+catch java.lang.Throwable from label01 to label02 with label11;
+catch java.lang.Throwable from label03 to label08 with label11;
+}
+public java.net.URL getResourceURL(java.lang.String)
+{
+java.lang.Throwable v26;
+java.net.URL v15, v16;
+java.util.jar.JarFile v2;
+java.util.jar.JarEntry v3;
+int v7, v8;
+java.lang.String v1, v12, v13, v14, v17, v18, v19, v20, v21, v22, v5;
+java.net.URI v10, v11;
+io.quarkus.bootstrap.runner.JarResource v0;
+java.nio.file.Path v9;
+boolean v6;
+java.lang.RuntimeException v25;
+java.lang.Exception v24;
+java.util.concurrent.locks.Lock v23, v27, v4;
+v0 := @this: io.quarkus.bootstrap.runner.JarResource;
+v1 := @parameter0: java.lang.String;
+v2 = specialinvoke v0.<io.quarkus.bootstrap.runner.JarResource: java.util.jar.JarFile readLockAcquireAndGetJarReference()>();
+label1:
+v3 = virtualinvoke v2.<java.util.jar.JarFile: java.util.jar.JarEntry getJarEntry(java.lang.String)>(v1);
+if v3 != null goto label3;
+label2:
+v4 = v0.<io.quarkus.bootstrap.runner.JarResource: java.util.concurrent.locks.Lock readLock>;
+interfaceinvoke v4.<java.util.concurrent.locks.Lock: void unlock()>();
+return null;
+label3:
+v5 = staticinvoke <io.smallrye.common.io.jar.JarEntries: java.lang.String getRealName(java.util.jar.JarEntry)>(v3);
+v6 = virtualinvoke v5.<java.lang.String: boolean endsWith(java.lang.String)>("/");
+if v6 == 0 goto label4;
+v7 = virtualinvoke v5.<java.lang.String: int length()>();
+v8 = v7 - 1;
+v5 = virtualinvoke v5.<java.lang.String: java.lang.String substring(int,int)>(0, v8);
+label4:
+v9 = v0.<io.quarkus.bootstrap.runner.JarResource: java.nio.file.Path jarPath>;
+v10 = interfaceinvoke v9.<java.nio.file.Path: java.net.URI toUri()>();
+v11 = new java.net.URI;
+v12 = virtualinvoke v10.<java.net.URI: java.lang.String getScheme()>();
+v13 = virtualinvoke v10.<java.net.URI: java.lang.String getPath()>();
+v14 = dynamicinvoke "makeConcatWithConstants" <java.lang.String (java.lang.String,java.lang.String)>(v13, v5) <java.lang.invoke.StringConcatFactory: java.lang.invoke.CallSite makeConcatWithConstants(java.lang.invoke.MethodHandles$Lookup,java.lang.String,java.lang.invoke.MethodType,java.lang.String,java.lang.Object[])>("\u0001!/\u0001");
+specialinvoke v11.<java.net.URI: void <init>(java.lang.String,java.lang.String,java.lang.String)>(v12, v14, null);
+v15 = virtualinvoke v11.<java.net.URI: java.net.URL toURL()>();
+v16 = new java.net.URL;
+v17 = virtualinvoke v15.<java.net.URL: java.lang.String getProtocol()>();
+v18 = virtualinvoke v15.<java.net.URL: java.lang.String getPath()>();
+v19 = virtualinvoke v15.<java.net.URL: java.lang.String getQuery()>();
+if v19 != null goto label5;
+v20 = "";
+goto label6;
+label5:
+v21 = virtualinvoke v15.<java.net.URL: java.lang.String getQuery()>();
+v20 = dynamicinvoke "makeConcatWithConstants" <java.lang.String (java.lang.String)>(v21) <java.lang.invoke.StringConcatFactory: java.lang.invoke.CallSite makeConcatWithConstants(java.lang.invoke.MethodHandles$Lookup,java.lang.String,java.lang.invoke.MethodType,java.lang.String,java.lang.Object[])>("%3F\u0001");
+label6:
+v22 = dynamicinvoke "makeConcatWithConstants" <java.lang.String (java.lang.String,java.lang.String,java.lang.String)>(v17, v18, v20) <java.lang.invoke.StringConcatFactory: java.lang.invoke.CallSite makeConcatWithConstants(java.lang.invoke.MethodHandles$Lookup,java.lang.String,java.lang.invoke.MethodType,java.lang.String,java.lang.Object[])>("\u0001:\u0001\u0001");
+specialinvoke v16.<java.net.URL: void <init>(java.lang.String,java.lang.String,java.lang.String)>("jar", null, v22);
+label7:
+v23 = v0.<io.quarkus.bootstrap.runner.JarResource: java.util.concurrent.locks.Lock readLock>;
+interfaceinvoke v23.<java.util.concurrent.locks.Lock: void unlock()>();
+return v16;
+label8:
+v24 := @caughtexception;
+v25 = new java.lang.RuntimeException;
+specialinvoke v25.<java.lang.RuntimeException: void <init>(java.lang.Throwable)>(v24);
+throw v25;
+label9:
+v26 := @caughtexception;
+v27 = v0.<io.quarkus.bootstrap.runner.JarResource: java.util.concurrent.locks.Lock readLock>;
+interfaceinvoke v27.<java.util.concurrent.locks.Lock: void unlock()>();
+throw v26;
+catch java.net.MalformedURLException from label3 to label7 with label8;
+catch java.net.URISyntaxException from label3 to label7 with label8;
+catch java.lang.Throwable from label1 to label2 with label9;
+catch java.lang.Throwable from label3 to label7 with label9;
+}
+public io.quarkus.bootstrap.runner.ManifestInfo getManifestInfo()
+{
+io.quarkus.bootstrap.runner.ManifestInfo v1;
+io.quarkus.bootstrap.runner.JarResource v0;
+v0 := @this: io.quarkus.bootstrap.runner.JarResource;
+v1 = v0.<io.quarkus.bootstrap.runner.JarResource: io.quarkus.bootstrap.runner.ManifestInfo manifestInfo>;
+return v1;
+}
+public java.security.ProtectionDomain getProtectionDomain()
+{
+io.quarkus.bootstrap.runner.JarResource v0;
+java.security.ProtectionDomain v1;
+v0 := @this: io.quarkus.bootstrap.runner.JarResource;
+v1 = v0.<io.quarkus.bootstrap.runner.JarResource: java.security.ProtectionDomain protectionDomain>;
+return v1;
+}
+private java.util.jar.JarFile readLockAcquireAndGetJarReference()
+{
+java.util.concurrent.locks.Lock v1, v3;
+java.util.jar.JarFile v2;
+io.quarkus.bootstrap.runner.JarResource v0;
+v0 := @this: io.quarkus.bootstrap.runner.JarResource;
+label1:
+v1 = v0.<io.quarkus.bootstrap.runner.JarResource: java.util.concurrent.locks.Lock readLock>;
+interfaceinvoke v1.<java.util.concurrent.locks.Lock: void lock()>();
+v2 = v0.<io.quarkus.bootstrap.runner.JarResource: java.util.jar.JarFile zipFile>;
+if v2 == null goto label2;
+return v2;
+label2:
+v3 = v0.<io.quarkus.bootstrap.runner.JarResource: java.util.concurrent.locks.Lock readLock>;
+interfaceinvoke v3.<java.util.concurrent.locks.Lock: void unlock()>();
+specialinvoke v0.<io.quarkus.bootstrap.runner.JarResource: void ensureJarFileIsOpen()>();
+goto label1;
+}
+private void ensureJarFileIsOpen()
+{
+java.lang.Throwable v11;
+java.io.IOException v6;
+java.util.jar.JarFile v2, v5;
+java.lang.RuntimeException v7;
+java.io.File v4;
+java.util.concurrent.locks.Lock v1, v10, v12;
+java.lang.String v9;
+io.quarkus.bootstrap.runner.JarResource v0;
+java.nio.file.Path v3, v8;
+v0 := @this: io.quarkus.bootstrap.runner.JarResource;
+v1 = v0.<io.quarkus.bootstrap.runner.JarResource: java.util.concurrent.locks.Lock writeLock>;
+interfaceinvoke v1.<java.util.concurrent.locks.Lock: void lock()>();
+label1:
+v2 = v0.<io.quarkus.bootstrap.runner.JarResource: java.util.jar.JarFile zipFile>;
+if v2 != null goto label5;
+label2:
+v3 = v0.<io.quarkus.bootstrap.runner.JarResource: java.nio.file.Path jarPath>;
+v4 = interfaceinvoke v3.<java.nio.file.Path: java.io.File toFile()>();
+v5 = staticinvoke <io.smallrye.common.io.jar.JarFiles: java.util.jar.JarFile create(java.io.File)>(v4);
+v0.<io.quarkus.bootstrap.runner.JarResource: java.util.jar.JarFile zipFile> = v5;
+label3:
+goto label5;
+label4:
+v6 := @caughtexception;
+v7 = new java.lang.RuntimeException;
+v8 = v0.<io.quarkus.bootstrap.runner.JarResource: java.nio.file.Path jarPath>;
+v9 = dynamicinvoke "makeConcatWithConstants" <java.lang.String (java.nio.file.Path)>(v8) <java.lang.invoke.StringConcatFactory: java.lang.invoke.CallSite makeConcatWithConstants(java.lang.invoke.MethodHandles$Lookup,java.lang.String,java.lang.invoke.MethodType,java.lang.String,java.lang.Object[])>("Failed to open \u0001");
+specialinvoke v7.<java.lang.RuntimeException: void <init>(java.lang.String,java.lang.Throwable)>(v9, v6);
+throw v7;
+label5:
+v10 = v0.<io.quarkus.bootstrap.runner.JarResource: java.util.concurrent.locks.Lock writeLock>;
+interfaceinvoke v10.<java.util.concurrent.locks.Lock: void unlock()>();
+goto label7;
+label6:
+v11 := @caughtexception;
+v12 = v0.<io.quarkus.bootstrap.runner.JarResource: java.util.concurrent.locks.Lock writeLock>;
+interfaceinvoke v12.<java.util.concurrent.locks.Lock: void unlock()>();
+throw v11;
+label7:
+return;
+catch java.io.IOException from label2 to label3 with label4;
+catch java.lang.Throwable from label1 to label5 with label6;
+}
+public void close()
+{
+java.lang.Throwable v4;
+java.util.concurrent.locks.Lock v1, v3, v5;
+java.util.jar.JarFile v2;
+io.quarkus.bootstrap.runner.JarResource v0;
+v0 := @this: io.quarkus.bootstrap.runner.JarResource;
+v1 = v0.<io.quarkus.bootstrap.runner.JarResource: java.util.concurrent.locks.Lock writeLock>;
+interfaceinvoke v1.<java.util.concurrent.locks.Lock: void lock()>();
+label1:
+v2 = v0.<io.quarkus.bootstrap.runner.JarResource: java.util.jar.JarFile zipFile>;
+if v2 == null goto label2;
+v0.<io.quarkus.bootstrap.runner.JarResource: java.util.jar.JarFile zipFile> = null;
+label2:
+v3 = v0.<io.quarkus.bootstrap.runner.JarResource: java.util.concurrent.locks.Lock writeLock>;
+interfaceinvoke v3.<java.util.concurrent.locks.Lock: void unlock()>();
+goto label4;
+label3:
+v4 := @caughtexception;
+v5 = v0.<io.quarkus.bootstrap.runner.JarResource: java.util.concurrent.locks.Lock writeLock>;
+interfaceinvoke v5.<java.util.concurrent.locks.Lock: void unlock()>();
+throw v4;
+label4:
+return;
+catch java.lang.Throwable from label1 to label2 with label3;
+}
+public void resetInternalCaches()
+{
+io.quarkus.bootstrap.runner.JarResource v0;
+v0 := @this: io.quarkus.bootstrap.runner.JarResource;
+virtualinvoke v0.<io.quarkus.bootstrap.runner.JarResource: void close()>();
+return;
+}
+public java.lang.String toString()
+{
+java.lang.String v3;
+io.quarkus.bootstrap.runner.JarResource v0;
+java.nio.file.Path v1, v2;
+v0 := @this: io.quarkus.bootstrap.runner.JarResource;
+v1 = v0.<io.quarkus.bootstrap.runner.JarResource: java.nio.file.Path jarPath>;
+v2 = interfaceinvoke v1.<java.nio.file.Path: java.nio.file.Path getFileName()>();
+v3 = dynamicinvoke "makeConcatWithConstants" <java.lang.String (java.nio.file.Path)>(v2) <java.lang.invoke.StringConcatFactory: java.lang.invoke.CallSite makeConcatWithConstants(java.lang.invoke.MethodHandles$Lookup,java.lang.String,java.lang.invoke.MethodType,java.lang.String,java.lang.Object[])>("JarResource{\u0001}");
+return v3;
+}
+public boolean equals(java.lang.Object)
+{
+io.quarkus.bootstrap.runner.ManifestInfo v4, v5;
+java.lang.Class v2, v3;
+java.lang.Object v1;
+io.quarkus.bootstrap.runner.JarResource v0;
+java.nio.file.Path v7, v8;
+boolean v10, v6, v9;
+v0 := @this: io.quarkus.bootstrap.runner.JarResource;
+v1 := @parameter0: java.lang.Object;
+if v0 != v1 goto label1;
+return 1;
+label1:
+if v1 == null goto label2;
+v2 = virtualinvoke v0.<java.lang.Object: java.lang.Class getClass()>();
+v3 = virtualinvoke v1.<java.lang.Object: java.lang.Class getClass()>();
+if v2 == v3 goto label3;
+label2:
+return 0;
+label3:
+v4 = v0.<io.quarkus.bootstrap.runner.JarResource: io.quarkus.bootstrap.runner.ManifestInfo manifestInfo>;
+v5 = v1.<io.quarkus.bootstrap.runner.JarResource: io.quarkus.bootstrap.runner.ManifestInfo manifestInfo>;
+v6 = staticinvoke <java.util.Objects: boolean equals(java.lang.Object,java.lang.Object)>(v4, v5);
+if v6 == 0 goto label4;
+v7 = v0.<io.quarkus.bootstrap.runner.JarResource: java.nio.file.Path jarPath>;
+v8 = v1.<io.quarkus.bootstrap.runner.JarResource: java.nio.file.Path jarPath>;
+v9 = interfaceinvoke v7.<java.nio.file.Path: boolean equals(java.lang.Object)>(v8);
+if v9 == 0 goto label4;
+v10 = 1;
+goto label5;
+label4:
+v10 = 0;
+label5:
+return v10;
+}
+public int hashCode()
+{
+io.quarkus.bootstrap.runner.ManifestInfo v2;
+java.lang.Object[] v1;
+int v4;
+io.quarkus.bootstrap.runner.JarResource v0;
+java.nio.file.Path v3;
+v0 := @this: io.quarkus.bootstrap.runner.JarResource;
+v1 = newarray (java.lang.Object)[2];
+v2 = v0.<io.quarkus.bootstrap.runner.JarResource: io.quarkus.bootstrap.runner.ManifestInfo manifestInfo>;
+v1[0] = v2;
+v3 = v0.<io.quarkus.bootstrap.runner.JarResource: java.nio.file.Path jarPath>;
+v1[1] = v3;
+v4 = staticinvoke <java.util.Objects: int hash(java.lang.Object[])>(v1);
+return v4;
+}
+}

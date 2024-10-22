@@ -1,0 +1,211 @@
+abstract class io.netty.handler.codec.http.websocketx.extensions.compression.DeflateEncoder extends io.netty.handler.codec.http.websocketx.extensions.WebSocketExtensionEncoder
+{
+private final int compressionLevel;
+private final int windowSize;
+private final boolean noContext;
+private final io.netty.handler.codec.http.websocketx.extensions.WebSocketExtensionFilter extensionEncoderFilter;
+private io.netty.channel.embedded.EmbeddedChannel encoder;
+void <init>(int, int, boolean, io.netty.handler.codec.http.websocketx.extensions.WebSocketExtensionFilter)
+{
+io.netty.handler.codec.http.websocketx.extensions.WebSocketExtensionFilter v4;
+io.netty.handler.codec.http.websocketx.extensions.compression.DeflateEncoder v0;
+int v1, v2;
+java.lang.Object v5;
+boolean v3;
+v0 := @this: io.netty.handler.codec.http.websocketx.extensions.compression.DeflateEncoder;
+v1 := @parameter0: int;
+v2 := @parameter1: int;
+v3 := @parameter2: boolean;
+v4 := @parameter3: io.netty.handler.codec.http.websocketx.extensions.WebSocketExtensionFilter;
+specialinvoke v0.<io.netty.handler.codec.http.websocketx.extensions.WebSocketExtensionEncoder: void <init>()>();
+v0.<io.netty.handler.codec.http.websocketx.extensions.compression.DeflateEncoder: int compressionLevel> = v1;
+v0.<io.netty.handler.codec.http.websocketx.extensions.compression.DeflateEncoder: int windowSize> = v2;
+v0.<io.netty.handler.codec.http.websocketx.extensions.compression.DeflateEncoder: boolean noContext> = v3;
+v5 = staticinvoke <io.netty.util.internal.ObjectUtil: java.lang.Object checkNotNull(java.lang.Object,java.lang.String)>(v4, "extensionEncoderFilter");
+v0.<io.netty.handler.codec.http.websocketx.extensions.compression.DeflateEncoder: io.netty.handler.codec.http.websocketx.extensions.WebSocketExtensionFilter extensionEncoderFilter> = v5;
+return;
+}
+protected io.netty.handler.codec.http.websocketx.extensions.WebSocketExtensionFilter extensionEncoderFilter()
+{
+io.netty.handler.codec.http.websocketx.extensions.WebSocketExtensionFilter v1;
+io.netty.handler.codec.http.websocketx.extensions.compression.DeflateEncoder v0;
+v0 := @this: io.netty.handler.codec.http.websocketx.extensions.compression.DeflateEncoder;
+v1 = v0.<io.netty.handler.codec.http.websocketx.extensions.compression.DeflateEncoder: io.netty.handler.codec.http.websocketx.extensions.WebSocketExtensionFilter extensionEncoderFilter>;
+return v1;
+}
+protected abstract int rsv(io.netty.handler.codec.http.websocketx.WebSocketFrame);
+protected abstract boolean removeFrameTail(io.netty.handler.codec.http.websocketx.WebSocketFrame);
+protected void encode(io.netty.channel.ChannelHandlerContext, io.netty.handler.codec.http.websocketx.WebSocketFrame, java.util.List) throws java.lang.Exception
+{
+io.netty.channel.ChannelHandlerContext v1;
+io.netty.handler.codec.CodecException v23, v9;
+io.netty.buffer.ByteBuf v4, v6, v8;
+int v13, v18, v22;
+java.lang.String v25, v26;
+boolean v10, v12, v15, v17, v19, v21, v5, v7;
+io.netty.handler.codec.http.websocketx.WebSocketFrame v14, v2;
+io.netty.handler.codec.http.websocketx.ContinuationWebSocketFrame v20;
+io.netty.handler.codec.http.websocketx.extensions.compression.DeflateEncoder v0;
+io.netty.handler.codec.http.websocketx.BinaryWebSocketFrame v16;
+java.util.List v3;
+io.netty.handler.codec.http.websocketx.TextWebSocketFrame v11;
+java.lang.Class v24;
+v0 := @this: io.netty.handler.codec.http.websocketx.extensions.compression.DeflateEncoder;
+v1 := @parameter0: io.netty.channel.ChannelHandlerContext;
+v2 := @parameter1: io.netty.handler.codec.http.websocketx.WebSocketFrame;
+v3 := @parameter2: java.util.List;
+v4 = virtualinvoke v2.<io.netty.handler.codec.http.websocketx.WebSocketFrame: io.netty.buffer.ByteBuf content()>();
+v5 = virtualinvoke v4.<io.netty.buffer.ByteBuf: boolean isReadable()>();
+if v5 == 0 goto label1;
+v6 = specialinvoke v0.<io.netty.handler.codec.http.websocketx.extensions.compression.DeflateEncoder: io.netty.buffer.ByteBuf compressContent(io.netty.channel.ChannelHandlerContext,io.netty.handler.codec.http.websocketx.WebSocketFrame)>(v1, v2);
+goto label3;
+label1:
+v7 = virtualinvoke v2.<io.netty.handler.codec.http.websocketx.WebSocketFrame: boolean isFinalFragment()>();
+if v7 == 0 goto label2;
+v8 = <io.netty.handler.codec.http.websocketx.extensions.compression.PerMessageDeflateDecoder: io.netty.buffer.ByteBuf EMPTY_DEFLATE_BLOCK>;
+v6 = virtualinvoke v8.<io.netty.buffer.ByteBuf: io.netty.buffer.ByteBuf duplicate()>();
+goto label3;
+label2:
+v9 = new io.netty.handler.codec.CodecException;
+specialinvoke v9.<io.netty.handler.codec.CodecException: void <init>(java.lang.String)>("cannot compress content buffer");
+throw v9;
+label3:
+v10 = v2 instanceof io.netty.handler.codec.http.websocketx.TextWebSocketFrame;
+if v10 == 0 goto label4;
+v11 = new io.netty.handler.codec.http.websocketx.TextWebSocketFrame;
+v12 = virtualinvoke v2.<io.netty.handler.codec.http.websocketx.WebSocketFrame: boolean isFinalFragment()>();
+v13 = virtualinvoke v0.<io.netty.handler.codec.http.websocketx.extensions.compression.DeflateEncoder: int rsv(io.netty.handler.codec.http.websocketx.WebSocketFrame)>(v2);
+specialinvoke v11.<io.netty.handler.codec.http.websocketx.TextWebSocketFrame: void <init>(boolean,int,io.netty.buffer.ByteBuf)>(v12, v13, v6);
+v14 = v11;
+goto label7;
+label4:
+v15 = v2 instanceof io.netty.handler.codec.http.websocketx.BinaryWebSocketFrame;
+if v15 == 0 goto label5;
+v16 = new io.netty.handler.codec.http.websocketx.BinaryWebSocketFrame;
+v17 = virtualinvoke v2.<io.netty.handler.codec.http.websocketx.WebSocketFrame: boolean isFinalFragment()>();
+v18 = virtualinvoke v0.<io.netty.handler.codec.http.websocketx.extensions.compression.DeflateEncoder: int rsv(io.netty.handler.codec.http.websocketx.WebSocketFrame)>(v2);
+specialinvoke v16.<io.netty.handler.codec.http.websocketx.BinaryWebSocketFrame: void <init>(boolean,int,io.netty.buffer.ByteBuf)>(v17, v18, v6);
+v14 = v16;
+goto label7;
+label5:
+v19 = v2 instanceof io.netty.handler.codec.http.websocketx.ContinuationWebSocketFrame;
+if v19 == 0 goto label6;
+v20 = new io.netty.handler.codec.http.websocketx.ContinuationWebSocketFrame;
+v21 = virtualinvoke v2.<io.netty.handler.codec.http.websocketx.WebSocketFrame: boolean isFinalFragment()>();
+v22 = virtualinvoke v0.<io.netty.handler.codec.http.websocketx.extensions.compression.DeflateEncoder: int rsv(io.netty.handler.codec.http.websocketx.WebSocketFrame)>(v2);
+specialinvoke v20.<io.netty.handler.codec.http.websocketx.ContinuationWebSocketFrame: void <init>(boolean,int,io.netty.buffer.ByteBuf)>(v21, v22, v6);
+v14 = v20;
+goto label7;
+label6:
+v23 = new io.netty.handler.codec.CodecException;
+v24 = virtualinvoke v2.<java.lang.Object: java.lang.Class getClass()>();
+v25 = virtualinvoke v24.<java.lang.Class: java.lang.String getName()>();
+v26 = dynamicinvoke "makeConcatWithConstants" <java.lang.String (java.lang.String)>(v25) <java.lang.invoke.StringConcatFactory: java.lang.invoke.CallSite makeConcatWithConstants(java.lang.invoke.MethodHandles$Lookup,java.lang.String,java.lang.invoke.MethodType,java.lang.String,java.lang.Object[])>("unexpected frame type: \u0001");
+specialinvoke v23.<io.netty.handler.codec.CodecException: void <init>(java.lang.String)>(v26);
+throw v23;
+label7:
+interfaceinvoke v3.<java.util.List: boolean add(java.lang.Object)>(v14);
+return;
+}
+public void handlerRemoved(io.netty.channel.ChannelHandlerContext) throws java.lang.Exception
+{
+io.netty.channel.ChannelHandlerContext v1;
+io.netty.handler.codec.http.websocketx.extensions.compression.DeflateEncoder v0;
+v0 := @this: io.netty.handler.codec.http.websocketx.extensions.compression.DeflateEncoder;
+v1 := @parameter0: io.netty.channel.ChannelHandlerContext;
+specialinvoke v0.<io.netty.handler.codec.http.websocketx.extensions.compression.DeflateEncoder: void cleanup()>();
+specialinvoke v0.<io.netty.handler.codec.http.websocketx.extensions.WebSocketExtensionEncoder: void handlerRemoved(io.netty.channel.ChannelHandlerContext)>(v1);
+return;
+}
+private io.netty.buffer.ByteBuf compressContent(io.netty.channel.ChannelHandlerContext, io.netty.handler.codec.http.websocketx.WebSocketFrame)
+{
+java.lang.Object[] v11;
+io.netty.buffer.ByteBufAllocator v14;
+io.netty.handler.codec.compression.ZlibEncoder v9;
+io.netty.channel.ChannelHandlerContext v1;
+io.netty.handler.codec.CodecException v20;
+io.netty.buffer.ByteBuf v12, v13, v25, v28;
+int v19, v24, v26, v27, v7, v8;
+boolean v18, v21, v22, v23;
+io.netty.handler.codec.http.websocketx.WebSocketFrame v2;
+io.netty.channel.embedded.EmbeddedChannel v10, v16, v3, v4;
+io.netty.handler.codec.http.websocketx.extensions.compression.DeflateEncoder v0;
+io.netty.handler.codec.compression.ZlibWrapper v6;
+io.netty.channel.ChannelHandler[] v5;
+io.netty.buffer.CompositeByteBuf v15;
+java.lang.Object v17;
+v0 := @this: io.netty.handler.codec.http.websocketx.extensions.compression.DeflateEncoder;
+v1 := @parameter0: io.netty.channel.ChannelHandlerContext;
+v2 := @parameter1: io.netty.handler.codec.http.websocketx.WebSocketFrame;
+v3 = v0.<io.netty.handler.codec.http.websocketx.extensions.compression.DeflateEncoder: io.netty.channel.embedded.EmbeddedChannel encoder>;
+if v3 != null goto label1;
+v4 = new io.netty.channel.embedded.EmbeddedChannel;
+v5 = newarray (io.netty.channel.ChannelHandler)[1];
+v6 = <io.netty.handler.codec.compression.ZlibWrapper: io.netty.handler.codec.compression.ZlibWrapper NONE>;
+v7 = v0.<io.netty.handler.codec.http.websocketx.extensions.compression.DeflateEncoder: int compressionLevel>;
+v8 = v0.<io.netty.handler.codec.http.websocketx.extensions.compression.DeflateEncoder: int windowSize>;
+v9 = staticinvoke <io.netty.handler.codec.compression.ZlibCodecFactory: io.netty.handler.codec.compression.ZlibEncoder newZlibEncoder(io.netty.handler.codec.compression.ZlibWrapper,int,int,int)>(v6, v7, v8, 8);
+v5[0] = v9;
+specialinvoke v4.<io.netty.channel.embedded.EmbeddedChannel: void <init>(io.netty.channel.ChannelHandler[])>(v5);
+v0.<io.netty.handler.codec.http.websocketx.extensions.compression.DeflateEncoder: io.netty.channel.embedded.EmbeddedChannel encoder> = v4;
+label1:
+v10 = v0.<io.netty.handler.codec.http.websocketx.extensions.compression.DeflateEncoder: io.netty.channel.embedded.EmbeddedChannel encoder>;
+v11 = newarray (java.lang.Object)[1];
+v12 = virtualinvoke v2.<io.netty.handler.codec.http.websocketx.WebSocketFrame: io.netty.buffer.ByteBuf content()>();
+v13 = virtualinvoke v12.<io.netty.buffer.ByteBuf: io.netty.buffer.ByteBuf retain()>();
+v11[0] = v13;
+virtualinvoke v10.<io.netty.channel.embedded.EmbeddedChannel: boolean writeOutbound(java.lang.Object[])>(v11);
+v14 = interfaceinvoke v1.<io.netty.channel.ChannelHandlerContext: io.netty.buffer.ByteBufAllocator alloc()>();
+v15 = interfaceinvoke v14.<io.netty.buffer.ByteBufAllocator: io.netty.buffer.CompositeByteBuf compositeBuffer()>();
+label2:
+v16 = v0.<io.netty.handler.codec.http.websocketx.extensions.compression.DeflateEncoder: io.netty.channel.embedded.EmbeddedChannel encoder>;
+v17 = virtualinvoke v16.<io.netty.channel.embedded.EmbeddedChannel: java.lang.Object readOutbound()>();
+if v17 == null goto label4;
+v18 = virtualinvoke v17.<io.netty.buffer.ByteBuf: boolean isReadable()>();
+if v18 != 0 goto label3;
+virtualinvoke v17.<io.netty.buffer.ByteBuf: boolean release()>();
+goto label2;
+label3:
+virtualinvoke v15.<io.netty.buffer.CompositeByteBuf: io.netty.buffer.CompositeByteBuf addComponent(boolean,io.netty.buffer.ByteBuf)>(1, v17);
+goto label2;
+label4:
+v19 = virtualinvoke v15.<io.netty.buffer.CompositeByteBuf: int numComponents()>();
+if v19 > 0 goto label5;
+virtualinvoke v15.<io.netty.buffer.CompositeByteBuf: boolean release()>();
+v20 = new io.netty.handler.codec.CodecException;
+specialinvoke v20.<io.netty.handler.codec.CodecException: void <init>(java.lang.String)>("cannot read compressed buffer");
+throw v20;
+label5:
+v21 = virtualinvoke v2.<io.netty.handler.codec.http.websocketx.WebSocketFrame: boolean isFinalFragment()>();
+if v21 == 0 goto label6;
+v22 = v0.<io.netty.handler.codec.http.websocketx.extensions.compression.DeflateEncoder: boolean noContext>;
+if v22 == 0 goto label6;
+specialinvoke v0.<io.netty.handler.codec.http.websocketx.extensions.compression.DeflateEncoder: void cleanup()>();
+label6:
+v23 = virtualinvoke v0.<io.netty.handler.codec.http.websocketx.extensions.compression.DeflateEncoder: boolean removeFrameTail(io.netty.handler.codec.http.websocketx.WebSocketFrame)>(v2);
+if v23 == 0 goto label7;
+v24 = virtualinvoke v15.<io.netty.buffer.CompositeByteBuf: int readableBytes()>();
+v25 = <io.netty.handler.codec.http.websocketx.extensions.compression.PerMessageDeflateDecoder: io.netty.buffer.ByteBuf FRAME_TAIL>;
+v26 = virtualinvoke v25.<io.netty.buffer.ByteBuf: int readableBytes()>();
+v27 = v24 - v26;
+v28 = virtualinvoke v15.<io.netty.buffer.CompositeByteBuf: io.netty.buffer.ByteBuf slice(int,int)>(0, v27);
+goto label8;
+label7:
+v28 = v15;
+label8:
+return v28;
+}
+private void cleanup()
+{
+io.netty.channel.embedded.EmbeddedChannel v1, v2;
+io.netty.handler.codec.http.websocketx.extensions.compression.DeflateEncoder v0;
+v0 := @this: io.netty.handler.codec.http.websocketx.extensions.compression.DeflateEncoder;
+v1 = v0.<io.netty.handler.codec.http.websocketx.extensions.compression.DeflateEncoder: io.netty.channel.embedded.EmbeddedChannel encoder>;
+if v1 == null goto label1;
+v2 = v0.<io.netty.handler.codec.http.websocketx.extensions.compression.DeflateEncoder: io.netty.channel.embedded.EmbeddedChannel encoder>;
+virtualinvoke v2.<io.netty.channel.embedded.EmbeddedChannel: boolean finishAndReleaseAll()>();
+v0.<io.netty.handler.codec.http.websocketx.extensions.compression.DeflateEncoder: io.netty.channel.embedded.EmbeddedChannel encoder> = null;
+label1:
+return;
+}
+}

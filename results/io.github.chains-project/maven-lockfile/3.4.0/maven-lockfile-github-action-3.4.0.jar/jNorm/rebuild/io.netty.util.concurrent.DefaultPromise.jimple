@@ -1,0 +1,1490 @@
+public class io.netty.util.concurrent.DefaultPromise extends io.netty.util.concurrent.AbstractFuture implements io.netty.util.concurrent.Promise
+{
+private static final io.netty.util.internal.logging.InternalLogger logger;
+private static final io.netty.util.internal.logging.InternalLogger rejectedExecutionLogger;
+private static final int MAX_LISTENER_STACK_DEPTH;
+private static final java.util.concurrent.atomic.AtomicReferenceFieldUpdater RESULT_UPDATER;
+private static final java.lang.Object SUCCESS;
+private static final java.lang.Object UNCANCELLABLE;
+private static final io.netty.util.concurrent.DefaultPromise$CauseHolder CANCELLATION_CAUSE_HOLDER;
+private static final java.lang.StackTraceElement[] CANCELLATION_STACK;
+private volatile java.lang.Object result;
+private final io.netty.util.concurrent.EventExecutor executor;
+private io.netty.util.concurrent.GenericFutureListener listener;
+private io.netty.util.concurrent.DefaultFutureListeners listeners;
+private short waiters;
+private boolean notifyingListeners;
+static final boolean $assertionsDisabled;
+public void <init>(io.netty.util.concurrent.EventExecutor)
+{
+io.netty.util.concurrent.EventExecutor v1;
+io.netty.util.concurrent.DefaultPromise v0;
+java.lang.Object v2;
+v0 := @this: io.netty.util.concurrent.DefaultPromise;
+v1 := @parameter0: io.netty.util.concurrent.EventExecutor;
+specialinvoke v0.<io.netty.util.concurrent.AbstractFuture: void <init>()>();
+v2 = staticinvoke <io.netty.util.internal.ObjectUtil: java.lang.Object checkNotNull(java.lang.Object,java.lang.String)>(v1, "executor");
+v0.<io.netty.util.concurrent.DefaultPromise: io.netty.util.concurrent.EventExecutor executor> = v2;
+return;
+}
+protected void <init>()
+{
+io.netty.util.concurrent.DefaultPromise v0;
+v0 := @this: io.netty.util.concurrent.DefaultPromise;
+specialinvoke v0.<io.netty.util.concurrent.AbstractFuture: void <init>()>();
+v0.<io.netty.util.concurrent.DefaultPromise: io.netty.util.concurrent.EventExecutor executor> = null;
+return;
+}
+public io.netty.util.concurrent.Promise setSuccess(java.lang.Object)
+{
+io.netty.util.concurrent.DefaultPromise v0;
+java.lang.IllegalStateException v3;
+java.lang.Object v1;
+java.lang.String v4;
+boolean v2;
+v0 := @this: io.netty.util.concurrent.DefaultPromise;
+v1 := @parameter0: java.lang.Object;
+v2 = specialinvoke v0.<io.netty.util.concurrent.DefaultPromise: boolean setSuccess0(java.lang.Object)>(v1);
+if v2 == 0 goto label1;
+return v0;
+label1:
+v3 = new java.lang.IllegalStateException;
+v4 = dynamicinvoke "makeConcatWithConstants" <java.lang.String (io.netty.util.concurrent.DefaultPromise)>(v0) <java.lang.invoke.StringConcatFactory: java.lang.invoke.CallSite makeConcatWithConstants(java.lang.invoke.MethodHandles$Lookup,java.lang.String,java.lang.invoke.MethodType,java.lang.String,java.lang.Object[])>("complete already: \u0001");
+specialinvoke v3.<java.lang.IllegalStateException: void <init>(java.lang.String)>(v4);
+throw v3;
+}
+public boolean trySuccess(java.lang.Object)
+{
+io.netty.util.concurrent.DefaultPromise v0;
+java.lang.Object v1;
+boolean v2;
+v0 := @this: io.netty.util.concurrent.DefaultPromise;
+v1 := @parameter0: java.lang.Object;
+v2 = specialinvoke v0.<io.netty.util.concurrent.DefaultPromise: boolean setSuccess0(java.lang.Object)>(v1);
+return v2;
+}
+public io.netty.util.concurrent.Promise setFailure(java.lang.Throwable)
+{
+java.lang.Throwable v1;
+io.netty.util.concurrent.DefaultPromise v0;
+java.lang.IllegalStateException v3;
+java.lang.String v4;
+boolean v2;
+v0 := @this: io.netty.util.concurrent.DefaultPromise;
+v1 := @parameter0: java.lang.Throwable;
+v2 = specialinvoke v0.<io.netty.util.concurrent.DefaultPromise: boolean setFailure0(java.lang.Throwable)>(v1);
+if v2 == 0 goto label1;
+return v0;
+label1:
+v3 = new java.lang.IllegalStateException;
+v4 = dynamicinvoke "makeConcatWithConstants" <java.lang.String (io.netty.util.concurrent.DefaultPromise)>(v0) <java.lang.invoke.StringConcatFactory: java.lang.invoke.CallSite makeConcatWithConstants(java.lang.invoke.MethodHandles$Lookup,java.lang.String,java.lang.invoke.MethodType,java.lang.String,java.lang.Object[])>("complete already: \u0001");
+specialinvoke v3.<java.lang.IllegalStateException: void <init>(java.lang.String,java.lang.Throwable)>(v4, v1);
+throw v3;
+}
+public boolean tryFailure(java.lang.Throwable)
+{
+java.lang.Throwable v1;
+io.netty.util.concurrent.DefaultPromise v0;
+boolean v2;
+v0 := @this: io.netty.util.concurrent.DefaultPromise;
+v1 := @parameter0: java.lang.Throwable;
+v2 = specialinvoke v0.<io.netty.util.concurrent.DefaultPromise: boolean setFailure0(java.lang.Throwable)>(v1);
+return v2;
+}
+public boolean setUncancellable()
+{
+java.util.concurrent.atomic.AtomicReferenceFieldUpdater v1;
+io.netty.util.concurrent.DefaultPromise v0;
+java.lang.Object v2, v4;
+boolean v3, v5, v6, v7;
+v0 := @this: io.netty.util.concurrent.DefaultPromise;
+v1 = <io.netty.util.concurrent.DefaultPromise: java.util.concurrent.atomic.AtomicReferenceFieldUpdater RESULT_UPDATER>;
+v2 = <io.netty.util.concurrent.DefaultPromise: java.lang.Object UNCANCELLABLE>;
+v3 = virtualinvoke v1.<java.util.concurrent.atomic.AtomicReferenceFieldUpdater: boolean compareAndSet(java.lang.Object,java.lang.Object,java.lang.Object)>(v0, null, v2);
+if v3 == 0 goto label1;
+return 1;
+label1:
+v4 = v0.<io.netty.util.concurrent.DefaultPromise: java.lang.Object result>;
+v5 = staticinvoke <io.netty.util.concurrent.DefaultPromise: boolean isDone0(java.lang.Object)>(v4);
+if v5 == 0 goto label2;
+v6 = staticinvoke <io.netty.util.concurrent.DefaultPromise: boolean isCancelled0(java.lang.Object)>(v4);
+if v6 != 0 goto label3;
+label2:
+v7 = 1;
+goto label4;
+label3:
+v7 = 0;
+label4:
+return v7;
+}
+public boolean isSuccess()
+{
+io.netty.util.concurrent.DefaultPromise v0;
+java.lang.Object v1, v2;
+boolean v3, v4;
+v0 := @this: io.netty.util.concurrent.DefaultPromise;
+v1 = v0.<io.netty.util.concurrent.DefaultPromise: java.lang.Object result>;
+if v1 == null goto label1;
+v2 = <io.netty.util.concurrent.DefaultPromise: java.lang.Object UNCANCELLABLE>;
+if v1 == v2 goto label1;
+v3 = v1 instanceof io.netty.util.concurrent.DefaultPromise$CauseHolder;
+if v3 != 0 goto label1;
+v4 = 1;
+goto label2;
+label1:
+v4 = 0;
+label2:
+return v4;
+}
+public boolean isCancellable()
+{
+io.netty.util.concurrent.DefaultPromise v0;
+java.lang.Object v1;
+boolean v2;
+v0 := @this: io.netty.util.concurrent.DefaultPromise;
+v1 = v0.<io.netty.util.concurrent.DefaultPromise: java.lang.Object result>;
+if v1 != null goto label1;
+v2 = 1;
+goto label2;
+label1:
+v2 = 0;
+label2:
+return v2;
+}
+public java.lang.Throwable cause()
+{
+java.lang.Throwable v2;
+io.netty.util.concurrent.DefaultPromise v0;
+java.lang.Object v1;
+v0 := @this: io.netty.util.concurrent.DefaultPromise;
+v1 = v0.<io.netty.util.concurrent.DefaultPromise: java.lang.Object result>;
+v2 = specialinvoke v0.<io.netty.util.concurrent.DefaultPromise: java.lang.Throwable cause0(java.lang.Object)>(v1);
+return v2;
+}
+private java.lang.Throwable cause0(java.lang.Object)
+{
+java.lang.Throwable v9;
+io.netty.util.concurrent.DefaultPromise$LeanCancellationException v4;
+java.util.concurrent.atomic.AtomicReferenceFieldUpdater v5;
+io.netty.util.concurrent.DefaultPromise$CauseHolder v3, v6, v7;
+io.netty.util.concurrent.DefaultPromise v0;
+java.lang.Object v1;
+boolean v2, v8;
+v0 := @this: io.netty.util.concurrent.DefaultPromise;
+v1 := @parameter0: java.lang.Object;
+v2 = v1 instanceof io.netty.util.concurrent.DefaultPromise$CauseHolder;
+if v2 != 0 goto label1;
+return null;
+label1:
+v3 = <io.netty.util.concurrent.DefaultPromise: io.netty.util.concurrent.DefaultPromise$CauseHolder CANCELLATION_CAUSE_HOLDER>;
+if v1 != v3 goto label3;
+v4 = new io.netty.util.concurrent.DefaultPromise$LeanCancellationException;
+specialinvoke v4.<io.netty.util.concurrent.DefaultPromise$LeanCancellationException: void <init>()>();
+v5 = <io.netty.util.concurrent.DefaultPromise: java.util.concurrent.atomic.AtomicReferenceFieldUpdater RESULT_UPDATER>;
+v6 = <io.netty.util.concurrent.DefaultPromise: io.netty.util.concurrent.DefaultPromise$CauseHolder CANCELLATION_CAUSE_HOLDER>;
+v7 = new io.netty.util.concurrent.DefaultPromise$CauseHolder;
+specialinvoke v7.<io.netty.util.concurrent.DefaultPromise$CauseHolder: void <init>(java.lang.Throwable)>(v4);
+v8 = virtualinvoke v5.<java.util.concurrent.atomic.AtomicReferenceFieldUpdater: boolean compareAndSet(java.lang.Object,java.lang.Object,java.lang.Object)>(v0, v6, v7);
+if v8 == 0 goto label2;
+return v4;
+label2:
+v1 = v0.<io.netty.util.concurrent.DefaultPromise: java.lang.Object result>;
+label3:
+v9 = v1.<io.netty.util.concurrent.DefaultPromise$CauseHolder: java.lang.Throwable cause>;
+return v9;
+}
+public io.netty.util.concurrent.Promise addListener(io.netty.util.concurrent.GenericFutureListener)
+{
+java.lang.Throwable v2;
+io.netty.util.concurrent.DefaultPromise v0;
+io.netty.util.concurrent.GenericFutureListener v1;
+boolean v3;
+v0 := @this: io.netty.util.concurrent.DefaultPromise;
+v1 := @parameter0: io.netty.util.concurrent.GenericFutureListener;
+staticinvoke <io.netty.util.internal.ObjectUtil: java.lang.Object checkNotNull(java.lang.Object,java.lang.String)>(v1, "listener");
+entermonitor v0;
+label1:
+specialinvoke v0.<io.netty.util.concurrent.DefaultPromise: void addListener0(io.netty.util.concurrent.GenericFutureListener)>(v1);
+exitmonitor v0;
+label2:
+goto label4;
+label3:
+v2 := @caughtexception;
+exitmonitor v0;
+throw v2;
+label4:
+v3 = virtualinvoke v0.<io.netty.util.concurrent.DefaultPromise: boolean isDone()>();
+if v3 == 0 goto label5;
+specialinvoke v0.<io.netty.util.concurrent.DefaultPromise: void notifyListeners()>();
+label5:
+return v0;
+catch java.lang.Throwable from label1 to label2 with label3;
+}
+public transient io.netty.util.concurrent.Promise addListeners(io.netty.util.concurrent.GenericFutureListener[])
+{
+java.lang.Throwable v5;
+io.netty.util.concurrent.DefaultPromise v0;
+io.netty.util.concurrent.GenericFutureListener[] v1;
+int v2, v3;
+io.netty.util.concurrent.GenericFutureListener v4;
+boolean v6;
+v0 := @this: io.netty.util.concurrent.DefaultPromise;
+v1 := @parameter0: io.netty.util.concurrent.GenericFutureListener[];
+staticinvoke <io.netty.util.internal.ObjectUtil: java.lang.Object checkNotNull(java.lang.Object,java.lang.String)>(v1, "listeners");
+entermonitor v0;
+label1:
+v2 = lengthof v1;
+v3 = 0;
+label2:
+if v3 >= v2 goto label3;
+v4 = v1[v3];
+if v4 == null goto label3;
+specialinvoke v0.<io.netty.util.concurrent.DefaultPromise: void addListener0(io.netty.util.concurrent.GenericFutureListener)>(v4);
+v3 = v3 + 1;
+goto label2;
+label3:
+exitmonitor v0;
+label4:
+goto label6;
+label5:
+v5 := @caughtexception;
+exitmonitor v0;
+throw v5;
+label6:
+v6 = virtualinvoke v0.<io.netty.util.concurrent.DefaultPromise: boolean isDone()>();
+if v6 == 0 goto label7;
+specialinvoke v0.<io.netty.util.concurrent.DefaultPromise: void notifyListeners()>();
+label7:
+return v0;
+catch java.lang.Throwable from label1 to label4 with label5;
+}
+public io.netty.util.concurrent.Promise removeListener(io.netty.util.concurrent.GenericFutureListener)
+{
+java.lang.Throwable v2;
+io.netty.util.concurrent.DefaultPromise v0;
+io.netty.util.concurrent.GenericFutureListener v1;
+v0 := @this: io.netty.util.concurrent.DefaultPromise;
+v1 := @parameter0: io.netty.util.concurrent.GenericFutureListener;
+staticinvoke <io.netty.util.internal.ObjectUtil: java.lang.Object checkNotNull(java.lang.Object,java.lang.String)>(v1, "listener");
+entermonitor v0;
+label1:
+specialinvoke v0.<io.netty.util.concurrent.DefaultPromise: void removeListener0(io.netty.util.concurrent.GenericFutureListener)>(v1);
+exitmonitor v0;
+label2:
+goto label4;
+label3:
+v2 := @caughtexception;
+exitmonitor v0;
+throw v2;
+label4:
+return v0;
+catch java.lang.Throwable from label1 to label2 with label3;
+}
+public transient io.netty.util.concurrent.Promise removeListeners(io.netty.util.concurrent.GenericFutureListener[])
+{
+java.lang.Throwable v5;
+io.netty.util.concurrent.DefaultPromise v0;
+io.netty.util.concurrent.GenericFutureListener[] v1;
+int v2, v3;
+io.netty.util.concurrent.GenericFutureListener v4;
+v0 := @this: io.netty.util.concurrent.DefaultPromise;
+v1 := @parameter0: io.netty.util.concurrent.GenericFutureListener[];
+staticinvoke <io.netty.util.internal.ObjectUtil: java.lang.Object checkNotNull(java.lang.Object,java.lang.String)>(v1, "listeners");
+entermonitor v0;
+label1:
+v2 = lengthof v1;
+v3 = 0;
+label2:
+if v3 >= v2 goto label3;
+v4 = v1[v3];
+if v4 == null goto label3;
+specialinvoke v0.<io.netty.util.concurrent.DefaultPromise: void removeListener0(io.netty.util.concurrent.GenericFutureListener)>(v4);
+v3 = v3 + 1;
+goto label2;
+label3:
+exitmonitor v0;
+label4:
+goto label6;
+label5:
+v5 := @caughtexception;
+exitmonitor v0;
+throw v5;
+label6:
+return v0;
+catch java.lang.Throwable from label1 to label4 with label5;
+}
+public io.netty.util.concurrent.Promise await() throws java.lang.InterruptedException
+{
+java.lang.Throwable v6, v7;
+io.netty.util.concurrent.DefaultPromise v0;
+java.lang.InterruptedException v3;
+java.lang.String v4;
+boolean v1, v2, v5;
+v0 := @this: io.netty.util.concurrent.DefaultPromise;
+v1 = virtualinvoke v0.<io.netty.util.concurrent.DefaultPromise: boolean isDone()>();
+if v1 == 0 goto label01;
+return v0;
+label01:
+v2 = staticinvoke <java.lang.Thread: boolean interrupted()>();
+if v2 == 0 goto label02;
+v3 = new java.lang.InterruptedException;
+v4 = virtualinvoke v0.<io.netty.util.concurrent.DefaultPromise: java.lang.String toString()>();
+specialinvoke v3.<java.lang.InterruptedException: void <init>(java.lang.String)>(v4);
+throw v3;
+label02:
+virtualinvoke v0.<io.netty.util.concurrent.DefaultPromise: void checkDeadLock()>();
+entermonitor v0;
+label03:
+v5 = virtualinvoke v0.<io.netty.util.concurrent.DefaultPromise: boolean isDone()>();
+if v5 != 0 goto label07;
+specialinvoke v0.<io.netty.util.concurrent.DefaultPromise: void incWaiters()>();
+label04:
+virtualinvoke v0.<java.lang.Object: void wait()>();
+label05:
+specialinvoke v0.<io.netty.util.concurrent.DefaultPromise: void decWaiters()>();
+goto label03;
+label06:
+v6 := @caughtexception;
+specialinvoke v0.<io.netty.util.concurrent.DefaultPromise: void decWaiters()>();
+throw v6;
+label07:
+exitmonitor v0;
+label08:
+goto label10;
+label09:
+v7 := @caughtexception;
+exitmonitor v0;
+throw v7;
+label10:
+return v0;
+catch java.lang.Throwable from label04 to label05 with label06;
+catch java.lang.Throwable from label03 to label08 with label09;
+}
+public io.netty.util.concurrent.Promise awaitUninterruptibly()
+{
+java.lang.Throwable v5, v6;
+io.netty.util.concurrent.DefaultPromise v0;
+java.lang.InterruptedException v4;
+java.lang.Thread v7;
+boolean v1, v2, v3;
+v0 := @this: io.netty.util.concurrent.DefaultPromise;
+v1 = virtualinvoke v0.<io.netty.util.concurrent.DefaultPromise: boolean isDone()>();
+if v1 == 0 goto label01;
+return v0;
+label01:
+virtualinvoke v0.<io.netty.util.concurrent.DefaultPromise: void checkDeadLock()>();
+v2 = 0;
+entermonitor v0;
+label02:
+v3 = virtualinvoke v0.<io.netty.util.concurrent.DefaultPromise: boolean isDone()>();
+if v3 != 0 goto label08;
+specialinvoke v0.<io.netty.util.concurrent.DefaultPromise: void incWaiters()>();
+label03:
+virtualinvoke v0.<java.lang.Object: void wait()>();
+label04:
+specialinvoke v0.<io.netty.util.concurrent.DefaultPromise: void decWaiters()>();
+goto label02;
+label05:
+v4 := @caughtexception;
+v2 = 1;
+label06:
+specialinvoke v0.<io.netty.util.concurrent.DefaultPromise: void decWaiters()>();
+goto label02;
+label07:
+v5 := @caughtexception;
+specialinvoke v0.<io.netty.util.concurrent.DefaultPromise: void decWaiters()>();
+throw v5;
+label08:
+exitmonitor v0;
+label09:
+goto label11;
+label10:
+v6 := @caughtexception;
+exitmonitor v0;
+throw v6;
+label11:
+if v2 == 0 goto label12;
+v7 = staticinvoke <java.lang.Thread: java.lang.Thread currentThread()>();
+virtualinvoke v7.<java.lang.Thread: void interrupt()>();
+label12:
+return v0;
+catch java.lang.InterruptedException from label03 to label04 with label05;
+catch java.lang.Throwable from label03 to label04 with label07;
+catch java.lang.Throwable from label05 to label06 with label07;
+catch java.lang.Throwable from label02 to label09 with label10;
+}
+public boolean await(long, java.util.concurrent.TimeUnit) throws java.lang.InterruptedException
+{
+java.util.concurrent.TimeUnit v2;
+io.netty.util.concurrent.DefaultPromise v0;
+long v1, v3;
+boolean v4;
+v0 := @this: io.netty.util.concurrent.DefaultPromise;
+v1 := @parameter0: long;
+v2 := @parameter1: java.util.concurrent.TimeUnit;
+v3 = virtualinvoke v2.<java.util.concurrent.TimeUnit: long toNanos(long)>(v1);
+v4 = specialinvoke v0.<io.netty.util.concurrent.DefaultPromise: boolean await0(long,boolean)>(v3, 1);
+return v4;
+}
+public boolean await(long) throws java.lang.InterruptedException
+{
+java.util.concurrent.TimeUnit v2;
+io.netty.util.concurrent.DefaultPromise v0;
+long v1, v3;
+boolean v4;
+v0 := @this: io.netty.util.concurrent.DefaultPromise;
+v1 := @parameter0: long;
+v2 = <java.util.concurrent.TimeUnit: java.util.concurrent.TimeUnit MILLISECONDS>;
+v3 = virtualinvoke v2.<java.util.concurrent.TimeUnit: long toNanos(long)>(v1);
+v4 = specialinvoke v0.<io.netty.util.concurrent.DefaultPromise: boolean await0(long,boolean)>(v3, 1);
+return v4;
+}
+public boolean awaitUninterruptibly(long, java.util.concurrent.TimeUnit)
+{
+java.util.concurrent.TimeUnit v2;
+io.netty.util.concurrent.DefaultPromise v0;
+java.lang.InterruptedException v5;
+java.lang.InternalError v6;
+long v1, v3;
+boolean v4;
+v0 := @this: io.netty.util.concurrent.DefaultPromise;
+v1 := @parameter0: long;
+v2 := @parameter1: java.util.concurrent.TimeUnit;
+label1:
+v3 = virtualinvoke v2.<java.util.concurrent.TimeUnit: long toNanos(long)>(v1);
+v4 = specialinvoke v0.<io.netty.util.concurrent.DefaultPromise: boolean await0(long,boolean)>(v3, 0);
+label2:
+return v4;
+label3:
+v5 := @caughtexception;
+v6 = new java.lang.InternalError;
+specialinvoke v6.<java.lang.InternalError: void <init>()>();
+throw v6;
+catch java.lang.InterruptedException from label1 to label2 with label3;
+}
+public boolean awaitUninterruptibly(long)
+{
+java.util.concurrent.TimeUnit v2;
+io.netty.util.concurrent.DefaultPromise v0;
+java.lang.InterruptedException v5;
+java.lang.InternalError v6;
+long v1, v3;
+boolean v4;
+v0 := @this: io.netty.util.concurrent.DefaultPromise;
+v1 := @parameter0: long;
+label1:
+v2 = <java.util.concurrent.TimeUnit: java.util.concurrent.TimeUnit MILLISECONDS>;
+v3 = virtualinvoke v2.<java.util.concurrent.TimeUnit: long toNanos(long)>(v1);
+v4 = specialinvoke v0.<io.netty.util.concurrent.DefaultPromise: boolean await0(long,boolean)>(v3, 0);
+label2:
+return v4;
+label3:
+v5 := @caughtexception;
+v6 = new java.lang.InternalError;
+specialinvoke v6.<java.lang.InternalError: void <init>()>();
+throw v6;
+catch java.lang.InterruptedException from label1 to label2 with label3;
+}
+public java.lang.Object getNow()
+{
+io.netty.util.concurrent.DefaultPromise v0;
+java.lang.Object v1, v3, v4;
+boolean v2;
+v0 := @this: io.netty.util.concurrent.DefaultPromise;
+v1 = v0.<io.netty.util.concurrent.DefaultPromise: java.lang.Object result>;
+v2 = v1 instanceof io.netty.util.concurrent.DefaultPromise$CauseHolder;
+if v2 != 0 goto label1;
+v3 = <io.netty.util.concurrent.DefaultPromise: java.lang.Object SUCCESS>;
+if v1 == v3 goto label1;
+v4 = <io.netty.util.concurrent.DefaultPromise: java.lang.Object UNCANCELLABLE>;
+if v1 != v4 goto label2;
+label1:
+return null;
+label2:
+return v1;
+}
+public java.lang.Object get() throws java.lang.InterruptedException, java.util.concurrent.ExecutionException
+{
+java.lang.Throwable v5;
+java.util.concurrent.ExecutionException v7;
+io.netty.util.concurrent.DefaultPromise v0;
+java.lang.Object v1, v3, v4;
+boolean v2, v6;
+v0 := @this: io.netty.util.concurrent.DefaultPromise;
+v1 = v0.<io.netty.util.concurrent.DefaultPromise: java.lang.Object result>;
+v2 = staticinvoke <io.netty.util.concurrent.DefaultPromise: boolean isDone0(java.lang.Object)>(v1);
+if v2 != 0 goto label1;
+virtualinvoke v0.<io.netty.util.concurrent.DefaultPromise: io.netty.util.concurrent.Promise await()>();
+v1 = v0.<io.netty.util.concurrent.DefaultPromise: java.lang.Object result>;
+label1:
+v3 = <io.netty.util.concurrent.DefaultPromise: java.lang.Object SUCCESS>;
+if v1 == v3 goto label2;
+v4 = <io.netty.util.concurrent.DefaultPromise: java.lang.Object UNCANCELLABLE>;
+if v1 != v4 goto label3;
+label2:
+return null;
+label3:
+v5 = specialinvoke v0.<io.netty.util.concurrent.DefaultPromise: java.lang.Throwable cause0(java.lang.Object)>(v1);
+if v5 != null goto label4;
+return v1;
+label4:
+v6 = v5 instanceof java.util.concurrent.CancellationException;
+if v6 == 0 goto label5;
+throw v5;
+label5:
+v7 = new java.util.concurrent.ExecutionException;
+specialinvoke v7.<java.util.concurrent.ExecutionException: void <init>(java.lang.Throwable)>(v5);
+throw v7;
+}
+public java.lang.Object get(long, java.util.concurrent.TimeUnit) throws java.lang.InterruptedException, java.util.concurrent.ExecutionException, java.util.concurrent.TimeoutException
+{
+java.lang.Throwable v9;
+java.util.concurrent.TimeoutException v6;
+long v1;
+java.util.concurrent.ExecutionException v11;
+java.util.concurrent.TimeUnit v2;
+io.netty.util.concurrent.DefaultPromise v0;
+java.lang.Object v3, v7, v8;
+boolean v10, v4, v5;
+v0 := @this: io.netty.util.concurrent.DefaultPromise;
+v1 := @parameter0: long;
+v2 := @parameter1: java.util.concurrent.TimeUnit;
+v3 = v0.<io.netty.util.concurrent.DefaultPromise: java.lang.Object result>;
+v4 = staticinvoke <io.netty.util.concurrent.DefaultPromise: boolean isDone0(java.lang.Object)>(v3);
+if v4 != 0 goto label2;
+v5 = virtualinvoke v0.<io.netty.util.concurrent.DefaultPromise: boolean await(long,java.util.concurrent.TimeUnit)>(v1, v2);
+if v5 != 0 goto label1;
+v6 = new java.util.concurrent.TimeoutException;
+specialinvoke v6.<java.util.concurrent.TimeoutException: void <init>()>();
+throw v6;
+label1:
+v3 = v0.<io.netty.util.concurrent.DefaultPromise: java.lang.Object result>;
+label2:
+v7 = <io.netty.util.concurrent.DefaultPromise: java.lang.Object SUCCESS>;
+if v3 == v7 goto label3;
+v8 = <io.netty.util.concurrent.DefaultPromise: java.lang.Object UNCANCELLABLE>;
+if v3 != v8 goto label4;
+label3:
+return null;
+label4:
+v9 = specialinvoke v0.<io.netty.util.concurrent.DefaultPromise: java.lang.Throwable cause0(java.lang.Object)>(v3);
+if v9 != null goto label5;
+return v3;
+label5:
+v10 = v9 instanceof java.util.concurrent.CancellationException;
+if v10 == 0 goto label6;
+throw v9;
+label6:
+v11 = new java.util.concurrent.ExecutionException;
+specialinvoke v11.<java.util.concurrent.ExecutionException: void <init>(java.lang.Throwable)>(v9);
+throw v11;
+}
+public boolean cancel(boolean)
+{
+io.netty.util.concurrent.DefaultPromise v0;
+java.util.concurrent.atomic.AtomicReferenceFieldUpdater v2;
+io.netty.util.concurrent.DefaultPromise$CauseHolder v3;
+boolean v1, v4, v5;
+v0 := @this: io.netty.util.concurrent.DefaultPromise;
+v1 := @parameter0: boolean;
+v2 = <io.netty.util.concurrent.DefaultPromise: java.util.concurrent.atomic.AtomicReferenceFieldUpdater RESULT_UPDATER>;
+v3 = <io.netty.util.concurrent.DefaultPromise: io.netty.util.concurrent.DefaultPromise$CauseHolder CANCELLATION_CAUSE_HOLDER>;
+v4 = virtualinvoke v2.<java.util.concurrent.atomic.AtomicReferenceFieldUpdater: boolean compareAndSet(java.lang.Object,java.lang.Object,java.lang.Object)>(v0, null, v3);
+if v4 == 0 goto label2;
+v5 = specialinvoke v0.<io.netty.util.concurrent.DefaultPromise: boolean checkNotifyWaiters()>();
+if v5 == 0 goto label1;
+specialinvoke v0.<io.netty.util.concurrent.DefaultPromise: void notifyListeners()>();
+label1:
+return 1;
+label2:
+return 0;
+}
+public boolean isCancelled()
+{
+io.netty.util.concurrent.DefaultPromise v0;
+java.lang.Object v1;
+boolean v2;
+v0 := @this: io.netty.util.concurrent.DefaultPromise;
+v1 = v0.<io.netty.util.concurrent.DefaultPromise: java.lang.Object result>;
+v2 = staticinvoke <io.netty.util.concurrent.DefaultPromise: boolean isCancelled0(java.lang.Object)>(v1);
+return v2;
+}
+public boolean isDone()
+{
+io.netty.util.concurrent.DefaultPromise v0;
+java.lang.Object v1;
+boolean v2;
+v0 := @this: io.netty.util.concurrent.DefaultPromise;
+v1 = v0.<io.netty.util.concurrent.DefaultPromise: java.lang.Object result>;
+v2 = staticinvoke <io.netty.util.concurrent.DefaultPromise: boolean isDone0(java.lang.Object)>(v1);
+return v2;
+}
+public io.netty.util.concurrent.Promise sync() throws java.lang.InterruptedException
+{
+io.netty.util.concurrent.DefaultPromise v0;
+v0 := @this: io.netty.util.concurrent.DefaultPromise;
+virtualinvoke v0.<io.netty.util.concurrent.DefaultPromise: io.netty.util.concurrent.Promise await()>();
+specialinvoke v0.<io.netty.util.concurrent.DefaultPromise: void rethrowIfFailed()>();
+return v0;
+}
+public io.netty.util.concurrent.Promise syncUninterruptibly()
+{
+io.netty.util.concurrent.DefaultPromise v0;
+v0 := @this: io.netty.util.concurrent.DefaultPromise;
+virtualinvoke v0.<io.netty.util.concurrent.DefaultPromise: io.netty.util.concurrent.Promise awaitUninterruptibly()>();
+specialinvoke v0.<io.netty.util.concurrent.DefaultPromise: void rethrowIfFailed()>();
+return v0;
+}
+public java.lang.String toString()
+{
+io.netty.util.concurrent.DefaultPromise v0;
+java.lang.StringBuilder v1;
+java.lang.String v2;
+v0 := @this: io.netty.util.concurrent.DefaultPromise;
+v1 = virtualinvoke v0.<io.netty.util.concurrent.DefaultPromise: java.lang.StringBuilder toStringBuilder()>();
+v2 = virtualinvoke v1.<java.lang.StringBuilder: java.lang.String toString()>();
+return v2;
+}
+protected java.lang.StringBuilder toStringBuilder()
+{
+java.lang.Throwable v13;
+int v5;
+java.lang.String v2, v6;
+boolean v11;
+io.netty.util.concurrent.DefaultPromise v0;
+java.lang.Object v10, v8, v9;
+java.lang.StringBuilder v1, v12, v14, v15, v16, v3, v4, v7;
+v0 := @this: io.netty.util.concurrent.DefaultPromise;
+v1 = new java.lang.StringBuilder;
+specialinvoke v1.<java.lang.StringBuilder: void <init>(int)>(64);
+v2 = staticinvoke <io.netty.util.internal.StringUtil: java.lang.String simpleClassName(java.lang.Object)>(v0);
+v3 = virtualinvoke v1.<java.lang.StringBuilder: java.lang.StringBuilder append(java.lang.String)>(v2);
+v4 = virtualinvoke v3.<java.lang.StringBuilder: java.lang.StringBuilder append(char)>(64);
+v5 = virtualinvoke v0.<java.lang.Object: int hashCode()>();
+v6 = staticinvoke <java.lang.Integer: java.lang.String toHexString(int)>(v5);
+v7 = virtualinvoke v4.<java.lang.StringBuilder: java.lang.StringBuilder append(java.lang.String)>(v6);
+v8 = v0.<io.netty.util.concurrent.DefaultPromise: java.lang.Object result>;
+v9 = <io.netty.util.concurrent.DefaultPromise: java.lang.Object SUCCESS>;
+if v8 != v9 goto label1;
+virtualinvoke v7.<java.lang.StringBuilder: java.lang.StringBuilder append(java.lang.String)>("(success)");
+goto label5;
+label1:
+v10 = <io.netty.util.concurrent.DefaultPromise: java.lang.Object UNCANCELLABLE>;
+if v8 != v10 goto label2;
+virtualinvoke v7.<java.lang.StringBuilder: java.lang.StringBuilder append(java.lang.String)>("(uncancellable)");
+goto label5;
+label2:
+v11 = v8 instanceof io.netty.util.concurrent.DefaultPromise$CauseHolder;
+if v11 == 0 goto label3;
+v12 = virtualinvoke v7.<java.lang.StringBuilder: java.lang.StringBuilder append(java.lang.String)>("(failure: ");
+v13 = v8.<io.netty.util.concurrent.DefaultPromise$CauseHolder: java.lang.Throwable cause>;
+v14 = virtualinvoke v12.<java.lang.StringBuilder: java.lang.StringBuilder append(java.lang.Object)>(v13);
+virtualinvoke v14.<java.lang.StringBuilder: java.lang.StringBuilder append(char)>(41);
+goto label5;
+label3:
+if v8 == null goto label4;
+v15 = virtualinvoke v7.<java.lang.StringBuilder: java.lang.StringBuilder append(java.lang.String)>("(success: ");
+v16 = virtualinvoke v15.<java.lang.StringBuilder: java.lang.StringBuilder append(java.lang.Object)>(v8);
+virtualinvoke v16.<java.lang.StringBuilder: java.lang.StringBuilder append(char)>(41);
+goto label5;
+label4:
+virtualinvoke v7.<java.lang.StringBuilder: java.lang.StringBuilder append(java.lang.String)>("(incomplete)");
+label5:
+return v7;
+}
+protected io.netty.util.concurrent.EventExecutor executor()
+{
+io.netty.util.concurrent.EventExecutor v1;
+io.netty.util.concurrent.DefaultPromise v0;
+v0 := @this: io.netty.util.concurrent.DefaultPromise;
+v1 = v0.<io.netty.util.concurrent.DefaultPromise: io.netty.util.concurrent.EventExecutor executor>;
+return v1;
+}
+protected void checkDeadLock()
+{
+io.netty.util.concurrent.EventExecutor v1;
+io.netty.util.concurrent.DefaultPromise v0;
+io.netty.util.concurrent.BlockingOperationException v3;
+java.lang.String v4;
+boolean v2;
+v0 := @this: io.netty.util.concurrent.DefaultPromise;
+v1 = virtualinvoke v0.<io.netty.util.concurrent.DefaultPromise: io.netty.util.concurrent.EventExecutor executor()>();
+if v1 == null goto label1;
+v2 = interfaceinvoke v1.<io.netty.util.concurrent.EventExecutor: boolean inEventLoop()>();
+if v2 == 0 goto label1;
+v3 = new io.netty.util.concurrent.BlockingOperationException;
+v4 = virtualinvoke v0.<io.netty.util.concurrent.DefaultPromise: java.lang.String toString()>();
+specialinvoke v3.<io.netty.util.concurrent.BlockingOperationException: void <init>(java.lang.String)>(v4);
+throw v3;
+label1:
+return;
+}
+protected static void notifyListener(io.netty.util.concurrent.EventExecutor, io.netty.util.concurrent.Future, io.netty.util.concurrent.GenericFutureListener)
+{
+io.netty.util.concurrent.EventExecutor v0;
+io.netty.util.concurrent.GenericFutureListener v2;
+java.lang.Object v3, v4, v5;
+io.netty.util.concurrent.Future v1;
+v0 := @parameter0: io.netty.util.concurrent.EventExecutor;
+v1 := @parameter1: io.netty.util.concurrent.Future;
+v2 := @parameter2: io.netty.util.concurrent.GenericFutureListener;
+v3 = staticinvoke <io.netty.util.internal.ObjectUtil: java.lang.Object checkNotNull(java.lang.Object,java.lang.String)>(v0, "eventExecutor");
+v4 = staticinvoke <io.netty.util.internal.ObjectUtil: java.lang.Object checkNotNull(java.lang.Object,java.lang.String)>(v1, "future");
+v5 = staticinvoke <io.netty.util.internal.ObjectUtil: java.lang.Object checkNotNull(java.lang.Object,java.lang.String)>(v2, "listener");
+staticinvoke <io.netty.util.concurrent.DefaultPromise: void notifyListenerWithStackOverFlowProtection(io.netty.util.concurrent.EventExecutor,io.netty.util.concurrent.Future,io.netty.util.concurrent.GenericFutureListener)>(v3, v4, v5);
+return;
+}
+private void notifyListeners()
+{
+io.netty.util.concurrent.EventExecutor v1;
+java.lang.Throwable v7;
+io.netty.util.concurrent.DefaultPromise$1 v8;
+io.netty.util.internal.InternalThreadLocalMap v3;
+io.netty.util.concurrent.DefaultPromise v0;
+int v4, v5, v6;
+boolean v2;
+v0 := @this: io.netty.util.concurrent.DefaultPromise;
+v1 = virtualinvoke v0.<io.netty.util.concurrent.DefaultPromise: io.netty.util.concurrent.EventExecutor executor()>();
+v2 = interfaceinvoke v1.<io.netty.util.concurrent.EventExecutor: boolean inEventLoop()>();
+if v2 == 0 goto label5;
+v3 = staticinvoke <io.netty.util.internal.InternalThreadLocalMap: io.netty.util.internal.InternalThreadLocalMap get()>();
+v4 = virtualinvoke v3.<io.netty.util.internal.InternalThreadLocalMap: int futureListenerStackDepth()>();
+v5 = <io.netty.util.concurrent.DefaultPromise: int MAX_LISTENER_STACK_DEPTH>;
+if v4 >= v5 goto label5;
+v6 = v4 + 1;
+virtualinvoke v3.<io.netty.util.internal.InternalThreadLocalMap: void setFutureListenerStackDepth(int)>(v6);
+label1:
+specialinvoke v0.<io.netty.util.concurrent.DefaultPromise: void notifyListenersNow()>();
+label2:
+virtualinvoke v3.<io.netty.util.internal.InternalThreadLocalMap: void setFutureListenerStackDepth(int)>(v4);
+goto label4;
+label3:
+v7 := @caughtexception;
+virtualinvoke v3.<io.netty.util.internal.InternalThreadLocalMap: void setFutureListenerStackDepth(int)>(v4);
+throw v7;
+label4:
+return;
+label5:
+v8 = new io.netty.util.concurrent.DefaultPromise$1;
+specialinvoke v8.<io.netty.util.concurrent.DefaultPromise$1: void <init>(io.netty.util.concurrent.DefaultPromise)>(v0);
+staticinvoke <io.netty.util.concurrent.DefaultPromise: void safeExecute(io.netty.util.concurrent.EventExecutor,java.lang.Runnable)>(v1, v8);
+return;
+catch java.lang.Throwable from label1 to label2 with label3;
+}
+private static void notifyListenerWithStackOverFlowProtection(io.netty.util.concurrent.EventExecutor, io.netty.util.concurrent.Future, io.netty.util.concurrent.GenericFutureListener)
+{
+io.netty.util.concurrent.DefaultPromise$2 v9;
+io.netty.util.concurrent.EventExecutor v0;
+java.lang.Throwable v8;
+io.netty.util.internal.InternalThreadLocalMap v4;
+io.netty.util.concurrent.GenericFutureListener v2;
+int v5, v6, v7;
+io.netty.util.concurrent.Future v1;
+boolean v3;
+v0 := @parameter0: io.netty.util.concurrent.EventExecutor;
+v1 := @parameter1: io.netty.util.concurrent.Future;
+v2 := @parameter2: io.netty.util.concurrent.GenericFutureListener;
+v3 = interfaceinvoke v0.<io.netty.util.concurrent.EventExecutor: boolean inEventLoop()>();
+if v3 == 0 goto label5;
+v4 = staticinvoke <io.netty.util.internal.InternalThreadLocalMap: io.netty.util.internal.InternalThreadLocalMap get()>();
+v5 = virtualinvoke v4.<io.netty.util.internal.InternalThreadLocalMap: int futureListenerStackDepth()>();
+v6 = <io.netty.util.concurrent.DefaultPromise: int MAX_LISTENER_STACK_DEPTH>;
+if v5 >= v6 goto label5;
+v7 = v5 + 1;
+virtualinvoke v4.<io.netty.util.internal.InternalThreadLocalMap: void setFutureListenerStackDepth(int)>(v7);
+label1:
+staticinvoke <io.netty.util.concurrent.DefaultPromise: void notifyListener0(io.netty.util.concurrent.Future,io.netty.util.concurrent.GenericFutureListener)>(v1, v2);
+label2:
+virtualinvoke v4.<io.netty.util.internal.InternalThreadLocalMap: void setFutureListenerStackDepth(int)>(v5);
+goto label4;
+label3:
+v8 := @caughtexception;
+virtualinvoke v4.<io.netty.util.internal.InternalThreadLocalMap: void setFutureListenerStackDepth(int)>(v5);
+throw v8;
+label4:
+return;
+label5:
+v9 = new io.netty.util.concurrent.DefaultPromise$2;
+specialinvoke v9.<io.netty.util.concurrent.DefaultPromise$2: void <init>(io.netty.util.concurrent.Future,io.netty.util.concurrent.GenericFutureListener)>(v1, v2);
+staticinvoke <io.netty.util.concurrent.DefaultPromise: void safeExecute(io.netty.util.concurrent.EventExecutor,java.lang.Runnable)>(v0, v9);
+return;
+catch java.lang.Throwable from label1 to label2 with label3;
+}
+private void notifyListenersNow()
+{
+java.lang.Throwable v4, v7;
+io.netty.util.concurrent.GenericFutureListener v1, v5;
+io.netty.util.concurrent.DefaultFutureListeners v2, v6;
+io.netty.util.concurrent.DefaultPromise v0;
+boolean v3;
+v0 := @this: io.netty.util.concurrent.DefaultPromise;
+entermonitor v0;
+label01:
+v1 = v0.<io.netty.util.concurrent.DefaultPromise: io.netty.util.concurrent.GenericFutureListener listener>;
+v2 = v0.<io.netty.util.concurrent.DefaultPromise: io.netty.util.concurrent.DefaultFutureListeners listeners>;
+v3 = v0.<io.netty.util.concurrent.DefaultPromise: boolean notifyingListeners>;
+if v3 != 0 goto label02;
+if v1 != null goto label04;
+if v2 != null goto label04;
+label02:
+exitmonitor v0;
+label03:
+return;
+label04:
+v0.<io.netty.util.concurrent.DefaultPromise: boolean notifyingListeners> = 1;
+if v1 == null goto label05;
+v0.<io.netty.util.concurrent.DefaultPromise: io.netty.util.concurrent.GenericFutureListener listener> = null;
+goto label06;
+label05:
+v0.<io.netty.util.concurrent.DefaultPromise: io.netty.util.concurrent.DefaultFutureListeners listeners> = null;
+label06:
+exitmonitor v0;
+label07:
+goto label09;
+label08:
+v4 := @caughtexception;
+exitmonitor v0;
+throw v4;
+label09:
+if v1 == null goto label10;
+staticinvoke <io.netty.util.concurrent.DefaultPromise: void notifyListener0(io.netty.util.concurrent.Future,io.netty.util.concurrent.GenericFutureListener)>(v0, v1);
+goto label11;
+label10:
+specialinvoke v0.<io.netty.util.concurrent.DefaultPromise: void notifyListeners0(io.netty.util.concurrent.DefaultFutureListeners)>(v2);
+label11:
+entermonitor v0;
+label12:
+v5 = v0.<io.netty.util.concurrent.DefaultPromise: io.netty.util.concurrent.GenericFutureListener listener>;
+if v5 != null goto label14;
+v6 = v0.<io.netty.util.concurrent.DefaultPromise: io.netty.util.concurrent.DefaultFutureListeners listeners>;
+if v6 != null goto label14;
+v0.<io.netty.util.concurrent.DefaultPromise: boolean notifyingListeners> = 0;
+exitmonitor v0;
+label13:
+return;
+label14:
+v1 = v0.<io.netty.util.concurrent.DefaultPromise: io.netty.util.concurrent.GenericFutureListener listener>;
+v2 = v0.<io.netty.util.concurrent.DefaultPromise: io.netty.util.concurrent.DefaultFutureListeners listeners>;
+if v1 == null goto label15;
+v0.<io.netty.util.concurrent.DefaultPromise: io.netty.util.concurrent.GenericFutureListener listener> = null;
+goto label16;
+label15:
+v0.<io.netty.util.concurrent.DefaultPromise: io.netty.util.concurrent.DefaultFutureListeners listeners> = null;
+label16:
+exitmonitor v0;
+label17:
+goto label09;
+label18:
+v7 := @caughtexception;
+exitmonitor v0;
+throw v7;
+catch java.lang.Throwable from label01 to label03 with label08;
+catch java.lang.Throwable from label04 to label07 with label08;
+catch java.lang.Throwable from label12 to label13 with label18;
+catch java.lang.Throwable from label14 to label17 with label18;
+}
+private void notifyListeners0(io.netty.util.concurrent.DefaultFutureListeners)
+{
+io.netty.util.concurrent.DefaultPromise v0;
+io.netty.util.concurrent.GenericFutureListener[] v2;
+int v3, v4;
+io.netty.util.concurrent.GenericFutureListener v5;
+io.netty.util.concurrent.DefaultFutureListeners v1;
+v0 := @this: io.netty.util.concurrent.DefaultPromise;
+v1 := @parameter0: io.netty.util.concurrent.DefaultFutureListeners;
+v2 = virtualinvoke v1.<io.netty.util.concurrent.DefaultFutureListeners: io.netty.util.concurrent.GenericFutureListener[] listeners()>();
+v3 = virtualinvoke v1.<io.netty.util.concurrent.DefaultFutureListeners: int size()>();
+v4 = 0;
+label1:
+if v4 >= v3 goto label2;
+v5 = v2[v4];
+staticinvoke <io.netty.util.concurrent.DefaultPromise: void notifyListener0(io.netty.util.concurrent.Future,io.netty.util.concurrent.GenericFutureListener)>(v0, v5);
+v4 = v4 + 1;
+goto label1;
+label2:
+return;
+}
+private static void notifyListener0(io.netty.util.concurrent.Future, io.netty.util.concurrent.GenericFutureListener)
+{
+java.lang.Throwable v2;
+io.netty.util.concurrent.GenericFutureListener v1;
+io.netty.util.internal.logging.InternalLogger v3, v5;
+java.lang.Class v6;
+java.lang.String v7, v8;
+io.netty.util.concurrent.Future v0;
+boolean v4;
+v0 := @parameter0: io.netty.util.concurrent.Future;
+v1 := @parameter1: io.netty.util.concurrent.GenericFutureListener;
+label1:
+interfaceinvoke v1.<io.netty.util.concurrent.GenericFutureListener: void operationComplete(io.netty.util.concurrent.Future)>(v0);
+label2:
+goto label4;
+label3:
+v2 := @caughtexception;
+v3 = <io.netty.util.concurrent.DefaultPromise: io.netty.util.internal.logging.InternalLogger logger>;
+v4 = interfaceinvoke v3.<io.netty.util.internal.logging.InternalLogger: boolean isWarnEnabled()>();
+if v4 == 0 goto label4;
+v5 = <io.netty.util.concurrent.DefaultPromise: io.netty.util.internal.logging.InternalLogger logger>;
+v6 = virtualinvoke v1.<java.lang.Object: java.lang.Class getClass()>();
+v7 = virtualinvoke v6.<java.lang.Class: java.lang.String getName()>();
+v8 = dynamicinvoke "makeConcatWithConstants" <java.lang.String (java.lang.String)>(v7) <java.lang.invoke.StringConcatFactory: java.lang.invoke.CallSite makeConcatWithConstants(java.lang.invoke.MethodHandles$Lookup,java.lang.String,java.lang.invoke.MethodType,java.lang.String,java.lang.Object[])>("An exception was thrown by \u0001.operationComplete()");
+interfaceinvoke v5.<io.netty.util.internal.logging.InternalLogger: void warn(java.lang.String,java.lang.Throwable)>(v8, v2);
+label4:
+return;
+catch java.lang.Throwable from label1 to label2 with label3;
+}
+private void addListener0(io.netty.util.concurrent.GenericFutureListener)
+{
+io.netty.util.concurrent.GenericFutureListener v1, v2, v9;
+java.lang.AssertionError v7;
+io.netty.util.concurrent.DefaultFutureListeners v3, v4, v6, v8;
+io.netty.util.concurrent.DefaultPromise v0;
+boolean v5;
+v0 := @this: io.netty.util.concurrent.DefaultPromise;
+v1 := @parameter0: io.netty.util.concurrent.GenericFutureListener;
+v2 = v0.<io.netty.util.concurrent.DefaultPromise: io.netty.util.concurrent.GenericFutureListener listener>;
+if v2 != null goto label2;
+v3 = v0.<io.netty.util.concurrent.DefaultPromise: io.netty.util.concurrent.DefaultFutureListeners listeners>;
+if v3 != null goto label1;
+v0.<io.netty.util.concurrent.DefaultPromise: io.netty.util.concurrent.GenericFutureListener listener> = v1;
+goto label4;
+label1:
+v4 = v0.<io.netty.util.concurrent.DefaultPromise: io.netty.util.concurrent.DefaultFutureListeners listeners>;
+virtualinvoke v4.<io.netty.util.concurrent.DefaultFutureListeners: void add(io.netty.util.concurrent.GenericFutureListener)>(v1);
+goto label4;
+label2:
+v5 = <io.netty.util.concurrent.DefaultPromise: boolean $assertionsDisabled>;
+if v5 != 0 goto label3;
+v6 = v0.<io.netty.util.concurrent.DefaultPromise: io.netty.util.concurrent.DefaultFutureListeners listeners>;
+if v6 == null goto label3;
+v7 = new java.lang.AssertionError;
+specialinvoke v7.<java.lang.AssertionError: void <init>()>();
+throw v7;
+label3:
+v8 = new io.netty.util.concurrent.DefaultFutureListeners;
+v9 = v0.<io.netty.util.concurrent.DefaultPromise: io.netty.util.concurrent.GenericFutureListener listener>;
+specialinvoke v8.<io.netty.util.concurrent.DefaultFutureListeners: void <init>(io.netty.util.concurrent.GenericFutureListener,io.netty.util.concurrent.GenericFutureListener)>(v9, v1);
+v0.<io.netty.util.concurrent.DefaultPromise: io.netty.util.concurrent.DefaultFutureListeners listeners> = v8;
+v0.<io.netty.util.concurrent.DefaultPromise: io.netty.util.concurrent.GenericFutureListener listener> = null;
+label4:
+return;
+}
+private void removeListener0(io.netty.util.concurrent.GenericFutureListener)
+{
+io.netty.util.concurrent.DefaultPromise v0;
+int v6;
+io.netty.util.concurrent.GenericFutureListener v1, v2;
+io.netty.util.concurrent.DefaultFutureListeners v3, v4, v5;
+v0 := @this: io.netty.util.concurrent.DefaultPromise;
+v1 := @parameter0: io.netty.util.concurrent.GenericFutureListener;
+v2 = v0.<io.netty.util.concurrent.DefaultPromise: io.netty.util.concurrent.GenericFutureListener listener>;
+if v2 != v1 goto label1;
+v0.<io.netty.util.concurrent.DefaultPromise: io.netty.util.concurrent.GenericFutureListener listener> = null;
+goto label2;
+label1:
+v3 = v0.<io.netty.util.concurrent.DefaultPromise: io.netty.util.concurrent.DefaultFutureListeners listeners>;
+if v3 == null goto label2;
+v4 = v0.<io.netty.util.concurrent.DefaultPromise: io.netty.util.concurrent.DefaultFutureListeners listeners>;
+virtualinvoke v4.<io.netty.util.concurrent.DefaultFutureListeners: void remove(io.netty.util.concurrent.GenericFutureListener)>(v1);
+v5 = v0.<io.netty.util.concurrent.DefaultPromise: io.netty.util.concurrent.DefaultFutureListeners listeners>;
+v6 = virtualinvoke v5.<io.netty.util.concurrent.DefaultFutureListeners: int size()>();
+if v6 != 0 goto label2;
+v0.<io.netty.util.concurrent.DefaultPromise: io.netty.util.concurrent.DefaultFutureListeners listeners> = null;
+label2:
+return;
+}
+private boolean setSuccess0(java.lang.Object)
+{
+io.netty.util.concurrent.DefaultPromise v0;
+java.lang.Object v1, v2;
+boolean v3;
+v0 := @this: io.netty.util.concurrent.DefaultPromise;
+v1 := @parameter0: java.lang.Object;
+if v1 != null goto label1;
+v2 = <io.netty.util.concurrent.DefaultPromise: java.lang.Object SUCCESS>;
+goto label2;
+label1:
+v2 = v1;
+label2:
+v3 = specialinvoke v0.<io.netty.util.concurrent.DefaultPromise: boolean setValue0(java.lang.Object)>(v2);
+return v3;
+}
+private boolean setFailure0(java.lang.Throwable)
+{
+java.lang.Throwable v1;
+io.netty.util.concurrent.DefaultPromise v0;
+java.lang.Object v3;
+io.netty.util.concurrent.DefaultPromise$CauseHolder v2;
+boolean v4;
+v0 := @this: io.netty.util.concurrent.DefaultPromise;
+v1 := @parameter0: java.lang.Throwable;
+v2 = new io.netty.util.concurrent.DefaultPromise$CauseHolder;
+v3 = staticinvoke <io.netty.util.internal.ObjectUtil: java.lang.Object checkNotNull(java.lang.Object,java.lang.String)>(v1, "cause");
+specialinvoke v2.<io.netty.util.concurrent.DefaultPromise$CauseHolder: void <init>(java.lang.Throwable)>(v3);
+v4 = specialinvoke v0.<io.netty.util.concurrent.DefaultPromise: boolean setValue0(java.lang.Object)>(v2);
+return v4;
+}
+private boolean setValue0(java.lang.Object)
+{
+java.util.concurrent.atomic.AtomicReferenceFieldUpdater v2, v4;
+io.netty.util.concurrent.DefaultPromise v0;
+java.lang.Object v1, v5;
+boolean v3, v6, v7;
+v0 := @this: io.netty.util.concurrent.DefaultPromise;
+v1 := @parameter0: java.lang.Object;
+v2 = <io.netty.util.concurrent.DefaultPromise: java.util.concurrent.atomic.AtomicReferenceFieldUpdater RESULT_UPDATER>;
+v3 = virtualinvoke v2.<java.util.concurrent.atomic.AtomicReferenceFieldUpdater: boolean compareAndSet(java.lang.Object,java.lang.Object,java.lang.Object)>(v0, null, v1);
+if v3 != 0 goto label1;
+v4 = <io.netty.util.concurrent.DefaultPromise: java.util.concurrent.atomic.AtomicReferenceFieldUpdater RESULT_UPDATER>;
+v5 = <io.netty.util.concurrent.DefaultPromise: java.lang.Object UNCANCELLABLE>;
+v6 = virtualinvoke v4.<java.util.concurrent.atomic.AtomicReferenceFieldUpdater: boolean compareAndSet(java.lang.Object,java.lang.Object,java.lang.Object)>(v0, v5, v1);
+if v6 == 0 goto label3;
+label1:
+v7 = specialinvoke v0.<io.netty.util.concurrent.DefaultPromise: boolean checkNotifyWaiters()>();
+if v7 == 0 goto label2;
+specialinvoke v0.<io.netty.util.concurrent.DefaultPromise: void notifyListeners()>();
+label2:
+return 1;
+label3:
+return 0;
+}
+private synchronized boolean checkNotifyWaiters()
+{
+io.netty.util.concurrent.DefaultPromise v0;
+short v1;
+io.netty.util.concurrent.GenericFutureListener v2;
+boolean v4;
+io.netty.util.concurrent.DefaultFutureListeners v3;
+v0 := @this: io.netty.util.concurrent.DefaultPromise;
+v1 = v0.<io.netty.util.concurrent.DefaultPromise: short waiters>;
+if v1 <= 0 goto label1;
+virtualinvoke v0.<java.lang.Object: void notifyAll()>();
+label1:
+v2 = v0.<io.netty.util.concurrent.DefaultPromise: io.netty.util.concurrent.GenericFutureListener listener>;
+if v2 != null goto label2;
+v3 = v0.<io.netty.util.concurrent.DefaultPromise: io.netty.util.concurrent.DefaultFutureListeners listeners>;
+if v3 == null goto label3;
+label2:
+v4 = 1;
+goto label4;
+label3:
+v4 = 0;
+label4:
+return v4;
+}
+private void incWaiters()
+{
+io.netty.util.concurrent.DefaultPromise v0;
+java.lang.IllegalStateException v2;
+short v1, v4;
+int v5;
+java.lang.String v3;
+v0 := @this: io.netty.util.concurrent.DefaultPromise;
+v1 = v0.<io.netty.util.concurrent.DefaultPromise: short waiters>;
+if v1 != 32767 goto label1;
+v2 = new java.lang.IllegalStateException;
+v3 = dynamicinvoke "makeConcatWithConstants" <java.lang.String (io.netty.util.concurrent.DefaultPromise)>(v0) <java.lang.invoke.StringConcatFactory: java.lang.invoke.CallSite makeConcatWithConstants(java.lang.invoke.MethodHandles$Lookup,java.lang.String,java.lang.invoke.MethodType,java.lang.String,java.lang.Object[])>("too many waiters: \u0001");
+specialinvoke v2.<java.lang.IllegalStateException: void <init>(java.lang.String)>(v3);
+throw v2;
+label1:
+v4 = v0.<io.netty.util.concurrent.DefaultPromise: short waiters>;
+v5 = v4 + 1;
+v0.<io.netty.util.concurrent.DefaultPromise: short waiters> = v5;
+return;
+}
+private void decWaiters()
+{
+int v2;
+io.netty.util.concurrent.DefaultPromise v0;
+short v1;
+v0 := @this: io.netty.util.concurrent.DefaultPromise;
+v1 = v0.<io.netty.util.concurrent.DefaultPromise: short waiters>;
+v2 = v1 - 1;
+v0.<io.netty.util.concurrent.DefaultPromise: short waiters> = v2;
+return;
+}
+private void rethrowIfFailed()
+{
+java.lang.Throwable v1;
+io.netty.util.concurrent.DefaultPromise v0;
+v0 := @this: io.netty.util.concurrent.DefaultPromise;
+v1 = virtualinvoke v0.<io.netty.util.concurrent.DefaultPromise: java.lang.Throwable cause()>();
+if v1 != null goto label1;
+return;
+label1:
+staticinvoke <io.netty.util.internal.PlatformDependent: void throwException(java.lang.Throwable)>(v1);
+return;
+}
+private boolean await0(long, boolean) throws java.lang.InterruptedException
+{
+java.lang.Throwable v17, v24, v26;
+long v1, v11, v14, v15, v20, v21, v9;
+byte v13, v4;
+java.lang.Thread v19, v23, v25;
+java.lang.String v8;
+boolean v10, v12, v18, v2, v22, v3, v5, v6;
+io.netty.util.concurrent.DefaultPromise v0;
+java.lang.InterruptedException v16, v7;
+v0 := @this: io.netty.util.concurrent.DefaultPromise;
+v1 := @parameter0: long;
+v2 := @parameter1: boolean;
+v3 = virtualinvoke v0.<io.netty.util.concurrent.DefaultPromise: boolean isDone()>();
+if v3 == 0 goto label01;
+return 1;
+label01:
+v4 = v1 cmp 0L;
+if v4 > 0 goto label02;
+v5 = virtualinvoke v0.<io.netty.util.concurrent.DefaultPromise: boolean isDone()>();
+return v5;
+label02:
+if v2 == 0 goto label03;
+v6 = staticinvoke <java.lang.Thread: boolean interrupted()>();
+if v6 == 0 goto label03;
+v7 = new java.lang.InterruptedException;
+v8 = virtualinvoke v0.<io.netty.util.concurrent.DefaultPromise: java.lang.String toString()>();
+specialinvoke v7.<java.lang.InterruptedException: void <init>(java.lang.String)>(v8);
+throw v7;
+label03:
+virtualinvoke v0.<io.netty.util.concurrent.DefaultPromise: void checkDeadLock()>();
+v9 = staticinvoke <java.lang.System: long nanoTime()>();
+entermonitor v0;
+label04:
+v10 = 0;
+label05:
+v11 = v1;
+label06:
+v12 = virtualinvoke v0.<io.netty.util.concurrent.DefaultPromise: boolean isDone()>();
+if v12 != 0 goto label18;
+v13 = v11 cmp 0L;
+if v13 <= 0 goto label18;
+specialinvoke v0.<io.netty.util.concurrent.DefaultPromise: void incWaiters()>();
+label07:
+v14 = v11 / 1000000L;
+v15 = v11 % 1000000L;
+virtualinvoke v0.<java.lang.Object: void wait(long,int)>(v14, v15);
+label08:
+specialinvoke v0.<io.netty.util.concurrent.DefaultPromise: void decWaiters()>();
+goto label13;
+label09:
+v16 := @caughtexception;
+if v2 == 0 goto label10;
+throw v16;
+label10:
+v10 = 1;
+label11:
+specialinvoke v0.<io.netty.util.concurrent.DefaultPromise: void decWaiters()>();
+goto label13;
+label12:
+v17 := @caughtexception;
+specialinvoke v0.<io.netty.util.concurrent.DefaultPromise: void decWaiters()>();
+throw v17;
+label13:
+v18 = virtualinvoke v0.<io.netty.util.concurrent.DefaultPromise: boolean isDone()>();
+if v18 == 0 goto label17;
+label14:
+if v10 == 0 goto label15;
+v19 = staticinvoke <java.lang.Thread: java.lang.Thread currentThread()>();
+virtualinvoke v19.<java.lang.Thread: void interrupt()>();
+label15:
+exitmonitor v0;
+label16:
+return 1;
+label17:
+v20 = staticinvoke <java.lang.System: long nanoTime()>();
+v21 = v20 - v9;
+v11 = v1 - v21;
+goto label06;
+label18:
+v22 = virtualinvoke v0.<io.netty.util.concurrent.DefaultPromise: boolean isDone()>();
+label19:
+if v10 == 0 goto label20;
+v23 = staticinvoke <java.lang.Thread: java.lang.Thread currentThread()>();
+virtualinvoke v23.<java.lang.Thread: void interrupt()>();
+label20:
+exitmonitor v0;
+label21:
+return v22;
+label22:
+v24 := @caughtexception;
+if v10 == 0 goto label23;
+v25 = staticinvoke <java.lang.Thread: java.lang.Thread currentThread()>();
+virtualinvoke v25.<java.lang.Thread: void interrupt()>();
+label23:
+throw v24;
+label24:
+v26 := @caughtexception;
+exitmonitor v0;
+throw v26;
+catch java.lang.InterruptedException from label07 to label08 with label09;
+catch java.lang.Throwable from label07 to label08 with label12;
+catch java.lang.Throwable from label09 to label11 with label12;
+catch java.lang.Throwable from label05 to label14 with label22;
+catch java.lang.Throwable from label17 to label19 with label22;
+catch java.lang.Throwable from label04 to label16 with label24;
+catch java.lang.Throwable from label17 to label21 with label24;
+}
+void notifyProgressiveListeners(long, long)
+{
+io.netty.util.concurrent.EventExecutor v4;
+long v1, v2;
+io.netty.util.concurrent.DefaultPromise$4 v9;
+io.netty.util.concurrent.DefaultPromise$3 v8;
+io.netty.util.concurrent.DefaultPromise v0;
+java.lang.Object v3;
+boolean v5, v6, v7;
+v0 := @this: io.netty.util.concurrent.DefaultPromise;
+v1 := @parameter0: long;
+v2 := @parameter1: long;
+v3 = specialinvoke v0.<io.netty.util.concurrent.DefaultPromise: java.lang.Object progressiveListeners()>();
+if v3 != null goto label1;
+return;
+label1:
+v4 = virtualinvoke v0.<io.netty.util.concurrent.DefaultPromise: io.netty.util.concurrent.EventExecutor executor()>();
+v5 = interfaceinvoke v4.<io.netty.util.concurrent.EventExecutor: boolean inEventLoop()>();
+if v5 == 0 goto label3;
+v6 = v3 instanceof io.netty.util.concurrent.GenericProgressiveFutureListener[];
+if v6 == 0 goto label2;
+staticinvoke <io.netty.util.concurrent.DefaultPromise: void notifyProgressiveListeners0(io.netty.util.concurrent.ProgressiveFuture,io.netty.util.concurrent.GenericProgressiveFutureListener[],long,long)>(v0, v3, v1, v2);
+goto label5;
+label2:
+staticinvoke <io.netty.util.concurrent.DefaultPromise: void notifyProgressiveListener0(io.netty.util.concurrent.ProgressiveFuture,io.netty.util.concurrent.GenericProgressiveFutureListener,long,long)>(v0, v3, v1, v2);
+goto label5;
+label3:
+v7 = v3 instanceof io.netty.util.concurrent.GenericProgressiveFutureListener[];
+if v7 == 0 goto label4;
+v8 = new io.netty.util.concurrent.DefaultPromise$3;
+specialinvoke v8.<io.netty.util.concurrent.DefaultPromise$3: void <init>(io.netty.util.concurrent.DefaultPromise,io.netty.util.concurrent.ProgressiveFuture,io.netty.util.concurrent.GenericProgressiveFutureListener[],long,long)>(v0, v0, v3, v1, v2);
+staticinvoke <io.netty.util.concurrent.DefaultPromise: void safeExecute(io.netty.util.concurrent.EventExecutor,java.lang.Runnable)>(v4, v8);
+goto label5;
+label4:
+v9 = new io.netty.util.concurrent.DefaultPromise$4;
+specialinvoke v9.<io.netty.util.concurrent.DefaultPromise$4: void <init>(io.netty.util.concurrent.DefaultPromise,io.netty.util.concurrent.ProgressiveFuture,io.netty.util.concurrent.GenericProgressiveFutureListener,long,long)>(v0, v0, v3, v1, v2);
+staticinvoke <io.netty.util.concurrent.DefaultPromise: void safeExecute(io.netty.util.concurrent.EventExecutor,java.lang.Runnable)>(v4, v9);
+label5:
+return;
+}
+private synchronized java.lang.Object progressiveListeners()
+{
+io.netty.util.concurrent.GenericFutureListener[] v4, v9;
+io.netty.util.concurrent.GenericProgressiveFutureListener[] v10;
+int v11, v12, v15, v3, v5, v6;
+boolean v14, v16, v8;
+io.netty.util.concurrent.GenericFutureListener v1, v13, v7;
+io.netty.util.concurrent.DefaultFutureListeners v2;
+io.netty.util.concurrent.DefaultPromise v0;
+v0 := @this: io.netty.util.concurrent.DefaultPromise;
+v1 = v0.<io.netty.util.concurrent.DefaultPromise: io.netty.util.concurrent.GenericFutureListener listener>;
+v2 = v0.<io.netty.util.concurrent.DefaultPromise: io.netty.util.concurrent.DefaultFutureListeners listeners>;
+if v1 != null goto label01;
+if v2 != null goto label01;
+return null;
+label01:
+if v2 == null goto label11;
+v3 = virtualinvoke v2.<io.netty.util.concurrent.DefaultFutureListeners: int progressiveSize()>();
+lookupswitch(v3)
+{
+case 0: goto label02;
+case 1: goto label03;
+default: goto label07;
+};
+label02:
+return null;
+label03:
+v4 = virtualinvoke v2.<io.netty.util.concurrent.DefaultFutureListeners: io.netty.util.concurrent.GenericFutureListener[] listeners()>();
+v5 = lengthof v4;
+v6 = 0;
+label04:
+if v6 >= v5 goto label06;
+v7 = v4[v6];
+v8 = v7 instanceof io.netty.util.concurrent.GenericProgressiveFutureListener;
+if v8 == 0 goto label05;
+return v7;
+label05:
+v6 = v6 + 1;
+goto label04;
+label06:
+return null;
+label07:
+v9 = virtualinvoke v2.<io.netty.util.concurrent.DefaultFutureListeners: io.netty.util.concurrent.GenericFutureListener[] listeners()>();
+v10 = newarray (io.netty.util.concurrent.GenericProgressiveFutureListener)[v3];
+v11 = 0;
+v12 = 0;
+label08:
+if v12 >= v3 goto label10;
+v13 = v9[v11];
+v14 = v13 instanceof io.netty.util.concurrent.GenericProgressiveFutureListener;
+if v14 == 0 goto label09;
+v15 = v12;
+v12 = v12 + 1;
+v10[v15] = v13;
+label09:
+v11 = v11 + 1;
+goto label08;
+label10:
+return v10;
+label11:
+v16 = v1 instanceof io.netty.util.concurrent.GenericProgressiveFutureListener;
+if v16 == 0 goto label12;
+return v1;
+label12:
+return null;
+}
+private static void notifyProgressiveListeners0(io.netty.util.concurrent.ProgressiveFuture, io.netty.util.concurrent.GenericProgressiveFutureListener[], long, long)
+{
+int v4, v5;
+io.netty.util.concurrent.GenericProgressiveFutureListener[] v1;
+io.netty.util.concurrent.ProgressiveFuture v0;
+long v2, v3;
+io.netty.util.concurrent.GenericProgressiveFutureListener v6;
+v0 := @parameter0: io.netty.util.concurrent.ProgressiveFuture;
+v1 := @parameter1: io.netty.util.concurrent.GenericProgressiveFutureListener[];
+v2 := @parameter2: long;
+v3 := @parameter3: long;
+v4 = lengthof v1;
+v5 = 0;
+label1:
+if v5 >= v4 goto label2;
+v6 = v1[v5];
+if v6 == null goto label2;
+staticinvoke <io.netty.util.concurrent.DefaultPromise: void notifyProgressiveListener0(io.netty.util.concurrent.ProgressiveFuture,io.netty.util.concurrent.GenericProgressiveFutureListener,long,long)>(v0, v6, v2, v3);
+v5 = v5 + 1;
+goto label1;
+label2:
+return;
+}
+private static void notifyProgressiveListener0(io.netty.util.concurrent.ProgressiveFuture, io.netty.util.concurrent.GenericProgressiveFutureListener, long, long)
+{
+java.lang.Throwable v4;
+io.netty.util.concurrent.ProgressiveFuture v0;
+long v2, v3;
+io.netty.util.internal.logging.InternalLogger v5, v7;
+java.lang.Class v8;
+java.lang.String v10, v9;
+boolean v6;
+io.netty.util.concurrent.GenericProgressiveFutureListener v1;
+v0 := @parameter0: io.netty.util.concurrent.ProgressiveFuture;
+v1 := @parameter1: io.netty.util.concurrent.GenericProgressiveFutureListener;
+v2 := @parameter2: long;
+v3 := @parameter3: long;
+label1:
+interfaceinvoke v1.<io.netty.util.concurrent.GenericProgressiveFutureListener: void operationProgressed(io.netty.util.concurrent.ProgressiveFuture,long,long)>(v0, v2, v3);
+label2:
+goto label4;
+label3:
+v4 := @caughtexception;
+v5 = <io.netty.util.concurrent.DefaultPromise: io.netty.util.internal.logging.InternalLogger logger>;
+v6 = interfaceinvoke v5.<io.netty.util.internal.logging.InternalLogger: boolean isWarnEnabled()>();
+if v6 == 0 goto label4;
+v7 = <io.netty.util.concurrent.DefaultPromise: io.netty.util.internal.logging.InternalLogger logger>;
+v8 = virtualinvoke v1.<java.lang.Object: java.lang.Class getClass()>();
+v9 = virtualinvoke v8.<java.lang.Class: java.lang.String getName()>();
+v10 = dynamicinvoke "makeConcatWithConstants" <java.lang.String (java.lang.String)>(v9) <java.lang.invoke.StringConcatFactory: java.lang.invoke.CallSite makeConcatWithConstants(java.lang.invoke.MethodHandles$Lookup,java.lang.String,java.lang.invoke.MethodType,java.lang.String,java.lang.Object[])>("An exception was thrown by \u0001.operationProgressed()");
+interfaceinvoke v7.<io.netty.util.internal.logging.InternalLogger: void warn(java.lang.String,java.lang.Throwable)>(v10, v4);
+label4:
+return;
+catch java.lang.Throwable from label1 to label2 with label3;
+}
+private static boolean isCancelled0(java.lang.Object)
+{
+java.lang.Throwable v2;
+java.lang.Object v0;
+boolean v1, v3, v4;
+v0 := @parameter0: java.lang.Object;
+v1 = v0 instanceof io.netty.util.concurrent.DefaultPromise$CauseHolder;
+if v1 == 0 goto label1;
+v2 = v0.<io.netty.util.concurrent.DefaultPromise$CauseHolder: java.lang.Throwable cause>;
+v3 = v2 instanceof java.util.concurrent.CancellationException;
+if v3 == 0 goto label1;
+v4 = 1;
+goto label2;
+label1:
+v4 = 0;
+label2:
+return v4;
+}
+private static boolean isDone0(java.lang.Object)
+{
+java.lang.Object v0, v1;
+boolean v2;
+v0 := @parameter0: java.lang.Object;
+if v0 == null goto label1;
+v1 = <io.netty.util.concurrent.DefaultPromise: java.lang.Object UNCANCELLABLE>;
+if v0 == v1 goto label1;
+v2 = 1;
+goto label2;
+label1:
+v2 = 0;
+label2:
+return v2;
+}
+private static void safeExecute(io.netty.util.concurrent.EventExecutor, java.lang.Runnable)
+{
+io.netty.util.concurrent.EventExecutor v0;
+java.lang.Throwable v2;
+io.netty.util.internal.logging.InternalLogger v3;
+java.lang.Runnable v1;
+v0 := @parameter0: io.netty.util.concurrent.EventExecutor;
+v1 := @parameter1: java.lang.Runnable;
+label1:
+interfaceinvoke v0.<io.netty.util.concurrent.EventExecutor: void execute(java.lang.Runnable)>(v1);
+label2:
+goto label4;
+label3:
+v2 := @caughtexception;
+v3 = <io.netty.util.concurrent.DefaultPromise: io.netty.util.internal.logging.InternalLogger rejectedExecutionLogger>;
+interfaceinvoke v3.<io.netty.util.internal.logging.InternalLogger: void error(java.lang.String,java.lang.Throwable)>("Failed to submit a listener notification task. Event loop shut down?", v2);
+label4:
+return;
+catch java.lang.Throwable from label1 to label2 with label3;
+}
+static void <clinit>()
+{
+java.lang.Throwable v16;
+int v8, v9;
+java.lang.String v5, v6;
+boolean v1, v2;
+java.util.concurrent.atomic.AtomicReferenceFieldUpdater v10;
+io.netty.util.concurrent.DefaultPromise$CauseHolder v13, v15;
+io.netty.util.concurrent.DefaultPromise$StacklessCancellationException v14;
+java.lang.StackTraceElement[] v17;
+io.netty.util.internal.logging.InternalLogger v3, v7;
+java.lang.Class v0, v4;
+java.lang.Object v11, v12;
+v0 = class "Lio/netty/util/concurrent/DefaultPromise;";
+v1 = virtualinvoke v0.<java.lang.Class: boolean desiredAssertionStatus()>();
+if v1 != 0 goto label1;
+v2 = 1;
+goto label2;
+label1:
+v2 = 0;
+label2:
+<io.netty.util.concurrent.DefaultPromise: boolean $assertionsDisabled> = v2;
+v3 = staticinvoke <io.netty.util.internal.logging.InternalLoggerFactory: io.netty.util.internal.logging.InternalLogger getInstance(java.lang.Class)>(class "Lio/netty/util/concurrent/DefaultPromise;");
+<io.netty.util.concurrent.DefaultPromise: io.netty.util.internal.logging.InternalLogger logger> = v3;
+v4 = class "Lio/netty/util/concurrent/DefaultPromise;";
+v5 = virtualinvoke v4.<java.lang.Class: java.lang.String getName()>();
+v6 = dynamicinvoke "makeConcatWithConstants" <java.lang.String (java.lang.String)>(v5) <java.lang.invoke.StringConcatFactory: java.lang.invoke.CallSite makeConcatWithConstants(java.lang.invoke.MethodHandles$Lookup,java.lang.String,java.lang.invoke.MethodType,java.lang.String,java.lang.Object[])>("\u0001.rejectedExecution");
+v7 = staticinvoke <io.netty.util.internal.logging.InternalLoggerFactory: io.netty.util.internal.logging.InternalLogger getInstance(java.lang.String)>(v6);
+<io.netty.util.concurrent.DefaultPromise: io.netty.util.internal.logging.InternalLogger rejectedExecutionLogger> = v7;
+v8 = staticinvoke <io.netty.util.internal.SystemPropertyUtil: int getInt(java.lang.String,int)>("io.netty.defaultPromise.maxListenerStackDepth", 8);
+v9 = staticinvoke <java.lang.Math: int min(int,int)>(8, v8);
+<io.netty.util.concurrent.DefaultPromise: int MAX_LISTENER_STACK_DEPTH> = v9;
+v10 = staticinvoke <java.util.concurrent.atomic.AtomicReferenceFieldUpdater: java.util.concurrent.atomic.AtomicReferenceFieldUpdater newUpdater(java.lang.Class,java.lang.Class,java.lang.String)>(class "Lio/netty/util/concurrent/DefaultPromise;", class "Ljava/lang/Object;", "result");
+<io.netty.util.concurrent.DefaultPromise: java.util.concurrent.atomic.AtomicReferenceFieldUpdater RESULT_UPDATER> = v10;
+v11 = new java.lang.Object;
+specialinvoke v11.<java.lang.Object: void <init>()>();
+<io.netty.util.concurrent.DefaultPromise: java.lang.Object SUCCESS> = v11;
+v12 = new java.lang.Object;
+specialinvoke v12.<java.lang.Object: void <init>()>();
+<io.netty.util.concurrent.DefaultPromise: java.lang.Object UNCANCELLABLE> = v12;
+v13 = new io.netty.util.concurrent.DefaultPromise$CauseHolder;
+v14 = staticinvoke <io.netty.util.concurrent.DefaultPromise$StacklessCancellationException: io.netty.util.concurrent.DefaultPromise$StacklessCancellationException newInstance(java.lang.Class,java.lang.String)>(class "Lio/netty/util/concurrent/DefaultPromise;", "cancel(...)");
+specialinvoke v13.<io.netty.util.concurrent.DefaultPromise$CauseHolder: void <init>(java.lang.Throwable)>(v14);
+<io.netty.util.concurrent.DefaultPromise: io.netty.util.concurrent.DefaultPromise$CauseHolder CANCELLATION_CAUSE_HOLDER> = v13;
+v15 = <io.netty.util.concurrent.DefaultPromise: io.netty.util.concurrent.DefaultPromise$CauseHolder CANCELLATION_CAUSE_HOLDER>;
+v16 = v15.<io.netty.util.concurrent.DefaultPromise$CauseHolder: java.lang.Throwable cause>;
+v17 = virtualinvoke v16.<java.lang.Throwable: java.lang.StackTraceElement[] getStackTrace()>();
+<io.netty.util.concurrent.DefaultPromise: java.lang.StackTraceElement[] CANCELLATION_STACK> = v17;
+return;
+}
+}

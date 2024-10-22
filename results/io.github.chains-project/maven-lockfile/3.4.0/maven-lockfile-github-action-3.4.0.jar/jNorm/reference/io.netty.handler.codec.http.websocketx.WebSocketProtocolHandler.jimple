@@ -1,0 +1,303 @@
+abstract class io.netty.handler.codec.http.websocketx.WebSocketProtocolHandler extends io.netty.handler.codec.MessageToMessageDecoder implements io.netty.channel.ChannelOutboundHandler
+{
+private final boolean dropPongFrames;
+private final io.netty.handler.codec.http.websocketx.WebSocketCloseStatus closeStatus;
+private final long forceCloseTimeoutMillis;
+private io.netty.channel.ChannelPromise closeSent;
+void <init>()
+{
+io.netty.handler.codec.http.websocketx.WebSocketProtocolHandler v0;
+v0 := @this: io.netty.handler.codec.http.websocketx.WebSocketProtocolHandler;
+specialinvoke v0.<io.netty.handler.codec.http.websocketx.WebSocketProtocolHandler: void <init>(boolean)>(1);
+return;
+}
+void <init>(boolean)
+{
+io.netty.handler.codec.http.websocketx.WebSocketProtocolHandler v0;
+boolean v1;
+v0 := @this: io.netty.handler.codec.http.websocketx.WebSocketProtocolHandler;
+v1 := @parameter0: boolean;
+specialinvoke v0.<io.netty.handler.codec.http.websocketx.WebSocketProtocolHandler: void <init>(boolean,io.netty.handler.codec.http.websocketx.WebSocketCloseStatus,long)>(v1, null, 0L);
+return;
+}
+void <init>(boolean, io.netty.handler.codec.http.websocketx.WebSocketCloseStatus, long)
+{
+io.netty.handler.codec.http.websocketx.WebSocketProtocolHandler v0;
+io.netty.handler.codec.http.websocketx.WebSocketCloseStatus v2;
+long v3;
+boolean v1;
+v0 := @this: io.netty.handler.codec.http.websocketx.WebSocketProtocolHandler;
+v1 := @parameter0: boolean;
+v2 := @parameter1: io.netty.handler.codec.http.websocketx.WebSocketCloseStatus;
+v3 := @parameter2: long;
+specialinvoke v0.<io.netty.handler.codec.MessageToMessageDecoder: void <init>()>();
+v0.<io.netty.handler.codec.http.websocketx.WebSocketProtocolHandler: boolean dropPongFrames> = v1;
+v0.<io.netty.handler.codec.http.websocketx.WebSocketProtocolHandler: io.netty.handler.codec.http.websocketx.WebSocketCloseStatus closeStatus> = v2;
+v0.<io.netty.handler.codec.http.websocketx.WebSocketProtocolHandler: long forceCloseTimeoutMillis> = v3;
+return;
+}
+protected void decode(io.netty.channel.ChannelHandlerContext, io.netty.handler.codec.http.websocketx.WebSocketFrame, java.util.List) throws java.lang.Exception
+{
+io.netty.handler.codec.http.websocketx.WebSocketFrame v10, v2;
+io.netty.channel.ChannelHandlerContext v1;
+java.util.List v3;
+io.netty.buffer.ByteBuf v5, v7;
+io.netty.handler.codec.http.websocketx.PongWebSocketFrame v6;
+io.netty.handler.codec.http.websocketx.WebSocketProtocolHandler v0;
+boolean v4, v8, v9;
+v0 := @this: io.netty.handler.codec.http.websocketx.WebSocketProtocolHandler;
+v1 := @parameter0: io.netty.channel.ChannelHandlerContext;
+v2 := @parameter1: io.netty.handler.codec.http.websocketx.WebSocketFrame;
+v3 := @parameter2: java.util.List;
+v4 = v2 instanceof io.netty.handler.codec.http.websocketx.PingWebSocketFrame;
+if v4 == 0 goto label1;
+v5 = virtualinvoke v2.<io.netty.handler.codec.http.websocketx.WebSocketFrame: io.netty.buffer.ByteBuf content()>();
+virtualinvoke v5.<io.netty.buffer.ByteBuf: io.netty.buffer.ByteBuf retain()>();
+v6 = new io.netty.handler.codec.http.websocketx.PongWebSocketFrame;
+v7 = virtualinvoke v2.<io.netty.handler.codec.http.websocketx.WebSocketFrame: io.netty.buffer.ByteBuf content()>();
+specialinvoke v6.<io.netty.handler.codec.http.websocketx.PongWebSocketFrame: void <init>(io.netty.buffer.ByteBuf)>(v7);
+interfaceinvoke v1.<io.netty.channel.ChannelHandlerContext: io.netty.channel.ChannelFuture writeAndFlush(java.lang.Object)>(v6);
+staticinvoke <io.netty.handler.codec.http.websocketx.WebSocketProtocolHandler: void readIfNeeded(io.netty.channel.ChannelHandlerContext)>(v1);
+return;
+label1:
+v8 = v2 instanceof io.netty.handler.codec.http.websocketx.PongWebSocketFrame;
+if v8 == 0 goto label2;
+v9 = v0.<io.netty.handler.codec.http.websocketx.WebSocketProtocolHandler: boolean dropPongFrames>;
+if v9 == 0 goto label2;
+staticinvoke <io.netty.handler.codec.http.websocketx.WebSocketProtocolHandler: void readIfNeeded(io.netty.channel.ChannelHandlerContext)>(v1);
+return;
+label2:
+v10 = virtualinvoke v2.<io.netty.handler.codec.http.websocketx.WebSocketFrame: io.netty.handler.codec.http.websocketx.WebSocketFrame retain()>();
+interfaceinvoke v3.<java.util.List: boolean add(java.lang.Object)>(v10);
+return;
+}
+private static void readIfNeeded(io.netty.channel.ChannelHandlerContext)
+{
+io.netty.channel.Channel v1;
+io.netty.channel.ChannelHandlerContext v0;
+io.netty.channel.ChannelConfig v2;
+boolean v3;
+v0 := @parameter0: io.netty.channel.ChannelHandlerContext;
+v1 = interfaceinvoke v0.<io.netty.channel.ChannelHandlerContext: io.netty.channel.Channel channel()>();
+v2 = interfaceinvoke v1.<io.netty.channel.Channel: io.netty.channel.ChannelConfig config()>();
+v3 = interfaceinvoke v2.<io.netty.channel.ChannelConfig: boolean isAutoRead()>();
+if v3 != 0 goto label1;
+interfaceinvoke v0.<io.netty.channel.ChannelHandlerContext: io.netty.channel.ChannelHandlerContext read()>();
+label1:
+return;
+}
+public void close(io.netty.channel.ChannelHandlerContext, io.netty.channel.ChannelPromise) throws java.lang.Exception
+{
+io.netty.handler.codec.http.websocketx.WebSocketCloseStatus v3, v8;
+io.netty.handler.codec.http.websocketx.WebSocketProtocolHandler$1 v11;
+io.netty.channel.Channel v4;
+io.netty.channel.ChannelHandlerContext v1;
+io.netty.channel.ChannelPromise v10, v2, v6, v9;
+io.netty.handler.codec.http.websocketx.WebSocketProtocolHandler v0;
+io.netty.handler.codec.http.websocketx.CloseWebSocketFrame v7;
+boolean v5;
+v0 := @this: io.netty.handler.codec.http.websocketx.WebSocketProtocolHandler;
+v1 := @parameter0: io.netty.channel.ChannelHandlerContext;
+v2 := @parameter1: io.netty.channel.ChannelPromise;
+v3 = v0.<io.netty.handler.codec.http.websocketx.WebSocketProtocolHandler: io.netty.handler.codec.http.websocketx.WebSocketCloseStatus closeStatus>;
+if v3 == null goto label1;
+v4 = interfaceinvoke v1.<io.netty.channel.ChannelHandlerContext: io.netty.channel.Channel channel()>();
+v5 = interfaceinvoke v4.<io.netty.channel.Channel: boolean isActive()>();
+if v5 != 0 goto label2;
+label1:
+interfaceinvoke v1.<io.netty.channel.ChannelHandlerContext: io.netty.channel.ChannelFuture close(io.netty.channel.ChannelPromise)>(v2);
+goto label4;
+label2:
+v6 = v0.<io.netty.handler.codec.http.websocketx.WebSocketProtocolHandler: io.netty.channel.ChannelPromise closeSent>;
+if v6 != null goto label3;
+v7 = new io.netty.handler.codec.http.websocketx.CloseWebSocketFrame;
+v8 = v0.<io.netty.handler.codec.http.websocketx.WebSocketProtocolHandler: io.netty.handler.codec.http.websocketx.WebSocketCloseStatus closeStatus>;
+specialinvoke v7.<io.netty.handler.codec.http.websocketx.CloseWebSocketFrame: void <init>(io.netty.handler.codec.http.websocketx.WebSocketCloseStatus)>(v8);
+v9 = interfaceinvoke v1.<io.netty.channel.ChannelHandlerContext: io.netty.channel.ChannelPromise newPromise()>();
+virtualinvoke v0.<io.netty.handler.codec.http.websocketx.WebSocketProtocolHandler: void write(io.netty.channel.ChannelHandlerContext,java.lang.Object,io.netty.channel.ChannelPromise)>(v1, v7, v9);
+label3:
+virtualinvoke v0.<io.netty.handler.codec.http.websocketx.WebSocketProtocolHandler: void flush(io.netty.channel.ChannelHandlerContext)>(v1);
+specialinvoke v0.<io.netty.handler.codec.http.websocketx.WebSocketProtocolHandler: void applyCloseSentTimeout(io.netty.channel.ChannelHandlerContext)>(v1);
+v10 = v0.<io.netty.handler.codec.http.websocketx.WebSocketProtocolHandler: io.netty.channel.ChannelPromise closeSent>;
+v11 = new io.netty.handler.codec.http.websocketx.WebSocketProtocolHandler$1;
+specialinvoke v11.<io.netty.handler.codec.http.websocketx.WebSocketProtocolHandler$1: void <init>(io.netty.handler.codec.http.websocketx.WebSocketProtocolHandler,io.netty.channel.ChannelHandlerContext,io.netty.channel.ChannelPromise)>(v0, v1, v2);
+interfaceinvoke v10.<io.netty.channel.ChannelPromise: io.netty.channel.ChannelPromise addListener(io.netty.util.concurrent.GenericFutureListener)>(v11);
+label4:
+return;
+}
+public void write(io.netty.channel.ChannelHandlerContext, java.lang.Object, io.netty.channel.ChannelPromise) throws java.lang.Exception
+{
+io.netty.util.concurrent.PromiseNotifier v9;
+java.nio.channels.ClosedChannelException v5;
+io.netty.channel.ChannelFuture v8;
+io.netty.channel.ChannelHandlerContext v1;
+io.netty.channel.ChannelPromise v11, v3, v4, v7;
+io.netty.handler.codec.http.websocketx.WebSocketProtocolHandler v0;
+java.lang.Object v2;
+io.netty.util.concurrent.Promise[] v10;
+boolean v6;
+v0 := @this: io.netty.handler.codec.http.websocketx.WebSocketProtocolHandler;
+v1 := @parameter0: io.netty.channel.ChannelHandlerContext;
+v2 := @parameter1: java.lang.Object;
+v3 := @parameter2: io.netty.channel.ChannelPromise;
+v4 = v0.<io.netty.handler.codec.http.websocketx.WebSocketProtocolHandler: io.netty.channel.ChannelPromise closeSent>;
+if v4 == null goto label1;
+staticinvoke <io.netty.util.ReferenceCountUtil: boolean release(java.lang.Object)>(v2);
+v5 = new java.nio.channels.ClosedChannelException;
+specialinvoke v5.<java.nio.channels.ClosedChannelException: void <init>()>();
+interfaceinvoke v3.<io.netty.channel.ChannelPromise: io.netty.channel.ChannelPromise setFailure(java.lang.Throwable)>(v5);
+goto label3;
+label1:
+v6 = v2 instanceof io.netty.handler.codec.http.websocketx.CloseWebSocketFrame;
+if v6 == 0 goto label2;
+v7 = interfaceinvoke v3.<io.netty.channel.ChannelPromise: io.netty.channel.ChannelPromise unvoid()>();
+virtualinvoke v0.<io.netty.handler.codec.http.websocketx.WebSocketProtocolHandler: void closeSent(io.netty.channel.ChannelPromise)>(v7);
+v8 = interfaceinvoke v1.<io.netty.channel.ChannelHandlerContext: io.netty.channel.ChannelFuture write(java.lang.Object)>(v2);
+v9 = new io.netty.util.concurrent.PromiseNotifier;
+v10 = newarray (io.netty.util.concurrent.Promise)[1];
+v11 = v0.<io.netty.handler.codec.http.websocketx.WebSocketProtocolHandler: io.netty.channel.ChannelPromise closeSent>;
+v10[0] = v11;
+specialinvoke v9.<io.netty.util.concurrent.PromiseNotifier: void <init>(boolean,io.netty.util.concurrent.Promise[])>(0, v10);
+interfaceinvoke v8.<io.netty.channel.ChannelFuture: io.netty.channel.ChannelFuture addListener(io.netty.util.concurrent.GenericFutureListener)>(v9);
+goto label3;
+label2:
+interfaceinvoke v1.<io.netty.channel.ChannelHandlerContext: io.netty.channel.ChannelFuture write(java.lang.Object,io.netty.channel.ChannelPromise)>(v2, v3);
+label3:
+return;
+}
+void closeSent(io.netty.channel.ChannelPromise)
+{
+io.netty.handler.codec.http.websocketx.WebSocketProtocolHandler v0;
+io.netty.channel.ChannelPromise v1;
+v0 := @this: io.netty.handler.codec.http.websocketx.WebSocketProtocolHandler;
+v1 := @parameter0: io.netty.channel.ChannelPromise;
+v0.<io.netty.handler.codec.http.websocketx.WebSocketProtocolHandler: io.netty.channel.ChannelPromise closeSent> = v1;
+return;
+}
+private void applyCloseSentTimeout(io.netty.channel.ChannelHandlerContext)
+{
+io.netty.util.concurrent.EventExecutor v6;
+io.netty.util.concurrent.ScheduledFuture v10;
+long v4, v8;
+java.util.concurrent.TimeUnit v9;
+io.netty.channel.ChannelHandlerContext v1;
+io.netty.handler.codec.http.websocketx.WebSocketProtocolHandler$3 v12;
+io.netty.handler.codec.http.websocketx.WebSocketProtocolHandler$2 v7;
+byte v5;
+io.netty.channel.ChannelPromise v11, v2;
+io.netty.handler.codec.http.websocketx.WebSocketProtocolHandler v0;
+boolean v3;
+v0 := @this: io.netty.handler.codec.http.websocketx.WebSocketProtocolHandler;
+v1 := @parameter0: io.netty.channel.ChannelHandlerContext;
+v2 = v0.<io.netty.handler.codec.http.websocketx.WebSocketProtocolHandler: io.netty.channel.ChannelPromise closeSent>;
+v3 = interfaceinvoke v2.<io.netty.channel.ChannelPromise: boolean isDone()>();
+if v3 != 0 goto label1;
+v4 = v0.<io.netty.handler.codec.http.websocketx.WebSocketProtocolHandler: long forceCloseTimeoutMillis>;
+v5 = v4 cmp 0L;
+if v5 >= 0 goto label2;
+label1:
+return;
+label2:
+v6 = interfaceinvoke v1.<io.netty.channel.ChannelHandlerContext: io.netty.util.concurrent.EventExecutor executor()>();
+v7 = new io.netty.handler.codec.http.websocketx.WebSocketProtocolHandler$2;
+specialinvoke v7.<io.netty.handler.codec.http.websocketx.WebSocketProtocolHandler$2: void <init>(io.netty.handler.codec.http.websocketx.WebSocketProtocolHandler)>(v0);
+v8 = v0.<io.netty.handler.codec.http.websocketx.WebSocketProtocolHandler: long forceCloseTimeoutMillis>;
+v9 = <java.util.concurrent.TimeUnit: java.util.concurrent.TimeUnit MILLISECONDS>;
+v10 = interfaceinvoke v6.<io.netty.util.concurrent.EventExecutor: io.netty.util.concurrent.ScheduledFuture schedule(java.lang.Runnable,long,java.util.concurrent.TimeUnit)>(v7, v8, v9);
+v11 = v0.<io.netty.handler.codec.http.websocketx.WebSocketProtocolHandler: io.netty.channel.ChannelPromise closeSent>;
+v12 = new io.netty.handler.codec.http.websocketx.WebSocketProtocolHandler$3;
+specialinvoke v12.<io.netty.handler.codec.http.websocketx.WebSocketProtocolHandler$3: void <init>(io.netty.handler.codec.http.websocketx.WebSocketProtocolHandler,io.netty.util.concurrent.Future)>(v0, v10);
+interfaceinvoke v11.<io.netty.channel.ChannelPromise: io.netty.channel.ChannelPromise addListener(io.netty.util.concurrent.GenericFutureListener)>(v12);
+return;
+}
+protected io.netty.handler.codec.http.websocketx.WebSocketHandshakeException buildHandshakeException(java.lang.String)
+{
+io.netty.handler.codec.http.websocketx.WebSocketProtocolHandler v0;
+java.lang.String v1;
+io.netty.handler.codec.http.websocketx.WebSocketHandshakeException v2;
+v0 := @this: io.netty.handler.codec.http.websocketx.WebSocketProtocolHandler;
+v1 := @parameter0: java.lang.String;
+v2 = new io.netty.handler.codec.http.websocketx.WebSocketHandshakeException;
+specialinvoke v2.<io.netty.handler.codec.http.websocketx.WebSocketHandshakeException: void <init>(java.lang.String)>(v1);
+return v2;
+}
+public void bind(io.netty.channel.ChannelHandlerContext, java.net.SocketAddress, io.netty.channel.ChannelPromise) throws java.lang.Exception
+{
+io.netty.channel.ChannelHandlerContext v1;
+io.netty.channel.ChannelPromise v3;
+java.net.SocketAddress v2;
+io.netty.handler.codec.http.websocketx.WebSocketProtocolHandler v0;
+v0 := @this: io.netty.handler.codec.http.websocketx.WebSocketProtocolHandler;
+v1 := @parameter0: io.netty.channel.ChannelHandlerContext;
+v2 := @parameter1: java.net.SocketAddress;
+v3 := @parameter2: io.netty.channel.ChannelPromise;
+interfaceinvoke v1.<io.netty.channel.ChannelHandlerContext: io.netty.channel.ChannelFuture bind(java.net.SocketAddress,io.netty.channel.ChannelPromise)>(v2, v3);
+return;
+}
+public void connect(io.netty.channel.ChannelHandlerContext, java.net.SocketAddress, java.net.SocketAddress, io.netty.channel.ChannelPromise) throws java.lang.Exception
+{
+io.netty.channel.ChannelHandlerContext v1;
+io.netty.channel.ChannelPromise v4;
+java.net.SocketAddress v2, v3;
+io.netty.handler.codec.http.websocketx.WebSocketProtocolHandler v0;
+v0 := @this: io.netty.handler.codec.http.websocketx.WebSocketProtocolHandler;
+v1 := @parameter0: io.netty.channel.ChannelHandlerContext;
+v2 := @parameter1: java.net.SocketAddress;
+v3 := @parameter2: java.net.SocketAddress;
+v4 := @parameter3: io.netty.channel.ChannelPromise;
+interfaceinvoke v1.<io.netty.channel.ChannelHandlerContext: io.netty.channel.ChannelFuture connect(java.net.SocketAddress,java.net.SocketAddress,io.netty.channel.ChannelPromise)>(v2, v3, v4);
+return;
+}
+public void disconnect(io.netty.channel.ChannelHandlerContext, io.netty.channel.ChannelPromise) throws java.lang.Exception
+{
+io.netty.handler.codec.http.websocketx.WebSocketProtocolHandler v0;
+io.netty.channel.ChannelHandlerContext v1;
+io.netty.channel.ChannelPromise v2;
+v0 := @this: io.netty.handler.codec.http.websocketx.WebSocketProtocolHandler;
+v1 := @parameter0: io.netty.channel.ChannelHandlerContext;
+v2 := @parameter1: io.netty.channel.ChannelPromise;
+interfaceinvoke v1.<io.netty.channel.ChannelHandlerContext: io.netty.channel.ChannelFuture disconnect(io.netty.channel.ChannelPromise)>(v2);
+return;
+}
+public void deregister(io.netty.channel.ChannelHandlerContext, io.netty.channel.ChannelPromise) throws java.lang.Exception
+{
+io.netty.handler.codec.http.websocketx.WebSocketProtocolHandler v0;
+io.netty.channel.ChannelHandlerContext v1;
+io.netty.channel.ChannelPromise v2;
+v0 := @this: io.netty.handler.codec.http.websocketx.WebSocketProtocolHandler;
+v1 := @parameter0: io.netty.channel.ChannelHandlerContext;
+v2 := @parameter1: io.netty.channel.ChannelPromise;
+interfaceinvoke v1.<io.netty.channel.ChannelHandlerContext: io.netty.channel.ChannelFuture deregister(io.netty.channel.ChannelPromise)>(v2);
+return;
+}
+public void read(io.netty.channel.ChannelHandlerContext) throws java.lang.Exception
+{
+io.netty.handler.codec.http.websocketx.WebSocketProtocolHandler v0;
+io.netty.channel.ChannelHandlerContext v1;
+v0 := @this: io.netty.handler.codec.http.websocketx.WebSocketProtocolHandler;
+v1 := @parameter0: io.netty.channel.ChannelHandlerContext;
+interfaceinvoke v1.<io.netty.channel.ChannelHandlerContext: io.netty.channel.ChannelHandlerContext read()>();
+return;
+}
+public void flush(io.netty.channel.ChannelHandlerContext) throws java.lang.Exception
+{
+io.netty.handler.codec.http.websocketx.WebSocketProtocolHandler v0;
+io.netty.channel.ChannelHandlerContext v1;
+v0 := @this: io.netty.handler.codec.http.websocketx.WebSocketProtocolHandler;
+v1 := @parameter0: io.netty.channel.ChannelHandlerContext;
+interfaceinvoke v1.<io.netty.channel.ChannelHandlerContext: io.netty.channel.ChannelHandlerContext flush()>();
+return;
+}
+public void exceptionCaught(io.netty.channel.ChannelHandlerContext, java.lang.Throwable) throws java.lang.Exception
+{
+io.netty.handler.codec.http.websocketx.WebSocketProtocolHandler v0;
+java.lang.Throwable v2;
+io.netty.channel.ChannelHandlerContext v1;
+v0 := @this: io.netty.handler.codec.http.websocketx.WebSocketProtocolHandler;
+v1 := @parameter0: io.netty.channel.ChannelHandlerContext;
+v2 := @parameter1: java.lang.Throwable;
+interfaceinvoke v1.<io.netty.channel.ChannelHandlerContext: io.netty.channel.ChannelHandlerContext fireExceptionCaught(java.lang.Throwable)>(v2);
+interfaceinvoke v1.<io.netty.channel.ChannelHandlerContext: io.netty.channel.ChannelFuture close()>();
+return;
+}
+}

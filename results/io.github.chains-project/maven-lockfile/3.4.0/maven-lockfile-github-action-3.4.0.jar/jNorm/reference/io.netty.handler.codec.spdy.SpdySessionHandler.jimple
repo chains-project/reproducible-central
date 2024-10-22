@@ -1,0 +1,992 @@
+public class io.netty.handler.codec.spdy.SpdySessionHandler extends io.netty.channel.ChannelDuplexHandler
+{
+private static final io.netty.handler.codec.spdy.SpdyProtocolException PROTOCOL_EXCEPTION;
+private static final io.netty.handler.codec.spdy.SpdyProtocolException STREAM_CLOSED;
+private static final int DEFAULT_WINDOW_SIZE;
+private int initialSendWindowSize;
+private int initialReceiveWindowSize;
+private volatile int initialSessionReceiveWindowSize;
+private final io.netty.handler.codec.spdy.SpdySession spdySession;
+private int lastGoodStreamId;
+private static final int DEFAULT_MAX_CONCURRENT_STREAMS;
+private int remoteConcurrentStreams;
+private int localConcurrentStreams;
+private final java.util.concurrent.atomic.AtomicInteger pings;
+private boolean sentGoAwayFrame;
+private boolean receivedGoAwayFrame;
+private io.netty.channel.ChannelFutureListener closeSessionFutureListener;
+private final boolean server;
+private final int minorVersion;
+public void <init>(io.netty.handler.codec.spdy.SpdyVersion, boolean)
+{
+io.netty.handler.codec.spdy.SpdySession v3;
+io.netty.handler.codec.spdy.SpdyVersion v1;
+java.util.concurrent.atomic.AtomicInteger v6;
+int v4, v5, v8;
+io.netty.handler.codec.spdy.SpdySessionHandler v0;
+java.lang.Object v7;
+boolean v2;
+v0 := @this: io.netty.handler.codec.spdy.SpdySessionHandler;
+v1 := @parameter0: io.netty.handler.codec.spdy.SpdyVersion;
+v2 := @parameter1: boolean;
+specialinvoke v0.<io.netty.channel.ChannelDuplexHandler: void <init>()>();
+v0.<io.netty.handler.codec.spdy.SpdySessionHandler: int initialSendWindowSize> = 65536;
+v0.<io.netty.handler.codec.spdy.SpdySessionHandler: int initialReceiveWindowSize> = 65536;
+v0.<io.netty.handler.codec.spdy.SpdySessionHandler: int initialSessionReceiveWindowSize> = 65536;
+v3 = new io.netty.handler.codec.spdy.SpdySession;
+v4 = v0.<io.netty.handler.codec.spdy.SpdySessionHandler: int initialSendWindowSize>;
+v5 = v0.<io.netty.handler.codec.spdy.SpdySessionHandler: int initialReceiveWindowSize>;
+specialinvoke v3.<io.netty.handler.codec.spdy.SpdySession: void <init>(int,int)>(v4, v5);
+v0.<io.netty.handler.codec.spdy.SpdySessionHandler: io.netty.handler.codec.spdy.SpdySession spdySession> = v3;
+v0.<io.netty.handler.codec.spdy.SpdySessionHandler: int remoteConcurrentStreams> = 2147483647;
+v0.<io.netty.handler.codec.spdy.SpdySessionHandler: int localConcurrentStreams> = 2147483647;
+v6 = new java.util.concurrent.atomic.AtomicInteger;
+specialinvoke v6.<java.util.concurrent.atomic.AtomicInteger: void <init>()>();
+v0.<io.netty.handler.codec.spdy.SpdySessionHandler: java.util.concurrent.atomic.AtomicInteger pings> = v6;
+v7 = staticinvoke <io.netty.util.internal.ObjectUtil: java.lang.Object checkNotNull(java.lang.Object,java.lang.String)>(v1, "version");
+v8 = virtualinvoke v7.<io.netty.handler.codec.spdy.SpdyVersion: int getMinorVersion()>();
+v0.<io.netty.handler.codec.spdy.SpdySessionHandler: int minorVersion> = v8;
+v0.<io.netty.handler.codec.spdy.SpdySessionHandler: boolean server> = v2;
+return;
+}
+public void setSessionReceiveWindowSize(int)
+{
+int v1;
+io.netty.handler.codec.spdy.SpdySessionHandler v0;
+v0 := @this: io.netty.handler.codec.spdy.SpdySessionHandler;
+v1 := @parameter0: int;
+staticinvoke <io.netty.util.internal.ObjectUtil: int checkPositiveOrZero(int,java.lang.String)>(v1, "sessionReceiveWindowSize");
+v0.<io.netty.handler.codec.spdy.SpdySessionHandler: int initialSessionReceiveWindowSize> = v1;
+return;
+}
+public void channelRead(io.netty.channel.ChannelHandlerContext, java.lang.Object) throws java.lang.Exception
+{
+io.netty.handler.codec.spdy.SpdySession v100, v108, v110, v16, v18, v24, v28, v31, v33, v48, v56, v70, v73, v76, v9;
+io.netty.handler.codec.spdy.SpdyStreamStatus v102, v114, v21, v23, v26, v30, v35, v58, v65, v72, v75, v99;
+byte v61;
+io.netty.handler.codec.spdy.DefaultSpdyDataFrame v39;
+io.netty.handler.codec.spdy.DefaultSpdyWindowUpdateFrame v17, v49;
+java.util.concurrent.atomic.AtomicInteger v92, v94;
+io.netty.handler.codec.spdy.SpdySessionHandler v0;
+boolean v101, v103, v105, v109, v19, v22, v25, v27, v29, v3, v45, v50, v52, v54, v55, v57, v62, v63, v64, v66, v68, v69, v71, v74, v77, v79, v82, v87, v89, v91, v95, v96, v98;
+io.netty.handler.codec.spdy.SpdySessionStatus v11, v113, v60, v85;
+io.netty.channel.ChannelHandlerContext v1;
+io.netty.buffer.ByteBuf v36, v40, v42, v5;
+int v10, v106, v107, v111, v112, v12, v13, v14, v15, v20, v32, v34, v37, v38, v4, v41, v43, v44, v46, v47, v53, v59, v6, v67, v7, v8, v80, v83, v84, v86, v88, v90, v93, v97;
+io.netty.channel.ChannelFuture v104, v51, v78, v81;
+java.lang.Object v2;
+v0 := @this: io.netty.handler.codec.spdy.SpdySessionHandler;
+v1 := @parameter0: io.netty.channel.ChannelHandlerContext;
+v2 := @parameter1: java.lang.Object;
+v3 = v2 instanceof io.netty.handler.codec.spdy.SpdyDataFrame;
+if v3 == 0 goto label12;
+v4 = interfaceinvoke v2.<io.netty.handler.codec.spdy.SpdyDataFrame: int streamId()>();
+v5 = interfaceinvoke v2.<io.netty.handler.codec.spdy.SpdyDataFrame: io.netty.buffer.ByteBuf content()>();
+v6 = virtualinvoke v5.<io.netty.buffer.ByteBuf: int readableBytes()>();
+v7 = (int) -1;
+v8 = v7 * v6;
+v9 = v0.<io.netty.handler.codec.spdy.SpdySessionHandler: io.netty.handler.codec.spdy.SpdySession spdySession>;
+v10 = virtualinvoke v9.<io.netty.handler.codec.spdy.SpdySession: int updateReceiveWindowSize(int,int)>(0, v8);
+if v10 >= 0 goto label01;
+v11 = <io.netty.handler.codec.spdy.SpdySessionStatus: io.netty.handler.codec.spdy.SpdySessionStatus PROTOCOL_ERROR>;
+specialinvoke v0.<io.netty.handler.codec.spdy.SpdySessionHandler: void issueSessionError(io.netty.channel.ChannelHandlerContext,io.netty.handler.codec.spdy.SpdySessionStatus)>(v1, v11);
+return;
+label01:
+v12 = v0.<io.netty.handler.codec.spdy.SpdySessionHandler: int initialSessionReceiveWindowSize>;
+v13 = v12 / 2;
+if v10 > v13 goto label02;
+v14 = v0.<io.netty.handler.codec.spdy.SpdySessionHandler: int initialSessionReceiveWindowSize>;
+v15 = v14 - v10;
+v16 = v0.<io.netty.handler.codec.spdy.SpdySessionHandler: io.netty.handler.codec.spdy.SpdySession spdySession>;
+virtualinvoke v16.<io.netty.handler.codec.spdy.SpdySession: int updateReceiveWindowSize(int,int)>(0, v15);
+v17 = new io.netty.handler.codec.spdy.DefaultSpdyWindowUpdateFrame;
+specialinvoke v17.<io.netty.handler.codec.spdy.DefaultSpdyWindowUpdateFrame: void <init>(int,int)>(0, v15);
+interfaceinvoke v1.<io.netty.channel.ChannelHandlerContext: io.netty.channel.ChannelFuture writeAndFlush(java.lang.Object)>(v17);
+label02:
+v18 = v0.<io.netty.handler.codec.spdy.SpdySessionHandler: io.netty.handler.codec.spdy.SpdySession spdySession>;
+v19 = virtualinvoke v18.<io.netty.handler.codec.spdy.SpdySession: boolean isActiveStream(int)>(v4);
+if v19 != 0 goto label05;
+interfaceinvoke v2.<io.netty.handler.codec.spdy.SpdyDataFrame: boolean release()>();
+v20 = v0.<io.netty.handler.codec.spdy.SpdySessionHandler: int lastGoodStreamId>;
+if v4 > v20 goto label03;
+v21 = <io.netty.handler.codec.spdy.SpdyStreamStatus: io.netty.handler.codec.spdy.SpdyStreamStatus PROTOCOL_ERROR>;
+specialinvoke v0.<io.netty.handler.codec.spdy.SpdySessionHandler: void issueStreamError(io.netty.channel.ChannelHandlerContext,int,io.netty.handler.codec.spdy.SpdyStreamStatus)>(v1, v4, v21);
+goto label04;
+label03:
+v22 = v0.<io.netty.handler.codec.spdy.SpdySessionHandler: boolean sentGoAwayFrame>;
+if v22 != 0 goto label04;
+v23 = <io.netty.handler.codec.spdy.SpdyStreamStatus: io.netty.handler.codec.spdy.SpdyStreamStatus INVALID_STREAM>;
+specialinvoke v0.<io.netty.handler.codec.spdy.SpdySessionHandler: void issueStreamError(io.netty.channel.ChannelHandlerContext,int,io.netty.handler.codec.spdy.SpdyStreamStatus)>(v1, v4, v23);
+label04:
+return;
+label05:
+v24 = v0.<io.netty.handler.codec.spdy.SpdySessionHandler: io.netty.handler.codec.spdy.SpdySession spdySession>;
+v25 = virtualinvoke v24.<io.netty.handler.codec.spdy.SpdySession: boolean isRemoteSideClosed(int)>(v4);
+if v25 == 0 goto label06;
+interfaceinvoke v2.<io.netty.handler.codec.spdy.SpdyDataFrame: boolean release()>();
+v26 = <io.netty.handler.codec.spdy.SpdyStreamStatus: io.netty.handler.codec.spdy.SpdyStreamStatus STREAM_ALREADY_CLOSED>;
+specialinvoke v0.<io.netty.handler.codec.spdy.SpdySessionHandler: void issueStreamError(io.netty.channel.ChannelHandlerContext,int,io.netty.handler.codec.spdy.SpdyStreamStatus)>(v1, v4, v26);
+return;
+label06:
+v27 = specialinvoke v0.<io.netty.handler.codec.spdy.SpdySessionHandler: boolean isRemoteInitiatedId(int)>(v4);
+if v27 != 0 goto label07;
+v28 = v0.<io.netty.handler.codec.spdy.SpdySessionHandler: io.netty.handler.codec.spdy.SpdySession spdySession>;
+v29 = virtualinvoke v28.<io.netty.handler.codec.spdy.SpdySession: boolean hasReceivedReply(int)>(v4);
+if v29 != 0 goto label07;
+interfaceinvoke v2.<io.netty.handler.codec.spdy.SpdyDataFrame: boolean release()>();
+v30 = <io.netty.handler.codec.spdy.SpdyStreamStatus: io.netty.handler.codec.spdy.SpdyStreamStatus PROTOCOL_ERROR>;
+specialinvoke v0.<io.netty.handler.codec.spdy.SpdySessionHandler: void issueStreamError(io.netty.channel.ChannelHandlerContext,int,io.netty.handler.codec.spdy.SpdyStreamStatus)>(v1, v4, v30);
+return;
+label07:
+v31 = v0.<io.netty.handler.codec.spdy.SpdySessionHandler: io.netty.handler.codec.spdy.SpdySession spdySession>;
+v32 = virtualinvoke v31.<io.netty.handler.codec.spdy.SpdySession: int updateReceiveWindowSize(int,int)>(v4, v8);
+v33 = v0.<io.netty.handler.codec.spdy.SpdySessionHandler: io.netty.handler.codec.spdy.SpdySession spdySession>;
+v34 = virtualinvoke v33.<io.netty.handler.codec.spdy.SpdySession: int getReceiveWindowSizeLowerBound(int)>(v4);
+if v32 >= v34 goto label08;
+interfaceinvoke v2.<io.netty.handler.codec.spdy.SpdyDataFrame: boolean release()>();
+v35 = <io.netty.handler.codec.spdy.SpdyStreamStatus: io.netty.handler.codec.spdy.SpdyStreamStatus FLOW_CONTROL_ERROR>;
+specialinvoke v0.<io.netty.handler.codec.spdy.SpdySessionHandler: void issueStreamError(io.netty.channel.ChannelHandlerContext,int,io.netty.handler.codec.spdy.SpdyStreamStatus)>(v1, v4, v35);
+return;
+label08:
+if v32 >= 0 goto label10;
+label09:
+v36 = interfaceinvoke v2.<io.netty.handler.codec.spdy.SpdyDataFrame: io.netty.buffer.ByteBuf content()>();
+v37 = virtualinvoke v36.<io.netty.buffer.ByteBuf: int readableBytes()>();
+v38 = v0.<io.netty.handler.codec.spdy.SpdySessionHandler: int initialReceiveWindowSize>;
+if v37 <= v38 goto label10;
+v39 = new io.netty.handler.codec.spdy.DefaultSpdyDataFrame;
+v40 = interfaceinvoke v2.<io.netty.handler.codec.spdy.SpdyDataFrame: io.netty.buffer.ByteBuf content()>();
+v41 = v0.<io.netty.handler.codec.spdy.SpdySessionHandler: int initialReceiveWindowSize>;
+v42 = virtualinvoke v40.<io.netty.buffer.ByteBuf: io.netty.buffer.ByteBuf readRetainedSlice(int)>(v41);
+specialinvoke v39.<io.netty.handler.codec.spdy.DefaultSpdyDataFrame: void <init>(int,io.netty.buffer.ByteBuf)>(v4, v42);
+interfaceinvoke v1.<io.netty.channel.ChannelHandlerContext: io.netty.channel.ChannelFuture writeAndFlush(java.lang.Object)>(v39);
+goto label09;
+label10:
+v43 = v0.<io.netty.handler.codec.spdy.SpdySessionHandler: int initialReceiveWindowSize>;
+v44 = v43 / 2;
+if v32 > v44 goto label11;
+v45 = interfaceinvoke v2.<io.netty.handler.codec.spdy.SpdyDataFrame: boolean isLast()>();
+if v45 != 0 goto label11;
+v46 = v0.<io.netty.handler.codec.spdy.SpdySessionHandler: int initialReceiveWindowSize>;
+v47 = v46 - v32;
+v48 = v0.<io.netty.handler.codec.spdy.SpdySessionHandler: io.netty.handler.codec.spdy.SpdySession spdySession>;
+virtualinvoke v48.<io.netty.handler.codec.spdy.SpdySession: int updateReceiveWindowSize(int,int)>(v4, v47);
+v49 = new io.netty.handler.codec.spdy.DefaultSpdyWindowUpdateFrame;
+specialinvoke v49.<io.netty.handler.codec.spdy.DefaultSpdyWindowUpdateFrame: void <init>(int,int)>(v4, v47);
+interfaceinvoke v1.<io.netty.channel.ChannelHandlerContext: io.netty.channel.ChannelFuture writeAndFlush(java.lang.Object)>(v49);
+label11:
+v50 = interfaceinvoke v2.<io.netty.handler.codec.spdy.SpdyDataFrame: boolean isLast()>();
+if v50 == 0 goto label37;
+v51 = interfaceinvoke v1.<io.netty.channel.ChannelHandlerContext: io.netty.channel.ChannelFuture newSucceededFuture()>();
+specialinvoke v0.<io.netty.handler.codec.spdy.SpdySessionHandler: void halfCloseStream(int,boolean,io.netty.channel.ChannelFuture)>(v4, 1, v51);
+goto label37;
+label12:
+v52 = v2 instanceof io.netty.handler.codec.spdy.SpdySynStreamFrame;
+if v52 == 0 goto label16;
+v53 = interfaceinvoke v2.<io.netty.handler.codec.spdy.SpdySynStreamFrame: int streamId()>();
+v54 = interfaceinvoke v2.<io.netty.handler.codec.spdy.SpdySynStreamFrame: boolean isInvalid()>();
+if v54 != 0 goto label13;
+v55 = specialinvoke v0.<io.netty.handler.codec.spdy.SpdySessionHandler: boolean isRemoteInitiatedId(int)>(v53);
+if v55 == 0 goto label13;
+v56 = v0.<io.netty.handler.codec.spdy.SpdySessionHandler: io.netty.handler.codec.spdy.SpdySession spdySession>;
+v57 = virtualinvoke v56.<io.netty.handler.codec.spdy.SpdySession: boolean isActiveStream(int)>(v53);
+if v57 == 0 goto label14;
+label13:
+v58 = <io.netty.handler.codec.spdy.SpdyStreamStatus: io.netty.handler.codec.spdy.SpdyStreamStatus PROTOCOL_ERROR>;
+specialinvoke v0.<io.netty.handler.codec.spdy.SpdySessionHandler: void issueStreamError(io.netty.channel.ChannelHandlerContext,int,io.netty.handler.codec.spdy.SpdyStreamStatus)>(v1, v53, v58);
+return;
+label14:
+v59 = v0.<io.netty.handler.codec.spdy.SpdySessionHandler: int lastGoodStreamId>;
+if v53 > v59 goto label15;
+v60 = <io.netty.handler.codec.spdy.SpdySessionStatus: io.netty.handler.codec.spdy.SpdySessionStatus PROTOCOL_ERROR>;
+specialinvoke v0.<io.netty.handler.codec.spdy.SpdySessionHandler: void issueSessionError(io.netty.channel.ChannelHandlerContext,io.netty.handler.codec.spdy.SpdySessionStatus)>(v1, v60);
+return;
+label15:
+v61 = interfaceinvoke v2.<io.netty.handler.codec.spdy.SpdySynStreamFrame: byte priority()>();
+v62 = interfaceinvoke v2.<io.netty.handler.codec.spdy.SpdySynStreamFrame: boolean isLast()>();
+v63 = interfaceinvoke v2.<io.netty.handler.codec.spdy.SpdySynStreamFrame: boolean isUnidirectional()>();
+v64 = specialinvoke v0.<io.netty.handler.codec.spdy.SpdySessionHandler: boolean acceptStream(int,byte,boolean,boolean)>(v53, v61, v62, v63);
+if v64 != 0 goto label37;
+v65 = <io.netty.handler.codec.spdy.SpdyStreamStatus: io.netty.handler.codec.spdy.SpdyStreamStatus REFUSED_STREAM>;
+specialinvoke v0.<io.netty.handler.codec.spdy.SpdySessionHandler: void issueStreamError(io.netty.channel.ChannelHandlerContext,int,io.netty.handler.codec.spdy.SpdyStreamStatus)>(v1, v53, v65);
+return;
+label16:
+v66 = v2 instanceof io.netty.handler.codec.spdy.SpdySynReplyFrame;
+if v66 == 0 goto label20;
+v67 = interfaceinvoke v2.<io.netty.handler.codec.spdy.SpdySynReplyFrame: int streamId()>();
+v68 = interfaceinvoke v2.<io.netty.handler.codec.spdy.SpdySynReplyFrame: boolean isInvalid()>();
+if v68 != 0 goto label17;
+v69 = specialinvoke v0.<io.netty.handler.codec.spdy.SpdySessionHandler: boolean isRemoteInitiatedId(int)>(v67);
+if v69 != 0 goto label17;
+v70 = v0.<io.netty.handler.codec.spdy.SpdySessionHandler: io.netty.handler.codec.spdy.SpdySession spdySession>;
+v71 = virtualinvoke v70.<io.netty.handler.codec.spdy.SpdySession: boolean isRemoteSideClosed(int)>(v67);
+if v71 == 0 goto label18;
+label17:
+v72 = <io.netty.handler.codec.spdy.SpdyStreamStatus: io.netty.handler.codec.spdy.SpdyStreamStatus INVALID_STREAM>;
+specialinvoke v0.<io.netty.handler.codec.spdy.SpdySessionHandler: void issueStreamError(io.netty.channel.ChannelHandlerContext,int,io.netty.handler.codec.spdy.SpdyStreamStatus)>(v1, v67, v72);
+return;
+label18:
+v73 = v0.<io.netty.handler.codec.spdy.SpdySessionHandler: io.netty.handler.codec.spdy.SpdySession spdySession>;
+v74 = virtualinvoke v73.<io.netty.handler.codec.spdy.SpdySession: boolean hasReceivedReply(int)>(v67);
+if v74 == 0 goto label19;
+v75 = <io.netty.handler.codec.spdy.SpdyStreamStatus: io.netty.handler.codec.spdy.SpdyStreamStatus STREAM_IN_USE>;
+specialinvoke v0.<io.netty.handler.codec.spdy.SpdySessionHandler: void issueStreamError(io.netty.channel.ChannelHandlerContext,int,io.netty.handler.codec.spdy.SpdyStreamStatus)>(v1, v67, v75);
+return;
+label19:
+v76 = v0.<io.netty.handler.codec.spdy.SpdySessionHandler: io.netty.handler.codec.spdy.SpdySession spdySession>;
+virtualinvoke v76.<io.netty.handler.codec.spdy.SpdySession: void receivedReply(int)>(v67);
+v77 = interfaceinvoke v2.<io.netty.handler.codec.spdy.SpdySynReplyFrame: boolean isLast()>();
+if v77 == 0 goto label37;
+v78 = interfaceinvoke v1.<io.netty.channel.ChannelHandlerContext: io.netty.channel.ChannelFuture newSucceededFuture()>();
+specialinvoke v0.<io.netty.handler.codec.spdy.SpdySessionHandler: void halfCloseStream(int,boolean,io.netty.channel.ChannelFuture)>(v67, 1, v78);
+goto label37;
+label20:
+v79 = v2 instanceof io.netty.handler.codec.spdy.SpdyRstStreamFrame;
+if v79 == 0 goto label21;
+v80 = interfaceinvoke v2.<io.netty.handler.codec.spdy.SpdyRstStreamFrame: int streamId()>();
+v81 = interfaceinvoke v1.<io.netty.channel.ChannelHandlerContext: io.netty.channel.ChannelFuture newSucceededFuture()>();
+specialinvoke v0.<io.netty.handler.codec.spdy.SpdySessionHandler: void removeStream(int,io.netty.channel.ChannelFuture)>(v80, v81);
+goto label37;
+label21:
+v82 = v2 instanceof io.netty.handler.codec.spdy.SpdySettingsFrame;
+if v82 == 0 goto label25;
+v83 = interfaceinvoke v2.<io.netty.handler.codec.spdy.SpdySettingsFrame: int getValue(int)>(0);
+if v83 < 0 goto label22;
+v84 = v0.<io.netty.handler.codec.spdy.SpdySessionHandler: int minorVersion>;
+if v83 == v84 goto label22;
+v85 = <io.netty.handler.codec.spdy.SpdySessionStatus: io.netty.handler.codec.spdy.SpdySessionStatus PROTOCOL_ERROR>;
+specialinvoke v0.<io.netty.handler.codec.spdy.SpdySessionHandler: void issueSessionError(io.netty.channel.ChannelHandlerContext,io.netty.handler.codec.spdy.SpdySessionStatus)>(v1, v85);
+return;
+label22:
+v86 = interfaceinvoke v2.<io.netty.handler.codec.spdy.SpdySettingsFrame: int getValue(int)>(4);
+if v86 < 0 goto label23;
+v0.<io.netty.handler.codec.spdy.SpdySessionHandler: int remoteConcurrentStreams> = v86;
+label23:
+v87 = interfaceinvoke v2.<io.netty.handler.codec.spdy.SpdySettingsFrame: boolean isPersisted(int)>(7);
+if v87 == 0 goto label24;
+interfaceinvoke v2.<io.netty.handler.codec.spdy.SpdySettingsFrame: io.netty.handler.codec.spdy.SpdySettingsFrame removeValue(int)>(7);
+label24:
+interfaceinvoke v2.<io.netty.handler.codec.spdy.SpdySettingsFrame: io.netty.handler.codec.spdy.SpdySettingsFrame setPersistValue(int,boolean)>(7, 0);
+v88 = interfaceinvoke v2.<io.netty.handler.codec.spdy.SpdySettingsFrame: int getValue(int)>(7);
+if v88 < 0 goto label37;
+specialinvoke v0.<io.netty.handler.codec.spdy.SpdySessionHandler: void updateInitialSendWindowSize(int)>(v88);
+goto label37;
+label25:
+v89 = v2 instanceof io.netty.handler.codec.spdy.SpdyPingFrame;
+if v89 == 0 goto label28;
+v90 = interfaceinvoke v2.<io.netty.handler.codec.spdy.SpdyPingFrame: int id()>();
+v91 = specialinvoke v0.<io.netty.handler.codec.spdy.SpdySessionHandler: boolean isRemoteInitiatedId(int)>(v90);
+if v91 == 0 goto label26;
+interfaceinvoke v1.<io.netty.channel.ChannelHandlerContext: io.netty.channel.ChannelFuture writeAndFlush(java.lang.Object)>(v2);
+return;
+label26:
+v92 = v0.<io.netty.handler.codec.spdy.SpdySessionHandler: java.util.concurrent.atomic.AtomicInteger pings>;
+v93 = virtualinvoke v92.<java.util.concurrent.atomic.AtomicInteger: int get()>();
+if v93 != 0 goto label27;
+return;
+label27:
+v94 = v0.<io.netty.handler.codec.spdy.SpdySessionHandler: java.util.concurrent.atomic.AtomicInteger pings>;
+virtualinvoke v94.<java.util.concurrent.atomic.AtomicInteger: int getAndDecrement()>();
+goto label37;
+label28:
+v95 = v2 instanceof io.netty.handler.codec.spdy.SpdyGoAwayFrame;
+if v95 == 0 goto label29;
+v0.<io.netty.handler.codec.spdy.SpdySessionHandler: boolean receivedGoAwayFrame> = 1;
+goto label37;
+label29:
+v96 = v2 instanceof io.netty.handler.codec.spdy.SpdyHeadersFrame;
+if v96 == 0 goto label32;
+v97 = interfaceinvoke v2.<io.netty.handler.codec.spdy.SpdyHeadersFrame: int streamId()>();
+v98 = interfaceinvoke v2.<io.netty.handler.codec.spdy.SpdyHeadersFrame: boolean isInvalid()>();
+if v98 == 0 goto label30;
+v99 = <io.netty.handler.codec.spdy.SpdyStreamStatus: io.netty.handler.codec.spdy.SpdyStreamStatus PROTOCOL_ERROR>;
+specialinvoke v0.<io.netty.handler.codec.spdy.SpdySessionHandler: void issueStreamError(io.netty.channel.ChannelHandlerContext,int,io.netty.handler.codec.spdy.SpdyStreamStatus)>(v1, v97, v99);
+return;
+label30:
+v100 = v0.<io.netty.handler.codec.spdy.SpdySessionHandler: io.netty.handler.codec.spdy.SpdySession spdySession>;
+v101 = virtualinvoke v100.<io.netty.handler.codec.spdy.SpdySession: boolean isRemoteSideClosed(int)>(v97);
+if v101 == 0 goto label31;
+v102 = <io.netty.handler.codec.spdy.SpdyStreamStatus: io.netty.handler.codec.spdy.SpdyStreamStatus INVALID_STREAM>;
+specialinvoke v0.<io.netty.handler.codec.spdy.SpdySessionHandler: void issueStreamError(io.netty.channel.ChannelHandlerContext,int,io.netty.handler.codec.spdy.SpdyStreamStatus)>(v1, v97, v102);
+return;
+label31:
+v103 = interfaceinvoke v2.<io.netty.handler.codec.spdy.SpdyHeadersFrame: boolean isLast()>();
+if v103 == 0 goto label37;
+v104 = interfaceinvoke v1.<io.netty.channel.ChannelHandlerContext: io.netty.channel.ChannelFuture newSucceededFuture()>();
+specialinvoke v0.<io.netty.handler.codec.spdy.SpdySessionHandler: void halfCloseStream(int,boolean,io.netty.channel.ChannelFuture)>(v97, 1, v104);
+goto label37;
+label32:
+v105 = v2 instanceof io.netty.handler.codec.spdy.SpdyWindowUpdateFrame;
+if v105 == 0 goto label37;
+v106 = interfaceinvoke v2.<io.netty.handler.codec.spdy.SpdyWindowUpdateFrame: int streamId()>();
+v107 = interfaceinvoke v2.<io.netty.handler.codec.spdy.SpdyWindowUpdateFrame: int deltaWindowSize()>();
+if v106 == 0 goto label33;
+v108 = v0.<io.netty.handler.codec.spdy.SpdySessionHandler: io.netty.handler.codec.spdy.SpdySession spdySession>;
+v109 = virtualinvoke v108.<io.netty.handler.codec.spdy.SpdySession: boolean isLocalSideClosed(int)>(v106);
+if v109 == 0 goto label33;
+return;
+label33:
+v110 = v0.<io.netty.handler.codec.spdy.SpdySessionHandler: io.netty.handler.codec.spdy.SpdySession spdySession>;
+v111 = virtualinvoke v110.<io.netty.handler.codec.spdy.SpdySession: int getSendWindowSize(int)>(v106);
+v112 = 2147483647 - v107;
+if v111 <= v112 goto label36;
+if v106 != 0 goto label34;
+v113 = <io.netty.handler.codec.spdy.SpdySessionStatus: io.netty.handler.codec.spdy.SpdySessionStatus PROTOCOL_ERROR>;
+specialinvoke v0.<io.netty.handler.codec.spdy.SpdySessionHandler: void issueSessionError(io.netty.channel.ChannelHandlerContext,io.netty.handler.codec.spdy.SpdySessionStatus)>(v1, v113);
+goto label35;
+label34:
+v114 = <io.netty.handler.codec.spdy.SpdyStreamStatus: io.netty.handler.codec.spdy.SpdyStreamStatus FLOW_CONTROL_ERROR>;
+specialinvoke v0.<io.netty.handler.codec.spdy.SpdySessionHandler: void issueStreamError(io.netty.channel.ChannelHandlerContext,int,io.netty.handler.codec.spdy.SpdyStreamStatus)>(v1, v106, v114);
+label35:
+return;
+label36:
+specialinvoke v0.<io.netty.handler.codec.spdy.SpdySessionHandler: void updateSendWindowSize(io.netty.channel.ChannelHandlerContext,int,int)>(v1, v106, v107);
+label37:
+interfaceinvoke v1.<io.netty.channel.ChannelHandlerContext: io.netty.channel.ChannelHandlerContext fireChannelRead(java.lang.Object)>(v2);
+return;
+}
+public void channelInactive(io.netty.channel.ChannelHandlerContext) throws java.lang.Exception
+{
+io.netty.handler.codec.spdy.SpdySession v2;
+java.util.Iterator v5;
+java.util.Set v4;
+io.netty.channel.ChannelFuture v9;
+io.netty.channel.ChannelHandlerContext v1;
+java.util.Map v3;
+int v8;
+io.netty.handler.codec.spdy.SpdySessionHandler v0;
+java.lang.Object v7;
+boolean v6;
+v0 := @this: io.netty.handler.codec.spdy.SpdySessionHandler;
+v1 := @parameter0: io.netty.channel.ChannelHandlerContext;
+v2 = v0.<io.netty.handler.codec.spdy.SpdySessionHandler: io.netty.handler.codec.spdy.SpdySession spdySession>;
+v3 = virtualinvoke v2.<io.netty.handler.codec.spdy.SpdySession: java.util.Map activeStreams()>();
+v4 = interfaceinvoke v3.<java.util.Map: java.util.Set keySet()>();
+v5 = interfaceinvoke v4.<java.util.Set: java.util.Iterator iterator()>();
+label1:
+v6 = interfaceinvoke v5.<java.util.Iterator: boolean hasNext()>();
+if v6 == 0 goto label2;
+v7 = interfaceinvoke v5.<java.util.Iterator: java.lang.Object next()>();
+v8 = virtualinvoke v7.<java.lang.Integer: int intValue()>();
+v9 = interfaceinvoke v1.<io.netty.channel.ChannelHandlerContext: io.netty.channel.ChannelFuture newSucceededFuture()>();
+specialinvoke v0.<io.netty.handler.codec.spdy.SpdySessionHandler: void removeStream(int,io.netty.channel.ChannelFuture)>(v8, v9);
+goto label1;
+label2:
+interfaceinvoke v1.<io.netty.channel.ChannelHandlerContext: io.netty.channel.ChannelHandlerContext fireChannelInactive()>();
+return;
+}
+public void exceptionCaught(io.netty.channel.ChannelHandlerContext, java.lang.Throwable) throws java.lang.Exception
+{
+java.lang.Throwable v2;
+io.netty.channel.ChannelHandlerContext v1;
+io.netty.handler.codec.spdy.SpdySessionStatus v4;
+io.netty.handler.codec.spdy.SpdySessionHandler v0;
+boolean v3;
+v0 := @this: io.netty.handler.codec.spdy.SpdySessionHandler;
+v1 := @parameter0: io.netty.channel.ChannelHandlerContext;
+v2 := @parameter1: java.lang.Throwable;
+v3 = v2 instanceof io.netty.handler.codec.spdy.SpdyProtocolException;
+if v3 == 0 goto label1;
+v4 = <io.netty.handler.codec.spdy.SpdySessionStatus: io.netty.handler.codec.spdy.SpdySessionStatus PROTOCOL_ERROR>;
+specialinvoke v0.<io.netty.handler.codec.spdy.SpdySessionHandler: void issueSessionError(io.netty.channel.ChannelHandlerContext,io.netty.handler.codec.spdy.SpdySessionStatus)>(v1, v4);
+label1:
+interfaceinvoke v1.<io.netty.channel.ChannelHandlerContext: io.netty.channel.ChannelHandlerContext fireExceptionCaught(java.lang.Throwable)>(v2);
+return;
+}
+public void close(io.netty.channel.ChannelHandlerContext, io.netty.channel.ChannelPromise) throws java.lang.Exception
+{
+io.netty.channel.ChannelHandlerContext v1;
+io.netty.handler.codec.spdy.SpdySessionHandler v0;
+io.netty.channel.ChannelPromise v2;
+v0 := @this: io.netty.handler.codec.spdy.SpdySessionHandler;
+v1 := @parameter0: io.netty.channel.ChannelHandlerContext;
+v2 := @parameter1: io.netty.channel.ChannelPromise;
+specialinvoke v0.<io.netty.handler.codec.spdy.SpdySessionHandler: void sendGoAwayFrame(io.netty.channel.ChannelHandlerContext,io.netty.channel.ChannelPromise)>(v1, v2);
+return;
+}
+public void write(io.netty.channel.ChannelHandlerContext, java.lang.Object, io.netty.channel.ChannelPromise) throws java.lang.Exception
+{
+io.netty.channel.ChannelHandlerContext v1;
+io.netty.channel.ChannelPromise v3;
+io.netty.handler.codec.spdy.SpdySessionHandler v0;
+java.lang.Object v2;
+boolean v10, v11, v12, v4, v5, v6, v7, v8, v9;
+v0 := @this: io.netty.handler.codec.spdy.SpdySessionHandler;
+v1 := @parameter0: io.netty.channel.ChannelHandlerContext;
+v2 := @parameter1: java.lang.Object;
+v3 := @parameter2: io.netty.channel.ChannelPromise;
+v4 = v2 instanceof io.netty.handler.codec.spdy.SpdyDataFrame;
+if v4 != 0 goto label1;
+v5 = v2 instanceof io.netty.handler.codec.spdy.SpdySynStreamFrame;
+if v5 != 0 goto label1;
+v6 = v2 instanceof io.netty.handler.codec.spdy.SpdySynReplyFrame;
+if v6 != 0 goto label1;
+v7 = v2 instanceof io.netty.handler.codec.spdy.SpdyRstStreamFrame;
+if v7 != 0 goto label1;
+v8 = v2 instanceof io.netty.handler.codec.spdy.SpdySettingsFrame;
+if v8 != 0 goto label1;
+v9 = v2 instanceof io.netty.handler.codec.spdy.SpdyPingFrame;
+if v9 != 0 goto label1;
+v10 = v2 instanceof io.netty.handler.codec.spdy.SpdyGoAwayFrame;
+if v10 != 0 goto label1;
+v11 = v2 instanceof io.netty.handler.codec.spdy.SpdyHeadersFrame;
+if v11 != 0 goto label1;
+v12 = v2 instanceof io.netty.handler.codec.spdy.SpdyWindowUpdateFrame;
+if v12 == 0 goto label2;
+label1:
+specialinvoke v0.<io.netty.handler.codec.spdy.SpdySessionHandler: void handleOutboundMessage(io.netty.channel.ChannelHandlerContext,java.lang.Object,io.netty.channel.ChannelPromise)>(v1, v2, v3);
+goto label3;
+label2:
+interfaceinvoke v1.<io.netty.channel.ChannelHandlerContext: io.netty.channel.ChannelFuture write(java.lang.Object,io.netty.channel.ChannelPromise)>(v2, v3);
+label3:
+return;
+}
+private void handleOutboundMessage(io.netty.channel.ChannelHandlerContext, java.lang.Object, io.netty.channel.ChannelPromise) throws java.lang.Exception
+{
+io.netty.handler.codec.spdy.SpdySession v11, v13, v16, v18, v21, v27, v31, v34, v51, v6, v75;
+byte v43;
+io.netty.handler.codec.spdy.SpdyProtocolException v42, v47, v53, v60, v72, v77, v8, v80;
+io.netty.handler.codec.spdy.SpdySessionHandler$1 v30;
+io.netty.handler.codec.spdy.DefaultSpdyDataFrame v24;
+java.lang.String v69;
+io.netty.handler.codec.spdy.SpdySessionHandler$2 v37;
+io.netty.channel.ChannelPromise v3;
+java.util.concurrent.atomic.AtomicInteger v70;
+io.netty.handler.codec.spdy.SpdySessionHandler v0;
+boolean v38, v39, v4, v41, v44, v45, v46, v48, v50, v52, v54, v55, v57, v62, v64, v66, v7, v71, v73, v76, v78, v79;
+io.netty.channel.ChannelHandlerContext v1;
+io.netty.buffer.ByteBuf v25, v26, v9;
+int v10, v12, v14, v15, v19, v20, v22, v23, v32, v33, v35, v36, v40, v49, v5, v56, v58, v59, v61, v63, v65, v68, v74;
+java.lang.IllegalArgumentException v67;
+io.netty.channel.ChannelFuture v29;
+io.netty.handler.codec.spdy.SpdySession$PendingWrite v17, v28;
+java.lang.Object v2;
+v0 := @this: io.netty.handler.codec.spdy.SpdySessionHandler;
+v1 := @parameter0: io.netty.channel.ChannelHandlerContext;
+v2 := @parameter1: java.lang.Object;
+v3 := @parameter2: io.netty.channel.ChannelPromise;
+v4 = v2 instanceof io.netty.handler.codec.spdy.SpdyDataFrame;
+if v4 == 0 goto label04;
+v5 = interfaceinvoke v2.<io.netty.handler.codec.spdy.SpdyDataFrame: int streamId()>();
+v6 = v0.<io.netty.handler.codec.spdy.SpdySessionHandler: io.netty.handler.codec.spdy.SpdySession spdySession>;
+v7 = virtualinvoke v6.<io.netty.handler.codec.spdy.SpdySession: boolean isLocalSideClosed(int)>(v5);
+if v7 == 0 goto label01;
+interfaceinvoke v2.<io.netty.handler.codec.spdy.SpdyDataFrame: boolean release()>();
+v8 = <io.netty.handler.codec.spdy.SpdySessionHandler: io.netty.handler.codec.spdy.SpdyProtocolException PROTOCOL_EXCEPTION>;
+interfaceinvoke v3.<io.netty.channel.ChannelPromise: io.netty.channel.ChannelPromise setFailure(java.lang.Throwable)>(v8);
+return;
+label01:
+v9 = interfaceinvoke v2.<io.netty.handler.codec.spdy.SpdyDataFrame: io.netty.buffer.ByteBuf content()>();
+v10 = virtualinvoke v9.<io.netty.buffer.ByteBuf: int readableBytes()>();
+v11 = v0.<io.netty.handler.codec.spdy.SpdySessionHandler: io.netty.handler.codec.spdy.SpdySession spdySession>;
+v12 = virtualinvoke v11.<io.netty.handler.codec.spdy.SpdySession: int getSendWindowSize(int)>(v5);
+v13 = v0.<io.netty.handler.codec.spdy.SpdySessionHandler: io.netty.handler.codec.spdy.SpdySession spdySession>;
+v14 = virtualinvoke v13.<io.netty.handler.codec.spdy.SpdySession: int getSendWindowSize(int)>(0);
+v15 = staticinvoke <java.lang.Math: int min(int,int)>(v12, v14);
+if v15 > 0 goto label02;
+v16 = v0.<io.netty.handler.codec.spdy.SpdySessionHandler: io.netty.handler.codec.spdy.SpdySession spdySession>;
+v17 = new io.netty.handler.codec.spdy.SpdySession$PendingWrite;
+specialinvoke v17.<io.netty.handler.codec.spdy.SpdySession$PendingWrite: void <init>(io.netty.handler.codec.spdy.SpdyDataFrame,io.netty.channel.ChannelPromise)>(v2, v3);
+virtualinvoke v16.<io.netty.handler.codec.spdy.SpdySession: boolean putPendingWrite(int,io.netty.handler.codec.spdy.SpdySession$PendingWrite)>(v5, v17);
+return;
+label02:
+if v15 >= v10 goto label03;
+v18 = v0.<io.netty.handler.codec.spdy.SpdySessionHandler: io.netty.handler.codec.spdy.SpdySession spdySession>;
+v19 = (int) -1;
+v20 = v19 * v15;
+virtualinvoke v18.<io.netty.handler.codec.spdy.SpdySession: int updateSendWindowSize(int,int)>(v5, v20);
+v21 = v0.<io.netty.handler.codec.spdy.SpdySessionHandler: io.netty.handler.codec.spdy.SpdySession spdySession>;
+v22 = (int) -1;
+v23 = v22 * v15;
+virtualinvoke v21.<io.netty.handler.codec.spdy.SpdySession: int updateSendWindowSize(int,int)>(0, v23);
+v24 = new io.netty.handler.codec.spdy.DefaultSpdyDataFrame;
+v25 = interfaceinvoke v2.<io.netty.handler.codec.spdy.SpdyDataFrame: io.netty.buffer.ByteBuf content()>();
+v26 = virtualinvoke v25.<io.netty.buffer.ByteBuf: io.netty.buffer.ByteBuf readRetainedSlice(int)>(v15);
+specialinvoke v24.<io.netty.handler.codec.spdy.DefaultSpdyDataFrame: void <init>(int,io.netty.buffer.ByteBuf)>(v5, v26);
+v27 = v0.<io.netty.handler.codec.spdy.SpdySessionHandler: io.netty.handler.codec.spdy.SpdySession spdySession>;
+v28 = new io.netty.handler.codec.spdy.SpdySession$PendingWrite;
+specialinvoke v28.<io.netty.handler.codec.spdy.SpdySession$PendingWrite: void <init>(io.netty.handler.codec.spdy.SpdyDataFrame,io.netty.channel.ChannelPromise)>(v2, v3);
+virtualinvoke v27.<io.netty.handler.codec.spdy.SpdySession: boolean putPendingWrite(int,io.netty.handler.codec.spdy.SpdySession$PendingWrite)>(v5, v28);
+v29 = interfaceinvoke v1.<io.netty.channel.ChannelHandlerContext: io.netty.channel.ChannelFuture write(java.lang.Object)>(v24);
+v30 = new io.netty.handler.codec.spdy.SpdySessionHandler$1;
+specialinvoke v30.<io.netty.handler.codec.spdy.SpdySessionHandler$1: void <init>(io.netty.handler.codec.spdy.SpdySessionHandler,io.netty.channel.ChannelHandlerContext)>(v0, v1);
+interfaceinvoke v29.<io.netty.channel.ChannelFuture: io.netty.channel.ChannelFuture addListener(io.netty.util.concurrent.GenericFutureListener)>(v30);
+return;
+label03:
+v31 = v0.<io.netty.handler.codec.spdy.SpdySessionHandler: io.netty.handler.codec.spdy.SpdySession spdySession>;
+v32 = (int) -1;
+v33 = v32 * v10;
+virtualinvoke v31.<io.netty.handler.codec.spdy.SpdySession: int updateSendWindowSize(int,int)>(v5, v33);
+v34 = v0.<io.netty.handler.codec.spdy.SpdySessionHandler: io.netty.handler.codec.spdy.SpdySession spdySession>;
+v35 = (int) -1;
+v36 = v35 * v10;
+virtualinvoke v34.<io.netty.handler.codec.spdy.SpdySession: int updateSendWindowSize(int,int)>(0, v36);
+v37 = new io.netty.handler.codec.spdy.SpdySessionHandler$2;
+specialinvoke v37.<io.netty.handler.codec.spdy.SpdySessionHandler$2: void <init>(io.netty.handler.codec.spdy.SpdySessionHandler,io.netty.channel.ChannelHandlerContext)>(v0, v1);
+interfaceinvoke v3.<io.netty.channel.ChannelPromise: io.netty.channel.ChannelPromise addListener(io.netty.util.concurrent.GenericFutureListener)>(v37);
+v38 = interfaceinvoke v2.<io.netty.handler.codec.spdy.SpdyDataFrame: boolean isLast()>();
+if v38 == 0 goto label20;
+specialinvoke v0.<io.netty.handler.codec.spdy.SpdySessionHandler: void halfCloseStream(int,boolean,io.netty.channel.ChannelFuture)>(v5, 0, v3);
+goto label20;
+label04:
+v39 = v2 instanceof io.netty.handler.codec.spdy.SpdySynStreamFrame;
+if v39 == 0 goto label06;
+v40 = interfaceinvoke v2.<io.netty.handler.codec.spdy.SpdySynStreamFrame: int streamId()>();
+v41 = specialinvoke v0.<io.netty.handler.codec.spdy.SpdySessionHandler: boolean isRemoteInitiatedId(int)>(v40);
+if v41 == 0 goto label05;
+v42 = <io.netty.handler.codec.spdy.SpdySessionHandler: io.netty.handler.codec.spdy.SpdyProtocolException PROTOCOL_EXCEPTION>;
+interfaceinvoke v3.<io.netty.channel.ChannelPromise: io.netty.channel.ChannelPromise setFailure(java.lang.Throwable)>(v42);
+return;
+label05:
+v43 = interfaceinvoke v2.<io.netty.handler.codec.spdy.SpdySynStreamFrame: byte priority()>();
+v44 = interfaceinvoke v2.<io.netty.handler.codec.spdy.SpdySynStreamFrame: boolean isUnidirectional()>();
+v45 = interfaceinvoke v2.<io.netty.handler.codec.spdy.SpdySynStreamFrame: boolean isLast()>();
+v46 = specialinvoke v0.<io.netty.handler.codec.spdy.SpdySessionHandler: boolean acceptStream(int,byte,boolean,boolean)>(v40, v43, v44, v45);
+if v46 != 0 goto label20;
+v47 = <io.netty.handler.codec.spdy.SpdySessionHandler: io.netty.handler.codec.spdy.SpdyProtocolException PROTOCOL_EXCEPTION>;
+interfaceinvoke v3.<io.netty.channel.ChannelPromise: io.netty.channel.ChannelPromise setFailure(java.lang.Throwable)>(v47);
+return;
+label06:
+v48 = v2 instanceof io.netty.handler.codec.spdy.SpdySynReplyFrame;
+if v48 == 0 goto label09;
+v49 = interfaceinvoke v2.<io.netty.handler.codec.spdy.SpdySynReplyFrame: int streamId()>();
+v50 = specialinvoke v0.<io.netty.handler.codec.spdy.SpdySessionHandler: boolean isRemoteInitiatedId(int)>(v49);
+if v50 == 0 goto label07;
+v51 = v0.<io.netty.handler.codec.spdy.SpdySessionHandler: io.netty.handler.codec.spdy.SpdySession spdySession>;
+v52 = virtualinvoke v51.<io.netty.handler.codec.spdy.SpdySession: boolean isLocalSideClosed(int)>(v49);
+if v52 == 0 goto label08;
+label07:
+v53 = <io.netty.handler.codec.spdy.SpdySessionHandler: io.netty.handler.codec.spdy.SpdyProtocolException PROTOCOL_EXCEPTION>;
+interfaceinvoke v3.<io.netty.channel.ChannelPromise: io.netty.channel.ChannelPromise setFailure(java.lang.Throwable)>(v53);
+return;
+label08:
+v54 = interfaceinvoke v2.<io.netty.handler.codec.spdy.SpdySynReplyFrame: boolean isLast()>();
+if v54 == 0 goto label20;
+specialinvoke v0.<io.netty.handler.codec.spdy.SpdySessionHandler: void halfCloseStream(int,boolean,io.netty.channel.ChannelFuture)>(v49, 0, v3);
+goto label20;
+label09:
+v55 = v2 instanceof io.netty.handler.codec.spdy.SpdyRstStreamFrame;
+if v55 == 0 goto label10;
+v56 = interfaceinvoke v2.<io.netty.handler.codec.spdy.SpdyRstStreamFrame: int streamId()>();
+specialinvoke v0.<io.netty.handler.codec.spdy.SpdySessionHandler: void removeStream(int,io.netty.channel.ChannelFuture)>(v56, v3);
+goto label20;
+label10:
+v57 = v2 instanceof io.netty.handler.codec.spdy.SpdySettingsFrame;
+if v57 == 0 goto label14;
+v58 = interfaceinvoke v2.<io.netty.handler.codec.spdy.SpdySettingsFrame: int getValue(int)>(0);
+if v58 < 0 goto label11;
+v59 = v0.<io.netty.handler.codec.spdy.SpdySessionHandler: int minorVersion>;
+if v58 == v59 goto label11;
+v60 = <io.netty.handler.codec.spdy.SpdySessionHandler: io.netty.handler.codec.spdy.SpdyProtocolException PROTOCOL_EXCEPTION>;
+interfaceinvoke v3.<io.netty.channel.ChannelPromise: io.netty.channel.ChannelPromise setFailure(java.lang.Throwable)>(v60);
+return;
+label11:
+v61 = interfaceinvoke v2.<io.netty.handler.codec.spdy.SpdySettingsFrame: int getValue(int)>(4);
+if v61 < 0 goto label12;
+v0.<io.netty.handler.codec.spdy.SpdySessionHandler: int localConcurrentStreams> = v61;
+label12:
+v62 = interfaceinvoke v2.<io.netty.handler.codec.spdy.SpdySettingsFrame: boolean isPersisted(int)>(7);
+if v62 == 0 goto label13;
+interfaceinvoke v2.<io.netty.handler.codec.spdy.SpdySettingsFrame: io.netty.handler.codec.spdy.SpdySettingsFrame removeValue(int)>(7);
+label13:
+interfaceinvoke v2.<io.netty.handler.codec.spdy.SpdySettingsFrame: io.netty.handler.codec.spdy.SpdySettingsFrame setPersistValue(int,boolean)>(7, 0);
+v63 = interfaceinvoke v2.<io.netty.handler.codec.spdy.SpdySettingsFrame: int getValue(int)>(7);
+if v63 < 0 goto label20;
+specialinvoke v0.<io.netty.handler.codec.spdy.SpdySessionHandler: void updateInitialReceiveWindowSize(int)>(v63);
+goto label20;
+label14:
+v64 = v2 instanceof io.netty.handler.codec.spdy.SpdyPingFrame;
+if v64 == 0 goto label16;
+v65 = interfaceinvoke v2.<io.netty.handler.codec.spdy.SpdyPingFrame: int id()>();
+v66 = specialinvoke v0.<io.netty.handler.codec.spdy.SpdySessionHandler: boolean isRemoteInitiatedId(int)>(v65);
+if v66 == 0 goto label15;
+v67 = new java.lang.IllegalArgumentException;
+v68 = interfaceinvoke v2.<io.netty.handler.codec.spdy.SpdyPingFrame: int id()>();
+v69 = dynamicinvoke "makeConcatWithConstants" <java.lang.String (int)>(v68) <java.lang.invoke.StringConcatFactory: java.lang.invoke.CallSite makeConcatWithConstants(java.lang.invoke.MethodHandles$Lookup,java.lang.String,java.lang.invoke.MethodType,java.lang.String,java.lang.Object[])>("invalid PING ID: \u0001");
+specialinvoke v67.<java.lang.IllegalArgumentException: void <init>(java.lang.String)>(v69);
+interfaceinvoke v1.<io.netty.channel.ChannelHandlerContext: io.netty.channel.ChannelHandlerContext fireExceptionCaught(java.lang.Throwable)>(v67);
+return;
+label15:
+v70 = v0.<io.netty.handler.codec.spdy.SpdySessionHandler: java.util.concurrent.atomic.AtomicInteger pings>;
+virtualinvoke v70.<java.util.concurrent.atomic.AtomicInteger: int getAndIncrement()>();
+goto label20;
+label16:
+v71 = v2 instanceof io.netty.handler.codec.spdy.SpdyGoAwayFrame;
+if v71 == 0 goto label17;
+v72 = <io.netty.handler.codec.spdy.SpdySessionHandler: io.netty.handler.codec.spdy.SpdyProtocolException PROTOCOL_EXCEPTION>;
+interfaceinvoke v3.<io.netty.channel.ChannelPromise: io.netty.channel.ChannelPromise setFailure(java.lang.Throwable)>(v72);
+return;
+label17:
+v73 = v2 instanceof io.netty.handler.codec.spdy.SpdyHeadersFrame;
+if v73 == 0 goto label19;
+v74 = interfaceinvoke v2.<io.netty.handler.codec.spdy.SpdyHeadersFrame: int streamId()>();
+v75 = v0.<io.netty.handler.codec.spdy.SpdySessionHandler: io.netty.handler.codec.spdy.SpdySession spdySession>;
+v76 = virtualinvoke v75.<io.netty.handler.codec.spdy.SpdySession: boolean isLocalSideClosed(int)>(v74);
+if v76 == 0 goto label18;
+v77 = <io.netty.handler.codec.spdy.SpdySessionHandler: io.netty.handler.codec.spdy.SpdyProtocolException PROTOCOL_EXCEPTION>;
+interfaceinvoke v3.<io.netty.channel.ChannelPromise: io.netty.channel.ChannelPromise setFailure(java.lang.Throwable)>(v77);
+return;
+label18:
+v78 = interfaceinvoke v2.<io.netty.handler.codec.spdy.SpdyHeadersFrame: boolean isLast()>();
+if v78 == 0 goto label20;
+specialinvoke v0.<io.netty.handler.codec.spdy.SpdySessionHandler: void halfCloseStream(int,boolean,io.netty.channel.ChannelFuture)>(v74, 0, v3);
+goto label20;
+label19:
+v79 = v2 instanceof io.netty.handler.codec.spdy.SpdyWindowUpdateFrame;
+if v79 == 0 goto label20;
+v80 = <io.netty.handler.codec.spdy.SpdySessionHandler: io.netty.handler.codec.spdy.SpdyProtocolException PROTOCOL_EXCEPTION>;
+interfaceinvoke v3.<io.netty.channel.ChannelPromise: io.netty.channel.ChannelPromise setFailure(java.lang.Throwable)>(v80);
+return;
+label20:
+interfaceinvoke v1.<io.netty.channel.ChannelHandlerContext: io.netty.channel.ChannelFuture write(java.lang.Object,io.netty.channel.ChannelPromise)>(v2, v3);
+return;
+}
+private void issueSessionError(io.netty.channel.ChannelHandlerContext, io.netty.handler.codec.spdy.SpdySessionStatus)
+{
+io.netty.channel.ChannelHandlerContext v1;
+io.netty.handler.codec.spdy.SpdySessionStatus v2;
+io.netty.channel.ChannelPromise v5;
+io.netty.handler.codec.spdy.SpdySessionHandler$ClosingChannelFutureListener v4;
+io.netty.handler.codec.spdy.SpdySessionHandler v0;
+io.netty.channel.ChannelFuture v3;
+v0 := @this: io.netty.handler.codec.spdy.SpdySessionHandler;
+v1 := @parameter0: io.netty.channel.ChannelHandlerContext;
+v2 := @parameter1: io.netty.handler.codec.spdy.SpdySessionStatus;
+v3 = specialinvoke v0.<io.netty.handler.codec.spdy.SpdySessionHandler: io.netty.channel.ChannelFuture sendGoAwayFrame(io.netty.channel.ChannelHandlerContext,io.netty.handler.codec.spdy.SpdySessionStatus)>(v1, v2);
+v4 = new io.netty.handler.codec.spdy.SpdySessionHandler$ClosingChannelFutureListener;
+v5 = interfaceinvoke v1.<io.netty.channel.ChannelHandlerContext: io.netty.channel.ChannelPromise newPromise()>();
+specialinvoke v4.<io.netty.handler.codec.spdy.SpdySessionHandler$ClosingChannelFutureListener: void <init>(io.netty.channel.ChannelHandlerContext,io.netty.channel.ChannelPromise)>(v1, v5);
+interfaceinvoke v3.<io.netty.channel.ChannelFuture: io.netty.channel.ChannelFuture addListener(io.netty.util.concurrent.GenericFutureListener)>(v4);
+return;
+}
+private void issueStreamError(io.netty.channel.ChannelHandlerContext, int, io.netty.handler.codec.spdy.SpdyStreamStatus)
+{
+io.netty.handler.codec.spdy.SpdySession v4;
+io.netty.handler.codec.spdy.SpdyStreamStatus v3;
+io.netty.handler.codec.spdy.DefaultSpdyRstStreamFrame v8;
+io.netty.channel.ChannelHandlerContext v1;
+io.netty.channel.ChannelPromise v7;
+int v2;
+io.netty.handler.codec.spdy.SpdySessionHandler v0;
+boolean v5, v6;
+v0 := @this: io.netty.handler.codec.spdy.SpdySessionHandler;
+v1 := @parameter0: io.netty.channel.ChannelHandlerContext;
+v2 := @parameter1: int;
+v3 := @parameter2: io.netty.handler.codec.spdy.SpdyStreamStatus;
+v4 = v0.<io.netty.handler.codec.spdy.SpdySessionHandler: io.netty.handler.codec.spdy.SpdySession spdySession>;
+v5 = virtualinvoke v4.<io.netty.handler.codec.spdy.SpdySession: boolean isRemoteSideClosed(int)>(v2);
+if v5 != 0 goto label1;
+v6 = 1;
+goto label2;
+label1:
+v6 = 0;
+label2:
+v7 = interfaceinvoke v1.<io.netty.channel.ChannelHandlerContext: io.netty.channel.ChannelPromise newPromise()>();
+specialinvoke v0.<io.netty.handler.codec.spdy.SpdySessionHandler: void removeStream(int,io.netty.channel.ChannelFuture)>(v2, v7);
+v8 = new io.netty.handler.codec.spdy.DefaultSpdyRstStreamFrame;
+specialinvoke v8.<io.netty.handler.codec.spdy.DefaultSpdyRstStreamFrame: void <init>(int,io.netty.handler.codec.spdy.SpdyStreamStatus)>(v2, v3);
+interfaceinvoke v1.<io.netty.channel.ChannelHandlerContext: io.netty.channel.ChannelFuture writeAndFlush(java.lang.Object,io.netty.channel.ChannelPromise)>(v8, v7);
+if v6 == 0 goto label3;
+interfaceinvoke v1.<io.netty.channel.ChannelHandlerContext: io.netty.channel.ChannelHandlerContext fireChannelRead(java.lang.Object)>(v8);
+label3:
+return;
+}
+private boolean isRemoteInitiatedId(int)
+{
+int v1;
+io.netty.handler.codec.spdy.SpdySessionHandler v0;
+boolean v2, v3, v4, v5;
+v0 := @this: io.netty.handler.codec.spdy.SpdySessionHandler;
+v1 := @parameter0: int;
+v2 = staticinvoke <io.netty.handler.codec.spdy.SpdyCodecUtil: boolean isServerId(int)>(v1);
+v3 = v0.<io.netty.handler.codec.spdy.SpdySessionHandler: boolean server>;
+if v3 == 0 goto label1;
+if v2 == 0 goto label2;
+label1:
+v4 = v0.<io.netty.handler.codec.spdy.SpdySessionHandler: boolean server>;
+if v4 != 0 goto label3;
+if v2 == 0 goto label3;
+label2:
+v5 = 1;
+goto label4;
+label3:
+v5 = 0;
+label4:
+return v5;
+}
+private void updateInitialSendWindowSize(int)
+{
+io.netty.handler.codec.spdy.SpdySession v4;
+int v1, v2, v3;
+io.netty.handler.codec.spdy.SpdySessionHandler v0;
+v0 := @this: io.netty.handler.codec.spdy.SpdySessionHandler;
+v1 := @parameter0: int;
+v2 = v0.<io.netty.handler.codec.spdy.SpdySessionHandler: int initialSendWindowSize>;
+v3 = v1 - v2;
+v0.<io.netty.handler.codec.spdy.SpdySessionHandler: int initialSendWindowSize> = v1;
+v4 = v0.<io.netty.handler.codec.spdy.SpdySessionHandler: io.netty.handler.codec.spdy.SpdySession spdySession>;
+virtualinvoke v4.<io.netty.handler.codec.spdy.SpdySession: void updateAllSendWindowSizes(int)>(v3);
+return;
+}
+private void updateInitialReceiveWindowSize(int)
+{
+io.netty.handler.codec.spdy.SpdySession v4;
+int v1, v2, v3;
+io.netty.handler.codec.spdy.SpdySessionHandler v0;
+v0 := @this: io.netty.handler.codec.spdy.SpdySessionHandler;
+v1 := @parameter0: int;
+v2 = v0.<io.netty.handler.codec.spdy.SpdySessionHandler: int initialReceiveWindowSize>;
+v3 = v1 - v2;
+v0.<io.netty.handler.codec.spdy.SpdySessionHandler: int initialReceiveWindowSize> = v1;
+v4 = v0.<io.netty.handler.codec.spdy.SpdySessionHandler: io.netty.handler.codec.spdy.SpdySession spdySession>;
+virtualinvoke v4.<io.netty.handler.codec.spdy.SpdySession: void updateAllReceiveWindowSizes(int)>(v3);
+return;
+}
+private boolean acceptStream(int, byte, boolean, boolean)
+{
+io.netty.handler.codec.spdy.SpdySession v11, v9;
+byte v2;
+int v1, v10, v12, v13, v8;
+io.netty.handler.codec.spdy.SpdySessionHandler v0;
+boolean v3, v4, v5, v6, v7;
+v0 := @this: io.netty.handler.codec.spdy.SpdySessionHandler;
+v1 := @parameter0: int;
+v2 := @parameter1: byte;
+v3 := @parameter2: boolean;
+v4 := @parameter3: boolean;
+v5 = v0.<io.netty.handler.codec.spdy.SpdySessionHandler: boolean receivedGoAwayFrame>;
+if v5 != 0 goto label1;
+v6 = v0.<io.netty.handler.codec.spdy.SpdySessionHandler: boolean sentGoAwayFrame>;
+if v6 == 0 goto label2;
+label1:
+return 0;
+label2:
+v7 = specialinvoke v0.<io.netty.handler.codec.spdy.SpdySessionHandler: boolean isRemoteInitiatedId(int)>(v1);
+if v7 == 0 goto label3;
+v8 = v0.<io.netty.handler.codec.spdy.SpdySessionHandler: int localConcurrentStreams>;
+goto label4;
+label3:
+v8 = v0.<io.netty.handler.codec.spdy.SpdySessionHandler: int remoteConcurrentStreams>;
+label4:
+v9 = v0.<io.netty.handler.codec.spdy.SpdySessionHandler: io.netty.handler.codec.spdy.SpdySession spdySession>;
+v10 = virtualinvoke v9.<io.netty.handler.codec.spdy.SpdySession: int numActiveStreams(boolean)>(v7);
+if v10 < v8 goto label5;
+return 0;
+label5:
+v11 = v0.<io.netty.handler.codec.spdy.SpdySessionHandler: io.netty.handler.codec.spdy.SpdySession spdySession>;
+v12 = v0.<io.netty.handler.codec.spdy.SpdySessionHandler: int initialSendWindowSize>;
+v13 = v0.<io.netty.handler.codec.spdy.SpdySessionHandler: int initialReceiveWindowSize>;
+virtualinvoke v11.<io.netty.handler.codec.spdy.SpdySession: void acceptStream(int,byte,boolean,boolean,int,int,boolean)>(v1, v2, v3, v4, v12, v13, v7);
+if v7 == 0 goto label6;
+v0.<io.netty.handler.codec.spdy.SpdySessionHandler: int lastGoodStreamId> = v1;
+label6:
+return 1;
+}
+private void halfCloseStream(int, boolean, io.netty.channel.ChannelFuture)
+{
+io.netty.handler.codec.spdy.SpdySession v4, v6, v9;
+io.netty.channel.ChannelFuture v3;
+io.netty.channel.ChannelFutureListener v11, v8;
+int v1;
+io.netty.handler.codec.spdy.SpdySessionHandler v0;
+boolean v10, v2, v5, v7;
+v0 := @this: io.netty.handler.codec.spdy.SpdySessionHandler;
+v1 := @parameter0: int;
+v2 := @parameter1: boolean;
+v3 := @parameter2: io.netty.channel.ChannelFuture;
+if v2 == 0 goto label1;
+v4 = v0.<io.netty.handler.codec.spdy.SpdySessionHandler: io.netty.handler.codec.spdy.SpdySession spdySession>;
+v5 = specialinvoke v0.<io.netty.handler.codec.spdy.SpdySessionHandler: boolean isRemoteInitiatedId(int)>(v1);
+virtualinvoke v4.<io.netty.handler.codec.spdy.SpdySession: void closeRemoteSide(int,boolean)>(v1, v5);
+goto label2;
+label1:
+v6 = v0.<io.netty.handler.codec.spdy.SpdySessionHandler: io.netty.handler.codec.spdy.SpdySession spdySession>;
+v7 = specialinvoke v0.<io.netty.handler.codec.spdy.SpdySessionHandler: boolean isRemoteInitiatedId(int)>(v1);
+virtualinvoke v6.<io.netty.handler.codec.spdy.SpdySession: void closeLocalSide(int,boolean)>(v1, v7);
+label2:
+v8 = v0.<io.netty.handler.codec.spdy.SpdySessionHandler: io.netty.channel.ChannelFutureListener closeSessionFutureListener>;
+if v8 == null goto label3;
+v9 = v0.<io.netty.handler.codec.spdy.SpdySessionHandler: io.netty.handler.codec.spdy.SpdySession spdySession>;
+v10 = virtualinvoke v9.<io.netty.handler.codec.spdy.SpdySession: boolean noActiveStreams()>();
+if v10 == 0 goto label3;
+v11 = v0.<io.netty.handler.codec.spdy.SpdySessionHandler: io.netty.channel.ChannelFutureListener closeSessionFutureListener>;
+interfaceinvoke v3.<io.netty.channel.ChannelFuture: io.netty.channel.ChannelFuture addListener(io.netty.util.concurrent.GenericFutureListener)>(v11);
+label3:
+return;
+}
+private void removeStream(int, io.netty.channel.ChannelFuture)
+{
+io.netty.handler.codec.spdy.SpdySession v3, v7;
+io.netty.channel.ChannelFuture v2;
+io.netty.channel.ChannelFutureListener v6, v9;
+int v1;
+io.netty.handler.codec.spdy.SpdySessionHandler v0;
+io.netty.handler.codec.spdy.SpdyProtocolException v4;
+boolean v5, v8;
+v0 := @this: io.netty.handler.codec.spdy.SpdySessionHandler;
+v1 := @parameter0: int;
+v2 := @parameter1: io.netty.channel.ChannelFuture;
+v3 = v0.<io.netty.handler.codec.spdy.SpdySessionHandler: io.netty.handler.codec.spdy.SpdySession spdySession>;
+v4 = <io.netty.handler.codec.spdy.SpdySessionHandler: io.netty.handler.codec.spdy.SpdyProtocolException STREAM_CLOSED>;
+v5 = specialinvoke v0.<io.netty.handler.codec.spdy.SpdySessionHandler: boolean isRemoteInitiatedId(int)>(v1);
+virtualinvoke v3.<io.netty.handler.codec.spdy.SpdySession: void removeStream(int,java.lang.Throwable,boolean)>(v1, v4, v5);
+v6 = v0.<io.netty.handler.codec.spdy.SpdySessionHandler: io.netty.channel.ChannelFutureListener closeSessionFutureListener>;
+if v6 == null goto label1;
+v7 = v0.<io.netty.handler.codec.spdy.SpdySessionHandler: io.netty.handler.codec.spdy.SpdySession spdySession>;
+v8 = virtualinvoke v7.<io.netty.handler.codec.spdy.SpdySession: boolean noActiveStreams()>();
+if v8 == 0 goto label1;
+v9 = v0.<io.netty.handler.codec.spdy.SpdySessionHandler: io.netty.channel.ChannelFutureListener closeSessionFutureListener>;
+interfaceinvoke v2.<io.netty.channel.ChannelFuture: io.netty.channel.ChannelFuture addListener(io.netty.util.concurrent.GenericFutureListener)>(v9);
+label1:
+return;
+}
+private void updateSendWindowSize(io.netty.channel.ChannelHandlerContext, int, int)
+{
+io.netty.handler.codec.spdy.SpdySession v11, v13, v16, v19, v27, v28, v31, v4, v5;
+io.netty.channel.ChannelPromise v35, v36;
+io.netty.handler.codec.spdy.SpdySessionHandler v0;
+boolean v34;
+io.netty.handler.codec.spdy.DefaultSpdyDataFrame v22;
+io.netty.handler.codec.spdy.SpdyDataFrame v7;
+io.netty.channel.ChannelHandlerContext v1;
+io.netty.buffer.ByteBuf v23, v24, v8;
+int v10, v12, v14, v15, v17, v18, v2, v20, v21, v29, v3, v30, v32, v33, v9;
+io.netty.handler.codec.spdy.SpdySessionHandler$3 v26;
+io.netty.handler.codec.spdy.SpdySessionHandler$4 v38;
+io.netty.channel.ChannelFuture v25, v37;
+io.netty.handler.codec.spdy.SpdySession$PendingWrite v6;
+v0 := @this: io.netty.handler.codec.spdy.SpdySessionHandler;
+v1 := @parameter0: io.netty.channel.ChannelHandlerContext;
+v2 := @parameter1: int;
+v3 := @parameter2: int;
+v4 = v0.<io.netty.handler.codec.spdy.SpdySessionHandler: io.netty.handler.codec.spdy.SpdySession spdySession>;
+virtualinvoke v4.<io.netty.handler.codec.spdy.SpdySession: int updateSendWindowSize(int,int)>(v2, v3);
+label1:
+v5 = v0.<io.netty.handler.codec.spdy.SpdySessionHandler: io.netty.handler.codec.spdy.SpdySession spdySession>;
+v6 = virtualinvoke v5.<io.netty.handler.codec.spdy.SpdySession: io.netty.handler.codec.spdy.SpdySession$PendingWrite getPendingWrite(int)>(v2);
+if v6 != null goto label2;
+return;
+label2:
+v7 = v6.<io.netty.handler.codec.spdy.SpdySession$PendingWrite: io.netty.handler.codec.spdy.SpdyDataFrame spdyDataFrame>;
+v8 = interfaceinvoke v7.<io.netty.handler.codec.spdy.SpdyDataFrame: io.netty.buffer.ByteBuf content()>();
+v9 = virtualinvoke v8.<io.netty.buffer.ByteBuf: int readableBytes()>();
+v10 = interfaceinvoke v7.<io.netty.handler.codec.spdy.SpdyDataFrame: int streamId()>();
+v11 = v0.<io.netty.handler.codec.spdy.SpdySessionHandler: io.netty.handler.codec.spdy.SpdySession spdySession>;
+v12 = virtualinvoke v11.<io.netty.handler.codec.spdy.SpdySession: int getSendWindowSize(int)>(v10);
+v13 = v0.<io.netty.handler.codec.spdy.SpdySessionHandler: io.netty.handler.codec.spdy.SpdySession spdySession>;
+v14 = virtualinvoke v13.<io.netty.handler.codec.spdy.SpdySession: int getSendWindowSize(int)>(0);
+v15 = staticinvoke <java.lang.Math: int min(int,int)>(v12, v14);
+if v15 > 0 goto label3;
+return;
+label3:
+if v15 >= v9 goto label4;
+v16 = v0.<io.netty.handler.codec.spdy.SpdySessionHandler: io.netty.handler.codec.spdy.SpdySession spdySession>;
+v17 = (int) -1;
+v18 = v17 * v15;
+virtualinvoke v16.<io.netty.handler.codec.spdy.SpdySession: int updateSendWindowSize(int,int)>(v10, v18);
+v19 = v0.<io.netty.handler.codec.spdy.SpdySessionHandler: io.netty.handler.codec.spdy.SpdySession spdySession>;
+v20 = (int) -1;
+v21 = v20 * v15;
+virtualinvoke v19.<io.netty.handler.codec.spdy.SpdySession: int updateSendWindowSize(int,int)>(0, v21);
+v22 = new io.netty.handler.codec.spdy.DefaultSpdyDataFrame;
+v23 = interfaceinvoke v7.<io.netty.handler.codec.spdy.SpdyDataFrame: io.netty.buffer.ByteBuf content()>();
+v24 = virtualinvoke v23.<io.netty.buffer.ByteBuf: io.netty.buffer.ByteBuf readRetainedSlice(int)>(v15);
+specialinvoke v22.<io.netty.handler.codec.spdy.DefaultSpdyDataFrame: void <init>(int,io.netty.buffer.ByteBuf)>(v10, v24);
+v25 = interfaceinvoke v1.<io.netty.channel.ChannelHandlerContext: io.netty.channel.ChannelFuture writeAndFlush(java.lang.Object)>(v22);
+v26 = new io.netty.handler.codec.spdy.SpdySessionHandler$3;
+specialinvoke v26.<io.netty.handler.codec.spdy.SpdySessionHandler$3: void <init>(io.netty.handler.codec.spdy.SpdySessionHandler,io.netty.channel.ChannelHandlerContext)>(v0, v1);
+interfaceinvoke v25.<io.netty.channel.ChannelFuture: io.netty.channel.ChannelFuture addListener(io.netty.util.concurrent.GenericFutureListener)>(v26);
+goto label1;
+label4:
+v27 = v0.<io.netty.handler.codec.spdy.SpdySessionHandler: io.netty.handler.codec.spdy.SpdySession spdySession>;
+virtualinvoke v27.<io.netty.handler.codec.spdy.SpdySession: io.netty.handler.codec.spdy.SpdySession$PendingWrite removePendingWrite(int)>(v10);
+v28 = v0.<io.netty.handler.codec.spdy.SpdySessionHandler: io.netty.handler.codec.spdy.SpdySession spdySession>;
+v29 = (int) -1;
+v30 = v29 * v9;
+virtualinvoke v28.<io.netty.handler.codec.spdy.SpdySession: int updateSendWindowSize(int,int)>(v10, v30);
+v31 = v0.<io.netty.handler.codec.spdy.SpdySessionHandler: io.netty.handler.codec.spdy.SpdySession spdySession>;
+v32 = (int) -1;
+v33 = v32 * v9;
+virtualinvoke v31.<io.netty.handler.codec.spdy.SpdySession: int updateSendWindowSize(int,int)>(0, v33);
+v34 = interfaceinvoke v7.<io.netty.handler.codec.spdy.SpdyDataFrame: boolean isLast()>();
+if v34 == 0 goto label5;
+v35 = v6.<io.netty.handler.codec.spdy.SpdySession$PendingWrite: io.netty.channel.ChannelPromise promise>;
+specialinvoke v0.<io.netty.handler.codec.spdy.SpdySessionHandler: void halfCloseStream(int,boolean,io.netty.channel.ChannelFuture)>(v10, 0, v35);
+label5:
+v36 = v6.<io.netty.handler.codec.spdy.SpdySession$PendingWrite: io.netty.channel.ChannelPromise promise>;
+v37 = interfaceinvoke v1.<io.netty.channel.ChannelHandlerContext: io.netty.channel.ChannelFuture writeAndFlush(java.lang.Object,io.netty.channel.ChannelPromise)>(v7, v36);
+v38 = new io.netty.handler.codec.spdy.SpdySessionHandler$4;
+specialinvoke v38.<io.netty.handler.codec.spdy.SpdySessionHandler$4: void <init>(io.netty.handler.codec.spdy.SpdySessionHandler,io.netty.channel.ChannelHandlerContext)>(v0, v1);
+interfaceinvoke v37.<io.netty.channel.ChannelFuture: io.netty.channel.ChannelFuture addListener(io.netty.util.concurrent.GenericFutureListener)>(v38);
+goto label1;
+}
+private void sendGoAwayFrame(io.netty.channel.ChannelHandlerContext, io.netty.channel.ChannelPromise)
+{
+io.netty.handler.codec.spdy.SpdySession v7;
+io.netty.handler.codec.spdy.SpdySessionHandler$ClosingChannelFutureListener v10, v9;
+io.netty.channel.ChannelFuture v6;
+io.netty.channel.Channel v3;
+io.netty.channel.ChannelHandlerContext v1;
+io.netty.handler.codec.spdy.SpdySessionStatus v5;
+io.netty.channel.ChannelPromise v2;
+io.netty.handler.codec.spdy.SpdySessionHandler v0;
+boolean v4, v8;
+v0 := @this: io.netty.handler.codec.spdy.SpdySessionHandler;
+v1 := @parameter0: io.netty.channel.ChannelHandlerContext;
+v2 := @parameter1: io.netty.channel.ChannelPromise;
+v3 = interfaceinvoke v1.<io.netty.channel.ChannelHandlerContext: io.netty.channel.Channel channel()>();
+v4 = interfaceinvoke v3.<io.netty.channel.Channel: boolean isActive()>();
+if v4 != 0 goto label1;
+interfaceinvoke v1.<io.netty.channel.ChannelHandlerContext: io.netty.channel.ChannelFuture close(io.netty.channel.ChannelPromise)>(v2);
+return;
+label1:
+v5 = <io.netty.handler.codec.spdy.SpdySessionStatus: io.netty.handler.codec.spdy.SpdySessionStatus OK>;
+v6 = specialinvoke v0.<io.netty.handler.codec.spdy.SpdySessionHandler: io.netty.channel.ChannelFuture sendGoAwayFrame(io.netty.channel.ChannelHandlerContext,io.netty.handler.codec.spdy.SpdySessionStatus)>(v1, v5);
+v7 = v0.<io.netty.handler.codec.spdy.SpdySessionHandler: io.netty.handler.codec.spdy.SpdySession spdySession>;
+v8 = virtualinvoke v7.<io.netty.handler.codec.spdy.SpdySession: boolean noActiveStreams()>();
+if v8 == 0 goto label2;
+v9 = new io.netty.handler.codec.spdy.SpdySessionHandler$ClosingChannelFutureListener;
+specialinvoke v9.<io.netty.handler.codec.spdy.SpdySessionHandler$ClosingChannelFutureListener: void <init>(io.netty.channel.ChannelHandlerContext,io.netty.channel.ChannelPromise)>(v1, v2);
+interfaceinvoke v6.<io.netty.channel.ChannelFuture: io.netty.channel.ChannelFuture addListener(io.netty.util.concurrent.GenericFutureListener)>(v9);
+goto label3;
+label2:
+v10 = new io.netty.handler.codec.spdy.SpdySessionHandler$ClosingChannelFutureListener;
+specialinvoke v10.<io.netty.handler.codec.spdy.SpdySessionHandler$ClosingChannelFutureListener: void <init>(io.netty.channel.ChannelHandlerContext,io.netty.channel.ChannelPromise)>(v1, v2);
+v0.<io.netty.handler.codec.spdy.SpdySessionHandler: io.netty.channel.ChannelFutureListener closeSessionFutureListener> = v10;
+label3:
+return;
+}
+private io.netty.channel.ChannelFuture sendGoAwayFrame(io.netty.channel.ChannelHandlerContext, io.netty.handler.codec.spdy.SpdySessionStatus)
+{
+io.netty.handler.codec.spdy.DefaultSpdyGoAwayFrame v4;
+io.netty.channel.ChannelFuture v6, v7;
+io.netty.channel.ChannelHandlerContext v1;
+io.netty.handler.codec.spdy.SpdySessionStatus v2;
+int v5;
+io.netty.handler.codec.spdy.SpdySessionHandler v0;
+boolean v3;
+v0 := @this: io.netty.handler.codec.spdy.SpdySessionHandler;
+v1 := @parameter0: io.netty.channel.ChannelHandlerContext;
+v2 := @parameter1: io.netty.handler.codec.spdy.SpdySessionStatus;
+v3 = v0.<io.netty.handler.codec.spdy.SpdySessionHandler: boolean sentGoAwayFrame>;
+if v3 != 0 goto label1;
+v0.<io.netty.handler.codec.spdy.SpdySessionHandler: boolean sentGoAwayFrame> = 1;
+v4 = new io.netty.handler.codec.spdy.DefaultSpdyGoAwayFrame;
+v5 = v0.<io.netty.handler.codec.spdy.SpdySessionHandler: int lastGoodStreamId>;
+specialinvoke v4.<io.netty.handler.codec.spdy.DefaultSpdyGoAwayFrame: void <init>(int,io.netty.handler.codec.spdy.SpdySessionStatus)>(v5, v2);
+v6 = interfaceinvoke v1.<io.netty.channel.ChannelHandlerContext: io.netty.channel.ChannelFuture writeAndFlush(java.lang.Object)>(v4);
+return v6;
+label1:
+v7 = interfaceinvoke v1.<io.netty.channel.ChannelHandlerContext: io.netty.channel.ChannelFuture newSucceededFuture()>();
+return v7;
+}
+static void <clinit>()
+{
+io.netty.handler.codec.spdy.SpdyProtocolException v0, v1;
+v0 = staticinvoke <io.netty.handler.codec.spdy.SpdyProtocolException: io.netty.handler.codec.spdy.SpdyProtocolException newStatic(java.lang.String,java.lang.Class,java.lang.String)>(null, class "Lio/netty/handler/codec/spdy/SpdySessionHandler;", "handleOutboundMessage(...)");
+<io.netty.handler.codec.spdy.SpdySessionHandler: io.netty.handler.codec.spdy.SpdyProtocolException PROTOCOL_EXCEPTION> = v0;
+v1 = staticinvoke <io.netty.handler.codec.spdy.SpdyProtocolException: io.netty.handler.codec.spdy.SpdyProtocolException newStatic(java.lang.String,java.lang.Class,java.lang.String)>("Stream closed", class "Lio/netty/handler/codec/spdy/SpdySessionHandler;", "removeStream(...)");
+<io.netty.handler.codec.spdy.SpdySessionHandler: io.netty.handler.codec.spdy.SpdyProtocolException STREAM_CLOSED> = v1;
+return;
+}
+}

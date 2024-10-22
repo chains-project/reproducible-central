@@ -1,0 +1,915 @@
+final class io.netty.handler.codec.http2.HpackEncoder extends java.lang.Object
+{
+static final int NOT_FOUND;
+static final int HUFF_CODE_THRESHOLD;
+private final io.netty.handler.codec.http2.HpackEncoder$NameEntry[] nameEntries;
+private final io.netty.handler.codec.http2.HpackEncoder$NameValueEntry[] nameValueEntries;
+private final io.netty.handler.codec.http2.HpackEncoder$NameValueEntry head;
+private io.netty.handler.codec.http2.HpackEncoder$NameValueEntry latest;
+private final io.netty.handler.codec.http2.HpackHuffmanEncoder hpackHuffmanEncoder;
+private final byte hashMask;
+private final boolean ignoreMaxHeaderListSize;
+private final int huffCodeThreshold;
+private long size;
+private long maxHeaderTableSize;
+private long maxHeaderListSize;
+static final boolean $assertionsDisabled;
+void <init>()
+{
+io.netty.handler.codec.http2.HpackEncoder v0;
+v0 := @this: io.netty.handler.codec.http2.HpackEncoder;
+specialinvoke v0.<io.netty.handler.codec.http2.HpackEncoder: void <init>(boolean)>(0);
+return;
+}
+void <init>(boolean)
+{
+io.netty.handler.codec.http2.HpackEncoder v0;
+boolean v1;
+v0 := @this: io.netty.handler.codec.http2.HpackEncoder;
+v1 := @parameter0: boolean;
+specialinvoke v0.<io.netty.handler.codec.http2.HpackEncoder: void <init>(boolean,int,int)>(v1, 64, 512);
+return;
+}
+void <init>(boolean, int, int)
+{
+io.netty.util.AsciiString v5, v6;
+io.netty.handler.codec.http2.HpackEncoder$NameValueEntry[] v16;
+int v10, v11, v12, v15, v18, v19, v2, v3, v7;
+boolean v1;
+io.netty.handler.codec.http2.HpackEncoder$NameValueEntry v4, v8;
+io.netty.handler.codec.http2.HpackHuffmanEncoder v9;
+io.netty.handler.codec.http2.HpackEncoder v0;
+io.netty.handler.codec.http2.HpackEncoder$NameEntry[] v13, v14, v17;
+v0 := @this: io.netty.handler.codec.http2.HpackEncoder;
+v1 := @parameter0: boolean;
+v2 := @parameter1: int;
+v3 := @parameter2: int;
+specialinvoke v0.<java.lang.Object: void <init>()>();
+v4 = new io.netty.handler.codec.http2.HpackEncoder$NameValueEntry;
+v5 = <io.netty.util.AsciiString: io.netty.util.AsciiString EMPTY_STRING>;
+v6 = <io.netty.util.AsciiString: io.netty.util.AsciiString EMPTY_STRING>;
+v7 = (int) -1;
+specialinvoke v4.<io.netty.handler.codec.http2.HpackEncoder$NameValueEntry: void <init>(int,java.lang.CharSequence,java.lang.CharSequence,int,io.netty.handler.codec.http2.HpackEncoder$NameValueEntry)>(v7, v5, v6, 2147483647, null);
+v0.<io.netty.handler.codec.http2.HpackEncoder: io.netty.handler.codec.http2.HpackEncoder$NameValueEntry head> = v4;
+v8 = v0.<io.netty.handler.codec.http2.HpackEncoder: io.netty.handler.codec.http2.HpackEncoder$NameValueEntry head>;
+v0.<io.netty.handler.codec.http2.HpackEncoder: io.netty.handler.codec.http2.HpackEncoder$NameValueEntry latest> = v8;
+v9 = new io.netty.handler.codec.http2.HpackHuffmanEncoder;
+specialinvoke v9.<io.netty.handler.codec.http2.HpackHuffmanEncoder: void <init>()>();
+v0.<io.netty.handler.codec.http2.HpackEncoder: io.netty.handler.codec.http2.HpackHuffmanEncoder hpackHuffmanEncoder> = v9;
+v0.<io.netty.handler.codec.http2.HpackEncoder: boolean ignoreMaxHeaderListSize> = v1;
+v0.<io.netty.handler.codec.http2.HpackEncoder: long maxHeaderTableSize> = 4096L;
+v0.<io.netty.handler.codec.http2.HpackEncoder: long maxHeaderListSize> = 4294967295L;
+v10 = staticinvoke <java.lang.Math: int min(int,int)>(v2, 128);
+v11 = staticinvoke <java.lang.Math: int max(int,int)>(2, v10);
+v12 = staticinvoke <io.netty.util.internal.MathUtil: int findNextPositivePowerOfTwo(int)>(v11);
+v13 = newarray (io.netty.handler.codec.http2.HpackEncoder$NameEntry)[v12];
+v0.<io.netty.handler.codec.http2.HpackEncoder: io.netty.handler.codec.http2.HpackEncoder$NameEntry[] nameEntries> = v13;
+v14 = v0.<io.netty.handler.codec.http2.HpackEncoder: io.netty.handler.codec.http2.HpackEncoder$NameEntry[] nameEntries>;
+v15 = lengthof v14;
+v16 = newarray (io.netty.handler.codec.http2.HpackEncoder$NameValueEntry)[v15];
+v0.<io.netty.handler.codec.http2.HpackEncoder: io.netty.handler.codec.http2.HpackEncoder$NameValueEntry[] nameValueEntries> = v16;
+v17 = v0.<io.netty.handler.codec.http2.HpackEncoder: io.netty.handler.codec.http2.HpackEncoder$NameEntry[] nameEntries>;
+v18 = lengthof v17;
+v19 = v18 - 1;
+v0.<io.netty.handler.codec.http2.HpackEncoder: byte hashMask> = v19;
+v0.<io.netty.handler.codec.http2.HpackEncoder: int huffCodeThreshold> = v3;
+return;
+}
+public void encodeHeaders(int, io.netty.buffer.ByteBuf, io.netty.handler.codec.http2.Http2Headers, io.netty.handler.codec.http2.Http2HeadersEncoder$SensitivityDetector) throws io.netty.handler.codec.http2.Http2Exception
+{
+io.netty.buffer.ByteBuf v2;
+io.netty.handler.codec.http2.Http2Headers v3;
+int v1;
+io.netty.handler.codec.http2.HpackEncoder v0;
+io.netty.handler.codec.http2.Http2HeadersEncoder$SensitivityDetector v4;
+boolean v5;
+v0 := @this: io.netty.handler.codec.http2.HpackEncoder;
+v1 := @parameter0: int;
+v2 := @parameter1: io.netty.buffer.ByteBuf;
+v3 := @parameter2: io.netty.handler.codec.http2.Http2Headers;
+v4 := @parameter3: io.netty.handler.codec.http2.Http2HeadersEncoder$SensitivityDetector;
+v5 = v0.<io.netty.handler.codec.http2.HpackEncoder: boolean ignoreMaxHeaderListSize>;
+if v5 == 0 goto label1;
+specialinvoke v0.<io.netty.handler.codec.http2.HpackEncoder: void encodeHeadersIgnoreMaxHeaderListSize(io.netty.buffer.ByteBuf,io.netty.handler.codec.http2.Http2Headers,io.netty.handler.codec.http2.Http2HeadersEncoder$SensitivityDetector)>(v2, v3, v4);
+goto label2;
+label1:
+specialinvoke v0.<io.netty.handler.codec.http2.HpackEncoder: void encodeHeadersEnforceMaxHeaderListSize(int,io.netty.buffer.ByteBuf,io.netty.handler.codec.http2.Http2Headers,io.netty.handler.codec.http2.Http2HeadersEncoder$SensitivityDetector)>(v1, v2, v3, v4);
+label2:
+return;
+}
+private void encodeHeadersEnforceMaxHeaderListSize(int, io.netty.buffer.ByteBuf, io.netty.handler.codec.http2.Http2Headers, io.netty.handler.codec.http2.Http2HeadersEncoder$SensitivityDetector) throws io.netty.handler.codec.http2.Http2Exception
+{
+java.util.Iterator v6;
+long v11, v12, v14, v5;
+io.netty.handler.codec.http2.Http2HeadersEncoder$SensitivityDetector v4;
+byte v13;
+io.netty.buffer.ByteBuf v2;
+io.netty.handler.codec.http2.Http2Headers v3;
+int v1;
+java.lang.Object v10, v8, v9;
+io.netty.handler.codec.http2.HpackEncoder v0;
+boolean v7;
+v0 := @this: io.netty.handler.codec.http2.HpackEncoder;
+v1 := @parameter0: int;
+v2 := @parameter1: io.netty.buffer.ByteBuf;
+v3 := @parameter2: io.netty.handler.codec.http2.Http2Headers;
+v4 := @parameter3: io.netty.handler.codec.http2.Http2HeadersEncoder$SensitivityDetector;
+v5 = 0L;
+v6 = interfaceinvoke v3.<io.netty.handler.codec.http2.Http2Headers: java.util.Iterator iterator()>();
+label1:
+v7 = interfaceinvoke v6.<java.util.Iterator: boolean hasNext()>();
+if v7 == 0 goto label2;
+v8 = interfaceinvoke v6.<java.util.Iterator: java.lang.Object next()>();
+v9 = interfaceinvoke v8.<java.util.Map$Entry: java.lang.Object getKey()>();
+v10 = interfaceinvoke v8.<java.util.Map$Entry: java.lang.Object getValue()>();
+v11 = staticinvoke <io.netty.handler.codec.http2.HpackHeaderField: long sizeOf(java.lang.CharSequence,java.lang.CharSequence)>(v9, v10);
+v5 = v5 + v11;
+v12 = v0.<io.netty.handler.codec.http2.HpackEncoder: long maxHeaderListSize>;
+v13 = v5 cmp v12;
+if v13 <= 0 goto label1;
+v14 = v0.<io.netty.handler.codec.http2.HpackEncoder: long maxHeaderListSize>;
+staticinvoke <io.netty.handler.codec.http2.Http2CodecUtil: void headerListSizeExceeded(int,long,boolean)>(v1, v14, 0);
+goto label1;
+label2:
+specialinvoke v0.<io.netty.handler.codec.http2.HpackEncoder: void encodeHeadersIgnoreMaxHeaderListSize(io.netty.buffer.ByteBuf,io.netty.handler.codec.http2.Http2Headers,io.netty.handler.codec.http2.Http2HeadersEncoder$SensitivityDetector)>(v2, v3, v4);
+return;
+}
+private void encodeHeadersIgnoreMaxHeaderListSize(io.netty.buffer.ByteBuf, io.netty.handler.codec.http2.Http2Headers, io.netty.handler.codec.http2.Http2HeadersEncoder$SensitivityDetector)
+{
+java.util.Iterator v4;
+long v10;
+io.netty.handler.codec.http2.Http2HeadersEncoder$SensitivityDetector v3;
+io.netty.buffer.ByteBuf v1;
+io.netty.handler.codec.http2.Http2Headers v2;
+java.lang.Object v6, v7, v8;
+io.netty.handler.codec.http2.HpackEncoder v0;
+boolean v5, v9;
+v0 := @this: io.netty.handler.codec.http2.HpackEncoder;
+v1 := @parameter0: io.netty.buffer.ByteBuf;
+v2 := @parameter1: io.netty.handler.codec.http2.Http2Headers;
+v3 := @parameter2: io.netty.handler.codec.http2.Http2HeadersEncoder$SensitivityDetector;
+v4 = interfaceinvoke v2.<io.netty.handler.codec.http2.Http2Headers: java.util.Iterator iterator()>();
+label1:
+v5 = interfaceinvoke v4.<java.util.Iterator: boolean hasNext()>();
+if v5 == 0 goto label2;
+v6 = interfaceinvoke v4.<java.util.Iterator: java.lang.Object next()>();
+v7 = interfaceinvoke v6.<java.util.Map$Entry: java.lang.Object getKey()>();
+v8 = interfaceinvoke v6.<java.util.Map$Entry: java.lang.Object getValue()>();
+v9 = interfaceinvoke v3.<io.netty.handler.codec.http2.Http2HeadersEncoder$SensitivityDetector: boolean isSensitive(java.lang.CharSequence,java.lang.CharSequence)>(v7, v8);
+v10 = staticinvoke <io.netty.handler.codec.http2.HpackHeaderField: long sizeOf(java.lang.CharSequence,java.lang.CharSequence)>(v7, v8);
+specialinvoke v0.<io.netty.handler.codec.http2.HpackEncoder: void encodeHeader(io.netty.buffer.ByteBuf,java.lang.CharSequence,java.lang.CharSequence,boolean,long)>(v1, v7, v8, v9, v10);
+goto label1;
+label2:
+return;
+}
+private void encodeHeader(io.netty.buffer.ByteBuf, java.lang.CharSequence, java.lang.CharSequence, boolean, long)
+{
+long v14, v25, v26, v5, v8;
+byte v15, v9;
+io.netty.buffer.ByteBuf v1;
+int v10, v11, v12, v16, v18, v19, v21, v22, v23, v24, v6;
+boolean v4;
+java.lang.CharSequence v2, v3;
+io.netty.handler.codec.http2.HpackEncoder$NameValueEntry v20;
+io.netty.handler.codec.http2.HpackEncoder v0;
+io.netty.handler.codec.http2.HpackUtil$IndexType v13, v17, v7;
+v0 := @this: io.netty.handler.codec.http2.HpackEncoder;
+v1 := @parameter0: io.netty.buffer.ByteBuf;
+v2 := @parameter1: java.lang.CharSequence;
+v3 := @parameter2: java.lang.CharSequence;
+v4 := @parameter3: boolean;
+v5 := @parameter4: long;
+if v4 == 0 goto label1;
+v6 = specialinvoke v0.<io.netty.handler.codec.http2.HpackEncoder: int getNameIndex(java.lang.CharSequence)>(v2);
+v7 = <io.netty.handler.codec.http2.HpackUtil$IndexType: io.netty.handler.codec.http2.HpackUtil$IndexType NEVER>;
+specialinvoke v0.<io.netty.handler.codec.http2.HpackEncoder: void encodeLiteral(io.netty.buffer.ByteBuf,java.lang.CharSequence,java.lang.CharSequence,io.netty.handler.codec.http2.HpackUtil$IndexType,int)>(v1, v2, v3, v7, v6);
+return;
+label1:
+v8 = v0.<io.netty.handler.codec.http2.HpackEncoder: long maxHeaderTableSize>;
+v9 = v8 cmp 0L;
+if v9 != 0 goto label4;
+v10 = staticinvoke <io.netty.handler.codec.http2.HpackStaticTable: int getIndexInsensitive(java.lang.CharSequence,java.lang.CharSequence)>(v2, v3);
+v11 = (int) -1;
+if v10 != v11 goto label2;
+v12 = staticinvoke <io.netty.handler.codec.http2.HpackStaticTable: int getIndex(java.lang.CharSequence)>(v2);
+v13 = <io.netty.handler.codec.http2.HpackUtil$IndexType: io.netty.handler.codec.http2.HpackUtil$IndexType NONE>;
+specialinvoke v0.<io.netty.handler.codec.http2.HpackEncoder: void encodeLiteral(io.netty.buffer.ByteBuf,java.lang.CharSequence,java.lang.CharSequence,io.netty.handler.codec.http2.HpackUtil$IndexType,int)>(v1, v2, v3, v13, v12);
+goto label3;
+label2:
+staticinvoke <io.netty.handler.codec.http2.HpackEncoder: void encodeInteger(io.netty.buffer.ByteBuf,int,int,int)>(v1, 128, 7, v10);
+label3:
+return;
+label4:
+v14 = v0.<io.netty.handler.codec.http2.HpackEncoder: long maxHeaderTableSize>;
+v15 = v5 cmp v14;
+if v15 <= 0 goto label5;
+v16 = specialinvoke v0.<io.netty.handler.codec.http2.HpackEncoder: int getNameIndex(java.lang.CharSequence)>(v2);
+v17 = <io.netty.handler.codec.http2.HpackUtil$IndexType: io.netty.handler.codec.http2.HpackUtil$IndexType NONE>;
+specialinvoke v0.<io.netty.handler.codec.http2.HpackEncoder: void encodeLiteral(io.netty.buffer.ByteBuf,java.lang.CharSequence,java.lang.CharSequence,io.netty.handler.codec.http2.HpackUtil$IndexType,int)>(v1, v2, v3, v17, v16);
+return;
+label5:
+v18 = staticinvoke <io.netty.util.AsciiString: int hashCode(java.lang.CharSequence)>(v2);
+v19 = staticinvoke <io.netty.util.AsciiString: int hashCode(java.lang.CharSequence)>(v3);
+v20 = specialinvoke v0.<io.netty.handler.codec.http2.HpackEncoder: io.netty.handler.codec.http2.HpackEncoder$NameValueEntry getEntryInsensitive(java.lang.CharSequence,int,java.lang.CharSequence,int)>(v2, v18, v3, v19);
+if v20 == null goto label6;
+v21 = v20.<io.netty.handler.codec.http2.HpackEncoder$NameValueEntry: int counter>;
+v22 = specialinvoke v0.<io.netty.handler.codec.http2.HpackEncoder: int getIndexPlusOffset(int)>(v21);
+staticinvoke <io.netty.handler.codec.http2.HpackEncoder: void encodeInteger(io.netty.buffer.ByteBuf,int,int,int)>(v1, 128, 7, v22);
+goto label8;
+label6:
+v23 = staticinvoke <io.netty.handler.codec.http2.HpackStaticTable: int getIndexInsensitive(java.lang.CharSequence,java.lang.CharSequence)>(v2, v3);
+v24 = (int) -1;
+if v23 == v24 goto label7;
+staticinvoke <io.netty.handler.codec.http2.HpackEncoder: void encodeInteger(io.netty.buffer.ByteBuf,int,int,int)>(v1, 128, 7, v23);
+goto label8;
+label7:
+specialinvoke v0.<io.netty.handler.codec.http2.HpackEncoder: void ensureCapacity(long)>(v5);
+specialinvoke v0.<io.netty.handler.codec.http2.HpackEncoder: void encodeAndAddEntries(io.netty.buffer.ByteBuf,java.lang.CharSequence,int,java.lang.CharSequence,int)>(v1, v2, v18, v3, v19);
+v25 = v0.<io.netty.handler.codec.http2.HpackEncoder: long size>;
+v26 = v25 + v5;
+v0.<io.netty.handler.codec.http2.HpackEncoder: long size> = v26;
+label8:
+return;
+}
+private void encodeAndAddEntries(io.netty.buffer.ByteBuf, java.lang.CharSequence, int, java.lang.CharSequence, int)
+{
+io.netty.handler.codec.http2.HpackEncoder$NameEntry v10;
+io.netty.buffer.ByteBuf v1;
+int v12, v14, v15, v3, v5, v6, v7, v8, v9;
+java.lang.CharSequence v16, v19, v2, v4;
+io.netty.handler.codec.http2.HpackHeaderField v18;
+io.netty.handler.codec.http2.HpackEncoder v0;
+io.netty.handler.codec.http2.HpackUtil$IndexType v11, v13, v17;
+v0 := @this: io.netty.handler.codec.http2.HpackEncoder;
+v1 := @parameter0: io.netty.buffer.ByteBuf;
+v2 := @parameter1: java.lang.CharSequence;
+v3 := @parameter2: int;
+v4 := @parameter3: java.lang.CharSequence;
+v5 := @parameter4: int;
+v6 = staticinvoke <io.netty.handler.codec.http2.HpackStaticTable: int getIndex(java.lang.CharSequence)>(v2);
+v7 = specialinvoke v0.<io.netty.handler.codec.http2.HpackEncoder: int latestCounter()>();
+v8 = v7 - 1;
+v9 = (int) -1;
+if v6 != v9 goto label2;
+v10 = specialinvoke v0.<io.netty.handler.codec.http2.HpackEncoder: io.netty.handler.codec.http2.HpackEncoder$NameEntry getEntry(java.lang.CharSequence,int)>(v2, v3);
+if v10 != null goto label1;
+v11 = <io.netty.handler.codec.http2.HpackUtil$IndexType: io.netty.handler.codec.http2.HpackUtil$IndexType INCREMENTAL>;
+v12 = (int) -1;
+specialinvoke v0.<io.netty.handler.codec.http2.HpackEncoder: void encodeLiteral(io.netty.buffer.ByteBuf,java.lang.CharSequence,java.lang.CharSequence,io.netty.handler.codec.http2.HpackUtil$IndexType,int)>(v1, v2, v4, v11, v12);
+specialinvoke v0.<io.netty.handler.codec.http2.HpackEncoder: void addNameEntry(java.lang.CharSequence,int,int)>(v2, v3, v8);
+specialinvoke v0.<io.netty.handler.codec.http2.HpackEncoder: void addNameValueEntry(java.lang.CharSequence,java.lang.CharSequence,int,int,int)>(v2, v4, v3, v5, v8);
+goto label3;
+label1:
+v13 = <io.netty.handler.codec.http2.HpackUtil$IndexType: io.netty.handler.codec.http2.HpackUtil$IndexType INCREMENTAL>;
+v14 = v10.<io.netty.handler.codec.http2.HpackEncoder$NameEntry: int counter>;
+v15 = specialinvoke v0.<io.netty.handler.codec.http2.HpackEncoder: int getIndexPlusOffset(int)>(v14);
+specialinvoke v0.<io.netty.handler.codec.http2.HpackEncoder: void encodeLiteral(io.netty.buffer.ByteBuf,java.lang.CharSequence,java.lang.CharSequence,io.netty.handler.codec.http2.HpackUtil$IndexType,int)>(v1, v2, v4, v13, v15);
+v16 = v10.<io.netty.handler.codec.http2.HpackEncoder$NameEntry: java.lang.CharSequence name>;
+specialinvoke v0.<io.netty.handler.codec.http2.HpackEncoder: void addNameValueEntry(java.lang.CharSequence,java.lang.CharSequence,int,int,int)>(v16, v4, v3, v5, v8);
+v10.<io.netty.handler.codec.http2.HpackEncoder$NameEntry: int counter> = v8;
+goto label3;
+label2:
+v17 = <io.netty.handler.codec.http2.HpackUtil$IndexType: io.netty.handler.codec.http2.HpackUtil$IndexType INCREMENTAL>;
+specialinvoke v0.<io.netty.handler.codec.http2.HpackEncoder: void encodeLiteral(io.netty.buffer.ByteBuf,java.lang.CharSequence,java.lang.CharSequence,io.netty.handler.codec.http2.HpackUtil$IndexType,int)>(v1, v2, v4, v17, v6);
+v18 = staticinvoke <io.netty.handler.codec.http2.HpackStaticTable: io.netty.handler.codec.http2.HpackHeaderField getEntry(int)>(v6);
+v19 = v18.<io.netty.handler.codec.http2.HpackHeaderField: java.lang.CharSequence name>;
+specialinvoke v0.<io.netty.handler.codec.http2.HpackEncoder: void addNameValueEntry(java.lang.CharSequence,java.lang.CharSequence,int,int,int)>(v19, v4, v3, v5, v8);
+label3:
+return;
+}
+public void setMaxHeaderTableSize(io.netty.buffer.ByteBuf, long) throws io.netty.handler.codec.http2.Http2Exception
+{
+java.lang.Object[] v6;
+long v11, v2;
+byte v12, v3, v4;
+io.netty.buffer.ByteBuf v1;
+java.lang.Long v7, v8, v9;
+io.netty.handler.codec.http2.Http2Exception v10;
+io.netty.handler.codec.http2.Http2Error v5;
+io.netty.handler.codec.http2.HpackEncoder v0;
+v0 := @this: io.netty.handler.codec.http2.HpackEncoder;
+v1 := @parameter0: io.netty.buffer.ByteBuf;
+v2 := @parameter1: long;
+v3 = v2 cmp 0L;
+if v3 < 0 goto label1;
+v4 = v2 cmp 4294967295L;
+if v4 <= 0 goto label2;
+label1:
+v5 = <io.netty.handler.codec.http2.Http2Error: io.netty.handler.codec.http2.Http2Error PROTOCOL_ERROR>;
+v6 = newarray (java.lang.Object)[3];
+v7 = staticinvoke <java.lang.Long: java.lang.Long valueOf(long)>(0L);
+v6[0] = v7;
+v8 = staticinvoke <java.lang.Long: java.lang.Long valueOf(long)>(4294967295L);
+v6[1] = v8;
+v9 = staticinvoke <java.lang.Long: java.lang.Long valueOf(long)>(v2);
+v6[2] = v9;
+v10 = staticinvoke <io.netty.handler.codec.http2.Http2Exception: io.netty.handler.codec.http2.Http2Exception connectionError(io.netty.handler.codec.http2.Http2Error,java.lang.String,java.lang.Object[])>(v5, "Header Table Size must be >= %d and <= %d but was %d", v6);
+throw v10;
+label2:
+v11 = v0.<io.netty.handler.codec.http2.HpackEncoder: long maxHeaderTableSize>;
+v12 = v11 cmp v2;
+if v12 != 0 goto label3;
+return;
+label3:
+v0.<io.netty.handler.codec.http2.HpackEncoder: long maxHeaderTableSize> = v2;
+specialinvoke v0.<io.netty.handler.codec.http2.HpackEncoder: void ensureCapacity(long)>(0L);
+staticinvoke <io.netty.handler.codec.http2.HpackEncoder: void encodeInteger(io.netty.buffer.ByteBuf,int,int,long)>(v1, 32, 5, v2);
+return;
+}
+public long getMaxHeaderTableSize()
+{
+long v1;
+io.netty.handler.codec.http2.HpackEncoder v0;
+v0 := @this: io.netty.handler.codec.http2.HpackEncoder;
+v1 = v0.<io.netty.handler.codec.http2.HpackEncoder: long maxHeaderTableSize>;
+return v1;
+}
+public void setMaxHeaderListSize(long) throws io.netty.handler.codec.http2.Http2Exception
+{
+java.lang.Object[] v5;
+long v1;
+byte v2, v3;
+java.lang.Long v6, v7, v8;
+io.netty.handler.codec.http2.Http2Exception v9;
+io.netty.handler.codec.http2.Http2Error v4;
+io.netty.handler.codec.http2.HpackEncoder v0;
+v0 := @this: io.netty.handler.codec.http2.HpackEncoder;
+v1 := @parameter0: long;
+v2 = v1 cmp 0L;
+if v2 < 0 goto label1;
+v3 = v1 cmp 4294967295L;
+if v3 <= 0 goto label2;
+label1:
+v4 = <io.netty.handler.codec.http2.Http2Error: io.netty.handler.codec.http2.Http2Error PROTOCOL_ERROR>;
+v5 = newarray (java.lang.Object)[3];
+v6 = staticinvoke <java.lang.Long: java.lang.Long valueOf(long)>(0L);
+v5[0] = v6;
+v7 = staticinvoke <java.lang.Long: java.lang.Long valueOf(long)>(4294967295L);
+v5[1] = v7;
+v8 = staticinvoke <java.lang.Long: java.lang.Long valueOf(long)>(v1);
+v5[2] = v8;
+v9 = staticinvoke <io.netty.handler.codec.http2.Http2Exception: io.netty.handler.codec.http2.Http2Exception connectionError(io.netty.handler.codec.http2.Http2Error,java.lang.String,java.lang.Object[])>(v4, "Header List Size must be >= %d and <= %d but was %d", v5);
+throw v9;
+label2:
+v0.<io.netty.handler.codec.http2.HpackEncoder: long maxHeaderListSize> = v1;
+return;
+}
+public long getMaxHeaderListSize()
+{
+long v1;
+io.netty.handler.codec.http2.HpackEncoder v0;
+v0 := @this: io.netty.handler.codec.http2.HpackEncoder;
+v1 = v0.<io.netty.handler.codec.http2.HpackEncoder: long maxHeaderListSize>;
+return v1;
+}
+private static void encodeInteger(io.netty.buffer.ByteBuf, int, int, int)
+{
+io.netty.buffer.ByteBuf v0;
+int v1, v2, v3;
+v0 := @parameter0: io.netty.buffer.ByteBuf;
+v1 := @parameter1: int;
+v2 := @parameter2: int;
+v3 := @parameter3: int;
+staticinvoke <io.netty.handler.codec.http2.HpackEncoder: void encodeInteger(io.netty.buffer.ByteBuf,int,int,long)>(v0, v1, v2, v3);
+return;
+}
+private static void encodeInteger(io.netty.buffer.ByteBuf, int, int, long)
+{
+long v10, v12, v13, v15, v16, v3;
+java.lang.AssertionError v5;
+byte v14, v9;
+io.netty.buffer.ByteBuf v0;
+int v1, v11, v2, v7, v8;
+java.lang.String v6;
+boolean v4;
+v0 := @parameter0: io.netty.buffer.ByteBuf;
+v1 := @parameter1: int;
+v2 := @parameter2: int;
+v3 := @parameter3: long;
+v4 = <io.netty.handler.codec.http2.HpackEncoder: boolean $assertionsDisabled>;
+if v4 != 0 goto label2;
+if v2 < 0 goto label1;
+if v2 <= 8 goto label2;
+label1:
+v5 = new java.lang.AssertionError;
+v6 = dynamicinvoke "makeConcatWithConstants" <java.lang.String (int)>(v2) <java.lang.invoke.StringConcatFactory: java.lang.invoke.CallSite makeConcatWithConstants(java.lang.invoke.MethodHandles$Lookup,java.lang.String,java.lang.invoke.MethodType,java.lang.String,java.lang.Object[])>("N: \u0001");
+specialinvoke v5.<java.lang.AssertionError: void <init>(java.lang.Object)>(v6);
+throw v5;
+label2:
+v7 = 8 - v2;
+v8 = 255 >>> v7;
+v9 = v3 cmp v8;
+if v9 >= 0 goto label3;
+v10 = v1 | v3;
+virtualinvoke v0.<io.netty.buffer.ByteBuf: io.netty.buffer.ByteBuf writeByte(int)>(v10);
+goto label6;
+label3:
+v11 = v1 | v8;
+virtualinvoke v0.<io.netty.buffer.ByteBuf: io.netty.buffer.ByteBuf writeByte(int)>(v11);
+v12 = v3 - v8;
+label4:
+v13 = v12 & -128L;
+v14 = v13 cmp 0L;
+if v14 == 0 goto label5;
+v15 = v12 & 127L;
+v16 = v15 | 128L;
+virtualinvoke v0.<io.netty.buffer.ByteBuf: io.netty.buffer.ByteBuf writeByte(int)>(v16);
+v12 = v12 >>> 7;
+goto label4;
+label5:
+virtualinvoke v0.<io.netty.buffer.ByteBuf: io.netty.buffer.ByteBuf writeByte(int)>(v12);
+label6:
+return;
+}
+private void encodeStringLiteral(io.netty.buffer.ByteBuf, java.lang.CharSequence)
+{
+byte[] v11;
+java.lang.CharSequence v2;
+io.netty.handler.codec.http2.HpackHuffmanEncoder v5, v8;
+io.netty.buffer.ByteBuf v1;
+java.nio.charset.Charset v14;
+int v12, v13, v3, v4, v6, v7, v9;
+io.netty.handler.codec.http2.HpackEncoder v0;
+boolean v10;
+v0 := @this: io.netty.handler.codec.http2.HpackEncoder;
+v1 := @parameter0: io.netty.buffer.ByteBuf;
+v2 := @parameter1: java.lang.CharSequence;
+v3 = interfaceinvoke v2.<java.lang.CharSequence: int length()>();
+v4 = v0.<io.netty.handler.codec.http2.HpackEncoder: int huffCodeThreshold>;
+if v3 < v4 goto label1;
+v5 = v0.<io.netty.handler.codec.http2.HpackEncoder: io.netty.handler.codec.http2.HpackHuffmanEncoder hpackHuffmanEncoder>;
+v6 = virtualinvoke v5.<io.netty.handler.codec.http2.HpackHuffmanEncoder: int getEncodedLength(java.lang.CharSequence)>(v2);
+v7 = interfaceinvoke v2.<java.lang.CharSequence: int length()>();
+if v6 >= v7 goto label1;
+staticinvoke <io.netty.handler.codec.http2.HpackEncoder: void encodeInteger(io.netty.buffer.ByteBuf,int,int,int)>(v1, 128, 7, v6);
+v8 = v0.<io.netty.handler.codec.http2.HpackEncoder: io.netty.handler.codec.http2.HpackHuffmanEncoder hpackHuffmanEncoder>;
+virtualinvoke v8.<io.netty.handler.codec.http2.HpackHuffmanEncoder: void encode(io.netty.buffer.ByteBuf,java.lang.CharSequence)>(v1, v2);
+goto label3;
+label1:
+v9 = interfaceinvoke v2.<java.lang.CharSequence: int length()>();
+staticinvoke <io.netty.handler.codec.http2.HpackEncoder: void encodeInteger(io.netty.buffer.ByteBuf,int,int,int)>(v1, 0, 7, v9);
+v10 = v2 instanceof io.netty.util.AsciiString;
+if v10 == 0 goto label2;
+v11 = virtualinvoke v2.<io.netty.util.AsciiString: byte[] array()>();
+v12 = virtualinvoke v2.<io.netty.util.AsciiString: int arrayOffset()>();
+v13 = virtualinvoke v2.<io.netty.util.AsciiString: int length()>();
+virtualinvoke v1.<io.netty.buffer.ByteBuf: io.netty.buffer.ByteBuf writeBytes(byte[],int,int)>(v11, v12, v13);
+goto label3;
+label2:
+v14 = <io.netty.util.CharsetUtil: java.nio.charset.Charset ISO_8859_1>;
+virtualinvoke v1.<io.netty.buffer.ByteBuf: int writeCharSequence(java.lang.CharSequence,java.nio.charset.Charset)>(v2, v14);
+label3:
+return;
+}
+private void encodeLiteral(io.netty.buffer.ByteBuf, java.lang.CharSequence, java.lang.CharSequence, io.netty.handler.codec.http2.HpackUtil$IndexType, int)
+{
+java.lang.Error v15;
+io.netty.buffer.ByteBuf v1;
+int[] v9;
+int v10, v11, v12, v13, v14, v5, v6;
+boolean v7, v8;
+java.lang.CharSequence v2, v3;
+io.netty.handler.codec.http2.HpackEncoder v0;
+io.netty.handler.codec.http2.HpackUtil$IndexType v4;
+v0 := @this: io.netty.handler.codec.http2.HpackEncoder;
+v1 := @parameter0: io.netty.buffer.ByteBuf;
+v2 := @parameter1: java.lang.CharSequence;
+v3 := @parameter2: java.lang.CharSequence;
+v4 := @parameter3: io.netty.handler.codec.http2.HpackUtil$IndexType;
+v5 := @parameter4: int;
+v6 = (int) -1;
+if v5 == v6 goto label01;
+v7 = 1;
+goto label02;
+label01:
+v7 = 0;
+label02:
+v8 = v7;
+v9 = <io.netty.handler.codec.http2.HpackEncoder$1: int[] $SwitchMap$io$netty$handler$codec$http2$HpackUtil$IndexType>;
+v10 = virtualinvoke v4.<io.netty.handler.codec.http2.HpackUtil$IndexType: int ordinal()>();
+v11 = v9[v10];
+tableswitch(v11)
+{
+case 1: goto label03;
+case 2: goto label06;
+case 3: goto label09;
+default: goto label12;
+};
+label03:
+if v7 == 0 goto label04;
+v12 = v5;
+goto label05;
+label04:
+v12 = 0;
+label05:
+staticinvoke <io.netty.handler.codec.http2.HpackEncoder: void encodeInteger(io.netty.buffer.ByteBuf,int,int,int)>(v1, 64, 6, v12);
+goto label13;
+label06:
+if v7 == 0 goto label07;
+v13 = v5;
+goto label08;
+label07:
+v13 = 0;
+label08:
+staticinvoke <io.netty.handler.codec.http2.HpackEncoder: void encodeInteger(io.netty.buffer.ByteBuf,int,int,int)>(v1, 0, 4, v13);
+goto label13;
+label09:
+if v7 == 0 goto label10;
+v14 = v5;
+goto label11;
+label10:
+v14 = 0;
+label11:
+staticinvoke <io.netty.handler.codec.http2.HpackEncoder: void encodeInteger(io.netty.buffer.ByteBuf,int,int,int)>(v1, 16, 4, v14);
+goto label13;
+label12:
+v15 = new java.lang.Error;
+specialinvoke v15.<java.lang.Error: void <init>(java.lang.String)>("should not reach here");
+throw v15;
+label13:
+if v8 != 0 goto label14;
+specialinvoke v0.<io.netty.handler.codec.http2.HpackEncoder: void encodeStringLiteral(io.netty.buffer.ByteBuf,java.lang.CharSequence)>(v1, v2);
+label14:
+specialinvoke v0.<io.netty.handler.codec.http2.HpackEncoder: void encodeStringLiteral(io.netty.buffer.ByteBuf,java.lang.CharSequence)>(v1, v3);
+return;
+}
+private int getNameIndex(java.lang.CharSequence)
+{
+java.lang.CharSequence v1;
+io.netty.handler.codec.http2.HpackEncoder$NameEntry v5;
+int v2, v3, v4, v6, v7, v8;
+io.netty.handler.codec.http2.HpackEncoder v0;
+v0 := @this: io.netty.handler.codec.http2.HpackEncoder;
+v1 := @parameter0: java.lang.CharSequence;
+v2 = staticinvoke <io.netty.handler.codec.http2.HpackStaticTable: int getIndex(java.lang.CharSequence)>(v1);
+v3 = (int) -1;
+if v2 == v3 goto label1;
+return v2;
+label1:
+v4 = staticinvoke <io.netty.util.AsciiString: int hashCode(java.lang.CharSequence)>(v1);
+v5 = specialinvoke v0.<io.netty.handler.codec.http2.HpackEncoder: io.netty.handler.codec.http2.HpackEncoder$NameEntry getEntry(java.lang.CharSequence,int)>(v1, v4);
+if v5 != null goto label2;
+v6 = (int) -1;
+v7 = v6;
+goto label3;
+label2:
+v8 = v5.<io.netty.handler.codec.http2.HpackEncoder$NameEntry: int counter>;
+v7 = specialinvoke v0.<io.netty.handler.codec.http2.HpackEncoder: int getIndexPlusOffset(int)>(v8);
+label3:
+return v7;
+}
+private void ensureCapacity(long)
+{
+byte v5;
+long v1, v2, v3, v4;
+io.netty.handler.codec.http2.HpackEncoder v0;
+v0 := @this: io.netty.handler.codec.http2.HpackEncoder;
+v1 := @parameter0: long;
+label1:
+v2 = v0.<io.netty.handler.codec.http2.HpackEncoder: long maxHeaderTableSize>;
+v3 = v0.<io.netty.handler.codec.http2.HpackEncoder: long size>;
+v4 = v2 - v3;
+v5 = v4 cmp v1;
+if v5 >= 0 goto label2;
+specialinvoke v0.<io.netty.handler.codec.http2.HpackEncoder: void remove()>();
+goto label1;
+label2:
+return;
+}
+int length()
+{
+io.netty.handler.codec.http2.HpackEncoder$NameValueEntry v3, v4;
+int v2, v5;
+io.netty.handler.codec.http2.HpackEncoder v0;
+boolean v1;
+v0 := @this: io.netty.handler.codec.http2.HpackEncoder;
+v1 = specialinvoke v0.<io.netty.handler.codec.http2.HpackEncoder: boolean isEmpty()>();
+if v1 == 0 goto label1;
+v2 = 0;
+goto label2;
+label1:
+v3 = v0.<io.netty.handler.codec.http2.HpackEncoder: io.netty.handler.codec.http2.HpackEncoder$NameValueEntry head>;
+v4 = v3.<io.netty.handler.codec.http2.HpackEncoder$NameValueEntry: io.netty.handler.codec.http2.HpackEncoder$NameValueEntry after>;
+v5 = v4.<io.netty.handler.codec.http2.HpackEncoder$NameValueEntry: int counter>;
+v2 = specialinvoke v0.<io.netty.handler.codec.http2.HpackEncoder: int getIndex(int)>(v5);
+label2:
+return v2;
+}
+long size()
+{
+long v1;
+io.netty.handler.codec.http2.HpackEncoder v0;
+v0 := @this: io.netty.handler.codec.http2.HpackEncoder;
+v1 = v0.<io.netty.handler.codec.http2.HpackEncoder: long size>;
+return v1;
+}
+io.netty.handler.codec.http2.HpackHeaderField getHeaderField(int)
+{
+io.netty.handler.codec.http2.HpackEncoder$NameValueEntry v2;
+int v1, v3, v4;
+io.netty.handler.codec.http2.HpackEncoder v0;
+v0 := @this: io.netty.handler.codec.http2.HpackEncoder;
+v1 := @parameter0: int;
+v2 = v0.<io.netty.handler.codec.http2.HpackEncoder: io.netty.handler.codec.http2.HpackEncoder$NameValueEntry head>;
+label1:
+v3 = v1;
+v1 = v1 + 1;
+v4 = virtualinvoke v0.<io.netty.handler.codec.http2.HpackEncoder: int length()>();
+if v3 >= v4 goto label2;
+v2 = v2.<io.netty.handler.codec.http2.HpackEncoder$NameValueEntry: io.netty.handler.codec.http2.HpackEncoder$NameValueEntry after>;
+goto label1;
+label2:
+return v2;
+}
+private io.netty.handler.codec.http2.HpackEncoder$NameValueEntry getEntryInsensitive(java.lang.CharSequence, int, java.lang.CharSequence, int)
+{
+java.lang.CharSequence v1, v10, v12, v3;
+io.netty.handler.codec.http2.HpackEncoder$NameValueEntry v8;
+io.netty.handler.codec.http2.HpackEncoder$NameValueEntry[] v6;
+int v2, v4, v5, v7, v9;
+io.netty.handler.codec.http2.HpackEncoder v0;
+boolean v11, v13;
+v0 := @this: io.netty.handler.codec.http2.HpackEncoder;
+v1 := @parameter0: java.lang.CharSequence;
+v2 := @parameter1: int;
+v3 := @parameter2: java.lang.CharSequence;
+v4 := @parameter3: int;
+v5 = staticinvoke <io.netty.handler.codec.http2.HpackEncoder: int hash(int,int)>(v2, v4);
+v6 = v0.<io.netty.handler.codec.http2.HpackEncoder: io.netty.handler.codec.http2.HpackEncoder$NameValueEntry[] nameValueEntries>;
+v7 = specialinvoke v0.<io.netty.handler.codec.http2.HpackEncoder: int bucket(int)>(v5);
+v8 = v6[v7];
+label1:
+if v8 == null goto label3;
+v9 = v8.<io.netty.handler.codec.http2.HpackEncoder$NameValueEntry: int hash>;
+if v9 != v5 goto label2;
+v10 = v8.<io.netty.handler.codec.http2.HpackEncoder$NameValueEntry: java.lang.CharSequence value>;
+v11 = staticinvoke <io.netty.handler.codec.http2.HpackUtil: boolean equalsVariableTime(java.lang.CharSequence,java.lang.CharSequence)>(v3, v10);
+if v11 == 0 goto label2;
+v12 = v8.<io.netty.handler.codec.http2.HpackEncoder$NameValueEntry: java.lang.CharSequence name>;
+v13 = staticinvoke <io.netty.handler.codec.http2.HpackUtil: boolean equalsVariableTime(java.lang.CharSequence,java.lang.CharSequence)>(v1, v12);
+if v13 == 0 goto label2;
+return v8;
+label2:
+v8 = v8.<io.netty.handler.codec.http2.HpackEncoder$NameValueEntry: io.netty.handler.codec.http2.HpackEncoder$NameValueEntry next>;
+goto label1;
+label3:
+return null;
+}
+private io.netty.handler.codec.http2.HpackEncoder$NameEntry getEntry(java.lang.CharSequence, int)
+{
+java.lang.CharSequence v1, v7;
+io.netty.handler.codec.http2.HpackEncoder$NameEntry v5;
+int v2, v4, v6, v8;
+io.netty.handler.codec.http2.HpackEncoder v0;
+io.netty.handler.codec.http2.HpackEncoder$NameEntry[] v3;
+v0 := @this: io.netty.handler.codec.http2.HpackEncoder;
+v1 := @parameter0: java.lang.CharSequence;
+v2 := @parameter1: int;
+v3 = v0.<io.netty.handler.codec.http2.HpackEncoder: io.netty.handler.codec.http2.HpackEncoder$NameEntry[] nameEntries>;
+v4 = specialinvoke v0.<io.netty.handler.codec.http2.HpackEncoder: int bucket(int)>(v2);
+v5 = v3[v4];
+label1:
+if v5 == null goto label3;
+v6 = v5.<io.netty.handler.codec.http2.HpackEncoder$NameEntry: int hash>;
+if v6 != v2 goto label2;
+v7 = v5.<io.netty.handler.codec.http2.HpackEncoder$NameEntry: java.lang.CharSequence name>;
+v8 = staticinvoke <io.netty.handler.codec.http2.HpackUtil: int equalsConstantTime(java.lang.CharSequence,java.lang.CharSequence)>(v1, v7);
+if v8 == 0 goto label2;
+return v5;
+label2:
+v5 = v5.<io.netty.handler.codec.http2.HpackEncoder$NameEntry: io.netty.handler.codec.http2.HpackEncoder$NameEntry next>;
+goto label1;
+label3:
+return null;
+}
+private int getIndexPlusOffset(int)
+{
+int v1, v2, v3, v4;
+io.netty.handler.codec.http2.HpackEncoder v0;
+v0 := @this: io.netty.handler.codec.http2.HpackEncoder;
+v1 := @parameter0: int;
+v2 = specialinvoke v0.<io.netty.handler.codec.http2.HpackEncoder: int getIndex(int)>(v1);
+v3 = <io.netty.handler.codec.http2.HpackStaticTable: int length>;
+v4 = v2 + v3;
+return v4;
+}
+private int getIndex(int)
+{
+int v1, v2, v3, v4;
+io.netty.handler.codec.http2.HpackEncoder v0;
+v0 := @this: io.netty.handler.codec.http2.HpackEncoder;
+v1 := @parameter0: int;
+v2 = specialinvoke v0.<io.netty.handler.codec.http2.HpackEncoder: int latestCounter()>();
+v3 = v1 - v2;
+v4 = v3 + 1;
+return v4;
+}
+private int latestCounter()
+{
+int v2;
+io.netty.handler.codec.http2.HpackEncoder v0;
+io.netty.handler.codec.http2.HpackEncoder$NameValueEntry v1;
+v0 := @this: io.netty.handler.codec.http2.HpackEncoder;
+v1 = v0.<io.netty.handler.codec.http2.HpackEncoder: io.netty.handler.codec.http2.HpackEncoder$NameValueEntry latest>;
+v2 = v1.<io.netty.handler.codec.http2.HpackEncoder$NameValueEntry: int counter>;
+return v2;
+}
+private void addNameEntry(java.lang.CharSequence, int, int)
+{
+java.lang.CharSequence v1;
+io.netty.handler.codec.http2.HpackEncoder$NameEntry v6, v8;
+int v2, v3, v4;
+io.netty.handler.codec.http2.HpackEncoder v0;
+io.netty.handler.codec.http2.HpackEncoder$NameEntry[] v5, v7;
+v0 := @this: io.netty.handler.codec.http2.HpackEncoder;
+v1 := @parameter0: java.lang.CharSequence;
+v2 := @parameter1: int;
+v3 := @parameter2: int;
+v4 = specialinvoke v0.<io.netty.handler.codec.http2.HpackEncoder: int bucket(int)>(v2);
+v5 = v0.<io.netty.handler.codec.http2.HpackEncoder: io.netty.handler.codec.http2.HpackEncoder$NameEntry[] nameEntries>;
+v6 = new io.netty.handler.codec.http2.HpackEncoder$NameEntry;
+v7 = v0.<io.netty.handler.codec.http2.HpackEncoder: io.netty.handler.codec.http2.HpackEncoder$NameEntry[] nameEntries>;
+v8 = v7[v4];
+specialinvoke v6.<io.netty.handler.codec.http2.HpackEncoder$NameEntry: void <init>(int,java.lang.CharSequence,int,io.netty.handler.codec.http2.HpackEncoder$NameEntry)>(v2, v1, v3, v8);
+v5[v4] = v6;
+return;
+}
+private void addNameValueEntry(java.lang.CharSequence, java.lang.CharSequence, int, int, int)
+{
+java.lang.CharSequence v1, v2;
+io.netty.handler.codec.http2.HpackEncoder$NameValueEntry v10, v12, v8;
+io.netty.handler.codec.http2.HpackEncoder$NameValueEntry[] v11, v9;
+int v3, v4, v5, v6, v7;
+io.netty.handler.codec.http2.HpackEncoder v0;
+v0 := @this: io.netty.handler.codec.http2.HpackEncoder;
+v1 := @parameter0: java.lang.CharSequence;
+v2 := @parameter1: java.lang.CharSequence;
+v3 := @parameter2: int;
+v4 := @parameter3: int;
+v5 := @parameter4: int;
+v6 = staticinvoke <io.netty.handler.codec.http2.HpackEncoder: int hash(int,int)>(v3, v4);
+v7 = specialinvoke v0.<io.netty.handler.codec.http2.HpackEncoder: int bucket(int)>(v6);
+v8 = new io.netty.handler.codec.http2.HpackEncoder$NameValueEntry;
+v9 = v0.<io.netty.handler.codec.http2.HpackEncoder: io.netty.handler.codec.http2.HpackEncoder$NameValueEntry[] nameValueEntries>;
+v10 = v9[v7];
+specialinvoke v8.<io.netty.handler.codec.http2.HpackEncoder$NameValueEntry: void <init>(int,java.lang.CharSequence,java.lang.CharSequence,int,io.netty.handler.codec.http2.HpackEncoder$NameValueEntry)>(v6, v1, v2, v5, v10);
+v11 = v0.<io.netty.handler.codec.http2.HpackEncoder: io.netty.handler.codec.http2.HpackEncoder$NameValueEntry[] nameValueEntries>;
+v11[v7] = v8;
+v12 = v0.<io.netty.handler.codec.http2.HpackEncoder: io.netty.handler.codec.http2.HpackEncoder$NameValueEntry latest>;
+v12.<io.netty.handler.codec.http2.HpackEncoder$NameValueEntry: io.netty.handler.codec.http2.HpackEncoder$NameValueEntry after> = v8;
+v0.<io.netty.handler.codec.http2.HpackEncoder: io.netty.handler.codec.http2.HpackEncoder$NameValueEntry latest> = v8;
+return;
+}
+private void remove()
+{
+java.lang.CharSequence v3;
+io.netty.handler.codec.http2.HpackEncoder$NameValueEntry v1, v11, v2, v5, v6;
+long v7, v9;
+int v4, v8;
+io.netty.handler.codec.http2.HpackEncoder v0;
+boolean v10;
+v0 := @this: io.netty.handler.codec.http2.HpackEncoder;
+v1 = v0.<io.netty.handler.codec.http2.HpackEncoder: io.netty.handler.codec.http2.HpackEncoder$NameValueEntry head>;
+v2 = v1.<io.netty.handler.codec.http2.HpackEncoder$NameValueEntry: io.netty.handler.codec.http2.HpackEncoder$NameValueEntry after>;
+specialinvoke v0.<io.netty.handler.codec.http2.HpackEncoder: void removeNameValueEntry(io.netty.handler.codec.http2.HpackEncoder$NameValueEntry)>(v2);
+v3 = v2.<io.netty.handler.codec.http2.HpackEncoder$NameValueEntry: java.lang.CharSequence name>;
+v4 = v2.<io.netty.handler.codec.http2.HpackEncoder$NameValueEntry: int counter>;
+specialinvoke v0.<io.netty.handler.codec.http2.HpackEncoder: void removeNameEntryMatchingCounter(java.lang.CharSequence,int)>(v3, v4);
+v5 = v0.<io.netty.handler.codec.http2.HpackEncoder: io.netty.handler.codec.http2.HpackEncoder$NameValueEntry head>;
+v6 = v2.<io.netty.handler.codec.http2.HpackEncoder$NameValueEntry: io.netty.handler.codec.http2.HpackEncoder$NameValueEntry after>;
+v5.<io.netty.handler.codec.http2.HpackEncoder$NameValueEntry: io.netty.handler.codec.http2.HpackEncoder$NameValueEntry after> = v6;
+virtualinvoke v2.<io.netty.handler.codec.http2.HpackEncoder$NameValueEntry: void unlink()>();
+v7 = v0.<io.netty.handler.codec.http2.HpackEncoder: long size>;
+v8 = virtualinvoke v2.<io.netty.handler.codec.http2.HpackEncoder$NameValueEntry: int size()>();
+v9 = v7 - v8;
+v0.<io.netty.handler.codec.http2.HpackEncoder: long size> = v9;
+v10 = specialinvoke v0.<io.netty.handler.codec.http2.HpackEncoder: boolean isEmpty()>();
+if v10 == 0 goto label1;
+v11 = v0.<io.netty.handler.codec.http2.HpackEncoder: io.netty.handler.codec.http2.HpackEncoder$NameValueEntry head>;
+v0.<io.netty.handler.codec.http2.HpackEncoder: io.netty.handler.codec.http2.HpackEncoder$NameValueEntry latest> = v11;
+label1:
+return;
+}
+private boolean isEmpty()
+{
+byte v2;
+long v1;
+io.netty.handler.codec.http2.HpackEncoder v0;
+boolean v3;
+v0 := @this: io.netty.handler.codec.http2.HpackEncoder;
+v1 = v0.<io.netty.handler.codec.http2.HpackEncoder: long size>;
+v2 = v1 cmp 0L;
+if v2 != 0 goto label1;
+v3 = 1;
+goto label2;
+label1:
+v3 = 0;
+label2:
+return v3;
+}
+private void removeNameValueEntry(io.netty.handler.codec.http2.HpackEncoder$NameValueEntry)
+{
+io.netty.handler.codec.http2.HpackEncoder$NameValueEntry v1, v5, v7, v8, v9;
+io.netty.handler.codec.http2.HpackEncoder$NameValueEntry[] v4, v6;
+int v2, v3;
+io.netty.handler.codec.http2.HpackEncoder v0;
+v0 := @this: io.netty.handler.codec.http2.HpackEncoder;
+v1 := @parameter0: io.netty.handler.codec.http2.HpackEncoder$NameValueEntry;
+v2 = v1.<io.netty.handler.codec.http2.HpackEncoder$NameValueEntry: int hash>;
+v3 = specialinvoke v0.<io.netty.handler.codec.http2.HpackEncoder: int bucket(int)>(v2);
+v4 = v0.<io.netty.handler.codec.http2.HpackEncoder: io.netty.handler.codec.http2.HpackEncoder$NameValueEntry[] nameValueEntries>;
+v5 = v4[v3];
+if v5 != v1 goto label1;
+v6 = v0.<io.netty.handler.codec.http2.HpackEncoder: io.netty.handler.codec.http2.HpackEncoder$NameValueEntry[] nameValueEntries>;
+v7 = v1.<io.netty.handler.codec.http2.HpackEncoder$NameValueEntry: io.netty.handler.codec.http2.HpackEncoder$NameValueEntry next>;
+v6[v3] = v7;
+goto label3;
+label1:
+v8 = v5.<io.netty.handler.codec.http2.HpackEncoder$NameValueEntry: io.netty.handler.codec.http2.HpackEncoder$NameValueEntry next>;
+if v8 == v1 goto label2;
+v5 = v5.<io.netty.handler.codec.http2.HpackEncoder$NameValueEntry: io.netty.handler.codec.http2.HpackEncoder$NameValueEntry next>;
+goto label1;
+label2:
+v9 = v1.<io.netty.handler.codec.http2.HpackEncoder$NameValueEntry: io.netty.handler.codec.http2.HpackEncoder$NameValueEntry next>;
+v5.<io.netty.handler.codec.http2.HpackEncoder$NameValueEntry: io.netty.handler.codec.http2.HpackEncoder$NameValueEntry next> = v9;
+label3:
+return;
+}
+private void removeNameEntryMatchingCounter(java.lang.CharSequence, int)
+{
+java.lang.CharSequence v1;
+io.netty.handler.codec.http2.HpackEncoder$NameEntry v10, v11, v13, v6, v9;
+int v12, v2, v3, v4, v7;
+io.netty.handler.codec.http2.HpackEncoder v0;
+io.netty.handler.codec.http2.HpackEncoder$NameEntry[] v5, v8;
+v0 := @this: io.netty.handler.codec.http2.HpackEncoder;
+v1 := @parameter0: java.lang.CharSequence;
+v2 := @parameter1: int;
+v3 = staticinvoke <io.netty.util.AsciiString: int hashCode(java.lang.CharSequence)>(v1);
+v4 = specialinvoke v0.<io.netty.handler.codec.http2.HpackEncoder: int bucket(int)>(v3);
+v5 = v0.<io.netty.handler.codec.http2.HpackEncoder: io.netty.handler.codec.http2.HpackEncoder$NameEntry[] nameEntries>;
+v6 = v5[v4];
+if v6 != null goto label1;
+return;
+label1:
+v7 = v6.<io.netty.handler.codec.http2.HpackEncoder$NameEntry: int counter>;
+if v2 != v7 goto label2;
+v8 = v0.<io.netty.handler.codec.http2.HpackEncoder: io.netty.handler.codec.http2.HpackEncoder$NameEntry[] nameEntries>;
+v9 = v6.<io.netty.handler.codec.http2.HpackEncoder$NameEntry: io.netty.handler.codec.http2.HpackEncoder$NameEntry next>;
+v8[v4] = v9;
+virtualinvoke v6.<io.netty.handler.codec.http2.HpackEncoder$NameEntry: void unlink()>();
+goto label5;
+label2:
+v10 = v6;
+v11 = v6.<io.netty.handler.codec.http2.HpackEncoder$NameEntry: io.netty.handler.codec.http2.HpackEncoder$NameEntry next>;
+label3:
+if v11 == null goto label5;
+v12 = v11.<io.netty.handler.codec.http2.HpackEncoder$NameEntry: int counter>;
+if v2 != v12 goto label4;
+v13 = v11.<io.netty.handler.codec.http2.HpackEncoder$NameEntry: io.netty.handler.codec.http2.HpackEncoder$NameEntry next>;
+v10.<io.netty.handler.codec.http2.HpackEncoder$NameEntry: io.netty.handler.codec.http2.HpackEncoder$NameEntry next> = v13;
+virtualinvoke v11.<io.netty.handler.codec.http2.HpackEncoder$NameEntry: void unlink()>();
+goto label5;
+label4:
+v10 = v11;
+v11 = v11.<io.netty.handler.codec.http2.HpackEncoder$NameEntry: io.netty.handler.codec.http2.HpackEncoder$NameEntry next>;
+goto label3;
+label5:
+return;
+}
+private int bucket(int)
+{
+byte v2;
+int v1, v3;
+io.netty.handler.codec.http2.HpackEncoder v0;
+v0 := @this: io.netty.handler.codec.http2.HpackEncoder;
+v1 := @parameter0: int;
+v2 = v0.<io.netty.handler.codec.http2.HpackEncoder: byte hashMask>;
+v3 = v1 & v2;
+return v3;
+}
+private static int hash(int, int)
+{
+int v0, v1, v2, v3;
+v0 := @parameter0: int;
+v1 := @parameter1: int;
+v2 = 31 * v0;
+v3 = v2 + v1;
+return v3;
+}
+static void <clinit>()
+{
+java.lang.Class v0;
+boolean v1, v2;
+v0 = class "Lio/netty/handler/codec/http2/HpackEncoder;";
+v1 = virtualinvoke v0.<java.lang.Class: boolean desiredAssertionStatus()>();
+if v1 != 0 goto label1;
+v2 = 1;
+goto label2;
+label1:
+v2 = 0;
+label2:
+<io.netty.handler.codec.http2.HpackEncoder: boolean $assertionsDisabled> = v2;
+return;
+}
+}

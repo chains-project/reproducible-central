@@ -1,0 +1,482 @@
+public abstract class org.jboss.logmanager.ExtHandler extends java.util.logging.Handler implements org.jboss.logmanager.handlers.FlushableCloseable
+{
+private volatile boolean autoFlush;
+private volatile boolean enabled;
+private volatile boolean closeChildren;
+private static final java.util.logging.ErrorManager DEFAULT_ERROR_MANAGER;
+protected volatile java.util.logging.Handler[] handlers;
+protected static final org.jboss.logmanager.AtomicArray handlersUpdater;
+protected void <init>()
+{
+java.util.logging.ErrorManager v2;
+org.jboss.logmanager.ExtHandler v0;
+org.jboss.logmanager.AtomicArray v1;
+v0 := @this: org.jboss.logmanager.ExtHandler;
+specialinvoke v0.<java.util.logging.Handler: void <init>()>();
+v0.<org.jboss.logmanager.ExtHandler: boolean autoFlush> = 1;
+v0.<org.jboss.logmanager.ExtHandler: boolean enabled> = 1;
+v1 = <org.jboss.logmanager.ExtHandler: org.jboss.logmanager.AtomicArray handlersUpdater>;
+virtualinvoke v1.<org.jboss.logmanager.AtomicArray: void clear(java.lang.Object)>(v0);
+v0.<org.jboss.logmanager.ExtHandler: boolean closeChildren> = 1;
+v2 = <org.jboss.logmanager.ExtHandler: java.util.logging.ErrorManager DEFAULT_ERROR_MANAGER>;
+specialinvoke v0.<java.util.logging.Handler: void setErrorManager(java.util.logging.ErrorManager)>(v2);
+return;
+}
+public void publish(java.util.logging.LogRecord)
+{
+org.jboss.logmanager.ExtHandler v0;
+java.util.logging.LogRecord v1;
+org.jboss.logmanager.ExtLogRecord v4;
+boolean v2, v3;
+v0 := @this: org.jboss.logmanager.ExtHandler;
+v1 := @parameter0: java.util.logging.LogRecord;
+v2 = v0.<org.jboss.logmanager.ExtHandler: boolean enabled>;
+if v2 == 0 goto label1;
+if v1 == null goto label1;
+v3 = virtualinvoke v0.<org.jboss.logmanager.ExtHandler: boolean isLoggable(java.util.logging.LogRecord)>(v1);
+if v3 == 0 goto label1;
+v4 = staticinvoke <org.jboss.logmanager.ExtLogRecord: org.jboss.logmanager.ExtLogRecord wrap(java.util.logging.LogRecord)>(v1);
+virtualinvoke v0.<org.jboss.logmanager.ExtHandler: void doPublish(org.jboss.logmanager.ExtLogRecord)>(v4);
+label1:
+return;
+}
+public void publish(org.jboss.logmanager.ExtLogRecord)
+{
+java.lang.Throwable v5;
+org.jboss.logmanager.ExtHandler v0;
+org.jboss.logmanager.ExtLogRecord v1;
+java.lang.Exception v4;
+boolean v2, v3;
+v0 := @this: org.jboss.logmanager.ExtHandler;
+v1 := @parameter0: org.jboss.logmanager.ExtLogRecord;
+v2 = v0.<org.jboss.logmanager.ExtHandler: boolean enabled>;
+if v2 == 0 goto label5;
+if v1 == null goto label5;
+v3 = virtualinvoke v0.<org.jboss.logmanager.ExtHandler: boolean isLoggable(java.util.logging.LogRecord)>(v1);
+if v3 == 0 goto label5;
+label1:
+virtualinvoke v0.<org.jboss.logmanager.ExtHandler: void doPublish(org.jboss.logmanager.ExtLogRecord)>(v1);
+label2:
+goto label5;
+label3:
+v4 := @caughtexception;
+virtualinvoke v0.<org.jboss.logmanager.ExtHandler: void reportError(java.lang.String,java.lang.Exception,int)>("Handler publication threw an exception", v4, 1);
+goto label5;
+label4:
+v5 := @caughtexception;
+label5:
+return;
+catch java.lang.Exception from label1 to label2 with label3;
+catch java.lang.Throwable from label1 to label2 with label4;
+}
+protected void publishToNestedHandlers(org.jboss.logmanager.ExtLogRecord)
+{
+java.lang.Throwable v7;
+java.util.logging.Handler[] v2;
+org.jboss.logmanager.ExtLogRecord v1;
+java.lang.Exception v6;
+int v3, v4;
+org.jboss.logmanager.ExtHandler v0;
+java.util.logging.Handler v5;
+v0 := @this: org.jboss.logmanager.ExtHandler;
+v1 := @parameter0: org.jboss.logmanager.ExtLogRecord;
+if v1 == null goto label7;
+v2 = virtualinvoke v0.<org.jboss.logmanager.ExtHandler: java.util.logging.Handler[] getHandlers()>();
+v3 = lengthof v2;
+v4 = 0;
+label1:
+if v4 >= v3 goto label7;
+v5 = v2[v4];
+label2:
+virtualinvoke v5.<java.util.logging.Handler: void publish(java.util.logging.LogRecord)>(v1);
+label3:
+goto label6;
+label4:
+v6 := @caughtexception;
+staticinvoke <org.jboss.logmanager.ExtHandler: void reportError(java.util.logging.Handler,java.lang.String,java.lang.Exception,int)>(v5, "Nested handler publication threw an exception", v6, 1);
+goto label6;
+label5:
+v7 := @caughtexception;
+label6:
+v4 = v4 + 1;
+goto label1;
+label7:
+return;
+catch java.lang.Exception from label2 to label3 with label4;
+catch java.lang.Throwable from label2 to label3 with label5;
+}
+protected void doPublish(org.jboss.logmanager.ExtLogRecord)
+{
+org.jboss.logmanager.ExtHandler v0;
+org.jboss.logmanager.ExtLogRecord v1;
+boolean v2;
+v0 := @this: org.jboss.logmanager.ExtHandler;
+v1 := @parameter0: org.jboss.logmanager.ExtLogRecord;
+v2 = v0.<org.jboss.logmanager.ExtHandler: boolean autoFlush>;
+if v2 == 0 goto label1;
+virtualinvoke v0.<org.jboss.logmanager.ExtHandler: void flush()>();
+label1:
+return;
+}
+public void addHandler(java.util.logging.Handler)
+{
+org.jboss.logmanager.ExtHandler v0;
+org.jboss.logmanager.AtomicArray v3;
+java.util.logging.Handler v1;
+java.lang.NullPointerException v2;
+v0 := @this: org.jboss.logmanager.ExtHandler;
+v1 := @parameter0: java.util.logging.Handler;
+if v1 != null goto label1;
+v2 = new java.lang.NullPointerException;
+specialinvoke v2.<java.lang.NullPointerException: void <init>(java.lang.String)>("handler is null");
+throw v2;
+label1:
+v3 = <org.jboss.logmanager.ExtHandler: org.jboss.logmanager.AtomicArray handlersUpdater>;
+virtualinvoke v3.<org.jboss.logmanager.AtomicArray: void add(java.lang.Object,java.lang.Object)>(v0, v1);
+return;
+}
+public void removeHandler(java.util.logging.Handler) throws java.lang.SecurityException
+{
+org.jboss.logmanager.ExtHandler v0;
+org.jboss.logmanager.AtomicArray v2;
+java.util.logging.Handler v1;
+v0 := @this: org.jboss.logmanager.ExtHandler;
+v1 := @parameter0: java.util.logging.Handler;
+if v1 != null goto label1;
+return;
+label1:
+v2 = <org.jboss.logmanager.ExtHandler: org.jboss.logmanager.AtomicArray handlersUpdater>;
+virtualinvoke v2.<org.jboss.logmanager.AtomicArray: boolean remove(java.lang.Object,java.lang.Object,boolean)>(v0, v1, 1);
+return;
+}
+public java.util.logging.Handler[] getHandlers()
+{
+int v2;
+java.util.logging.Handler[] v1;
+java.lang.Object v3;
+org.jboss.logmanager.ExtHandler v0;
+v0 := @this: org.jboss.logmanager.ExtHandler;
+v1 = v0.<org.jboss.logmanager.ExtHandler: java.util.logging.Handler[] handlers>;
+v2 = lengthof v1;
+if v2 <= 0 goto label1;
+v3 = virtualinvoke v1.<java.lang.Object: java.lang.Object clone()>();
+goto label2;
+label1:
+v3 = v1;
+label2:
+return v3;
+}
+public java.util.logging.Handler[] clearHandlers() throws java.lang.SecurityException
+{
+int v3;
+java.util.logging.Handler[] v1;
+java.lang.Object v4;
+org.jboss.logmanager.ExtHandler v0;
+org.jboss.logmanager.AtomicArray v2;
+v0 := @this: org.jboss.logmanager.ExtHandler;
+v1 = v0.<org.jboss.logmanager.ExtHandler: java.util.logging.Handler[] handlers>;
+v2 = <org.jboss.logmanager.ExtHandler: org.jboss.logmanager.AtomicArray handlersUpdater>;
+virtualinvoke v2.<org.jboss.logmanager.AtomicArray: void clear(java.lang.Object)>(v0);
+v3 = lengthof v1;
+if v3 <= 0 goto label1;
+v4 = virtualinvoke v1.<java.lang.Object: java.lang.Object clone()>();
+goto label2;
+label1:
+v4 = v1;
+label2:
+return v4;
+}
+public java.util.logging.Handler[] setHandlers(java.util.logging.Handler[]) throws java.lang.SecurityException
+{
+java.lang.Object[] v6;
+java.util.logging.Handler[] v1, v4;
+java.lang.IllegalArgumentException v2;
+int v3, v7;
+java.lang.Object v8;
+org.jboss.logmanager.ExtHandler v0;
+org.jboss.logmanager.AtomicArray v5;
+v0 := @this: org.jboss.logmanager.ExtHandler;
+v1 := @parameter0: java.util.logging.Handler[];
+if v1 != null goto label1;
+v2 = new java.lang.IllegalArgumentException;
+specialinvoke v2.<java.lang.IllegalArgumentException: void <init>(java.lang.String)>("newHandlers is null");
+throw v2;
+label1:
+v3 = lengthof v1;
+if v3 != 0 goto label2;
+v4 = virtualinvoke v0.<org.jboss.logmanager.ExtHandler: java.util.logging.Handler[] clearHandlers()>();
+return v4;
+label2:
+v5 = <org.jboss.logmanager.ExtHandler: org.jboss.logmanager.AtomicArray handlersUpdater>;
+v6 = virtualinvoke v5.<org.jboss.logmanager.AtomicArray: java.lang.Object[] getAndSet(java.lang.Object,java.lang.Object[])>(v0, v1);
+v7 = lengthof v6;
+if v7 <= 0 goto label3;
+v8 = virtualinvoke v6.<java.lang.Object: java.lang.Object clone()>();
+goto label4;
+label3:
+v8 = v6;
+label4:
+return v8;
+}
+public boolean isAutoFlush()
+{
+org.jboss.logmanager.ExtHandler v0;
+boolean v1;
+v0 := @this: org.jboss.logmanager.ExtHandler;
+v1 = v0.<org.jboss.logmanager.ExtHandler: boolean autoFlush>;
+return v1;
+}
+public void setAutoFlush(boolean) throws java.lang.SecurityException
+{
+org.jboss.logmanager.ExtHandler v0;
+boolean v1;
+v0 := @this: org.jboss.logmanager.ExtHandler;
+v1 := @parameter0: boolean;
+v0.<org.jboss.logmanager.ExtHandler: boolean autoFlush> = v1;
+if v1 == 0 goto label1;
+virtualinvoke v0.<org.jboss.logmanager.ExtHandler: void flush()>();
+label1:
+return;
+}
+public final void setEnabled(boolean) throws java.lang.SecurityException
+{
+org.jboss.logmanager.ExtHandler v0;
+boolean v1;
+v0 := @this: org.jboss.logmanager.ExtHandler;
+v1 := @parameter0: boolean;
+v0.<org.jboss.logmanager.ExtHandler: boolean enabled> = v1;
+return;
+}
+public final boolean isEnabled()
+{
+org.jboss.logmanager.ExtHandler v0;
+boolean v1;
+v0 := @this: org.jboss.logmanager.ExtHandler;
+v1 = v0.<org.jboss.logmanager.ExtHandler: boolean enabled>;
+return v1;
+}
+public boolean isCloseChildren()
+{
+org.jboss.logmanager.ExtHandler v0;
+boolean v1;
+v0 := @this: org.jboss.logmanager.ExtHandler;
+v1 = v0.<org.jboss.logmanager.ExtHandler: boolean closeChildren>;
+return v1;
+}
+public void setCloseChildren(boolean)
+{
+org.jboss.logmanager.ExtHandler v0;
+boolean v1;
+v0 := @this: org.jboss.logmanager.ExtHandler;
+v1 := @parameter0: boolean;
+v0.<org.jboss.logmanager.ExtHandler: boolean closeChildren> = v1;
+return;
+}
+public void flush()
+{
+java.lang.Throwable v6;
+int v2, v3;
+java.util.logging.Handler[] v1;
+org.jboss.logmanager.ExtHandler v0;
+java.util.logging.Handler v4;
+java.lang.Exception v5;
+v0 := @this: org.jboss.logmanager.ExtHandler;
+v1 = v0.<org.jboss.logmanager.ExtHandler: java.util.logging.Handler[] handlers>;
+v2 = lengthof v1;
+v3 = 0;
+label1:
+if v3 >= v2 goto label7;
+v4 = v1[v3];
+label2:
+virtualinvoke v4.<java.util.logging.Handler: void flush()>();
+label3:
+goto label6;
+label4:
+v5 := @caughtexception;
+virtualinvoke v0.<org.jboss.logmanager.ExtHandler: void reportError(java.lang.String,java.lang.Exception,int)>("Failed to flush child handler", v5, 2);
+goto label6;
+label5:
+v6 := @caughtexception;
+label6:
+v3 = v3 + 1;
+goto label1;
+label7:
+return;
+catch java.lang.Exception from label2 to label3 with label4;
+catch java.lang.Throwable from label2 to label3 with label5;
+}
+public void close() throws java.lang.SecurityException
+{
+int v3, v4;
+java.util.logging.Handler[] v2;
+org.jboss.logmanager.ExtHandler v0;
+java.util.logging.Handler v5;
+boolean v1;
+v0 := @this: org.jboss.logmanager.ExtHandler;
+v1 = v0.<org.jboss.logmanager.ExtHandler: boolean closeChildren>;
+if v1 == 0 goto label2;
+v2 = v0.<org.jboss.logmanager.ExtHandler: java.util.logging.Handler[] handlers>;
+v3 = lengthof v2;
+v4 = 0;
+label1:
+if v4 >= v3 goto label2;
+v5 = v2[v4];
+v4 = v4 + 1;
+goto label1;
+label2:
+return;
+}
+public void setFormatter(java.util.logging.Formatter) throws java.lang.SecurityException
+{
+org.jboss.logmanager.ExtHandler v0;
+java.util.logging.Formatter v1;
+v0 := @this: org.jboss.logmanager.ExtHandler;
+v1 := @parameter0: java.util.logging.Formatter;
+specialinvoke v0.<java.util.logging.Handler: void setFormatter(java.util.logging.Formatter)>(v1);
+return;
+}
+public void setFilter(java.util.logging.Filter) throws java.lang.SecurityException
+{
+org.jboss.logmanager.ExtHandler v0;
+java.util.logging.Filter v1;
+v0 := @this: org.jboss.logmanager.ExtHandler;
+v1 := @parameter0: java.util.logging.Filter;
+specialinvoke v0.<java.util.logging.Handler: void setFilter(java.util.logging.Filter)>(v1);
+return;
+}
+public void setEncoding(java.lang.String) throws java.lang.SecurityException, java.io.UnsupportedEncodingException
+{
+org.jboss.logmanager.ExtHandler v0;
+java.lang.String v1;
+v0 := @this: org.jboss.logmanager.ExtHandler;
+v1 := @parameter0: java.lang.String;
+specialinvoke v0.<java.util.logging.Handler: void setEncoding(java.lang.String)>(v1);
+return;
+}
+public void setErrorManager(java.util.logging.ErrorManager)
+{
+java.util.logging.ErrorManager v1;
+org.jboss.logmanager.ExtHandler v0;
+v0 := @this: org.jboss.logmanager.ExtHandler;
+v1 := @parameter0: java.util.logging.ErrorManager;
+specialinvoke v0.<java.util.logging.Handler: void setErrorManager(java.util.logging.ErrorManager)>(v1);
+return;
+}
+public void setLevel(java.util.logging.Level) throws java.lang.SecurityException
+{
+org.jboss.logmanager.ExtHandler v0;
+java.util.logging.Level v1;
+v0 := @this: org.jboss.logmanager.ExtHandler;
+v1 := @parameter0: java.util.logging.Level;
+specialinvoke v0.<java.util.logging.Handler: void setLevel(java.util.logging.Level)>(v1);
+return;
+}
+public boolean isCallerCalculationRequired()
+{
+java.util.logging.Handler[] v3;
+java.util.logging.Formatter v1, v9;
+int v4, v5;
+org.jboss.logmanager.ExtHandler v0;
+java.util.logging.Handler v6;
+boolean v10, v2, v7, v8;
+v0 := @this: org.jboss.logmanager.ExtHandler;
+v1 = virtualinvoke v0.<org.jboss.logmanager.ExtHandler: java.util.logging.Formatter getFormatter()>();
+v2 = staticinvoke <org.jboss.logmanager.ExtHandler: boolean formatterRequiresCallerCalculation(java.util.logging.Formatter)>(v1);
+if v2 == 0 goto label1;
+return 1;
+label1:
+v3 = virtualinvoke v0.<org.jboss.logmanager.ExtHandler: java.util.logging.Handler[] getHandlers()>();
+v4 = lengthof v3;
+v5 = 0;
+label2:
+if v5 >= v4 goto label5;
+v6 = v3[v5];
+v7 = v6 instanceof org.jboss.logmanager.ExtHandler;
+if v7 == 0 goto label3;
+v8 = virtualinvoke v6.<org.jboss.logmanager.ExtHandler: boolean isCallerCalculationRequired()>();
+if v8 == 0 goto label4;
+return 1;
+label3:
+v9 = virtualinvoke v6.<java.util.logging.Handler: java.util.logging.Formatter getFormatter()>();
+v10 = staticinvoke <org.jboss.logmanager.ExtHandler: boolean formatterRequiresCallerCalculation(java.util.logging.Formatter)>(v9);
+if v10 == 0 goto label4;
+return 1;
+label4:
+v5 = v5 + 1;
+goto label2;
+label5:
+return 0;
+}
+protected void reportError(java.lang.String, java.lang.Exception, int)
+{
+int v3;
+org.jboss.logmanager.ExtHandler v0;
+java.lang.String v1;
+java.lang.Exception v2;
+v0 := @this: org.jboss.logmanager.ExtHandler;
+v1 := @parameter0: java.lang.String;
+v2 := @parameter1: java.lang.Exception;
+v3 := @parameter2: int;
+specialinvoke v0.<java.util.logging.Handler: void reportError(java.lang.String,java.lang.Exception,int)>(v1, v2, v3);
+return;
+}
+public static void reportError(java.util.logging.Handler, java.lang.String, java.lang.Exception, int)
+{
+java.io.PrintStream v6;
+int v3;
+java.util.logging.ErrorManager v4;
+java.lang.String v1;
+java.util.logging.Handler v0;
+java.lang.Exception v2, v5;
+v0 := @parameter0: java.util.logging.Handler;
+v1 := @parameter1: java.lang.String;
+v2 := @parameter2: java.lang.Exception;
+v3 := @parameter3: int;
+if v0 == null goto label4;
+v4 = virtualinvoke v0.<java.util.logging.Handler: java.util.logging.ErrorManager getErrorManager()>();
+if v4 == null goto label4;
+label1:
+virtualinvoke v4.<java.util.logging.ErrorManager: void error(java.lang.String,java.lang.Exception,int)>(v1, v2, v3);
+label2:
+goto label4;
+label3:
+v5 := @caughtexception;
+v6 = <java.lang.System: java.io.PrintStream err>;
+virtualinvoke v6.<java.io.PrintStream: void println(java.lang.String)>("Handler.reportError caught:");
+virtualinvoke v5.<java.lang.Exception: void printStackTrace()>();
+label4:
+return;
+catch java.lang.Exception from label1 to label2 with label3;
+}
+private static boolean formatterRequiresCallerCalculation(java.util.logging.Formatter)
+{
+java.util.logging.Formatter v0;
+boolean v1, v2, v3;
+v0 := @parameter0: java.util.logging.Formatter;
+if v0 == null goto label2;
+v1 = v0 instanceof org.jboss.logmanager.ExtFormatter;
+if v1 == 0 goto label1;
+v2 = virtualinvoke v0.<org.jboss.logmanager.ExtFormatter: boolean isCallerCalculationRequired()>();
+if v2 == 0 goto label2;
+label1:
+v3 = 1;
+goto label3;
+label2:
+v3 = 0;
+label3:
+return v3;
+}
+static void <clinit>()
+{
+org.jboss.logmanager.AtomicArray v2;
+java.util.concurrent.atomic.AtomicReferenceFieldUpdater v1;
+org.jboss.logmanager.errormanager.OnlyOnceErrorManager v0;
+v0 = new org.jboss.logmanager.errormanager.OnlyOnceErrorManager;
+specialinvoke v0.<org.jboss.logmanager.errormanager.OnlyOnceErrorManager: void <init>()>();
+<org.jboss.logmanager.ExtHandler: java.util.logging.ErrorManager DEFAULT_ERROR_MANAGER> = v0;
+v1 = staticinvoke <java.util.concurrent.atomic.AtomicReferenceFieldUpdater: java.util.concurrent.atomic.AtomicReferenceFieldUpdater newUpdater(java.lang.Class,java.lang.Class,java.lang.String)>(class "Lorg/jboss/logmanager/ExtHandler;", class "[Ljava/util/logging/Handler;", "handlers");
+v2 = staticinvoke <org.jboss.logmanager.AtomicArray: org.jboss.logmanager.AtomicArray create(java.util.concurrent.atomic.AtomicReferenceFieldUpdater,java.lang.Class)>(v1, class "Ljava/util/logging/Handler;");
+<org.jboss.logmanager.ExtHandler: org.jboss.logmanager.AtomicArray handlersUpdater> = v2;
+return;
+}
+}

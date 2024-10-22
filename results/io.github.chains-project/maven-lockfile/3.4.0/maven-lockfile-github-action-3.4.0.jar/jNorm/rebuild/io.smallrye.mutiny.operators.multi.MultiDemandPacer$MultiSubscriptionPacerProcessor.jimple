@@ -1,0 +1,249 @@
+class io.smallrye.mutiny.operators.multi.MultiDemandPacer$MultiSubscriptionPacerProcessor extends io.smallrye.mutiny.operators.multi.MultiOperatorProcessor
+{
+private final java.util.concurrent.ScheduledExecutorService executor;
+private final io.smallrye.mutiny.subscription.DemandPacer pacer;
+private final java.util.concurrent.atomic.AtomicLong itemsCounter;
+private java.util.concurrent.ScheduledFuture scheduledFuture;
+private io.smallrye.mutiny.subscription.DemandPacer$Request currentRequest;
+void <init>(io.smallrye.mutiny.subscription.MultiSubscriber, java.util.concurrent.ScheduledExecutorService, io.smallrye.mutiny.subscription.DemandPacer)
+{
+java.util.concurrent.atomic.AtomicLong v4;
+io.smallrye.mutiny.subscription.DemandPacer v3;
+java.util.concurrent.ScheduledExecutorService v2;
+io.smallrye.mutiny.subscription.MultiSubscriber v1;
+io.smallrye.mutiny.operators.multi.MultiDemandPacer$MultiSubscriptionPacerProcessor v0;
+v0 := @this: io.smallrye.mutiny.operators.multi.MultiDemandPacer$MultiSubscriptionPacerProcessor;
+v1 := @parameter0: io.smallrye.mutiny.subscription.MultiSubscriber;
+v2 := @parameter1: java.util.concurrent.ScheduledExecutorService;
+v3 := @parameter2: io.smallrye.mutiny.subscription.DemandPacer;
+specialinvoke v0.<io.smallrye.mutiny.operators.multi.MultiOperatorProcessor: void <init>(io.smallrye.mutiny.subscription.MultiSubscriber)>(v1);
+v4 = new java.util.concurrent.atomic.AtomicLong;
+specialinvoke v4.<java.util.concurrent.atomic.AtomicLong: void <init>()>();
+v0.<io.smallrye.mutiny.operators.multi.MultiDemandPacer$MultiSubscriptionPacerProcessor: java.util.concurrent.atomic.AtomicLong itemsCounter> = v4;
+v0.<io.smallrye.mutiny.operators.multi.MultiDemandPacer$MultiSubscriptionPacerProcessor: java.util.concurrent.ScheduledExecutorService executor> = v2;
+v0.<io.smallrye.mutiny.operators.multi.MultiDemandPacer$MultiSubscriptionPacerProcessor: io.smallrye.mutiny.subscription.DemandPacer pacer> = v3;
+return;
+}
+public io.smallrye.mutiny.Context context()
+{
+io.smallrye.mutiny.Context v4, v5;
+io.smallrye.mutiny.subscription.MultiSubscriber v1, v3;
+boolean v2;
+io.smallrye.mutiny.operators.multi.MultiDemandPacer$MultiSubscriptionPacerProcessor v0;
+v0 := @this: io.smallrye.mutiny.operators.multi.MultiDemandPacer$MultiSubscriptionPacerProcessor;
+v1 = v0.<io.smallrye.mutiny.operators.multi.MultiDemandPacer$MultiSubscriptionPacerProcessor: io.smallrye.mutiny.subscription.MultiSubscriber downstream>;
+v2 = v1 instanceof io.smallrye.mutiny.subscription.ContextSupport;
+if v2 == 0 goto label1;
+v3 = v0.<io.smallrye.mutiny.operators.multi.MultiDemandPacer$MultiSubscriptionPacerProcessor: io.smallrye.mutiny.subscription.MultiSubscriber downstream>;
+v4 = interfaceinvoke v3.<io.smallrye.mutiny.subscription.ContextSupport: io.smallrye.mutiny.Context context()>();
+return v4;
+label1:
+v5 = staticinvoke <io.smallrye.mutiny.Context: io.smallrye.mutiny.Context empty()>();
+return v5;
+}
+private void demandAndSchedule(java.util.concurrent.ScheduledExecutorService)
+{
+java.util.concurrent.ScheduledFuture v11;
+long v5, v8;
+io.smallrye.mutiny.helpers.Subscriptions$EmptySubscription v3;
+java.lang.Runnable v9;
+java.util.concurrent.TimeUnit v10;
+java.time.Duration v7;
+java.util.concurrent.ScheduledExecutorService v1;
+io.smallrye.mutiny.subscription.DemandPacer$Request v4, v6;
+io.smallrye.mutiny.operators.multi.MultiDemandPacer$MultiSubscriptionPacerProcessor v0;
+java.util.concurrent.Flow$Subscription v12, v2;
+v0 := @this: io.smallrye.mutiny.operators.multi.MultiDemandPacer$MultiSubscriptionPacerProcessor;
+v1 := @parameter0: java.util.concurrent.ScheduledExecutorService;
+v2 = v0.<io.smallrye.mutiny.operators.multi.MultiDemandPacer$MultiSubscriptionPacerProcessor: java.util.concurrent.Flow$Subscription upstream>;
+v3 = <io.smallrye.mutiny.helpers.Subscriptions: io.smallrye.mutiny.helpers.Subscriptions$EmptySubscription CANCELLED>;
+if v2 != v3 goto label1;
+return;
+label1:
+v4 = v0.<io.smallrye.mutiny.operators.multi.MultiDemandPacer$MultiSubscriptionPacerProcessor: io.smallrye.mutiny.subscription.DemandPacer$Request currentRequest>;
+v5 = virtualinvoke v4.<io.smallrye.mutiny.subscription.DemandPacer$Request: long demand()>();
+v6 = v0.<io.smallrye.mutiny.operators.multi.MultiDemandPacer$MultiSubscriptionPacerProcessor: io.smallrye.mutiny.subscription.DemandPacer$Request currentRequest>;
+v7 = virtualinvoke v6.<io.smallrye.mutiny.subscription.DemandPacer$Request: java.time.Duration delay()>();
+v8 = virtualinvoke v7.<java.time.Duration: long toNanos()>();
+v9 = staticinvoke <io.smallrye.mutiny.operators.multi.MultiDemandPacer$MultiSubscriptionPacerProcessor$tick__2647: java.lang.Runnable bootstrap$(io.smallrye.mutiny.operators.multi.MultiDemandPacer$MultiSubscriptionPacerProcessor)>(v0);
+v10 = <java.util.concurrent.TimeUnit: java.util.concurrent.TimeUnit NANOSECONDS>;
+v11 = interfaceinvoke v1.<java.util.concurrent.ScheduledExecutorService: java.util.concurrent.ScheduledFuture schedule(java.lang.Runnable,long,java.util.concurrent.TimeUnit)>(v9, v8, v10);
+v0.<io.smallrye.mutiny.operators.multi.MultiDemandPacer$MultiSubscriptionPacerProcessor: java.util.concurrent.ScheduledFuture scheduledFuture> = v11;
+v12 = v0.<io.smallrye.mutiny.operators.multi.MultiDemandPacer$MultiSubscriptionPacerProcessor: java.util.concurrent.Flow$Subscription upstream>;
+interfaceinvoke v12.<java.util.concurrent.Flow$Subscription: void request(long)>(v5);
+return;
+}
+public void tick()
+{
+java.lang.Throwable v11;
+io.smallrye.mutiny.subscription.DemandPacer v5;
+long v4;
+io.smallrye.mutiny.helpers.Subscriptions$EmptySubscription v2;
+java.lang.NullPointerException v10;
+java.util.concurrent.atomic.AtomicLong v3;
+java.util.concurrent.ScheduledExecutorService v13;
+io.smallrye.mutiny.subscription.DemandPacer$Request v6, v7, v8;
+io.smallrye.mutiny.subscription.MultiSubscriber v12, v9;
+io.smallrye.mutiny.operators.multi.MultiDemandPacer$MultiSubscriptionPacerProcessor v0;
+java.util.concurrent.Flow$Subscription v1;
+v0 := @this: io.smallrye.mutiny.operators.multi.MultiDemandPacer$MultiSubscriptionPacerProcessor;
+v1 = v0.<io.smallrye.mutiny.operators.multi.MultiDemandPacer$MultiSubscriptionPacerProcessor: java.util.concurrent.Flow$Subscription upstream>;
+v2 = <io.smallrye.mutiny.helpers.Subscriptions: io.smallrye.mutiny.helpers.Subscriptions$EmptySubscription CANCELLED>;
+if v1 != v2 goto label1;
+return;
+label1:
+v3 = v0.<io.smallrye.mutiny.operators.multi.MultiDemandPacer$MultiSubscriptionPacerProcessor: java.util.concurrent.atomic.AtomicLong itemsCounter>;
+v4 = virtualinvoke v3.<java.util.concurrent.atomic.AtomicLong: long getAndSet(long)>(0L);
+label2:
+v5 = v0.<io.smallrye.mutiny.operators.multi.MultiDemandPacer$MultiSubscriptionPacerProcessor: io.smallrye.mutiny.subscription.DemandPacer pacer>;
+v6 = v0.<io.smallrye.mutiny.operators.multi.MultiDemandPacer$MultiSubscriptionPacerProcessor: io.smallrye.mutiny.subscription.DemandPacer$Request currentRequest>;
+v7 = interfaceinvoke v5.<io.smallrye.mutiny.subscription.DemandPacer: io.smallrye.mutiny.subscription.DemandPacer$Request apply(io.smallrye.mutiny.subscription.DemandPacer$Request,long)>(v6, v4);
+v0.<io.smallrye.mutiny.operators.multi.MultiDemandPacer$MultiSubscriptionPacerProcessor: io.smallrye.mutiny.subscription.DemandPacer$Request currentRequest> = v7;
+v8 = v0.<io.smallrye.mutiny.operators.multi.MultiDemandPacer$MultiSubscriptionPacerProcessor: io.smallrye.mutiny.subscription.DemandPacer$Request currentRequest>;
+if v8 != null goto label5;
+virtualinvoke v0.<io.smallrye.mutiny.operators.multi.MultiDemandPacer$MultiSubscriptionPacerProcessor: void cancel()>();
+v9 = v0.<io.smallrye.mutiny.operators.multi.MultiDemandPacer$MultiSubscriptionPacerProcessor: io.smallrye.mutiny.subscription.MultiSubscriber downstream>;
+v10 = new java.lang.NullPointerException;
+specialinvoke v10.<java.lang.NullPointerException: void <init>(java.lang.String)>("The pacer provided a null request");
+interfaceinvoke v9.<io.smallrye.mutiny.subscription.MultiSubscriber: void onFailure(java.lang.Throwable)>(v10);
+label3:
+return;
+label4:
+v11 := @caughtexception;
+virtualinvoke v0.<io.smallrye.mutiny.operators.multi.MultiDemandPacer$MultiSubscriptionPacerProcessor: void cancel()>();
+v12 = v0.<io.smallrye.mutiny.operators.multi.MultiDemandPacer$MultiSubscriptionPacerProcessor: io.smallrye.mutiny.subscription.MultiSubscriber downstream>;
+interfaceinvoke v12.<io.smallrye.mutiny.subscription.MultiSubscriber: void onFailure(java.lang.Throwable)>(v11);
+return;
+label5:
+v13 = v0.<io.smallrye.mutiny.operators.multi.MultiDemandPacer$MultiSubscriptionPacerProcessor: java.util.concurrent.ScheduledExecutorService executor>;
+specialinvoke v0.<io.smallrye.mutiny.operators.multi.MultiDemandPacer$MultiSubscriptionPacerProcessor: void demandAndSchedule(java.util.concurrent.ScheduledExecutorService)>(v13);
+return;
+catch java.lang.Throwable from label2 to label3 with label4;
+}
+public void onSubscribe(java.util.concurrent.Flow$Subscription)
+{
+java.lang.Throwable v6;
+io.smallrye.mutiny.subscription.DemandPacer v4;
+java.lang.NullPointerException v10;
+java.util.concurrent.ScheduledExecutorService v11;
+io.smallrye.mutiny.subscription.DemandPacer$Request v5, v8;
+io.smallrye.mutiny.subscription.MultiSubscriber v3, v7, v9;
+boolean v2;
+io.smallrye.mutiny.operators.multi.MultiDemandPacer$MultiSubscriptionPacerProcessor v0;
+java.util.concurrent.Flow$Subscription v1;
+v0 := @this: io.smallrye.mutiny.operators.multi.MultiDemandPacer$MultiSubscriptionPacerProcessor;
+v1 := @parameter0: java.util.concurrent.Flow$Subscription;
+v2 = virtualinvoke v0.<io.smallrye.mutiny.operators.multi.MultiDemandPacer$MultiSubscriptionPacerProcessor: boolean compareAndSetUpstreamSubscription(java.util.concurrent.Flow$Subscription,java.util.concurrent.Flow$Subscription)>(null, v1);
+if v2 == 0 goto label6;
+v3 = v0.<io.smallrye.mutiny.operators.multi.MultiDemandPacer$MultiSubscriptionPacerProcessor: io.smallrye.mutiny.subscription.MultiSubscriber downstream>;
+interfaceinvoke v3.<io.smallrye.mutiny.subscription.MultiSubscriber: void onSubscribe(java.util.concurrent.Flow$Subscription)>(v0);
+label1:
+v4 = v0.<io.smallrye.mutiny.operators.multi.MultiDemandPacer$MultiSubscriptionPacerProcessor: io.smallrye.mutiny.subscription.DemandPacer pacer>;
+v5 = interfaceinvoke v4.<io.smallrye.mutiny.subscription.DemandPacer: io.smallrye.mutiny.subscription.DemandPacer$Request initial()>();
+v0.<io.smallrye.mutiny.operators.multi.MultiDemandPacer$MultiSubscriptionPacerProcessor: io.smallrye.mutiny.subscription.DemandPacer$Request currentRequest> = v5;
+label2:
+goto label4;
+label3:
+v6 := @caughtexception;
+virtualinvoke v0.<io.smallrye.mutiny.operators.multi.MultiDemandPacer$MultiSubscriptionPacerProcessor: void cancel()>();
+v7 = v0.<io.smallrye.mutiny.operators.multi.MultiDemandPacer$MultiSubscriptionPacerProcessor: io.smallrye.mutiny.subscription.MultiSubscriber downstream>;
+interfaceinvoke v7.<io.smallrye.mutiny.subscription.MultiSubscriber: void onFailure(java.lang.Throwable)>(v6);
+return;
+label4:
+v8 = v0.<io.smallrye.mutiny.operators.multi.MultiDemandPacer$MultiSubscriptionPacerProcessor: io.smallrye.mutiny.subscription.DemandPacer$Request currentRequest>;
+if v8 != null goto label5;
+virtualinvoke v0.<io.smallrye.mutiny.operators.multi.MultiDemandPacer$MultiSubscriptionPacerProcessor: void cancel()>();
+v9 = v0.<io.smallrye.mutiny.operators.multi.MultiDemandPacer$MultiSubscriptionPacerProcessor: io.smallrye.mutiny.subscription.MultiSubscriber downstream>;
+v10 = new java.lang.NullPointerException;
+specialinvoke v10.<java.lang.NullPointerException: void <init>(java.lang.String)>("The pacer provided a null initial request");
+interfaceinvoke v9.<io.smallrye.mutiny.subscription.MultiSubscriber: void onFailure(java.lang.Throwable)>(v10);
+goto label7;
+label5:
+v11 = v0.<io.smallrye.mutiny.operators.multi.MultiDemandPacer$MultiSubscriptionPacerProcessor: java.util.concurrent.ScheduledExecutorService executor>;
+specialinvoke v0.<io.smallrye.mutiny.operators.multi.MultiDemandPacer$MultiSubscriptionPacerProcessor: void demandAndSchedule(java.util.concurrent.ScheduledExecutorService)>(v11);
+goto label7;
+label6:
+interfaceinvoke v1.<java.util.concurrent.Flow$Subscription: void cancel()>();
+label7:
+return;
+catch java.lang.Throwable from label1 to label2 with label3;
+}
+public void onItem(java.lang.Object)
+{
+java.util.concurrent.atomic.AtomicLong v4;
+java.lang.Object v1;
+io.smallrye.mutiny.helpers.Subscriptions$EmptySubscription v3;
+io.smallrye.mutiny.subscription.MultiSubscriber v5;
+io.smallrye.mutiny.operators.multi.MultiDemandPacer$MultiSubscriptionPacerProcessor v0;
+java.util.concurrent.Flow$Subscription v2;
+v0 := @this: io.smallrye.mutiny.operators.multi.MultiDemandPacer$MultiSubscriptionPacerProcessor;
+v1 := @parameter0: java.lang.Object;
+v2 = v0.<io.smallrye.mutiny.operators.multi.MultiDemandPacer$MultiSubscriptionPacerProcessor: java.util.concurrent.Flow$Subscription upstream>;
+v3 = <io.smallrye.mutiny.helpers.Subscriptions: io.smallrye.mutiny.helpers.Subscriptions$EmptySubscription CANCELLED>;
+if v2 != v3 goto label1;
+return;
+label1:
+v4 = v0.<io.smallrye.mutiny.operators.multi.MultiDemandPacer$MultiSubscriptionPacerProcessor: java.util.concurrent.atomic.AtomicLong itemsCounter>;
+virtualinvoke v4.<java.util.concurrent.atomic.AtomicLong: long incrementAndGet()>();
+v5 = v0.<io.smallrye.mutiny.operators.multi.MultiDemandPacer$MultiSubscriptionPacerProcessor: io.smallrye.mutiny.subscription.MultiSubscriber downstream>;
+interfaceinvoke v5.<io.smallrye.mutiny.subscription.MultiSubscriber: void onItem(java.lang.Object)>(v1);
+return;
+}
+public void onFailure(java.lang.Throwable)
+{
+java.lang.Throwable v1;
+io.smallrye.mutiny.helpers.Subscriptions$EmptySubscription v3;
+io.smallrye.mutiny.subscription.MultiSubscriber v4;
+io.smallrye.mutiny.operators.multi.MultiDemandPacer$MultiSubscriptionPacerProcessor v0;
+java.util.concurrent.Flow$Subscription v2;
+v0 := @this: io.smallrye.mutiny.operators.multi.MultiDemandPacer$MultiSubscriptionPacerProcessor;
+v1 := @parameter0: java.lang.Throwable;
+v2 = v0.<io.smallrye.mutiny.operators.multi.MultiDemandPacer$MultiSubscriptionPacerProcessor: java.util.concurrent.Flow$Subscription upstream>;
+v3 = <io.smallrye.mutiny.helpers.Subscriptions: io.smallrye.mutiny.helpers.Subscriptions$EmptySubscription CANCELLED>;
+if v2 != v3 goto label1;
+return;
+label1:
+virtualinvoke v0.<io.smallrye.mutiny.operators.multi.MultiDemandPacer$MultiSubscriptionPacerProcessor: void cancel()>();
+v4 = v0.<io.smallrye.mutiny.operators.multi.MultiDemandPacer$MultiSubscriptionPacerProcessor: io.smallrye.mutiny.subscription.MultiSubscriber downstream>;
+interfaceinvoke v4.<io.smallrye.mutiny.subscription.MultiSubscriber: void onFailure(java.lang.Throwable)>(v1);
+return;
+}
+public void onCompletion()
+{
+io.smallrye.mutiny.helpers.Subscriptions$EmptySubscription v2;
+io.smallrye.mutiny.subscription.MultiSubscriber v3;
+io.smallrye.mutiny.operators.multi.MultiDemandPacer$MultiSubscriptionPacerProcessor v0;
+java.util.concurrent.Flow$Subscription v1;
+v0 := @this: io.smallrye.mutiny.operators.multi.MultiDemandPacer$MultiSubscriptionPacerProcessor;
+v1 = v0.<io.smallrye.mutiny.operators.multi.MultiDemandPacer$MultiSubscriptionPacerProcessor: java.util.concurrent.Flow$Subscription upstream>;
+v2 = <io.smallrye.mutiny.helpers.Subscriptions: io.smallrye.mutiny.helpers.Subscriptions$EmptySubscription CANCELLED>;
+if v1 != v2 goto label1;
+return;
+label1:
+virtualinvoke v0.<io.smallrye.mutiny.operators.multi.MultiDemandPacer$MultiSubscriptionPacerProcessor: void cancel()>();
+v3 = v0.<io.smallrye.mutiny.operators.multi.MultiDemandPacer$MultiSubscriptionPacerProcessor: io.smallrye.mutiny.subscription.MultiSubscriber downstream>;
+interfaceinvoke v3.<io.smallrye.mutiny.subscription.MultiSubscriber: void onCompletion()>();
+return;
+}
+public void cancel()
+{
+java.util.concurrent.ScheduledFuture v1, v2;
+io.smallrye.mutiny.operators.multi.MultiDemandPacer$MultiSubscriptionPacerProcessor v0;
+v0 := @this: io.smallrye.mutiny.operators.multi.MultiDemandPacer$MultiSubscriptionPacerProcessor;
+v1 = v0.<io.smallrye.mutiny.operators.multi.MultiDemandPacer$MultiSubscriptionPacerProcessor: java.util.concurrent.ScheduledFuture scheduledFuture>;
+if v1 == null goto label1;
+v2 = v0.<io.smallrye.mutiny.operators.multi.MultiDemandPacer$MultiSubscriptionPacerProcessor: java.util.concurrent.ScheduledFuture scheduledFuture>;
+interfaceinvoke v2.<java.util.concurrent.ScheduledFuture: boolean cancel(boolean)>(1);
+label1:
+specialinvoke v0.<io.smallrye.mutiny.operators.multi.MultiOperatorProcessor: void cancel()>();
+return;
+}
+public void request(long)
+{
+long v1;
+io.smallrye.mutiny.operators.multi.MultiDemandPacer$MultiSubscriptionPacerProcessor v0;
+v0 := @this: io.smallrye.mutiny.operators.multi.MultiDemandPacer$MultiSubscriptionPacerProcessor;
+v1 := @parameter0: long;
+return;
+}
+}

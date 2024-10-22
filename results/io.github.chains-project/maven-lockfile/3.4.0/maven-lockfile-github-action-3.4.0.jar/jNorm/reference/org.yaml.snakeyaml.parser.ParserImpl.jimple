@@ -1,0 +1,602 @@
+public class org.yaml.snakeyaml.parser.ParserImpl extends java.lang.Object implements org.yaml.snakeyaml.parser.Parser
+{
+private static final java.util.Map DEFAULT_TAGS;
+protected final org.yaml.snakeyaml.scanner.Scanner scanner;
+private org.yaml.snakeyaml.events.Event currentEvent;
+private final org.yaml.snakeyaml.util.ArrayStack states;
+private final org.yaml.snakeyaml.util.ArrayStack marks;
+private org.yaml.snakeyaml.parser.Production state;
+private org.yaml.snakeyaml.parser.VersionTagsTuple directives;
+public void <init>(org.yaml.snakeyaml.reader.StreamReader, org.yaml.snakeyaml.LoaderOptions)
+{
+org.yaml.snakeyaml.parser.ParserImpl v0;
+org.yaml.snakeyaml.LoaderOptions v2;
+org.yaml.snakeyaml.reader.StreamReader v1;
+org.yaml.snakeyaml.scanner.ScannerImpl v3;
+v0 := @this: org.yaml.snakeyaml.parser.ParserImpl;
+v1 := @parameter0: org.yaml.snakeyaml.reader.StreamReader;
+v2 := @parameter1: org.yaml.snakeyaml.LoaderOptions;
+v3 = new org.yaml.snakeyaml.scanner.ScannerImpl;
+specialinvoke v3.<org.yaml.snakeyaml.scanner.ScannerImpl: void <init>(org.yaml.snakeyaml.reader.StreamReader,org.yaml.snakeyaml.LoaderOptions)>(v1, v2);
+specialinvoke v0.<org.yaml.snakeyaml.parser.ParserImpl: void <init>(org.yaml.snakeyaml.scanner.Scanner)>(v3);
+return;
+}
+public void <init>(org.yaml.snakeyaml.scanner.Scanner)
+{
+org.yaml.snakeyaml.parser.ParserImpl v0;
+org.yaml.snakeyaml.parser.ParserImpl$ParseStreamStart v7;
+org.yaml.snakeyaml.parser.VersionTagsTuple v2;
+java.util.HashMap v3;
+org.yaml.snakeyaml.util.ArrayStack v5, v6;
+org.yaml.snakeyaml.scanner.Scanner v1;
+java.util.Map v4;
+v0 := @this: org.yaml.snakeyaml.parser.ParserImpl;
+v1 := @parameter0: org.yaml.snakeyaml.scanner.Scanner;
+specialinvoke v0.<java.lang.Object: void <init>()>();
+v0.<org.yaml.snakeyaml.parser.ParserImpl: org.yaml.snakeyaml.scanner.Scanner scanner> = v1;
+v0.<org.yaml.snakeyaml.parser.ParserImpl: org.yaml.snakeyaml.events.Event currentEvent> = null;
+v2 = new org.yaml.snakeyaml.parser.VersionTagsTuple;
+v3 = new java.util.HashMap;
+v4 = <org.yaml.snakeyaml.parser.ParserImpl: java.util.Map DEFAULT_TAGS>;
+specialinvoke v3.<java.util.HashMap: void <init>(java.util.Map)>(v4);
+specialinvoke v2.<org.yaml.snakeyaml.parser.VersionTagsTuple: void <init>(org.yaml.snakeyaml.DumperOptions$Version,java.util.Map)>(null, v3);
+v0.<org.yaml.snakeyaml.parser.ParserImpl: org.yaml.snakeyaml.parser.VersionTagsTuple directives> = v2;
+v5 = new org.yaml.snakeyaml.util.ArrayStack;
+specialinvoke v5.<org.yaml.snakeyaml.util.ArrayStack: void <init>(int)>(100);
+v0.<org.yaml.snakeyaml.parser.ParserImpl: org.yaml.snakeyaml.util.ArrayStack states> = v5;
+v6 = new org.yaml.snakeyaml.util.ArrayStack;
+specialinvoke v6.<org.yaml.snakeyaml.util.ArrayStack: void <init>(int)>(10);
+v0.<org.yaml.snakeyaml.parser.ParserImpl: org.yaml.snakeyaml.util.ArrayStack marks> = v6;
+v7 = new org.yaml.snakeyaml.parser.ParserImpl$ParseStreamStart;
+specialinvoke v7.<org.yaml.snakeyaml.parser.ParserImpl$ParseStreamStart: void <init>(org.yaml.snakeyaml.parser.ParserImpl)>(v0);
+v0.<org.yaml.snakeyaml.parser.ParserImpl: org.yaml.snakeyaml.parser.Production state> = v7;
+return;
+}
+public boolean checkEvent(org.yaml.snakeyaml.events.Event$ID)
+{
+org.yaml.snakeyaml.parser.ParserImpl v0;
+org.yaml.snakeyaml.events.Event$ID v1;
+org.yaml.snakeyaml.events.Event v2, v3;
+boolean v4, v5;
+v0 := @this: org.yaml.snakeyaml.parser.ParserImpl;
+v1 := @parameter0: org.yaml.snakeyaml.events.Event$ID;
+virtualinvoke v0.<org.yaml.snakeyaml.parser.ParserImpl: org.yaml.snakeyaml.events.Event peekEvent()>();
+v2 = v0.<org.yaml.snakeyaml.parser.ParserImpl: org.yaml.snakeyaml.events.Event currentEvent>;
+if v2 == null goto label1;
+v3 = v0.<org.yaml.snakeyaml.parser.ParserImpl: org.yaml.snakeyaml.events.Event currentEvent>;
+v4 = virtualinvoke v3.<org.yaml.snakeyaml.events.Event: boolean is(org.yaml.snakeyaml.events.Event$ID)>(v1);
+if v4 == 0 goto label1;
+v5 = 1;
+goto label2;
+label1:
+v5 = 0;
+label2:
+return v5;
+}
+public org.yaml.snakeyaml.events.Event peekEvent()
+{
+org.yaml.snakeyaml.parser.ParserImpl v0;
+org.yaml.snakeyaml.parser.Production v2, v3;
+org.yaml.snakeyaml.events.Event v1, v4, v5;
+v0 := @this: org.yaml.snakeyaml.parser.ParserImpl;
+v1 = v0.<org.yaml.snakeyaml.parser.ParserImpl: org.yaml.snakeyaml.events.Event currentEvent>;
+if v1 != null goto label1;
+v2 = v0.<org.yaml.snakeyaml.parser.ParserImpl: org.yaml.snakeyaml.parser.Production state>;
+if v2 == null goto label1;
+v3 = v0.<org.yaml.snakeyaml.parser.ParserImpl: org.yaml.snakeyaml.parser.Production state>;
+v4 = interfaceinvoke v3.<org.yaml.snakeyaml.parser.Production: org.yaml.snakeyaml.events.Event produce()>();
+v0.<org.yaml.snakeyaml.parser.ParserImpl: org.yaml.snakeyaml.events.Event currentEvent> = v4;
+label1:
+v5 = v0.<org.yaml.snakeyaml.parser.ParserImpl: org.yaml.snakeyaml.events.Event currentEvent>;
+return v5;
+}
+public org.yaml.snakeyaml.events.Event getEvent()
+{
+org.yaml.snakeyaml.parser.ParserImpl v0;
+org.yaml.snakeyaml.events.Event v1;
+v0 := @this: org.yaml.snakeyaml.parser.ParserImpl;
+virtualinvoke v0.<org.yaml.snakeyaml.parser.ParserImpl: org.yaml.snakeyaml.events.Event peekEvent()>();
+v1 = v0.<org.yaml.snakeyaml.parser.ParserImpl: org.yaml.snakeyaml.events.Event currentEvent>;
+v0.<org.yaml.snakeyaml.parser.ParserImpl: org.yaml.snakeyaml.events.Event currentEvent> = null;
+return v1;
+}
+private org.yaml.snakeyaml.events.CommentEvent produceCommentEvent(org.yaml.snakeyaml.tokens.CommentToken)
+{
+org.yaml.snakeyaml.parser.ParserImpl v0;
+org.yaml.snakeyaml.error.Mark v2, v3;
+org.yaml.snakeyaml.events.CommentEvent v6;
+org.yaml.snakeyaml.comments.CommentType v5;
+org.yaml.snakeyaml.tokens.CommentToken v1;
+java.lang.String v4;
+v0 := @this: org.yaml.snakeyaml.parser.ParserImpl;
+v1 := @parameter0: org.yaml.snakeyaml.tokens.CommentToken;
+v2 = virtualinvoke v1.<org.yaml.snakeyaml.tokens.CommentToken: org.yaml.snakeyaml.error.Mark getStartMark()>();
+v3 = virtualinvoke v1.<org.yaml.snakeyaml.tokens.CommentToken: org.yaml.snakeyaml.error.Mark getEndMark()>();
+v4 = virtualinvoke v1.<org.yaml.snakeyaml.tokens.CommentToken: java.lang.String getValue()>();
+v5 = virtualinvoke v1.<org.yaml.snakeyaml.tokens.CommentToken: org.yaml.snakeyaml.comments.CommentType getCommentType()>();
+v6 = new org.yaml.snakeyaml.events.CommentEvent;
+specialinvoke v6.<org.yaml.snakeyaml.events.CommentEvent: void <init>(org.yaml.snakeyaml.comments.CommentType,java.lang.String,org.yaml.snakeyaml.error.Mark,org.yaml.snakeyaml.error.Mark)>(v5, v4, v2, v3);
+return v6;
+}
+private org.yaml.snakeyaml.parser.VersionTagsTuple processDirectives()
+{
+org.yaml.snakeyaml.parser.ParserImpl v0;
+org.yaml.snakeyaml.parser.VersionTagsTuple v18, v2, v29, v31, v54, v55, v9;
+java.util.Map v3, v4, v46, v52;
+boolean v13, v17, v34, v38, v44, v49, v51, v7;
+java.util.Set v47, v5;
+org.yaml.snakeyaml.DumperOptions$Version v19, v30, v32, v56;
+java.util.List v22, v35;
+org.yaml.snakeyaml.error.Mark v21, v26, v41;
+org.yaml.snakeyaml.parser.ParserException v20, v25, v39;
+java.util.HashMap v1, v42, v43, v45;
+int v24, v28;
+java.lang.String v16, v33, v40;
+org.yaml.snakeyaml.tokens.Token v15;
+org.yaml.snakeyaml.tokens.Token$ID v12;
+java.util.Iterator v48, v6;
+org.yaml.snakeyaml.scanner.Scanner v10, v14;
+org.yaml.snakeyaml.tokens.Token$ID[] v11;
+java.lang.Object v23, v27, v36, v37, v50, v53, v8;
+v0 := @this: org.yaml.snakeyaml.parser.ParserImpl;
+v1 = new java.util.HashMap;
+v2 = v0.<org.yaml.snakeyaml.parser.ParserImpl: org.yaml.snakeyaml.parser.VersionTagsTuple directives>;
+v3 = virtualinvoke v2.<org.yaml.snakeyaml.parser.VersionTagsTuple: java.util.Map getTags()>();
+specialinvoke v1.<java.util.HashMap: void <init>(java.util.Map)>(v3);
+v4 = <org.yaml.snakeyaml.parser.ParserImpl: java.util.Map DEFAULT_TAGS>;
+v5 = interfaceinvoke v4.<java.util.Map: java.util.Set keySet()>();
+v6 = interfaceinvoke v5.<java.util.Set: java.util.Iterator iterator()>();
+label01:
+v7 = interfaceinvoke v6.<java.util.Iterator: boolean hasNext()>();
+if v7 == 0 goto label02;
+v8 = interfaceinvoke v6.<java.util.Iterator: java.lang.Object next()>();
+virtualinvoke v1.<java.util.HashMap: java.lang.Object remove(java.lang.Object)>(v8);
+goto label01;
+label02:
+v9 = new org.yaml.snakeyaml.parser.VersionTagsTuple;
+specialinvoke v9.<org.yaml.snakeyaml.parser.VersionTagsTuple: void <init>(org.yaml.snakeyaml.DumperOptions$Version,java.util.Map)>(null, v1);
+v0.<org.yaml.snakeyaml.parser.ParserImpl: org.yaml.snakeyaml.parser.VersionTagsTuple directives> = v9;
+label03:
+v10 = v0.<org.yaml.snakeyaml.parser.ParserImpl: org.yaml.snakeyaml.scanner.Scanner scanner>;
+v11 = newarray (org.yaml.snakeyaml.tokens.Token$ID)[1];
+v12 = <org.yaml.snakeyaml.tokens.Token$ID: org.yaml.snakeyaml.tokens.Token$ID Directive>;
+v11[0] = v12;
+v13 = interfaceinvoke v10.<org.yaml.snakeyaml.scanner.Scanner: boolean checkToken(org.yaml.snakeyaml.tokens.Token$ID[])>(v11);
+if v13 == 0 goto label09;
+v14 = v0.<org.yaml.snakeyaml.parser.ParserImpl: org.yaml.snakeyaml.scanner.Scanner scanner>;
+v15 = interfaceinvoke v14.<org.yaml.snakeyaml.scanner.Scanner: org.yaml.snakeyaml.tokens.Token getToken()>();
+v16 = virtualinvoke v15.<org.yaml.snakeyaml.tokens.DirectiveToken: java.lang.String getName()>();
+v17 = virtualinvoke v16.<java.lang.String: boolean equals(java.lang.Object)>("YAML");
+if v17 == 0 goto label07;
+v18 = v0.<org.yaml.snakeyaml.parser.ParserImpl: org.yaml.snakeyaml.parser.VersionTagsTuple directives>;
+v19 = virtualinvoke v18.<org.yaml.snakeyaml.parser.VersionTagsTuple: org.yaml.snakeyaml.DumperOptions$Version getVersion()>();
+if v19 == null goto label04;
+v20 = new org.yaml.snakeyaml.parser.ParserException;
+v21 = virtualinvoke v15.<org.yaml.snakeyaml.tokens.DirectiveToken: org.yaml.snakeyaml.error.Mark getStartMark()>();
+specialinvoke v20.<org.yaml.snakeyaml.parser.ParserException: void <init>(java.lang.String,org.yaml.snakeyaml.error.Mark,java.lang.String,org.yaml.snakeyaml.error.Mark)>(null, null, "found duplicate YAML directive", v21);
+throw v20;
+label04:
+v22 = virtualinvoke v15.<org.yaml.snakeyaml.tokens.DirectiveToken: java.util.List getValue()>();
+v23 = interfaceinvoke v22.<java.util.List: java.lang.Object get(int)>(0);
+v24 = virtualinvoke v23.<java.lang.Integer: int intValue()>();
+if v24 == 1 goto label05;
+v25 = new org.yaml.snakeyaml.parser.ParserException;
+v26 = virtualinvoke v15.<org.yaml.snakeyaml.tokens.DirectiveToken: org.yaml.snakeyaml.error.Mark getStartMark()>();
+specialinvoke v25.<org.yaml.snakeyaml.parser.ParserException: void <init>(java.lang.String,org.yaml.snakeyaml.error.Mark,java.lang.String,org.yaml.snakeyaml.error.Mark)>(null, null, "found incompatible YAML document (version 1.* is required)", v26);
+throw v25;
+label05:
+v27 = interfaceinvoke v22.<java.util.List: java.lang.Object get(int)>(1);
+v28 = virtualinvoke v27.<java.lang.Integer: int intValue()>();
+if v28 != 0 goto label06;
+v29 = new org.yaml.snakeyaml.parser.VersionTagsTuple;
+v30 = <org.yaml.snakeyaml.DumperOptions$Version: org.yaml.snakeyaml.DumperOptions$Version V1_0>;
+specialinvoke v29.<org.yaml.snakeyaml.parser.VersionTagsTuple: void <init>(org.yaml.snakeyaml.DumperOptions$Version,java.util.Map)>(v30, v1);
+v0.<org.yaml.snakeyaml.parser.ParserImpl: org.yaml.snakeyaml.parser.VersionTagsTuple directives> = v29;
+goto label03;
+label06:
+v31 = new org.yaml.snakeyaml.parser.VersionTagsTuple;
+v32 = <org.yaml.snakeyaml.DumperOptions$Version: org.yaml.snakeyaml.DumperOptions$Version V1_1>;
+specialinvoke v31.<org.yaml.snakeyaml.parser.VersionTagsTuple: void <init>(org.yaml.snakeyaml.DumperOptions$Version,java.util.Map)>(v32, v1);
+v0.<org.yaml.snakeyaml.parser.ParserImpl: org.yaml.snakeyaml.parser.VersionTagsTuple directives> = v31;
+goto label03;
+label07:
+v33 = virtualinvoke v15.<org.yaml.snakeyaml.tokens.DirectiveToken: java.lang.String getName()>();
+v34 = virtualinvoke v33.<java.lang.String: boolean equals(java.lang.Object)>("TAG");
+if v34 == 0 goto label03;
+v35 = virtualinvoke v15.<org.yaml.snakeyaml.tokens.DirectiveToken: java.util.List getValue()>();
+v36 = interfaceinvoke v35.<java.util.List: java.lang.Object get(int)>(0);
+v37 = interfaceinvoke v35.<java.util.List: java.lang.Object get(int)>(1);
+v38 = virtualinvoke v1.<java.util.HashMap: boolean containsKey(java.lang.Object)>(v36);
+if v38 == 0 goto label08;
+v39 = new org.yaml.snakeyaml.parser.ParserException;
+v40 = dynamicinvoke "makeConcatWithConstants" <java.lang.String (java.lang.String)>(v36) <java.lang.invoke.StringConcatFactory: java.lang.invoke.CallSite makeConcatWithConstants(java.lang.invoke.MethodHandles$Lookup,java.lang.String,java.lang.invoke.MethodType,java.lang.String,java.lang.Object[])>("duplicate tag handle \u0001");
+v41 = virtualinvoke v15.<org.yaml.snakeyaml.tokens.DirectiveToken: org.yaml.snakeyaml.error.Mark getStartMark()>();
+specialinvoke v39.<org.yaml.snakeyaml.parser.ParserException: void <init>(java.lang.String,org.yaml.snakeyaml.error.Mark,java.lang.String,org.yaml.snakeyaml.error.Mark)>(null, null, v40, v41);
+throw v39;
+label08:
+virtualinvoke v1.<java.util.HashMap: java.lang.Object put(java.lang.Object,java.lang.Object)>(v36, v37);
+goto label03;
+label09:
+v42 = new java.util.HashMap;
+specialinvoke v42.<java.util.HashMap: void <init>()>();
+v43 = v42;
+v44 = virtualinvoke v1.<java.util.HashMap: boolean isEmpty()>();
+if v44 != 0 goto label10;
+v45 = new java.util.HashMap;
+specialinvoke v45.<java.util.HashMap: void <init>(java.util.Map)>(v1);
+v43 = v45;
+label10:
+v46 = <org.yaml.snakeyaml.parser.ParserImpl: java.util.Map DEFAULT_TAGS>;
+v47 = interfaceinvoke v46.<java.util.Map: java.util.Set keySet()>();
+v48 = interfaceinvoke v47.<java.util.Set: java.util.Iterator iterator()>();
+label11:
+v49 = interfaceinvoke v48.<java.util.Iterator: boolean hasNext()>();
+if v49 == 0 goto label12;
+v50 = interfaceinvoke v48.<java.util.Iterator: java.lang.Object next()>();
+v51 = virtualinvoke v1.<java.util.HashMap: boolean containsKey(java.lang.Object)>(v50);
+if v51 != 0 goto label11;
+v52 = <org.yaml.snakeyaml.parser.ParserImpl: java.util.Map DEFAULT_TAGS>;
+v53 = interfaceinvoke v52.<java.util.Map: java.lang.Object get(java.lang.Object)>(v50);
+virtualinvoke v1.<java.util.HashMap: java.lang.Object put(java.lang.Object,java.lang.Object)>(v50, v53);
+goto label11;
+label12:
+v54 = new org.yaml.snakeyaml.parser.VersionTagsTuple;
+v55 = v0.<org.yaml.snakeyaml.parser.ParserImpl: org.yaml.snakeyaml.parser.VersionTagsTuple directives>;
+v56 = virtualinvoke v55.<org.yaml.snakeyaml.parser.VersionTagsTuple: org.yaml.snakeyaml.DumperOptions$Version getVersion()>();
+specialinvoke v54.<org.yaml.snakeyaml.parser.VersionTagsTuple: void <init>(org.yaml.snakeyaml.DumperOptions$Version,java.util.Map)>(v56, v43);
+return v54;
+}
+private org.yaml.snakeyaml.events.Event parseFlowNode()
+{
+org.yaml.snakeyaml.parser.ParserImpl v0;
+org.yaml.snakeyaml.events.Event v1;
+v0 := @this: org.yaml.snakeyaml.parser.ParserImpl;
+v1 = specialinvoke v0.<org.yaml.snakeyaml.parser.ParserImpl: org.yaml.snakeyaml.events.Event parseNode(boolean,boolean)>(0, 0);
+return v1;
+}
+private org.yaml.snakeyaml.events.Event parseBlockNodeOrIndentlessSequence()
+{
+org.yaml.snakeyaml.parser.ParserImpl v0;
+org.yaml.snakeyaml.events.Event v1;
+v0 := @this: org.yaml.snakeyaml.parser.ParserImpl;
+v1 = specialinvoke v0.<org.yaml.snakeyaml.parser.ParserImpl: org.yaml.snakeyaml.events.Event parseNode(boolean,boolean)>(1, 1);
+return v1;
+}
+private org.yaml.snakeyaml.events.Event parseNode(boolean, boolean)
+{
+org.yaml.snakeyaml.parser.ParserImpl v0;
+java.util.Map v49, v54;
+org.yaml.snakeyaml.events.MappingStartEvent v107, v127;
+org.yaml.snakeyaml.parser.ParserImpl$ParseBlockSequenceFirstEntry v119;
+org.yaml.snakeyaml.error.Mark v106, v116, v126, v14, v142, v15, v3, v4, v5, v67, v77, v96;
+org.yaml.snakeyaml.tokens.Token v105, v11, v115, v125, v136, v26, v32, v38, v44, v57, v66, v76, v95;
+org.yaml.snakeyaml.events.SequenceStartEvent v117, v68, v97;
+org.yaml.snakeyaml.parser.ParserImpl$ParseFlowSequenceFirstEntry v99;
+org.yaml.snakeyaml.tokens.Token$ID[] v101, v111, v121, v22, v28, v34, v40, v62, v7, v72, v91;
+org.yaml.snakeyaml.parser.VersionTagsTuple v48, v53;
+org.yaml.snakeyaml.DumperOptions$FlowStyle v108, v118, v128, v69, v98;
+org.yaml.snakeyaml.tokens.TagTuple v20;
+org.yaml.snakeyaml.parser.ParserException v137, v51;
+org.yaml.snakeyaml.parser.ParserImpl$ParseIndentlessSequenceEntryKey v70;
+org.yaml.snakeyaml.DumperOptions$ScalarStyle v132, v87;
+org.yaml.snakeyaml.tokens.Token$ID v102, v112, v122, v140, v23, v29, v35, v41, v63, v73, v8, v92;
+org.yaml.snakeyaml.scanner.Scanner v10, v100, v104, v110, v114, v120, v124, v135, v21, v25, v27, v31, v33, v37, v39, v43, v56, v6, v61, v65, v71, v75, v90, v94;
+org.yaml.snakeyaml.events.NodeEvent v16;
+java.lang.Object v134, v18, v55, v89;
+org.yaml.snakeyaml.parser.ParserImpl$ParseFlowMappingFirstKey v109;
+java.lang.String v13, v138, v139, v141, v19, v45, v46, v47, v52, v79, v86;
+org.yaml.snakeyaml.events.AliasEvent v12;
+boolean v1, v103, v113, v123, v2, v24, v30, v36, v42, v50, v58, v59, v60, v64, v74, v78, v80, v9, v93;
+org.yaml.snakeyaml.parser.ParserImpl$ParseBlockMappingFirstKey v129;
+org.yaml.snakeyaml.util.ArrayStack v133, v17, v88;
+org.yaml.snakeyaml.events.ImplicitTuple v131, v81, v82, v83, v84;
+org.yaml.snakeyaml.events.ScalarEvent v130, v85;
+v0 := @this: org.yaml.snakeyaml.parser.ParserImpl;
+v1 := @parameter0: boolean;
+v2 := @parameter1: boolean;
+v3 = null;
+v4 = null;
+v5 = null;
+v6 = v0.<org.yaml.snakeyaml.parser.ParserImpl: org.yaml.snakeyaml.scanner.Scanner scanner>;
+v7 = newarray (org.yaml.snakeyaml.tokens.Token$ID)[1];
+v8 = <org.yaml.snakeyaml.tokens.Token$ID: org.yaml.snakeyaml.tokens.Token$ID Alias>;
+v7[0] = v8;
+v9 = interfaceinvoke v6.<org.yaml.snakeyaml.scanner.Scanner: boolean checkToken(org.yaml.snakeyaml.tokens.Token$ID[])>(v7);
+if v9 == 0 goto label01;
+v10 = v0.<org.yaml.snakeyaml.parser.ParserImpl: org.yaml.snakeyaml.scanner.Scanner scanner>;
+v11 = interfaceinvoke v10.<org.yaml.snakeyaml.scanner.Scanner: org.yaml.snakeyaml.tokens.Token getToken()>();
+v12 = new org.yaml.snakeyaml.events.AliasEvent;
+v13 = virtualinvoke v11.<org.yaml.snakeyaml.tokens.AliasToken: java.lang.String getValue()>();
+v14 = virtualinvoke v11.<org.yaml.snakeyaml.tokens.AliasToken: org.yaml.snakeyaml.error.Mark getStartMark()>();
+v15 = virtualinvoke v11.<org.yaml.snakeyaml.tokens.AliasToken: org.yaml.snakeyaml.error.Mark getEndMark()>();
+specialinvoke v12.<org.yaml.snakeyaml.events.AliasEvent: void <init>(java.lang.String,org.yaml.snakeyaml.error.Mark,org.yaml.snakeyaml.error.Mark)>(v13, v14, v15);
+v16 = v12;
+v17 = v0.<org.yaml.snakeyaml.parser.ParserImpl: org.yaml.snakeyaml.util.ArrayStack states>;
+v18 = virtualinvoke v17.<org.yaml.snakeyaml.util.ArrayStack: java.lang.Object pop()>();
+v0.<org.yaml.snakeyaml.parser.ParserImpl: org.yaml.snakeyaml.parser.Production state> = v18;
+goto label26;
+label01:
+v19 = null;
+v20 = null;
+v21 = v0.<org.yaml.snakeyaml.parser.ParserImpl: org.yaml.snakeyaml.scanner.Scanner scanner>;
+v22 = newarray (org.yaml.snakeyaml.tokens.Token$ID)[1];
+v23 = <org.yaml.snakeyaml.tokens.Token$ID: org.yaml.snakeyaml.tokens.Token$ID Anchor>;
+v22[0] = v23;
+v24 = interfaceinvoke v21.<org.yaml.snakeyaml.scanner.Scanner: boolean checkToken(org.yaml.snakeyaml.tokens.Token$ID[])>(v22);
+if v24 == 0 goto label02;
+v25 = v0.<org.yaml.snakeyaml.parser.ParserImpl: org.yaml.snakeyaml.scanner.Scanner scanner>;
+v26 = interfaceinvoke v25.<org.yaml.snakeyaml.scanner.Scanner: org.yaml.snakeyaml.tokens.Token getToken()>();
+v3 = virtualinvoke v26.<org.yaml.snakeyaml.tokens.AnchorToken: org.yaml.snakeyaml.error.Mark getStartMark()>();
+v4 = virtualinvoke v26.<org.yaml.snakeyaml.tokens.AnchorToken: org.yaml.snakeyaml.error.Mark getEndMark()>();
+v19 = virtualinvoke v26.<org.yaml.snakeyaml.tokens.AnchorToken: java.lang.String getValue()>();
+v27 = v0.<org.yaml.snakeyaml.parser.ParserImpl: org.yaml.snakeyaml.scanner.Scanner scanner>;
+v28 = newarray (org.yaml.snakeyaml.tokens.Token$ID)[1];
+v29 = <org.yaml.snakeyaml.tokens.Token$ID: org.yaml.snakeyaml.tokens.Token$ID Tag>;
+v28[0] = v29;
+v30 = interfaceinvoke v27.<org.yaml.snakeyaml.scanner.Scanner: boolean checkToken(org.yaml.snakeyaml.tokens.Token$ID[])>(v28);
+if v30 == 0 goto label03;
+v31 = v0.<org.yaml.snakeyaml.parser.ParserImpl: org.yaml.snakeyaml.scanner.Scanner scanner>;
+v32 = interfaceinvoke v31.<org.yaml.snakeyaml.scanner.Scanner: org.yaml.snakeyaml.tokens.Token getToken()>();
+v5 = virtualinvoke v32.<org.yaml.snakeyaml.tokens.TagToken: org.yaml.snakeyaml.error.Mark getStartMark()>();
+v4 = virtualinvoke v32.<org.yaml.snakeyaml.tokens.TagToken: org.yaml.snakeyaml.error.Mark getEndMark()>();
+v20 = virtualinvoke v32.<org.yaml.snakeyaml.tokens.TagToken: org.yaml.snakeyaml.tokens.TagTuple getValue()>();
+goto label03;
+label02:
+v33 = v0.<org.yaml.snakeyaml.parser.ParserImpl: org.yaml.snakeyaml.scanner.Scanner scanner>;
+v34 = newarray (org.yaml.snakeyaml.tokens.Token$ID)[1];
+v35 = <org.yaml.snakeyaml.tokens.Token$ID: org.yaml.snakeyaml.tokens.Token$ID Tag>;
+v34[0] = v35;
+v36 = interfaceinvoke v33.<org.yaml.snakeyaml.scanner.Scanner: boolean checkToken(org.yaml.snakeyaml.tokens.Token$ID[])>(v34);
+if v36 == 0 goto label03;
+v37 = v0.<org.yaml.snakeyaml.parser.ParserImpl: org.yaml.snakeyaml.scanner.Scanner scanner>;
+v38 = interfaceinvoke v37.<org.yaml.snakeyaml.scanner.Scanner: org.yaml.snakeyaml.tokens.Token getToken()>();
+v3 = virtualinvoke v38.<org.yaml.snakeyaml.tokens.TagToken: org.yaml.snakeyaml.error.Mark getStartMark()>();
+v5 = v3;
+v4 = virtualinvoke v38.<org.yaml.snakeyaml.tokens.TagToken: org.yaml.snakeyaml.error.Mark getEndMark()>();
+v20 = virtualinvoke v38.<org.yaml.snakeyaml.tokens.TagToken: org.yaml.snakeyaml.tokens.TagTuple getValue()>();
+v39 = v0.<org.yaml.snakeyaml.parser.ParserImpl: org.yaml.snakeyaml.scanner.Scanner scanner>;
+v40 = newarray (org.yaml.snakeyaml.tokens.Token$ID)[1];
+v41 = <org.yaml.snakeyaml.tokens.Token$ID: org.yaml.snakeyaml.tokens.Token$ID Anchor>;
+v40[0] = v41;
+v42 = interfaceinvoke v39.<org.yaml.snakeyaml.scanner.Scanner: boolean checkToken(org.yaml.snakeyaml.tokens.Token$ID[])>(v40);
+if v42 == 0 goto label03;
+v43 = v0.<org.yaml.snakeyaml.parser.ParserImpl: org.yaml.snakeyaml.scanner.Scanner scanner>;
+v44 = interfaceinvoke v43.<org.yaml.snakeyaml.scanner.Scanner: org.yaml.snakeyaml.tokens.Token getToken()>();
+v4 = virtualinvoke v44.<org.yaml.snakeyaml.tokens.AnchorToken: org.yaml.snakeyaml.error.Mark getEndMark()>();
+v19 = virtualinvoke v44.<org.yaml.snakeyaml.tokens.AnchorToken: java.lang.String getValue()>();
+label03:
+v45 = null;
+if v20 == null goto label06;
+v46 = virtualinvoke v20.<org.yaml.snakeyaml.tokens.TagTuple: java.lang.String getHandle()>();
+v47 = virtualinvoke v20.<org.yaml.snakeyaml.tokens.TagTuple: java.lang.String getSuffix()>();
+if v46 == null goto label05;
+v48 = v0.<org.yaml.snakeyaml.parser.ParserImpl: org.yaml.snakeyaml.parser.VersionTagsTuple directives>;
+v49 = virtualinvoke v48.<org.yaml.snakeyaml.parser.VersionTagsTuple: java.util.Map getTags()>();
+v50 = interfaceinvoke v49.<java.util.Map: boolean containsKey(java.lang.Object)>(v46);
+if v50 != 0 goto label04;
+v51 = new org.yaml.snakeyaml.parser.ParserException;
+v52 = dynamicinvoke "makeConcatWithConstants" <java.lang.String (java.lang.String)>(v46) <java.lang.invoke.StringConcatFactory: java.lang.invoke.CallSite makeConcatWithConstants(java.lang.invoke.MethodHandles$Lookup,java.lang.String,java.lang.invoke.MethodType,java.lang.String,java.lang.Object[])>("found undefined tag handle \u0001");
+specialinvoke v51.<org.yaml.snakeyaml.parser.ParserException: void <init>(java.lang.String,org.yaml.snakeyaml.error.Mark,java.lang.String,org.yaml.snakeyaml.error.Mark)>("while parsing a node", v3, v52, v5);
+throw v51;
+label04:
+v53 = v0.<org.yaml.snakeyaml.parser.ParserImpl: org.yaml.snakeyaml.parser.VersionTagsTuple directives>;
+v54 = virtualinvoke v53.<org.yaml.snakeyaml.parser.VersionTagsTuple: java.util.Map getTags()>();
+v55 = interfaceinvoke v54.<java.util.Map: java.lang.Object get(java.lang.Object)>(v46);
+v45 = dynamicinvoke "makeConcatWithConstants" <java.lang.String (java.lang.Object,java.lang.String)>(v55, v47) <java.lang.invoke.StringConcatFactory: java.lang.invoke.CallSite makeConcatWithConstants(java.lang.invoke.MethodHandles$Lookup,java.lang.String,java.lang.invoke.MethodType,java.lang.String,java.lang.Object[])>("\u0001\u0001");
+goto label06;
+label05:
+v45 = v47;
+label06:
+if v3 != null goto label07;
+v56 = v0.<org.yaml.snakeyaml.parser.ParserImpl: org.yaml.snakeyaml.scanner.Scanner scanner>;
+v57 = interfaceinvoke v56.<org.yaml.snakeyaml.scanner.Scanner: org.yaml.snakeyaml.tokens.Token peekToken()>();
+v3 = virtualinvoke v57.<org.yaml.snakeyaml.tokens.Token: org.yaml.snakeyaml.error.Mark getStartMark()>();
+v4 = v3;
+label07:
+if v45 == null goto label08;
+v58 = virtualinvoke v45.<java.lang.String: boolean equals(java.lang.Object)>("!");
+if v58 == 0 goto label09;
+label08:
+v59 = 1;
+goto label10;
+label09:
+v59 = 0;
+label10:
+v60 = v59;
+if v2 == 0 goto label11;
+v61 = v0.<org.yaml.snakeyaml.parser.ParserImpl: org.yaml.snakeyaml.scanner.Scanner scanner>;
+v62 = newarray (org.yaml.snakeyaml.tokens.Token$ID)[1];
+v63 = <org.yaml.snakeyaml.tokens.Token$ID: org.yaml.snakeyaml.tokens.Token$ID BlockEntry>;
+v62[0] = v63;
+v64 = interfaceinvoke v61.<org.yaml.snakeyaml.scanner.Scanner: boolean checkToken(org.yaml.snakeyaml.tokens.Token$ID[])>(v62);
+if v64 == 0 goto label11;
+v65 = v0.<org.yaml.snakeyaml.parser.ParserImpl: org.yaml.snakeyaml.scanner.Scanner scanner>;
+v66 = interfaceinvoke v65.<org.yaml.snakeyaml.scanner.Scanner: org.yaml.snakeyaml.tokens.Token peekToken()>();
+v67 = virtualinvoke v66.<org.yaml.snakeyaml.tokens.Token: org.yaml.snakeyaml.error.Mark getEndMark()>();
+v68 = new org.yaml.snakeyaml.events.SequenceStartEvent;
+v69 = <org.yaml.snakeyaml.DumperOptions$FlowStyle: org.yaml.snakeyaml.DumperOptions$FlowStyle BLOCK>;
+specialinvoke v68.<org.yaml.snakeyaml.events.SequenceStartEvent: void <init>(java.lang.String,java.lang.String,boolean,org.yaml.snakeyaml.error.Mark,org.yaml.snakeyaml.error.Mark,org.yaml.snakeyaml.DumperOptions$FlowStyle)>(v19, v45, v59, v3, v67, v69);
+v16 = v68;
+v70 = new org.yaml.snakeyaml.parser.ParserImpl$ParseIndentlessSequenceEntryKey;
+specialinvoke v70.<org.yaml.snakeyaml.parser.ParserImpl$ParseIndentlessSequenceEntryKey: void <init>(org.yaml.snakeyaml.parser.ParserImpl)>(v0);
+v0.<org.yaml.snakeyaml.parser.ParserImpl: org.yaml.snakeyaml.parser.Production state> = v70;
+goto label26;
+label11:
+v71 = v0.<org.yaml.snakeyaml.parser.ParserImpl: org.yaml.snakeyaml.scanner.Scanner scanner>;
+v72 = newarray (org.yaml.snakeyaml.tokens.Token$ID)[1];
+v73 = <org.yaml.snakeyaml.tokens.Token$ID: org.yaml.snakeyaml.tokens.Token$ID Scalar>;
+v72[0] = v73;
+v74 = interfaceinvoke v71.<org.yaml.snakeyaml.scanner.Scanner: boolean checkToken(org.yaml.snakeyaml.tokens.Token$ID[])>(v72);
+if v74 == 0 goto label17;
+v75 = v0.<org.yaml.snakeyaml.parser.ParserImpl: org.yaml.snakeyaml.scanner.Scanner scanner>;
+v76 = interfaceinvoke v75.<org.yaml.snakeyaml.scanner.Scanner: org.yaml.snakeyaml.tokens.Token getToken()>();
+v77 = virtualinvoke v76.<org.yaml.snakeyaml.tokens.ScalarToken: org.yaml.snakeyaml.error.Mark getEndMark()>();
+v78 = virtualinvoke v76.<org.yaml.snakeyaml.tokens.ScalarToken: boolean getPlain()>();
+if v78 == 0 goto label12;
+if v45 == null goto label13;
+label12:
+v79 = "!";
+v80 = virtualinvoke v79.<java.lang.String: boolean equals(java.lang.Object)>(v45);
+if v80 == 0 goto label14;
+label13:
+v81 = new org.yaml.snakeyaml.events.ImplicitTuple;
+specialinvoke v81.<org.yaml.snakeyaml.events.ImplicitTuple: void <init>(boolean,boolean)>(1, 0);
+v82 = v81;
+goto label16;
+label14:
+if v45 != null goto label15;
+v83 = new org.yaml.snakeyaml.events.ImplicitTuple;
+specialinvoke v83.<org.yaml.snakeyaml.events.ImplicitTuple: void <init>(boolean,boolean)>(0, 1);
+v82 = v83;
+goto label16;
+label15:
+v84 = new org.yaml.snakeyaml.events.ImplicitTuple;
+specialinvoke v84.<org.yaml.snakeyaml.events.ImplicitTuple: void <init>(boolean,boolean)>(0, 0);
+v82 = v84;
+label16:
+v85 = new org.yaml.snakeyaml.events.ScalarEvent;
+v86 = virtualinvoke v76.<org.yaml.snakeyaml.tokens.ScalarToken: java.lang.String getValue()>();
+v87 = virtualinvoke v76.<org.yaml.snakeyaml.tokens.ScalarToken: org.yaml.snakeyaml.DumperOptions$ScalarStyle getStyle()>();
+specialinvoke v85.<org.yaml.snakeyaml.events.ScalarEvent: void <init>(java.lang.String,java.lang.String,org.yaml.snakeyaml.events.ImplicitTuple,java.lang.String,org.yaml.snakeyaml.error.Mark,org.yaml.snakeyaml.error.Mark,org.yaml.snakeyaml.DumperOptions$ScalarStyle)>(v19, v45, v82, v86, v3, v77, v87);
+v16 = v85;
+v88 = v0.<org.yaml.snakeyaml.parser.ParserImpl: org.yaml.snakeyaml.util.ArrayStack states>;
+v89 = virtualinvoke v88.<org.yaml.snakeyaml.util.ArrayStack: java.lang.Object pop()>();
+v0.<org.yaml.snakeyaml.parser.ParserImpl: org.yaml.snakeyaml.parser.Production state> = v89;
+goto label26;
+label17:
+v90 = v0.<org.yaml.snakeyaml.parser.ParserImpl: org.yaml.snakeyaml.scanner.Scanner scanner>;
+v91 = newarray (org.yaml.snakeyaml.tokens.Token$ID)[1];
+v92 = <org.yaml.snakeyaml.tokens.Token$ID: org.yaml.snakeyaml.tokens.Token$ID FlowSequenceStart>;
+v91[0] = v92;
+v93 = interfaceinvoke v90.<org.yaml.snakeyaml.scanner.Scanner: boolean checkToken(org.yaml.snakeyaml.tokens.Token$ID[])>(v91);
+if v93 == 0 goto label18;
+v94 = v0.<org.yaml.snakeyaml.parser.ParserImpl: org.yaml.snakeyaml.scanner.Scanner scanner>;
+v95 = interfaceinvoke v94.<org.yaml.snakeyaml.scanner.Scanner: org.yaml.snakeyaml.tokens.Token peekToken()>();
+v96 = virtualinvoke v95.<org.yaml.snakeyaml.tokens.Token: org.yaml.snakeyaml.error.Mark getEndMark()>();
+v97 = new org.yaml.snakeyaml.events.SequenceStartEvent;
+v98 = <org.yaml.snakeyaml.DumperOptions$FlowStyle: org.yaml.snakeyaml.DumperOptions$FlowStyle FLOW>;
+specialinvoke v97.<org.yaml.snakeyaml.events.SequenceStartEvent: void <init>(java.lang.String,java.lang.String,boolean,org.yaml.snakeyaml.error.Mark,org.yaml.snakeyaml.error.Mark,org.yaml.snakeyaml.DumperOptions$FlowStyle)>(v19, v45, v60, v3, v96, v98);
+v16 = v97;
+v99 = new org.yaml.snakeyaml.parser.ParserImpl$ParseFlowSequenceFirstEntry;
+specialinvoke v99.<org.yaml.snakeyaml.parser.ParserImpl$ParseFlowSequenceFirstEntry: void <init>(org.yaml.snakeyaml.parser.ParserImpl)>(v0);
+v0.<org.yaml.snakeyaml.parser.ParserImpl: org.yaml.snakeyaml.parser.Production state> = v99;
+goto label26;
+label18:
+v100 = v0.<org.yaml.snakeyaml.parser.ParserImpl: org.yaml.snakeyaml.scanner.Scanner scanner>;
+v101 = newarray (org.yaml.snakeyaml.tokens.Token$ID)[1];
+v102 = <org.yaml.snakeyaml.tokens.Token$ID: org.yaml.snakeyaml.tokens.Token$ID FlowMappingStart>;
+v101[0] = v102;
+v103 = interfaceinvoke v100.<org.yaml.snakeyaml.scanner.Scanner: boolean checkToken(org.yaml.snakeyaml.tokens.Token$ID[])>(v101);
+if v103 == 0 goto label19;
+v104 = v0.<org.yaml.snakeyaml.parser.ParserImpl: org.yaml.snakeyaml.scanner.Scanner scanner>;
+v105 = interfaceinvoke v104.<org.yaml.snakeyaml.scanner.Scanner: org.yaml.snakeyaml.tokens.Token peekToken()>();
+v106 = virtualinvoke v105.<org.yaml.snakeyaml.tokens.Token: org.yaml.snakeyaml.error.Mark getEndMark()>();
+v107 = new org.yaml.snakeyaml.events.MappingStartEvent;
+v108 = <org.yaml.snakeyaml.DumperOptions$FlowStyle: org.yaml.snakeyaml.DumperOptions$FlowStyle FLOW>;
+specialinvoke v107.<org.yaml.snakeyaml.events.MappingStartEvent: void <init>(java.lang.String,java.lang.String,boolean,org.yaml.snakeyaml.error.Mark,org.yaml.snakeyaml.error.Mark,org.yaml.snakeyaml.DumperOptions$FlowStyle)>(v19, v45, v60, v3, v106, v108);
+v16 = v107;
+v109 = new org.yaml.snakeyaml.parser.ParserImpl$ParseFlowMappingFirstKey;
+specialinvoke v109.<org.yaml.snakeyaml.parser.ParserImpl$ParseFlowMappingFirstKey: void <init>(org.yaml.snakeyaml.parser.ParserImpl)>(v0);
+v0.<org.yaml.snakeyaml.parser.ParserImpl: org.yaml.snakeyaml.parser.Production state> = v109;
+goto label26;
+label19:
+if v1 == 0 goto label21;
+v110 = v0.<org.yaml.snakeyaml.parser.ParserImpl: org.yaml.snakeyaml.scanner.Scanner scanner>;
+v111 = newarray (org.yaml.snakeyaml.tokens.Token$ID)[1];
+v112 = <org.yaml.snakeyaml.tokens.Token$ID: org.yaml.snakeyaml.tokens.Token$ID BlockSequenceStart>;
+v111[0] = v112;
+v113 = interfaceinvoke v110.<org.yaml.snakeyaml.scanner.Scanner: boolean checkToken(org.yaml.snakeyaml.tokens.Token$ID[])>(v111);
+if v113 == 0 goto label20;
+v114 = v0.<org.yaml.snakeyaml.parser.ParserImpl: org.yaml.snakeyaml.scanner.Scanner scanner>;
+v115 = interfaceinvoke v114.<org.yaml.snakeyaml.scanner.Scanner: org.yaml.snakeyaml.tokens.Token peekToken()>();
+v116 = virtualinvoke v115.<org.yaml.snakeyaml.tokens.Token: org.yaml.snakeyaml.error.Mark getStartMark()>();
+v117 = new org.yaml.snakeyaml.events.SequenceStartEvent;
+v118 = <org.yaml.snakeyaml.DumperOptions$FlowStyle: org.yaml.snakeyaml.DumperOptions$FlowStyle BLOCK>;
+specialinvoke v117.<org.yaml.snakeyaml.events.SequenceStartEvent: void <init>(java.lang.String,java.lang.String,boolean,org.yaml.snakeyaml.error.Mark,org.yaml.snakeyaml.error.Mark,org.yaml.snakeyaml.DumperOptions$FlowStyle)>(v19, v45, v60, v3, v116, v118);
+v16 = v117;
+v119 = new org.yaml.snakeyaml.parser.ParserImpl$ParseBlockSequenceFirstEntry;
+specialinvoke v119.<org.yaml.snakeyaml.parser.ParserImpl$ParseBlockSequenceFirstEntry: void <init>(org.yaml.snakeyaml.parser.ParserImpl)>(v0);
+v0.<org.yaml.snakeyaml.parser.ParserImpl: org.yaml.snakeyaml.parser.Production state> = v119;
+goto label26;
+label20:
+if v1 == 0 goto label21;
+v120 = v0.<org.yaml.snakeyaml.parser.ParserImpl: org.yaml.snakeyaml.scanner.Scanner scanner>;
+v121 = newarray (org.yaml.snakeyaml.tokens.Token$ID)[1];
+v122 = <org.yaml.snakeyaml.tokens.Token$ID: org.yaml.snakeyaml.tokens.Token$ID BlockMappingStart>;
+v121[0] = v122;
+v123 = interfaceinvoke v120.<org.yaml.snakeyaml.scanner.Scanner: boolean checkToken(org.yaml.snakeyaml.tokens.Token$ID[])>(v121);
+if v123 == 0 goto label21;
+v124 = v0.<org.yaml.snakeyaml.parser.ParserImpl: org.yaml.snakeyaml.scanner.Scanner scanner>;
+v125 = interfaceinvoke v124.<org.yaml.snakeyaml.scanner.Scanner: org.yaml.snakeyaml.tokens.Token peekToken()>();
+v126 = virtualinvoke v125.<org.yaml.snakeyaml.tokens.Token: org.yaml.snakeyaml.error.Mark getStartMark()>();
+v127 = new org.yaml.snakeyaml.events.MappingStartEvent;
+v128 = <org.yaml.snakeyaml.DumperOptions$FlowStyle: org.yaml.snakeyaml.DumperOptions$FlowStyle BLOCK>;
+specialinvoke v127.<org.yaml.snakeyaml.events.MappingStartEvent: void <init>(java.lang.String,java.lang.String,boolean,org.yaml.snakeyaml.error.Mark,org.yaml.snakeyaml.error.Mark,org.yaml.snakeyaml.DumperOptions$FlowStyle)>(v19, v45, v60, v3, v126, v128);
+v16 = v127;
+v129 = new org.yaml.snakeyaml.parser.ParserImpl$ParseBlockMappingFirstKey;
+specialinvoke v129.<org.yaml.snakeyaml.parser.ParserImpl$ParseBlockMappingFirstKey: void <init>(org.yaml.snakeyaml.parser.ParserImpl)>(v0);
+v0.<org.yaml.snakeyaml.parser.ParserImpl: org.yaml.snakeyaml.parser.Production state> = v129;
+goto label26;
+label21:
+if v19 != null goto label22;
+if v45 == null goto label23;
+label22:
+v130 = new org.yaml.snakeyaml.events.ScalarEvent;
+v131 = new org.yaml.snakeyaml.events.ImplicitTuple;
+specialinvoke v131.<org.yaml.snakeyaml.events.ImplicitTuple: void <init>(boolean,boolean)>(v60, 0);
+v132 = <org.yaml.snakeyaml.DumperOptions$ScalarStyle: org.yaml.snakeyaml.DumperOptions$ScalarStyle PLAIN>;
+specialinvoke v130.<org.yaml.snakeyaml.events.ScalarEvent: void <init>(java.lang.String,java.lang.String,org.yaml.snakeyaml.events.ImplicitTuple,java.lang.String,org.yaml.snakeyaml.error.Mark,org.yaml.snakeyaml.error.Mark,org.yaml.snakeyaml.DumperOptions$ScalarStyle)>(v19, v45, v131, "", v3, v4, v132);
+v16 = v130;
+v133 = v0.<org.yaml.snakeyaml.parser.ParserImpl: org.yaml.snakeyaml.util.ArrayStack states>;
+v134 = virtualinvoke v133.<org.yaml.snakeyaml.util.ArrayStack: java.lang.Object pop()>();
+v0.<org.yaml.snakeyaml.parser.ParserImpl: org.yaml.snakeyaml.parser.Production state> = v134;
+goto label26;
+label23:
+v135 = v0.<org.yaml.snakeyaml.parser.ParserImpl: org.yaml.snakeyaml.scanner.Scanner scanner>;
+v136 = interfaceinvoke v135.<org.yaml.snakeyaml.scanner.Scanner: org.yaml.snakeyaml.tokens.Token peekToken()>();
+v137 = new org.yaml.snakeyaml.parser.ParserException;
+if v1 == 0 goto label24;
+v138 = "block";
+goto label25;
+label24:
+v138 = "flow";
+label25:
+v139 = dynamicinvoke "makeConcatWithConstants" <java.lang.String (java.lang.String)>(v138) <java.lang.invoke.StringConcatFactory: java.lang.invoke.CallSite makeConcatWithConstants(java.lang.invoke.MethodHandles$Lookup,java.lang.String,java.lang.invoke.MethodType,java.lang.String,java.lang.Object[])>("while parsing a \u0001 node");
+v140 = virtualinvoke v136.<org.yaml.snakeyaml.tokens.Token: org.yaml.snakeyaml.tokens.Token$ID getTokenId()>();
+v141 = dynamicinvoke "makeConcatWithConstants" <java.lang.String (org.yaml.snakeyaml.tokens.Token$ID)>(v140) <java.lang.invoke.StringConcatFactory: java.lang.invoke.CallSite makeConcatWithConstants(java.lang.invoke.MethodHandles$Lookup,java.lang.String,java.lang.invoke.MethodType,java.lang.String,java.lang.Object[])>("expected the node content, but found \'\u0001\'");
+v142 = virtualinvoke v136.<org.yaml.snakeyaml.tokens.Token: org.yaml.snakeyaml.error.Mark getStartMark()>();
+specialinvoke v137.<org.yaml.snakeyaml.parser.ParserException: void <init>(java.lang.String,org.yaml.snakeyaml.error.Mark,java.lang.String,org.yaml.snakeyaml.error.Mark)>(v139, v3, v141, v142);
+throw v137;
+label26:
+return v16;
+}
+private org.yaml.snakeyaml.events.Event processEmptyScalar(org.yaml.snakeyaml.error.Mark)
+{
+org.yaml.snakeyaml.parser.ParserImpl v0;
+org.yaml.snakeyaml.error.Mark v1;
+org.yaml.snakeyaml.DumperOptions$ScalarStyle v4;
+org.yaml.snakeyaml.events.ImplicitTuple v3;
+org.yaml.snakeyaml.events.ScalarEvent v2;
+v0 := @this: org.yaml.snakeyaml.parser.ParserImpl;
+v1 := @parameter0: org.yaml.snakeyaml.error.Mark;
+v2 = new org.yaml.snakeyaml.events.ScalarEvent;
+v3 = new org.yaml.snakeyaml.events.ImplicitTuple;
+specialinvoke v3.<org.yaml.snakeyaml.events.ImplicitTuple: void <init>(boolean,boolean)>(1, 0);
+v4 = <org.yaml.snakeyaml.DumperOptions$ScalarStyle: org.yaml.snakeyaml.DumperOptions$ScalarStyle PLAIN>;
+specialinvoke v2.<org.yaml.snakeyaml.events.ScalarEvent: void <init>(java.lang.String,java.lang.String,org.yaml.snakeyaml.events.ImplicitTuple,java.lang.String,org.yaml.snakeyaml.error.Mark,org.yaml.snakeyaml.error.Mark,org.yaml.snakeyaml.DumperOptions$ScalarStyle)>(null, null, v3, "", v1, v1, v4);
+return v2;
+}
+static void <clinit>()
+{
+java.util.HashMap v0;
+java.util.Map v1, v2;
+v0 = new java.util.HashMap;
+specialinvoke v0.<java.util.HashMap: void <init>()>();
+<org.yaml.snakeyaml.parser.ParserImpl: java.util.Map DEFAULT_TAGS> = v0;
+v1 = <org.yaml.snakeyaml.parser.ParserImpl: java.util.Map DEFAULT_TAGS>;
+interfaceinvoke v1.<java.util.Map: java.lang.Object put(java.lang.Object,java.lang.Object)>("!", "!");
+v2 = <org.yaml.snakeyaml.parser.ParserImpl: java.util.Map DEFAULT_TAGS>;
+interfaceinvoke v2.<java.util.Map: java.lang.Object put(java.lang.Object,java.lang.Object)>("!!", "tag:yaml.org,2002:");
+return;
+}
+}

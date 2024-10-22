@@ -1,0 +1,708 @@
+public class io.netty.handler.ssl.JdkSslContext extends io.netty.handler.ssl.SslContext
+{
+private static final io.netty.util.internal.logging.InternalLogger logger;
+static final java.lang.String PROTOCOL;
+private static final java.lang.String[] DEFAULT_PROTOCOLS;
+private static final java.util.List DEFAULT_CIPHERS;
+private static final java.util.List DEFAULT_CIPHERS_NON_TLSV13;
+private static final java.util.Set SUPPORTED_CIPHERS;
+private static final java.util.Set SUPPORTED_CIPHERS_NON_TLSV13;
+private static final java.security.Provider DEFAULT_PROVIDER;
+private final java.lang.String[] protocols;
+private final java.lang.String[] cipherSuites;
+private final java.util.List unmodifiableCipherSuites;
+private final io.netty.handler.ssl.JdkApplicationProtocolNegotiator apn;
+private final io.netty.handler.ssl.ClientAuth clientAuth;
+private final javax.net.ssl.SSLContext sslContext;
+private final boolean isClient;
+private static java.lang.String[] defaultProtocols(javax.net.ssl.SSLContext, javax.net.ssl.SSLEngine)
+{
+javax.net.ssl.SSLContext v0;
+java.lang.Object[] v10;
+javax.net.ssl.SSLParameters v2;
+java.lang.String[] v11, v3, v7, v9;
+java.util.ArrayList v6;
+javax.net.ssl.SSLEngine v1;
+java.util.HashSet v4;
+int v5;
+boolean v8;
+v0 := @parameter0: javax.net.ssl.SSLContext;
+v1 := @parameter1: javax.net.ssl.SSLEngine;
+v2 = virtualinvoke v0.<javax.net.ssl.SSLContext: javax.net.ssl.SSLParameters getDefaultSSLParameters()>();
+v3 = virtualinvoke v2.<javax.net.ssl.SSLParameters: java.lang.String[] getProtocols()>();
+v4 = new java.util.HashSet;
+v5 = lengthof v3;
+specialinvoke v4.<java.util.HashSet: void <init>(int)>(v5);
+staticinvoke <java.util.Collections: boolean addAll(java.util.Collection,java.lang.Object[])>(v4, v3);
+v6 = new java.util.ArrayList;
+specialinvoke v6.<java.util.ArrayList: void <init>()>();
+v7 = newarray (java.lang.String)[4];
+v7[0] = "TLSv1.3";
+v7[1] = "TLSv1.2";
+v7[2] = "TLSv1.1";
+v7[3] = "TLSv1";
+staticinvoke <io.netty.handler.ssl.SslUtils: void addIfSupported(java.util.Set,java.util.List,java.lang.String[])>(v4, v6, v7);
+v8 = interfaceinvoke v6.<java.util.List: boolean isEmpty()>();
+if v8 != 0 goto label1;
+v9 = <io.netty.util.internal.EmptyArrays: java.lang.String[] EMPTY_STRINGS>;
+v10 = interfaceinvoke v6.<java.util.List: java.lang.Object[] toArray(java.lang.Object[])>(v9);
+return v10;
+label1:
+v11 = virtualinvoke v1.<javax.net.ssl.SSLEngine: java.lang.String[] getEnabledProtocols()>();
+return v11;
+}
+private static java.util.Set supportedCiphers(javax.net.ssl.SSLEngine)
+{
+java.lang.String[] v1, v12;
+java.lang.IllegalArgumentException v13;
+javax.net.ssl.SSLEngine v0;
+int v3, v4, v5, v9;
+java.lang.String v10, v11, v6, v8;
+java.util.LinkedHashSet v2;
+boolean v7;
+v0 := @parameter0: javax.net.ssl.SSLEngine;
+v1 = virtualinvoke v0.<javax.net.ssl.SSLEngine: java.lang.String[] getSupportedCipherSuites()>();
+v2 = new java.util.LinkedHashSet;
+v3 = lengthof v1;
+specialinvoke v2.<java.util.LinkedHashSet: void <init>(int)>(v3);
+v4 = 0;
+label1:
+v5 = lengthof v1;
+if v4 >= v5 goto label6;
+v6 = v1[v4];
+interfaceinvoke v2.<java.util.Set: boolean add(java.lang.Object)>(v6);
+v7 = virtualinvoke v6.<java.lang.String: boolean startsWith(java.lang.String)>("SSL_");
+if v7 == 0 goto label5;
+v8 = "SSL_";
+v9 = virtualinvoke v8.<java.lang.String: int length()>();
+v10 = virtualinvoke v6.<java.lang.String: java.lang.String substring(int)>(v9);
+v11 = dynamicinvoke "makeConcatWithConstants" <java.lang.String (java.lang.String)>(v10) <java.lang.invoke.StringConcatFactory: java.lang.invoke.CallSite makeConcatWithConstants(java.lang.invoke.MethodHandles$Lookup,java.lang.String,java.lang.invoke.MethodType,java.lang.String,java.lang.Object[])>("TLS_\u0001");
+label2:
+v12 = newarray (java.lang.String)[1];
+v12[0] = v11;
+virtualinvoke v0.<javax.net.ssl.SSLEngine: void setEnabledCipherSuites(java.lang.String[])>(v12);
+interfaceinvoke v2.<java.util.Set: boolean add(java.lang.Object)>(v11);
+label3:
+goto label5;
+label4:
+v13 := @caughtexception;
+label5:
+v4 = v4 + 1;
+goto label1;
+label6:
+return v2;
+catch java.lang.IllegalArgumentException from label2 to label3 with label4;
+}
+private static java.util.List defaultCiphers(javax.net.ssl.SSLEngine, java.util.Set)
+{
+java.util.Set v1;
+java.lang.String[] v3, v4;
+java.util.ArrayList v2;
+javax.net.ssl.SSLEngine v0;
+v0 := @parameter0: javax.net.ssl.SSLEngine;
+v1 := @parameter1: java.util.Set;
+v2 = new java.util.ArrayList;
+specialinvoke v2.<java.util.ArrayList: void <init>()>();
+v3 = <io.netty.handler.ssl.SslUtils: java.lang.String[] DEFAULT_CIPHER_SUITES>;
+staticinvoke <io.netty.handler.ssl.SslUtils: void addIfSupported(java.util.Set,java.util.List,java.lang.String[])>(v1, v2, v3);
+v4 = virtualinvoke v0.<javax.net.ssl.SSLEngine: java.lang.String[] getEnabledCipherSuites()>();
+staticinvoke <io.netty.handler.ssl.SslUtils: void useFallbackCiphersIfDefaultIsEmpty(java.util.List,java.lang.String[])>(v2, v4);
+return v2;
+}
+private static boolean isTlsV13Supported(java.lang.String[])
+{
+int v1, v2;
+java.lang.String[] v0;
+java.lang.String v3, v4;
+boolean v5;
+v0 := @parameter0: java.lang.String[];
+v1 = lengthof v0;
+v2 = 0;
+label1:
+if v2 >= v1 goto label3;
+v3 = v0[v2];
+v4 = "TLSv1.3";
+v5 = virtualinvoke v4.<java.lang.String: boolean equals(java.lang.Object)>(v3);
+if v5 == 0 goto label2;
+return 1;
+label2:
+v2 = v2 + 1;
+goto label1;
+label3:
+return 0;
+}
+public void <init>(javax.net.ssl.SSLContext, boolean, io.netty.handler.ssl.ClientAuth)
+{
+io.netty.handler.ssl.IdentityCipherSuiteFilter v4;
+io.netty.handler.ssl.ClientAuth v3;
+javax.net.ssl.SSLContext v1;
+io.netty.handler.ssl.JdkDefaultApplicationProtocolNegotiator v5;
+io.netty.handler.ssl.JdkSslContext v0;
+boolean v2;
+v0 := @this: io.netty.handler.ssl.JdkSslContext;
+v1 := @parameter0: javax.net.ssl.SSLContext;
+v2 := @parameter1: boolean;
+v3 := @parameter2: io.netty.handler.ssl.ClientAuth;
+v4 = <io.netty.handler.ssl.IdentityCipherSuiteFilter: io.netty.handler.ssl.IdentityCipherSuiteFilter INSTANCE>;
+v5 = <io.netty.handler.ssl.JdkDefaultApplicationProtocolNegotiator: io.netty.handler.ssl.JdkDefaultApplicationProtocolNegotiator INSTANCE>;
+specialinvoke v0.<io.netty.handler.ssl.JdkSslContext: void <init>(javax.net.ssl.SSLContext,boolean,java.lang.Iterable,io.netty.handler.ssl.CipherSuiteFilter,io.netty.handler.ssl.JdkApplicationProtocolNegotiator,io.netty.handler.ssl.ClientAuth,java.lang.String[],boolean)>(v1, v2, null, v4, v5, v3, null, 0);
+return;
+}
+public void <init>(javax.net.ssl.SSLContext, boolean, java.lang.Iterable, io.netty.handler.ssl.CipherSuiteFilter, io.netty.handler.ssl.ApplicationProtocolConfig, io.netty.handler.ssl.ClientAuth)
+{
+io.netty.handler.ssl.CipherSuiteFilter v4;
+io.netty.handler.ssl.ClientAuth v6;
+javax.net.ssl.SSLContext v1;
+io.netty.handler.ssl.JdkSslContext v0;
+io.netty.handler.ssl.ApplicationProtocolConfig v5;
+java.lang.Iterable v3;
+boolean v2;
+v0 := @this: io.netty.handler.ssl.JdkSslContext;
+v1 := @parameter0: javax.net.ssl.SSLContext;
+v2 := @parameter1: boolean;
+v3 := @parameter2: java.lang.Iterable;
+v4 := @parameter3: io.netty.handler.ssl.CipherSuiteFilter;
+v5 := @parameter4: io.netty.handler.ssl.ApplicationProtocolConfig;
+v6 := @parameter5: io.netty.handler.ssl.ClientAuth;
+specialinvoke v0.<io.netty.handler.ssl.JdkSslContext: void <init>(javax.net.ssl.SSLContext,boolean,java.lang.Iterable,io.netty.handler.ssl.CipherSuiteFilter,io.netty.handler.ssl.ApplicationProtocolConfig,io.netty.handler.ssl.ClientAuth,java.lang.String[],boolean)>(v1, v2, v3, v4, v5, v6, null, 0);
+return;
+}
+public void <init>(javax.net.ssl.SSLContext, boolean, java.lang.Iterable, io.netty.handler.ssl.CipherSuiteFilter, io.netty.handler.ssl.ApplicationProtocolConfig, io.netty.handler.ssl.ClientAuth, java.lang.String[], boolean)
+{
+javax.net.ssl.SSLContext v1;
+io.netty.handler.ssl.JdkSslContext v0;
+io.netty.handler.ssl.JdkApplicationProtocolNegotiator v10;
+java.lang.String[] v7;
+java.lang.Iterable v3;
+io.netty.handler.ssl.CipherSuiteFilter v4;
+io.netty.handler.ssl.ClientAuth v6;
+java.lang.Object v11;
+io.netty.handler.ssl.ApplicationProtocolConfig v5;
+boolean v2, v8, v9;
+v0 := @this: io.netty.handler.ssl.JdkSslContext;
+v1 := @parameter0: javax.net.ssl.SSLContext;
+v2 := @parameter1: boolean;
+v3 := @parameter2: java.lang.Iterable;
+v4 := @parameter3: io.netty.handler.ssl.CipherSuiteFilter;
+v5 := @parameter4: io.netty.handler.ssl.ApplicationProtocolConfig;
+v6 := @parameter5: io.netty.handler.ssl.ClientAuth;
+v7 := @parameter6: java.lang.String[];
+v8 := @parameter7: boolean;
+if v2 != 0 goto label1;
+v9 = 1;
+goto label2;
+label1:
+v9 = 0;
+label2:
+v10 = staticinvoke <io.netty.handler.ssl.JdkSslContext: io.netty.handler.ssl.JdkApplicationProtocolNegotiator toNegotiator(io.netty.handler.ssl.ApplicationProtocolConfig,boolean)>(v5, v9);
+if v7 == null goto label3;
+v11 = virtualinvoke v7.<java.lang.Object: java.lang.Object clone()>();
+label3:
+specialinvoke v0.<io.netty.handler.ssl.JdkSslContext: void <init>(javax.net.ssl.SSLContext,boolean,java.lang.Iterable,io.netty.handler.ssl.CipherSuiteFilter,io.netty.handler.ssl.JdkApplicationProtocolNegotiator,io.netty.handler.ssl.ClientAuth,java.lang.String[],boolean)>(v1, v2, v3, v4, v10, v6, v11, v8);
+return;
+}
+void <init>(javax.net.ssl.SSLContext, boolean, java.lang.Iterable, io.netty.handler.ssl.CipherSuiteFilter, io.netty.handler.ssl.JdkApplicationProtocolNegotiator, io.netty.handler.ssl.ClientAuth, java.lang.String[], boolean)
+{
+javax.net.ssl.SSLContext v1;
+io.netty.handler.ssl.JdkApplicationProtocolNegotiator v5;
+io.netty.handler.ssl.CipherSuiteFilter v4;
+io.netty.handler.ssl.ClientAuth v6;
+boolean v14, v17, v2, v23, v8;
+io.netty.handler.ssl.JdkSslContext v0;
+java.util.Set v18;
+java.security.Provider v12, v13;
+java.util.List v19, v32, v33;
+java.lang.Throwable v28;
+java.lang.String[] v15, v16, v21, v22, v24, v30, v31, v7;
+java.lang.Iterable v3;
+javax.net.ssl.SSLEngine v20;
+int v25, v26;
+java.lang.String v27;
+java.lang.Object v10, v11, v29, v9;
+v0 := @this: io.netty.handler.ssl.JdkSslContext;
+v1 := @parameter0: javax.net.ssl.SSLContext;
+v2 := @parameter1: boolean;
+v3 := @parameter2: java.lang.Iterable;
+v4 := @parameter3: io.netty.handler.ssl.CipherSuiteFilter;
+v5 := @parameter4: io.netty.handler.ssl.JdkApplicationProtocolNegotiator;
+v6 := @parameter5: io.netty.handler.ssl.ClientAuth;
+v7 := @parameter6: java.lang.String[];
+v8 := @parameter7: boolean;
+specialinvoke v0.<io.netty.handler.ssl.SslContext: void <init>(boolean)>(v8);
+v9 = staticinvoke <io.netty.util.internal.ObjectUtil: java.lang.Object checkNotNull(java.lang.Object,java.lang.String)>(v5, "apn");
+v0.<io.netty.handler.ssl.JdkSslContext: io.netty.handler.ssl.JdkApplicationProtocolNegotiator apn> = v9;
+v10 = staticinvoke <io.netty.util.internal.ObjectUtil: java.lang.Object checkNotNull(java.lang.Object,java.lang.String)>(v6, "clientAuth");
+v0.<io.netty.handler.ssl.JdkSslContext: io.netty.handler.ssl.ClientAuth clientAuth> = v10;
+v11 = staticinvoke <io.netty.util.internal.ObjectUtil: java.lang.Object checkNotNull(java.lang.Object,java.lang.String)>(v1, "sslContext");
+v0.<io.netty.handler.ssl.JdkSslContext: javax.net.ssl.SSLContext sslContext> = v11;
+v12 = <io.netty.handler.ssl.JdkSslContext: java.security.Provider DEFAULT_PROVIDER>;
+v13 = virtualinvoke v1.<javax.net.ssl.SSLContext: java.security.Provider getProvider()>();
+v14 = virtualinvoke v12.<java.security.Provider: boolean equals(java.lang.Object)>(v13);
+if v14 == 0 goto label04;
+if v7 != null goto label01;
+v15 = <io.netty.handler.ssl.JdkSslContext: java.lang.String[] DEFAULT_PROTOCOLS>;
+goto label02;
+label01:
+v15 = v7;
+label02:
+v0.<io.netty.handler.ssl.JdkSslContext: java.lang.String[] protocols> = v15;
+v16 = v0.<io.netty.handler.ssl.JdkSslContext: java.lang.String[] protocols>;
+v17 = staticinvoke <io.netty.handler.ssl.JdkSslContext: boolean isTlsV13Supported(java.lang.String[])>(v16);
+if v17 == 0 goto label03;
+v18 = <io.netty.handler.ssl.JdkSslContext: java.util.Set SUPPORTED_CIPHERS>;
+v19 = <io.netty.handler.ssl.JdkSslContext: java.util.List DEFAULT_CIPHERS>;
+goto label11;
+label03:
+v18 = <io.netty.handler.ssl.JdkSslContext: java.util.Set SUPPORTED_CIPHERS_NON_TLSV13>;
+v19 = <io.netty.handler.ssl.JdkSslContext: java.util.List DEFAULT_CIPHERS_NON_TLSV13>;
+goto label11;
+label04:
+v20 = virtualinvoke v1.<javax.net.ssl.SSLContext: javax.net.ssl.SSLEngine createSSLEngine()>();
+label05:
+if v7 != null goto label06;
+v21 = staticinvoke <io.netty.handler.ssl.JdkSslContext: java.lang.String[] defaultProtocols(javax.net.ssl.SSLContext,javax.net.ssl.SSLEngine)>(v1, v20);
+v0.<io.netty.handler.ssl.JdkSslContext: java.lang.String[] protocols> = v21;
+goto label07;
+label06:
+v0.<io.netty.handler.ssl.JdkSslContext: java.lang.String[] protocols> = v7;
+label07:
+v18 = staticinvoke <io.netty.handler.ssl.JdkSslContext: java.util.Set supportedCiphers(javax.net.ssl.SSLEngine)>(v20);
+v19 = staticinvoke <io.netty.handler.ssl.JdkSslContext: java.util.List defaultCiphers(javax.net.ssl.SSLEngine,java.util.Set)>(v20, v18);
+v22 = v0.<io.netty.handler.ssl.JdkSslContext: java.lang.String[] protocols>;
+v23 = staticinvoke <io.netty.handler.ssl.JdkSslContext: boolean isTlsV13Supported(java.lang.String[])>(v22);
+if v23 != 0 goto label09;
+v24 = <io.netty.handler.ssl.SslUtils: java.lang.String[] DEFAULT_TLSV13_CIPHER_SUITES>;
+v25 = lengthof v24;
+v26 = 0;
+label08:
+if v26 >= v25 goto label09;
+v27 = v24[v26];
+interfaceinvoke v18.<java.util.Set: boolean remove(java.lang.Object)>(v27);
+interfaceinvoke v19.<java.util.List: boolean remove(java.lang.Object)>(v27);
+v26 = v26 + 1;
+goto label08;
+label09:
+staticinvoke <io.netty.util.ReferenceCountUtil: boolean release(java.lang.Object)>(v20);
+goto label11;
+label10:
+v28 := @caughtexception;
+staticinvoke <io.netty.util.ReferenceCountUtil: boolean release(java.lang.Object)>(v20);
+throw v28;
+label11:
+v29 = staticinvoke <io.netty.util.internal.ObjectUtil: java.lang.Object checkNotNull(java.lang.Object,java.lang.String)>(v4, "cipherFilter");
+v30 = interfaceinvoke v29.<io.netty.handler.ssl.CipherSuiteFilter: java.lang.String[] filterCipherSuites(java.lang.Iterable,java.util.List,java.util.Set)>(v3, v19, v18);
+v0.<io.netty.handler.ssl.JdkSslContext: java.lang.String[] cipherSuites> = v30;
+v31 = v0.<io.netty.handler.ssl.JdkSslContext: java.lang.String[] cipherSuites>;
+v32 = staticinvoke <java.util.Arrays: java.util.List asList(java.lang.Object[])>(v31);
+v33 = staticinvoke <java.util.Collections: java.util.List unmodifiableList(java.util.List)>(v32);
+v0.<io.netty.handler.ssl.JdkSslContext: java.util.List unmodifiableCipherSuites> = v33;
+v0.<io.netty.handler.ssl.JdkSslContext: boolean isClient> = v2;
+return;
+catch java.lang.Throwable from label05 to label09 with label10;
+}
+public final javax.net.ssl.SSLContext context()
+{
+javax.net.ssl.SSLContext v1;
+io.netty.handler.ssl.JdkSslContext v0;
+v0 := @this: io.netty.handler.ssl.JdkSslContext;
+v1 = v0.<io.netty.handler.ssl.JdkSslContext: javax.net.ssl.SSLContext sslContext>;
+return v1;
+}
+public final boolean isClient()
+{
+io.netty.handler.ssl.JdkSslContext v0;
+boolean v1;
+v0 := @this: io.netty.handler.ssl.JdkSslContext;
+v1 = v0.<io.netty.handler.ssl.JdkSslContext: boolean isClient>;
+return v1;
+}
+public final javax.net.ssl.SSLSessionContext sessionContext()
+{
+javax.net.ssl.SSLContext v2, v4;
+io.netty.handler.ssl.JdkSslContext v0;
+javax.net.ssl.SSLSessionContext v3, v5;
+boolean v1;
+v0 := @this: io.netty.handler.ssl.JdkSslContext;
+v1 = virtualinvoke v0.<io.netty.handler.ssl.JdkSslContext: boolean isServer()>();
+if v1 == 0 goto label1;
+v2 = virtualinvoke v0.<io.netty.handler.ssl.JdkSslContext: javax.net.ssl.SSLContext context()>();
+v3 = virtualinvoke v2.<javax.net.ssl.SSLContext: javax.net.ssl.SSLSessionContext getServerSessionContext()>();
+return v3;
+label1:
+v4 = virtualinvoke v0.<io.netty.handler.ssl.JdkSslContext: javax.net.ssl.SSLContext context()>();
+v5 = virtualinvoke v4.<javax.net.ssl.SSLContext: javax.net.ssl.SSLSessionContext getClientSessionContext()>();
+return v5;
+}
+public final java.util.List cipherSuites()
+{
+java.util.List v1;
+io.netty.handler.ssl.JdkSslContext v0;
+v0 := @this: io.netty.handler.ssl.JdkSslContext;
+v1 = v0.<io.netty.handler.ssl.JdkSslContext: java.util.List unmodifiableCipherSuites>;
+return v1;
+}
+public final javax.net.ssl.SSLEngine newEngine(io.netty.buffer.ByteBufAllocator)
+{
+javax.net.ssl.SSLContext v2;
+io.netty.handler.ssl.JdkSslContext v0;
+io.netty.buffer.ByteBufAllocator v1;
+javax.net.ssl.SSLEngine v3, v4;
+v0 := @this: io.netty.handler.ssl.JdkSslContext;
+v1 := @parameter0: io.netty.buffer.ByteBufAllocator;
+v2 = virtualinvoke v0.<io.netty.handler.ssl.JdkSslContext: javax.net.ssl.SSLContext context()>();
+v3 = virtualinvoke v2.<javax.net.ssl.SSLContext: javax.net.ssl.SSLEngine createSSLEngine()>();
+v4 = specialinvoke v0.<io.netty.handler.ssl.JdkSslContext: javax.net.ssl.SSLEngine configureAndWrapEngine(javax.net.ssl.SSLEngine,io.netty.buffer.ByteBufAllocator)>(v3, v1);
+return v4;
+}
+public final javax.net.ssl.SSLEngine newEngine(io.netty.buffer.ByteBufAllocator, java.lang.String, int)
+{
+javax.net.ssl.SSLContext v4;
+io.netty.handler.ssl.JdkSslContext v0;
+io.netty.buffer.ByteBufAllocator v1;
+int v3;
+java.lang.String v2;
+javax.net.ssl.SSLEngine v5, v6;
+v0 := @this: io.netty.handler.ssl.JdkSslContext;
+v1 := @parameter0: io.netty.buffer.ByteBufAllocator;
+v2 := @parameter1: java.lang.String;
+v3 := @parameter2: int;
+v4 = virtualinvoke v0.<io.netty.handler.ssl.JdkSslContext: javax.net.ssl.SSLContext context()>();
+v5 = virtualinvoke v4.<javax.net.ssl.SSLContext: javax.net.ssl.SSLEngine createSSLEngine(java.lang.String,int)>(v2, v3);
+v6 = specialinvoke v0.<io.netty.handler.ssl.JdkSslContext: javax.net.ssl.SSLEngine configureAndWrapEngine(javax.net.ssl.SSLEngine,io.netty.buffer.ByteBufAllocator)>(v5, v1);
+return v6;
+}
+private javax.net.ssl.SSLEngine configureAndWrapEngine(javax.net.ssl.SSLEngine, io.netty.buffer.ByteBufAllocator)
+{
+io.netty.buffer.ByteBufAllocator v2;
+java.lang.Error v11;
+io.netty.handler.ssl.JdkApplicationProtocolNegotiator v14, v17, v20;
+java.lang.String[] v3, v4;
+javax.net.ssl.SSLEngine v1, v19, v22;
+io.netty.handler.ssl.ClientAuth v12, v8;
+int[] v7;
+int v10, v9;
+java.lang.String v13;
+boolean v16, v18, v21, v5, v6;
+io.netty.handler.ssl.JdkSslContext v0;
+io.netty.handler.ssl.JdkApplicationProtocolNegotiator$SslEngineWrapperFactory v15;
+v0 := @this: io.netty.handler.ssl.JdkSslContext;
+v1 := @parameter0: javax.net.ssl.SSLEngine;
+v2 := @parameter1: io.netty.buffer.ByteBufAllocator;
+v3 = v0.<io.netty.handler.ssl.JdkSslContext: java.lang.String[] cipherSuites>;
+virtualinvoke v1.<javax.net.ssl.SSLEngine: void setEnabledCipherSuites(java.lang.String[])>(v3);
+v4 = v0.<io.netty.handler.ssl.JdkSslContext: java.lang.String[] protocols>;
+virtualinvoke v1.<javax.net.ssl.SSLEngine: void setEnabledProtocols(java.lang.String[])>(v4);
+v5 = virtualinvoke v0.<io.netty.handler.ssl.JdkSslContext: boolean isClient()>();
+virtualinvoke v1.<javax.net.ssl.SSLEngine: void setUseClientMode(boolean)>(v5);
+v6 = virtualinvoke v0.<io.netty.handler.ssl.JdkSslContext: boolean isServer()>();
+if v6 == 0 goto label4;
+v7 = <io.netty.handler.ssl.JdkSslContext$1: int[] $SwitchMap$io$netty$handler$ssl$ClientAuth>;
+v8 = v0.<io.netty.handler.ssl.JdkSslContext: io.netty.handler.ssl.ClientAuth clientAuth>;
+v9 = virtualinvoke v8.<io.netty.handler.ssl.ClientAuth: int ordinal()>();
+v10 = v7[v9];
+tableswitch(v10)
+{
+case 1: goto label1;
+case 2: goto label2;
+case 3: goto label4;
+default: goto label3;
+};
+label1:
+virtualinvoke v1.<javax.net.ssl.SSLEngine: void setWantClientAuth(boolean)>(1);
+goto label4;
+label2:
+virtualinvoke v1.<javax.net.ssl.SSLEngine: void setNeedClientAuth(boolean)>(1);
+goto label4;
+label3:
+v11 = new java.lang.Error;
+v12 = v0.<io.netty.handler.ssl.JdkSslContext: io.netty.handler.ssl.ClientAuth clientAuth>;
+v13 = dynamicinvoke "makeConcatWithConstants" <java.lang.String (io.netty.handler.ssl.ClientAuth)>(v12) <java.lang.invoke.StringConcatFactory: java.lang.invoke.CallSite makeConcatWithConstants(java.lang.invoke.MethodHandles$Lookup,java.lang.String,java.lang.invoke.MethodType,java.lang.String,java.lang.Object[])>("Unknown auth \u0001");
+specialinvoke v11.<java.lang.Error: void <init>(java.lang.String)>(v13);
+throw v11;
+label4:
+v14 = v0.<io.netty.handler.ssl.JdkSslContext: io.netty.handler.ssl.JdkApplicationProtocolNegotiator apn>;
+v15 = interfaceinvoke v14.<io.netty.handler.ssl.JdkApplicationProtocolNegotiator: io.netty.handler.ssl.JdkApplicationProtocolNegotiator$SslEngineWrapperFactory wrapperFactory()>();
+v16 = v15 instanceof io.netty.handler.ssl.JdkApplicationProtocolNegotiator$AllocatorAwareSslEngineWrapperFactory;
+if v16 == 0 goto label5;
+v17 = v0.<io.netty.handler.ssl.JdkSslContext: io.netty.handler.ssl.JdkApplicationProtocolNegotiator apn>;
+v18 = virtualinvoke v0.<io.netty.handler.ssl.JdkSslContext: boolean isServer()>();
+v19 = virtualinvoke v15.<io.netty.handler.ssl.JdkApplicationProtocolNegotiator$AllocatorAwareSslEngineWrapperFactory: javax.net.ssl.SSLEngine wrapSslEngine(javax.net.ssl.SSLEngine,io.netty.buffer.ByteBufAllocator,io.netty.handler.ssl.JdkApplicationProtocolNegotiator,boolean)>(v1, v2, v17, v18);
+return v19;
+label5:
+v20 = v0.<io.netty.handler.ssl.JdkSslContext: io.netty.handler.ssl.JdkApplicationProtocolNegotiator apn>;
+v21 = virtualinvoke v0.<io.netty.handler.ssl.JdkSslContext: boolean isServer()>();
+v22 = interfaceinvoke v15.<io.netty.handler.ssl.JdkApplicationProtocolNegotiator$SslEngineWrapperFactory: javax.net.ssl.SSLEngine wrapSslEngine(javax.net.ssl.SSLEngine,io.netty.handler.ssl.JdkApplicationProtocolNegotiator,boolean)>(v1, v20, v21);
+return v22;
+}
+public final io.netty.handler.ssl.JdkApplicationProtocolNegotiator applicationProtocolNegotiator()
+{
+io.netty.handler.ssl.JdkApplicationProtocolNegotiator v1;
+io.netty.handler.ssl.JdkSslContext v0;
+v0 := @this: io.netty.handler.ssl.JdkSslContext;
+v1 = v0.<io.netty.handler.ssl.JdkSslContext: io.netty.handler.ssl.JdkApplicationProtocolNegotiator apn>;
+return v1;
+}
+static io.netty.handler.ssl.JdkApplicationProtocolNegotiator toNegotiator(io.netty.handler.ssl.ApplicationProtocolConfig, boolean)
+{
+io.netty.handler.ssl.ApplicationProtocolConfig$Protocol v4, v53;
+int[] v19, v3, v30, v41, v8;
+io.netty.handler.ssl.ApplicationProtocolConfig v0;
+boolean v1;
+java.util.List v13, v15, v24, v26, v35, v37, v46, v48;
+io.netty.handler.ssl.ApplicationProtocolConfig$SelectorFailureBehavior v17, v42, v50, v9;
+java.lang.StringBuilder v55, v56, v57, v58, v59;
+io.netty.handler.ssl.JdkAlpnApplicationProtocolNegotiator v12, v14, v23, v25;
+io.netty.handler.ssl.JdkDefaultApplicationProtocolNegotiator v2, v7;
+io.netty.handler.ssl.JdkNpnApplicationProtocolNegotiator v34, v36, v45, v47;
+io.netty.handler.ssl.ApplicationProtocolConfig$SelectedListenerFailureBehavior v20, v28, v31, v39;
+int v10, v11, v21, v22, v32, v33, v43, v44, v5, v6;
+java.lang.String v18, v29, v40, v51, v54;
+java.lang.UnsupportedOperationException v16, v27, v38, v49, v52;
+v0 := @parameter0: io.netty.handler.ssl.ApplicationProtocolConfig;
+v1 := @parameter1: boolean;
+if v0 != null goto label01;
+v2 = <io.netty.handler.ssl.JdkDefaultApplicationProtocolNegotiator: io.netty.handler.ssl.JdkDefaultApplicationProtocolNegotiator INSTANCE>;
+return v2;
+label01:
+v3 = <io.netty.handler.ssl.JdkSslContext$1: int[] $SwitchMap$io$netty$handler$ssl$ApplicationProtocolConfig$Protocol>;
+v4 = virtualinvoke v0.<io.netty.handler.ssl.ApplicationProtocolConfig: io.netty.handler.ssl.ApplicationProtocolConfig$Protocol protocol()>();
+v5 = virtualinvoke v4.<io.netty.handler.ssl.ApplicationProtocolConfig$Protocol: int ordinal()>();
+v6 = v3[v5];
+tableswitch(v6)
+{
+case 1: goto label02;
+case 2: goto label03;
+case 3: goto label11;
+default: goto label19;
+};
+label02:
+v7 = <io.netty.handler.ssl.JdkDefaultApplicationProtocolNegotiator: io.netty.handler.ssl.JdkDefaultApplicationProtocolNegotiator INSTANCE>;
+return v7;
+label03:
+if v1 == 0 goto label07;
+v8 = <io.netty.handler.ssl.JdkSslContext$1: int[] $SwitchMap$io$netty$handler$ssl$ApplicationProtocolConfig$SelectorFailureBehavior>;
+v9 = virtualinvoke v0.<io.netty.handler.ssl.ApplicationProtocolConfig: io.netty.handler.ssl.ApplicationProtocolConfig$SelectorFailureBehavior selectorFailureBehavior()>();
+v10 = virtualinvoke v9.<io.netty.handler.ssl.ApplicationProtocolConfig$SelectorFailureBehavior: int ordinal()>();
+v11 = v8[v10];
+lookupswitch(v11)
+{
+case 1: goto label04;
+case 2: goto label05;
+default: goto label06;
+};
+label04:
+v12 = new io.netty.handler.ssl.JdkAlpnApplicationProtocolNegotiator;
+v13 = virtualinvoke v0.<io.netty.handler.ssl.ApplicationProtocolConfig: java.util.List supportedProtocols()>();
+specialinvoke v12.<io.netty.handler.ssl.JdkAlpnApplicationProtocolNegotiator: void <init>(boolean,java.lang.Iterable)>(1, v13);
+return v12;
+label05:
+v14 = new io.netty.handler.ssl.JdkAlpnApplicationProtocolNegotiator;
+v15 = virtualinvoke v0.<io.netty.handler.ssl.ApplicationProtocolConfig: java.util.List supportedProtocols()>();
+specialinvoke v14.<io.netty.handler.ssl.JdkAlpnApplicationProtocolNegotiator: void <init>(boolean,java.lang.Iterable)>(0, v15);
+return v14;
+label06:
+v16 = new java.lang.UnsupportedOperationException;
+specialinvoke v58.<java.lang.StringBuilder: void <init>(java.lang.String)>("JDK provider does not support ");
+v17 = virtualinvoke v0.<io.netty.handler.ssl.ApplicationProtocolConfig: io.netty.handler.ssl.ApplicationProtocolConfig$SelectorFailureBehavior selectorFailureBehavior()>();
+v18 = dynamicinvoke "makeConcatWithConstants" <java.lang.String (io.netty.handler.ssl.ApplicationProtocolConfig$SelectorFailureBehavior)>(v17) <java.lang.invoke.StringConcatFactory: java.lang.invoke.CallSite makeConcatWithConstants(java.lang.invoke.MethodHandles$Lookup,java.lang.String,java.lang.invoke.MethodType,java.lang.String,java.lang.Object[])>("\u0001 failure behavior");
+specialinvoke v16.<java.lang.UnsupportedOperationException: void <init>(java.lang.String)>(v18);
+throw v16;
+label07:
+v19 = <io.netty.handler.ssl.JdkSslContext$1: int[] $SwitchMap$io$netty$handler$ssl$ApplicationProtocolConfig$SelectedListenerFailureBehavior>;
+v20 = virtualinvoke v0.<io.netty.handler.ssl.ApplicationProtocolConfig: io.netty.handler.ssl.ApplicationProtocolConfig$SelectedListenerFailureBehavior selectedListenerFailureBehavior()>();
+v21 = virtualinvoke v20.<io.netty.handler.ssl.ApplicationProtocolConfig$SelectedListenerFailureBehavior: int ordinal()>();
+v22 = v19[v21];
+lookupswitch(v22)
+{
+case 1: goto label08;
+case 2: goto label09;
+default: goto label10;
+};
+label08:
+v23 = new io.netty.handler.ssl.JdkAlpnApplicationProtocolNegotiator;
+v24 = virtualinvoke v0.<io.netty.handler.ssl.ApplicationProtocolConfig: java.util.List supportedProtocols()>();
+specialinvoke v23.<io.netty.handler.ssl.JdkAlpnApplicationProtocolNegotiator: void <init>(boolean,java.lang.Iterable)>(0, v24);
+return v23;
+label09:
+v25 = new io.netty.handler.ssl.JdkAlpnApplicationProtocolNegotiator;
+v26 = virtualinvoke v0.<io.netty.handler.ssl.ApplicationProtocolConfig: java.util.List supportedProtocols()>();
+specialinvoke v25.<io.netty.handler.ssl.JdkAlpnApplicationProtocolNegotiator: void <init>(boolean,java.lang.Iterable)>(1, v26);
+return v25;
+label10:
+v27 = new java.lang.UnsupportedOperationException;
+specialinvoke v57.<java.lang.StringBuilder: void <init>(java.lang.String)>("JDK provider does not support ");
+v28 = virtualinvoke v0.<io.netty.handler.ssl.ApplicationProtocolConfig: io.netty.handler.ssl.ApplicationProtocolConfig$SelectedListenerFailureBehavior selectedListenerFailureBehavior()>();
+v29 = dynamicinvoke "makeConcatWithConstants" <java.lang.String (io.netty.handler.ssl.ApplicationProtocolConfig$SelectedListenerFailureBehavior)>(v28) <java.lang.invoke.StringConcatFactory: java.lang.invoke.CallSite makeConcatWithConstants(java.lang.invoke.MethodHandles$Lookup,java.lang.String,java.lang.invoke.MethodType,java.lang.String,java.lang.Object[])>("\u0001 failure behavior");
+specialinvoke v27.<java.lang.UnsupportedOperationException: void <init>(java.lang.String)>(v29);
+throw v27;
+label11:
+if v1 == 0 goto label15;
+v30 = <io.netty.handler.ssl.JdkSslContext$1: int[] $SwitchMap$io$netty$handler$ssl$ApplicationProtocolConfig$SelectedListenerFailureBehavior>;
+v31 = virtualinvoke v0.<io.netty.handler.ssl.ApplicationProtocolConfig: io.netty.handler.ssl.ApplicationProtocolConfig$SelectedListenerFailureBehavior selectedListenerFailureBehavior()>();
+v32 = virtualinvoke v31.<io.netty.handler.ssl.ApplicationProtocolConfig$SelectedListenerFailureBehavior: int ordinal()>();
+v33 = v30[v32];
+lookupswitch(v33)
+{
+case 1: goto label12;
+case 2: goto label13;
+default: goto label14;
+};
+label12:
+v34 = new io.netty.handler.ssl.JdkNpnApplicationProtocolNegotiator;
+v35 = virtualinvoke v0.<io.netty.handler.ssl.ApplicationProtocolConfig: java.util.List supportedProtocols()>();
+specialinvoke v34.<io.netty.handler.ssl.JdkNpnApplicationProtocolNegotiator: void <init>(boolean,java.lang.Iterable)>(0, v35);
+return v34;
+label13:
+v36 = new io.netty.handler.ssl.JdkNpnApplicationProtocolNegotiator;
+v37 = virtualinvoke v0.<io.netty.handler.ssl.ApplicationProtocolConfig: java.util.List supportedProtocols()>();
+specialinvoke v36.<io.netty.handler.ssl.JdkNpnApplicationProtocolNegotiator: void <init>(boolean,java.lang.Iterable)>(1, v37);
+return v36;
+label14:
+v38 = new java.lang.UnsupportedOperationException;
+specialinvoke v56.<java.lang.StringBuilder: void <init>(java.lang.String)>("JDK provider does not support ");
+v39 = virtualinvoke v0.<io.netty.handler.ssl.ApplicationProtocolConfig: io.netty.handler.ssl.ApplicationProtocolConfig$SelectedListenerFailureBehavior selectedListenerFailureBehavior()>();
+v40 = dynamicinvoke "makeConcatWithConstants" <java.lang.String (io.netty.handler.ssl.ApplicationProtocolConfig$SelectedListenerFailureBehavior)>(v39) <java.lang.invoke.StringConcatFactory: java.lang.invoke.CallSite makeConcatWithConstants(java.lang.invoke.MethodHandles$Lookup,java.lang.String,java.lang.invoke.MethodType,java.lang.String,java.lang.Object[])>("\u0001 failure behavior");
+specialinvoke v38.<java.lang.UnsupportedOperationException: void <init>(java.lang.String)>(v40);
+throw v38;
+label15:
+v41 = <io.netty.handler.ssl.JdkSslContext$1: int[] $SwitchMap$io$netty$handler$ssl$ApplicationProtocolConfig$SelectorFailureBehavior>;
+v42 = virtualinvoke v0.<io.netty.handler.ssl.ApplicationProtocolConfig: io.netty.handler.ssl.ApplicationProtocolConfig$SelectorFailureBehavior selectorFailureBehavior()>();
+v43 = virtualinvoke v42.<io.netty.handler.ssl.ApplicationProtocolConfig$SelectorFailureBehavior: int ordinal()>();
+v44 = v41[v43];
+lookupswitch(v44)
+{
+case 1: goto label16;
+case 2: goto label17;
+default: goto label18;
+};
+label16:
+v45 = new io.netty.handler.ssl.JdkNpnApplicationProtocolNegotiator;
+v46 = virtualinvoke v0.<io.netty.handler.ssl.ApplicationProtocolConfig: java.util.List supportedProtocols()>();
+specialinvoke v45.<io.netty.handler.ssl.JdkNpnApplicationProtocolNegotiator: void <init>(boolean,java.lang.Iterable)>(1, v46);
+return v45;
+label17:
+v47 = new io.netty.handler.ssl.JdkNpnApplicationProtocolNegotiator;
+v48 = virtualinvoke v0.<io.netty.handler.ssl.ApplicationProtocolConfig: java.util.List supportedProtocols()>();
+specialinvoke v47.<io.netty.handler.ssl.JdkNpnApplicationProtocolNegotiator: void <init>(boolean,java.lang.Iterable)>(0, v48);
+return v47;
+label18:
+v49 = new java.lang.UnsupportedOperationException;
+specialinvoke v55.<java.lang.StringBuilder: void <init>(java.lang.String)>("JDK provider does not support ");
+v50 = virtualinvoke v0.<io.netty.handler.ssl.ApplicationProtocolConfig: io.netty.handler.ssl.ApplicationProtocolConfig$SelectorFailureBehavior selectorFailureBehavior()>();
+v51 = dynamicinvoke "makeConcatWithConstants" <java.lang.String (io.netty.handler.ssl.ApplicationProtocolConfig$SelectorFailureBehavior)>(v50) <java.lang.invoke.StringConcatFactory: java.lang.invoke.CallSite makeConcatWithConstants(java.lang.invoke.MethodHandles$Lookup,java.lang.String,java.lang.invoke.MethodType,java.lang.String,java.lang.Object[])>("\u0001 failure behavior");
+specialinvoke v49.<java.lang.UnsupportedOperationException: void <init>(java.lang.String)>(v51);
+throw v49;
+label19:
+v52 = new java.lang.UnsupportedOperationException;
+specialinvoke v59.<java.lang.StringBuilder: void <init>(java.lang.String)>("JDK provider does not support ");
+v53 = virtualinvoke v0.<io.netty.handler.ssl.ApplicationProtocolConfig: io.netty.handler.ssl.ApplicationProtocolConfig$Protocol protocol()>();
+v54 = dynamicinvoke "makeConcatWithConstants" <java.lang.String (io.netty.handler.ssl.ApplicationProtocolConfig$Protocol)>(v53) <java.lang.invoke.StringConcatFactory: java.lang.invoke.CallSite makeConcatWithConstants(java.lang.invoke.MethodHandles$Lookup,java.lang.String,java.lang.invoke.MethodType,java.lang.String,java.lang.Object[])>("\u0001 protocol");
+specialinvoke v52.<java.lang.UnsupportedOperationException: void <init>(java.lang.String)>(v54);
+throw v52;
+}
+static javax.net.ssl.KeyManagerFactory buildKeyManagerFactory(java.io.File, java.io.File, java.lang.String, javax.net.ssl.KeyManagerFactory, java.lang.String) throws java.security.UnrecoverableKeyException, java.security.KeyStoreException, java.security.NoSuchAlgorithmException, javax.crypto.NoSuchPaddingException, java.security.spec.InvalidKeySpecException, java.security.InvalidAlgorithmParameterException, java.security.cert.CertificateException, java.security.KeyException, java.io.IOException
+{
+javax.net.ssl.KeyManagerFactory v3, v6;
+java.lang.String v2, v4, v5;
+java.io.File v0, v1;
+v0 := @parameter0: java.io.File;
+v1 := @parameter1: java.io.File;
+v2 := @parameter2: java.lang.String;
+v3 := @parameter3: javax.net.ssl.KeyManagerFactory;
+v4 := @parameter4: java.lang.String;
+v5 = staticinvoke <java.security.Security: java.lang.String getProperty(java.lang.String)>("ssl.KeyManagerFactory.algorithm");
+if v5 != null goto label1;
+v5 = "SunX509";
+label1:
+v6 = staticinvoke <io.netty.handler.ssl.JdkSslContext: javax.net.ssl.KeyManagerFactory buildKeyManagerFactory(java.io.File,java.lang.String,java.io.File,java.lang.String,javax.net.ssl.KeyManagerFactory,java.lang.String)>(v0, v5, v1, v2, v3, v4);
+return v6;
+}
+protected static javax.net.ssl.KeyManagerFactory buildKeyManagerFactory(java.io.File, java.io.File, java.lang.String, javax.net.ssl.KeyManagerFactory) throws java.security.UnrecoverableKeyException, java.security.KeyStoreException, java.security.NoSuchAlgorithmException, javax.crypto.NoSuchPaddingException, java.security.spec.InvalidKeySpecException, java.security.InvalidAlgorithmParameterException, java.security.cert.CertificateException, java.security.KeyException, java.io.IOException
+{
+javax.net.ssl.KeyManagerFactory v3, v5;
+java.lang.String v2, v4;
+java.io.File v0, v1;
+v0 := @parameter0: java.io.File;
+v1 := @parameter1: java.io.File;
+v2 := @parameter2: java.lang.String;
+v3 := @parameter3: javax.net.ssl.KeyManagerFactory;
+v4 = staticinvoke <java.security.KeyStore: java.lang.String getDefaultType()>();
+v5 = staticinvoke <io.netty.handler.ssl.JdkSslContext: javax.net.ssl.KeyManagerFactory buildKeyManagerFactory(java.io.File,java.io.File,java.lang.String,javax.net.ssl.KeyManagerFactory,java.lang.String)>(v0, v1, v2, v3, v4);
+return v5;
+}
+static javax.net.ssl.KeyManagerFactory buildKeyManagerFactory(java.io.File, java.lang.String, java.io.File, java.lang.String, javax.net.ssl.KeyManagerFactory, java.lang.String) throws java.security.KeyStoreException, java.security.NoSuchAlgorithmException, javax.crypto.NoSuchPaddingException, java.security.spec.InvalidKeySpecException, java.security.InvalidAlgorithmParameterException, java.io.IOException, java.security.cert.CertificateException, java.security.KeyException, java.security.UnrecoverableKeyException
+{
+javax.net.ssl.KeyManagerFactory v4, v8;
+java.io.File v0, v2;
+java.security.PrivateKey v7;
+java.lang.String v1, v3, v5;
+java.security.cert.X509Certificate[] v6;
+v0 := @parameter0: java.io.File;
+v1 := @parameter1: java.lang.String;
+v2 := @parameter2: java.io.File;
+v3 := @parameter3: java.lang.String;
+v4 := @parameter4: javax.net.ssl.KeyManagerFactory;
+v5 := @parameter5: java.lang.String;
+v6 = staticinvoke <io.netty.handler.ssl.JdkSslContext: java.security.cert.X509Certificate[] toX509Certificates(java.io.File)>(v0);
+v7 = staticinvoke <io.netty.handler.ssl.JdkSslContext: java.security.PrivateKey toPrivateKey(java.io.File,java.lang.String)>(v2, v3);
+v8 = staticinvoke <io.netty.handler.ssl.JdkSslContext: javax.net.ssl.KeyManagerFactory buildKeyManagerFactory(java.security.cert.X509Certificate[],java.lang.String,java.security.PrivateKey,java.lang.String,javax.net.ssl.KeyManagerFactory,java.lang.String)>(v6, v1, v7, v3, v4, v5);
+return v8;
+}
+protected static javax.net.ssl.KeyManagerFactory buildKeyManagerFactory(java.io.File, java.lang.String, java.io.File, java.lang.String, javax.net.ssl.KeyManagerFactory) throws java.security.KeyStoreException, java.security.NoSuchAlgorithmException, javax.crypto.NoSuchPaddingException, java.security.spec.InvalidKeySpecException, java.security.InvalidAlgorithmParameterException, java.io.IOException, java.security.cert.CertificateException, java.security.KeyException, java.security.UnrecoverableKeyException
+{
+javax.net.ssl.KeyManagerFactory v4, v8;
+java.io.File v0, v2;
+java.security.PrivateKey v6;
+java.lang.String v1, v3, v7;
+java.security.cert.X509Certificate[] v5;
+v0 := @parameter0: java.io.File;
+v1 := @parameter1: java.lang.String;
+v2 := @parameter2: java.io.File;
+v3 := @parameter3: java.lang.String;
+v4 := @parameter4: javax.net.ssl.KeyManagerFactory;
+v5 = staticinvoke <io.netty.handler.ssl.JdkSslContext: java.security.cert.X509Certificate[] toX509Certificates(java.io.File)>(v0);
+v6 = staticinvoke <io.netty.handler.ssl.JdkSslContext: java.security.PrivateKey toPrivateKey(java.io.File,java.lang.String)>(v2, v3);
+v7 = staticinvoke <java.security.KeyStore: java.lang.String getDefaultType()>();
+v8 = staticinvoke <io.netty.handler.ssl.JdkSslContext: javax.net.ssl.KeyManagerFactory buildKeyManagerFactory(java.security.cert.X509Certificate[],java.lang.String,java.security.PrivateKey,java.lang.String,javax.net.ssl.KeyManagerFactory,java.lang.String)>(v5, v1, v6, v3, v4, v7);
+return v8;
+}
+static void <clinit>()
+{
+java.util.Set v4, v7;
+java.lang.String[] v11, v3;
+io.netty.handler.ssl.JdkSslContext$Defaults v1;
+java.security.Provider v2;
+java.util.List v12, v14, v5, v6;
+io.netty.util.internal.logging.InternalLogger v0, v10, v13, v8;
+boolean v9;
+v0 = staticinvoke <io.netty.util.internal.logging.InternalLoggerFactory: io.netty.util.internal.logging.InternalLogger getInstance(java.lang.Class)>(class "Lio/netty/handler/ssl/JdkSslContext;");
+<io.netty.handler.ssl.JdkSslContext: io.netty.util.internal.logging.InternalLogger logger> = v0;
+v1 = new io.netty.handler.ssl.JdkSslContext$Defaults;
+specialinvoke v1.<io.netty.handler.ssl.JdkSslContext$Defaults: void <init>()>();
+virtualinvoke v1.<io.netty.handler.ssl.JdkSslContext$Defaults: void init()>();
+v2 = v1.<io.netty.handler.ssl.JdkSslContext$Defaults: java.security.Provider defaultProvider>;
+<io.netty.handler.ssl.JdkSslContext: java.security.Provider DEFAULT_PROVIDER> = v2;
+v3 = v1.<io.netty.handler.ssl.JdkSslContext$Defaults: java.lang.String[] defaultProtocols>;
+<io.netty.handler.ssl.JdkSslContext: java.lang.String[] DEFAULT_PROTOCOLS> = v3;
+v4 = v1.<io.netty.handler.ssl.JdkSslContext$Defaults: java.util.Set supportedCiphers>;
+<io.netty.handler.ssl.JdkSslContext: java.util.Set SUPPORTED_CIPHERS> = v4;
+v5 = v1.<io.netty.handler.ssl.JdkSslContext$Defaults: java.util.List defaultCiphers>;
+<io.netty.handler.ssl.JdkSslContext: java.util.List DEFAULT_CIPHERS> = v5;
+v6 = v1.<io.netty.handler.ssl.JdkSslContext$Defaults: java.util.List defaultCiphersNonTLSv13>;
+<io.netty.handler.ssl.JdkSslContext: java.util.List DEFAULT_CIPHERS_NON_TLSV13> = v6;
+v7 = v1.<io.netty.handler.ssl.JdkSslContext$Defaults: java.util.Set supportedCiphersNonTLSv13>;
+<io.netty.handler.ssl.JdkSslContext: java.util.Set SUPPORTED_CIPHERS_NON_TLSV13> = v7;
+v8 = <io.netty.handler.ssl.JdkSslContext: io.netty.util.internal.logging.InternalLogger logger>;
+v9 = interfaceinvoke v8.<io.netty.util.internal.logging.InternalLogger: boolean isDebugEnabled()>();
+if v9 == 0 goto label1;
+v10 = <io.netty.handler.ssl.JdkSslContext: io.netty.util.internal.logging.InternalLogger logger>;
+v11 = <io.netty.handler.ssl.JdkSslContext: java.lang.String[] DEFAULT_PROTOCOLS>;
+v12 = staticinvoke <java.util.Arrays: java.util.List asList(java.lang.Object[])>(v11);
+interfaceinvoke v10.<io.netty.util.internal.logging.InternalLogger: void debug(java.lang.String,java.lang.Object)>("Default protocols (JDK): {} ", v12);
+v13 = <io.netty.handler.ssl.JdkSslContext: io.netty.util.internal.logging.InternalLogger logger>;
+v14 = <io.netty.handler.ssl.JdkSslContext: java.util.List DEFAULT_CIPHERS>;
+interfaceinvoke v13.<io.netty.util.internal.logging.InternalLogger: void debug(java.lang.String,java.lang.Object)>("Default cipher suites (JDK): {}", v14);
+label1:
+return;
+}
+}

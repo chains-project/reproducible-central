@@ -1,0 +1,195 @@
+public class io.vertx.core.impl.IsolatingClassLoader extends java.net.URLClassLoader
+{
+private volatile boolean closed;
+private java.util.List isolatedClasses;
+public void <init>(java.net.URL[], java.lang.ClassLoader, java.util.List)
+{
+java.net.URL[] v1;
+java.util.List v3;
+io.vertx.core.impl.IsolatingClassLoader v0;
+java.lang.ClassLoader v2;
+v0 := @this: io.vertx.core.impl.IsolatingClassLoader;
+v1 := @parameter0: java.net.URL[];
+v2 := @parameter1: java.lang.ClassLoader;
+v3 := @parameter2: java.util.List;
+specialinvoke v0.<java.net.URLClassLoader: void <init>(java.net.URL[],java.lang.ClassLoader)>(v1, v2);
+v0.<io.vertx.core.impl.IsolatingClassLoader: java.util.List isolatedClasses> = v3;
+return;
+}
+protected java.lang.Class loadClass(java.lang.String, boolean) throws java.lang.ClassNotFoundException
+{
+java.lang.Throwable v11;
+io.vertx.core.impl.IsolatingClassLoader v0;
+java.lang.Class v4;
+java.lang.ClassNotFoundException v8, v9;
+java.lang.Object v3;
+java.lang.ClassLoader v10, v7;
+java.lang.String v1;
+boolean v2, v5, v6;
+v0 := @this: io.vertx.core.impl.IsolatingClassLoader;
+v1 := @parameter0: java.lang.String;
+v2 := @parameter1: boolean;
+v3 = virtualinvoke v0.<io.vertx.core.impl.IsolatingClassLoader: java.lang.Object getClassLoadingLock(java.lang.String)>(v1);
+entermonitor v3;
+label01:
+v4 = virtualinvoke v0.<io.vertx.core.impl.IsolatingClassLoader: java.lang.Class findLoadedClass(java.lang.String)>(v1);
+if v4 != null goto label11;
+v5 = specialinvoke v0.<io.vertx.core.impl.IsolatingClassLoader: boolean isIsolatedClass(java.lang.String)>(v1);
+if v5 == 0 goto label10;
+v6 = specialinvoke v0.<io.vertx.core.impl.IsolatingClassLoader: boolean isVertxOrSystemClass(java.lang.String)>(v1);
+if v6 == 0 goto label05;
+label02:
+v7 = virtualinvoke v0.<io.vertx.core.impl.IsolatingClassLoader: java.lang.ClassLoader getParent()>();
+v4 = virtualinvoke v7.<java.lang.ClassLoader: java.lang.Class loadClass(java.lang.String)>(v1);
+label03:
+goto label05;
+label04:
+v8 := @caughtexception;
+label05:
+if v4 != null goto label09;
+label06:
+v4 = virtualinvoke v0.<io.vertx.core.impl.IsolatingClassLoader: java.lang.Class findClass(java.lang.String)>(v1);
+label07:
+goto label09;
+label08:
+v9 := @caughtexception;
+v10 = virtualinvoke v0.<io.vertx.core.impl.IsolatingClassLoader: java.lang.ClassLoader getParent()>();
+v4 = virtualinvoke v10.<java.lang.ClassLoader: java.lang.Class loadClass(java.lang.String)>(v1);
+label09:
+if v2 == 0 goto label11;
+virtualinvoke v0.<io.vertx.core.impl.IsolatingClassLoader: void resolveClass(java.lang.Class)>(v4);
+goto label11;
+label10:
+v4 = specialinvoke v0.<java.net.URLClassLoader: java.lang.Class loadClass(java.lang.String,boolean)>(v1, v2);
+label11:
+exitmonitor v3;
+label12:
+return v4;
+label13:
+v11 := @caughtexception;
+exitmonitor v3;
+throw v11;
+catch java.lang.ClassNotFoundException from label02 to label03 with label04;
+catch java.lang.ClassNotFoundException from label06 to label07 with label08;
+catch java.lang.Throwable from label01 to label12 with label13;
+}
+private boolean isIsolatedClass(java.lang.String)
+{
+int v11, v12, v8, v9;
+java.lang.String v1, v10, v13;
+boolean v14, v15, v5, v7;
+java.util.Iterator v4;
+io.vertx.core.impl.IsolatingClassLoader v0;
+java.util.List v2, v3;
+java.lang.Object v6;
+v0 := @this: io.vertx.core.impl.IsolatingClassLoader;
+v1 := @parameter0: java.lang.String;
+v2 = v0.<io.vertx.core.impl.IsolatingClassLoader: java.util.List isolatedClasses>;
+if v2 == null goto label3;
+v3 = v0.<io.vertx.core.impl.IsolatingClassLoader: java.util.List isolatedClasses>;
+v4 = interfaceinvoke v3.<java.util.List: java.util.Iterator iterator()>();
+label1:
+v5 = interfaceinvoke v4.<java.util.Iterator: boolean hasNext()>();
+if v5 == 0 goto label3;
+v6 = interfaceinvoke v4.<java.util.Iterator: java.lang.Object next()>();
+v7 = virtualinvoke v6.<java.lang.String: boolean endsWith(java.lang.String)>(".*");
+if v7 == 0 goto label2;
+v8 = virtualinvoke v6.<java.lang.String: int length()>();
+v9 = v8 - 1;
+v10 = virtualinvoke v6.<java.lang.String: java.lang.String substring(int,int)>(0, v9);
+v11 = virtualinvoke v1.<java.lang.String: int lastIndexOf(int)>(46);
+v12 = v11 + 1;
+v13 = virtualinvoke v1.<java.lang.String: java.lang.String substring(int,int)>(0, v12);
+v14 = virtualinvoke v13.<java.lang.String: boolean startsWith(java.lang.String)>(v10);
+if v14 == 0 goto label1;
+return 1;
+label2:
+v15 = virtualinvoke v6.<java.lang.String: boolean equals(java.lang.Object)>(v1);
+if v15 == 0 goto label1;
+return 1;
+label3:
+return 0;
+}
+public java.net.URL getResource(java.lang.String)
+{
+java.lang.String v1;
+io.vertx.core.impl.IsolatingClassLoader v0;
+java.net.URL v2;
+v0 := @this: io.vertx.core.impl.IsolatingClassLoader;
+v1 := @parameter0: java.lang.String;
+v2 = virtualinvoke v0.<io.vertx.core.impl.IsolatingClassLoader: java.net.URL findResource(java.lang.String)>(v1);
+if v2 != null goto label1;
+v2 = specialinvoke v0.<java.net.URLClassLoader: java.net.URL getResource(java.lang.String)>(v1);
+label1:
+return v2;
+}
+public java.util.Enumeration getResources(java.lang.String) throws java.io.IOException
+{
+java.util.Enumeration v2, v6, v9;
+io.vertx.core.impl.IsolatingClassLoader v0;
+java.util.ArrayList v3, v8;
+java.lang.ClassLoader v4, v5;
+java.lang.String v1;
+boolean v7;
+v0 := @this: io.vertx.core.impl.IsolatingClassLoader;
+v1 := @parameter0: java.lang.String;
+v2 = virtualinvoke v0.<io.vertx.core.impl.IsolatingClassLoader: java.util.Enumeration findResources(java.lang.String)>(v1);
+v3 = staticinvoke <java.util.Collections: java.util.ArrayList list(java.util.Enumeration)>(v2);
+v4 = virtualinvoke v0.<io.vertx.core.impl.IsolatingClassLoader: java.lang.ClassLoader getParent()>();
+if v4 == null goto label1;
+v5 = virtualinvoke v0.<io.vertx.core.impl.IsolatingClassLoader: java.lang.ClassLoader getParent()>();
+v6 = virtualinvoke v5.<java.lang.ClassLoader: java.util.Enumeration getResources(java.lang.String)>(v1);
+v7 = interfaceinvoke v6.<java.util.Enumeration: boolean hasMoreElements()>();
+if v7 == 0 goto label1;
+v8 = staticinvoke <java.util.Collections: java.util.ArrayList list(java.util.Enumeration)>(v6);
+interfaceinvoke v3.<java.util.List: boolean addAll(java.util.Collection)>(v8);
+label1:
+v9 = staticinvoke <java.util.Collections: java.util.Enumeration enumeration(java.util.Collection)>(v3);
+return v9;
+}
+public void close() throws java.io.IOException
+{
+io.vertx.core.impl.IsolatingClassLoader v0;
+v0 := @this: io.vertx.core.impl.IsolatingClassLoader;
+v0.<io.vertx.core.impl.IsolatingClassLoader: boolean closed> = 1;
+specialinvoke v0.<java.net.URLClassLoader: void close()>();
+return;
+}
+public boolean isClosed()
+{
+io.vertx.core.impl.IsolatingClassLoader v0;
+boolean v1;
+v0 := @this: io.vertx.core.impl.IsolatingClassLoader;
+v1 = v0.<io.vertx.core.impl.IsolatingClassLoader: boolean closed>;
+return v1;
+}
+private boolean isVertxOrSystemClass(java.lang.String)
+{
+io.vertx.core.impl.IsolatingClassLoader v0;
+java.lang.String v1;
+boolean v2, v3, v4, v5, v6, v7, v8, v9;
+v0 := @this: io.vertx.core.impl.IsolatingClassLoader;
+v1 := @parameter0: java.lang.String;
+v2 = virtualinvoke v1.<java.lang.String: boolean startsWith(java.lang.String)>("java.");
+if v2 != 0 goto label1;
+v3 = virtualinvoke v1.<java.lang.String: boolean startsWith(java.lang.String)>("javax.");
+if v3 != 0 goto label1;
+v4 = virtualinvoke v1.<java.lang.String: boolean startsWith(java.lang.String)>("sun.*");
+if v4 != 0 goto label1;
+v5 = virtualinvoke v1.<java.lang.String: boolean startsWith(java.lang.String)>("com.sun.");
+if v5 != 0 goto label1;
+v6 = virtualinvoke v1.<java.lang.String: boolean startsWith(java.lang.String)>("io.vertx.core");
+if v6 != 0 goto label1;
+v7 = virtualinvoke v1.<java.lang.String: boolean startsWith(java.lang.String)>("io.netty.");
+if v7 != 0 goto label1;
+v8 = virtualinvoke v1.<java.lang.String: boolean startsWith(java.lang.String)>("com.fasterxml.jackson");
+if v8 == 0 goto label2;
+label1:
+v9 = 1;
+goto label3;
+label2:
+v9 = 0;
+label3:
+return v9;
+}
+}

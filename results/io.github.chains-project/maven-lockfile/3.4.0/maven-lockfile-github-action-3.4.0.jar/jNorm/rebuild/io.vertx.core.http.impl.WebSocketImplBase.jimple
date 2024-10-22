@@ -1,0 +1,1700 @@
+public abstract class io.vertx.core.http.impl.WebSocketImplBase extends java.lang.Object implements io.vertx.core.http.impl.WebSocketInternal
+{
+private final boolean supportsContinuation;
+private final java.lang.String textHandlerID;
+private final java.lang.String binaryHandlerID;
+private final int maxWebSocketFrameSize;
+private final int maxWebSocketMessageSize;
+private final io.vertx.core.streams.impl.InboundBuffer pending;
+private io.netty.channel.ChannelHandlerContext chctx;
+protected final io.vertx.core.impl.ContextInternal context;
+private io.vertx.core.eventbus.MessageConsumer binaryHandlerRegistration;
+private io.vertx.core.eventbus.MessageConsumer textHandlerRegistration;
+private java.lang.String subProtocol;
+private java.lang.Object metric;
+private io.vertx.core.Handler handler;
+private io.vertx.core.Handler frameHandler;
+private io.vertx.core.Handler pongHandler;
+private io.vertx.core.Handler drainHandler;
+private io.vertx.core.Handler exceptionHandler;
+private io.vertx.core.Handler closeHandler;
+private io.vertx.core.Handler endHandler;
+protected final io.vertx.core.http.impl.Http1xConnectionBase conn;
+private boolean writable;
+private boolean closed;
+private java.lang.Short closeStatusCode;
+private java.lang.String closeReason;
+private long closeTimeoutID;
+private io.vertx.core.MultiMap headers;
+void <init>(io.vertx.core.impl.ContextInternal, io.vertx.core.http.impl.Http1xConnectionBase, boolean, int, int, boolean)
+{
+io.vertx.core.streams.impl.InboundBuffer v11, v15, v17;
+io.vertx.core.impl.ContextInternal v1;
+io.netty.channel.ChannelHandlerContext v14;
+int v4, v5;
+java.lang.String v10, v8;
+io.vertx.core.http.impl.Http1xConnectionBase v2;
+io.vertx.core.http.impl.WebSocketImplBase v0;
+boolean v12, v13, v3, v6;
+java.util.UUID v7, v9;
+io.vertx.core.Handler v16, v18;
+v0 := @this: io.vertx.core.http.impl.WebSocketImplBase;
+v1 := @parameter0: io.vertx.core.impl.ContextInternal;
+v2 := @parameter1: io.vertx.core.http.impl.Http1xConnectionBase;
+v3 := @parameter2: boolean;
+v4 := @parameter3: int;
+v5 := @parameter4: int;
+v6 := @parameter5: boolean;
+specialinvoke v0.<java.lang.Object: void <init>()>();
+v0.<io.vertx.core.http.impl.WebSocketImplBase: long closeTimeoutID> = -1L;
+v0.<io.vertx.core.http.impl.WebSocketImplBase: boolean supportsContinuation> = v3;
+if v6 == 0 goto label1;
+v7 = staticinvoke <java.util.UUID: java.util.UUID randomUUID()>();
+v8 = dynamicinvoke "makeConcatWithConstants" <java.lang.String (java.util.UUID)>(v7) <java.lang.invoke.StringConcatFactory: java.lang.invoke.CallSite makeConcatWithConstants(java.lang.invoke.MethodHandles$Lookup,java.lang.String,java.lang.invoke.MethodType,java.lang.String,java.lang.Object[])>("__vertx.ws.\u0001");
+v0.<io.vertx.core.http.impl.WebSocketImplBase: java.lang.String textHandlerID> = v8;
+v9 = staticinvoke <java.util.UUID: java.util.UUID randomUUID()>();
+v10 = dynamicinvoke "makeConcatWithConstants" <java.lang.String (java.util.UUID)>(v9) <java.lang.invoke.StringConcatFactory: java.lang.invoke.CallSite makeConcatWithConstants(java.lang.invoke.MethodHandles$Lookup,java.lang.String,java.lang.invoke.MethodType,java.lang.String,java.lang.Object[])>("__vertx.ws.\u0001");
+v0.<io.vertx.core.http.impl.WebSocketImplBase: java.lang.String binaryHandlerID> = v10;
+goto label2;
+label1:
+v0.<io.vertx.core.http.impl.WebSocketImplBase: java.lang.String binaryHandlerID> = null;
+v0.<io.vertx.core.http.impl.WebSocketImplBase: java.lang.String textHandlerID> = null;
+label2:
+v0.<io.vertx.core.http.impl.WebSocketImplBase: io.vertx.core.http.impl.Http1xConnectionBase conn> = v2;
+v0.<io.vertx.core.http.impl.WebSocketImplBase: io.vertx.core.impl.ContextInternal context> = v1;
+v0.<io.vertx.core.http.impl.WebSocketImplBase: int maxWebSocketFrameSize> = v4;
+v0.<io.vertx.core.http.impl.WebSocketImplBase: int maxWebSocketMessageSize> = v5;
+v11 = new io.vertx.core.streams.impl.InboundBuffer;
+specialinvoke v11.<io.vertx.core.streams.impl.InboundBuffer: void <init>(io.vertx.core.Context)>(v1);
+v0.<io.vertx.core.http.impl.WebSocketImplBase: io.vertx.core.streams.impl.InboundBuffer pending> = v11;
+v12 = virtualinvoke v2.<io.vertx.core.http.impl.Http1xConnectionBase: boolean isNotWritable()>();
+if v12 != 0 goto label3;
+v13 = 1;
+goto label4;
+label3:
+v13 = 0;
+label4:
+v0.<io.vertx.core.http.impl.WebSocketImplBase: boolean writable> = v13;
+v14 = virtualinvoke v2.<io.vertx.core.http.impl.Http1xConnectionBase: io.netty.channel.ChannelHandlerContext channelHandlerContext()>();
+v0.<io.vertx.core.http.impl.WebSocketImplBase: io.netty.channel.ChannelHandlerContext chctx> = v14;
+v15 = v0.<io.vertx.core.http.impl.WebSocketImplBase: io.vertx.core.streams.impl.InboundBuffer pending>;
+v16 = staticinvoke <io.vertx.core.http.impl.WebSocketImplBase$receiveFrame__968: io.vertx.core.Handler bootstrap$(io.vertx.core.http.impl.WebSocketImplBase)>(v0);
+virtualinvoke v15.<io.vertx.core.streams.impl.InboundBuffer: io.vertx.core.streams.impl.InboundBuffer handler(io.vertx.core.Handler)>(v16);
+v17 = v0.<io.vertx.core.http.impl.WebSocketImplBase: io.vertx.core.streams.impl.InboundBuffer pending>;
+v18 = staticinvoke <io.vertx.core.http.impl.WebSocketImplBase$lambda_new_0__969: io.vertx.core.Handler bootstrap$(io.vertx.core.http.impl.Http1xConnectionBase)>(v2);
+virtualinvoke v17.<io.vertx.core.streams.impl.InboundBuffer: io.vertx.core.streams.impl.InboundBuffer drainHandler(io.vertx.core.Handler)>(v18);
+return;
+}
+void registerHandler(io.vertx.core.eventbus.EventBus)
+{
+io.vertx.core.eventbus.EventBus v1;
+java.lang.String v2, v5, v8;
+io.vertx.core.Handler v3, v4;
+io.vertx.core.eventbus.MessageConsumer v10, v6, v7, v9;
+io.vertx.core.http.impl.WebSocketImplBase v0;
+v0 := @this: io.vertx.core.http.impl.WebSocketImplBase;
+v1 := @parameter0: io.vertx.core.eventbus.EventBus;
+v2 = v0.<io.vertx.core.http.impl.WebSocketImplBase: java.lang.String binaryHandlerID>;
+if v2 == null goto label1;
+v3 = staticinvoke <io.vertx.core.http.impl.WebSocketImplBase$lambda_registerHandler_1__970: io.vertx.core.Handler bootstrap$(io.vertx.core.http.impl.WebSocketImplBase)>(v0);
+v4 = staticinvoke <io.vertx.core.http.impl.WebSocketImplBase$lambda_registerHandler_2__971: io.vertx.core.Handler bootstrap$(io.vertx.core.http.impl.WebSocketImplBase)>(v0);
+v5 = v0.<io.vertx.core.http.impl.WebSocketImplBase: java.lang.String binaryHandlerID>;
+v6 = interfaceinvoke v1.<io.vertx.core.eventbus.EventBus: io.vertx.core.eventbus.MessageConsumer localConsumer(java.lang.String)>(v5);
+v7 = interfaceinvoke v6.<io.vertx.core.eventbus.MessageConsumer: io.vertx.core.eventbus.MessageConsumer handler(io.vertx.core.Handler)>(v3);
+v0.<io.vertx.core.http.impl.WebSocketImplBase: io.vertx.core.eventbus.MessageConsumer binaryHandlerRegistration> = v7;
+v8 = v0.<io.vertx.core.http.impl.WebSocketImplBase: java.lang.String textHandlerID>;
+v9 = interfaceinvoke v1.<io.vertx.core.eventbus.EventBus: io.vertx.core.eventbus.MessageConsumer localConsumer(java.lang.String)>(v8);
+v10 = interfaceinvoke v9.<io.vertx.core.eventbus.MessageConsumer: io.vertx.core.eventbus.MessageConsumer handler(io.vertx.core.Handler)>(v4);
+v0.<io.vertx.core.http.impl.WebSocketImplBase: io.vertx.core.eventbus.MessageConsumer textHandlerRegistration> = v10;
+label1:
+return;
+}
+public io.netty.channel.ChannelHandlerContext channelHandlerContext()
+{
+io.netty.channel.ChannelHandlerContext v1;
+io.vertx.core.http.impl.WebSocketImplBase v0;
+v0 := @this: io.vertx.core.http.impl.WebSocketImplBase;
+v1 = v0.<io.vertx.core.http.impl.WebSocketImplBase: io.netty.channel.ChannelHandlerContext chctx>;
+return v1;
+}
+public io.vertx.core.http.HttpConnection connection()
+{
+io.vertx.core.http.impl.Http1xConnectionBase v1;
+io.vertx.core.http.impl.WebSocketImplBase v0;
+v0 := @this: io.vertx.core.http.impl.WebSocketImplBase;
+v1 = v0.<io.vertx.core.http.impl.WebSocketImplBase: io.vertx.core.http.impl.Http1xConnectionBase conn>;
+return v1;
+}
+public java.lang.String binaryHandlerID()
+{
+java.lang.String v1;
+io.vertx.core.http.impl.WebSocketImplBase v0;
+v0 := @this: io.vertx.core.http.impl.WebSocketImplBase;
+v1 = v0.<io.vertx.core.http.impl.WebSocketImplBase: java.lang.String binaryHandlerID>;
+return v1;
+}
+public java.lang.String textHandlerID()
+{
+java.lang.String v1;
+io.vertx.core.http.impl.WebSocketImplBase v0;
+v0 := @this: io.vertx.core.http.impl.WebSocketImplBase;
+v1 = v0.<io.vertx.core.http.impl.WebSocketImplBase: java.lang.String textHandlerID>;
+return v1;
+}
+public boolean writeQueueFull()
+{
+java.lang.Throwable v4;
+io.vertx.core.http.impl.Http1xConnectionBase v1, v2;
+io.vertx.core.http.impl.WebSocketImplBase v0;
+boolean v3;
+v0 := @this: io.vertx.core.http.impl.WebSocketImplBase;
+v1 = v0.<io.vertx.core.http.impl.WebSocketImplBase: io.vertx.core.http.impl.Http1xConnectionBase conn>;
+entermonitor v1;
+label1:
+virtualinvoke v0.<io.vertx.core.http.impl.WebSocketImplBase: void checkClosed()>();
+v2 = v0.<io.vertx.core.http.impl.WebSocketImplBase: io.vertx.core.http.impl.Http1xConnectionBase conn>;
+v3 = virtualinvoke v2.<io.vertx.core.http.impl.Http1xConnectionBase: boolean isNotWritable()>();
+exitmonitor v1;
+label2:
+return v3;
+label3:
+v4 := @caughtexception;
+exitmonitor v1;
+throw v4;
+catch java.lang.Throwable from label1 to label2 with label3;
+}
+public io.vertx.core.Future close()
+{
+java.lang.String v1;
+io.vertx.core.Future v2;
+io.vertx.core.http.impl.WebSocketImplBase v0;
+v0 := @this: io.vertx.core.http.impl.WebSocketImplBase;
+v1 = null;
+v2 = virtualinvoke v0.<io.vertx.core.http.impl.WebSocketImplBase: io.vertx.core.Future close(short,java.lang.String)>(1000, v1);
+return v2;
+}
+public void close(io.vertx.core.Handler)
+{
+io.vertx.core.Handler v1;
+io.vertx.core.Future v2;
+io.vertx.core.http.impl.WebSocketImplBase v0;
+v0 := @this: io.vertx.core.http.impl.WebSocketImplBase;
+v1 := @parameter0: io.vertx.core.Handler;
+v2 = virtualinvoke v0.<io.vertx.core.http.impl.WebSocketImplBase: io.vertx.core.Future close()>();
+if v1 == null goto label1;
+interfaceinvoke v2.<io.vertx.core.Future: io.vertx.core.Future onComplete(io.vertx.core.Handler)>(v1);
+label1:
+return;
+}
+public io.vertx.core.Future close(short)
+{
+short v1;
+java.lang.String v2;
+io.vertx.core.Future v3;
+io.vertx.core.http.impl.WebSocketImplBase v0;
+v0 := @this: io.vertx.core.http.impl.WebSocketImplBase;
+v1 := @parameter0: short;
+v2 = null;
+v3 = virtualinvoke v0.<io.vertx.core.http.impl.WebSocketImplBase: io.vertx.core.Future close(short,java.lang.String)>(v1, v2);
+return v3;
+}
+public void close(short, io.vertx.core.Handler)
+{
+short v1;
+java.lang.String v3;
+io.vertx.core.Handler v2;
+io.vertx.core.Future v4;
+io.vertx.core.http.impl.WebSocketImplBase v0;
+v0 := @this: io.vertx.core.http.impl.WebSocketImplBase;
+v1 := @parameter0: short;
+v2 := @parameter1: io.vertx.core.Handler;
+v3 = null;
+v4 = virtualinvoke v0.<io.vertx.core.http.impl.WebSocketImplBase: io.vertx.core.Future close(short,java.lang.String)>(v1, v3);
+if v2 == null goto label1;
+interfaceinvoke v4.<io.vertx.core.Future: io.vertx.core.Future onComplete(io.vertx.core.Handler)>(v2);
+label1:
+return;
+}
+public void close(short, java.lang.String, io.vertx.core.Handler)
+{
+short v1;
+java.lang.String v2;
+io.vertx.core.Handler v3;
+io.vertx.core.Future v4;
+io.vertx.core.http.impl.WebSocketImplBase v0;
+v0 := @this: io.vertx.core.http.impl.WebSocketImplBase;
+v1 := @parameter0: short;
+v2 := @parameter1: java.lang.String;
+v3 := @parameter2: io.vertx.core.Handler;
+v4 = virtualinvoke v0.<io.vertx.core.http.impl.WebSocketImplBase: io.vertx.core.Future close(short,java.lang.String)>(v1, v2);
+if v3 == null goto label1;
+interfaceinvoke v4.<io.vertx.core.Future: io.vertx.core.Future onComplete(io.vertx.core.Handler)>(v3);
+label1:
+return;
+}
+public io.vertx.core.Future close(short, java.lang.String)
+{
+java.lang.Throwable v8;
+io.vertx.core.impl.ContextInternal v11, v14;
+short v1;
+io.netty.buffer.ByteBuf v9;
+java.lang.Short v4, v7;
+io.netty.handler.codec.http.websocketx.CloseWebSocketFrame v10;
+java.lang.String v2;
+io.vertx.core.http.impl.Http1xConnectionBase v13, v3;
+io.vertx.core.http.impl.WebSocketImplBase v0;
+boolean v5, v6;
+io.vertx.core.impl.future.PromiseInternal v12;
+io.vertx.core.Future v15;
+v0 := @this: io.vertx.core.http.impl.WebSocketImplBase;
+v1 := @parameter0: short;
+v2 := @parameter1: java.lang.String;
+v3 = v0.<io.vertx.core.http.impl.WebSocketImplBase: io.vertx.core.http.impl.Http1xConnectionBase conn>;
+entermonitor v3;
+label1:
+v4 = v0.<io.vertx.core.http.impl.WebSocketImplBase: java.lang.Short closeStatusCode>;
+if v4 != null goto label2;
+v5 = 1;
+goto label3;
+label2:
+v5 = 0;
+label3:
+v6 = v5;
+if v5 == 0 goto label4;
+v7 = staticinvoke <java.lang.Short: java.lang.Short valueOf(short)>(v1);
+v0.<io.vertx.core.http.impl.WebSocketImplBase: java.lang.Short closeStatusCode> = v7;
+v0.<io.vertx.core.http.impl.WebSocketImplBase: java.lang.String closeReason> = v2;
+label4:
+exitmonitor v3;
+label5:
+goto label7;
+label6:
+v8 := @caughtexception;
+exitmonitor v3;
+throw v8;
+label7:
+if v6 == 0 goto label8;
+v9 = staticinvoke <io.vertx.core.http.impl.HttpUtils: io.netty.buffer.ByteBuf generateWSCloseFrameByteBuf(short,java.lang.String)>(v1, v2);
+v10 = new io.netty.handler.codec.http.websocketx.CloseWebSocketFrame;
+specialinvoke v10.<io.netty.handler.codec.http.websocketx.CloseWebSocketFrame: void <init>(boolean,int,io.netty.buffer.ByteBuf)>(1, 0, v9);
+v11 = v0.<io.vertx.core.http.impl.WebSocketImplBase: io.vertx.core.impl.ContextInternal context>;
+v12 = interfaceinvoke v11.<io.vertx.core.impl.ContextInternal: io.vertx.core.impl.future.PromiseInternal promise()>();
+v13 = v0.<io.vertx.core.http.impl.WebSocketImplBase: io.vertx.core.http.impl.Http1xConnectionBase conn>;
+virtualinvoke v13.<io.vertx.core.http.impl.Http1xConnectionBase: void writeToChannel(java.lang.Object,io.netty.util.concurrent.FutureListener)>(v10, v12);
+return v12;
+label8:
+v14 = v0.<io.vertx.core.http.impl.WebSocketImplBase: io.vertx.core.impl.ContextInternal context>;
+v15 = interfaceinvoke v14.<io.vertx.core.impl.ContextInternal: io.vertx.core.Future succeededFuture()>();
+return v15;
+catch java.lang.Throwable from label1 to label5 with label6;
+}
+public boolean isSsl()
+{
+io.vertx.core.http.impl.Http1xConnectionBase v1;
+io.vertx.core.http.impl.WebSocketImplBase v0;
+boolean v2;
+v0 := @this: io.vertx.core.http.impl.WebSocketImplBase;
+v1 = v0.<io.vertx.core.http.impl.WebSocketImplBase: io.vertx.core.http.impl.Http1xConnectionBase conn>;
+v2 = virtualinvoke v1.<io.vertx.core.http.impl.Http1xConnectionBase: boolean isSsl()>();
+return v2;
+}
+public javax.net.ssl.SSLSession sslSession()
+{
+javax.net.ssl.SSLSession v2;
+io.vertx.core.http.impl.Http1xConnectionBase v1;
+io.vertx.core.http.impl.WebSocketImplBase v0;
+v0 := @this: io.vertx.core.http.impl.WebSocketImplBase;
+v1 = v0.<io.vertx.core.http.impl.WebSocketImplBase: io.vertx.core.http.impl.Http1xConnectionBase conn>;
+v2 = virtualinvoke v1.<io.vertx.core.http.impl.Http1xConnectionBase: javax.net.ssl.SSLSession sslSession()>();
+return v2;
+}
+public javax.security.cert.X509Certificate[] peerCertificateChain() throws javax.net.ssl.SSLPeerUnverifiedException
+{
+javax.security.cert.X509Certificate[] v2;
+io.vertx.core.http.impl.Http1xConnectionBase v1;
+io.vertx.core.http.impl.WebSocketImplBase v0;
+v0 := @this: io.vertx.core.http.impl.WebSocketImplBase;
+v1 = v0.<io.vertx.core.http.impl.WebSocketImplBase: io.vertx.core.http.impl.Http1xConnectionBase conn>;
+v2 = virtualinvoke v1.<io.vertx.core.http.impl.Http1xConnectionBase: javax.security.cert.X509Certificate[] peerCertificateChain()>();
+return v2;
+}
+public java.util.List peerCertificates() throws javax.net.ssl.SSLPeerUnverifiedException
+{
+java.util.List v2;
+io.vertx.core.http.impl.Http1xConnectionBase v1;
+io.vertx.core.http.impl.WebSocketImplBase v0;
+v0 := @this: io.vertx.core.http.impl.WebSocketImplBase;
+v1 = v0.<io.vertx.core.http.impl.WebSocketImplBase: io.vertx.core.http.impl.Http1xConnectionBase conn>;
+v2 = virtualinvoke v1.<io.vertx.core.http.impl.Http1xConnectionBase: java.util.List peerCertificates()>();
+return v2;
+}
+public io.vertx.core.net.SocketAddress localAddress()
+{
+io.vertx.core.http.impl.Http1xConnectionBase v1;
+io.vertx.core.http.impl.WebSocketImplBase v0;
+io.vertx.core.net.SocketAddress v2;
+v0 := @this: io.vertx.core.http.impl.WebSocketImplBase;
+v1 = v0.<io.vertx.core.http.impl.WebSocketImplBase: io.vertx.core.http.impl.Http1xConnectionBase conn>;
+v2 = virtualinvoke v1.<io.vertx.core.http.impl.Http1xConnectionBase: io.vertx.core.net.SocketAddress localAddress()>();
+return v2;
+}
+public io.vertx.core.net.SocketAddress remoteAddress()
+{
+io.vertx.core.http.impl.Http1xConnectionBase v1;
+io.vertx.core.http.impl.WebSocketImplBase v0;
+io.vertx.core.net.SocketAddress v2;
+v0 := @this: io.vertx.core.http.impl.WebSocketImplBase;
+v1 = v0.<io.vertx.core.http.impl.WebSocketImplBase: io.vertx.core.http.impl.Http1xConnectionBase conn>;
+v2 = virtualinvoke v1.<io.vertx.core.http.impl.Http1xConnectionBase: io.vertx.core.net.SocketAddress remoteAddress()>();
+return v2;
+}
+public io.vertx.core.Future writeFinalTextFrame(java.lang.String)
+{
+io.vertx.core.impl.future.PromiseInternal v3;
+io.vertx.core.impl.ContextInternal v2;
+java.lang.String v1;
+io.vertx.core.Future v4;
+io.vertx.core.http.impl.WebSocketImplBase v0;
+v0 := @this: io.vertx.core.http.impl.WebSocketImplBase;
+v1 := @parameter0: java.lang.String;
+v2 = v0.<io.vertx.core.http.impl.WebSocketImplBase: io.vertx.core.impl.ContextInternal context>;
+v3 = interfaceinvoke v2.<io.vertx.core.impl.ContextInternal: io.vertx.core.impl.future.PromiseInternal promise()>();
+virtualinvoke v0.<io.vertx.core.http.impl.WebSocketImplBase: io.vertx.core.http.WebSocketBase writeFinalTextFrame(java.lang.String,io.vertx.core.Handler)>(v1, v3);
+v4 = interfaceinvoke v3.<io.vertx.core.Promise: io.vertx.core.Future future()>();
+return v4;
+}
+public io.vertx.core.http.WebSocketBase writeFinalTextFrame(java.lang.String, io.vertx.core.Handler)
+{
+io.vertx.core.http.WebSocketBase v4;
+java.lang.String v1;
+io.vertx.core.Handler v2;
+io.vertx.core.http.WebSocketFrame v3;
+io.vertx.core.http.impl.WebSocketImplBase v0;
+v0 := @this: io.vertx.core.http.impl.WebSocketImplBase;
+v1 := @parameter0: java.lang.String;
+v2 := @parameter1: io.vertx.core.Handler;
+v3 = staticinvoke <io.vertx.core.http.WebSocketFrame: io.vertx.core.http.WebSocketFrame textFrame(java.lang.String,boolean)>(v1, 1);
+v4 = virtualinvoke v0.<io.vertx.core.http.impl.WebSocketImplBase: io.vertx.core.http.WebSocketBase writeFrame(io.vertx.core.http.WebSocketFrame,io.vertx.core.Handler)>(v3, v2);
+return v4;
+}
+public io.vertx.core.Future writeFinalBinaryFrame(io.vertx.core.buffer.Buffer)
+{
+io.vertx.core.impl.future.PromiseInternal v3;
+io.vertx.core.buffer.Buffer v1;
+io.vertx.core.impl.ContextInternal v2;
+io.vertx.core.Future v4;
+io.vertx.core.http.impl.WebSocketImplBase v0;
+v0 := @this: io.vertx.core.http.impl.WebSocketImplBase;
+v1 := @parameter0: io.vertx.core.buffer.Buffer;
+v2 = v0.<io.vertx.core.http.impl.WebSocketImplBase: io.vertx.core.impl.ContextInternal context>;
+v3 = interfaceinvoke v2.<io.vertx.core.impl.ContextInternal: io.vertx.core.impl.future.PromiseInternal promise()>();
+virtualinvoke v0.<io.vertx.core.http.impl.WebSocketImplBase: io.vertx.core.http.WebSocketBase writeFinalBinaryFrame(io.vertx.core.buffer.Buffer,io.vertx.core.Handler)>(v1, v3);
+v4 = interfaceinvoke v3.<io.vertx.core.Promise: io.vertx.core.Future future()>();
+return v4;
+}
+public io.vertx.core.http.WebSocketBase writeFinalBinaryFrame(io.vertx.core.buffer.Buffer, io.vertx.core.Handler)
+{
+io.vertx.core.buffer.Buffer v1;
+io.vertx.core.http.WebSocketBase v4;
+io.vertx.core.Handler v2;
+io.vertx.core.http.WebSocketFrame v3;
+io.vertx.core.http.impl.WebSocketImplBase v0;
+v0 := @this: io.vertx.core.http.impl.WebSocketImplBase;
+v1 := @parameter0: io.vertx.core.buffer.Buffer;
+v2 := @parameter1: io.vertx.core.Handler;
+v3 = staticinvoke <io.vertx.core.http.WebSocketFrame: io.vertx.core.http.WebSocketFrame binaryFrame(io.vertx.core.buffer.Buffer,boolean)>(v1, 1);
+v4 = virtualinvoke v0.<io.vertx.core.http.impl.WebSocketImplBase: io.vertx.core.http.WebSocketBase writeFrame(io.vertx.core.http.WebSocketFrame,io.vertx.core.Handler)>(v3, v2);
+return v4;
+}
+public java.lang.String subProtocol()
+{
+java.lang.Throwable v3;
+java.lang.String v2;
+io.vertx.core.http.impl.Http1xConnectionBase v1;
+io.vertx.core.http.impl.WebSocketImplBase v0;
+v0 := @this: io.vertx.core.http.impl.WebSocketImplBase;
+v1 = v0.<io.vertx.core.http.impl.WebSocketImplBase: io.vertx.core.http.impl.Http1xConnectionBase conn>;
+entermonitor v1;
+label1:
+v2 = v0.<io.vertx.core.http.impl.WebSocketImplBase: java.lang.String subProtocol>;
+exitmonitor v1;
+label2:
+return v2;
+label3:
+v3 := @caughtexception;
+exitmonitor v1;
+throw v3;
+catch java.lang.Throwable from label1 to label2 with label3;
+}
+void subProtocol(java.lang.String)
+{
+java.lang.Throwable v3;
+java.lang.String v1;
+io.vertx.core.http.impl.Http1xConnectionBase v2;
+io.vertx.core.http.impl.WebSocketImplBase v0;
+v0 := @this: io.vertx.core.http.impl.WebSocketImplBase;
+v1 := @parameter0: java.lang.String;
+v2 = v0.<io.vertx.core.http.impl.WebSocketImplBase: io.vertx.core.http.impl.Http1xConnectionBase conn>;
+entermonitor v2;
+label1:
+v0.<io.vertx.core.http.impl.WebSocketImplBase: java.lang.String subProtocol> = v1;
+exitmonitor v2;
+label2:
+goto label4;
+label3:
+v3 := @caughtexception;
+exitmonitor v2;
+throw v3;
+label4:
+return;
+catch java.lang.Throwable from label1 to label2 with label3;
+}
+public java.lang.Short closeStatusCode()
+{
+java.lang.Throwable v3;
+java.lang.Short v2;
+io.vertx.core.http.impl.Http1xConnectionBase v1;
+io.vertx.core.http.impl.WebSocketImplBase v0;
+v0 := @this: io.vertx.core.http.impl.WebSocketImplBase;
+v1 = v0.<io.vertx.core.http.impl.WebSocketImplBase: io.vertx.core.http.impl.Http1xConnectionBase conn>;
+entermonitor v1;
+label1:
+v2 = v0.<io.vertx.core.http.impl.WebSocketImplBase: java.lang.Short closeStatusCode>;
+exitmonitor v1;
+label2:
+return v2;
+label3:
+v3 := @caughtexception;
+exitmonitor v1;
+throw v3;
+catch java.lang.Throwable from label1 to label2 with label3;
+}
+public java.lang.String closeReason()
+{
+java.lang.Throwable v3;
+java.lang.String v2;
+io.vertx.core.http.impl.Http1xConnectionBase v1;
+io.vertx.core.http.impl.WebSocketImplBase v0;
+v0 := @this: io.vertx.core.http.impl.WebSocketImplBase;
+v1 = v0.<io.vertx.core.http.impl.WebSocketImplBase: io.vertx.core.http.impl.Http1xConnectionBase conn>;
+entermonitor v1;
+label1:
+v2 = v0.<io.vertx.core.http.impl.WebSocketImplBase: java.lang.String closeReason>;
+exitmonitor v1;
+label2:
+return v2;
+label3:
+v3 := @caughtexception;
+exitmonitor v1;
+throw v3;
+catch java.lang.Throwable from label1 to label2 with label3;
+}
+public io.vertx.core.MultiMap headers()
+{
+java.lang.Throwable v3;
+io.vertx.core.MultiMap v2;
+io.vertx.core.http.impl.Http1xConnectionBase v1;
+io.vertx.core.http.impl.WebSocketImplBase v0;
+v0 := @this: io.vertx.core.http.impl.WebSocketImplBase;
+v1 = v0.<io.vertx.core.http.impl.WebSocketImplBase: io.vertx.core.http.impl.Http1xConnectionBase conn>;
+entermonitor v1;
+label1:
+v2 = v0.<io.vertx.core.http.impl.WebSocketImplBase: io.vertx.core.MultiMap headers>;
+exitmonitor v1;
+label2:
+return v2;
+label3:
+v3 := @caughtexception;
+exitmonitor v1;
+throw v3;
+catch java.lang.Throwable from label1 to label2 with label3;
+}
+void headers(io.vertx.core.MultiMap)
+{
+java.lang.Throwable v3;
+io.vertx.core.MultiMap v1;
+io.vertx.core.http.impl.Http1xConnectionBase v2;
+io.vertx.core.http.impl.WebSocketImplBase v0;
+v0 := @this: io.vertx.core.http.impl.WebSocketImplBase;
+v1 := @parameter0: io.vertx.core.MultiMap;
+v2 = v0.<io.vertx.core.http.impl.WebSocketImplBase: io.vertx.core.http.impl.Http1xConnectionBase conn>;
+entermonitor v2;
+label1:
+v0.<io.vertx.core.http.impl.WebSocketImplBase: io.vertx.core.MultiMap headers> = v1;
+exitmonitor v2;
+label2:
+goto label4;
+label3:
+v3 := @caughtexception;
+exitmonitor v2;
+throw v3;
+label4:
+return;
+catch java.lang.Throwable from label1 to label2 with label3;
+}
+public io.vertx.core.Future writeBinaryMessage(io.vertx.core.buffer.Buffer)
+{
+io.vertx.core.buffer.Buffer v1;
+io.vertx.core.http.WebSocketFrameType v2;
+io.vertx.core.Future v3;
+io.vertx.core.http.impl.WebSocketImplBase v0;
+v0 := @this: io.vertx.core.http.impl.WebSocketImplBase;
+v1 := @parameter0: io.vertx.core.buffer.Buffer;
+v2 = <io.vertx.core.http.WebSocketFrameType: io.vertx.core.http.WebSocketFrameType BINARY>;
+v3 = specialinvoke v0.<io.vertx.core.http.impl.WebSocketImplBase: io.vertx.core.Future writePartialMessage(io.vertx.core.http.WebSocketFrameType,io.vertx.core.buffer.Buffer,int)>(v2, v1, 0);
+return v3;
+}
+public final io.vertx.core.http.WebSocketBase writeBinaryMessage(io.vertx.core.buffer.Buffer, io.vertx.core.Handler)
+{
+io.vertx.core.buffer.Buffer v1;
+io.vertx.core.Handler v2;
+io.vertx.core.Future v3;
+io.vertx.core.http.impl.WebSocketImplBase v0;
+v0 := @this: io.vertx.core.http.impl.WebSocketImplBase;
+v1 := @parameter0: io.vertx.core.buffer.Buffer;
+v2 := @parameter1: io.vertx.core.Handler;
+v3 = virtualinvoke v0.<io.vertx.core.http.impl.WebSocketImplBase: io.vertx.core.Future writeBinaryMessage(io.vertx.core.buffer.Buffer)>(v1);
+if v2 == null goto label1;
+interfaceinvoke v3.<io.vertx.core.Future: io.vertx.core.Future onComplete(io.vertx.core.Handler)>(v2);
+label1:
+return v0;
+}
+public io.vertx.core.Future writeTextMessage(java.lang.String)
+{
+io.vertx.core.buffer.Buffer v3;
+io.vertx.core.http.WebSocketFrameType v2;
+java.lang.String v1;
+io.vertx.core.Future v4;
+io.vertx.core.http.impl.WebSocketImplBase v0;
+v0 := @this: io.vertx.core.http.impl.WebSocketImplBase;
+v1 := @parameter0: java.lang.String;
+v2 = <io.vertx.core.http.WebSocketFrameType: io.vertx.core.http.WebSocketFrameType TEXT>;
+v3 = staticinvoke <io.vertx.core.buffer.Buffer: io.vertx.core.buffer.Buffer buffer(java.lang.String)>(v1);
+v4 = specialinvoke v0.<io.vertx.core.http.impl.WebSocketImplBase: io.vertx.core.Future writePartialMessage(io.vertx.core.http.WebSocketFrameType,io.vertx.core.buffer.Buffer,int)>(v2, v3, 0);
+return v4;
+}
+public final io.vertx.core.http.WebSocketBase writeTextMessage(java.lang.String, io.vertx.core.Handler)
+{
+java.lang.String v1;
+io.vertx.core.Handler v2;
+io.vertx.core.Future v3;
+io.vertx.core.http.impl.WebSocketImplBase v0;
+v0 := @this: io.vertx.core.http.impl.WebSocketImplBase;
+v1 := @parameter0: java.lang.String;
+v2 := @parameter1: io.vertx.core.Handler;
+v3 = virtualinvoke v0.<io.vertx.core.http.impl.WebSocketImplBase: io.vertx.core.Future writeTextMessage(java.lang.String)>(v1);
+if v2 == null goto label1;
+interfaceinvoke v3.<io.vertx.core.Future: io.vertx.core.Future onComplete(io.vertx.core.Handler)>(v2);
+label1:
+return v0;
+}
+public io.vertx.core.Future write(io.vertx.core.buffer.Buffer)
+{
+io.vertx.core.buffer.Buffer v1;
+io.vertx.core.Future v3;
+io.vertx.core.http.WebSocketFrame v2;
+io.vertx.core.http.impl.WebSocketImplBase v0;
+v0 := @this: io.vertx.core.http.impl.WebSocketImplBase;
+v1 := @parameter0: io.vertx.core.buffer.Buffer;
+v2 = staticinvoke <io.vertx.core.http.WebSocketFrame: io.vertx.core.http.WebSocketFrame binaryFrame(io.vertx.core.buffer.Buffer,boolean)>(v1, 1);
+v3 = virtualinvoke v0.<io.vertx.core.http.impl.WebSocketImplBase: io.vertx.core.Future writeFrame(io.vertx.core.http.WebSocketFrame)>(v2);
+return v3;
+}
+public final void write(io.vertx.core.buffer.Buffer, io.vertx.core.Handler)
+{
+io.vertx.core.buffer.Buffer v1;
+io.vertx.core.Handler v2;
+io.vertx.core.Future v3;
+io.vertx.core.http.impl.WebSocketImplBase v0;
+v0 := @this: io.vertx.core.http.impl.WebSocketImplBase;
+v1 := @parameter0: io.vertx.core.buffer.Buffer;
+v2 := @parameter1: io.vertx.core.Handler;
+v3 = virtualinvoke v0.<io.vertx.core.http.impl.WebSocketImplBase: io.vertx.core.Future write(io.vertx.core.buffer.Buffer)>(v1);
+if v2 == null goto label1;
+interfaceinvoke v3.<io.vertx.core.Future: io.vertx.core.Future onComplete(io.vertx.core.Handler)>(v2);
+label1:
+return;
+}
+public io.vertx.core.Future writePing(io.vertx.core.buffer.Buffer)
+{
+io.vertx.core.impl.ContextInternal v5;
+io.vertx.core.Future v6, v8;
+io.vertx.core.buffer.Buffer v1;
+int v2, v3, v4;
+io.vertx.core.http.WebSocketFrame v7;
+io.vertx.core.http.impl.WebSocketImplBase v0;
+v0 := @this: io.vertx.core.http.impl.WebSocketImplBase;
+v1 := @parameter0: io.vertx.core.buffer.Buffer;
+v2 = interfaceinvoke v1.<io.vertx.core.buffer.Buffer: int length()>();
+v3 = v0.<io.vertx.core.http.impl.WebSocketImplBase: int maxWebSocketFrameSize>;
+if v2 > v3 goto label1;
+v4 = interfaceinvoke v1.<io.vertx.core.buffer.Buffer: int length()>();
+if v4 <= 125 goto label2;
+label1:
+v5 = v0.<io.vertx.core.http.impl.WebSocketImplBase: io.vertx.core.impl.ContextInternal context>;
+v6 = interfaceinvoke v5.<io.vertx.core.impl.ContextInternal: io.vertx.core.Future failedFuture(java.lang.String)>("Ping cannot exceed maxWebSocketFrameSize or 125 bytes");
+return v6;
+label2:
+v7 = staticinvoke <io.vertx.core.http.WebSocketFrame: io.vertx.core.http.WebSocketFrame pingFrame(io.vertx.core.buffer.Buffer)>(v1);
+v8 = virtualinvoke v0.<io.vertx.core.http.impl.WebSocketImplBase: io.vertx.core.Future writeFrame(io.vertx.core.http.WebSocketFrame)>(v7);
+return v8;
+}
+public final io.vertx.core.http.WebSocketBase writePing(io.vertx.core.buffer.Buffer, io.vertx.core.Handler)
+{
+io.vertx.core.buffer.Buffer v1;
+io.vertx.core.Handler v2;
+io.vertx.core.Future v3;
+io.vertx.core.http.impl.WebSocketImplBase v0;
+v0 := @this: io.vertx.core.http.impl.WebSocketImplBase;
+v1 := @parameter0: io.vertx.core.buffer.Buffer;
+v2 := @parameter1: io.vertx.core.Handler;
+v3 = virtualinvoke v0.<io.vertx.core.http.impl.WebSocketImplBase: io.vertx.core.Future writePing(io.vertx.core.buffer.Buffer)>(v1);
+if v2 == null goto label1;
+interfaceinvoke v3.<io.vertx.core.Future: io.vertx.core.Future onComplete(io.vertx.core.Handler)>(v2);
+label1:
+return v0;
+}
+public io.vertx.core.Future writePong(io.vertx.core.buffer.Buffer)
+{
+io.vertx.core.impl.ContextInternal v5;
+io.vertx.core.Future v6, v8;
+io.vertx.core.buffer.Buffer v1;
+int v2, v3, v4;
+io.vertx.core.http.WebSocketFrame v7;
+io.vertx.core.http.impl.WebSocketImplBase v0;
+v0 := @this: io.vertx.core.http.impl.WebSocketImplBase;
+v1 := @parameter0: io.vertx.core.buffer.Buffer;
+v2 = interfaceinvoke v1.<io.vertx.core.buffer.Buffer: int length()>();
+v3 = v0.<io.vertx.core.http.impl.WebSocketImplBase: int maxWebSocketFrameSize>;
+if v2 > v3 goto label1;
+v4 = interfaceinvoke v1.<io.vertx.core.buffer.Buffer: int length()>();
+if v4 <= 125 goto label2;
+label1:
+v5 = v0.<io.vertx.core.http.impl.WebSocketImplBase: io.vertx.core.impl.ContextInternal context>;
+v6 = interfaceinvoke v5.<io.vertx.core.impl.ContextInternal: io.vertx.core.Future failedFuture(java.lang.String)>("Pong cannot exceed maxWebSocketFrameSize or 125 bytes");
+return v6;
+label2:
+v7 = staticinvoke <io.vertx.core.http.WebSocketFrame: io.vertx.core.http.WebSocketFrame pongFrame(io.vertx.core.buffer.Buffer)>(v1);
+v8 = virtualinvoke v0.<io.vertx.core.http.impl.WebSocketImplBase: io.vertx.core.Future writeFrame(io.vertx.core.http.WebSocketFrame)>(v7);
+return v8;
+}
+public final io.vertx.core.http.WebSocketBase writePong(io.vertx.core.buffer.Buffer, io.vertx.core.Handler)
+{
+io.vertx.core.buffer.Buffer v1;
+io.vertx.core.Handler v2;
+io.vertx.core.Future v3;
+io.vertx.core.http.impl.WebSocketImplBase v0;
+v0 := @this: io.vertx.core.http.impl.WebSocketImplBase;
+v1 := @parameter0: io.vertx.core.buffer.Buffer;
+v2 := @parameter1: io.vertx.core.Handler;
+v3 = virtualinvoke v0.<io.vertx.core.http.impl.WebSocketImplBase: io.vertx.core.Future writePong(io.vertx.core.buffer.Buffer)>(v1);
+if v2 == null goto label1;
+interfaceinvoke v3.<io.vertx.core.Future: io.vertx.core.Future onComplete(io.vertx.core.Handler)>(v2);
+label1:
+return v0;
+}
+private io.vertx.core.Future writePartialMessage(io.vertx.core.http.WebSocketFrameType, io.vertx.core.buffer.Buffer, int)
+{
+io.netty.buffer.ByteBuf v11;
+int v13, v14, v3, v4, v5, v6;
+io.vertx.core.http.impl.ws.WebSocketFrameImpl v10;
+io.vertx.core.http.impl.WebSocketImplBase v0;
+boolean v7, v9;
+io.vertx.core.http.WebSocketFrameType v1;
+io.vertx.core.Future v15, v16;
+io.vertx.core.buffer.Buffer v2, v8;
+io.vertx.core.http.WebSocketFrame v12;
+v0 := @this: io.vertx.core.http.impl.WebSocketImplBase;
+v1 := @parameter0: io.vertx.core.http.WebSocketFrameType;
+v2 := @parameter1: io.vertx.core.buffer.Buffer;
+v3 := @parameter2: int;
+v4 = v0.<io.vertx.core.http.impl.WebSocketImplBase: int maxWebSocketFrameSize>;
+v5 = v3 + v4;
+v6 = interfaceinvoke v2.<io.vertx.core.buffer.Buffer: int length()>();
+if v5 < v6 goto label1;
+v5 = interfaceinvoke v2.<io.vertx.core.buffer.Buffer: int length()>();
+v7 = 1;
+goto label2;
+label1:
+v7 = 0;
+label2:
+v8 = interfaceinvoke v2.<io.vertx.core.buffer.Buffer: io.vertx.core.buffer.Buffer slice(int,int)>(v3, v5);
+if v3 == 0 goto label3;
+v9 = v0.<io.vertx.core.http.impl.WebSocketImplBase: boolean supportsContinuation>;
+if v9 != 0 goto label4;
+label3:
+v10 = new io.vertx.core.http.impl.ws.WebSocketFrameImpl;
+v11 = interfaceinvoke v8.<io.vertx.core.buffer.Buffer: io.netty.buffer.ByteBuf getByteBuf()>();
+specialinvoke v10.<io.vertx.core.http.impl.ws.WebSocketFrameImpl: void <init>(io.vertx.core.http.WebSocketFrameType,io.netty.buffer.ByteBuf,boolean)>(v1, v11, v7);
+v12 = v10;
+goto label5;
+label4:
+v12 = staticinvoke <io.vertx.core.http.WebSocketFrame: io.vertx.core.http.WebSocketFrame continuationFrame(io.vertx.core.buffer.Buffer,boolean)>(v8, v7);
+label5:
+v13 = v0.<io.vertx.core.http.impl.WebSocketImplBase: int maxWebSocketFrameSize>;
+v14 = v3 + v13;
+if v7 == 0 goto label6;
+v15 = virtualinvoke v0.<io.vertx.core.http.impl.WebSocketImplBase: io.vertx.core.Future writeFrame(io.vertx.core.http.WebSocketFrame)>(v12);
+return v15;
+label6:
+virtualinvoke v0.<io.vertx.core.http.impl.WebSocketImplBase: io.vertx.core.Future writeFrame(io.vertx.core.http.WebSocketFrame)>(v12);
+v16 = specialinvoke v0.<io.vertx.core.http.impl.WebSocketImplBase: io.vertx.core.Future writePartialMessage(io.vertx.core.http.WebSocketFrameType,io.vertx.core.buffer.Buffer,int)>(v1, v2, v14);
+return v16;
+}
+public io.vertx.core.Future writeFrame(io.vertx.core.http.WebSocketFrame)
+{
+java.lang.Throwable v11;
+io.vertx.core.impl.future.PromiseInternal v7;
+io.netty.handler.codec.http.websocketx.WebSocketFrame v9;
+io.vertx.core.impl.ContextInternal v4, v6;
+io.vertx.core.Future v10, v5;
+io.vertx.core.http.impl.Http1xConnectionBase v2, v8;
+io.vertx.core.http.WebSocketFrame v1;
+io.vertx.core.http.impl.WebSocketImplBase v0;
+boolean v3;
+v0 := @this: io.vertx.core.http.impl.WebSocketImplBase;
+v1 := @parameter0: io.vertx.core.http.WebSocketFrame;
+v2 = v0.<io.vertx.core.http.impl.WebSocketImplBase: io.vertx.core.http.impl.Http1xConnectionBase conn>;
+entermonitor v2;
+label1:
+v3 = virtualinvoke v0.<io.vertx.core.http.impl.WebSocketImplBase: boolean isClosed()>();
+if v3 == 0 goto label3;
+v4 = v0.<io.vertx.core.http.impl.WebSocketImplBase: io.vertx.core.impl.ContextInternal context>;
+v5 = interfaceinvoke v4.<io.vertx.core.impl.ContextInternal: io.vertx.core.Future failedFuture(java.lang.String)>("WebSocket is closed");
+exitmonitor v2;
+label2:
+return v5;
+label3:
+v6 = v0.<io.vertx.core.http.impl.WebSocketImplBase: io.vertx.core.impl.ContextInternal context>;
+v7 = interfaceinvoke v6.<io.vertx.core.impl.ContextInternal: io.vertx.core.impl.future.PromiseInternal promise()>();
+v8 = v0.<io.vertx.core.http.impl.WebSocketImplBase: io.vertx.core.http.impl.Http1xConnectionBase conn>;
+v9 = specialinvoke v0.<io.vertx.core.http.impl.WebSocketImplBase: io.netty.handler.codec.http.websocketx.WebSocketFrame encodeFrame(io.vertx.core.http.impl.ws.WebSocketFrameImpl)>(v1);
+virtualinvoke v8.<io.vertx.core.http.impl.Http1xConnectionBase: void writeToChannel(java.lang.Object,io.netty.util.concurrent.FutureListener)>(v9, v7);
+v10 = interfaceinvoke v7.<io.vertx.core.impl.future.PromiseInternal: io.vertx.core.Future future()>();
+exitmonitor v2;
+label4:
+return v10;
+label5:
+v11 := @caughtexception;
+exitmonitor v2;
+throw v11;
+catch java.lang.Throwable from label1 to label2 with label5;
+catch java.lang.Throwable from label3 to label4 with label5;
+}
+public final io.vertx.core.http.WebSocketBase writeFrame(io.vertx.core.http.WebSocketFrame, io.vertx.core.Handler)
+{
+io.vertx.core.Handler v2;
+io.vertx.core.Future v3;
+io.vertx.core.http.WebSocketFrame v1;
+io.vertx.core.http.impl.WebSocketImplBase v0;
+v0 := @this: io.vertx.core.http.impl.WebSocketImplBase;
+v1 := @parameter0: io.vertx.core.http.WebSocketFrame;
+v2 := @parameter1: io.vertx.core.Handler;
+v3 = virtualinvoke v0.<io.vertx.core.http.impl.WebSocketImplBase: io.vertx.core.Future writeFrame(io.vertx.core.http.WebSocketFrame)>(v1);
+if v2 == null goto label1;
+interfaceinvoke v3.<io.vertx.core.Future: io.vertx.core.Future onComplete(io.vertx.core.Handler)>(v2);
+label1:
+return v0;
+}
+private void writeBinaryFrameInternal(io.vertx.core.buffer.Buffer)
+{
+io.netty.buffer.ByteBuf v4;
+io.vertx.core.buffer.Buffer v1;
+io.vertx.core.http.WebSocketFrameType v3;
+io.vertx.core.http.impl.ws.WebSocketFrameImpl v2;
+io.vertx.core.http.impl.WebSocketImplBase v0;
+v0 := @this: io.vertx.core.http.impl.WebSocketImplBase;
+v1 := @parameter0: io.vertx.core.buffer.Buffer;
+v2 = new io.vertx.core.http.impl.ws.WebSocketFrameImpl;
+v3 = <io.vertx.core.http.WebSocketFrameType: io.vertx.core.http.WebSocketFrameType BINARY>;
+v4 = interfaceinvoke v1.<io.vertx.core.buffer.Buffer: io.netty.buffer.ByteBuf getByteBuf()>();
+specialinvoke v2.<io.vertx.core.http.impl.ws.WebSocketFrameImpl: void <init>(io.vertx.core.http.WebSocketFrameType,io.netty.buffer.ByteBuf)>(v3, v4);
+virtualinvoke v0.<io.vertx.core.http.impl.WebSocketImplBase: io.vertx.core.Future writeFrame(io.vertx.core.http.WebSocketFrame)>(v2);
+return;
+}
+private void writeTextFrameInternal(java.lang.String)
+{
+io.vertx.core.http.impl.ws.WebSocketFrameImpl v2;
+java.lang.String v1;
+io.vertx.core.http.impl.WebSocketImplBase v0;
+v0 := @this: io.vertx.core.http.impl.WebSocketImplBase;
+v1 := @parameter0: java.lang.String;
+v2 = new io.vertx.core.http.impl.ws.WebSocketFrameImpl;
+specialinvoke v2.<io.vertx.core.http.impl.ws.WebSocketFrameImpl: void <init>(java.lang.String)>(v1);
+virtualinvoke v0.<io.vertx.core.http.impl.WebSocketImplBase: io.vertx.core.Future writeFrame(io.vertx.core.http.WebSocketFrame)>(v2);
+return;
+}
+private io.netty.handler.codec.http.websocketx.WebSocketFrame encodeFrame(io.vertx.core.http.impl.ws.WebSocketFrameImpl)
+{
+java.lang.IllegalStateException v17;
+io.netty.buffer.ByteBuf v2, v3;
+int[] v4;
+io.netty.handler.codec.http.websocketx.PongWebSocketFrame v15;
+int v6, v7;
+io.netty.handler.codec.http.websocketx.CloseWebSocketFrame v12;
+io.vertx.core.http.impl.ws.WebSocketFrameImpl v1;
+java.lang.String v18;
+io.vertx.core.http.impl.WebSocketImplBase v0;
+boolean v11, v14, v9;
+io.vertx.core.http.WebSocketFrameType v5;
+io.netty.handler.codec.http.websocketx.ContinuationWebSocketFrame v13;
+io.netty.handler.codec.http.websocketx.PingWebSocketFrame v16;
+io.netty.handler.codec.http.websocketx.BinaryWebSocketFrame v8;
+io.netty.handler.codec.http.websocketx.TextWebSocketFrame v10;
+v0 := @this: io.vertx.core.http.impl.WebSocketImplBase;
+v1 := @parameter0: io.vertx.core.http.impl.ws.WebSocketFrameImpl;
+v2 = virtualinvoke v1.<io.vertx.core.http.impl.ws.WebSocketFrameImpl: io.netty.buffer.ByteBuf getBinaryData()>();
+v3 = staticinvoke <io.vertx.core.net.impl.VertxHandler: io.netty.buffer.ByteBuf safeBuffer(io.netty.buffer.ByteBuf)>(v2);
+v4 = <io.vertx.core.http.impl.WebSocketImplBase$1: int[] $SwitchMap$io$vertx$core$http$WebSocketFrameType>;
+v5 = virtualinvoke v1.<io.vertx.core.http.impl.ws.WebSocketFrameImpl: io.vertx.core.http.WebSocketFrameType type()>();
+v6 = virtualinvoke v5.<io.vertx.core.http.WebSocketFrameType: int ordinal()>();
+v7 = v4[v6];
+tableswitch(v7)
+{
+case 1: goto label1;
+case 2: goto label2;
+case 3: goto label3;
+case 4: goto label4;
+case 5: goto label5;
+case 6: goto label6;
+default: goto label7;
+};
+label1:
+v8 = new io.netty.handler.codec.http.websocketx.BinaryWebSocketFrame;
+v9 = virtualinvoke v1.<io.vertx.core.http.impl.ws.WebSocketFrameImpl: boolean isFinal()>();
+specialinvoke v8.<io.netty.handler.codec.http.websocketx.BinaryWebSocketFrame: void <init>(boolean,int,io.netty.buffer.ByteBuf)>(v9, 0, v3);
+return v8;
+label2:
+v10 = new io.netty.handler.codec.http.websocketx.TextWebSocketFrame;
+v11 = virtualinvoke v1.<io.vertx.core.http.impl.ws.WebSocketFrameImpl: boolean isFinal()>();
+specialinvoke v10.<io.netty.handler.codec.http.websocketx.TextWebSocketFrame: void <init>(boolean,int,io.netty.buffer.ByteBuf)>(v11, 0, v3);
+return v10;
+label3:
+v12 = new io.netty.handler.codec.http.websocketx.CloseWebSocketFrame;
+specialinvoke v12.<io.netty.handler.codec.http.websocketx.CloseWebSocketFrame: void <init>(boolean,int,io.netty.buffer.ByteBuf)>(1, 0, v3);
+return v12;
+label4:
+v13 = new io.netty.handler.codec.http.websocketx.ContinuationWebSocketFrame;
+v14 = virtualinvoke v1.<io.vertx.core.http.impl.ws.WebSocketFrameImpl: boolean isFinal()>();
+specialinvoke v13.<io.netty.handler.codec.http.websocketx.ContinuationWebSocketFrame: void <init>(boolean,int,io.netty.buffer.ByteBuf)>(v14, 0, v3);
+return v13;
+label5:
+v15 = new io.netty.handler.codec.http.websocketx.PongWebSocketFrame;
+specialinvoke v15.<io.netty.handler.codec.http.websocketx.PongWebSocketFrame: void <init>(io.netty.buffer.ByteBuf)>(v3);
+return v15;
+label6:
+v16 = new io.netty.handler.codec.http.websocketx.PingWebSocketFrame;
+specialinvoke v16.<io.netty.handler.codec.http.websocketx.PingWebSocketFrame: void <init>(io.netty.buffer.ByteBuf)>(v3);
+return v16;
+label7:
+v17 = new java.lang.IllegalStateException;
+v18 = dynamicinvoke "makeConcatWithConstants" <java.lang.String (io.vertx.core.http.impl.ws.WebSocketFrameImpl)>(v1) <java.lang.invoke.StringConcatFactory: java.lang.invoke.CallSite makeConcatWithConstants(java.lang.invoke.MethodHandles$Lookup,java.lang.String,java.lang.invoke.MethodType,java.lang.String,java.lang.Object[])>("Unsupported WebSocket msg \u0001");
+specialinvoke v17.<java.lang.IllegalStateException: void <init>(java.lang.String)>(v18);
+throw v17;
+}
+void checkClosed()
+{
+java.lang.IllegalStateException v2;
+io.vertx.core.http.impl.WebSocketImplBase v0;
+boolean v1;
+v0 := @this: io.vertx.core.http.impl.WebSocketImplBase;
+v1 = virtualinvoke v0.<io.vertx.core.http.impl.WebSocketImplBase: boolean isClosed()>();
+if v1 == 0 goto label1;
+v2 = new java.lang.IllegalStateException;
+specialinvoke v2.<java.lang.IllegalStateException: void <init>(java.lang.String)>("WebSocket is closed");
+throw v2;
+label1:
+return;
+}
+public boolean isClosed()
+{
+java.lang.Throwable v5;
+java.lang.Short v3;
+io.vertx.core.http.impl.Http1xConnectionBase v1;
+io.vertx.core.http.impl.WebSocketImplBase v0;
+boolean v2, v4;
+v0 := @this: io.vertx.core.http.impl.WebSocketImplBase;
+v1 = v0.<io.vertx.core.http.impl.WebSocketImplBase: io.vertx.core.http.impl.Http1xConnectionBase conn>;
+entermonitor v1;
+label1:
+v2 = v0.<io.vertx.core.http.impl.WebSocketImplBase: boolean closed>;
+if v2 != 0 goto label2;
+v3 = v0.<io.vertx.core.http.impl.WebSocketImplBase: java.lang.Short closeStatusCode>;
+if v3 == null goto label3;
+label2:
+v4 = 1;
+goto label4;
+label3:
+v4 = 0;
+label4:
+exitmonitor v1;
+label5:
+return v4;
+label6:
+v5 := @caughtexception;
+exitmonitor v1;
+throw v5;
+catch java.lang.Throwable from label1 to label5 with label6;
+}
+void handleFrame(io.vertx.core.http.impl.ws.WebSocketFrameInternal)
+{
+io.vertx.core.streams.impl.InboundBuffer v13;
+io.vertx.core.impl.ContextInternal v11;
+io.netty.buffer.ByteBuf v8, v9;
+int[] v2;
+io.netty.handler.codec.http.websocketx.PongWebSocketFrame v7;
+int v4, v5;
+io.vertx.core.http.impl.Http1xConnectionBase v15, v6;
+io.vertx.core.http.impl.WebSocketImplBase v0;
+boolean v14;
+io.vertx.core.http.WebSocketFrameType v3;
+io.vertx.core.buffer.Buffer v12;
+io.vertx.core.http.impl.ws.WebSocketFrameInternal v1;
+io.vertx.core.Handler v10;
+v0 := @this: io.vertx.core.http.impl.WebSocketImplBase;
+v1 := @parameter0: io.vertx.core.http.impl.ws.WebSocketFrameInternal;
+v2 = <io.vertx.core.http.impl.WebSocketImplBase$1: int[] $SwitchMap$io$vertx$core$http$WebSocketFrameType>;
+v3 = interfaceinvoke v1.<io.vertx.core.http.impl.ws.WebSocketFrameInternal: io.vertx.core.http.WebSocketFrameType type()>();
+v4 = virtualinvoke v3.<io.vertx.core.http.WebSocketFrameType: int ordinal()>();
+v5 = v2[v4];
+tableswitch(v5)
+{
+case 3: goto label3;
+case 4: goto label4;
+case 5: goto label2;
+case 6: goto label1;
+default: goto label4;
+};
+label1:
+v6 = v0.<io.vertx.core.http.impl.WebSocketImplBase: io.vertx.core.http.impl.Http1xConnectionBase conn>;
+v7 = new io.netty.handler.codec.http.websocketx.PongWebSocketFrame;
+v8 = interfaceinvoke v1.<io.vertx.core.http.impl.ws.WebSocketFrameInternal: io.netty.buffer.ByteBuf getBinaryData()>();
+v9 = virtualinvoke v8.<io.netty.buffer.ByteBuf: io.netty.buffer.ByteBuf copy()>();
+specialinvoke v7.<io.netty.handler.codec.http.websocketx.PongWebSocketFrame: void <init>(io.netty.buffer.ByteBuf)>(v9);
+virtualinvoke v6.<io.vertx.core.http.impl.Http1xConnectionBase: void writeToChannel(java.lang.Object)>(v7);
+goto label4;
+label2:
+v10 = specialinvoke v0.<io.vertx.core.http.impl.WebSocketImplBase: io.vertx.core.Handler pongHandler()>();
+if v10 == null goto label4;
+v11 = v0.<io.vertx.core.http.impl.WebSocketImplBase: io.vertx.core.impl.ContextInternal context>;
+v12 = interfaceinvoke v1.<io.vertx.core.http.impl.ws.WebSocketFrameInternal: io.vertx.core.buffer.Buffer binaryData()>();
+interfaceinvoke v11.<io.vertx.core.impl.ContextInternal: void dispatch(java.lang.Object,io.vertx.core.Handler)>(v12, v10);
+goto label4;
+label3:
+specialinvoke v0.<io.vertx.core.http.impl.WebSocketImplBase: void handleCloseFrame(io.vertx.core.http.impl.ws.WebSocketFrameInternal)>(v1);
+label4:
+v13 = v0.<io.vertx.core.http.impl.WebSocketImplBase: io.vertx.core.streams.impl.InboundBuffer pending>;
+v14 = virtualinvoke v13.<io.vertx.core.streams.impl.InboundBuffer: boolean write(java.lang.Object)>(v1);
+if v14 != 0 goto label5;
+v15 = v0.<io.vertx.core.http.impl.WebSocketImplBase: io.vertx.core.http.impl.Http1xConnectionBase conn>;
+virtualinvoke v15.<io.vertx.core.http.impl.Http1xConnectionBase: void doPause()>();
+label5:
+return;
+}
+private void handleCloseFrame(io.vertx.core.http.impl.ws.WebSocketFrameInternal)
+{
+java.lang.Throwable v8;
+short v14, v5;
+io.netty.channel.ChannelPromise v10;
+java.lang.Short v13, v3, v6;
+io.netty.handler.codec.http.websocketx.CloseWebSocketFrame v12;
+java.lang.String v15, v7;
+io.vertx.core.http.impl.Http1xConnectionBase v11, v2, v9;
+io.vertx.core.http.impl.WebSocketImplBase v0;
+boolean v4;
+io.netty.util.concurrent.GenericFutureListener v16;
+io.vertx.core.http.impl.ws.WebSocketFrameInternal v1;
+v0 := @this: io.vertx.core.http.impl.WebSocketImplBase;
+v1 := @parameter0: io.vertx.core.http.impl.ws.WebSocketFrameInternal;
+v2 = v0.<io.vertx.core.http.impl.WebSocketImplBase: io.vertx.core.http.impl.Http1xConnectionBase conn>;
+entermonitor v2;
+label1:
+v3 = v0.<io.vertx.core.http.impl.WebSocketImplBase: java.lang.Short closeStatusCode>;
+if v3 != null goto label2;
+v4 = 1;
+goto label3;
+label2:
+v4 = 0;
+label3:
+v0.<io.vertx.core.http.impl.WebSocketImplBase: boolean closed> = 1;
+v5 = interfaceinvoke v1.<io.vertx.core.http.impl.ws.WebSocketFrameInternal: short closeStatusCode()>();
+v6 = staticinvoke <java.lang.Short: java.lang.Short valueOf(short)>(v5);
+v0.<io.vertx.core.http.impl.WebSocketImplBase: java.lang.Short closeStatusCode> = v6;
+v7 = interfaceinvoke v1.<io.vertx.core.http.impl.ws.WebSocketFrameInternal: java.lang.String closeReason()>();
+v0.<io.vertx.core.http.impl.WebSocketImplBase: java.lang.String closeReason> = v7;
+exitmonitor v2;
+label4:
+goto label6;
+label5:
+v8 := @caughtexception;
+exitmonitor v2;
+throw v8;
+label6:
+virtualinvoke v0.<io.vertx.core.http.impl.WebSocketImplBase: void handleClose(boolean)>(1);
+if v4 == 0 goto label7;
+v9 = v0.<io.vertx.core.http.impl.WebSocketImplBase: io.vertx.core.http.impl.Http1xConnectionBase conn>;
+v10 = virtualinvoke v9.<io.vertx.core.http.impl.Http1xConnectionBase: io.netty.channel.ChannelPromise channelFuture()>();
+v11 = v0.<io.vertx.core.http.impl.WebSocketImplBase: io.vertx.core.http.impl.Http1xConnectionBase conn>;
+v12 = new io.netty.handler.codec.http.websocketx.CloseWebSocketFrame;
+v13 = v0.<io.vertx.core.http.impl.WebSocketImplBase: java.lang.Short closeStatusCode>;
+v14 = virtualinvoke v13.<java.lang.Short: short shortValue()>();
+v15 = v0.<io.vertx.core.http.impl.WebSocketImplBase: java.lang.String closeReason>;
+specialinvoke v12.<io.netty.handler.codec.http.websocketx.CloseWebSocketFrame: void <init>(int,java.lang.String)>(v14, v15);
+virtualinvoke v11.<io.vertx.core.http.impl.Http1xConnectionBase: void writeToChannel(java.lang.Object,io.netty.channel.ChannelPromise)>(v12, v10);
+v16 = staticinvoke <io.vertx.core.http.impl.WebSocketImplBase$lambda_handleCloseFrame_3__972: io.netty.util.concurrent.GenericFutureListener bootstrap$(io.vertx.core.http.impl.WebSocketImplBase)>(v0);
+interfaceinvoke v10.<io.netty.channel.ChannelPromise: io.netty.channel.ChannelPromise addListener(io.netty.util.concurrent.GenericFutureListener)>(v16);
+goto label8;
+label7:
+virtualinvoke v0.<io.vertx.core.http.impl.WebSocketImplBase: void handleCloseConnection()>();
+label8:
+return;
+catch java.lang.Throwable from label1 to label4 with label5;
+}
+protected void handleClose(boolean)
+{
+java.lang.Throwable v7;
+io.vertx.core.impl.ContextInternal v10, v8;
+io.vertx.core.http.HttpClosedException v9;
+io.vertx.core.Handler v3, v4;
+io.vertx.core.eventbus.MessageConsumer v5, v6;
+io.vertx.core.http.impl.Http1xConnectionBase v2;
+io.vertx.core.http.impl.WebSocketImplBase v0;
+boolean v1;
+v0 := @this: io.vertx.core.http.impl.WebSocketImplBase;
+v1 := @parameter0: boolean;
+v2 = v0.<io.vertx.core.http.impl.WebSocketImplBase: io.vertx.core.http.impl.Http1xConnectionBase conn>;
+entermonitor v2;
+label1:
+v3 = v0.<io.vertx.core.http.impl.WebSocketImplBase: io.vertx.core.Handler closeHandler>;
+v4 = v0.<io.vertx.core.http.impl.WebSocketImplBase: io.vertx.core.Handler exceptionHandler>;
+v5 = v0.<io.vertx.core.http.impl.WebSocketImplBase: io.vertx.core.eventbus.MessageConsumer binaryHandlerRegistration>;
+v6 = v0.<io.vertx.core.http.impl.WebSocketImplBase: io.vertx.core.eventbus.MessageConsumer textHandlerRegistration>;
+v0.<io.vertx.core.http.impl.WebSocketImplBase: io.vertx.core.eventbus.MessageConsumer binaryHandlerRegistration> = null;
+v0.<io.vertx.core.http.impl.WebSocketImplBase: io.vertx.core.eventbus.MessageConsumer textHandlerRegistration> = null;
+v0.<io.vertx.core.http.impl.WebSocketImplBase: io.vertx.core.Handler closeHandler> = null;
+v0.<io.vertx.core.http.impl.WebSocketImplBase: io.vertx.core.Handler exceptionHandler> = null;
+exitmonitor v2;
+label2:
+goto label4;
+label3:
+v7 := @caughtexception;
+exitmonitor v2;
+throw v7;
+label4:
+if v5 == null goto label5;
+interfaceinvoke v5.<io.vertx.core.eventbus.MessageConsumer: io.vertx.core.Future unregister()>();
+label5:
+if v6 == null goto label6;
+interfaceinvoke v6.<io.vertx.core.eventbus.MessageConsumer: io.vertx.core.Future unregister()>();
+label6:
+if v4 == null goto label7;
+if v1 != 0 goto label7;
+v8 = v0.<io.vertx.core.http.impl.WebSocketImplBase: io.vertx.core.impl.ContextInternal context>;
+v9 = <io.vertx.core.http.impl.HttpUtils: io.vertx.core.http.HttpClosedException CONNECTION_CLOSED_EXCEPTION>;
+interfaceinvoke v8.<io.vertx.core.impl.ContextInternal: void dispatch(java.lang.Object,io.vertx.core.Handler)>(v9, v4);
+label7:
+if v3 == null goto label8;
+v10 = v0.<io.vertx.core.http.impl.WebSocketImplBase: io.vertx.core.impl.ContextInternal context>;
+interfaceinvoke v10.<io.vertx.core.impl.ContextInternal: void dispatch(java.lang.Object,io.vertx.core.Handler)>(null, v3);
+label8:
+return;
+catch java.lang.Throwable from label1 to label2 with label3;
+}
+public void receiveFrame(io.vertx.core.http.impl.ws.WebSocketFrameInternal)
+{
+java.lang.Throwable v4;
+io.vertx.core.http.WebSocketFrameType v7;
+io.vertx.core.impl.ContextInternal v11, v13, v5;
+io.vertx.core.buffer.Buffer v14;
+int[] v6;
+int v8, v9;
+io.vertx.core.http.impl.ws.WebSocketFrameInternal v1;
+io.vertx.core.Handler v10, v12, v3;
+io.vertx.core.http.impl.Http1xConnectionBase v2;
+io.vertx.core.http.impl.WebSocketImplBase v0;
+v0 := @this: io.vertx.core.http.impl.WebSocketImplBase;
+v1 := @parameter0: io.vertx.core.http.impl.ws.WebSocketFrameInternal;
+v2 = v0.<io.vertx.core.http.impl.WebSocketImplBase: io.vertx.core.http.impl.Http1xConnectionBase conn>;
+entermonitor v2;
+label1:
+v3 = v0.<io.vertx.core.http.impl.WebSocketImplBase: io.vertx.core.Handler frameHandler>;
+exitmonitor v2;
+label2:
+goto label4;
+label3:
+v4 := @caughtexception;
+exitmonitor v2;
+throw v4;
+label4:
+if v3 == null goto label5;
+v5 = v0.<io.vertx.core.http.impl.WebSocketImplBase: io.vertx.core.impl.ContextInternal context>;
+interfaceinvoke v5.<io.vertx.core.impl.ContextInternal: void dispatch(java.lang.Object,io.vertx.core.Handler)>(v1, v3);
+label5:
+v6 = <io.vertx.core.http.impl.WebSocketImplBase$1: int[] $SwitchMap$io$vertx$core$http$WebSocketFrameType>;
+v7 = interfaceinvoke v1.<io.vertx.core.http.impl.ws.WebSocketFrameInternal: io.vertx.core.http.WebSocketFrameType type()>();
+v8 = virtualinvoke v7.<io.vertx.core.http.WebSocketFrameType: int ordinal()>();
+v9 = v6[v8];
+tableswitch(v9)
+{
+case 1: goto label7;
+case 2: goto label7;
+case 3: goto label6;
+case 4: goto label7;
+case 5: goto label8;
+case 6: goto label8;
+default: goto label9;
+};
+label6:
+v10 = specialinvoke v0.<io.vertx.core.http.impl.WebSocketImplBase: io.vertx.core.Handler endHandler()>();
+if v10 == null goto label9;
+v11 = v0.<io.vertx.core.http.impl.WebSocketImplBase: io.vertx.core.impl.ContextInternal context>;
+interfaceinvoke v11.<io.vertx.core.impl.ContextInternal: void dispatch(io.vertx.core.Handler)>(v10);
+goto label9;
+label7:
+v12 = specialinvoke v0.<io.vertx.core.http.impl.WebSocketImplBase: io.vertx.core.Handler handler()>();
+if v12 == null goto label9;
+v13 = v0.<io.vertx.core.http.impl.WebSocketImplBase: io.vertx.core.impl.ContextInternal context>;
+v14 = interfaceinvoke v1.<io.vertx.core.http.impl.ws.WebSocketFrameInternal: io.vertx.core.buffer.Buffer binaryData()>();
+interfaceinvoke v13.<io.vertx.core.impl.ContextInternal: void dispatch(java.lang.Object,io.vertx.core.Handler)>(v14, v12);
+goto label9;
+label8:
+virtualinvoke v0.<io.vertx.core.http.impl.WebSocketImplBase: io.vertx.core.http.WebSocketBase fetch(long)>(1L);
+label9:
+return;
+catch java.lang.Throwable from label1 to label2 with label3;
+}
+protected abstract void handleCloseConnection();
+void closeConnection()
+{
+io.netty.channel.ChannelHandlerContext v2;
+io.vertx.core.http.impl.Http1xConnectionBase v1;
+io.vertx.core.http.impl.WebSocketImplBase v0;
+v0 := @this: io.vertx.core.http.impl.WebSocketImplBase;
+v1 = v0.<io.vertx.core.http.impl.WebSocketImplBase: io.vertx.core.http.impl.Http1xConnectionBase conn>;
+v2 = virtualinvoke v1.<io.vertx.core.http.impl.Http1xConnectionBase: io.netty.channel.ChannelHandlerContext channelHandlerContext()>();
+interfaceinvoke v2.<io.netty.channel.ChannelHandlerContext: io.netty.channel.ChannelFuture close()>();
+return;
+}
+void initiateConnectionCloseTimeout(long)
+{
+java.lang.Throwable v6;
+io.vertx.core.impl.ContextInternal v3;
+long v1, v5;
+io.vertx.core.Handler v4;
+io.vertx.core.http.impl.Http1xConnectionBase v2;
+io.vertx.core.http.impl.WebSocketImplBase v0;
+v0 := @this: io.vertx.core.http.impl.WebSocketImplBase;
+v1 := @parameter0: long;
+v2 = v0.<io.vertx.core.http.impl.WebSocketImplBase: io.vertx.core.http.impl.Http1xConnectionBase conn>;
+entermonitor v2;
+label1:
+v3 = v0.<io.vertx.core.http.impl.WebSocketImplBase: io.vertx.core.impl.ContextInternal context>;
+v4 = staticinvoke <io.vertx.core.http.impl.WebSocketImplBase$lambda_initiateConnectionCloseTimeout_4__973: io.vertx.core.Handler bootstrap$(io.vertx.core.http.impl.WebSocketImplBase)>(v0);
+v5 = interfaceinvoke v3.<io.vertx.core.impl.ContextInternal: long setTimer(long,io.vertx.core.Handler)>(v1, v4);
+v0.<io.vertx.core.http.impl.WebSocketImplBase: long closeTimeoutID> = v5;
+exitmonitor v2;
+label2:
+goto label4;
+label3:
+v6 := @caughtexception;
+exitmonitor v2;
+throw v6;
+label4:
+return;
+catch java.lang.Throwable from label1 to label2 with label3;
+}
+public io.vertx.core.http.WebSocketBase frameHandler(io.vertx.core.Handler)
+{
+java.lang.Throwable v3;
+io.vertx.core.Handler v1;
+io.vertx.core.http.impl.Http1xConnectionBase v2;
+io.vertx.core.http.impl.WebSocketImplBase v0;
+v0 := @this: io.vertx.core.http.impl.WebSocketImplBase;
+v1 := @parameter0: io.vertx.core.Handler;
+v2 = v0.<io.vertx.core.http.impl.WebSocketImplBase: io.vertx.core.http.impl.Http1xConnectionBase conn>;
+entermonitor v2;
+label1:
+virtualinvoke v0.<io.vertx.core.http.impl.WebSocketImplBase: void checkClosed()>();
+v0.<io.vertx.core.http.impl.WebSocketImplBase: io.vertx.core.Handler frameHandler> = v1;
+exitmonitor v2;
+label2:
+return v0;
+label3:
+v3 := @caughtexception;
+exitmonitor v2;
+throw v3;
+catch java.lang.Throwable from label1 to label2 with label3;
+}
+public io.vertx.core.http.WebSocketBase textMessageHandler(io.vertx.core.Handler)
+{
+java.lang.Throwable v8;
+io.vertx.core.http.impl.WebSocketImplBase$FrameAggregator v6;
+java.lang.Class v5;
+io.vertx.core.Handler v1, v3, v4, v7;
+io.vertx.core.http.impl.Http1xConnectionBase v2;
+io.vertx.core.http.impl.WebSocketImplBase v0;
+v0 := @this: io.vertx.core.http.impl.WebSocketImplBase;
+v1 := @parameter0: io.vertx.core.Handler;
+v2 = v0.<io.vertx.core.http.impl.WebSocketImplBase: io.vertx.core.http.impl.Http1xConnectionBase conn>;
+entermonitor v2;
+label1:
+virtualinvoke v0.<io.vertx.core.http.impl.WebSocketImplBase: void checkClosed()>();
+v3 = v0.<io.vertx.core.http.impl.WebSocketImplBase: io.vertx.core.Handler frameHandler>;
+if v3 == null goto label2;
+v4 = v0.<io.vertx.core.http.impl.WebSocketImplBase: io.vertx.core.Handler frameHandler>;
+v5 = virtualinvoke v4.<java.lang.Object: java.lang.Class getClass()>();
+if v5 == class "Lio/vertx/core/http/impl/WebSocketImplBase$FrameAggregator;" goto label3;
+label2:
+v6 = new io.vertx.core.http.impl.WebSocketImplBase$FrameAggregator;
+specialinvoke v6.<io.vertx.core.http.impl.WebSocketImplBase$FrameAggregator: void <init>(io.vertx.core.http.impl.WebSocketImplBase)>(v0);
+v0.<io.vertx.core.http.impl.WebSocketImplBase: io.vertx.core.Handler frameHandler> = v6;
+label3:
+v7 = v0.<io.vertx.core.http.impl.WebSocketImplBase: io.vertx.core.Handler frameHandler>;
+v7.<io.vertx.core.http.impl.WebSocketImplBase$FrameAggregator: io.vertx.core.Handler textMessageHandler> = v1;
+exitmonitor v2;
+label4:
+return v0;
+label5:
+v8 := @caughtexception;
+exitmonitor v2;
+throw v8;
+catch java.lang.Throwable from label1 to label4 with label5;
+}
+public io.vertx.core.http.WebSocketBase binaryMessageHandler(io.vertx.core.Handler)
+{
+java.lang.Throwable v8;
+io.vertx.core.http.impl.WebSocketImplBase$FrameAggregator v6;
+java.lang.Class v5;
+io.vertx.core.Handler v1, v3, v4, v7;
+io.vertx.core.http.impl.Http1xConnectionBase v2;
+io.vertx.core.http.impl.WebSocketImplBase v0;
+v0 := @this: io.vertx.core.http.impl.WebSocketImplBase;
+v1 := @parameter0: io.vertx.core.Handler;
+v2 = v0.<io.vertx.core.http.impl.WebSocketImplBase: io.vertx.core.http.impl.Http1xConnectionBase conn>;
+entermonitor v2;
+label1:
+virtualinvoke v0.<io.vertx.core.http.impl.WebSocketImplBase: void checkClosed()>();
+v3 = v0.<io.vertx.core.http.impl.WebSocketImplBase: io.vertx.core.Handler frameHandler>;
+if v3 == null goto label2;
+v4 = v0.<io.vertx.core.http.impl.WebSocketImplBase: io.vertx.core.Handler frameHandler>;
+v5 = virtualinvoke v4.<java.lang.Object: java.lang.Class getClass()>();
+if v5 == class "Lio/vertx/core/http/impl/WebSocketImplBase$FrameAggregator;" goto label3;
+label2:
+v6 = new io.vertx.core.http.impl.WebSocketImplBase$FrameAggregator;
+specialinvoke v6.<io.vertx.core.http.impl.WebSocketImplBase$FrameAggregator: void <init>(io.vertx.core.http.impl.WebSocketImplBase)>(v0);
+v0.<io.vertx.core.http.impl.WebSocketImplBase: io.vertx.core.Handler frameHandler> = v6;
+label3:
+v7 = v0.<io.vertx.core.http.impl.WebSocketImplBase: io.vertx.core.Handler frameHandler>;
+v7.<io.vertx.core.http.impl.WebSocketImplBase$FrameAggregator: io.vertx.core.Handler binaryMessageHandler> = v1;
+exitmonitor v2;
+label4:
+return v0;
+label5:
+v8 := @caughtexception;
+exitmonitor v2;
+throw v8;
+catch java.lang.Throwable from label1 to label4 with label5;
+}
+public io.vertx.core.http.WebSocketBase pongHandler(io.vertx.core.Handler)
+{
+java.lang.Throwable v3;
+io.vertx.core.Handler v1;
+io.vertx.core.http.impl.Http1xConnectionBase v2;
+io.vertx.core.http.impl.WebSocketImplBase v0;
+v0 := @this: io.vertx.core.http.impl.WebSocketImplBase;
+v1 := @parameter0: io.vertx.core.Handler;
+v2 = v0.<io.vertx.core.http.impl.WebSocketImplBase: io.vertx.core.http.impl.Http1xConnectionBase conn>;
+entermonitor v2;
+label1:
+virtualinvoke v0.<io.vertx.core.http.impl.WebSocketImplBase: void checkClosed()>();
+v0.<io.vertx.core.http.impl.WebSocketImplBase: io.vertx.core.Handler pongHandler> = v1;
+exitmonitor v2;
+label2:
+return v0;
+label3:
+v3 := @caughtexception;
+exitmonitor v2;
+throw v3;
+catch java.lang.Throwable from label1 to label2 with label3;
+}
+private io.vertx.core.Handler pongHandler()
+{
+java.lang.Throwable v3;
+io.vertx.core.Handler v2;
+io.vertx.core.http.impl.Http1xConnectionBase v1;
+io.vertx.core.http.impl.WebSocketImplBase v0;
+v0 := @this: io.vertx.core.http.impl.WebSocketImplBase;
+v1 = v0.<io.vertx.core.http.impl.WebSocketImplBase: io.vertx.core.http.impl.Http1xConnectionBase conn>;
+entermonitor v1;
+label1:
+v2 = v0.<io.vertx.core.http.impl.WebSocketImplBase: io.vertx.core.Handler pongHandler>;
+exitmonitor v1;
+label2:
+return v2;
+label3:
+v3 := @caughtexception;
+exitmonitor v1;
+throw v3;
+catch java.lang.Throwable from label1 to label2 with label3;
+}
+void handleWritabilityChanged(boolean)
+{
+java.lang.Throwable v6;
+io.vertx.core.impl.ContextInternal v7;
+io.vertx.core.Handler v5;
+io.vertx.core.http.impl.Http1xConnectionBase v2;
+io.vertx.core.http.impl.WebSocketImplBase v0;
+boolean v1, v3, v4;
+v0 := @this: io.vertx.core.http.impl.WebSocketImplBase;
+v1 := @parameter0: boolean;
+v2 = v0.<io.vertx.core.http.impl.WebSocketImplBase: io.vertx.core.http.impl.Http1xConnectionBase conn>;
+entermonitor v2;
+label1:
+v3 = v0.<io.vertx.core.http.impl.WebSocketImplBase: boolean writable>;
+if v3 == 0 goto label2;
+if v1 != 0 goto label2;
+v4 = 1;
+goto label3;
+label2:
+v4 = 0;
+label3:
+v0.<io.vertx.core.http.impl.WebSocketImplBase: boolean writable> = v1;
+v5 = v0.<io.vertx.core.http.impl.WebSocketImplBase: io.vertx.core.Handler drainHandler>;
+if v5 == null goto label4;
+if v4 == 0 goto label6;
+label4:
+exitmonitor v2;
+label5:
+return;
+label6:
+exitmonitor v2;
+label7:
+goto label9;
+label8:
+v6 := @caughtexception;
+exitmonitor v2;
+throw v6;
+label9:
+v7 = v0.<io.vertx.core.http.impl.WebSocketImplBase: io.vertx.core.impl.ContextInternal context>;
+interfaceinvoke v7.<io.vertx.core.impl.ContextInternal: void dispatch(java.lang.Object,io.vertx.core.Handler)>(null, v5);
+return;
+catch java.lang.Throwable from label1 to label5 with label8;
+catch java.lang.Throwable from label6 to label7 with label8;
+}
+void handleException(java.lang.Throwable)
+{
+java.lang.Throwable v1, v4;
+io.vertx.core.impl.ContextInternal v5;
+io.vertx.core.Handler v3;
+io.vertx.core.http.impl.Http1xConnectionBase v2;
+io.vertx.core.http.impl.WebSocketImplBase v0;
+v0 := @this: io.vertx.core.http.impl.WebSocketImplBase;
+v1 := @parameter0: java.lang.Throwable;
+v2 = v0.<io.vertx.core.http.impl.WebSocketImplBase: io.vertx.core.http.impl.Http1xConnectionBase conn>;
+entermonitor v2;
+label1:
+v3 = v0.<io.vertx.core.http.impl.WebSocketImplBase: io.vertx.core.Handler exceptionHandler>;
+if v3 != null goto label3;
+exitmonitor v2;
+label2:
+return;
+label3:
+exitmonitor v2;
+label4:
+goto label6;
+label5:
+v4 := @caughtexception;
+exitmonitor v2;
+throw v4;
+label6:
+v5 = v0.<io.vertx.core.http.impl.WebSocketImplBase: io.vertx.core.impl.ContextInternal context>;
+interfaceinvoke v5.<io.vertx.core.impl.ContextInternal: void dispatch(java.lang.Object,io.vertx.core.Handler)>(v1, v3);
+return;
+catch java.lang.Throwable from label1 to label2 with label5;
+catch java.lang.Throwable from label3 to label4 with label5;
+}
+void handleConnectionClosed()
+{
+java.lang.Throwable v8;
+io.vertx.core.impl.VertxInternal v5;
+io.vertx.core.impl.ContextInternal v4;
+long v2, v6;
+byte v3;
+io.vertx.core.http.impl.Http1xConnectionBase v1;
+io.vertx.core.http.impl.WebSocketImplBase v0;
+boolean v7;
+v0 := @this: io.vertx.core.http.impl.WebSocketImplBase;
+v1 = v0.<io.vertx.core.http.impl.WebSocketImplBase: io.vertx.core.http.impl.Http1xConnectionBase conn>;
+entermonitor v1;
+label1:
+v2 = v0.<io.vertx.core.http.impl.WebSocketImplBase: long closeTimeoutID>;
+v3 = v2 cmp -1L;
+if v3 == 0 goto label2;
+v4 = v0.<io.vertx.core.http.impl.WebSocketImplBase: io.vertx.core.impl.ContextInternal context>;
+v5 = interfaceinvoke v4.<io.vertx.core.impl.ContextInternal: io.vertx.core.impl.VertxInternal owner()>();
+v6 = v0.<io.vertx.core.http.impl.WebSocketImplBase: long closeTimeoutID>;
+interfaceinvoke v5.<io.vertx.core.impl.VertxInternal: boolean cancelTimer(long)>(v6);
+label2:
+v7 = v0.<io.vertx.core.http.impl.WebSocketImplBase: boolean closed>;
+if v7 == 0 goto label4;
+exitmonitor v1;
+label3:
+return;
+label4:
+v0.<io.vertx.core.http.impl.WebSocketImplBase: boolean closed> = 1;
+exitmonitor v1;
+label5:
+goto label7;
+label6:
+v8 := @caughtexception;
+exitmonitor v1;
+throw v8;
+label7:
+virtualinvoke v0.<io.vertx.core.http.impl.WebSocketImplBase: void handleClose(boolean)>(0);
+return;
+catch java.lang.Throwable from label1 to label3 with label6;
+catch java.lang.Throwable from label4 to label5 with label6;
+}
+synchronized void setMetric(java.lang.Object)
+{
+java.lang.Object v1;
+io.vertx.core.http.impl.WebSocketImplBase v0;
+v0 := @this: io.vertx.core.http.impl.WebSocketImplBase;
+v1 := @parameter0: java.lang.Object;
+v0.<io.vertx.core.http.impl.WebSocketImplBase: java.lang.Object metric> = v1;
+return;
+}
+synchronized java.lang.Object getMetric()
+{
+java.lang.Object v1;
+io.vertx.core.http.impl.WebSocketImplBase v0;
+v0 := @this: io.vertx.core.http.impl.WebSocketImplBase;
+v1 = v0.<io.vertx.core.http.impl.WebSocketImplBase: java.lang.Object metric>;
+return v1;
+}
+public io.vertx.core.http.WebSocketBase handler(io.vertx.core.Handler)
+{
+java.lang.Throwable v3;
+io.vertx.core.Handler v1;
+io.vertx.core.http.impl.Http1xConnectionBase v2;
+io.vertx.core.http.impl.WebSocketImplBase v0;
+v0 := @this: io.vertx.core.http.impl.WebSocketImplBase;
+v1 := @parameter0: io.vertx.core.Handler;
+v2 = v0.<io.vertx.core.http.impl.WebSocketImplBase: io.vertx.core.http.impl.Http1xConnectionBase conn>;
+entermonitor v2;
+label1:
+if v1 == null goto label2;
+virtualinvoke v0.<io.vertx.core.http.impl.WebSocketImplBase: void checkClosed()>();
+label2:
+v0.<io.vertx.core.http.impl.WebSocketImplBase: io.vertx.core.Handler handler> = v1;
+exitmonitor v2;
+label3:
+return v0;
+label4:
+v3 := @caughtexception;
+exitmonitor v2;
+throw v3;
+catch java.lang.Throwable from label1 to label3 with label4;
+}
+private io.vertx.core.Handler handler()
+{
+java.lang.Throwable v3;
+io.vertx.core.Handler v2;
+io.vertx.core.http.impl.Http1xConnectionBase v1;
+io.vertx.core.http.impl.WebSocketImplBase v0;
+v0 := @this: io.vertx.core.http.impl.WebSocketImplBase;
+v1 = v0.<io.vertx.core.http.impl.WebSocketImplBase: io.vertx.core.http.impl.Http1xConnectionBase conn>;
+entermonitor v1;
+label1:
+v2 = v0.<io.vertx.core.http.impl.WebSocketImplBase: io.vertx.core.Handler handler>;
+exitmonitor v1;
+label2:
+return v2;
+label3:
+v3 := @caughtexception;
+exitmonitor v1;
+throw v3;
+catch java.lang.Throwable from label1 to label2 with label3;
+}
+public io.vertx.core.http.WebSocketBase endHandler(io.vertx.core.Handler)
+{
+java.lang.Throwable v3;
+io.vertx.core.Handler v1;
+io.vertx.core.http.impl.Http1xConnectionBase v2;
+io.vertx.core.http.impl.WebSocketImplBase v0;
+v0 := @this: io.vertx.core.http.impl.WebSocketImplBase;
+v1 := @parameter0: io.vertx.core.Handler;
+v2 = v0.<io.vertx.core.http.impl.WebSocketImplBase: io.vertx.core.http.impl.Http1xConnectionBase conn>;
+entermonitor v2;
+label1:
+if v1 == null goto label2;
+virtualinvoke v0.<io.vertx.core.http.impl.WebSocketImplBase: void checkClosed()>();
+label2:
+v0.<io.vertx.core.http.impl.WebSocketImplBase: io.vertx.core.Handler endHandler> = v1;
+exitmonitor v2;
+label3:
+return v0;
+label4:
+v3 := @caughtexception;
+exitmonitor v2;
+throw v3;
+catch java.lang.Throwable from label1 to label3 with label4;
+}
+private io.vertx.core.Handler endHandler()
+{
+java.lang.Throwable v3;
+io.vertx.core.Handler v2;
+io.vertx.core.http.impl.Http1xConnectionBase v1;
+io.vertx.core.http.impl.WebSocketImplBase v0;
+v0 := @this: io.vertx.core.http.impl.WebSocketImplBase;
+v1 = v0.<io.vertx.core.http.impl.WebSocketImplBase: io.vertx.core.http.impl.Http1xConnectionBase conn>;
+entermonitor v1;
+label1:
+v2 = v0.<io.vertx.core.http.impl.WebSocketImplBase: io.vertx.core.Handler endHandler>;
+exitmonitor v1;
+label2:
+return v2;
+label3:
+v3 := @caughtexception;
+exitmonitor v1;
+throw v3;
+catch java.lang.Throwable from label1 to label2 with label3;
+}
+public io.vertx.core.http.WebSocketBase exceptionHandler(io.vertx.core.Handler)
+{
+java.lang.Throwable v3;
+io.vertx.core.Handler v1;
+io.vertx.core.http.impl.Http1xConnectionBase v2;
+io.vertx.core.http.impl.WebSocketImplBase v0;
+v0 := @this: io.vertx.core.http.impl.WebSocketImplBase;
+v1 := @parameter0: io.vertx.core.Handler;
+v2 = v0.<io.vertx.core.http.impl.WebSocketImplBase: io.vertx.core.http.impl.Http1xConnectionBase conn>;
+entermonitor v2;
+label1:
+if v1 == null goto label2;
+virtualinvoke v0.<io.vertx.core.http.impl.WebSocketImplBase: void checkClosed()>();
+label2:
+v0.<io.vertx.core.http.impl.WebSocketImplBase: io.vertx.core.Handler exceptionHandler> = v1;
+exitmonitor v2;
+label3:
+return v0;
+label4:
+v3 := @caughtexception;
+exitmonitor v2;
+throw v3;
+catch java.lang.Throwable from label1 to label3 with label4;
+}
+public io.vertx.core.http.WebSocketBase closeHandler(io.vertx.core.Handler)
+{
+java.lang.Throwable v3;
+io.vertx.core.Handler v1;
+io.vertx.core.http.impl.Http1xConnectionBase v2;
+io.vertx.core.http.impl.WebSocketImplBase v0;
+v0 := @this: io.vertx.core.http.impl.WebSocketImplBase;
+v1 := @parameter0: io.vertx.core.Handler;
+v2 = v0.<io.vertx.core.http.impl.WebSocketImplBase: io.vertx.core.http.impl.Http1xConnectionBase conn>;
+entermonitor v2;
+label1:
+virtualinvoke v0.<io.vertx.core.http.impl.WebSocketImplBase: void checkClosed()>();
+v0.<io.vertx.core.http.impl.WebSocketImplBase: io.vertx.core.Handler closeHandler> = v1;
+exitmonitor v2;
+label2:
+return v0;
+label3:
+v3 := @caughtexception;
+exitmonitor v2;
+throw v3;
+catch java.lang.Throwable from label1 to label2 with label3;
+}
+public io.vertx.core.http.WebSocketBase drainHandler(io.vertx.core.Handler)
+{
+java.lang.Throwable v3;
+io.vertx.core.Handler v1;
+io.vertx.core.http.impl.Http1xConnectionBase v2;
+io.vertx.core.http.impl.WebSocketImplBase v0;
+v0 := @this: io.vertx.core.http.impl.WebSocketImplBase;
+v1 := @parameter0: io.vertx.core.Handler;
+v2 = v0.<io.vertx.core.http.impl.WebSocketImplBase: io.vertx.core.http.impl.Http1xConnectionBase conn>;
+entermonitor v2;
+label1:
+virtualinvoke v0.<io.vertx.core.http.impl.WebSocketImplBase: void checkClosed()>();
+v0.<io.vertx.core.http.impl.WebSocketImplBase: io.vertx.core.Handler drainHandler> = v1;
+exitmonitor v2;
+label2:
+return v0;
+label3:
+v3 := @caughtexception;
+exitmonitor v2;
+throw v3;
+catch java.lang.Throwable from label1 to label2 with label3;
+}
+public io.vertx.core.http.WebSocketBase pause()
+{
+io.vertx.core.streams.impl.InboundBuffer v1;
+io.vertx.core.http.impl.WebSocketImplBase v0;
+v0 := @this: io.vertx.core.http.impl.WebSocketImplBase;
+v1 = v0.<io.vertx.core.http.impl.WebSocketImplBase: io.vertx.core.streams.impl.InboundBuffer pending>;
+virtualinvoke v1.<io.vertx.core.streams.impl.InboundBuffer: io.vertx.core.streams.impl.InboundBuffer pause()>();
+return v0;
+}
+public io.vertx.core.http.WebSocketBase resume()
+{
+io.vertx.core.streams.impl.InboundBuffer v1;
+io.vertx.core.http.impl.WebSocketImplBase v0;
+v0 := @this: io.vertx.core.http.impl.WebSocketImplBase;
+v1 = v0.<io.vertx.core.http.impl.WebSocketImplBase: io.vertx.core.streams.impl.InboundBuffer pending>;
+virtualinvoke v1.<io.vertx.core.streams.impl.InboundBuffer: boolean resume()>();
+return v0;
+}
+public io.vertx.core.http.WebSocketBase fetch(long)
+{
+long v1;
+io.vertx.core.streams.impl.InboundBuffer v2;
+io.vertx.core.http.impl.WebSocketImplBase v0;
+v0 := @this: io.vertx.core.http.impl.WebSocketImplBase;
+v1 := @parameter0: long;
+v2 = v0.<io.vertx.core.http.impl.WebSocketImplBase: io.vertx.core.streams.impl.InboundBuffer pending>;
+virtualinvoke v2.<io.vertx.core.streams.impl.InboundBuffer: boolean fetch(long)>(v1);
+return v0;
+}
+public io.vertx.core.http.WebSocketBase setWriteQueueMaxSize(int)
+{
+java.lang.Throwable v4;
+int v1;
+io.vertx.core.http.impl.Http1xConnectionBase v2, v3;
+io.vertx.core.http.impl.WebSocketImplBase v0;
+v0 := @this: io.vertx.core.http.impl.WebSocketImplBase;
+v1 := @parameter0: int;
+v2 = v0.<io.vertx.core.http.impl.WebSocketImplBase: io.vertx.core.http.impl.Http1xConnectionBase conn>;
+entermonitor v2;
+label1:
+virtualinvoke v0.<io.vertx.core.http.impl.WebSocketImplBase: void checkClosed()>();
+v3 = v0.<io.vertx.core.http.impl.WebSocketImplBase: io.vertx.core.http.impl.Http1xConnectionBase conn>;
+virtualinvoke v3.<io.vertx.core.http.impl.Http1xConnectionBase: void doSetWriteQueueMaxSize(int)>(v1);
+exitmonitor v2;
+label2:
+return v0;
+label3:
+v4 := @caughtexception;
+exitmonitor v2;
+throw v4;
+catch java.lang.Throwable from label1 to label2 with label3;
+}
+public io.vertx.core.Future end()
+{
+io.vertx.core.Future v1;
+io.vertx.core.http.impl.WebSocketImplBase v0;
+v0 := @this: io.vertx.core.http.impl.WebSocketImplBase;
+v1 = virtualinvoke v0.<io.vertx.core.http.impl.WebSocketImplBase: io.vertx.core.Future close()>();
+return v1;
+}
+public void end(io.vertx.core.Handler)
+{
+io.vertx.core.Handler v1;
+io.vertx.core.http.impl.WebSocketImplBase v0;
+v0 := @this: io.vertx.core.http.impl.WebSocketImplBase;
+v1 := @parameter0: io.vertx.core.Handler;
+virtualinvoke v0.<io.vertx.core.http.impl.WebSocketImplBase: void close(io.vertx.core.Handler)>(v1);
+return;
+}
+}

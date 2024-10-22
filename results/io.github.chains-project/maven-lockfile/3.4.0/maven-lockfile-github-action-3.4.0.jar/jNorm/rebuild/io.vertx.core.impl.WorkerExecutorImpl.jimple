@@ -1,0 +1,195 @@
+class io.vertx.core.impl.WorkerExecutorImpl extends java.lang.Object implements io.vertx.core.spi.metrics.MetricsProvider, io.vertx.core.impl.WorkerExecutorInternal
+{
+private final io.vertx.core.impl.VertxInternal vertx;
+private final io.vertx.core.impl.CloseFuture closeFuture;
+private final io.vertx.core.impl.VertxImpl$SharedWorkerPool pool;
+private boolean closed;
+public void <init>(io.vertx.core.impl.VertxInternal, io.vertx.core.impl.CloseFuture, io.vertx.core.impl.VertxImpl$SharedWorkerPool)
+{
+io.vertx.core.impl.VertxInternal v1;
+io.vertx.core.impl.WorkerExecutorImpl v0;
+io.vertx.core.impl.CloseFuture v2;
+io.vertx.core.impl.VertxImpl$SharedWorkerPool v3;
+v0 := @this: io.vertx.core.impl.WorkerExecutorImpl;
+v1 := @parameter0: io.vertx.core.impl.VertxInternal;
+v2 := @parameter1: io.vertx.core.impl.CloseFuture;
+v3 := @parameter2: io.vertx.core.impl.VertxImpl$SharedWorkerPool;
+specialinvoke v0.<java.lang.Object: void <init>()>();
+v0.<io.vertx.core.impl.WorkerExecutorImpl: io.vertx.core.impl.VertxInternal vertx> = v1;
+v0.<io.vertx.core.impl.WorkerExecutorImpl: io.vertx.core.impl.CloseFuture closeFuture> = v2;
+v0.<io.vertx.core.impl.WorkerExecutorImpl: io.vertx.core.impl.VertxImpl$SharedWorkerPool pool> = v3;
+return;
+}
+public io.vertx.core.spi.metrics.Metrics getMetrics()
+{
+io.vertx.core.impl.VertxImpl$SharedWorkerPool v1;
+io.vertx.core.spi.metrics.PoolMetrics v2;
+io.vertx.core.impl.WorkerExecutorImpl v0;
+v0 := @this: io.vertx.core.impl.WorkerExecutorImpl;
+v1 = v0.<io.vertx.core.impl.WorkerExecutorImpl: io.vertx.core.impl.VertxImpl$SharedWorkerPool pool>;
+v2 = virtualinvoke v1.<io.vertx.core.impl.VertxImpl$SharedWorkerPool: io.vertx.core.spi.metrics.PoolMetrics metrics()>();
+return v2;
+}
+public boolean isMetricsEnabled()
+{
+io.vertx.core.spi.metrics.PoolMetrics v2;
+io.vertx.core.impl.WorkerExecutorImpl v0;
+io.vertx.core.impl.VertxImpl$SharedWorkerPool v1;
+boolean v3;
+v0 := @this: io.vertx.core.impl.WorkerExecutorImpl;
+v1 = v0.<io.vertx.core.impl.WorkerExecutorImpl: io.vertx.core.impl.VertxImpl$SharedWorkerPool pool>;
+v2 = virtualinvoke v1.<io.vertx.core.impl.VertxImpl$SharedWorkerPool: io.vertx.core.spi.metrics.PoolMetrics metrics()>();
+if v2 == null goto label1;
+v3 = 1;
+goto label2;
+label1:
+v3 = 0;
+label2:
+return v3;
+}
+public io.vertx.core.Vertx vertx()
+{
+io.vertx.core.impl.VertxInternal v1;
+io.vertx.core.impl.WorkerExecutorImpl v0;
+v0 := @this: io.vertx.core.impl.WorkerExecutorImpl;
+v1 = v0.<io.vertx.core.impl.WorkerExecutorImpl: io.vertx.core.impl.VertxInternal vertx>;
+return v1;
+}
+public io.vertx.core.impl.WorkerPool getPool()
+{
+io.vertx.core.impl.VertxImpl$SharedWorkerPool v1;
+io.vertx.core.impl.WorkerExecutorImpl v0;
+v0 := @this: io.vertx.core.impl.WorkerExecutorImpl;
+v1 = v0.<io.vertx.core.impl.WorkerExecutorImpl: io.vertx.core.impl.VertxImpl$SharedWorkerPool pool>;
+return v1;
+}
+public io.vertx.core.Future executeBlocking(io.vertx.core.Handler, boolean)
+{
+java.lang.Throwable v5;
+java.lang.IllegalStateException v4;
+io.vertx.core.impl.VertxInternal v6;
+io.vertx.core.impl.WorkerExecutorImpl v0;
+io.vertx.core.impl.ContextInternal v7;
+io.vertx.core.Future v12;
+io.vertx.core.impl.ContextBase v9;
+io.vertx.core.impl.TaskQueue v11;
+io.vertx.core.impl.VertxImpl$SharedWorkerPool v10;
+io.vertx.core.Handler v1;
+boolean v2, v3, v8;
+v0 := @this: io.vertx.core.impl.WorkerExecutorImpl;
+v1 := @parameter0: io.vertx.core.Handler;
+v2 := @parameter1: boolean;
+entermonitor v0;
+label1:
+v3 = v0.<io.vertx.core.impl.WorkerExecutorImpl: boolean closed>;
+if v3 == 0 goto label2;
+v4 = new java.lang.IllegalStateException;
+specialinvoke v4.<java.lang.IllegalStateException: void <init>(java.lang.String)>("Worker executor closed");
+throw v4;
+label2:
+exitmonitor v0;
+label3:
+goto label5;
+label4:
+v5 := @caughtexception;
+exitmonitor v0;
+throw v5;
+label5:
+v6 = v0.<io.vertx.core.impl.WorkerExecutorImpl: io.vertx.core.impl.VertxInternal vertx>;
+v7 = interfaceinvoke v6.<io.vertx.core.impl.VertxInternal: io.vertx.core.impl.ContextInternal getOrCreateContext()>();
+v8 = v7 instanceof io.vertx.core.impl.DuplicatedContext;
+if v8 == 0 goto label6;
+v9 = v7.<io.vertx.core.impl.DuplicatedContext: io.vertx.core.impl.ContextBase delegate>;
+label6:
+v10 = v0.<io.vertx.core.impl.WorkerExecutorImpl: io.vertx.core.impl.VertxImpl$SharedWorkerPool pool>;
+if v2 == 0 goto label7;
+v11 = v7.<io.vertx.core.impl.ContextBase: io.vertx.core.impl.TaskQueue orderedTasks>;
+goto label8;
+label7:
+v11 = null;
+label8:
+v12 = staticinvoke <io.vertx.core.impl.ContextBase: io.vertx.core.Future executeBlocking(io.vertx.core.impl.ContextInternal,io.vertx.core.Handler,io.vertx.core.impl.WorkerPool,io.vertx.core.impl.TaskQueue)>(v7, v1, v10, v11);
+return v12;
+catch java.lang.Throwable from label1 to label3 with label4;
+}
+public void executeBlocking(io.vertx.core.Handler, boolean, io.vertx.core.Handler)
+{
+io.vertx.core.impl.WorkerExecutorImpl v0;
+io.vertx.core.Handler v1, v3;
+io.vertx.core.Future v4;
+boolean v2;
+v0 := @this: io.vertx.core.impl.WorkerExecutorImpl;
+v1 := @parameter0: io.vertx.core.Handler;
+v2 := @parameter1: boolean;
+v3 := @parameter2: io.vertx.core.Handler;
+v4 = virtualinvoke v0.<io.vertx.core.impl.WorkerExecutorImpl: io.vertx.core.Future executeBlocking(io.vertx.core.Handler,boolean)>(v1, v2);
+if v3 == null goto label1;
+interfaceinvoke v4.<io.vertx.core.Future: io.vertx.core.Future onComplete(io.vertx.core.Handler)>(v3);
+label1:
+return;
+}
+public io.vertx.core.Future close()
+{
+io.vertx.core.impl.VertxInternal v1;
+io.vertx.core.impl.future.PromiseInternal v3;
+io.vertx.core.impl.WorkerExecutorImpl v0;
+io.vertx.core.impl.CloseFuture v4;
+io.vertx.core.impl.ContextInternal v2;
+io.vertx.core.Future v5;
+v0 := @this: io.vertx.core.impl.WorkerExecutorImpl;
+v1 = v0.<io.vertx.core.impl.WorkerExecutorImpl: io.vertx.core.impl.VertxInternal vertx>;
+v2 = interfaceinvoke v1.<io.vertx.core.impl.VertxInternal: io.vertx.core.impl.ContextInternal getOrCreateContext()>();
+v3 = interfaceinvoke v2.<io.vertx.core.impl.ContextInternal: io.vertx.core.impl.future.PromiseInternal promise()>();
+v4 = v0.<io.vertx.core.impl.WorkerExecutorImpl: io.vertx.core.impl.CloseFuture closeFuture>;
+virtualinvoke v4.<io.vertx.core.impl.CloseFuture: void close(io.vertx.core.Promise)>(v3);
+v5 = interfaceinvoke v3.<io.vertx.core.impl.future.PromiseInternal: io.vertx.core.Future future()>();
+return v5;
+}
+public void close(io.vertx.core.Handler)
+{
+io.vertx.core.impl.VertxInternal v2;
+io.vertx.core.impl.future.PromiseInternal v5;
+io.vertx.core.impl.WorkerExecutorImpl v0;
+io.vertx.core.impl.CloseFuture v4;
+io.vertx.core.impl.ContextInternal v3;
+io.vertx.core.Handler v1;
+v0 := @this: io.vertx.core.impl.WorkerExecutorImpl;
+v1 := @parameter0: io.vertx.core.Handler;
+v2 = v0.<io.vertx.core.impl.WorkerExecutorImpl: io.vertx.core.impl.VertxInternal vertx>;
+v3 = interfaceinvoke v2.<io.vertx.core.impl.VertxInternal: io.vertx.core.impl.ContextInternal getOrCreateContext()>();
+v4 = v0.<io.vertx.core.impl.WorkerExecutorImpl: io.vertx.core.impl.CloseFuture closeFuture>;
+if v1 == null goto label1;
+v5 = interfaceinvoke v3.<io.vertx.core.impl.ContextInternal: io.vertx.core.impl.future.PromiseInternal promise(io.vertx.core.Handler)>(v1);
+goto label2;
+label1:
+v5 = null;
+label2:
+virtualinvoke v4.<io.vertx.core.impl.CloseFuture: void close(io.vertx.core.Promise)>(v5);
+return;
+}
+public void close(io.vertx.core.Promise)
+{
+java.lang.Throwable v2;
+io.vertx.core.impl.WorkerExecutorImpl v0;
+io.vertx.core.Promise v1;
+io.vertx.core.impl.VertxImpl$SharedWorkerPool v3;
+v0 := @this: io.vertx.core.impl.WorkerExecutorImpl;
+v1 := @parameter0: io.vertx.core.Promise;
+entermonitor v0;
+label1:
+v0.<io.vertx.core.impl.WorkerExecutorImpl: boolean closed> = 1;
+exitmonitor v0;
+label2:
+goto label4;
+label3:
+v2 := @caughtexception;
+exitmonitor v0;
+throw v2;
+label4:
+v3 = v0.<io.vertx.core.impl.WorkerExecutorImpl: io.vertx.core.impl.VertxImpl$SharedWorkerPool pool>;
+virtualinvoke v3.<io.vertx.core.impl.VertxImpl$SharedWorkerPool: void close()>();
+interfaceinvoke v1.<io.vertx.core.Promise: void complete()>();
+return;
+catch java.lang.Throwable from label1 to label2 with label3;
+}
+}

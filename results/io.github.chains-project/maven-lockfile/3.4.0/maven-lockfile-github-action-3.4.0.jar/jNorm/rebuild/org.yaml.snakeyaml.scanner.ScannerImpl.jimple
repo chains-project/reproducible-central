@@ -1,0 +1,3194 @@
+public final class org.yaml.snakeyaml.scanner.ScannerImpl extends java.lang.Object implements org.yaml.snakeyaml.scanner.Scanner
+{
+private static final java.util.regex.Pattern NOT_HEXA;
+public static final java.util.Map ESCAPE_REPLACEMENTS;
+public static final java.util.Map ESCAPE_CODES;
+private final org.yaml.snakeyaml.reader.StreamReader reader;
+private boolean done;
+private int flowLevel;
+private final java.util.List tokens;
+private org.yaml.snakeyaml.tokens.Token lastToken;
+private int tokensTaken;
+private int indent;
+private final org.yaml.snakeyaml.util.ArrayStack indents;
+private final boolean parseComments;
+private final org.yaml.snakeyaml.LoaderOptions loaderOptions;
+private boolean allowSimpleKey;
+private final java.util.Map possibleSimpleKeys;
+public void <init>(org.yaml.snakeyaml.reader.StreamReader, org.yaml.snakeyaml.LoaderOptions)
+{
+org.yaml.snakeyaml.LoaderOptions v2;
+org.yaml.snakeyaml.util.ArrayStack v7;
+java.lang.NullPointerException v4;
+java.util.ArrayList v6;
+java.util.LinkedHashMap v8;
+int v3;
+org.yaml.snakeyaml.reader.StreamReader v1;
+boolean v5;
+org.yaml.snakeyaml.scanner.ScannerImpl v0;
+v0 := @this: org.yaml.snakeyaml.scanner.ScannerImpl;
+v1 := @parameter0: org.yaml.snakeyaml.reader.StreamReader;
+v2 := @parameter1: org.yaml.snakeyaml.LoaderOptions;
+specialinvoke v0.<java.lang.Object: void <init>()>();
+v0.<org.yaml.snakeyaml.scanner.ScannerImpl: boolean done> = 0;
+v0.<org.yaml.snakeyaml.scanner.ScannerImpl: int flowLevel> = 0;
+v0.<org.yaml.snakeyaml.scanner.ScannerImpl: int tokensTaken> = 0;
+v3 = (int) -1;
+v0.<org.yaml.snakeyaml.scanner.ScannerImpl: int indent> = v3;
+v0.<org.yaml.snakeyaml.scanner.ScannerImpl: boolean allowSimpleKey> = 1;
+if v2 != null goto label1;
+v4 = new java.lang.NullPointerException;
+specialinvoke v4.<java.lang.NullPointerException: void <init>(java.lang.String)>("LoaderOptions must be provided.");
+throw v4;
+label1:
+v5 = virtualinvoke v2.<org.yaml.snakeyaml.LoaderOptions: boolean isProcessComments()>();
+v0.<org.yaml.snakeyaml.scanner.ScannerImpl: boolean parseComments> = v5;
+v0.<org.yaml.snakeyaml.scanner.ScannerImpl: org.yaml.snakeyaml.reader.StreamReader reader> = v1;
+v6 = new java.util.ArrayList;
+specialinvoke v6.<java.util.ArrayList: void <init>(int)>(100);
+v0.<org.yaml.snakeyaml.scanner.ScannerImpl: java.util.List tokens> = v6;
+v7 = new org.yaml.snakeyaml.util.ArrayStack;
+specialinvoke v7.<org.yaml.snakeyaml.util.ArrayStack: void <init>(int)>(10);
+v0.<org.yaml.snakeyaml.scanner.ScannerImpl: org.yaml.snakeyaml.util.ArrayStack indents> = v7;
+v8 = new java.util.LinkedHashMap;
+specialinvoke v8.<java.util.LinkedHashMap: void <init>()>();
+v0.<org.yaml.snakeyaml.scanner.ScannerImpl: java.util.Map possibleSimpleKeys> = v8;
+v0.<org.yaml.snakeyaml.scanner.ScannerImpl: org.yaml.snakeyaml.LoaderOptions loaderOptions> = v2;
+specialinvoke v0.<org.yaml.snakeyaml.scanner.ScannerImpl: void fetchStreamStart()>();
+return;
+}
+public transient boolean checkToken(org.yaml.snakeyaml.tokens.Token$ID[])
+{
+org.yaml.snakeyaml.tokens.Token$ID v11, v8;
+java.util.List v3, v6;
+org.yaml.snakeyaml.tokens.Token$ID[] v1;
+int v10, v5, v9;
+java.lang.Object v7;
+boolean v2, v4;
+org.yaml.snakeyaml.scanner.ScannerImpl v0;
+v0 := @this: org.yaml.snakeyaml.scanner.ScannerImpl;
+v1 := @parameter0: org.yaml.snakeyaml.tokens.Token$ID[];
+label1:
+v2 = specialinvoke v0.<org.yaml.snakeyaml.scanner.ScannerImpl: boolean needMoreTokens()>();
+if v2 == 0 goto label2;
+specialinvoke v0.<org.yaml.snakeyaml.scanner.ScannerImpl: void fetchMoreTokens()>();
+goto label1;
+label2:
+v3 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: java.util.List tokens>;
+v4 = interfaceinvoke v3.<java.util.List: boolean isEmpty()>();
+if v4 != 0 goto label6;
+v5 = lengthof v1;
+if v5 != 0 goto label3;
+return 1;
+label3:
+v6 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: java.util.List tokens>;
+v7 = interfaceinvoke v6.<java.util.List: java.lang.Object get(int)>(0);
+v8 = virtualinvoke v7.<org.yaml.snakeyaml.tokens.Token: org.yaml.snakeyaml.tokens.Token$ID getTokenId()>();
+v9 = 0;
+label4:
+v10 = lengthof v1;
+if v9 >= v10 goto label6;
+v11 = v1[v9];
+if v8 != v11 goto label5;
+return 1;
+label5:
+v9 = v9 + 1;
+goto label4;
+label6:
+return 0;
+}
+public org.yaml.snakeyaml.tokens.Token peekToken()
+{
+java.util.List v2;
+java.lang.Object v3;
+boolean v1;
+org.yaml.snakeyaml.scanner.ScannerImpl v0;
+v0 := @this: org.yaml.snakeyaml.scanner.ScannerImpl;
+label1:
+v1 = specialinvoke v0.<org.yaml.snakeyaml.scanner.ScannerImpl: boolean needMoreTokens()>();
+if v1 == 0 goto label2;
+specialinvoke v0.<org.yaml.snakeyaml.scanner.ScannerImpl: void fetchMoreTokens()>();
+goto label1;
+label2:
+v2 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: java.util.List tokens>;
+v3 = interfaceinvoke v2.<java.util.List: java.lang.Object get(int)>(0);
+return v3;
+}
+public org.yaml.snakeyaml.tokens.Token getToken()
+{
+java.util.List v3;
+int v1, v2;
+java.lang.Object v4;
+org.yaml.snakeyaml.scanner.ScannerImpl v0;
+v0 := @this: org.yaml.snakeyaml.scanner.ScannerImpl;
+v1 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: int tokensTaken>;
+v2 = v1 + 1;
+v0.<org.yaml.snakeyaml.scanner.ScannerImpl: int tokensTaken> = v2;
+v3 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: java.util.List tokens>;
+v4 = interfaceinvoke v3.<java.util.List: java.lang.Object remove(int)>(0);
+return v4;
+}
+private void addToken(org.yaml.snakeyaml.tokens.Token)
+{
+org.yaml.snakeyaml.tokens.Token v1;
+java.util.List v2;
+org.yaml.snakeyaml.scanner.ScannerImpl v0;
+v0 := @this: org.yaml.snakeyaml.scanner.ScannerImpl;
+v1 := @parameter0: org.yaml.snakeyaml.tokens.Token;
+v0.<org.yaml.snakeyaml.scanner.ScannerImpl: org.yaml.snakeyaml.tokens.Token lastToken> = v1;
+v2 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: java.util.List tokens>;
+interfaceinvoke v2.<java.util.List: boolean add(java.lang.Object)>(v1);
+return;
+}
+private void addToken(int, org.yaml.snakeyaml.tokens.Token)
+{
+org.yaml.snakeyaml.tokens.Token v2;
+java.util.List v3, v5;
+int v1, v4;
+org.yaml.snakeyaml.scanner.ScannerImpl v0;
+v0 := @this: org.yaml.snakeyaml.scanner.ScannerImpl;
+v1 := @parameter0: int;
+v2 := @parameter1: org.yaml.snakeyaml.tokens.Token;
+v3 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: java.util.List tokens>;
+v4 = interfaceinvoke v3.<java.util.List: int size()>();
+if v1 != v4 goto label1;
+v0.<org.yaml.snakeyaml.scanner.ScannerImpl: org.yaml.snakeyaml.tokens.Token lastToken> = v2;
+label1:
+v5 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: java.util.List tokens>;
+interfaceinvoke v5.<java.util.List: void add(int,java.lang.Object)>(v1, v2);
+return;
+}
+private void addAllTokens(java.util.List)
+{
+java.util.List v1, v5;
+int v2, v3;
+java.lang.Object v4;
+org.yaml.snakeyaml.scanner.ScannerImpl v0;
+v0 := @this: org.yaml.snakeyaml.scanner.ScannerImpl;
+v1 := @parameter0: java.util.List;
+v2 = interfaceinvoke v1.<java.util.List: int size()>();
+v3 = v2 - 1;
+v4 = interfaceinvoke v1.<java.util.List: java.lang.Object get(int)>(v3);
+v0.<org.yaml.snakeyaml.scanner.ScannerImpl: org.yaml.snakeyaml.tokens.Token lastToken> = v4;
+v5 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: java.util.List tokens>;
+interfaceinvoke v5.<java.util.List: boolean addAll(java.util.Collection)>(v1);
+return;
+}
+private boolean needMoreTokens()
+{
+java.util.List v2;
+int v4, v5;
+boolean v1, v3, v6;
+org.yaml.snakeyaml.scanner.ScannerImpl v0;
+v0 := @this: org.yaml.snakeyaml.scanner.ScannerImpl;
+v1 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: boolean done>;
+if v1 == 0 goto label1;
+return 0;
+label1:
+v2 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: java.util.List tokens>;
+v3 = interfaceinvoke v2.<java.util.List: boolean isEmpty()>();
+if v3 == 0 goto label2;
+return 1;
+label2:
+specialinvoke v0.<org.yaml.snakeyaml.scanner.ScannerImpl: void stalePossibleSimpleKeys()>();
+v4 = specialinvoke v0.<org.yaml.snakeyaml.scanner.ScannerImpl: int nextPossibleSimpleKey()>();
+v5 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: int tokensTaken>;
+if v4 != v5 goto label3;
+v6 = 1;
+goto label4;
+label3:
+v6 = 0;
+label4:
+return v6;
+}
+private void fetchMoreTokens()
+{
+java.lang.Object[] v25;
+int v10, v12, v19, v2, v20, v4, v7;
+java.lang.String v23, v24, v26, v8;
+boolean v13, v14, v15, v16, v17, v18, v21;
+org.yaml.snakeyaml.scanner.ScannerException v27;
+org.yaml.snakeyaml.LoaderOptions v3, v6;
+org.yaml.snakeyaml.error.Mark v29;
+char[] v22;
+org.yaml.snakeyaml.reader.StreamReader v1, v11, v28, v9;
+org.yaml.snakeyaml.error.YAMLException v5;
+org.yaml.snakeyaml.scanner.ScannerImpl v0;
+v0 := @this: org.yaml.snakeyaml.scanner.ScannerImpl;
+v1 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: org.yaml.snakeyaml.reader.StreamReader reader>;
+v2 = virtualinvoke v1.<org.yaml.snakeyaml.reader.StreamReader: int getIndex()>();
+v3 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: org.yaml.snakeyaml.LoaderOptions loaderOptions>;
+v4 = virtualinvoke v3.<org.yaml.snakeyaml.LoaderOptions: int getCodePointLimit()>();
+if v2 <= v4 goto label01;
+v5 = new org.yaml.snakeyaml.error.YAMLException;
+v6 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: org.yaml.snakeyaml.LoaderOptions loaderOptions>;
+v7 = virtualinvoke v6.<org.yaml.snakeyaml.LoaderOptions: int getCodePointLimit()>();
+v8 = dynamicinvoke "makeConcatWithConstants" <java.lang.String (int)>(v7) <java.lang.invoke.StringConcatFactory: java.lang.invoke.CallSite makeConcatWithConstants(java.lang.invoke.MethodHandles$Lookup,java.lang.String,java.lang.invoke.MethodType,java.lang.String,java.lang.Object[])>("The incoming YAML document exceeds the limit: \u0001 code points.");
+specialinvoke v5.<org.yaml.snakeyaml.error.YAMLException: void <init>(java.lang.String)>(v8);
+throw v5;
+label01:
+specialinvoke v0.<org.yaml.snakeyaml.scanner.ScannerImpl: void scanToNextToken()>();
+specialinvoke v0.<org.yaml.snakeyaml.scanner.ScannerImpl: void stalePossibleSimpleKeys()>();
+v9 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: org.yaml.snakeyaml.reader.StreamReader reader>;
+v10 = virtualinvoke v9.<org.yaml.snakeyaml.reader.StreamReader: int getColumn()>();
+specialinvoke v0.<org.yaml.snakeyaml.scanner.ScannerImpl: void unwindIndent(int)>(v10);
+v11 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: org.yaml.snakeyaml.reader.StreamReader reader>;
+v12 = virtualinvoke v11.<org.yaml.snakeyaml.reader.StreamReader: int peek()>();
+lookupswitch(v12)
+{
+case 0: goto label02;
+case 33: goto label16;
+case 34: goto label20;
+case 37: goto label03;
+case 38: goto label15;
+case 39: goto label19;
+case 42: goto label14;
+case 44: goto label11;
+case 45: goto label04;
+case 46: goto label06;
+case 58: goto label13;
+case 62: goto label18;
+case 63: goto label12;
+case 91: goto label07;
+case 93: goto label09;
+case 123: goto label08;
+case 124: goto label17;
+case 125: goto label10;
+default: goto label21;
+};
+label02:
+specialinvoke v0.<org.yaml.snakeyaml.scanner.ScannerImpl: void fetchStreamEnd()>();
+return;
+label03:
+v13 = specialinvoke v0.<org.yaml.snakeyaml.scanner.ScannerImpl: boolean checkDirective()>();
+if v13 == 0 goto label21;
+specialinvoke v0.<org.yaml.snakeyaml.scanner.ScannerImpl: void fetchDirective()>();
+return;
+label04:
+v14 = specialinvoke v0.<org.yaml.snakeyaml.scanner.ScannerImpl: boolean checkDocumentStart()>();
+if v14 == 0 goto label05;
+specialinvoke v0.<org.yaml.snakeyaml.scanner.ScannerImpl: void fetchDocumentStart()>();
+return;
+label05:
+v15 = specialinvoke v0.<org.yaml.snakeyaml.scanner.ScannerImpl: boolean checkBlockEntry()>();
+if v15 == 0 goto label21;
+specialinvoke v0.<org.yaml.snakeyaml.scanner.ScannerImpl: void fetchBlockEntry()>();
+return;
+label06:
+v16 = specialinvoke v0.<org.yaml.snakeyaml.scanner.ScannerImpl: boolean checkDocumentEnd()>();
+if v16 == 0 goto label21;
+specialinvoke v0.<org.yaml.snakeyaml.scanner.ScannerImpl: void fetchDocumentEnd()>();
+return;
+label07:
+specialinvoke v0.<org.yaml.snakeyaml.scanner.ScannerImpl: void fetchFlowSequenceStart()>();
+return;
+label08:
+specialinvoke v0.<org.yaml.snakeyaml.scanner.ScannerImpl: void fetchFlowMappingStart()>();
+return;
+label09:
+specialinvoke v0.<org.yaml.snakeyaml.scanner.ScannerImpl: void fetchFlowSequenceEnd()>();
+return;
+label10:
+specialinvoke v0.<org.yaml.snakeyaml.scanner.ScannerImpl: void fetchFlowMappingEnd()>();
+return;
+label11:
+specialinvoke v0.<org.yaml.snakeyaml.scanner.ScannerImpl: void fetchFlowEntry()>();
+return;
+label12:
+v17 = specialinvoke v0.<org.yaml.snakeyaml.scanner.ScannerImpl: boolean checkKey()>();
+if v17 == 0 goto label21;
+specialinvoke v0.<org.yaml.snakeyaml.scanner.ScannerImpl: void fetchKey()>();
+return;
+label13:
+v18 = specialinvoke v0.<org.yaml.snakeyaml.scanner.ScannerImpl: boolean checkValue()>();
+if v18 == 0 goto label21;
+specialinvoke v0.<org.yaml.snakeyaml.scanner.ScannerImpl: void fetchValue()>();
+return;
+label14:
+specialinvoke v0.<org.yaml.snakeyaml.scanner.ScannerImpl: void fetchAlias()>();
+return;
+label15:
+specialinvoke v0.<org.yaml.snakeyaml.scanner.ScannerImpl: void fetchAnchor()>();
+return;
+label16:
+specialinvoke v0.<org.yaml.snakeyaml.scanner.ScannerImpl: void fetchTag()>();
+return;
+label17:
+v19 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: int flowLevel>;
+if v19 != 0 goto label21;
+specialinvoke v0.<org.yaml.snakeyaml.scanner.ScannerImpl: void fetchLiteral()>();
+return;
+label18:
+v20 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: int flowLevel>;
+if v20 != 0 goto label21;
+specialinvoke v0.<org.yaml.snakeyaml.scanner.ScannerImpl: void fetchFolded()>();
+return;
+label19:
+specialinvoke v0.<org.yaml.snakeyaml.scanner.ScannerImpl: void fetchSingle()>();
+return;
+label20:
+specialinvoke v0.<org.yaml.snakeyaml.scanner.ScannerImpl: void fetchDouble()>();
+return;
+label21:
+v21 = specialinvoke v0.<org.yaml.snakeyaml.scanner.ScannerImpl: boolean checkPlain()>();
+if v21 == 0 goto label22;
+specialinvoke v0.<org.yaml.snakeyaml.scanner.ScannerImpl: void fetchPlain()>();
+return;
+label22:
+v22 = staticinvoke <java.lang.Character: char[] toChars(int)>(v12);
+v23 = staticinvoke <java.lang.String: java.lang.String valueOf(char[])>(v22);
+v24 = specialinvoke v0.<org.yaml.snakeyaml.scanner.ScannerImpl: java.lang.String escapeChar(java.lang.String)>(v23);
+if v12 != 9 goto label23;
+v24 = dynamicinvoke "makeConcatWithConstants" <java.lang.String (java.lang.String)>(v24) <java.lang.invoke.StringConcatFactory: java.lang.invoke.CallSite makeConcatWithConstants(java.lang.invoke.MethodHandles$Lookup,java.lang.String,java.lang.invoke.MethodType,java.lang.String,java.lang.Object[])>("\u0001(TAB)");
+label23:
+v25 = newarray (java.lang.Object)[2];
+v25[0] = v24;
+v25[1] = v24;
+v26 = staticinvoke <java.lang.String: java.lang.String format(java.lang.String,java.lang.Object[])>("found character \'%s\' that cannot start any token. (Do not use %s for indentation)", v25);
+v27 = new org.yaml.snakeyaml.scanner.ScannerException;
+v28 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: org.yaml.snakeyaml.reader.StreamReader reader>;
+v29 = virtualinvoke v28.<org.yaml.snakeyaml.reader.StreamReader: org.yaml.snakeyaml.error.Mark getMark()>();
+specialinvoke v27.<org.yaml.snakeyaml.scanner.ScannerException: void <init>(java.lang.String,org.yaml.snakeyaml.error.Mark,java.lang.String,org.yaml.snakeyaml.error.Mark)>("while scanning for the next token", null, v26, v29);
+throw v27;
+}
+private java.lang.String escapeChar(java.lang.String)
+{
+java.util.Iterator v4;
+java.util.Set v3;
+java.util.Map v2, v7;
+java.lang.Object v6, v8;
+java.lang.String v1, v10;
+boolean v5, v9;
+org.yaml.snakeyaml.scanner.ScannerImpl v0;
+v0 := @this: org.yaml.snakeyaml.scanner.ScannerImpl;
+v1 := @parameter0: java.lang.String;
+v2 = <org.yaml.snakeyaml.scanner.ScannerImpl: java.util.Map ESCAPE_REPLACEMENTS>;
+v3 = interfaceinvoke v2.<java.util.Map: java.util.Set keySet()>();
+v4 = interfaceinvoke v3.<java.util.Set: java.util.Iterator iterator()>();
+label1:
+v5 = interfaceinvoke v4.<java.util.Iterator: boolean hasNext()>();
+if v5 == 0 goto label2;
+v6 = interfaceinvoke v4.<java.util.Iterator: java.lang.Object next()>();
+v7 = <org.yaml.snakeyaml.scanner.ScannerImpl: java.util.Map ESCAPE_REPLACEMENTS>;
+v8 = interfaceinvoke v7.<java.util.Map: java.lang.Object get(java.lang.Object)>(v6);
+v9 = virtualinvoke v8.<java.lang.String: boolean equals(java.lang.Object)>(v1);
+if v9 == 0 goto label1;
+v10 = dynamicinvoke "makeConcatWithConstants" <java.lang.String (java.lang.Character)>(v6) <java.lang.invoke.StringConcatFactory: java.lang.invoke.CallSite makeConcatWithConstants(java.lang.invoke.MethodHandles$Lookup,java.lang.String,java.lang.invoke.MethodType,java.lang.String,java.lang.Object[])>("\\\u0001");
+return v10;
+label2:
+return v1;
+}
+private int nextPossibleSimpleKey()
+{
+java.util.Iterator v5;
+java.util.Collection v4;
+java.util.Map v1, v3;
+int v7, v8;
+java.lang.Object v6;
+boolean v2;
+org.yaml.snakeyaml.scanner.ScannerImpl v0;
+v0 := @this: org.yaml.snakeyaml.scanner.ScannerImpl;
+v1 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: java.util.Map possibleSimpleKeys>;
+v2 = interfaceinvoke v1.<java.util.Map: boolean isEmpty()>();
+if v2 != 0 goto label1;
+v3 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: java.util.Map possibleSimpleKeys>;
+v4 = interfaceinvoke v3.<java.util.Map: java.util.Collection values()>();
+v5 = interfaceinvoke v4.<java.util.Collection: java.util.Iterator iterator()>();
+v6 = interfaceinvoke v5.<java.util.Iterator: java.lang.Object next()>();
+v7 = virtualinvoke v6.<org.yaml.snakeyaml.scanner.SimpleKey: int getTokenNumber()>();
+return v7;
+label1:
+v8 = (int) -1;
+return v8;
+}
+private void stalePossibleSimpleKeys()
+{
+java.util.Map v1, v3;
+int v10, v12, v13, v14, v8;
+boolean v15, v2, v6;
+java.util.Iterator v5;
+org.yaml.snakeyaml.scanner.ScannerException v16;
+java.util.Collection v4;
+org.yaml.snakeyaml.error.Mark v17, v19;
+org.yaml.snakeyaml.reader.StreamReader v11, v18, v9;
+java.lang.Object v7;
+org.yaml.snakeyaml.scanner.ScannerImpl v0;
+v0 := @this: org.yaml.snakeyaml.scanner.ScannerImpl;
+v1 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: java.util.Map possibleSimpleKeys>;
+v2 = interfaceinvoke v1.<java.util.Map: boolean isEmpty()>();
+if v2 != 0 goto label4;
+v3 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: java.util.Map possibleSimpleKeys>;
+v4 = interfaceinvoke v3.<java.util.Map: java.util.Collection values()>();
+v5 = interfaceinvoke v4.<java.util.Collection: java.util.Iterator iterator()>();
+label1:
+v6 = interfaceinvoke v5.<java.util.Iterator: boolean hasNext()>();
+if v6 == 0 goto label4;
+v7 = interfaceinvoke v5.<java.util.Iterator: java.lang.Object next()>();
+v8 = virtualinvoke v7.<org.yaml.snakeyaml.scanner.SimpleKey: int getLine()>();
+v9 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: org.yaml.snakeyaml.reader.StreamReader reader>;
+v10 = virtualinvoke v9.<org.yaml.snakeyaml.reader.StreamReader: int getLine()>();
+if v8 != v10 goto label2;
+v11 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: org.yaml.snakeyaml.reader.StreamReader reader>;
+v12 = virtualinvoke v11.<org.yaml.snakeyaml.reader.StreamReader: int getIndex()>();
+v13 = virtualinvoke v7.<org.yaml.snakeyaml.scanner.SimpleKey: int getIndex()>();
+v14 = v12 - v13;
+if v14 <= 1024 goto label1;
+label2:
+v15 = virtualinvoke v7.<org.yaml.snakeyaml.scanner.SimpleKey: boolean isRequired()>();
+if v15 == 0 goto label3;
+v16 = new org.yaml.snakeyaml.scanner.ScannerException;
+v17 = virtualinvoke v7.<org.yaml.snakeyaml.scanner.SimpleKey: org.yaml.snakeyaml.error.Mark getMark()>();
+v18 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: org.yaml.snakeyaml.reader.StreamReader reader>;
+v19 = virtualinvoke v18.<org.yaml.snakeyaml.reader.StreamReader: org.yaml.snakeyaml.error.Mark getMark()>();
+specialinvoke v16.<org.yaml.snakeyaml.scanner.ScannerException: void <init>(java.lang.String,org.yaml.snakeyaml.error.Mark,java.lang.String,org.yaml.snakeyaml.error.Mark)>("while scanning a simple key", v17, "could not find expected \':\'", v19);
+throw v16;
+label3:
+interfaceinvoke v5.<java.util.Iterator: void remove()>();
+goto label1;
+label4:
+return;
+}
+private void savePossibleSimpleKey()
+{
+java.lang.Integer v25;
+org.yaml.snakeyaml.scanner.SimpleKey v14;
+java.util.Map v23;
+int v1, v10, v12, v13, v16, v18, v2, v20, v24, v4;
+boolean v5, v6, v7, v9;
+java.util.List v11;
+org.yaml.snakeyaml.error.Mark v22;
+org.yaml.snakeyaml.reader.StreamReader v15, v17, v19, v21, v3;
+org.yaml.snakeyaml.error.YAMLException v8;
+org.yaml.snakeyaml.scanner.ScannerImpl v0;
+v0 := @this: org.yaml.snakeyaml.scanner.ScannerImpl;
+v1 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: int flowLevel>;
+if v1 != 0 goto label1;
+v2 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: int indent>;
+v3 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: org.yaml.snakeyaml.reader.StreamReader reader>;
+v4 = virtualinvoke v3.<org.yaml.snakeyaml.reader.StreamReader: int getColumn()>();
+if v2 != v4 goto label1;
+v5 = 1;
+goto label2;
+label1:
+v5 = 0;
+label2:
+v6 = v5;
+v7 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: boolean allowSimpleKey>;
+if v7 != 0 goto label3;
+if v5 == 0 goto label3;
+v8 = new org.yaml.snakeyaml.error.YAMLException;
+specialinvoke v8.<org.yaml.snakeyaml.error.YAMLException: void <init>(java.lang.String)>("A simple key is required only if it is the first token in the current line");
+throw v8;
+label3:
+v9 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: boolean allowSimpleKey>;
+if v9 == 0 goto label4;
+specialinvoke v0.<org.yaml.snakeyaml.scanner.ScannerImpl: void removePossibleSimpleKey()>();
+v10 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: int tokensTaken>;
+v11 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: java.util.List tokens>;
+v12 = interfaceinvoke v11.<java.util.List: int size()>();
+v13 = v10 + v12;
+v14 = new org.yaml.snakeyaml.scanner.SimpleKey;
+v15 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: org.yaml.snakeyaml.reader.StreamReader reader>;
+v16 = virtualinvoke v15.<org.yaml.snakeyaml.reader.StreamReader: int getIndex()>();
+v17 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: org.yaml.snakeyaml.reader.StreamReader reader>;
+v18 = virtualinvoke v17.<org.yaml.snakeyaml.reader.StreamReader: int getLine()>();
+v19 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: org.yaml.snakeyaml.reader.StreamReader reader>;
+v20 = virtualinvoke v19.<org.yaml.snakeyaml.reader.StreamReader: int getColumn()>();
+v21 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: org.yaml.snakeyaml.reader.StreamReader reader>;
+v22 = virtualinvoke v21.<org.yaml.snakeyaml.reader.StreamReader: org.yaml.snakeyaml.error.Mark getMark()>();
+specialinvoke v14.<org.yaml.snakeyaml.scanner.SimpleKey: void <init>(int,boolean,int,int,int,org.yaml.snakeyaml.error.Mark)>(v13, v6, v16, v18, v20, v22);
+v23 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: java.util.Map possibleSimpleKeys>;
+v24 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: int flowLevel>;
+v25 = staticinvoke <java.lang.Integer: java.lang.Integer valueOf(int)>(v24);
+interfaceinvoke v23.<java.util.Map: java.lang.Object put(java.lang.Object,java.lang.Object)>(v25, v14);
+label4:
+return;
+}
+private void removePossibleSimpleKey()
+{
+org.yaml.snakeyaml.scanner.ScannerException v6;
+java.lang.Integer v3;
+org.yaml.snakeyaml.error.Mark v7, v9;
+java.util.Map v1;
+int v2;
+org.yaml.snakeyaml.reader.StreamReader v8;
+java.lang.Object v4;
+boolean v5;
+org.yaml.snakeyaml.scanner.ScannerImpl v0;
+v0 := @this: org.yaml.snakeyaml.scanner.ScannerImpl;
+v1 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: java.util.Map possibleSimpleKeys>;
+v2 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: int flowLevel>;
+v3 = staticinvoke <java.lang.Integer: java.lang.Integer valueOf(int)>(v2);
+v4 = interfaceinvoke v1.<java.util.Map: java.lang.Object remove(java.lang.Object)>(v3);
+if v4 == null goto label1;
+v5 = virtualinvoke v4.<org.yaml.snakeyaml.scanner.SimpleKey: boolean isRequired()>();
+if v5 == 0 goto label1;
+v6 = new org.yaml.snakeyaml.scanner.ScannerException;
+v7 = virtualinvoke v4.<org.yaml.snakeyaml.scanner.SimpleKey: org.yaml.snakeyaml.error.Mark getMark()>();
+v8 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: org.yaml.snakeyaml.reader.StreamReader reader>;
+v9 = virtualinvoke v8.<org.yaml.snakeyaml.reader.StreamReader: org.yaml.snakeyaml.error.Mark getMark()>();
+specialinvoke v6.<org.yaml.snakeyaml.scanner.ScannerException: void <init>(java.lang.String,org.yaml.snakeyaml.error.Mark,java.lang.String,org.yaml.snakeyaml.error.Mark)>("while scanning a simple key", v7, "could not find expected \':\'", v9);
+throw v6;
+label1:
+return;
+}
+private void unwindIndent(int)
+{
+org.yaml.snakeyaml.util.ArrayStack v6;
+org.yaml.snakeyaml.error.Mark v5;
+org.yaml.snakeyaml.tokens.BlockEndToken v9;
+int v1, v2, v3, v8;
+org.yaml.snakeyaml.reader.StreamReader v4;
+java.lang.Object v7;
+org.yaml.snakeyaml.scanner.ScannerImpl v0;
+v0 := @this: org.yaml.snakeyaml.scanner.ScannerImpl;
+v1 := @parameter0: int;
+v2 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: int flowLevel>;
+if v2 == 0 goto label1;
+return;
+label1:
+v3 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: int indent>;
+if v3 <= v1 goto label2;
+v4 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: org.yaml.snakeyaml.reader.StreamReader reader>;
+v5 = virtualinvoke v4.<org.yaml.snakeyaml.reader.StreamReader: org.yaml.snakeyaml.error.Mark getMark()>();
+v6 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: org.yaml.snakeyaml.util.ArrayStack indents>;
+v7 = virtualinvoke v6.<org.yaml.snakeyaml.util.ArrayStack: java.lang.Object pop()>();
+v8 = virtualinvoke v7.<java.lang.Integer: int intValue()>();
+v0.<org.yaml.snakeyaml.scanner.ScannerImpl: int indent> = v8;
+v9 = new org.yaml.snakeyaml.tokens.BlockEndToken;
+specialinvoke v9.<org.yaml.snakeyaml.tokens.BlockEndToken: void <init>(org.yaml.snakeyaml.error.Mark,org.yaml.snakeyaml.error.Mark)>(v5, v5);
+specialinvoke v0.<org.yaml.snakeyaml.scanner.ScannerImpl: void addToken(org.yaml.snakeyaml.tokens.Token)>(v9);
+goto label1;
+label2:
+return;
+}
+private boolean addIndent(int)
+{
+int v1, v2, v4;
+org.yaml.snakeyaml.util.ArrayStack v3;
+java.lang.Integer v5;
+org.yaml.snakeyaml.scanner.ScannerImpl v0;
+v0 := @this: org.yaml.snakeyaml.scanner.ScannerImpl;
+v1 := @parameter0: int;
+v2 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: int indent>;
+if v2 >= v1 goto label1;
+v3 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: org.yaml.snakeyaml.util.ArrayStack indents>;
+v4 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: int indent>;
+v5 = staticinvoke <java.lang.Integer: java.lang.Integer valueOf(int)>(v4);
+virtualinvoke v3.<org.yaml.snakeyaml.util.ArrayStack: void push(java.lang.Object)>(v5);
+v0.<org.yaml.snakeyaml.scanner.ScannerImpl: int indent> = v1;
+return 1;
+label1:
+return 0;
+}
+private void fetchStreamStart()
+{
+org.yaml.snakeyaml.error.Mark v2;
+org.yaml.snakeyaml.reader.StreamReader v1;
+org.yaml.snakeyaml.tokens.StreamStartToken v3;
+org.yaml.snakeyaml.scanner.ScannerImpl v0;
+v0 := @this: org.yaml.snakeyaml.scanner.ScannerImpl;
+v1 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: org.yaml.snakeyaml.reader.StreamReader reader>;
+v2 = virtualinvoke v1.<org.yaml.snakeyaml.reader.StreamReader: org.yaml.snakeyaml.error.Mark getMark()>();
+v3 = new org.yaml.snakeyaml.tokens.StreamStartToken;
+specialinvoke v3.<org.yaml.snakeyaml.tokens.StreamStartToken: void <init>(org.yaml.snakeyaml.error.Mark,org.yaml.snakeyaml.error.Mark)>(v2, v2);
+specialinvoke v0.<org.yaml.snakeyaml.scanner.ScannerImpl: void addToken(org.yaml.snakeyaml.tokens.Token)>(v3);
+return;
+}
+private void fetchStreamEnd()
+{
+org.yaml.snakeyaml.error.Mark v4;
+java.util.Map v2;
+org.yaml.snakeyaml.tokens.StreamEndToken v5;
+int v1;
+org.yaml.snakeyaml.reader.StreamReader v3;
+org.yaml.snakeyaml.scanner.ScannerImpl v0;
+v0 := @this: org.yaml.snakeyaml.scanner.ScannerImpl;
+v1 = (int) -1;
+specialinvoke v0.<org.yaml.snakeyaml.scanner.ScannerImpl: void unwindIndent(int)>(v1);
+specialinvoke v0.<org.yaml.snakeyaml.scanner.ScannerImpl: void removePossibleSimpleKey()>();
+v0.<org.yaml.snakeyaml.scanner.ScannerImpl: boolean allowSimpleKey> = 0;
+v2 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: java.util.Map possibleSimpleKeys>;
+interfaceinvoke v2.<java.util.Map: void clear()>();
+v3 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: org.yaml.snakeyaml.reader.StreamReader reader>;
+v4 = virtualinvoke v3.<org.yaml.snakeyaml.reader.StreamReader: org.yaml.snakeyaml.error.Mark getMark()>();
+v5 = new org.yaml.snakeyaml.tokens.StreamEndToken;
+specialinvoke v5.<org.yaml.snakeyaml.tokens.StreamEndToken: void <init>(org.yaml.snakeyaml.error.Mark,org.yaml.snakeyaml.error.Mark)>(v4, v4);
+specialinvoke v0.<org.yaml.snakeyaml.scanner.ScannerImpl: void addToken(org.yaml.snakeyaml.tokens.Token)>(v5);
+v0.<org.yaml.snakeyaml.scanner.ScannerImpl: boolean done> = 1;
+return;
+}
+private void fetchDirective()
+{
+int v1;
+java.util.List v2;
+org.yaml.snakeyaml.scanner.ScannerImpl v0;
+v0 := @this: org.yaml.snakeyaml.scanner.ScannerImpl;
+v1 = (int) -1;
+specialinvoke v0.<org.yaml.snakeyaml.scanner.ScannerImpl: void unwindIndent(int)>(v1);
+specialinvoke v0.<org.yaml.snakeyaml.scanner.ScannerImpl: void removePossibleSimpleKey()>();
+v0.<org.yaml.snakeyaml.scanner.ScannerImpl: boolean allowSimpleKey> = 0;
+v2 = specialinvoke v0.<org.yaml.snakeyaml.scanner.ScannerImpl: java.util.List scanDirective()>();
+specialinvoke v0.<org.yaml.snakeyaml.scanner.ScannerImpl: void addAllTokens(java.util.List)>(v2);
+return;
+}
+private void fetchDocumentStart()
+{
+org.yaml.snakeyaml.scanner.ScannerImpl v0;
+v0 := @this: org.yaml.snakeyaml.scanner.ScannerImpl;
+specialinvoke v0.<org.yaml.snakeyaml.scanner.ScannerImpl: void fetchDocumentIndicator(boolean)>(1);
+return;
+}
+private void fetchDocumentEnd()
+{
+org.yaml.snakeyaml.scanner.ScannerImpl v0;
+v0 := @this: org.yaml.snakeyaml.scanner.ScannerImpl;
+specialinvoke v0.<org.yaml.snakeyaml.scanner.ScannerImpl: void fetchDocumentIndicator(boolean)>(0);
+return;
+}
+private void fetchDocumentIndicator(boolean)
+{
+org.yaml.snakeyaml.tokens.Token v9;
+org.yaml.snakeyaml.error.Mark v4, v7;
+int v2;
+org.yaml.snakeyaml.reader.StreamReader v3, v5, v6;
+org.yaml.snakeyaml.tokens.DocumentEndToken v10;
+boolean v1;
+org.yaml.snakeyaml.scanner.ScannerImpl v0;
+org.yaml.snakeyaml.tokens.DocumentStartToken v8;
+v0 := @this: org.yaml.snakeyaml.scanner.ScannerImpl;
+v1 := @parameter0: boolean;
+v2 = (int) -1;
+specialinvoke v0.<org.yaml.snakeyaml.scanner.ScannerImpl: void unwindIndent(int)>(v2);
+specialinvoke v0.<org.yaml.snakeyaml.scanner.ScannerImpl: void removePossibleSimpleKey()>();
+v0.<org.yaml.snakeyaml.scanner.ScannerImpl: boolean allowSimpleKey> = 0;
+v3 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: org.yaml.snakeyaml.reader.StreamReader reader>;
+v4 = virtualinvoke v3.<org.yaml.snakeyaml.reader.StreamReader: org.yaml.snakeyaml.error.Mark getMark()>();
+v5 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: org.yaml.snakeyaml.reader.StreamReader reader>;
+virtualinvoke v5.<org.yaml.snakeyaml.reader.StreamReader: void forward(int)>(3);
+v6 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: org.yaml.snakeyaml.reader.StreamReader reader>;
+v7 = virtualinvoke v6.<org.yaml.snakeyaml.reader.StreamReader: org.yaml.snakeyaml.error.Mark getMark()>();
+if v1 == 0 goto label1;
+v8 = new org.yaml.snakeyaml.tokens.DocumentStartToken;
+specialinvoke v8.<org.yaml.snakeyaml.tokens.DocumentStartToken: void <init>(org.yaml.snakeyaml.error.Mark,org.yaml.snakeyaml.error.Mark)>(v4, v7);
+v9 = v8;
+goto label2;
+label1:
+v10 = new org.yaml.snakeyaml.tokens.DocumentEndToken;
+specialinvoke v10.<org.yaml.snakeyaml.tokens.DocumentEndToken: void <init>(org.yaml.snakeyaml.error.Mark,org.yaml.snakeyaml.error.Mark)>(v4, v7);
+v9 = v10;
+label2:
+specialinvoke v0.<org.yaml.snakeyaml.scanner.ScannerImpl: void addToken(org.yaml.snakeyaml.tokens.Token)>(v9);
+return;
+}
+private void fetchFlowSequenceStart()
+{
+org.yaml.snakeyaml.scanner.ScannerImpl v0;
+v0 := @this: org.yaml.snakeyaml.scanner.ScannerImpl;
+specialinvoke v0.<org.yaml.snakeyaml.scanner.ScannerImpl: void fetchFlowCollectionStart(boolean)>(0);
+return;
+}
+private void fetchFlowMappingStart()
+{
+org.yaml.snakeyaml.scanner.ScannerImpl v0;
+v0 := @this: org.yaml.snakeyaml.scanner.ScannerImpl;
+specialinvoke v0.<org.yaml.snakeyaml.scanner.ScannerImpl: void fetchFlowCollectionStart(boolean)>(1);
+return;
+}
+private void fetchFlowCollectionStart(boolean)
+{
+org.yaml.snakeyaml.tokens.Token v10;
+org.yaml.snakeyaml.error.Mark v5, v8;
+org.yaml.snakeyaml.tokens.FlowMappingStartToken v9;
+org.yaml.snakeyaml.tokens.FlowSequenceStartToken v11;
+int v2, v3;
+org.yaml.snakeyaml.reader.StreamReader v4, v6, v7;
+boolean v1;
+org.yaml.snakeyaml.scanner.ScannerImpl v0;
+v0 := @this: org.yaml.snakeyaml.scanner.ScannerImpl;
+v1 := @parameter0: boolean;
+specialinvoke v0.<org.yaml.snakeyaml.scanner.ScannerImpl: void savePossibleSimpleKey()>();
+v2 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: int flowLevel>;
+v3 = v2 + 1;
+v0.<org.yaml.snakeyaml.scanner.ScannerImpl: int flowLevel> = v3;
+v0.<org.yaml.snakeyaml.scanner.ScannerImpl: boolean allowSimpleKey> = 1;
+v4 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: org.yaml.snakeyaml.reader.StreamReader reader>;
+v5 = virtualinvoke v4.<org.yaml.snakeyaml.reader.StreamReader: org.yaml.snakeyaml.error.Mark getMark()>();
+v6 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: org.yaml.snakeyaml.reader.StreamReader reader>;
+virtualinvoke v6.<org.yaml.snakeyaml.reader.StreamReader: void forward(int)>(1);
+v7 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: org.yaml.snakeyaml.reader.StreamReader reader>;
+v8 = virtualinvoke v7.<org.yaml.snakeyaml.reader.StreamReader: org.yaml.snakeyaml.error.Mark getMark()>();
+if v1 == 0 goto label1;
+v9 = new org.yaml.snakeyaml.tokens.FlowMappingStartToken;
+specialinvoke v9.<org.yaml.snakeyaml.tokens.FlowMappingStartToken: void <init>(org.yaml.snakeyaml.error.Mark,org.yaml.snakeyaml.error.Mark)>(v5, v8);
+v10 = v9;
+goto label2;
+label1:
+v11 = new org.yaml.snakeyaml.tokens.FlowSequenceStartToken;
+specialinvoke v11.<org.yaml.snakeyaml.tokens.FlowSequenceStartToken: void <init>(org.yaml.snakeyaml.error.Mark,org.yaml.snakeyaml.error.Mark)>(v5, v8);
+v10 = v11;
+label2:
+specialinvoke v0.<org.yaml.snakeyaml.scanner.ScannerImpl: void addToken(org.yaml.snakeyaml.tokens.Token)>(v10);
+return;
+}
+private void fetchFlowSequenceEnd()
+{
+org.yaml.snakeyaml.scanner.ScannerImpl v0;
+v0 := @this: org.yaml.snakeyaml.scanner.ScannerImpl;
+specialinvoke v0.<org.yaml.snakeyaml.scanner.ScannerImpl: void fetchFlowCollectionEnd(boolean)>(0);
+return;
+}
+private void fetchFlowMappingEnd()
+{
+org.yaml.snakeyaml.scanner.ScannerImpl v0;
+v0 := @this: org.yaml.snakeyaml.scanner.ScannerImpl;
+specialinvoke v0.<org.yaml.snakeyaml.scanner.ScannerImpl: void fetchFlowCollectionEnd(boolean)>(1);
+return;
+}
+private void fetchFlowCollectionEnd(boolean)
+{
+org.yaml.snakeyaml.tokens.Token v10;
+org.yaml.snakeyaml.tokens.FlowMappingEndToken v9;
+org.yaml.snakeyaml.error.Mark v5, v8;
+org.yaml.snakeyaml.tokens.FlowSequenceEndToken v11;
+int v2, v3;
+org.yaml.snakeyaml.reader.StreamReader v4, v6, v7;
+boolean v1;
+org.yaml.snakeyaml.scanner.ScannerImpl v0;
+v0 := @this: org.yaml.snakeyaml.scanner.ScannerImpl;
+v1 := @parameter0: boolean;
+specialinvoke v0.<org.yaml.snakeyaml.scanner.ScannerImpl: void removePossibleSimpleKey()>();
+v2 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: int flowLevel>;
+v3 = v2 - 1;
+v0.<org.yaml.snakeyaml.scanner.ScannerImpl: int flowLevel> = v3;
+v0.<org.yaml.snakeyaml.scanner.ScannerImpl: boolean allowSimpleKey> = 0;
+v4 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: org.yaml.snakeyaml.reader.StreamReader reader>;
+v5 = virtualinvoke v4.<org.yaml.snakeyaml.reader.StreamReader: org.yaml.snakeyaml.error.Mark getMark()>();
+v6 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: org.yaml.snakeyaml.reader.StreamReader reader>;
+virtualinvoke v6.<org.yaml.snakeyaml.reader.StreamReader: void forward()>();
+v7 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: org.yaml.snakeyaml.reader.StreamReader reader>;
+v8 = virtualinvoke v7.<org.yaml.snakeyaml.reader.StreamReader: org.yaml.snakeyaml.error.Mark getMark()>();
+if v1 == 0 goto label1;
+v9 = new org.yaml.snakeyaml.tokens.FlowMappingEndToken;
+specialinvoke v9.<org.yaml.snakeyaml.tokens.FlowMappingEndToken: void <init>(org.yaml.snakeyaml.error.Mark,org.yaml.snakeyaml.error.Mark)>(v5, v8);
+v10 = v9;
+goto label2;
+label1:
+v11 = new org.yaml.snakeyaml.tokens.FlowSequenceEndToken;
+specialinvoke v11.<org.yaml.snakeyaml.tokens.FlowSequenceEndToken: void <init>(org.yaml.snakeyaml.error.Mark,org.yaml.snakeyaml.error.Mark)>(v5, v8);
+v10 = v11;
+label2:
+specialinvoke v0.<org.yaml.snakeyaml.scanner.ScannerImpl: void addToken(org.yaml.snakeyaml.tokens.Token)>(v10);
+return;
+}
+private void fetchFlowEntry()
+{
+org.yaml.snakeyaml.error.Mark v2, v5;
+org.yaml.snakeyaml.reader.StreamReader v1, v3, v4;
+org.yaml.snakeyaml.tokens.FlowEntryToken v6;
+org.yaml.snakeyaml.scanner.ScannerImpl v0;
+v0 := @this: org.yaml.snakeyaml.scanner.ScannerImpl;
+v0.<org.yaml.snakeyaml.scanner.ScannerImpl: boolean allowSimpleKey> = 1;
+specialinvoke v0.<org.yaml.snakeyaml.scanner.ScannerImpl: void removePossibleSimpleKey()>();
+v1 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: org.yaml.snakeyaml.reader.StreamReader reader>;
+v2 = virtualinvoke v1.<org.yaml.snakeyaml.reader.StreamReader: org.yaml.snakeyaml.error.Mark getMark()>();
+v3 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: org.yaml.snakeyaml.reader.StreamReader reader>;
+virtualinvoke v3.<org.yaml.snakeyaml.reader.StreamReader: void forward()>();
+v4 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: org.yaml.snakeyaml.reader.StreamReader reader>;
+v5 = virtualinvoke v4.<org.yaml.snakeyaml.reader.StreamReader: org.yaml.snakeyaml.error.Mark getMark()>();
+v6 = new org.yaml.snakeyaml.tokens.FlowEntryToken;
+specialinvoke v6.<org.yaml.snakeyaml.tokens.FlowEntryToken: void <init>(org.yaml.snakeyaml.error.Mark,org.yaml.snakeyaml.error.Mark)>(v2, v5);
+specialinvoke v0.<org.yaml.snakeyaml.scanner.ScannerImpl: void addToken(org.yaml.snakeyaml.tokens.Token)>(v6);
+return;
+}
+private void fetchBlockEntry()
+{
+org.yaml.snakeyaml.tokens.BlockSequenceStartToken v11;
+int v1, v7;
+boolean v2, v8;
+org.yaml.snakeyaml.scanner.ScannerException v3;
+org.yaml.snakeyaml.tokens.BlockEntryToken v17;
+org.yaml.snakeyaml.error.Mark v10, v13, v16, v5;
+org.yaml.snakeyaml.reader.StreamReader v12, v14, v15, v4, v6, v9;
+org.yaml.snakeyaml.scanner.ScannerImpl v0;
+v0 := @this: org.yaml.snakeyaml.scanner.ScannerImpl;
+v1 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: int flowLevel>;
+if v1 != 0 goto label2;
+v2 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: boolean allowSimpleKey>;
+if v2 != 0 goto label1;
+v3 = new org.yaml.snakeyaml.scanner.ScannerException;
+v4 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: org.yaml.snakeyaml.reader.StreamReader reader>;
+v5 = virtualinvoke v4.<org.yaml.snakeyaml.reader.StreamReader: org.yaml.snakeyaml.error.Mark getMark()>();
+specialinvoke v3.<org.yaml.snakeyaml.scanner.ScannerException: void <init>(java.lang.String,org.yaml.snakeyaml.error.Mark,java.lang.String,org.yaml.snakeyaml.error.Mark)>(null, null, "sequence entries are not allowed here", v5);
+throw v3;
+label1:
+v6 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: org.yaml.snakeyaml.reader.StreamReader reader>;
+v7 = virtualinvoke v6.<org.yaml.snakeyaml.reader.StreamReader: int getColumn()>();
+v8 = specialinvoke v0.<org.yaml.snakeyaml.scanner.ScannerImpl: boolean addIndent(int)>(v7);
+if v8 == 0 goto label2;
+v9 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: org.yaml.snakeyaml.reader.StreamReader reader>;
+v10 = virtualinvoke v9.<org.yaml.snakeyaml.reader.StreamReader: org.yaml.snakeyaml.error.Mark getMark()>();
+v11 = new org.yaml.snakeyaml.tokens.BlockSequenceStartToken;
+specialinvoke v11.<org.yaml.snakeyaml.tokens.BlockSequenceStartToken: void <init>(org.yaml.snakeyaml.error.Mark,org.yaml.snakeyaml.error.Mark)>(v10, v10);
+specialinvoke v0.<org.yaml.snakeyaml.scanner.ScannerImpl: void addToken(org.yaml.snakeyaml.tokens.Token)>(v11);
+label2:
+v0.<org.yaml.snakeyaml.scanner.ScannerImpl: boolean allowSimpleKey> = 1;
+specialinvoke v0.<org.yaml.snakeyaml.scanner.ScannerImpl: void removePossibleSimpleKey()>();
+v12 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: org.yaml.snakeyaml.reader.StreamReader reader>;
+v13 = virtualinvoke v12.<org.yaml.snakeyaml.reader.StreamReader: org.yaml.snakeyaml.error.Mark getMark()>();
+v14 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: org.yaml.snakeyaml.reader.StreamReader reader>;
+virtualinvoke v14.<org.yaml.snakeyaml.reader.StreamReader: void forward()>();
+v15 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: org.yaml.snakeyaml.reader.StreamReader reader>;
+v16 = virtualinvoke v15.<org.yaml.snakeyaml.reader.StreamReader: org.yaml.snakeyaml.error.Mark getMark()>();
+v17 = new org.yaml.snakeyaml.tokens.BlockEntryToken;
+specialinvoke v17.<org.yaml.snakeyaml.tokens.BlockEntryToken: void <init>(org.yaml.snakeyaml.error.Mark,org.yaml.snakeyaml.error.Mark)>(v13, v16);
+specialinvoke v0.<org.yaml.snakeyaml.scanner.ScannerImpl: void addToken(org.yaml.snakeyaml.tokens.Token)>(v17);
+return;
+}
+private void fetchKey()
+{
+org.yaml.snakeyaml.tokens.KeyToken v19;
+org.yaml.snakeyaml.tokens.BlockMappingStartToken v11;
+int v1, v12, v7;
+boolean v13, v2, v8;
+org.yaml.snakeyaml.scanner.ScannerException v3;
+org.yaml.snakeyaml.error.Mark v10, v15, v18, v5;
+org.yaml.snakeyaml.reader.StreamReader v14, v16, v17, v4, v6, v9;
+org.yaml.snakeyaml.scanner.ScannerImpl v0;
+v0 := @this: org.yaml.snakeyaml.scanner.ScannerImpl;
+v1 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: int flowLevel>;
+if v1 != 0 goto label2;
+v2 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: boolean allowSimpleKey>;
+if v2 != 0 goto label1;
+v3 = new org.yaml.snakeyaml.scanner.ScannerException;
+v4 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: org.yaml.snakeyaml.reader.StreamReader reader>;
+v5 = virtualinvoke v4.<org.yaml.snakeyaml.reader.StreamReader: org.yaml.snakeyaml.error.Mark getMark()>();
+specialinvoke v3.<org.yaml.snakeyaml.scanner.ScannerException: void <init>(java.lang.String,org.yaml.snakeyaml.error.Mark,java.lang.String,org.yaml.snakeyaml.error.Mark)>(null, null, "mapping keys are not allowed here", v5);
+throw v3;
+label1:
+v6 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: org.yaml.snakeyaml.reader.StreamReader reader>;
+v7 = virtualinvoke v6.<org.yaml.snakeyaml.reader.StreamReader: int getColumn()>();
+v8 = specialinvoke v0.<org.yaml.snakeyaml.scanner.ScannerImpl: boolean addIndent(int)>(v7);
+if v8 == 0 goto label2;
+v9 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: org.yaml.snakeyaml.reader.StreamReader reader>;
+v10 = virtualinvoke v9.<org.yaml.snakeyaml.reader.StreamReader: org.yaml.snakeyaml.error.Mark getMark()>();
+v11 = new org.yaml.snakeyaml.tokens.BlockMappingStartToken;
+specialinvoke v11.<org.yaml.snakeyaml.tokens.BlockMappingStartToken: void <init>(org.yaml.snakeyaml.error.Mark,org.yaml.snakeyaml.error.Mark)>(v10, v10);
+specialinvoke v0.<org.yaml.snakeyaml.scanner.ScannerImpl: void addToken(org.yaml.snakeyaml.tokens.Token)>(v11);
+label2:
+v12 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: int flowLevel>;
+if v12 != 0 goto label3;
+v13 = 1;
+goto label4;
+label3:
+v13 = 0;
+label4:
+v0.<org.yaml.snakeyaml.scanner.ScannerImpl: boolean allowSimpleKey> = v13;
+specialinvoke v0.<org.yaml.snakeyaml.scanner.ScannerImpl: void removePossibleSimpleKey()>();
+v14 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: org.yaml.snakeyaml.reader.StreamReader reader>;
+v15 = virtualinvoke v14.<org.yaml.snakeyaml.reader.StreamReader: org.yaml.snakeyaml.error.Mark getMark()>();
+v16 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: org.yaml.snakeyaml.reader.StreamReader reader>;
+virtualinvoke v16.<org.yaml.snakeyaml.reader.StreamReader: void forward()>();
+v17 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: org.yaml.snakeyaml.reader.StreamReader reader>;
+v18 = virtualinvoke v17.<org.yaml.snakeyaml.reader.StreamReader: org.yaml.snakeyaml.error.Mark getMark()>();
+v19 = new org.yaml.snakeyaml.tokens.KeyToken;
+specialinvoke v19.<org.yaml.snakeyaml.tokens.KeyToken: void <init>(org.yaml.snakeyaml.error.Mark,org.yaml.snakeyaml.error.Mark)>(v15, v18);
+specialinvoke v0.<org.yaml.snakeyaml.scanner.ScannerImpl: void addToken(org.yaml.snakeyaml.tokens.Token)>(v19);
+return;
+}
+private void fetchValue()
+{
+java.lang.Integer v3;
+java.util.Map v1;
+boolean v13, v21, v28, v33;
+org.yaml.snakeyaml.error.Mark v10, v18, v19, v24, v30, v35, v38, v9;
+org.yaml.snakeyaml.scanner.ScannerImpl v0;
+org.yaml.snakeyaml.tokens.KeyToken v8;
+org.yaml.snakeyaml.tokens.BlockMappingStartToken v17, v31;
+int v11, v12, v14, v15, v16, v2, v20, v25, v27, v32, v5, v6, v7;
+org.yaml.snakeyaml.tokens.ValueToken v39;
+org.yaml.snakeyaml.scanner.ScannerException v22;
+org.yaml.snakeyaml.reader.StreamReader v23, v26, v29, v34, v36, v37;
+java.lang.Object v4;
+v0 := @this: org.yaml.snakeyaml.scanner.ScannerImpl;
+v1 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: java.util.Map possibleSimpleKeys>;
+v2 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: int flowLevel>;
+v3 = staticinvoke <java.lang.Integer: java.lang.Integer valueOf(int)>(v2);
+v4 = interfaceinvoke v1.<java.util.Map: java.lang.Object remove(java.lang.Object)>(v3);
+if v4 == null goto label2;
+v5 = virtualinvoke v4.<org.yaml.snakeyaml.scanner.SimpleKey: int getTokenNumber()>();
+v6 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: int tokensTaken>;
+v7 = v5 - v6;
+v8 = new org.yaml.snakeyaml.tokens.KeyToken;
+v9 = virtualinvoke v4.<org.yaml.snakeyaml.scanner.SimpleKey: org.yaml.snakeyaml.error.Mark getMark()>();
+v10 = virtualinvoke v4.<org.yaml.snakeyaml.scanner.SimpleKey: org.yaml.snakeyaml.error.Mark getMark()>();
+specialinvoke v8.<org.yaml.snakeyaml.tokens.KeyToken: void <init>(org.yaml.snakeyaml.error.Mark,org.yaml.snakeyaml.error.Mark)>(v9, v10);
+specialinvoke v0.<org.yaml.snakeyaml.scanner.ScannerImpl: void addToken(int,org.yaml.snakeyaml.tokens.Token)>(v7, v8);
+v11 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: int flowLevel>;
+if v11 != 0 goto label1;
+v12 = virtualinvoke v4.<org.yaml.snakeyaml.scanner.SimpleKey: int getColumn()>();
+v13 = specialinvoke v0.<org.yaml.snakeyaml.scanner.ScannerImpl: boolean addIndent(int)>(v12);
+if v13 == 0 goto label1;
+v14 = virtualinvoke v4.<org.yaml.snakeyaml.scanner.SimpleKey: int getTokenNumber()>();
+v15 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: int tokensTaken>;
+v16 = v14 - v15;
+v17 = new org.yaml.snakeyaml.tokens.BlockMappingStartToken;
+v18 = virtualinvoke v4.<org.yaml.snakeyaml.scanner.SimpleKey: org.yaml.snakeyaml.error.Mark getMark()>();
+v19 = virtualinvoke v4.<org.yaml.snakeyaml.scanner.SimpleKey: org.yaml.snakeyaml.error.Mark getMark()>();
+specialinvoke v17.<org.yaml.snakeyaml.tokens.BlockMappingStartToken: void <init>(org.yaml.snakeyaml.error.Mark,org.yaml.snakeyaml.error.Mark)>(v18, v19);
+specialinvoke v0.<org.yaml.snakeyaml.scanner.ScannerImpl: void addToken(int,org.yaml.snakeyaml.tokens.Token)>(v16, v17);
+label1:
+v0.<org.yaml.snakeyaml.scanner.ScannerImpl: boolean allowSimpleKey> = 0;
+goto label7;
+label2:
+v20 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: int flowLevel>;
+if v20 != 0 goto label3;
+v21 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: boolean allowSimpleKey>;
+if v21 != 0 goto label3;
+v22 = new org.yaml.snakeyaml.scanner.ScannerException;
+v23 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: org.yaml.snakeyaml.reader.StreamReader reader>;
+v24 = virtualinvoke v23.<org.yaml.snakeyaml.reader.StreamReader: org.yaml.snakeyaml.error.Mark getMark()>();
+specialinvoke v22.<org.yaml.snakeyaml.scanner.ScannerException: void <init>(java.lang.String,org.yaml.snakeyaml.error.Mark,java.lang.String,org.yaml.snakeyaml.error.Mark)>(null, null, "mapping values are not allowed here", v24);
+throw v22;
+label3:
+v25 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: int flowLevel>;
+if v25 != 0 goto label4;
+v26 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: org.yaml.snakeyaml.reader.StreamReader reader>;
+v27 = virtualinvoke v26.<org.yaml.snakeyaml.reader.StreamReader: int getColumn()>();
+v28 = specialinvoke v0.<org.yaml.snakeyaml.scanner.ScannerImpl: boolean addIndent(int)>(v27);
+if v28 == 0 goto label4;
+v29 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: org.yaml.snakeyaml.reader.StreamReader reader>;
+v30 = virtualinvoke v29.<org.yaml.snakeyaml.reader.StreamReader: org.yaml.snakeyaml.error.Mark getMark()>();
+v31 = new org.yaml.snakeyaml.tokens.BlockMappingStartToken;
+specialinvoke v31.<org.yaml.snakeyaml.tokens.BlockMappingStartToken: void <init>(org.yaml.snakeyaml.error.Mark,org.yaml.snakeyaml.error.Mark)>(v30, v30);
+specialinvoke v0.<org.yaml.snakeyaml.scanner.ScannerImpl: void addToken(org.yaml.snakeyaml.tokens.Token)>(v31);
+label4:
+v32 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: int flowLevel>;
+if v32 != 0 goto label5;
+v33 = 1;
+goto label6;
+label5:
+v33 = 0;
+label6:
+v0.<org.yaml.snakeyaml.scanner.ScannerImpl: boolean allowSimpleKey> = v33;
+specialinvoke v0.<org.yaml.snakeyaml.scanner.ScannerImpl: void removePossibleSimpleKey()>();
+label7:
+v34 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: org.yaml.snakeyaml.reader.StreamReader reader>;
+v35 = virtualinvoke v34.<org.yaml.snakeyaml.reader.StreamReader: org.yaml.snakeyaml.error.Mark getMark()>();
+v36 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: org.yaml.snakeyaml.reader.StreamReader reader>;
+virtualinvoke v36.<org.yaml.snakeyaml.reader.StreamReader: void forward()>();
+v37 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: org.yaml.snakeyaml.reader.StreamReader reader>;
+v38 = virtualinvoke v37.<org.yaml.snakeyaml.reader.StreamReader: org.yaml.snakeyaml.error.Mark getMark()>();
+v39 = new org.yaml.snakeyaml.tokens.ValueToken;
+specialinvoke v39.<org.yaml.snakeyaml.tokens.ValueToken: void <init>(org.yaml.snakeyaml.error.Mark,org.yaml.snakeyaml.error.Mark)>(v35, v38);
+specialinvoke v0.<org.yaml.snakeyaml.scanner.ScannerImpl: void addToken(org.yaml.snakeyaml.tokens.Token)>(v39);
+return;
+}
+private void fetchAlias()
+{
+org.yaml.snakeyaml.tokens.Token v1;
+org.yaml.snakeyaml.scanner.ScannerImpl v0;
+v0 := @this: org.yaml.snakeyaml.scanner.ScannerImpl;
+specialinvoke v0.<org.yaml.snakeyaml.scanner.ScannerImpl: void savePossibleSimpleKey()>();
+v0.<org.yaml.snakeyaml.scanner.ScannerImpl: boolean allowSimpleKey> = 0;
+v1 = specialinvoke v0.<org.yaml.snakeyaml.scanner.ScannerImpl: org.yaml.snakeyaml.tokens.Token scanAnchor(boolean)>(0);
+specialinvoke v0.<org.yaml.snakeyaml.scanner.ScannerImpl: void addToken(org.yaml.snakeyaml.tokens.Token)>(v1);
+return;
+}
+private void fetchAnchor()
+{
+org.yaml.snakeyaml.tokens.Token v1;
+org.yaml.snakeyaml.scanner.ScannerImpl v0;
+v0 := @this: org.yaml.snakeyaml.scanner.ScannerImpl;
+specialinvoke v0.<org.yaml.snakeyaml.scanner.ScannerImpl: void savePossibleSimpleKey()>();
+v0.<org.yaml.snakeyaml.scanner.ScannerImpl: boolean allowSimpleKey> = 0;
+v1 = specialinvoke v0.<org.yaml.snakeyaml.scanner.ScannerImpl: org.yaml.snakeyaml.tokens.Token scanAnchor(boolean)>(1);
+specialinvoke v0.<org.yaml.snakeyaml.scanner.ScannerImpl: void addToken(org.yaml.snakeyaml.tokens.Token)>(v1);
+return;
+}
+private void fetchTag()
+{
+org.yaml.snakeyaml.tokens.Token v1;
+org.yaml.snakeyaml.scanner.ScannerImpl v0;
+v0 := @this: org.yaml.snakeyaml.scanner.ScannerImpl;
+specialinvoke v0.<org.yaml.snakeyaml.scanner.ScannerImpl: void savePossibleSimpleKey()>();
+v0.<org.yaml.snakeyaml.scanner.ScannerImpl: boolean allowSimpleKey> = 0;
+v1 = specialinvoke v0.<org.yaml.snakeyaml.scanner.ScannerImpl: org.yaml.snakeyaml.tokens.Token scanTag()>();
+specialinvoke v0.<org.yaml.snakeyaml.scanner.ScannerImpl: void addToken(org.yaml.snakeyaml.tokens.Token)>(v1);
+return;
+}
+private void fetchLiteral()
+{
+org.yaml.snakeyaml.scanner.ScannerImpl v0;
+v0 := @this: org.yaml.snakeyaml.scanner.ScannerImpl;
+specialinvoke v0.<org.yaml.snakeyaml.scanner.ScannerImpl: void fetchBlockScalar(char)>(124);
+return;
+}
+private void fetchFolded()
+{
+org.yaml.snakeyaml.scanner.ScannerImpl v0;
+v0 := @this: org.yaml.snakeyaml.scanner.ScannerImpl;
+specialinvoke v0.<org.yaml.snakeyaml.scanner.ScannerImpl: void fetchBlockScalar(char)>(62);
+return;
+}
+private void fetchBlockScalar(char)
+{
+char v1;
+java.util.List v2;
+org.yaml.snakeyaml.scanner.ScannerImpl v0;
+v0 := @this: org.yaml.snakeyaml.scanner.ScannerImpl;
+v1 := @parameter0: char;
+v0.<org.yaml.snakeyaml.scanner.ScannerImpl: boolean allowSimpleKey> = 1;
+specialinvoke v0.<org.yaml.snakeyaml.scanner.ScannerImpl: void removePossibleSimpleKey()>();
+v2 = specialinvoke v0.<org.yaml.snakeyaml.scanner.ScannerImpl: java.util.List scanBlockScalar(char)>(v1);
+specialinvoke v0.<org.yaml.snakeyaml.scanner.ScannerImpl: void addAllTokens(java.util.List)>(v2);
+return;
+}
+private void fetchSingle()
+{
+org.yaml.snakeyaml.scanner.ScannerImpl v0;
+v0 := @this: org.yaml.snakeyaml.scanner.ScannerImpl;
+specialinvoke v0.<org.yaml.snakeyaml.scanner.ScannerImpl: void fetchFlowScalar(char)>(39);
+return;
+}
+private void fetchDouble()
+{
+org.yaml.snakeyaml.scanner.ScannerImpl v0;
+v0 := @this: org.yaml.snakeyaml.scanner.ScannerImpl;
+specialinvoke v0.<org.yaml.snakeyaml.scanner.ScannerImpl: void fetchFlowScalar(char)>(34);
+return;
+}
+private void fetchFlowScalar(char)
+{
+org.yaml.snakeyaml.tokens.Token v2;
+char v1;
+org.yaml.snakeyaml.scanner.ScannerImpl v0;
+v0 := @this: org.yaml.snakeyaml.scanner.ScannerImpl;
+v1 := @parameter0: char;
+specialinvoke v0.<org.yaml.snakeyaml.scanner.ScannerImpl: void savePossibleSimpleKey()>();
+v0.<org.yaml.snakeyaml.scanner.ScannerImpl: boolean allowSimpleKey> = 0;
+v2 = specialinvoke v0.<org.yaml.snakeyaml.scanner.ScannerImpl: org.yaml.snakeyaml.tokens.Token scanFlowScalar(char)>(v1);
+specialinvoke v0.<org.yaml.snakeyaml.scanner.ScannerImpl: void addToken(org.yaml.snakeyaml.tokens.Token)>(v2);
+return;
+}
+private void fetchPlain()
+{
+org.yaml.snakeyaml.tokens.Token v1;
+org.yaml.snakeyaml.scanner.ScannerImpl v0;
+v0 := @this: org.yaml.snakeyaml.scanner.ScannerImpl;
+specialinvoke v0.<org.yaml.snakeyaml.scanner.ScannerImpl: void savePossibleSimpleKey()>();
+v0.<org.yaml.snakeyaml.scanner.ScannerImpl: boolean allowSimpleKey> = 0;
+v1 = specialinvoke v0.<org.yaml.snakeyaml.scanner.ScannerImpl: org.yaml.snakeyaml.tokens.Token scanPlain()>();
+specialinvoke v0.<org.yaml.snakeyaml.scanner.ScannerImpl: void addToken(org.yaml.snakeyaml.tokens.Token)>(v1);
+return;
+}
+private boolean checkDirective()
+{
+int v2;
+org.yaml.snakeyaml.reader.StreamReader v1;
+boolean v3;
+org.yaml.snakeyaml.scanner.ScannerImpl v0;
+v0 := @this: org.yaml.snakeyaml.scanner.ScannerImpl;
+v1 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: org.yaml.snakeyaml.reader.StreamReader reader>;
+v2 = virtualinvoke v1.<org.yaml.snakeyaml.reader.StreamReader: int getColumn()>();
+if v2 != 0 goto label1;
+v3 = 1;
+goto label2;
+label1:
+v3 = 0;
+label2:
+return v3;
+}
+private boolean checkDocumentStart()
+{
+org.yaml.snakeyaml.scanner.Constant v7;
+int v2, v9;
+org.yaml.snakeyaml.reader.StreamReader v1, v4, v8;
+java.lang.String v3, v5;
+boolean v10, v11, v6;
+org.yaml.snakeyaml.scanner.ScannerImpl v0;
+v0 := @this: org.yaml.snakeyaml.scanner.ScannerImpl;
+v1 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: org.yaml.snakeyaml.reader.StreamReader reader>;
+v2 = virtualinvoke v1.<org.yaml.snakeyaml.reader.StreamReader: int getColumn()>();
+if v2 != 0 goto label3;
+v3 = "---";
+v4 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: org.yaml.snakeyaml.reader.StreamReader reader>;
+v5 = virtualinvoke v4.<org.yaml.snakeyaml.reader.StreamReader: java.lang.String prefix(int)>(3);
+v6 = virtualinvoke v3.<java.lang.String: boolean equals(java.lang.Object)>(v5);
+if v6 == 0 goto label1;
+v7 = <org.yaml.snakeyaml.scanner.Constant: org.yaml.snakeyaml.scanner.Constant NULL_BL_T_LINEBR>;
+v8 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: org.yaml.snakeyaml.reader.StreamReader reader>;
+v9 = virtualinvoke v8.<org.yaml.snakeyaml.reader.StreamReader: int peek(int)>(3);
+v10 = virtualinvoke v7.<org.yaml.snakeyaml.scanner.Constant: boolean has(int)>(v9);
+if v10 == 0 goto label1;
+v11 = 1;
+goto label2;
+label1:
+v11 = 0;
+label2:
+return v11;
+label3:
+return 0;
+}
+private boolean checkDocumentEnd()
+{
+org.yaml.snakeyaml.scanner.Constant v7;
+int v2, v9;
+org.yaml.snakeyaml.reader.StreamReader v1, v4, v8;
+java.lang.String v3, v5;
+boolean v10, v11, v6;
+org.yaml.snakeyaml.scanner.ScannerImpl v0;
+v0 := @this: org.yaml.snakeyaml.scanner.ScannerImpl;
+v1 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: org.yaml.snakeyaml.reader.StreamReader reader>;
+v2 = virtualinvoke v1.<org.yaml.snakeyaml.reader.StreamReader: int getColumn()>();
+if v2 != 0 goto label3;
+v3 = "...";
+v4 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: org.yaml.snakeyaml.reader.StreamReader reader>;
+v5 = virtualinvoke v4.<org.yaml.snakeyaml.reader.StreamReader: java.lang.String prefix(int)>(3);
+v6 = virtualinvoke v3.<java.lang.String: boolean equals(java.lang.Object)>(v5);
+if v6 == 0 goto label1;
+v7 = <org.yaml.snakeyaml.scanner.Constant: org.yaml.snakeyaml.scanner.Constant NULL_BL_T_LINEBR>;
+v8 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: org.yaml.snakeyaml.reader.StreamReader reader>;
+v9 = virtualinvoke v8.<org.yaml.snakeyaml.reader.StreamReader: int peek(int)>(3);
+v10 = virtualinvoke v7.<org.yaml.snakeyaml.scanner.Constant: boolean has(int)>(v9);
+if v10 == 0 goto label1;
+v11 = 1;
+goto label2;
+label1:
+v11 = 0;
+label2:
+return v11;
+label3:
+return 0;
+}
+private boolean checkBlockEntry()
+{
+org.yaml.snakeyaml.scanner.Constant v1;
+int v3;
+org.yaml.snakeyaml.reader.StreamReader v2;
+boolean v4;
+org.yaml.snakeyaml.scanner.ScannerImpl v0;
+v0 := @this: org.yaml.snakeyaml.scanner.ScannerImpl;
+v1 = <org.yaml.snakeyaml.scanner.Constant: org.yaml.snakeyaml.scanner.Constant NULL_BL_T_LINEBR>;
+v2 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: org.yaml.snakeyaml.reader.StreamReader reader>;
+v3 = virtualinvoke v2.<org.yaml.snakeyaml.reader.StreamReader: int peek(int)>(1);
+v4 = virtualinvoke v1.<org.yaml.snakeyaml.scanner.Constant: boolean has(int)>(v3);
+return v4;
+}
+private boolean checkKey()
+{
+org.yaml.snakeyaml.scanner.Constant v2;
+int v1, v4;
+org.yaml.snakeyaml.reader.StreamReader v3;
+boolean v5;
+org.yaml.snakeyaml.scanner.ScannerImpl v0;
+v0 := @this: org.yaml.snakeyaml.scanner.ScannerImpl;
+v1 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: int flowLevel>;
+if v1 == 0 goto label1;
+return 1;
+label1:
+v2 = <org.yaml.snakeyaml.scanner.Constant: org.yaml.snakeyaml.scanner.Constant NULL_BL_T_LINEBR>;
+v3 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: org.yaml.snakeyaml.reader.StreamReader reader>;
+v4 = virtualinvoke v3.<org.yaml.snakeyaml.reader.StreamReader: int peek(int)>(1);
+v5 = virtualinvoke v2.<org.yaml.snakeyaml.scanner.Constant: boolean has(int)>(v4);
+return v5;
+}
+private boolean checkValue()
+{
+org.yaml.snakeyaml.scanner.Constant v2;
+int v1, v4;
+org.yaml.snakeyaml.reader.StreamReader v3;
+boolean v5;
+org.yaml.snakeyaml.scanner.ScannerImpl v0;
+v0 := @this: org.yaml.snakeyaml.scanner.ScannerImpl;
+v1 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: int flowLevel>;
+if v1 == 0 goto label1;
+return 1;
+label1:
+v2 = <org.yaml.snakeyaml.scanner.Constant: org.yaml.snakeyaml.scanner.Constant NULL_BL_T_LINEBR>;
+v3 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: org.yaml.snakeyaml.reader.StreamReader reader>;
+v4 = virtualinvoke v3.<org.yaml.snakeyaml.reader.StreamReader: int peek(int)>(1);
+v5 = virtualinvoke v2.<org.yaml.snakeyaml.scanner.Constant: boolean has(int)>(v4);
+return v5;
+}
+private boolean checkPlain()
+{
+org.yaml.snakeyaml.scanner.Constant v3, v5;
+int v11, v12, v2, v7, v9;
+org.yaml.snakeyaml.reader.StreamReader v1, v6;
+java.lang.String v10;
+boolean v13, v4, v8;
+org.yaml.snakeyaml.scanner.ScannerImpl v0;
+v0 := @this: org.yaml.snakeyaml.scanner.ScannerImpl;
+v1 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: org.yaml.snakeyaml.reader.StreamReader reader>;
+v2 = virtualinvoke v1.<org.yaml.snakeyaml.reader.StreamReader: int peek()>();
+v3 = <org.yaml.snakeyaml.scanner.Constant: org.yaml.snakeyaml.scanner.Constant NULL_BL_T_LINEBR>;
+v4 = virtualinvoke v3.<org.yaml.snakeyaml.scanner.Constant: boolean hasNo(int,java.lang.String)>(v2, "-?:,[]{}#&*!|>\'\"%@`");
+if v4 != 0 goto label1;
+v5 = <org.yaml.snakeyaml.scanner.Constant: org.yaml.snakeyaml.scanner.Constant NULL_BL_T_LINEBR>;
+v6 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: org.yaml.snakeyaml.reader.StreamReader reader>;
+v7 = virtualinvoke v6.<org.yaml.snakeyaml.reader.StreamReader: int peek(int)>(1);
+v8 = virtualinvoke v5.<org.yaml.snakeyaml.scanner.Constant: boolean hasNo(int)>(v7);
+if v8 == 0 goto label2;
+if v2 == 45 goto label1;
+v9 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: int flowLevel>;
+if v9 != 0 goto label2;
+v10 = "?:";
+v11 = virtualinvoke v10.<java.lang.String: int indexOf(int)>(v2);
+v12 = (int) -1;
+if v11 == v12 goto label2;
+label1:
+v13 = 1;
+goto label3;
+label2:
+v13 = 0;
+label3:
+return v13;
+}
+private void scanToNextToken()
+{
+boolean v14, v31, v34, v7;
+org.yaml.snakeyaml.error.Mark v11, v36;
+org.yaml.snakeyaml.scanner.ScannerImpl v0;
+int v13, v15, v17, v2, v20, v28, v29, v33, v39, v4, v5, v8, v9;
+java.lang.String v32;
+org.yaml.snakeyaml.tokens.Token v21, v22;
+org.yaml.snakeyaml.tokens.Token$ID v23, v24;
+org.yaml.snakeyaml.tokens.CommentToken v30, v37;
+org.yaml.snakeyaml.comments.CommentType v25, v38;
+org.yaml.snakeyaml.reader.StreamReader v1, v10, v12, v16, v18, v19, v26, v27, v3, v35, v6;
+v0 := @this: org.yaml.snakeyaml.scanner.ScannerImpl;
+v1 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: org.yaml.snakeyaml.reader.StreamReader reader>;
+v2 = virtualinvoke v1.<org.yaml.snakeyaml.reader.StreamReader: int getIndex()>();
+if v2 != 0 goto label01;
+v3 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: org.yaml.snakeyaml.reader.StreamReader reader>;
+v4 = virtualinvoke v3.<org.yaml.snakeyaml.reader.StreamReader: int peek()>();
+v5 = (int) 65279;
+if v4 != v5 goto label01;
+v6 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: org.yaml.snakeyaml.reader.StreamReader reader>;
+virtualinvoke v6.<org.yaml.snakeyaml.reader.StreamReader: void forward()>();
+label01:
+v7 = 0;
+v8 = (int) -1;
+v9 = v8;
+label02:
+if v7 != 0 goto label13;
+v10 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: org.yaml.snakeyaml.reader.StreamReader reader>;
+v11 = virtualinvoke v10.<org.yaml.snakeyaml.reader.StreamReader: org.yaml.snakeyaml.error.Mark getMark()>();
+v12 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: org.yaml.snakeyaml.reader.StreamReader reader>;
+v13 = virtualinvoke v12.<org.yaml.snakeyaml.reader.StreamReader: int getColumn()>();
+v14 = 0;
+v15 = 0;
+label03:
+v16 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: org.yaml.snakeyaml.reader.StreamReader reader>;
+v17 = virtualinvoke v16.<org.yaml.snakeyaml.reader.StreamReader: int peek(int)>(v15);
+if v17 != 32 goto label04;
+v15 = v15 + 1;
+goto label03;
+label04:
+if v15 <= 0 goto label05;
+v18 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: org.yaml.snakeyaml.reader.StreamReader reader>;
+virtualinvoke v18.<org.yaml.snakeyaml.reader.StreamReader: void forward(int)>(v15);
+label05:
+v19 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: org.yaml.snakeyaml.reader.StreamReader reader>;
+v20 = virtualinvoke v19.<org.yaml.snakeyaml.reader.StreamReader: int peek()>();
+if v20 != 35 goto label10;
+v14 = 1;
+if v13 == 0 goto label07;
+v21 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: org.yaml.snakeyaml.tokens.Token lastToken>;
+if v21 == null goto label06;
+v22 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: org.yaml.snakeyaml.tokens.Token lastToken>;
+v23 = virtualinvoke v22.<org.yaml.snakeyaml.tokens.Token: org.yaml.snakeyaml.tokens.Token$ID getTokenId()>();
+v24 = <org.yaml.snakeyaml.tokens.Token$ID: org.yaml.snakeyaml.tokens.Token$ID BlockEntry>;
+if v23 == v24 goto label07;
+label06:
+v25 = <org.yaml.snakeyaml.comments.CommentType: org.yaml.snakeyaml.comments.CommentType IN_LINE>;
+v26 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: org.yaml.snakeyaml.reader.StreamReader reader>;
+v9 = virtualinvoke v26.<org.yaml.snakeyaml.reader.StreamReader: int getColumn()>();
+goto label09;
+label07:
+v27 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: org.yaml.snakeyaml.reader.StreamReader reader>;
+v28 = virtualinvoke v27.<org.yaml.snakeyaml.reader.StreamReader: int getColumn()>();
+if v9 != v28 goto label08;
+v25 = <org.yaml.snakeyaml.comments.CommentType: org.yaml.snakeyaml.comments.CommentType IN_LINE>;
+goto label09;
+label08:
+v29 = (int) -1;
+v9 = v29;
+v25 = <org.yaml.snakeyaml.comments.CommentType: org.yaml.snakeyaml.comments.CommentType BLOCK>;
+label09:
+v30 = specialinvoke v0.<org.yaml.snakeyaml.scanner.ScannerImpl: org.yaml.snakeyaml.tokens.CommentToken scanComment(org.yaml.snakeyaml.comments.CommentType)>(v25);
+v31 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: boolean parseComments>;
+if v31 == 0 goto label10;
+specialinvoke v0.<org.yaml.snakeyaml.scanner.ScannerImpl: void addToken(org.yaml.snakeyaml.tokens.Token)>(v30);
+label10:
+v32 = specialinvoke v0.<org.yaml.snakeyaml.scanner.ScannerImpl: java.lang.String scanLineBreak()>();
+v33 = virtualinvoke v32.<java.lang.String: int length()>();
+if v33 == 0 goto label12;
+v34 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: boolean parseComments>;
+if v34 == 0 goto label11;
+if v14 != 0 goto label11;
+if v13 != 0 goto label11;
+v35 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: org.yaml.snakeyaml.reader.StreamReader reader>;
+v36 = virtualinvoke v35.<org.yaml.snakeyaml.reader.StreamReader: org.yaml.snakeyaml.error.Mark getMark()>();
+v37 = new org.yaml.snakeyaml.tokens.CommentToken;
+v38 = <org.yaml.snakeyaml.comments.CommentType: org.yaml.snakeyaml.comments.CommentType BLANK_LINE>;
+specialinvoke v37.<org.yaml.snakeyaml.tokens.CommentToken: void <init>(org.yaml.snakeyaml.comments.CommentType,java.lang.String,org.yaml.snakeyaml.error.Mark,org.yaml.snakeyaml.error.Mark)>(v38, v32, v11, v36);
+specialinvoke v0.<org.yaml.snakeyaml.scanner.ScannerImpl: void addToken(org.yaml.snakeyaml.tokens.Token)>(v37);
+label11:
+v39 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: int flowLevel>;
+if v39 != 0 goto label02;
+v0.<org.yaml.snakeyaml.scanner.ScannerImpl: boolean allowSimpleKey> = 1;
+goto label02;
+label12:
+v7 = 1;
+goto label02;
+label13:
+return;
+}
+private org.yaml.snakeyaml.tokens.CommentToken scanComment(org.yaml.snakeyaml.comments.CommentType)
+{
+org.yaml.snakeyaml.tokens.CommentToken v14;
+org.yaml.snakeyaml.error.Mark v13, v3;
+org.yaml.snakeyaml.scanner.Constant v6;
+org.yaml.snakeyaml.comments.CommentType v1;
+int v5, v8;
+org.yaml.snakeyaml.reader.StreamReader v10, v12, v2, v4, v7;
+java.lang.String v11;
+boolean v9;
+org.yaml.snakeyaml.scanner.ScannerImpl v0;
+v0 := @this: org.yaml.snakeyaml.scanner.ScannerImpl;
+v1 := @parameter0: org.yaml.snakeyaml.comments.CommentType;
+v2 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: org.yaml.snakeyaml.reader.StreamReader reader>;
+v3 = virtualinvoke v2.<org.yaml.snakeyaml.reader.StreamReader: org.yaml.snakeyaml.error.Mark getMark()>();
+v4 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: org.yaml.snakeyaml.reader.StreamReader reader>;
+virtualinvoke v4.<org.yaml.snakeyaml.reader.StreamReader: void forward()>();
+v5 = 0;
+label1:
+v6 = <org.yaml.snakeyaml.scanner.Constant: org.yaml.snakeyaml.scanner.Constant NULL_OR_LINEBR>;
+v7 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: org.yaml.snakeyaml.reader.StreamReader reader>;
+v8 = virtualinvoke v7.<org.yaml.snakeyaml.reader.StreamReader: int peek(int)>(v5);
+v9 = virtualinvoke v6.<org.yaml.snakeyaml.scanner.Constant: boolean hasNo(int)>(v8);
+if v9 == 0 goto label2;
+v5 = v5 + 1;
+goto label1;
+label2:
+v10 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: org.yaml.snakeyaml.reader.StreamReader reader>;
+v11 = virtualinvoke v10.<org.yaml.snakeyaml.reader.StreamReader: java.lang.String prefixForward(int)>(v5);
+v12 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: org.yaml.snakeyaml.reader.StreamReader reader>;
+v13 = virtualinvoke v12.<org.yaml.snakeyaml.reader.StreamReader: org.yaml.snakeyaml.error.Mark getMark()>();
+v14 = new org.yaml.snakeyaml.tokens.CommentToken;
+specialinvoke v14.<org.yaml.snakeyaml.tokens.CommentToken: void <init>(org.yaml.snakeyaml.comments.CommentType,java.lang.String,org.yaml.snakeyaml.error.Mark,org.yaml.snakeyaml.error.Mark)>(v1, v11, v3, v13);
+return v14;
+}
+private java.util.List scanDirective()
+{
+org.yaml.snakeyaml.tokens.DirectiveToken v21;
+int v14, v17;
+java.lang.String v10, v4, v6;
+org.yaml.snakeyaml.tokens.Token[] v22;
+boolean v11, v18, v7;
+org.yaml.snakeyaml.tokens.CommentToken v20;
+java.util.List v23, v5;
+org.yaml.snakeyaml.error.Mark v2, v9;
+org.yaml.snakeyaml.scanner.Constant v15;
+org.yaml.snakeyaml.reader.StreamReader v1, v12, v13, v16, v19, v3, v8;
+org.yaml.snakeyaml.scanner.ScannerImpl v0;
+v0 := @this: org.yaml.snakeyaml.scanner.ScannerImpl;
+v1 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: org.yaml.snakeyaml.reader.StreamReader reader>;
+v2 = virtualinvoke v1.<org.yaml.snakeyaml.reader.StreamReader: org.yaml.snakeyaml.error.Mark getMark()>();
+v3 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: org.yaml.snakeyaml.reader.StreamReader reader>;
+virtualinvoke v3.<org.yaml.snakeyaml.reader.StreamReader: void forward()>();
+v4 = specialinvoke v0.<org.yaml.snakeyaml.scanner.ScannerImpl: java.lang.String scanDirectiveName(org.yaml.snakeyaml.error.Mark)>(v2);
+v5 = null;
+v6 = "YAML";
+v7 = virtualinvoke v6.<java.lang.String: boolean equals(java.lang.Object)>(v4);
+if v7 == 0 goto label1;
+v5 = specialinvoke v0.<org.yaml.snakeyaml.scanner.ScannerImpl: java.util.List scanYamlDirectiveValue(org.yaml.snakeyaml.error.Mark)>(v2);
+v8 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: org.yaml.snakeyaml.reader.StreamReader reader>;
+v9 = virtualinvoke v8.<org.yaml.snakeyaml.reader.StreamReader: org.yaml.snakeyaml.error.Mark getMark()>();
+goto label5;
+label1:
+v10 = "TAG";
+v11 = virtualinvoke v10.<java.lang.String: boolean equals(java.lang.Object)>(v4);
+if v11 == 0 goto label2;
+v5 = specialinvoke v0.<org.yaml.snakeyaml.scanner.ScannerImpl: java.util.List scanTagDirectiveValue(org.yaml.snakeyaml.error.Mark)>(v2);
+v12 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: org.yaml.snakeyaml.reader.StreamReader reader>;
+v9 = virtualinvoke v12.<org.yaml.snakeyaml.reader.StreamReader: org.yaml.snakeyaml.error.Mark getMark()>();
+goto label5;
+label2:
+v13 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: org.yaml.snakeyaml.reader.StreamReader reader>;
+v9 = virtualinvoke v13.<org.yaml.snakeyaml.reader.StreamReader: org.yaml.snakeyaml.error.Mark getMark()>();
+v14 = 0;
+label3:
+v15 = <org.yaml.snakeyaml.scanner.Constant: org.yaml.snakeyaml.scanner.Constant NULL_OR_LINEBR>;
+v16 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: org.yaml.snakeyaml.reader.StreamReader reader>;
+v17 = virtualinvoke v16.<org.yaml.snakeyaml.reader.StreamReader: int peek(int)>(v14);
+v18 = virtualinvoke v15.<org.yaml.snakeyaml.scanner.Constant: boolean hasNo(int)>(v17);
+if v18 == 0 goto label4;
+v14 = v14 + 1;
+goto label3;
+label4:
+if v14 <= 0 goto label5;
+v19 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: org.yaml.snakeyaml.reader.StreamReader reader>;
+virtualinvoke v19.<org.yaml.snakeyaml.reader.StreamReader: void forward(int)>(v14);
+label5:
+v20 = specialinvoke v0.<org.yaml.snakeyaml.scanner.ScannerImpl: org.yaml.snakeyaml.tokens.CommentToken scanDirectiveIgnoredLine(org.yaml.snakeyaml.error.Mark)>(v2);
+v21 = new org.yaml.snakeyaml.tokens.DirectiveToken;
+specialinvoke v21.<org.yaml.snakeyaml.tokens.DirectiveToken: void <init>(java.lang.String,java.util.List,org.yaml.snakeyaml.error.Mark,org.yaml.snakeyaml.error.Mark)>(v4, v5, v2, v9);
+v22 = newarray (org.yaml.snakeyaml.tokens.Token)[2];
+v22[0] = v21;
+v22[1] = v20;
+v23 = specialinvoke v0.<org.yaml.snakeyaml.scanner.ScannerImpl: java.util.List makeTokenList(org.yaml.snakeyaml.tokens.Token[])>(v22);
+return v23;
+}
+private java.lang.String scanDirectiveName(org.yaml.snakeyaml.error.Mark)
+{
+int v17, v2, v4;
+java.lang.String v11, v15, v21, v23, v9;
+boolean v19, v6;
+org.yaml.snakeyaml.scanner.ScannerException v10, v22;
+org.yaml.snakeyaml.error.Mark v1, v13, v25;
+org.yaml.snakeyaml.scanner.Constant v18, v5;
+char[] v20, v8;
+org.yaml.snakeyaml.reader.StreamReader v12, v14, v16, v24, v3, v7;
+org.yaml.snakeyaml.scanner.ScannerImpl v0;
+v0 := @this: org.yaml.snakeyaml.scanner.ScannerImpl;
+v1 := @parameter0: org.yaml.snakeyaml.error.Mark;
+v2 = 0;
+v3 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: org.yaml.snakeyaml.reader.StreamReader reader>;
+v4 = virtualinvoke v3.<org.yaml.snakeyaml.reader.StreamReader: int peek(int)>(0);
+label1:
+v5 = <org.yaml.snakeyaml.scanner.Constant: org.yaml.snakeyaml.scanner.Constant ALPHA>;
+v6 = virtualinvoke v5.<org.yaml.snakeyaml.scanner.Constant: boolean has(int)>(v4);
+if v6 == 0 goto label2;
+v2 = v2 + 1;
+v7 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: org.yaml.snakeyaml.reader.StreamReader reader>;
+v4 = virtualinvoke v7.<org.yaml.snakeyaml.reader.StreamReader: int peek(int)>(v2);
+goto label1;
+label2:
+if v2 != 0 goto label3;
+v8 = staticinvoke <java.lang.Character: char[] toChars(int)>(v4);
+v9 = staticinvoke <java.lang.String: java.lang.String valueOf(char[])>(v8);
+v10 = new org.yaml.snakeyaml.scanner.ScannerException;
+v11 = dynamicinvoke "makeConcatWithConstants" <java.lang.String (java.lang.String,int)>(v9, v4) <java.lang.invoke.StringConcatFactory: java.lang.invoke.CallSite makeConcatWithConstants(java.lang.invoke.MethodHandles$Lookup,java.lang.String,java.lang.invoke.MethodType,java.lang.String,java.lang.Object[])>("expected alphabetic or numeric character, but found \u0001(\u0001)");
+v12 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: org.yaml.snakeyaml.reader.StreamReader reader>;
+v13 = virtualinvoke v12.<org.yaml.snakeyaml.reader.StreamReader: org.yaml.snakeyaml.error.Mark getMark()>();
+specialinvoke v10.<org.yaml.snakeyaml.scanner.ScannerException: void <init>(java.lang.String,org.yaml.snakeyaml.error.Mark,java.lang.String,org.yaml.snakeyaml.error.Mark)>("while scanning a directive", v1, v11, v13);
+throw v10;
+label3:
+v14 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: org.yaml.snakeyaml.reader.StreamReader reader>;
+v15 = virtualinvoke v14.<org.yaml.snakeyaml.reader.StreamReader: java.lang.String prefixForward(int)>(v2);
+v16 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: org.yaml.snakeyaml.reader.StreamReader reader>;
+v17 = virtualinvoke v16.<org.yaml.snakeyaml.reader.StreamReader: int peek()>();
+v18 = <org.yaml.snakeyaml.scanner.Constant: org.yaml.snakeyaml.scanner.Constant NULL_BL_LINEBR>;
+v19 = virtualinvoke v18.<org.yaml.snakeyaml.scanner.Constant: boolean hasNo(int)>(v17);
+if v19 == 0 goto label4;
+v20 = staticinvoke <java.lang.Character: char[] toChars(int)>(v17);
+v21 = staticinvoke <java.lang.String: java.lang.String valueOf(char[])>(v20);
+v22 = new org.yaml.snakeyaml.scanner.ScannerException;
+v23 = dynamicinvoke "makeConcatWithConstants" <java.lang.String (java.lang.String,int)>(v21, v17) <java.lang.invoke.StringConcatFactory: java.lang.invoke.CallSite makeConcatWithConstants(java.lang.invoke.MethodHandles$Lookup,java.lang.String,java.lang.invoke.MethodType,java.lang.String,java.lang.Object[])>("expected alphabetic or numeric character, but found \u0001(\u0001)");
+v24 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: org.yaml.snakeyaml.reader.StreamReader reader>;
+v25 = virtualinvoke v24.<org.yaml.snakeyaml.reader.StreamReader: org.yaml.snakeyaml.error.Mark getMark()>();
+specialinvoke v22.<org.yaml.snakeyaml.scanner.ScannerException: void <init>(java.lang.String,org.yaml.snakeyaml.error.Mark,java.lang.String,org.yaml.snakeyaml.error.Mark)>("while scanning a directive", v1, v23, v25);
+throw v22;
+label4:
+return v15;
+}
+private java.util.List scanYamlDirectiveValue(org.yaml.snakeyaml.error.Mark)
+{
+java.lang.Integer v15, v5;
+java.util.ArrayList v26;
+int v17, v3, v7;
+java.lang.String v11, v21, v23, v9;
+boolean v19;
+org.yaml.snakeyaml.scanner.ScannerException v10, v22;
+org.yaml.snakeyaml.error.Mark v1, v13, v25;
+org.yaml.snakeyaml.scanner.Constant v18;
+char[] v20, v8;
+org.yaml.snakeyaml.reader.StreamReader v12, v14, v16, v2, v24, v4, v6;
+org.yaml.snakeyaml.scanner.ScannerImpl v0;
+v0 := @this: org.yaml.snakeyaml.scanner.ScannerImpl;
+v1 := @parameter0: org.yaml.snakeyaml.error.Mark;
+label1:
+v2 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: org.yaml.snakeyaml.reader.StreamReader reader>;
+v3 = virtualinvoke v2.<org.yaml.snakeyaml.reader.StreamReader: int peek()>();
+if v3 != 32 goto label2;
+v4 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: org.yaml.snakeyaml.reader.StreamReader reader>;
+virtualinvoke v4.<org.yaml.snakeyaml.reader.StreamReader: void forward()>();
+goto label1;
+label2:
+v5 = specialinvoke v0.<org.yaml.snakeyaml.scanner.ScannerImpl: java.lang.Integer scanYamlDirectiveNumber(org.yaml.snakeyaml.error.Mark)>(v1);
+v6 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: org.yaml.snakeyaml.reader.StreamReader reader>;
+v7 = virtualinvoke v6.<org.yaml.snakeyaml.reader.StreamReader: int peek()>();
+if v7 == 46 goto label3;
+v8 = staticinvoke <java.lang.Character: char[] toChars(int)>(v7);
+v9 = staticinvoke <java.lang.String: java.lang.String valueOf(char[])>(v8);
+v10 = new org.yaml.snakeyaml.scanner.ScannerException;
+v11 = dynamicinvoke "makeConcatWithConstants" <java.lang.String (java.lang.String,int)>(v9, v7) <java.lang.invoke.StringConcatFactory: java.lang.invoke.CallSite makeConcatWithConstants(java.lang.invoke.MethodHandles$Lookup,java.lang.String,java.lang.invoke.MethodType,java.lang.String,java.lang.Object[])>("expected a digit or \'.\', but found \u0001(\u0001)");
+v12 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: org.yaml.snakeyaml.reader.StreamReader reader>;
+v13 = virtualinvoke v12.<org.yaml.snakeyaml.reader.StreamReader: org.yaml.snakeyaml.error.Mark getMark()>();
+specialinvoke v10.<org.yaml.snakeyaml.scanner.ScannerException: void <init>(java.lang.String,org.yaml.snakeyaml.error.Mark,java.lang.String,org.yaml.snakeyaml.error.Mark)>("while scanning a directive", v1, v11, v13);
+throw v10;
+label3:
+v14 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: org.yaml.snakeyaml.reader.StreamReader reader>;
+virtualinvoke v14.<org.yaml.snakeyaml.reader.StreamReader: void forward()>();
+v15 = specialinvoke v0.<org.yaml.snakeyaml.scanner.ScannerImpl: java.lang.Integer scanYamlDirectiveNumber(org.yaml.snakeyaml.error.Mark)>(v1);
+v16 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: org.yaml.snakeyaml.reader.StreamReader reader>;
+v17 = virtualinvoke v16.<org.yaml.snakeyaml.reader.StreamReader: int peek()>();
+v18 = <org.yaml.snakeyaml.scanner.Constant: org.yaml.snakeyaml.scanner.Constant NULL_BL_LINEBR>;
+v19 = virtualinvoke v18.<org.yaml.snakeyaml.scanner.Constant: boolean hasNo(int)>(v17);
+if v19 == 0 goto label4;
+v20 = staticinvoke <java.lang.Character: char[] toChars(int)>(v17);
+v21 = staticinvoke <java.lang.String: java.lang.String valueOf(char[])>(v20);
+v22 = new org.yaml.snakeyaml.scanner.ScannerException;
+v23 = dynamicinvoke "makeConcatWithConstants" <java.lang.String (java.lang.String,int)>(v21, v17) <java.lang.invoke.StringConcatFactory: java.lang.invoke.CallSite makeConcatWithConstants(java.lang.invoke.MethodHandles$Lookup,java.lang.String,java.lang.invoke.MethodType,java.lang.String,java.lang.Object[])>("expected a digit or \' \', but found \u0001(\u0001)");
+v24 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: org.yaml.snakeyaml.reader.StreamReader reader>;
+v25 = virtualinvoke v24.<org.yaml.snakeyaml.reader.StreamReader: org.yaml.snakeyaml.error.Mark getMark()>();
+specialinvoke v22.<org.yaml.snakeyaml.scanner.ScannerException: void <init>(java.lang.String,org.yaml.snakeyaml.error.Mark,java.lang.String,org.yaml.snakeyaml.error.Mark)>("while scanning a directive", v1, v23, v25);
+throw v22;
+label4:
+v26 = new java.util.ArrayList;
+specialinvoke v26.<java.util.ArrayList: void <init>(int)>(2);
+interfaceinvoke v26.<java.util.List: boolean add(java.lang.Object)>(v5);
+interfaceinvoke v26.<java.util.List: boolean add(java.lang.Object)>(v15);
+return v26;
+}
+private java.lang.Integer scanYamlDirectiveNumber(org.yaml.snakeyaml.error.Mark)
+{
+java.lang.Integer v18;
+int v11, v13, v17, v3;
+java.lang.String v16, v6, v8;
+boolean v14, v4;
+org.yaml.snakeyaml.scanner.ScannerException v7;
+org.yaml.snakeyaml.error.Mark v1, v10;
+char[] v5;
+org.yaml.snakeyaml.reader.StreamReader v12, v15, v2, v9;
+org.yaml.snakeyaml.scanner.ScannerImpl v0;
+v0 := @this: org.yaml.snakeyaml.scanner.ScannerImpl;
+v1 := @parameter0: org.yaml.snakeyaml.error.Mark;
+v2 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: org.yaml.snakeyaml.reader.StreamReader reader>;
+v3 = virtualinvoke v2.<org.yaml.snakeyaml.reader.StreamReader: int peek()>();
+v4 = staticinvoke <java.lang.Character: boolean isDigit(int)>(v3);
+if v4 != 0 goto label1;
+v5 = staticinvoke <java.lang.Character: char[] toChars(int)>(v3);
+v6 = staticinvoke <java.lang.String: java.lang.String valueOf(char[])>(v5);
+v7 = new org.yaml.snakeyaml.scanner.ScannerException;
+v8 = dynamicinvoke "makeConcatWithConstants" <java.lang.String (java.lang.String,int)>(v6, v3) <java.lang.invoke.StringConcatFactory: java.lang.invoke.CallSite makeConcatWithConstants(java.lang.invoke.MethodHandles$Lookup,java.lang.String,java.lang.invoke.MethodType,java.lang.String,java.lang.Object[])>("expected a digit, but found \u0001(\u0001)");
+v9 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: org.yaml.snakeyaml.reader.StreamReader reader>;
+v10 = virtualinvoke v9.<org.yaml.snakeyaml.reader.StreamReader: org.yaml.snakeyaml.error.Mark getMark()>();
+specialinvoke v7.<org.yaml.snakeyaml.scanner.ScannerException: void <init>(java.lang.String,org.yaml.snakeyaml.error.Mark,java.lang.String,org.yaml.snakeyaml.error.Mark)>("while scanning a directive", v1, v8, v10);
+throw v7;
+label1:
+v11 = 0;
+label2:
+v12 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: org.yaml.snakeyaml.reader.StreamReader reader>;
+v13 = virtualinvoke v12.<org.yaml.snakeyaml.reader.StreamReader: int peek(int)>(v11);
+v14 = staticinvoke <java.lang.Character: boolean isDigit(int)>(v13);
+if v14 == 0 goto label3;
+v11 = v11 + 1;
+goto label2;
+label3:
+v15 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: org.yaml.snakeyaml.reader.StreamReader reader>;
+v16 = virtualinvoke v15.<org.yaml.snakeyaml.reader.StreamReader: java.lang.String prefixForward(int)>(v11);
+v17 = staticinvoke <java.lang.Integer: int parseInt(java.lang.String)>(v16);
+v18 = staticinvoke <java.lang.Integer: java.lang.Integer valueOf(int)>(v17);
+return v18;
+}
+private java.util.List scanTagDirectiveValue(org.yaml.snakeyaml.error.Mark)
+{
+java.util.ArrayList v10;
+org.yaml.snakeyaml.error.Mark v1;
+int v3, v7;
+org.yaml.snakeyaml.reader.StreamReader v2, v4, v6, v8;
+java.lang.String v5, v9;
+org.yaml.snakeyaml.scanner.ScannerImpl v0;
+v0 := @this: org.yaml.snakeyaml.scanner.ScannerImpl;
+v1 := @parameter0: org.yaml.snakeyaml.error.Mark;
+label1:
+v2 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: org.yaml.snakeyaml.reader.StreamReader reader>;
+v3 = virtualinvoke v2.<org.yaml.snakeyaml.reader.StreamReader: int peek()>();
+if v3 != 32 goto label2;
+v4 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: org.yaml.snakeyaml.reader.StreamReader reader>;
+virtualinvoke v4.<org.yaml.snakeyaml.reader.StreamReader: void forward()>();
+goto label1;
+label2:
+v5 = specialinvoke v0.<org.yaml.snakeyaml.scanner.ScannerImpl: java.lang.String scanTagDirectiveHandle(org.yaml.snakeyaml.error.Mark)>(v1);
+label3:
+v6 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: org.yaml.snakeyaml.reader.StreamReader reader>;
+v7 = virtualinvoke v6.<org.yaml.snakeyaml.reader.StreamReader: int peek()>();
+if v7 != 32 goto label4;
+v8 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: org.yaml.snakeyaml.reader.StreamReader reader>;
+virtualinvoke v8.<org.yaml.snakeyaml.reader.StreamReader: void forward()>();
+goto label3;
+label4:
+v9 = specialinvoke v0.<org.yaml.snakeyaml.scanner.ScannerImpl: java.lang.String scanTagDirectivePrefix(org.yaml.snakeyaml.error.Mark)>(v1);
+v10 = new java.util.ArrayList;
+specialinvoke v10.<java.util.ArrayList: void <init>(int)>(2);
+interfaceinvoke v10.<java.util.List: boolean add(java.lang.Object)>(v5);
+interfaceinvoke v10.<java.util.List: boolean add(java.lang.Object)>(v9);
+return v10;
+}
+private java.lang.String scanTagDirectiveHandle(org.yaml.snakeyaml.error.Mark)
+{
+org.yaml.snakeyaml.scanner.ScannerException v7;
+org.yaml.snakeyaml.error.Mark v1, v10;
+int v4;
+char[] v5;
+org.yaml.snakeyaml.reader.StreamReader v3, v9;
+java.lang.String v2, v6, v8;
+org.yaml.snakeyaml.scanner.ScannerImpl v0;
+v0 := @this: org.yaml.snakeyaml.scanner.ScannerImpl;
+v1 := @parameter0: org.yaml.snakeyaml.error.Mark;
+v2 = specialinvoke v0.<org.yaml.snakeyaml.scanner.ScannerImpl: java.lang.String scanTagHandle(java.lang.String,org.yaml.snakeyaml.error.Mark)>("directive", v1);
+v3 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: org.yaml.snakeyaml.reader.StreamReader reader>;
+v4 = virtualinvoke v3.<org.yaml.snakeyaml.reader.StreamReader: int peek()>();
+if v4 == 32 goto label1;
+v5 = staticinvoke <java.lang.Character: char[] toChars(int)>(v4);
+v6 = staticinvoke <java.lang.String: java.lang.String valueOf(char[])>(v5);
+v7 = new org.yaml.snakeyaml.scanner.ScannerException;
+v8 = dynamicinvoke "makeConcatWithConstants" <java.lang.String (java.lang.String,int)>(v6, v4) <java.lang.invoke.StringConcatFactory: java.lang.invoke.CallSite makeConcatWithConstants(java.lang.invoke.MethodHandles$Lookup,java.lang.String,java.lang.invoke.MethodType,java.lang.String,java.lang.Object[])>("expected \' \', but found \u0001(\u0001)");
+v9 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: org.yaml.snakeyaml.reader.StreamReader reader>;
+v10 = virtualinvoke v9.<org.yaml.snakeyaml.reader.StreamReader: org.yaml.snakeyaml.error.Mark getMark()>();
+specialinvoke v7.<org.yaml.snakeyaml.scanner.ScannerException: void <init>(java.lang.String,org.yaml.snakeyaml.error.Mark,java.lang.String,org.yaml.snakeyaml.error.Mark)>("while scanning a directive", v1, v8, v10);
+throw v7;
+label1:
+return v2;
+}
+private java.lang.String scanTagDirectivePrefix(org.yaml.snakeyaml.error.Mark)
+{
+org.yaml.snakeyaml.scanner.ScannerException v9;
+org.yaml.snakeyaml.error.Mark v1, v12;
+org.yaml.snakeyaml.scanner.Constant v5;
+int v4;
+char[] v7;
+org.yaml.snakeyaml.reader.StreamReader v11, v3;
+java.lang.String v10, v2, v8;
+boolean v6;
+org.yaml.snakeyaml.scanner.ScannerImpl v0;
+v0 := @this: org.yaml.snakeyaml.scanner.ScannerImpl;
+v1 := @parameter0: org.yaml.snakeyaml.error.Mark;
+v2 = specialinvoke v0.<org.yaml.snakeyaml.scanner.ScannerImpl: java.lang.String scanTagUri(java.lang.String,org.yaml.snakeyaml.error.Mark)>("directive", v1);
+v3 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: org.yaml.snakeyaml.reader.StreamReader reader>;
+v4 = virtualinvoke v3.<org.yaml.snakeyaml.reader.StreamReader: int peek()>();
+v5 = <org.yaml.snakeyaml.scanner.Constant: org.yaml.snakeyaml.scanner.Constant NULL_BL_LINEBR>;
+v6 = virtualinvoke v5.<org.yaml.snakeyaml.scanner.Constant: boolean hasNo(int)>(v4);
+if v6 == 0 goto label1;
+v7 = staticinvoke <java.lang.Character: char[] toChars(int)>(v4);
+v8 = staticinvoke <java.lang.String: java.lang.String valueOf(char[])>(v7);
+v9 = new org.yaml.snakeyaml.scanner.ScannerException;
+v10 = dynamicinvoke "makeConcatWithConstants" <java.lang.String (java.lang.String,int)>(v8, v4) <java.lang.invoke.StringConcatFactory: java.lang.invoke.CallSite makeConcatWithConstants(java.lang.invoke.MethodHandles$Lookup,java.lang.String,java.lang.invoke.MethodType,java.lang.String,java.lang.Object[])>("expected \' \', but found \u0001(\u0001)");
+v11 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: org.yaml.snakeyaml.reader.StreamReader reader>;
+v12 = virtualinvoke v11.<org.yaml.snakeyaml.reader.StreamReader: org.yaml.snakeyaml.error.Mark getMark()>();
+specialinvoke v9.<org.yaml.snakeyaml.scanner.ScannerException: void <init>(java.lang.String,org.yaml.snakeyaml.error.Mark,java.lang.String,org.yaml.snakeyaml.error.Mark)>("while scanning a directive", v1, v10, v12);
+throw v9;
+label1:
+return v2;
+}
+private org.yaml.snakeyaml.tokens.CommentToken scanDirectiveIgnoredLine(org.yaml.snakeyaml.error.Mark)
+{
+int v12, v14, v3, v7;
+java.lang.String v13, v16, v18;
+boolean v10;
+org.yaml.snakeyaml.scanner.ScannerException v17;
+org.yaml.snakeyaml.tokens.CommentToken v5, v9;
+org.yaml.snakeyaml.error.Mark v1, v20;
+org.yaml.snakeyaml.comments.CommentType v8;
+char[] v15;
+org.yaml.snakeyaml.reader.StreamReader v11, v19, v2, v4, v6;
+org.yaml.snakeyaml.scanner.ScannerImpl v0;
+v0 := @this: org.yaml.snakeyaml.scanner.ScannerImpl;
+v1 := @parameter0: org.yaml.snakeyaml.error.Mark;
+label1:
+v2 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: org.yaml.snakeyaml.reader.StreamReader reader>;
+v3 = virtualinvoke v2.<org.yaml.snakeyaml.reader.StreamReader: int peek()>();
+if v3 != 32 goto label2;
+v4 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: org.yaml.snakeyaml.reader.StreamReader reader>;
+virtualinvoke v4.<org.yaml.snakeyaml.reader.StreamReader: void forward()>();
+goto label1;
+label2:
+v5 = null;
+v6 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: org.yaml.snakeyaml.reader.StreamReader reader>;
+v7 = virtualinvoke v6.<org.yaml.snakeyaml.reader.StreamReader: int peek()>();
+if v7 != 35 goto label3;
+v8 = <org.yaml.snakeyaml.comments.CommentType: org.yaml.snakeyaml.comments.CommentType IN_LINE>;
+v9 = specialinvoke v0.<org.yaml.snakeyaml.scanner.ScannerImpl: org.yaml.snakeyaml.tokens.CommentToken scanComment(org.yaml.snakeyaml.comments.CommentType)>(v8);
+v10 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: boolean parseComments>;
+if v10 == 0 goto label3;
+v5 = v9;
+label3:
+v11 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: org.yaml.snakeyaml.reader.StreamReader reader>;
+v12 = virtualinvoke v11.<org.yaml.snakeyaml.reader.StreamReader: int peek()>();
+v13 = specialinvoke v0.<org.yaml.snakeyaml.scanner.ScannerImpl: java.lang.String scanLineBreak()>();
+v14 = virtualinvoke v13.<java.lang.String: int length()>();
+if v14 != 0 goto label4;
+if v12 == 0 goto label4;
+v15 = staticinvoke <java.lang.Character: char[] toChars(int)>(v12);
+v16 = staticinvoke <java.lang.String: java.lang.String valueOf(char[])>(v15);
+v17 = new org.yaml.snakeyaml.scanner.ScannerException;
+v18 = dynamicinvoke "makeConcatWithConstants" <java.lang.String (java.lang.String,int)>(v16, v12) <java.lang.invoke.StringConcatFactory: java.lang.invoke.CallSite makeConcatWithConstants(java.lang.invoke.MethodHandles$Lookup,java.lang.String,java.lang.invoke.MethodType,java.lang.String,java.lang.Object[])>("expected a comment or a line break, but found \u0001(\u0001)");
+v19 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: org.yaml.snakeyaml.reader.StreamReader reader>;
+v20 = virtualinvoke v19.<org.yaml.snakeyaml.reader.StreamReader: org.yaml.snakeyaml.error.Mark getMark()>();
+specialinvoke v17.<org.yaml.snakeyaml.scanner.ScannerException: void <init>(java.lang.String,org.yaml.snakeyaml.error.Mark,java.lang.String,org.yaml.snakeyaml.error.Mark)>("while scanning a directive", v1, v18, v20);
+throw v17;
+label4:
+return v5;
+}
+private org.yaml.snakeyaml.tokens.Token scanAnchor(boolean)
+{
+org.yaml.snakeyaml.tokens.AnchorToken v37;
+boolean v1, v13, v27;
+org.yaml.snakeyaml.error.Mark v21, v3, v34, v36;
+org.yaml.snakeyaml.scanner.Constant v12, v26;
+org.yaml.snakeyaml.tokens.AliasToken v39;
+org.yaml.snakeyaml.scanner.ScannerImpl v0;
+int v11, v25, v5, v9;
+java.lang.String v16, v18, v19, v23, v29, v31, v32, v6, v7;
+org.yaml.snakeyaml.tokens.Token v38;
+org.yaml.snakeyaml.scanner.ScannerException v17, v30;
+char[] v15, v28;
+org.yaml.snakeyaml.reader.StreamReader v10, v14, v2, v20, v22, v24, v33, v35, v4, v8;
+v0 := @this: org.yaml.snakeyaml.scanner.ScannerImpl;
+v1 := @parameter0: boolean;
+v2 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: org.yaml.snakeyaml.reader.StreamReader reader>;
+v3 = virtualinvoke v2.<org.yaml.snakeyaml.reader.StreamReader: org.yaml.snakeyaml.error.Mark getMark()>();
+v4 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: org.yaml.snakeyaml.reader.StreamReader reader>;
+v5 = virtualinvoke v4.<org.yaml.snakeyaml.reader.StreamReader: int peek()>();
+if v5 != 42 goto label1;
+v6 = "alias";
+goto label2;
+label1:
+v6 = "anchor";
+label2:
+v7 = v6;
+v8 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: org.yaml.snakeyaml.reader.StreamReader reader>;
+virtualinvoke v8.<org.yaml.snakeyaml.reader.StreamReader: void forward()>();
+v9 = 0;
+v10 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: org.yaml.snakeyaml.reader.StreamReader reader>;
+v11 = virtualinvoke v10.<org.yaml.snakeyaml.reader.StreamReader: int peek(int)>(0);
+label3:
+v12 = <org.yaml.snakeyaml.scanner.Constant: org.yaml.snakeyaml.scanner.Constant NULL_BL_T_LINEBR>;
+v13 = virtualinvoke v12.<org.yaml.snakeyaml.scanner.Constant: boolean hasNo(int,java.lang.String)>(v11, ":,[]{}/.*&");
+if v13 == 0 goto label4;
+v9 = v9 + 1;
+v14 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: org.yaml.snakeyaml.reader.StreamReader reader>;
+v11 = virtualinvoke v14.<org.yaml.snakeyaml.reader.StreamReader: int peek(int)>(v9);
+goto label3;
+label4:
+if v9 != 0 goto label5;
+v15 = staticinvoke <java.lang.Character: char[] toChars(int)>(v11);
+v16 = staticinvoke <java.lang.String: java.lang.String valueOf(char[])>(v15);
+v17 = new org.yaml.snakeyaml.scanner.ScannerException;
+v18 = dynamicinvoke "makeConcatWithConstants" <java.lang.String (java.lang.String)>(v7) <java.lang.invoke.StringConcatFactory: java.lang.invoke.CallSite makeConcatWithConstants(java.lang.invoke.MethodHandles$Lookup,java.lang.String,java.lang.invoke.MethodType,java.lang.String,java.lang.Object[])>("while scanning an \u0001");
+v19 = dynamicinvoke "makeConcatWithConstants" <java.lang.String (java.lang.String,int)>(v16, v11) <java.lang.invoke.StringConcatFactory: java.lang.invoke.CallSite makeConcatWithConstants(java.lang.invoke.MethodHandles$Lookup,java.lang.String,java.lang.invoke.MethodType,java.lang.String,java.lang.Object[])>("unexpected character found \u0001(\u0001)");
+v20 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: org.yaml.snakeyaml.reader.StreamReader reader>;
+v21 = virtualinvoke v20.<org.yaml.snakeyaml.reader.StreamReader: org.yaml.snakeyaml.error.Mark getMark()>();
+specialinvoke v17.<org.yaml.snakeyaml.scanner.ScannerException: void <init>(java.lang.String,org.yaml.snakeyaml.error.Mark,java.lang.String,org.yaml.snakeyaml.error.Mark)>(v18, v3, v19, v21);
+throw v17;
+label5:
+v22 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: org.yaml.snakeyaml.reader.StreamReader reader>;
+v23 = virtualinvoke v22.<org.yaml.snakeyaml.reader.StreamReader: java.lang.String prefixForward(int)>(v9);
+v24 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: org.yaml.snakeyaml.reader.StreamReader reader>;
+v25 = virtualinvoke v24.<org.yaml.snakeyaml.reader.StreamReader: int peek()>();
+v26 = <org.yaml.snakeyaml.scanner.Constant: org.yaml.snakeyaml.scanner.Constant NULL_BL_T_LINEBR>;
+v27 = virtualinvoke v26.<org.yaml.snakeyaml.scanner.Constant: boolean hasNo(int,java.lang.String)>(v25, "?:,]}%@`");
+if v27 == 0 goto label6;
+v28 = staticinvoke <java.lang.Character: char[] toChars(int)>(v25);
+v29 = staticinvoke <java.lang.String: java.lang.String valueOf(char[])>(v28);
+v30 = new org.yaml.snakeyaml.scanner.ScannerException;
+v31 = dynamicinvoke "makeConcatWithConstants" <java.lang.String (java.lang.String)>(v7) <java.lang.invoke.StringConcatFactory: java.lang.invoke.CallSite makeConcatWithConstants(java.lang.invoke.MethodHandles$Lookup,java.lang.String,java.lang.invoke.MethodType,java.lang.String,java.lang.Object[])>("while scanning an \u0001");
+v32 = dynamicinvoke "makeConcatWithConstants" <java.lang.String (java.lang.String,int)>(v29, v25) <java.lang.invoke.StringConcatFactory: java.lang.invoke.CallSite makeConcatWithConstants(java.lang.invoke.MethodHandles$Lookup,java.lang.String,java.lang.invoke.MethodType,java.lang.String,java.lang.Object[])>("unexpected character found \u0001(\u0001)");
+v33 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: org.yaml.snakeyaml.reader.StreamReader reader>;
+v34 = virtualinvoke v33.<org.yaml.snakeyaml.reader.StreamReader: org.yaml.snakeyaml.error.Mark getMark()>();
+specialinvoke v30.<org.yaml.snakeyaml.scanner.ScannerException: void <init>(java.lang.String,org.yaml.snakeyaml.error.Mark,java.lang.String,org.yaml.snakeyaml.error.Mark)>(v31, v3, v32, v34);
+throw v30;
+label6:
+v35 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: org.yaml.snakeyaml.reader.StreamReader reader>;
+v36 = virtualinvoke v35.<org.yaml.snakeyaml.reader.StreamReader: org.yaml.snakeyaml.error.Mark getMark()>();
+if v1 == 0 goto label7;
+v37 = new org.yaml.snakeyaml.tokens.AnchorToken;
+specialinvoke v37.<org.yaml.snakeyaml.tokens.AnchorToken: void <init>(java.lang.String,org.yaml.snakeyaml.error.Mark,org.yaml.snakeyaml.error.Mark)>(v23, v3, v36);
+v38 = v37;
+goto label8;
+label7:
+v39 = new org.yaml.snakeyaml.tokens.AliasToken;
+specialinvoke v39.<org.yaml.snakeyaml.tokens.AliasToken: void <init>(java.lang.String,org.yaml.snakeyaml.error.Mark,org.yaml.snakeyaml.error.Mark)>(v23, v3, v36);
+v38 = v39;
+label8:
+return v38;
+}
+private org.yaml.snakeyaml.tokens.Token scanTag()
+{
+boolean v18, v21, v23, v29;
+org.yaml.snakeyaml.tokens.TagTuple v36;
+org.yaml.snakeyaml.error.Mark v15, v2, v35, v38;
+org.yaml.snakeyaml.scanner.Constant v17, v22, v28;
+org.yaml.snakeyaml.scanner.ScannerImpl v0;
+int v20, v27, v4, v9;
+java.lang.String v11, v13, v31, v33, v5, v7;
+org.yaml.snakeyaml.scanner.ScannerException v12, v32;
+org.yaml.snakeyaml.tokens.TagToken v39;
+char[] v10, v30;
+org.yaml.snakeyaml.reader.StreamReader v1, v14, v16, v19, v24, v25, v26, v3, v34, v37, v6, v8;
+v0 := @this: org.yaml.snakeyaml.scanner.ScannerImpl;
+v1 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: org.yaml.snakeyaml.reader.StreamReader reader>;
+v2 = virtualinvoke v1.<org.yaml.snakeyaml.reader.StreamReader: org.yaml.snakeyaml.error.Mark getMark()>();
+v3 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: org.yaml.snakeyaml.reader.StreamReader reader>;
+v4 = virtualinvoke v3.<org.yaml.snakeyaml.reader.StreamReader: int peek(int)>(1);
+v5 = null;
+if v4 != 60 goto label02;
+v6 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: org.yaml.snakeyaml.reader.StreamReader reader>;
+virtualinvoke v6.<org.yaml.snakeyaml.reader.StreamReader: void forward(int)>(2);
+v7 = specialinvoke v0.<org.yaml.snakeyaml.scanner.ScannerImpl: java.lang.String scanTagUri(java.lang.String,org.yaml.snakeyaml.error.Mark)>("tag", v2);
+v8 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: org.yaml.snakeyaml.reader.StreamReader reader>;
+v9 = virtualinvoke v8.<org.yaml.snakeyaml.reader.StreamReader: int peek()>();
+if v9 == 62 goto label01;
+v10 = staticinvoke <java.lang.Character: char[] toChars(int)>(v9);
+v11 = staticinvoke <java.lang.String: java.lang.String valueOf(char[])>(v10);
+v12 = new org.yaml.snakeyaml.scanner.ScannerException;
+v13 = dynamicinvoke "makeConcatWithConstants" <java.lang.String (java.lang.String,int)>(v11, v9) <java.lang.invoke.StringConcatFactory: java.lang.invoke.CallSite makeConcatWithConstants(java.lang.invoke.MethodHandles$Lookup,java.lang.String,java.lang.invoke.MethodType,java.lang.String,java.lang.Object[])>("expected \'>\', but found \'\u0001\' (\u0001)");
+v14 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: org.yaml.snakeyaml.reader.StreamReader reader>;
+v15 = virtualinvoke v14.<org.yaml.snakeyaml.reader.StreamReader: org.yaml.snakeyaml.error.Mark getMark()>();
+specialinvoke v12.<org.yaml.snakeyaml.scanner.ScannerException: void <init>(java.lang.String,org.yaml.snakeyaml.error.Mark,java.lang.String,org.yaml.snakeyaml.error.Mark)>("while scanning a tag", v2, v13, v15);
+throw v12;
+label01:
+v16 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: org.yaml.snakeyaml.reader.StreamReader reader>;
+virtualinvoke v16.<org.yaml.snakeyaml.reader.StreamReader: void forward()>();
+goto label09;
+label02:
+v17 = <org.yaml.snakeyaml.scanner.Constant: org.yaml.snakeyaml.scanner.Constant NULL_BL_T_LINEBR>;
+v18 = virtualinvoke v17.<org.yaml.snakeyaml.scanner.Constant: boolean has(int)>(v4);
+if v18 == 0 goto label03;
+v7 = "!";
+v19 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: org.yaml.snakeyaml.reader.StreamReader reader>;
+virtualinvoke v19.<org.yaml.snakeyaml.reader.StreamReader: void forward()>();
+goto label09;
+label03:
+v20 = 1;
+v21 = 0;
+label04:
+v22 = <org.yaml.snakeyaml.scanner.Constant: org.yaml.snakeyaml.scanner.Constant NULL_BL_LINEBR>;
+v23 = virtualinvoke v22.<org.yaml.snakeyaml.scanner.Constant: boolean hasNo(int)>(v4);
+if v23 == 0 goto label06;
+if v4 != 33 goto label05;
+v21 = 1;
+goto label06;
+label05:
+v20 = v20 + 1;
+v24 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: org.yaml.snakeyaml.reader.StreamReader reader>;
+v4 = virtualinvoke v24.<org.yaml.snakeyaml.reader.StreamReader: int peek(int)>(v20);
+goto label04;
+label06:
+if v21 == 0 goto label07;
+v5 = specialinvoke v0.<org.yaml.snakeyaml.scanner.ScannerImpl: java.lang.String scanTagHandle(java.lang.String,org.yaml.snakeyaml.error.Mark)>("tag", v2);
+goto label08;
+label07:
+v5 = "!";
+v25 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: org.yaml.snakeyaml.reader.StreamReader reader>;
+virtualinvoke v25.<org.yaml.snakeyaml.reader.StreamReader: void forward()>();
+label08:
+v7 = specialinvoke v0.<org.yaml.snakeyaml.scanner.ScannerImpl: java.lang.String scanTagUri(java.lang.String,org.yaml.snakeyaml.error.Mark)>("tag", v2);
+label09:
+v26 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: org.yaml.snakeyaml.reader.StreamReader reader>;
+v27 = virtualinvoke v26.<org.yaml.snakeyaml.reader.StreamReader: int peek()>();
+v28 = <org.yaml.snakeyaml.scanner.Constant: org.yaml.snakeyaml.scanner.Constant NULL_BL_LINEBR>;
+v29 = virtualinvoke v28.<org.yaml.snakeyaml.scanner.Constant: boolean hasNo(int)>(v27);
+if v29 == 0 goto label10;
+v30 = staticinvoke <java.lang.Character: char[] toChars(int)>(v27);
+v31 = staticinvoke <java.lang.String: java.lang.String valueOf(char[])>(v30);
+v32 = new org.yaml.snakeyaml.scanner.ScannerException;
+v33 = dynamicinvoke "makeConcatWithConstants" <java.lang.String (java.lang.String,int)>(v31, v27) <java.lang.invoke.StringConcatFactory: java.lang.invoke.CallSite makeConcatWithConstants(java.lang.invoke.MethodHandles$Lookup,java.lang.String,java.lang.invoke.MethodType,java.lang.String,java.lang.Object[])>("expected \' \', but found \'\u0001\' (\u0001)");
+v34 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: org.yaml.snakeyaml.reader.StreamReader reader>;
+v35 = virtualinvoke v34.<org.yaml.snakeyaml.reader.StreamReader: org.yaml.snakeyaml.error.Mark getMark()>();
+specialinvoke v32.<org.yaml.snakeyaml.scanner.ScannerException: void <init>(java.lang.String,org.yaml.snakeyaml.error.Mark,java.lang.String,org.yaml.snakeyaml.error.Mark)>("while scanning a tag", v2, v33, v35);
+throw v32;
+label10:
+v36 = new org.yaml.snakeyaml.tokens.TagTuple;
+specialinvoke v36.<org.yaml.snakeyaml.tokens.TagTuple: void <init>(java.lang.String,java.lang.String)>(v5, v7);
+v37 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: org.yaml.snakeyaml.reader.StreamReader reader>;
+v38 = virtualinvoke v37.<org.yaml.snakeyaml.reader.StreamReader: org.yaml.snakeyaml.error.Mark getMark()>();
+v39 = new org.yaml.snakeyaml.tokens.TagToken;
+specialinvoke v39.<org.yaml.snakeyaml.tokens.TagToken: void <init>(org.yaml.snakeyaml.tokens.TagTuple,org.yaml.snakeyaml.error.Mark,org.yaml.snakeyaml.error.Mark)>(v36, v2, v38);
+return v39;
+}
+private java.util.List scanBlockScalar(char)
+{
+org.yaml.snakeyaml.scanner.ScannerImpl$Chomping v8;
+java.lang.Character v62;
+org.yaml.snakeyaml.error.Mark v6;
+java.lang.StringBuilder v4;
+org.yaml.snakeyaml.scanner.ScannerImpl v0;
+java.lang.Object[] v14, v21, v43;
+java.lang.String v24, v29, v42, v50, v52, v61;
+org.yaml.snakeyaml.tokens.ScalarToken v60;
+org.yaml.snakeyaml.tokens.CommentToken v10;
+boolean v2, v3, v34, v35, v40, v51, v58, v59;
+java.util.List v65;
+org.yaml.snakeyaml.scanner.Constant v37;
+org.yaml.snakeyaml.DumperOptions$ScalarStyle v63;
+int v11, v12, v13, v17, v19, v20, v26, v28, v31, v32, v33, v36, v39, v47, v49, v54, v55, v56, v57, v9;
+org.yaml.snakeyaml.tokens.Token[] v64;
+char v1;
+org.yaml.snakeyaml.reader.StreamReader v25, v27, v30, v38, v41, v46, v48, v5, v53, v7;
+java.lang.Object v15, v16, v18, v22, v23, v44, v45;
+v0 := @this: org.yaml.snakeyaml.scanner.ScannerImpl;
+v1 := @parameter0: char;
+if v1 != 62 goto label01;
+v2 = 1;
+goto label02;
+label01:
+v2 = 0;
+label02:
+v3 = v2;
+v4 = new java.lang.StringBuilder;
+specialinvoke v4.<java.lang.StringBuilder: void <init>()>();
+v5 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: org.yaml.snakeyaml.reader.StreamReader reader>;
+v6 = virtualinvoke v5.<org.yaml.snakeyaml.reader.StreamReader: org.yaml.snakeyaml.error.Mark getMark()>();
+v7 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: org.yaml.snakeyaml.reader.StreamReader reader>;
+virtualinvoke v7.<org.yaml.snakeyaml.reader.StreamReader: void forward()>();
+v8 = specialinvoke v0.<org.yaml.snakeyaml.scanner.ScannerImpl: org.yaml.snakeyaml.scanner.ScannerImpl$Chomping scanBlockScalarIndicators(org.yaml.snakeyaml.error.Mark)>(v6);
+v9 = virtualinvoke v8.<org.yaml.snakeyaml.scanner.ScannerImpl$Chomping: int getIncrement()>();
+v10 = specialinvoke v0.<org.yaml.snakeyaml.scanner.ScannerImpl: org.yaml.snakeyaml.tokens.CommentToken scanBlockScalarIgnoredLine(org.yaml.snakeyaml.error.Mark)>(v6);
+v11 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: int indent>;
+v12 = v11 + 1;
+if v12 >= 1 goto label03;
+v12 = 1;
+label03:
+v13 = (int) -1;
+if v9 != v13 goto label04;
+v14 = specialinvoke v0.<org.yaml.snakeyaml.scanner.ScannerImpl: java.lang.Object[] scanBlockScalarIndentation()>();
+v15 = v14[0];
+v16 = v14[1];
+v17 = virtualinvoke v16.<java.lang.Integer: int intValue()>();
+v18 = v14[2];
+v19 = staticinvoke <java.lang.Math: int max(int,int)>(v12, v17);
+goto label05;
+label04:
+v20 = v12 + v9;
+v19 = v20 - 1;
+v21 = specialinvoke v0.<org.yaml.snakeyaml.scanner.ScannerImpl: java.lang.Object[] scanBlockScalarBreaks(int)>(v19);
+v22 = v21[0];
+v23 = v21[1];
+label05:
+v24 = "";
+label06:
+v25 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: org.yaml.snakeyaml.reader.StreamReader reader>;
+v26 = virtualinvoke v25.<org.yaml.snakeyaml.reader.StreamReader: int getColumn()>();
+if v26 != v19 goto label12;
+v27 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: org.yaml.snakeyaml.reader.StreamReader reader>;
+v28 = virtualinvoke v27.<org.yaml.snakeyaml.reader.StreamReader: int peek()>();
+if v28 == 0 goto label12;
+virtualinvoke v4.<java.lang.StringBuilder: java.lang.StringBuilder append(java.lang.String)>(v15);
+v29 = " \t";
+v30 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: org.yaml.snakeyaml.reader.StreamReader reader>;
+v31 = virtualinvoke v30.<org.yaml.snakeyaml.reader.StreamReader: int peek()>();
+v32 = virtualinvoke v29.<java.lang.String: int indexOf(int)>(v31);
+v33 = (int) -1;
+if v32 != v33 goto label07;
+v34 = 1;
+goto label08;
+label07:
+v34 = 0;
+label08:
+v35 = v34;
+v36 = 0;
+label09:
+v37 = <org.yaml.snakeyaml.scanner.Constant: org.yaml.snakeyaml.scanner.Constant NULL_OR_LINEBR>;
+v38 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: org.yaml.snakeyaml.reader.StreamReader reader>;
+v39 = virtualinvoke v38.<org.yaml.snakeyaml.reader.StreamReader: int peek(int)>(v36);
+v40 = virtualinvoke v37.<org.yaml.snakeyaml.scanner.Constant: boolean hasNo(int)>(v39);
+if v40 == 0 goto label10;
+v36 = v36 + 1;
+goto label09;
+label10:
+v41 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: org.yaml.snakeyaml.reader.StreamReader reader>;
+v42 = virtualinvoke v41.<org.yaml.snakeyaml.reader.StreamReader: java.lang.String prefixForward(int)>(v36);
+virtualinvoke v4.<java.lang.StringBuilder: java.lang.StringBuilder append(java.lang.String)>(v42);
+v24 = specialinvoke v0.<org.yaml.snakeyaml.scanner.ScannerImpl: java.lang.String scanLineBreak()>();
+v43 = specialinvoke v0.<org.yaml.snakeyaml.scanner.ScannerImpl: java.lang.Object[] scanBlockScalarBreaks(int)>(v19);
+v44 = v43[0];
+v45 = v43[1];
+v46 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: org.yaml.snakeyaml.reader.StreamReader reader>;
+v47 = virtualinvoke v46.<org.yaml.snakeyaml.reader.StreamReader: int getColumn()>();
+if v47 != v19 goto label12;
+v48 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: org.yaml.snakeyaml.reader.StreamReader reader>;
+v49 = virtualinvoke v48.<org.yaml.snakeyaml.reader.StreamReader: int peek()>();
+if v49 == 0 goto label12;
+if v3 == 0 goto label11;
+v50 = "\n";
+v51 = virtualinvoke v50.<java.lang.String: boolean equals(java.lang.Object)>(v24);
+if v51 == 0 goto label11;
+if v35 == 0 goto label11;
+v52 = " \t";
+v53 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: org.yaml.snakeyaml.reader.StreamReader reader>;
+v54 = virtualinvoke v53.<org.yaml.snakeyaml.reader.StreamReader: int peek()>();
+v55 = virtualinvoke v52.<java.lang.String: int indexOf(int)>(v54);
+v56 = (int) -1;
+if v55 != v56 goto label11;
+v57 = virtualinvoke v15.<java.lang.String: int length()>();
+if v57 != 0 goto label06;
+virtualinvoke v4.<java.lang.StringBuilder: java.lang.StringBuilder append(java.lang.String)>(" ");
+goto label06;
+label11:
+virtualinvoke v4.<java.lang.StringBuilder: java.lang.StringBuilder append(java.lang.String)>(v24);
+goto label06;
+label12:
+v58 = virtualinvoke v8.<org.yaml.snakeyaml.scanner.ScannerImpl$Chomping: boolean chompTailIsNotFalse()>();
+if v58 == 0 goto label13;
+virtualinvoke v4.<java.lang.StringBuilder: java.lang.StringBuilder append(java.lang.String)>(v24);
+label13:
+v59 = virtualinvoke v8.<org.yaml.snakeyaml.scanner.ScannerImpl$Chomping: boolean chompTailIsTrue()>();
+if v59 == 0 goto label14;
+virtualinvoke v4.<java.lang.StringBuilder: java.lang.StringBuilder append(java.lang.String)>(v15);
+label14:
+v60 = new org.yaml.snakeyaml.tokens.ScalarToken;
+v61 = virtualinvoke v4.<java.lang.StringBuilder: java.lang.String toString()>();
+v62 = staticinvoke <java.lang.Character: java.lang.Character valueOf(char)>(v1);
+v63 = staticinvoke <org.yaml.snakeyaml.DumperOptions$ScalarStyle: org.yaml.snakeyaml.DumperOptions$ScalarStyle createStyle(java.lang.Character)>(v62);
+specialinvoke v60.<org.yaml.snakeyaml.tokens.ScalarToken: void <init>(java.lang.String,boolean,org.yaml.snakeyaml.error.Mark,org.yaml.snakeyaml.error.Mark,org.yaml.snakeyaml.DumperOptions$ScalarStyle)>(v61, 0, v6, v18, v63);
+v64 = newarray (org.yaml.snakeyaml.tokens.Token)[2];
+v64[0] = v10;
+v64[1] = v60;
+v65 = specialinvoke v0.<org.yaml.snakeyaml.scanner.ScannerImpl: java.util.List makeTokenList(org.yaml.snakeyaml.tokens.Token[])>(v64);
+return v65;
+}
+private org.yaml.snakeyaml.scanner.ScannerImpl$Chomping scanBlockScalarIndicators(org.yaml.snakeyaml.error.Mark)
+{
+org.yaml.snakeyaml.scanner.ScannerImpl$Chomping v37;
+boolean v10, v17, v30;
+org.yaml.snakeyaml.error.Mark v1, v15, v22, v36;
+org.yaml.snakeyaml.scanner.Constant v29;
+org.yaml.snakeyaml.scanner.ScannerImpl v0;
+int v25, v28, v3, v4, v6, v9;
+java.lang.Boolean v2;
+java.lang.String v12, v19, v32, v34;
+org.yaml.snakeyaml.scanner.ScannerException v13, v20, v33;
+char[] v11, v18, v31;
+org.yaml.snakeyaml.reader.StreamReader v14, v16, v21, v23, v24, v26, v27, v35, v5, v7, v8;
+v0 := @this: org.yaml.snakeyaml.scanner.ScannerImpl;
+v1 := @parameter0: org.yaml.snakeyaml.error.Mark;
+v2 = null;
+v3 = (int) -1;
+v4 = v3;
+v5 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: org.yaml.snakeyaml.reader.StreamReader reader>;
+v6 = virtualinvoke v5.<org.yaml.snakeyaml.reader.StreamReader: int peek()>();
+if v6 == 45 goto label01;
+if v6 != 43 goto label05;
+label01:
+if v6 != 43 goto label02;
+v2 = <java.lang.Boolean: java.lang.Boolean TRUE>;
+goto label03;
+label02:
+v2 = <java.lang.Boolean: java.lang.Boolean FALSE>;
+label03:
+v7 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: org.yaml.snakeyaml.reader.StreamReader reader>;
+virtualinvoke v7.<org.yaml.snakeyaml.reader.StreamReader: void forward()>();
+v8 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: org.yaml.snakeyaml.reader.StreamReader reader>;
+v9 = virtualinvoke v8.<org.yaml.snakeyaml.reader.StreamReader: int peek()>();
+v10 = staticinvoke <java.lang.Character: boolean isDigit(int)>(v9);
+if v10 == 0 goto label10;
+v11 = staticinvoke <java.lang.Character: char[] toChars(int)>(v9);
+v12 = staticinvoke <java.lang.String: java.lang.String valueOf(char[])>(v11);
+v4 = staticinvoke <java.lang.Integer: int parseInt(java.lang.String)>(v12);
+if v4 != 0 goto label04;
+v13 = new org.yaml.snakeyaml.scanner.ScannerException;
+v14 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: org.yaml.snakeyaml.reader.StreamReader reader>;
+v15 = virtualinvoke v14.<org.yaml.snakeyaml.reader.StreamReader: org.yaml.snakeyaml.error.Mark getMark()>();
+specialinvoke v13.<org.yaml.snakeyaml.scanner.ScannerException: void <init>(java.lang.String,org.yaml.snakeyaml.error.Mark,java.lang.String,org.yaml.snakeyaml.error.Mark)>("while scanning a block scalar", v1, "expected indentation indicator in the range 1-9, but found 0", v15);
+throw v13;
+label04:
+v16 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: org.yaml.snakeyaml.reader.StreamReader reader>;
+virtualinvoke v16.<org.yaml.snakeyaml.reader.StreamReader: void forward()>();
+goto label10;
+label05:
+v17 = staticinvoke <java.lang.Character: boolean isDigit(int)>(v6);
+if v17 == 0 goto label10;
+v18 = staticinvoke <java.lang.Character: char[] toChars(int)>(v6);
+v19 = staticinvoke <java.lang.String: java.lang.String valueOf(char[])>(v18);
+v4 = staticinvoke <java.lang.Integer: int parseInt(java.lang.String)>(v19);
+if v4 != 0 goto label06;
+v20 = new org.yaml.snakeyaml.scanner.ScannerException;
+v21 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: org.yaml.snakeyaml.reader.StreamReader reader>;
+v22 = virtualinvoke v21.<org.yaml.snakeyaml.reader.StreamReader: org.yaml.snakeyaml.error.Mark getMark()>();
+specialinvoke v20.<org.yaml.snakeyaml.scanner.ScannerException: void <init>(java.lang.String,org.yaml.snakeyaml.error.Mark,java.lang.String,org.yaml.snakeyaml.error.Mark)>("while scanning a block scalar", v1, "expected indentation indicator in the range 1-9, but found 0", v22);
+throw v20;
+label06:
+v23 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: org.yaml.snakeyaml.reader.StreamReader reader>;
+virtualinvoke v23.<org.yaml.snakeyaml.reader.StreamReader: void forward()>();
+v24 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: org.yaml.snakeyaml.reader.StreamReader reader>;
+v25 = virtualinvoke v24.<org.yaml.snakeyaml.reader.StreamReader: int peek()>();
+if v25 == 45 goto label07;
+if v25 != 43 goto label10;
+label07:
+if v25 != 43 goto label08;
+v2 = <java.lang.Boolean: java.lang.Boolean TRUE>;
+goto label09;
+label08:
+v2 = <java.lang.Boolean: java.lang.Boolean FALSE>;
+label09:
+v26 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: org.yaml.snakeyaml.reader.StreamReader reader>;
+virtualinvoke v26.<org.yaml.snakeyaml.reader.StreamReader: void forward()>();
+label10:
+v27 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: org.yaml.snakeyaml.reader.StreamReader reader>;
+v28 = virtualinvoke v27.<org.yaml.snakeyaml.reader.StreamReader: int peek()>();
+v29 = <org.yaml.snakeyaml.scanner.Constant: org.yaml.snakeyaml.scanner.Constant NULL_BL_LINEBR>;
+v30 = virtualinvoke v29.<org.yaml.snakeyaml.scanner.Constant: boolean hasNo(int)>(v28);
+if v30 == 0 goto label11;
+v31 = staticinvoke <java.lang.Character: char[] toChars(int)>(v28);
+v32 = staticinvoke <java.lang.String: java.lang.String valueOf(char[])>(v31);
+v33 = new org.yaml.snakeyaml.scanner.ScannerException;
+v34 = dynamicinvoke "makeConcatWithConstants" <java.lang.String (java.lang.String,int)>(v32, v28) <java.lang.invoke.StringConcatFactory: java.lang.invoke.CallSite makeConcatWithConstants(java.lang.invoke.MethodHandles$Lookup,java.lang.String,java.lang.invoke.MethodType,java.lang.String,java.lang.Object[])>("expected chomping or indentation indicators, but found \u0001(\u0001)");
+v35 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: org.yaml.snakeyaml.reader.StreamReader reader>;
+v36 = virtualinvoke v35.<org.yaml.snakeyaml.reader.StreamReader: org.yaml.snakeyaml.error.Mark getMark()>();
+specialinvoke v33.<org.yaml.snakeyaml.scanner.ScannerException: void <init>(java.lang.String,org.yaml.snakeyaml.error.Mark,java.lang.String,org.yaml.snakeyaml.error.Mark)>("while scanning a block scalar", v1, v34, v36);
+throw v33;
+label11:
+v37 = new org.yaml.snakeyaml.scanner.ScannerImpl$Chomping;
+specialinvoke v37.<org.yaml.snakeyaml.scanner.ScannerImpl$Chomping: void <init>(java.lang.Boolean,int)>(v2, v4);
+return v37;
+}
+private org.yaml.snakeyaml.tokens.CommentToken scanBlockScalarIgnoredLine(org.yaml.snakeyaml.error.Mark)
+{
+int v10, v12, v3, v7;
+java.lang.String v11, v14, v16;
+org.yaml.snakeyaml.scanner.ScannerException v15;
+org.yaml.snakeyaml.tokens.CommentToken v5;
+org.yaml.snakeyaml.error.Mark v1, v18;
+org.yaml.snakeyaml.comments.CommentType v8;
+char[] v13;
+org.yaml.snakeyaml.reader.StreamReader v17, v2, v4, v6, v9;
+org.yaml.snakeyaml.scanner.ScannerImpl v0;
+v0 := @this: org.yaml.snakeyaml.scanner.ScannerImpl;
+v1 := @parameter0: org.yaml.snakeyaml.error.Mark;
+label1:
+v2 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: org.yaml.snakeyaml.reader.StreamReader reader>;
+v3 = virtualinvoke v2.<org.yaml.snakeyaml.reader.StreamReader: int peek()>();
+if v3 != 32 goto label2;
+v4 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: org.yaml.snakeyaml.reader.StreamReader reader>;
+virtualinvoke v4.<org.yaml.snakeyaml.reader.StreamReader: void forward()>();
+goto label1;
+label2:
+v5 = null;
+v6 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: org.yaml.snakeyaml.reader.StreamReader reader>;
+v7 = virtualinvoke v6.<org.yaml.snakeyaml.reader.StreamReader: int peek()>();
+if v7 != 35 goto label3;
+v8 = <org.yaml.snakeyaml.comments.CommentType: org.yaml.snakeyaml.comments.CommentType IN_LINE>;
+v5 = specialinvoke v0.<org.yaml.snakeyaml.scanner.ScannerImpl: org.yaml.snakeyaml.tokens.CommentToken scanComment(org.yaml.snakeyaml.comments.CommentType)>(v8);
+label3:
+v9 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: org.yaml.snakeyaml.reader.StreamReader reader>;
+v10 = virtualinvoke v9.<org.yaml.snakeyaml.reader.StreamReader: int peek()>();
+v11 = specialinvoke v0.<org.yaml.snakeyaml.scanner.ScannerImpl: java.lang.String scanLineBreak()>();
+v12 = virtualinvoke v11.<java.lang.String: int length()>();
+if v12 != 0 goto label4;
+if v10 == 0 goto label4;
+v13 = staticinvoke <java.lang.Character: char[] toChars(int)>(v10);
+v14 = staticinvoke <java.lang.String: java.lang.String valueOf(char[])>(v13);
+v15 = new org.yaml.snakeyaml.scanner.ScannerException;
+v16 = dynamicinvoke "makeConcatWithConstants" <java.lang.String (java.lang.String,int)>(v14, v10) <java.lang.invoke.StringConcatFactory: java.lang.invoke.CallSite makeConcatWithConstants(java.lang.invoke.MethodHandles$Lookup,java.lang.String,java.lang.invoke.MethodType,java.lang.String,java.lang.Object[])>("expected a comment or a line break, but found \u0001(\u0001)");
+v17 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: org.yaml.snakeyaml.reader.StreamReader reader>;
+v18 = virtualinvoke v17.<org.yaml.snakeyaml.reader.StreamReader: org.yaml.snakeyaml.error.Mark getMark()>();
+specialinvoke v15.<org.yaml.snakeyaml.scanner.ScannerException: void <init>(java.lang.String,org.yaml.snakeyaml.error.Mark,java.lang.String,org.yaml.snakeyaml.error.Mark)>("while scanning a block scalar", v1, v16, v18);
+throw v15;
+label4:
+return v5;
+}
+private java.lang.Object[] scanBlockScalarIndentation()
+{
+java.lang.Object[] v17;
+java.lang.Integer v19;
+int v10, v15, v2, v7;
+java.lang.String v11, v18;
+boolean v8;
+org.yaml.snakeyaml.error.Mark v4;
+org.yaml.snakeyaml.scanner.Constant v5;
+org.yaml.snakeyaml.reader.StreamReader v12, v13, v14, v16, v3, v6, v9;
+java.lang.StringBuilder v1;
+org.yaml.snakeyaml.scanner.ScannerImpl v0;
+v0 := @this: org.yaml.snakeyaml.scanner.ScannerImpl;
+v1 = new java.lang.StringBuilder;
+specialinvoke v1.<java.lang.StringBuilder: void <init>()>();
+v2 = 0;
+v3 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: org.yaml.snakeyaml.reader.StreamReader reader>;
+v4 = virtualinvoke v3.<org.yaml.snakeyaml.reader.StreamReader: org.yaml.snakeyaml.error.Mark getMark()>();
+label1:
+v5 = <org.yaml.snakeyaml.scanner.Constant: org.yaml.snakeyaml.scanner.Constant LINEBR>;
+v6 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: org.yaml.snakeyaml.reader.StreamReader reader>;
+v7 = virtualinvoke v6.<org.yaml.snakeyaml.reader.StreamReader: int peek()>();
+v8 = virtualinvoke v5.<org.yaml.snakeyaml.scanner.Constant: boolean has(int,java.lang.String)>(v7, " \r");
+if v8 == 0 goto label3;
+v9 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: org.yaml.snakeyaml.reader.StreamReader reader>;
+v10 = virtualinvoke v9.<org.yaml.snakeyaml.reader.StreamReader: int peek()>();
+if v10 == 32 goto label2;
+v11 = specialinvoke v0.<org.yaml.snakeyaml.scanner.ScannerImpl: java.lang.String scanLineBreak()>();
+virtualinvoke v1.<java.lang.StringBuilder: java.lang.StringBuilder append(java.lang.String)>(v11);
+v12 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: org.yaml.snakeyaml.reader.StreamReader reader>;
+v4 = virtualinvoke v12.<org.yaml.snakeyaml.reader.StreamReader: org.yaml.snakeyaml.error.Mark getMark()>();
+goto label1;
+label2:
+v13 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: org.yaml.snakeyaml.reader.StreamReader reader>;
+virtualinvoke v13.<org.yaml.snakeyaml.reader.StreamReader: void forward()>();
+v14 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: org.yaml.snakeyaml.reader.StreamReader reader>;
+v15 = virtualinvoke v14.<org.yaml.snakeyaml.reader.StreamReader: int getColumn()>();
+if v15 <= v2 goto label1;
+v16 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: org.yaml.snakeyaml.reader.StreamReader reader>;
+v2 = virtualinvoke v16.<org.yaml.snakeyaml.reader.StreamReader: int getColumn()>();
+goto label1;
+label3:
+v17 = newarray (java.lang.Object)[3];
+v18 = virtualinvoke v1.<java.lang.StringBuilder: java.lang.String toString()>();
+v17[0] = v18;
+v19 = staticinvoke <java.lang.Integer: java.lang.Integer valueOf(int)>(v2);
+v17[1] = v19;
+v17[2] = v4;
+return v17;
+}
+private java.lang.Object[] scanBlockScalarBreaks(int)
+{
+java.lang.Object[] v18;
+int v1, v11, v14, v16, v6, v8;
+java.lang.String v10, v19;
+org.yaml.snakeyaml.error.Mark v4;
+org.yaml.snakeyaml.reader.StreamReader v12, v13, v15, v17, v3, v5, v7, v9;
+java.lang.StringBuilder v2;
+org.yaml.snakeyaml.scanner.ScannerImpl v0;
+v0 := @this: org.yaml.snakeyaml.scanner.ScannerImpl;
+v1 := @parameter0: int;
+v2 = new java.lang.StringBuilder;
+specialinvoke v2.<java.lang.StringBuilder: void <init>()>();
+v3 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: org.yaml.snakeyaml.reader.StreamReader reader>;
+v4 = virtualinvoke v3.<org.yaml.snakeyaml.reader.StreamReader: org.yaml.snakeyaml.error.Mark getMark()>();
+v5 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: org.yaml.snakeyaml.reader.StreamReader reader>;
+v6 = virtualinvoke v5.<org.yaml.snakeyaml.reader.StreamReader: int getColumn()>();
+label1:
+if v6 >= v1 goto label2;
+v7 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: org.yaml.snakeyaml.reader.StreamReader reader>;
+v8 = virtualinvoke v7.<org.yaml.snakeyaml.reader.StreamReader: int peek()>();
+if v8 != 32 goto label2;
+v9 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: org.yaml.snakeyaml.reader.StreamReader reader>;
+virtualinvoke v9.<org.yaml.snakeyaml.reader.StreamReader: void forward()>();
+v6 = v6 + 1;
+goto label1;
+label2:
+v10 = specialinvoke v0.<org.yaml.snakeyaml.scanner.ScannerImpl: java.lang.String scanLineBreak()>();
+v11 = virtualinvoke v10.<java.lang.String: int length()>();
+if v11 == 0 goto label4;
+virtualinvoke v2.<java.lang.StringBuilder: java.lang.StringBuilder append(java.lang.String)>(v10);
+v12 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: org.yaml.snakeyaml.reader.StreamReader reader>;
+v4 = virtualinvoke v12.<org.yaml.snakeyaml.reader.StreamReader: org.yaml.snakeyaml.error.Mark getMark()>();
+v13 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: org.yaml.snakeyaml.reader.StreamReader reader>;
+v14 = virtualinvoke v13.<org.yaml.snakeyaml.reader.StreamReader: int getColumn()>();
+label3:
+if v14 >= v1 goto label2;
+v15 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: org.yaml.snakeyaml.reader.StreamReader reader>;
+v16 = virtualinvoke v15.<org.yaml.snakeyaml.reader.StreamReader: int peek()>();
+if v16 != 32 goto label2;
+v17 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: org.yaml.snakeyaml.reader.StreamReader reader>;
+virtualinvoke v17.<org.yaml.snakeyaml.reader.StreamReader: void forward()>();
+v14 = v14 + 1;
+goto label3;
+label4:
+v18 = newarray (java.lang.Object)[2];
+v19 = virtualinvoke v2.<java.lang.StringBuilder: java.lang.String toString()>();
+v18[0] = v19;
+v18[1] = v4;
+return v18;
+}
+private org.yaml.snakeyaml.tokens.Token scanFlowScalar(char)
+{
+org.yaml.snakeyaml.DumperOptions$ScalarStyle v21;
+java.lang.Character v20;
+int v12, v8;
+java.lang.String v10, v13, v14, v19;
+boolean v2, v3;
+org.yaml.snakeyaml.tokens.ScalarToken v18;
+char v1;
+org.yaml.snakeyaml.error.Mark v17, v6;
+org.yaml.snakeyaml.reader.StreamReader v11, v15, v16, v5, v7, v9;
+java.lang.StringBuilder v4;
+org.yaml.snakeyaml.scanner.ScannerImpl v0;
+v0 := @this: org.yaml.snakeyaml.scanner.ScannerImpl;
+v1 := @parameter0: char;
+if v1 != 34 goto label1;
+v2 = 1;
+goto label2;
+label1:
+v2 = 0;
+label2:
+v3 = v2;
+v4 = new java.lang.StringBuilder;
+specialinvoke v4.<java.lang.StringBuilder: void <init>()>();
+v5 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: org.yaml.snakeyaml.reader.StreamReader reader>;
+v6 = virtualinvoke v5.<org.yaml.snakeyaml.reader.StreamReader: org.yaml.snakeyaml.error.Mark getMark()>();
+v7 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: org.yaml.snakeyaml.reader.StreamReader reader>;
+v8 = virtualinvoke v7.<org.yaml.snakeyaml.reader.StreamReader: int peek()>();
+v9 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: org.yaml.snakeyaml.reader.StreamReader reader>;
+virtualinvoke v9.<org.yaml.snakeyaml.reader.StreamReader: void forward()>();
+v10 = specialinvoke v0.<org.yaml.snakeyaml.scanner.ScannerImpl: java.lang.String scanFlowScalarNonSpaces(boolean,org.yaml.snakeyaml.error.Mark)>(v2, v6);
+virtualinvoke v4.<java.lang.StringBuilder: java.lang.StringBuilder append(java.lang.String)>(v10);
+label3:
+v11 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: org.yaml.snakeyaml.reader.StreamReader reader>;
+v12 = virtualinvoke v11.<org.yaml.snakeyaml.reader.StreamReader: int peek()>();
+if v12 == v8 goto label4;
+v13 = specialinvoke v0.<org.yaml.snakeyaml.scanner.ScannerImpl: java.lang.String scanFlowScalarSpaces(org.yaml.snakeyaml.error.Mark)>(v6);
+virtualinvoke v4.<java.lang.StringBuilder: java.lang.StringBuilder append(java.lang.String)>(v13);
+v14 = specialinvoke v0.<org.yaml.snakeyaml.scanner.ScannerImpl: java.lang.String scanFlowScalarNonSpaces(boolean,org.yaml.snakeyaml.error.Mark)>(v3, v6);
+virtualinvoke v4.<java.lang.StringBuilder: java.lang.StringBuilder append(java.lang.String)>(v14);
+goto label3;
+label4:
+v15 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: org.yaml.snakeyaml.reader.StreamReader reader>;
+virtualinvoke v15.<org.yaml.snakeyaml.reader.StreamReader: void forward()>();
+v16 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: org.yaml.snakeyaml.reader.StreamReader reader>;
+v17 = virtualinvoke v16.<org.yaml.snakeyaml.reader.StreamReader: org.yaml.snakeyaml.error.Mark getMark()>();
+v18 = new org.yaml.snakeyaml.tokens.ScalarToken;
+v19 = virtualinvoke v4.<java.lang.StringBuilder: java.lang.String toString()>();
+v20 = staticinvoke <java.lang.Character: java.lang.Character valueOf(char)>(v1);
+v21 = staticinvoke <org.yaml.snakeyaml.DumperOptions$ScalarStyle: org.yaml.snakeyaml.DumperOptions$ScalarStyle createStyle(java.lang.Character)>(v20);
+specialinvoke v18.<org.yaml.snakeyaml.tokens.ScalarToken: void <init>(java.lang.String,boolean,org.yaml.snakeyaml.error.Mark,org.yaml.snakeyaml.error.Mark,org.yaml.snakeyaml.DumperOptions$ScalarStyle)>(v19, 0, v6, v17, v21);
+return v18;
+}
+private java.lang.String scanFlowScalarNonSpaces(boolean, org.yaml.snakeyaml.error.Mark)
+{
+java.util.regex.Matcher v43;
+java.lang.Character v25, v28, v33, v36;
+java.util.Map v24, v27, v32, v35;
+boolean v1, v23, v26, v31, v34, v44, v8;
+org.yaml.snakeyaml.error.Mark v2, v48, v61;
+org.yaml.snakeyaml.scanner.Constant v5;
+java.lang.StringBuilder v3;
+java.util.regex.Pattern v42;
+org.yaml.snakeyaml.scanner.ScannerImpl v0;
+int v12, v14, v17, v18, v22, v38, v4, v49, v54, v7;
+java.lang.String v10, v16, v41, v46, v50, v53, v55, v57, v59, v62;
+org.yaml.snakeyaml.scanner.ScannerException v45, v58;
+char[] v51, v56;
+org.yaml.snakeyaml.reader.StreamReader v11, v13, v15, v19, v20, v21, v30, v39, v40, v47, v52, v6, v60, v9;
+java.lang.Object v29, v37;
+v0 := @this: org.yaml.snakeyaml.scanner.ScannerImpl;
+v1 := @parameter0: boolean;
+v2 := @parameter1: org.yaml.snakeyaml.error.Mark;
+v3 = new java.lang.StringBuilder;
+specialinvoke v3.<java.lang.StringBuilder: void <init>()>();
+label01:
+v4 = 0;
+label02:
+v5 = <org.yaml.snakeyaml.scanner.Constant: org.yaml.snakeyaml.scanner.Constant NULL_BL_T_LINEBR>;
+v6 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: org.yaml.snakeyaml.reader.StreamReader reader>;
+v7 = virtualinvoke v6.<org.yaml.snakeyaml.reader.StreamReader: int peek(int)>(v4);
+v8 = virtualinvoke v5.<org.yaml.snakeyaml.scanner.Constant: boolean hasNo(int,java.lang.String)>(v7, "\'\"\\");
+if v8 == 0 goto label03;
+v4 = v4 + 1;
+goto label02;
+label03:
+if v4 == 0 goto label04;
+v9 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: org.yaml.snakeyaml.reader.StreamReader reader>;
+v10 = virtualinvoke v9.<org.yaml.snakeyaml.reader.StreamReader: java.lang.String prefixForward(int)>(v4);
+virtualinvoke v3.<java.lang.StringBuilder: java.lang.StringBuilder append(java.lang.String)>(v10);
+label04:
+v11 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: org.yaml.snakeyaml.reader.StreamReader reader>;
+v12 = virtualinvoke v11.<org.yaml.snakeyaml.reader.StreamReader: int peek()>();
+if v1 != 0 goto label05;
+if v12 != 39 goto label05;
+v13 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: org.yaml.snakeyaml.reader.StreamReader reader>;
+v14 = virtualinvoke v13.<org.yaml.snakeyaml.reader.StreamReader: int peek(int)>(1);
+if v14 != 39 goto label05;
+virtualinvoke v3.<java.lang.StringBuilder: java.lang.StringBuilder append(java.lang.String)>("\'");
+v15 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: org.yaml.snakeyaml.reader.StreamReader reader>;
+virtualinvoke v15.<org.yaml.snakeyaml.reader.StreamReader: void forward(int)>(2);
+goto label01;
+label05:
+if v1 == 0 goto label06;
+if v12 == 39 goto label07;
+label06:
+if v1 != 0 goto label08;
+v16 = "\"\\";
+v17 = virtualinvoke v16.<java.lang.String: int indexOf(int)>(v12);
+v18 = (int) -1;
+if v17 == v18 goto label08;
+label07:
+virtualinvoke v3.<java.lang.StringBuilder: java.lang.StringBuilder appendCodePoint(int)>(v12);
+v19 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: org.yaml.snakeyaml.reader.StreamReader reader>;
+virtualinvoke v19.<org.yaml.snakeyaml.reader.StreamReader: void forward()>();
+goto label01;
+label08:
+if v1 == 0 goto label13;
+if v12 != 92 goto label13;
+v20 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: org.yaml.snakeyaml.reader.StreamReader reader>;
+virtualinvoke v20.<org.yaml.snakeyaml.reader.StreamReader: void forward()>();
+v21 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: org.yaml.snakeyaml.reader.StreamReader reader>;
+v22 = virtualinvoke v21.<org.yaml.snakeyaml.reader.StreamReader: int peek()>();
+v23 = staticinvoke <java.lang.Character: boolean isSupplementaryCodePoint(int)>(v22);
+if v23 != 0 goto label09;
+v24 = <org.yaml.snakeyaml.scanner.ScannerImpl: java.util.Map ESCAPE_REPLACEMENTS>;
+v25 = staticinvoke <java.lang.Character: java.lang.Character valueOf(char)>(v22);
+v26 = interfaceinvoke v24.<java.util.Map: boolean containsKey(java.lang.Object)>(v25);
+if v26 == 0 goto label09;
+v27 = <org.yaml.snakeyaml.scanner.ScannerImpl: java.util.Map ESCAPE_REPLACEMENTS>;
+v28 = staticinvoke <java.lang.Character: java.lang.Character valueOf(char)>(v22);
+v29 = interfaceinvoke v27.<java.util.Map: java.lang.Object get(java.lang.Object)>(v28);
+virtualinvoke v3.<java.lang.StringBuilder: java.lang.StringBuilder append(java.lang.String)>(v29);
+v30 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: org.yaml.snakeyaml.reader.StreamReader reader>;
+virtualinvoke v30.<org.yaml.snakeyaml.reader.StreamReader: void forward()>();
+goto label01;
+label09:
+v31 = staticinvoke <java.lang.Character: boolean isSupplementaryCodePoint(int)>(v22);
+if v31 != 0 goto label11;
+v32 = <org.yaml.snakeyaml.scanner.ScannerImpl: java.util.Map ESCAPE_CODES>;
+v33 = staticinvoke <java.lang.Character: java.lang.Character valueOf(char)>(v22);
+v34 = interfaceinvoke v32.<java.util.Map: boolean containsKey(java.lang.Object)>(v33);
+if v34 == 0 goto label11;
+v35 = <org.yaml.snakeyaml.scanner.ScannerImpl: java.util.Map ESCAPE_CODES>;
+v36 = staticinvoke <java.lang.Character: java.lang.Character valueOf(char)>(v22);
+v37 = interfaceinvoke v35.<java.util.Map: java.lang.Object get(java.lang.Object)>(v36);
+v38 = virtualinvoke v37.<java.lang.Integer: int intValue()>();
+v39 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: org.yaml.snakeyaml.reader.StreamReader reader>;
+virtualinvoke v39.<org.yaml.snakeyaml.reader.StreamReader: void forward()>();
+v40 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: org.yaml.snakeyaml.reader.StreamReader reader>;
+v41 = virtualinvoke v40.<org.yaml.snakeyaml.reader.StreamReader: java.lang.String prefix(int)>(v38);
+v42 = <org.yaml.snakeyaml.scanner.ScannerImpl: java.util.regex.Pattern NOT_HEXA>;
+v43 = virtualinvoke v42.<java.util.regex.Pattern: java.util.regex.Matcher matcher(java.lang.CharSequence)>(v41);
+v44 = virtualinvoke v43.<java.util.regex.Matcher: boolean find()>();
+if v44 == 0 goto label10;
+v45 = new org.yaml.snakeyaml.scanner.ScannerException;
+v46 = dynamicinvoke "makeConcatWithConstants" <java.lang.String (int,java.lang.String)>(v38, v41) <java.lang.invoke.StringConcatFactory: java.lang.invoke.CallSite makeConcatWithConstants(java.lang.invoke.MethodHandles$Lookup,java.lang.String,java.lang.invoke.MethodType,java.lang.String,java.lang.Object[])>("expected escape sequence of \u0001 hexadecimal numbers, but found: \u0001");
+v47 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: org.yaml.snakeyaml.reader.StreamReader reader>;
+v48 = virtualinvoke v47.<org.yaml.snakeyaml.reader.StreamReader: org.yaml.snakeyaml.error.Mark getMark()>();
+specialinvoke v45.<org.yaml.snakeyaml.scanner.ScannerException: void <init>(java.lang.String,org.yaml.snakeyaml.error.Mark,java.lang.String,org.yaml.snakeyaml.error.Mark)>("while scanning a double-quoted scalar", v2, v46, v48);
+throw v45;
+label10:
+v49 = staticinvoke <java.lang.Integer: int parseInt(java.lang.String,int)>(v41, 16);
+v50 = new java.lang.String;
+v51 = staticinvoke <java.lang.Character: char[] toChars(int)>(v49);
+specialinvoke v50.<java.lang.String: void <init>(char[])>(v51);
+virtualinvoke v3.<java.lang.StringBuilder: java.lang.StringBuilder append(java.lang.String)>(v50);
+v52 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: org.yaml.snakeyaml.reader.StreamReader reader>;
+virtualinvoke v52.<org.yaml.snakeyaml.reader.StreamReader: void forward(int)>(v38);
+goto label01;
+label11:
+v53 = specialinvoke v0.<org.yaml.snakeyaml.scanner.ScannerImpl: java.lang.String scanLineBreak()>();
+v54 = virtualinvoke v53.<java.lang.String: int length()>();
+if v54 == 0 goto label12;
+v55 = specialinvoke v0.<org.yaml.snakeyaml.scanner.ScannerImpl: java.lang.String scanFlowScalarBreaks(org.yaml.snakeyaml.error.Mark)>(v2);
+virtualinvoke v3.<java.lang.StringBuilder: java.lang.StringBuilder append(java.lang.String)>(v55);
+goto label01;
+label12:
+v56 = staticinvoke <java.lang.Character: char[] toChars(int)>(v22);
+v57 = staticinvoke <java.lang.String: java.lang.String valueOf(char[])>(v56);
+v58 = new org.yaml.snakeyaml.scanner.ScannerException;
+v59 = dynamicinvoke "makeConcatWithConstants" <java.lang.String (java.lang.String,int)>(v57, v22) <java.lang.invoke.StringConcatFactory: java.lang.invoke.CallSite makeConcatWithConstants(java.lang.invoke.MethodHandles$Lookup,java.lang.String,java.lang.invoke.MethodType,java.lang.String,java.lang.Object[])>("found unknown escape character \u0001(\u0001)");
+v60 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: org.yaml.snakeyaml.reader.StreamReader reader>;
+v61 = virtualinvoke v60.<org.yaml.snakeyaml.reader.StreamReader: org.yaml.snakeyaml.error.Mark getMark()>();
+specialinvoke v58.<org.yaml.snakeyaml.scanner.ScannerException: void <init>(java.lang.String,org.yaml.snakeyaml.error.Mark,java.lang.String,org.yaml.snakeyaml.error.Mark)>("while scanning a double-quoted scalar", v2, v59, v61);
+throw v58;
+label13:
+v62 = virtualinvoke v3.<java.lang.StringBuilder: java.lang.String toString()>();
+return v62;
+}
+private java.lang.String scanFlowScalarSpaces(org.yaml.snakeyaml.error.Mark)
+{
+int v12, v17, v21, v3, v6, v7, v8;
+java.lang.String v10, v16, v18, v19, v22, v4;
+boolean v20;
+org.yaml.snakeyaml.scanner.ScannerException v13;
+org.yaml.snakeyaml.error.Mark v1, v15;
+org.yaml.snakeyaml.reader.StreamReader v11, v14, v5, v9;
+java.lang.StringBuilder v2;
+org.yaml.snakeyaml.scanner.ScannerImpl v0;
+v0 := @this: org.yaml.snakeyaml.scanner.ScannerImpl;
+v1 := @parameter0: org.yaml.snakeyaml.error.Mark;
+v2 = new java.lang.StringBuilder;
+specialinvoke v2.<java.lang.StringBuilder: void <init>()>();
+v3 = 0;
+label1:
+v4 = " \t";
+v5 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: org.yaml.snakeyaml.reader.StreamReader reader>;
+v6 = virtualinvoke v5.<org.yaml.snakeyaml.reader.StreamReader: int peek(int)>(v3);
+v7 = virtualinvoke v4.<java.lang.String: int indexOf(int)>(v6);
+v8 = (int) -1;
+if v7 == v8 goto label2;
+v3 = v3 + 1;
+goto label1;
+label2:
+v9 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: org.yaml.snakeyaml.reader.StreamReader reader>;
+v10 = virtualinvoke v9.<org.yaml.snakeyaml.reader.StreamReader: java.lang.String prefixForward(int)>(v3);
+v11 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: org.yaml.snakeyaml.reader.StreamReader reader>;
+v12 = virtualinvoke v11.<org.yaml.snakeyaml.reader.StreamReader: int peek()>();
+if v12 != 0 goto label3;
+v13 = new org.yaml.snakeyaml.scanner.ScannerException;
+v14 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: org.yaml.snakeyaml.reader.StreamReader reader>;
+v15 = virtualinvoke v14.<org.yaml.snakeyaml.reader.StreamReader: org.yaml.snakeyaml.error.Mark getMark()>();
+specialinvoke v13.<org.yaml.snakeyaml.scanner.ScannerException: void <init>(java.lang.String,org.yaml.snakeyaml.error.Mark,java.lang.String,org.yaml.snakeyaml.error.Mark)>("while scanning a quoted scalar", v1, "found unexpected end of stream", v15);
+throw v13;
+label3:
+v16 = specialinvoke v0.<org.yaml.snakeyaml.scanner.ScannerImpl: java.lang.String scanLineBreak()>();
+v17 = virtualinvoke v16.<java.lang.String: int length()>();
+if v17 == 0 goto label6;
+v18 = specialinvoke v0.<org.yaml.snakeyaml.scanner.ScannerImpl: java.lang.String scanFlowScalarBreaks(org.yaml.snakeyaml.error.Mark)>(v1);
+v19 = "\n";
+v20 = virtualinvoke v19.<java.lang.String: boolean equals(java.lang.Object)>(v16);
+if v20 != 0 goto label4;
+virtualinvoke v2.<java.lang.StringBuilder: java.lang.StringBuilder append(java.lang.String)>(v16);
+goto label5;
+label4:
+v21 = virtualinvoke v18.<java.lang.String: int length()>();
+if v21 != 0 goto label5;
+virtualinvoke v2.<java.lang.StringBuilder: java.lang.StringBuilder append(java.lang.String)>(" ");
+label5:
+virtualinvoke v2.<java.lang.StringBuilder: java.lang.StringBuilder append(java.lang.String)>(v18);
+goto label7;
+label6:
+virtualinvoke v2.<java.lang.StringBuilder: java.lang.StringBuilder append(java.lang.String)>(v10);
+label7:
+v22 = virtualinvoke v2.<java.lang.StringBuilder: java.lang.String toString()>();
+return v22;
+}
+private java.lang.String scanFlowScalarBreaks(org.yaml.snakeyaml.error.Mark)
+{
+int v11, v18, v19, v20, v23;
+java.lang.String v16, v22, v24, v4, v5, v7;
+boolean v12, v6, v8;
+org.yaml.snakeyaml.scanner.ScannerException v13;
+org.yaml.snakeyaml.error.Mark v1, v15;
+org.yaml.snakeyaml.scanner.Constant v9;
+org.yaml.snakeyaml.reader.StreamReader v10, v14, v17, v21, v3;
+java.lang.StringBuilder v2;
+org.yaml.snakeyaml.scanner.ScannerImpl v0;
+v0 := @this: org.yaml.snakeyaml.scanner.ScannerImpl;
+v1 := @parameter0: org.yaml.snakeyaml.error.Mark;
+v2 = new java.lang.StringBuilder;
+specialinvoke v2.<java.lang.StringBuilder: void <init>()>();
+label1:
+v3 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: org.yaml.snakeyaml.reader.StreamReader reader>;
+v4 = virtualinvoke v3.<org.yaml.snakeyaml.reader.StreamReader: java.lang.String prefix(int)>(3);
+v5 = "---";
+v6 = virtualinvoke v5.<java.lang.String: boolean equals(java.lang.Object)>(v4);
+if v6 != 0 goto label2;
+v7 = "...";
+v8 = virtualinvoke v7.<java.lang.String: boolean equals(java.lang.Object)>(v4);
+if v8 == 0 goto label3;
+label2:
+v9 = <org.yaml.snakeyaml.scanner.Constant: org.yaml.snakeyaml.scanner.Constant NULL_BL_T_LINEBR>;
+v10 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: org.yaml.snakeyaml.reader.StreamReader reader>;
+v11 = virtualinvoke v10.<org.yaml.snakeyaml.reader.StreamReader: int peek(int)>(3);
+v12 = virtualinvoke v9.<org.yaml.snakeyaml.scanner.Constant: boolean has(int)>(v11);
+if v12 == 0 goto label3;
+v13 = new org.yaml.snakeyaml.scanner.ScannerException;
+v14 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: org.yaml.snakeyaml.reader.StreamReader reader>;
+v15 = virtualinvoke v14.<org.yaml.snakeyaml.reader.StreamReader: org.yaml.snakeyaml.error.Mark getMark()>();
+specialinvoke v13.<org.yaml.snakeyaml.scanner.ScannerException: void <init>(java.lang.String,org.yaml.snakeyaml.error.Mark,java.lang.String,org.yaml.snakeyaml.error.Mark)>("while scanning a quoted scalar", v1, "found unexpected document separator", v15);
+throw v13;
+label3:
+v16 = " \t";
+v17 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: org.yaml.snakeyaml.reader.StreamReader reader>;
+v18 = virtualinvoke v17.<org.yaml.snakeyaml.reader.StreamReader: int peek()>();
+v19 = virtualinvoke v16.<java.lang.String: int indexOf(int)>(v18);
+v20 = (int) -1;
+if v19 == v20 goto label4;
+v21 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: org.yaml.snakeyaml.reader.StreamReader reader>;
+virtualinvoke v21.<org.yaml.snakeyaml.reader.StreamReader: void forward()>();
+goto label3;
+label4:
+v22 = specialinvoke v0.<org.yaml.snakeyaml.scanner.ScannerImpl: java.lang.String scanLineBreak()>();
+v23 = virtualinvoke v22.<java.lang.String: int length()>();
+if v23 == 0 goto label5;
+virtualinvoke v2.<java.lang.StringBuilder: java.lang.StringBuilder append(java.lang.String)>(v22);
+goto label1;
+label5:
+v24 = virtualinvoke v2.<java.lang.StringBuilder: java.lang.String toString()>();
+return v24;
+}
+private org.yaml.snakeyaml.tokens.Token scanPlain()
+{
+boolean v14, v21;
+org.yaml.snakeyaml.error.Mark v3, v4;
+org.yaml.snakeyaml.scanner.Constant v13, v15;
+java.lang.StringBuilder v1;
+org.yaml.snakeyaml.scanner.ScannerImpl v0;
+int v10, v12, v17, v18, v19, v22, v24, v25, v29, v31, v32, v34, v5, v6, v8;
+java.lang.String v20, v23, v27, v36, v7;
+org.yaml.snakeyaml.tokens.ScalarToken v35;
+org.yaml.snakeyaml.reader.StreamReader v11, v16, v2, v26, v28, v30, v33, v9;
+v0 := @this: org.yaml.snakeyaml.scanner.ScannerImpl;
+v1 = new java.lang.StringBuilder;
+specialinvoke v1.<java.lang.StringBuilder: void <init>()>();
+v2 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: org.yaml.snakeyaml.reader.StreamReader reader>;
+v3 = virtualinvoke v2.<org.yaml.snakeyaml.reader.StreamReader: org.yaml.snakeyaml.error.Mark getMark()>();
+v4 = v3;
+v5 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: int indent>;
+v6 = v5 + 1;
+v7 = "";
+label1:
+v8 = 0;
+v9 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: org.yaml.snakeyaml.reader.StreamReader reader>;
+v10 = virtualinvoke v9.<org.yaml.snakeyaml.reader.StreamReader: int peek()>();
+if v10 == 35 goto label8;
+label2:
+v11 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: org.yaml.snakeyaml.reader.StreamReader reader>;
+v12 = virtualinvoke v11.<org.yaml.snakeyaml.reader.StreamReader: int peek(int)>(v8);
+v13 = <org.yaml.snakeyaml.scanner.Constant: org.yaml.snakeyaml.scanner.Constant NULL_BL_T_LINEBR>;
+v14 = virtualinvoke v13.<org.yaml.snakeyaml.scanner.Constant: boolean has(int)>(v12);
+if v14 != 0 goto label7;
+if v12 != 58 goto label5;
+v15 = <org.yaml.snakeyaml.scanner.Constant: org.yaml.snakeyaml.scanner.Constant NULL_BL_T_LINEBR>;
+v16 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: org.yaml.snakeyaml.reader.StreamReader reader>;
+v17 = v8 + 1;
+v18 = virtualinvoke v16.<org.yaml.snakeyaml.reader.StreamReader: int peek(int)>(v17);
+v19 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: int flowLevel>;
+if v19 == 0 goto label3;
+v20 = ",[]{}";
+goto label4;
+label3:
+v20 = "";
+label4:
+v21 = virtualinvoke v15.<org.yaml.snakeyaml.scanner.Constant: boolean has(int,java.lang.String)>(v18, v20);
+if v21 != 0 goto label7;
+label5:
+v22 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: int flowLevel>;
+if v22 == 0 goto label6;
+v23 = ",?[]{}";
+v24 = virtualinvoke v23.<java.lang.String: int indexOf(int)>(v12);
+v25 = (int) -1;
+if v24 != v25 goto label7;
+label6:
+v8 = v8 + 1;
+goto label2;
+label7:
+if v8 == 0 goto label8;
+v0.<org.yaml.snakeyaml.scanner.ScannerImpl: boolean allowSimpleKey> = 0;
+virtualinvoke v1.<java.lang.StringBuilder: java.lang.StringBuilder append(java.lang.String)>(v7);
+v26 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: org.yaml.snakeyaml.reader.StreamReader reader>;
+v27 = virtualinvoke v26.<org.yaml.snakeyaml.reader.StreamReader: java.lang.String prefixForward(int)>(v8);
+virtualinvoke v1.<java.lang.StringBuilder: java.lang.StringBuilder append(java.lang.String)>(v27);
+v28 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: org.yaml.snakeyaml.reader.StreamReader reader>;
+v4 = virtualinvoke v28.<org.yaml.snakeyaml.reader.StreamReader: org.yaml.snakeyaml.error.Mark getMark()>();
+v7 = specialinvoke v0.<org.yaml.snakeyaml.scanner.ScannerImpl: java.lang.String scanPlainSpaces()>();
+v29 = virtualinvoke v7.<java.lang.String: int length()>();
+if v29 == 0 goto label8;
+v30 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: org.yaml.snakeyaml.reader.StreamReader reader>;
+v31 = virtualinvoke v30.<org.yaml.snakeyaml.reader.StreamReader: int peek()>();
+if v31 == 35 goto label8;
+v32 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: int flowLevel>;
+if v32 != 0 goto label1;
+v33 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: org.yaml.snakeyaml.reader.StreamReader reader>;
+v34 = virtualinvoke v33.<org.yaml.snakeyaml.reader.StreamReader: int getColumn()>();
+if v34 >= v6 goto label1;
+label8:
+v35 = new org.yaml.snakeyaml.tokens.ScalarToken;
+v36 = virtualinvoke v1.<java.lang.StringBuilder: java.lang.String toString()>();
+specialinvoke v35.<org.yaml.snakeyaml.tokens.ScalarToken: void <init>(java.lang.String,org.yaml.snakeyaml.error.Mark,org.yaml.snakeyaml.error.Mark,boolean)>(v36, v3, v4, 1);
+return v35;
+}
+private boolean atEndOfPlain()
+{
+boolean v27, v33, v7, v9;
+org.yaml.snakeyaml.scanner.Constant v26, v28, v6, v8;
+org.yaml.snakeyaml.scanner.ScannerImpl v0;
+int v1, v11, v12, v13, v15, v17, v18, v19, v20, v21, v22, v24, v25, v3, v30, v31, v32, v5;
+org.yaml.snakeyaml.reader.StreamReader v10, v14, v16, v2, v23, v29, v4;
+v0 := @this: org.yaml.snakeyaml.scanner.ScannerImpl;
+v1 = 0;
+v2 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: org.yaml.snakeyaml.reader.StreamReader reader>;
+v3 = virtualinvoke v2.<org.yaml.snakeyaml.reader.StreamReader: int getColumn()>();
+label1:
+v4 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: org.yaml.snakeyaml.reader.StreamReader reader>;
+v5 = virtualinvoke v4.<org.yaml.snakeyaml.reader.StreamReader: int peek(int)>(v1);
+if v5 == 0 goto label4;
+v6 = <org.yaml.snakeyaml.scanner.Constant: org.yaml.snakeyaml.scanner.Constant NULL_BL_T_LINEBR>;
+v7 = virtualinvoke v6.<org.yaml.snakeyaml.scanner.Constant: boolean has(int)>(v5);
+if v7 == 0 goto label4;
+v1 = v1 + 1;
+v8 = <org.yaml.snakeyaml.scanner.Constant: org.yaml.snakeyaml.scanner.Constant LINEBR>;
+v9 = virtualinvoke v8.<org.yaml.snakeyaml.scanner.Constant: boolean has(int)>(v5);
+if v9 != 0 goto label3;
+if v5 != 13 goto label2;
+v10 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: org.yaml.snakeyaml.reader.StreamReader reader>;
+v11 = v1 + 1;
+v12 = virtualinvoke v10.<org.yaml.snakeyaml.reader.StreamReader: int peek(int)>(v11);
+if v12 == 10 goto label3;
+label2:
+v13 = (int) 65279;
+if v5 == v13 goto label3;
+v3 = v3 + 1;
+goto label1;
+label3:
+v3 = 0;
+goto label1;
+label4:
+v14 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: org.yaml.snakeyaml.reader.StreamReader reader>;
+v15 = virtualinvoke v14.<org.yaml.snakeyaml.reader.StreamReader: int peek(int)>(v1);
+if v15 == 35 goto label5;
+v16 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: org.yaml.snakeyaml.reader.StreamReader reader>;
+v17 = v1 + 1;
+v18 = virtualinvoke v16.<org.yaml.snakeyaml.reader.StreamReader: int peek(int)>(v17);
+if v18 == 0 goto label5;
+v19 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: int flowLevel>;
+if v19 != 0 goto label6;
+v20 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: int indent>;
+if v3 >= v20 goto label6;
+label5:
+return 1;
+label6:
+v21 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: int flowLevel>;
+if v21 != 0 goto label9;
+v22 = 1;
+label7:
+v23 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: org.yaml.snakeyaml.reader.StreamReader reader>;
+v24 = v1 + v22;
+v25 = virtualinvoke v23.<org.yaml.snakeyaml.reader.StreamReader: int peek(int)>(v24);
+if v25 == 0 goto label9;
+v26 = <org.yaml.snakeyaml.scanner.Constant: org.yaml.snakeyaml.scanner.Constant NULL_BL_T_LINEBR>;
+v27 = virtualinvoke v26.<org.yaml.snakeyaml.scanner.Constant: boolean has(int)>(v25);
+if v27 != 0 goto label9;
+if v25 != 58 goto label8;
+v28 = <org.yaml.snakeyaml.scanner.Constant: org.yaml.snakeyaml.scanner.Constant NULL_BL_T_LINEBR>;
+v29 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: org.yaml.snakeyaml.reader.StreamReader reader>;
+v30 = v1 + v22;
+v31 = v30 + 1;
+v32 = virtualinvoke v29.<org.yaml.snakeyaml.reader.StreamReader: int peek(int)>(v31);
+v33 = virtualinvoke v28.<org.yaml.snakeyaml.scanner.Constant: boolean has(int)>(v32);
+if v33 == 0 goto label8;
+return 1;
+label8:
+v22 = v22 + 1;
+goto label7;
+label9:
+return 0;
+}
+private java.lang.String scanPlainSpaces()
+{
+boolean v13, v15, v19, v20, v21, v31, v33, v37, v39;
+org.yaml.snakeyaml.scanner.Constant v16, v34;
+java.lang.StringBuilder v22;
+org.yaml.snakeyaml.scanner.ScannerImpl v0;
+int v1, v18, v24, v27, v3, v36, v41, v5, v9;
+java.lang.String v11, v12, v14, v26, v29, v30, v32, v38, v40, v42, v7, v8;
+org.yaml.snakeyaml.reader.StreamReader v10, v17, v2, v23, v25, v28, v35, v4, v6;
+v0 := @this: org.yaml.snakeyaml.scanner.ScannerImpl;
+v1 = 0;
+label01:
+v2 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: org.yaml.snakeyaml.reader.StreamReader reader>;
+v3 = virtualinvoke v2.<org.yaml.snakeyaml.reader.StreamReader: int peek(int)>(v1);
+if v3 == 32 goto label02;
+v4 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: org.yaml.snakeyaml.reader.StreamReader reader>;
+v5 = virtualinvoke v4.<org.yaml.snakeyaml.reader.StreamReader: int peek(int)>(v1);
+if v5 != 9 goto label03;
+label02:
+v1 = v1 + 1;
+goto label01;
+label03:
+v6 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: org.yaml.snakeyaml.reader.StreamReader reader>;
+v7 = virtualinvoke v6.<org.yaml.snakeyaml.reader.StreamReader: java.lang.String prefixForward(int)>(v1);
+v8 = specialinvoke v0.<org.yaml.snakeyaml.scanner.ScannerImpl: java.lang.String scanLineBreak()>();
+v9 = virtualinvoke v8.<java.lang.String: int length()>();
+if v9 == 0 goto label13;
+v0.<org.yaml.snakeyaml.scanner.ScannerImpl: boolean allowSimpleKey> = 1;
+v10 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: org.yaml.snakeyaml.reader.StreamReader reader>;
+v11 = virtualinvoke v10.<org.yaml.snakeyaml.reader.StreamReader: java.lang.String prefix(int)>(3);
+v12 = "---";
+v13 = virtualinvoke v12.<java.lang.String: boolean equals(java.lang.Object)>(v11);
+if v13 != 0 goto label04;
+v14 = "...";
+v15 = virtualinvoke v14.<java.lang.String: boolean equals(java.lang.Object)>(v11);
+if v15 == 0 goto label05;
+v16 = <org.yaml.snakeyaml.scanner.Constant: org.yaml.snakeyaml.scanner.Constant NULL_BL_T_LINEBR>;
+v17 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: org.yaml.snakeyaml.reader.StreamReader reader>;
+v18 = virtualinvoke v17.<org.yaml.snakeyaml.reader.StreamReader: int peek(int)>(3);
+v19 = virtualinvoke v16.<org.yaml.snakeyaml.scanner.Constant: boolean has(int)>(v18);
+if v19 == 0 goto label05;
+label04:
+return "";
+label05:
+v20 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: boolean parseComments>;
+if v20 == 0 goto label06;
+v21 = specialinvoke v0.<org.yaml.snakeyaml.scanner.ScannerImpl: boolean atEndOfPlain()>();
+if v21 == 0 goto label06;
+return "";
+label06:
+v22 = new java.lang.StringBuilder;
+specialinvoke v22.<java.lang.StringBuilder: void <init>()>();
+label07:
+v23 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: org.yaml.snakeyaml.reader.StreamReader reader>;
+v24 = virtualinvoke v23.<org.yaml.snakeyaml.reader.StreamReader: int peek()>();
+if v24 != 32 goto label08;
+v25 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: org.yaml.snakeyaml.reader.StreamReader reader>;
+virtualinvoke v25.<org.yaml.snakeyaml.reader.StreamReader: void forward()>();
+goto label07;
+label08:
+v26 = specialinvoke v0.<org.yaml.snakeyaml.scanner.ScannerImpl: java.lang.String scanLineBreak()>();
+v27 = virtualinvoke v26.<java.lang.String: int length()>();
+if v27 == 0 goto label10;
+virtualinvoke v22.<java.lang.StringBuilder: java.lang.StringBuilder append(java.lang.String)>(v26);
+v28 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: org.yaml.snakeyaml.reader.StreamReader reader>;
+v29 = virtualinvoke v28.<org.yaml.snakeyaml.reader.StreamReader: java.lang.String prefix(int)>(3);
+v30 = "---";
+v31 = virtualinvoke v30.<java.lang.String: boolean equals(java.lang.Object)>(v29);
+if v31 != 0 goto label09;
+v32 = "...";
+v33 = virtualinvoke v32.<java.lang.String: boolean equals(java.lang.Object)>(v29);
+if v33 == 0 goto label07;
+v34 = <org.yaml.snakeyaml.scanner.Constant: org.yaml.snakeyaml.scanner.Constant NULL_BL_T_LINEBR>;
+v35 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: org.yaml.snakeyaml.reader.StreamReader reader>;
+v36 = virtualinvoke v35.<org.yaml.snakeyaml.reader.StreamReader: int peek(int)>(3);
+v37 = virtualinvoke v34.<org.yaml.snakeyaml.scanner.Constant: boolean has(int)>(v36);
+if v37 == 0 goto label07;
+label09:
+return "";
+label10:
+v38 = "\n";
+v39 = virtualinvoke v38.<java.lang.String: boolean equals(java.lang.Object)>(v8);
+if v39 != 0 goto label11;
+v40 = dynamicinvoke "makeConcatWithConstants" <java.lang.String (java.lang.String,java.lang.StringBuilder)>(v8, v22) <java.lang.invoke.StringConcatFactory: java.lang.invoke.CallSite makeConcatWithConstants(java.lang.invoke.MethodHandles$Lookup,java.lang.String,java.lang.invoke.MethodType,java.lang.String,java.lang.Object[])>("\u0001\u0001");
+return v40;
+label11:
+v41 = virtualinvoke v22.<java.lang.StringBuilder: int length()>();
+if v41 != 0 goto label12;
+return " ";
+label12:
+v42 = virtualinvoke v22.<java.lang.StringBuilder: java.lang.String toString()>();
+return v42;
+label13:
+return v7;
+}
+private java.lang.String scanTagHandle(java.lang.String, org.yaml.snakeyaml.error.Mark)
+{
+int v12, v14, v4;
+java.lang.String v1, v20, v22, v23, v27, v6, v8, v9;
+boolean v16;
+org.yaml.snakeyaml.scanner.ScannerException v21, v7;
+org.yaml.snakeyaml.error.Mark v11, v2, v25;
+org.yaml.snakeyaml.scanner.Constant v15;
+char[] v19, v5;
+org.yaml.snakeyaml.reader.StreamReader v10, v13, v17, v18, v24, v26, v3;
+org.yaml.snakeyaml.scanner.ScannerImpl v0;
+v0 := @this: org.yaml.snakeyaml.scanner.ScannerImpl;
+v1 := @parameter0: java.lang.String;
+v2 := @parameter1: org.yaml.snakeyaml.error.Mark;
+v3 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: org.yaml.snakeyaml.reader.StreamReader reader>;
+v4 = virtualinvoke v3.<org.yaml.snakeyaml.reader.StreamReader: int peek()>();
+if v4 == 33 goto label1;
+v5 = staticinvoke <java.lang.Character: char[] toChars(int)>(v4);
+v6 = staticinvoke <java.lang.String: java.lang.String valueOf(char[])>(v5);
+v7 = new org.yaml.snakeyaml.scanner.ScannerException;
+v8 = dynamicinvoke "makeConcatWithConstants" <java.lang.String (java.lang.String)>(v1) <java.lang.invoke.StringConcatFactory: java.lang.invoke.CallSite makeConcatWithConstants(java.lang.invoke.MethodHandles$Lookup,java.lang.String,java.lang.invoke.MethodType,java.lang.String,java.lang.Object[])>("while scanning a \u0001");
+v9 = dynamicinvoke "makeConcatWithConstants" <java.lang.String (java.lang.String,int)>(v6, v4) <java.lang.invoke.StringConcatFactory: java.lang.invoke.CallSite makeConcatWithConstants(java.lang.invoke.MethodHandles$Lookup,java.lang.String,java.lang.invoke.MethodType,java.lang.String,java.lang.Object[])>("expected \'!\', but found \u0001(\u0001)");
+v10 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: org.yaml.snakeyaml.reader.StreamReader reader>;
+v11 = virtualinvoke v10.<org.yaml.snakeyaml.reader.StreamReader: org.yaml.snakeyaml.error.Mark getMark()>();
+specialinvoke v7.<org.yaml.snakeyaml.scanner.ScannerException: void <init>(java.lang.String,org.yaml.snakeyaml.error.Mark,java.lang.String,org.yaml.snakeyaml.error.Mark)>(v8, v2, v9, v11);
+throw v7;
+label1:
+v12 = 1;
+v13 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: org.yaml.snakeyaml.reader.StreamReader reader>;
+v14 = virtualinvoke v13.<org.yaml.snakeyaml.reader.StreamReader: int peek(int)>(1);
+if v14 == 32 goto label5;
+label2:
+v15 = <org.yaml.snakeyaml.scanner.Constant: org.yaml.snakeyaml.scanner.Constant ALPHA>;
+v16 = virtualinvoke v15.<org.yaml.snakeyaml.scanner.Constant: boolean has(int)>(v14);
+if v16 == 0 goto label3;
+v12 = v12 + 1;
+v17 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: org.yaml.snakeyaml.reader.StreamReader reader>;
+v14 = virtualinvoke v17.<org.yaml.snakeyaml.reader.StreamReader: int peek(int)>(v12);
+goto label2;
+label3:
+if v14 == 33 goto label4;
+v18 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: org.yaml.snakeyaml.reader.StreamReader reader>;
+virtualinvoke v18.<org.yaml.snakeyaml.reader.StreamReader: void forward(int)>(v12);
+v19 = staticinvoke <java.lang.Character: char[] toChars(int)>(v14);
+v20 = staticinvoke <java.lang.String: java.lang.String valueOf(char[])>(v19);
+v21 = new org.yaml.snakeyaml.scanner.ScannerException;
+v22 = dynamicinvoke "makeConcatWithConstants" <java.lang.String (java.lang.String)>(v1) <java.lang.invoke.StringConcatFactory: java.lang.invoke.CallSite makeConcatWithConstants(java.lang.invoke.MethodHandles$Lookup,java.lang.String,java.lang.invoke.MethodType,java.lang.String,java.lang.Object[])>("while scanning a \u0001");
+v23 = dynamicinvoke "makeConcatWithConstants" <java.lang.String (java.lang.String,int)>(v20, v14) <java.lang.invoke.StringConcatFactory: java.lang.invoke.CallSite makeConcatWithConstants(java.lang.invoke.MethodHandles$Lookup,java.lang.String,java.lang.invoke.MethodType,java.lang.String,java.lang.Object[])>("expected \'!\', but found \u0001(\u0001)");
+v24 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: org.yaml.snakeyaml.reader.StreamReader reader>;
+v25 = virtualinvoke v24.<org.yaml.snakeyaml.reader.StreamReader: org.yaml.snakeyaml.error.Mark getMark()>();
+specialinvoke v21.<org.yaml.snakeyaml.scanner.ScannerException: void <init>(java.lang.String,org.yaml.snakeyaml.error.Mark,java.lang.String,org.yaml.snakeyaml.error.Mark)>(v22, v2, v23, v25);
+throw v21;
+label4:
+v12 = v12 + 1;
+label5:
+v26 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: org.yaml.snakeyaml.reader.StreamReader reader>;
+v27 = virtualinvoke v26.<org.yaml.snakeyaml.reader.StreamReader: java.lang.String prefixForward(int)>(v12);
+return v27;
+}
+private java.lang.String scanTagUri(java.lang.String, org.yaml.snakeyaml.error.Mark)
+{
+int v15, v4, v6;
+java.lang.String v1, v10, v11, v14, v17, v19, v20, v23;
+boolean v8;
+org.yaml.snakeyaml.scanner.ScannerException v18;
+org.yaml.snakeyaml.error.Mark v2, v22;
+org.yaml.snakeyaml.scanner.Constant v7;
+char[] v16;
+org.yaml.snakeyaml.reader.StreamReader v12, v13, v21, v5, v9;
+java.lang.StringBuilder v3;
+org.yaml.snakeyaml.scanner.ScannerImpl v0;
+v0 := @this: org.yaml.snakeyaml.scanner.ScannerImpl;
+v1 := @parameter0: java.lang.String;
+v2 := @parameter1: org.yaml.snakeyaml.error.Mark;
+v3 = new java.lang.StringBuilder;
+specialinvoke v3.<java.lang.StringBuilder: void <init>()>();
+v4 = 0;
+v5 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: org.yaml.snakeyaml.reader.StreamReader reader>;
+v6 = virtualinvoke v5.<org.yaml.snakeyaml.reader.StreamReader: int peek(int)>(0);
+label1:
+v7 = <org.yaml.snakeyaml.scanner.Constant: org.yaml.snakeyaml.scanner.Constant URI_CHARS>;
+v8 = virtualinvoke v7.<org.yaml.snakeyaml.scanner.Constant: boolean has(int)>(v6);
+if v8 == 0 goto label4;
+if v6 != 37 goto label2;
+v9 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: org.yaml.snakeyaml.reader.StreamReader reader>;
+v10 = virtualinvoke v9.<org.yaml.snakeyaml.reader.StreamReader: java.lang.String prefixForward(int)>(v4);
+virtualinvoke v3.<java.lang.StringBuilder: java.lang.StringBuilder append(java.lang.String)>(v10);
+v4 = 0;
+v11 = specialinvoke v0.<org.yaml.snakeyaml.scanner.ScannerImpl: java.lang.String scanUriEscapes(java.lang.String,org.yaml.snakeyaml.error.Mark)>(v1, v2);
+virtualinvoke v3.<java.lang.StringBuilder: java.lang.StringBuilder append(java.lang.String)>(v11);
+goto label3;
+label2:
+v4 = v4 + 1;
+label3:
+v12 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: org.yaml.snakeyaml.reader.StreamReader reader>;
+v6 = virtualinvoke v12.<org.yaml.snakeyaml.reader.StreamReader: int peek(int)>(v4);
+goto label1;
+label4:
+if v4 == 0 goto label5;
+v13 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: org.yaml.snakeyaml.reader.StreamReader reader>;
+v14 = virtualinvoke v13.<org.yaml.snakeyaml.reader.StreamReader: java.lang.String prefixForward(int)>(v4);
+virtualinvoke v3.<java.lang.StringBuilder: java.lang.StringBuilder append(java.lang.String)>(v14);
+label5:
+v15 = virtualinvoke v3.<java.lang.StringBuilder: int length()>();
+if v15 != 0 goto label6;
+v16 = staticinvoke <java.lang.Character: char[] toChars(int)>(v6);
+v17 = staticinvoke <java.lang.String: java.lang.String valueOf(char[])>(v16);
+v18 = new org.yaml.snakeyaml.scanner.ScannerException;
+v19 = dynamicinvoke "makeConcatWithConstants" <java.lang.String (java.lang.String)>(v1) <java.lang.invoke.StringConcatFactory: java.lang.invoke.CallSite makeConcatWithConstants(java.lang.invoke.MethodHandles$Lookup,java.lang.String,java.lang.invoke.MethodType,java.lang.String,java.lang.Object[])>("while scanning a \u0001");
+v20 = dynamicinvoke "makeConcatWithConstants" <java.lang.String (java.lang.String,int)>(v17, v6) <java.lang.invoke.StringConcatFactory: java.lang.invoke.CallSite makeConcatWithConstants(java.lang.invoke.MethodHandles$Lookup,java.lang.String,java.lang.invoke.MethodType,java.lang.String,java.lang.Object[])>("expected URI, but found \u0001(\u0001)");
+v21 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: org.yaml.snakeyaml.reader.StreamReader reader>;
+v22 = virtualinvoke v21.<org.yaml.snakeyaml.reader.StreamReader: org.yaml.snakeyaml.error.Mark getMark()>();
+specialinvoke v18.<org.yaml.snakeyaml.scanner.ScannerException: void <init>(java.lang.String,org.yaml.snakeyaml.error.Mark,java.lang.String,org.yaml.snakeyaml.error.Mark)>(v19, v2, v20, v22);
+throw v18;
+label6:
+v23 = virtualinvoke v3.<java.lang.StringBuilder: java.lang.String toString()>();
+return v23;
+}
+private java.lang.String scanUriEscapes(java.lang.String, org.yaml.snakeyaml.error.Mark)
+{
+java.nio.ByteBuffer v9;
+org.yaml.snakeyaml.error.Mark v2, v29, v8;
+org.yaml.snakeyaml.scanner.ScannerImpl v0;
+java.nio.charset.CharacterCodingException v32;
+int v11, v15, v18, v22, v3, v5, v6;
+java.lang.String v1, v14, v20, v24, v26, v27, v31, v34, v35, v36;
+org.yaml.snakeyaml.scanner.ScannerException v25, v33;
+java.lang.NumberFormatException v16;
+char[] v19, v23;
+org.yaml.snakeyaml.reader.StreamReader v10, v12, v13, v17, v21, v28, v30, v4, v7;
+v0 := @this: org.yaml.snakeyaml.scanner.ScannerImpl;
+v1 := @parameter0: java.lang.String;
+v2 := @parameter1: org.yaml.snakeyaml.error.Mark;
+v3 = 1;
+label01:
+v4 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: org.yaml.snakeyaml.reader.StreamReader reader>;
+v5 = v3 * 3;
+v6 = virtualinvoke v4.<org.yaml.snakeyaml.reader.StreamReader: int peek(int)>(v5);
+if v6 != 37 goto label02;
+v3 = v3 + 1;
+goto label01;
+label02:
+v7 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: org.yaml.snakeyaml.reader.StreamReader reader>;
+v8 = virtualinvoke v7.<org.yaml.snakeyaml.reader.StreamReader: org.yaml.snakeyaml.error.Mark getMark()>();
+v9 = staticinvoke <java.nio.ByteBuffer: java.nio.ByteBuffer allocate(int)>(v3);
+label03:
+v10 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: org.yaml.snakeyaml.reader.StreamReader reader>;
+v11 = virtualinvoke v10.<org.yaml.snakeyaml.reader.StreamReader: int peek()>();
+if v11 != 37 goto label08;
+v12 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: org.yaml.snakeyaml.reader.StreamReader reader>;
+virtualinvoke v12.<org.yaml.snakeyaml.reader.StreamReader: void forward()>();
+label04:
+v13 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: org.yaml.snakeyaml.reader.StreamReader reader>;
+v14 = virtualinvoke v13.<org.yaml.snakeyaml.reader.StreamReader: java.lang.String prefix(int)>(2);
+v15 = staticinvoke <java.lang.Integer: int parseInt(java.lang.String,int)>(v14, 16);
+virtualinvoke v9.<java.nio.ByteBuffer: java.nio.ByteBuffer put(byte)>(v15);
+label05:
+goto label07;
+label06:
+v16 := @caughtexception;
+v17 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: org.yaml.snakeyaml.reader.StreamReader reader>;
+v18 = virtualinvoke v17.<org.yaml.snakeyaml.reader.StreamReader: int peek()>();
+v19 = staticinvoke <java.lang.Character: char[] toChars(int)>(v18);
+v20 = staticinvoke <java.lang.String: java.lang.String valueOf(char[])>(v19);
+v21 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: org.yaml.snakeyaml.reader.StreamReader reader>;
+v22 = virtualinvoke v21.<org.yaml.snakeyaml.reader.StreamReader: int peek(int)>(1);
+v23 = staticinvoke <java.lang.Character: char[] toChars(int)>(v22);
+v24 = staticinvoke <java.lang.String: java.lang.String valueOf(char[])>(v23);
+v25 = new org.yaml.snakeyaml.scanner.ScannerException;
+v26 = dynamicinvoke "makeConcatWithConstants" <java.lang.String (java.lang.String)>(v1) <java.lang.invoke.StringConcatFactory: java.lang.invoke.CallSite makeConcatWithConstants(java.lang.invoke.MethodHandles$Lookup,java.lang.String,java.lang.invoke.MethodType,java.lang.String,java.lang.Object[])>("while scanning a \u0001");
+v27 = dynamicinvoke "makeConcatWithConstants" <java.lang.String (java.lang.String,int,java.lang.String,int)>(v20, v18, v24, v22) <java.lang.invoke.StringConcatFactory: java.lang.invoke.CallSite makeConcatWithConstants(java.lang.invoke.MethodHandles$Lookup,java.lang.String,java.lang.invoke.MethodType,java.lang.String,java.lang.Object[])>("expected URI escape sequence of 2 hexadecimal numbers, but found \u0001(\u0001) and \u0001(\u0001)");
+v28 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: org.yaml.snakeyaml.reader.StreamReader reader>;
+v29 = virtualinvoke v28.<org.yaml.snakeyaml.reader.StreamReader: org.yaml.snakeyaml.error.Mark getMark()>();
+specialinvoke v25.<org.yaml.snakeyaml.scanner.ScannerException: void <init>(java.lang.String,org.yaml.snakeyaml.error.Mark,java.lang.String,org.yaml.snakeyaml.error.Mark)>(v26, v2, v27, v29);
+throw v25;
+label07:
+v30 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: org.yaml.snakeyaml.reader.StreamReader reader>;
+virtualinvoke v30.<org.yaml.snakeyaml.reader.StreamReader: void forward(int)>(2);
+goto label03;
+label08:
+virtualinvoke v9.<java.nio.ByteBuffer: java.nio.ByteBuffer flip()>();
+label09:
+v31 = staticinvoke <org.yaml.snakeyaml.util.UriEncoder: java.lang.String decode(java.nio.ByteBuffer)>(v9);
+label10:
+return v31;
+label11:
+v32 := @caughtexception;
+v33 = new org.yaml.snakeyaml.scanner.ScannerException;
+v34 = dynamicinvoke "makeConcatWithConstants" <java.lang.String (java.lang.String)>(v1) <java.lang.invoke.StringConcatFactory: java.lang.invoke.CallSite makeConcatWithConstants(java.lang.invoke.MethodHandles$Lookup,java.lang.String,java.lang.invoke.MethodType,java.lang.String,java.lang.Object[])>("while scanning a \u0001");
+v35 = virtualinvoke v32.<java.nio.charset.CharacterCodingException: java.lang.String getMessage()>();
+v36 = dynamicinvoke "makeConcatWithConstants" <java.lang.String (java.lang.String)>(v35) <java.lang.invoke.StringConcatFactory: java.lang.invoke.CallSite makeConcatWithConstants(java.lang.invoke.MethodHandles$Lookup,java.lang.String,java.lang.invoke.MethodType,java.lang.String,java.lang.Object[])>("expected URI in UTF-8: \u0001");
+specialinvoke v33.<org.yaml.snakeyaml.scanner.ScannerException: void <init>(java.lang.String,org.yaml.snakeyaml.error.Mark,java.lang.String,org.yaml.snakeyaml.error.Mark)>(v34, v2, v36, v8);
+throw v33;
+catch java.lang.NumberFormatException from label04 to label05 with label06;
+catch java.nio.charset.CharacterCodingException from label09 to label10 with label11;
+}
+private java.lang.String scanLineBreak()
+{
+int v2, v4;
+char[] v8;
+org.yaml.snakeyaml.reader.StreamReader v1, v3, v5, v6, v7;
+java.lang.String v9;
+org.yaml.snakeyaml.scanner.ScannerImpl v0;
+v0 := @this: org.yaml.snakeyaml.scanner.ScannerImpl;
+v1 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: org.yaml.snakeyaml.reader.StreamReader reader>;
+v2 = virtualinvoke v1.<org.yaml.snakeyaml.reader.StreamReader: int peek()>();
+if v2 == 13 goto label1;
+if v2 == 10 goto label1;
+if v2 != 133 goto label4;
+label1:
+if v2 != 13 goto label2;
+v3 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: org.yaml.snakeyaml.reader.StreamReader reader>;
+v4 = virtualinvoke v3.<org.yaml.snakeyaml.reader.StreamReader: int peek(int)>(1);
+if 10 != v4 goto label2;
+v5 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: org.yaml.snakeyaml.reader.StreamReader reader>;
+virtualinvoke v5.<org.yaml.snakeyaml.reader.StreamReader: void forward(int)>(2);
+goto label3;
+label2:
+v6 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: org.yaml.snakeyaml.reader.StreamReader reader>;
+virtualinvoke v6.<org.yaml.snakeyaml.reader.StreamReader: void forward()>();
+label3:
+return "\n";
+label4:
+if v2 == 8232 goto label5;
+if v2 != 8233 goto label6;
+label5:
+v7 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: org.yaml.snakeyaml.reader.StreamReader reader>;
+virtualinvoke v7.<org.yaml.snakeyaml.reader.StreamReader: void forward()>();
+v8 = staticinvoke <java.lang.Character: char[] toChars(int)>(v2);
+v9 = staticinvoke <java.lang.String: java.lang.String valueOf(char[])>(v8);
+return v9;
+label6:
+return "";
+}
+private transient java.util.List makeTokenList(org.yaml.snakeyaml.tokens.Token[])
+{
+org.yaml.snakeyaml.tokens.Token v5, v7, v9;
+java.util.ArrayList v2;
+int v3, v4;
+org.yaml.snakeyaml.tokens.Token[] v1;
+boolean v6, v8;
+org.yaml.snakeyaml.scanner.ScannerImpl v0;
+v0 := @this: org.yaml.snakeyaml.scanner.ScannerImpl;
+v1 := @parameter0: org.yaml.snakeyaml.tokens.Token[];
+v2 = new java.util.ArrayList;
+specialinvoke v2.<java.util.ArrayList: void <init>()>();
+v3 = 0;
+label1:
+v4 = lengthof v1;
+if v3 >= v4 goto label4;
+v5 = v1[v3];
+if v5 == null goto label3;
+v6 = v0.<org.yaml.snakeyaml.scanner.ScannerImpl: boolean parseComments>;
+if v6 != 0 goto label2;
+v7 = v1[v3];
+v8 = v7 instanceof org.yaml.snakeyaml.tokens.CommentToken;
+if v8 != 0 goto label3;
+label2:
+v9 = v1[v3];
+interfaceinvoke v2.<java.util.List: boolean add(java.lang.Object)>(v9);
+label3:
+v3 = v3 + 1;
+goto label1;
+label4:
+return v2;
+}
+static void <clinit>()
+{
+java.lang.Integer v37, v40, v43;
+java.lang.Character v10, v12, v14, v16, v18, v20, v22, v24, v26, v28, v30, v32, v34, v36, v39, v4, v42, v6, v8;
+java.util.Map v11, v13, v15, v17, v19, v21, v23, v25, v27, v29, v3, v31, v33, v35, v38, v41, v5, v7, v9;
+java.util.regex.Pattern v0;
+java.util.HashMap v1, v2;
+v0 = staticinvoke <java.util.regex.Pattern: java.util.regex.Pattern compile(java.lang.String)>("[^0-9A-Fa-f]");
+<org.yaml.snakeyaml.scanner.ScannerImpl: java.util.regex.Pattern NOT_HEXA> = v0;
+v1 = new java.util.HashMap;
+specialinvoke v1.<java.util.HashMap: void <init>()>();
+<org.yaml.snakeyaml.scanner.ScannerImpl: java.util.Map ESCAPE_REPLACEMENTS> = v1;
+v2 = new java.util.HashMap;
+specialinvoke v2.<java.util.HashMap: void <init>()>();
+<org.yaml.snakeyaml.scanner.ScannerImpl: java.util.Map ESCAPE_CODES> = v2;
+v3 = <org.yaml.snakeyaml.scanner.ScannerImpl: java.util.Map ESCAPE_REPLACEMENTS>;
+v4 = staticinvoke <java.lang.Character: java.lang.Character valueOf(char)>(48);
+interfaceinvoke v3.<java.util.Map: java.lang.Object put(java.lang.Object,java.lang.Object)>(v4, "\u0000");
+v5 = <org.yaml.snakeyaml.scanner.ScannerImpl: java.util.Map ESCAPE_REPLACEMENTS>;
+v6 = staticinvoke <java.lang.Character: java.lang.Character valueOf(char)>(97);
+interfaceinvoke v5.<java.util.Map: java.lang.Object put(java.lang.Object,java.lang.Object)>(v6, "\u0007");
+v7 = <org.yaml.snakeyaml.scanner.ScannerImpl: java.util.Map ESCAPE_REPLACEMENTS>;
+v8 = staticinvoke <java.lang.Character: java.lang.Character valueOf(char)>(98);
+interfaceinvoke v7.<java.util.Map: java.lang.Object put(java.lang.Object,java.lang.Object)>(v8, "\u0008");
+v9 = <org.yaml.snakeyaml.scanner.ScannerImpl: java.util.Map ESCAPE_REPLACEMENTS>;
+v10 = staticinvoke <java.lang.Character: java.lang.Character valueOf(char)>(116);
+interfaceinvoke v9.<java.util.Map: java.lang.Object put(java.lang.Object,java.lang.Object)>(v10, "\t");
+v11 = <org.yaml.snakeyaml.scanner.ScannerImpl: java.util.Map ESCAPE_REPLACEMENTS>;
+v12 = staticinvoke <java.lang.Character: java.lang.Character valueOf(char)>(110);
+interfaceinvoke v11.<java.util.Map: java.lang.Object put(java.lang.Object,java.lang.Object)>(v12, "\n");
+v13 = <org.yaml.snakeyaml.scanner.ScannerImpl: java.util.Map ESCAPE_REPLACEMENTS>;
+v14 = staticinvoke <java.lang.Character: java.lang.Character valueOf(char)>(118);
+interfaceinvoke v13.<java.util.Map: java.lang.Object put(java.lang.Object,java.lang.Object)>(v14, "\u000b");
+v15 = <org.yaml.snakeyaml.scanner.ScannerImpl: java.util.Map ESCAPE_REPLACEMENTS>;
+v16 = staticinvoke <java.lang.Character: java.lang.Character valueOf(char)>(102);
+interfaceinvoke v15.<java.util.Map: java.lang.Object put(java.lang.Object,java.lang.Object)>(v16, "\f");
+v17 = <org.yaml.snakeyaml.scanner.ScannerImpl: java.util.Map ESCAPE_REPLACEMENTS>;
+v18 = staticinvoke <java.lang.Character: java.lang.Character valueOf(char)>(114);
+interfaceinvoke v17.<java.util.Map: java.lang.Object put(java.lang.Object,java.lang.Object)>(v18, "\r");
+v19 = <org.yaml.snakeyaml.scanner.ScannerImpl: java.util.Map ESCAPE_REPLACEMENTS>;
+v20 = staticinvoke <java.lang.Character: java.lang.Character valueOf(char)>(101);
+interfaceinvoke v19.<java.util.Map: java.lang.Object put(java.lang.Object,java.lang.Object)>(v20, "\u001b");
+v21 = <org.yaml.snakeyaml.scanner.ScannerImpl: java.util.Map ESCAPE_REPLACEMENTS>;
+v22 = staticinvoke <java.lang.Character: java.lang.Character valueOf(char)>(32);
+interfaceinvoke v21.<java.util.Map: java.lang.Object put(java.lang.Object,java.lang.Object)>(v22, " ");
+v23 = <org.yaml.snakeyaml.scanner.ScannerImpl: java.util.Map ESCAPE_REPLACEMENTS>;
+v24 = staticinvoke <java.lang.Character: java.lang.Character valueOf(char)>(34);
+interfaceinvoke v23.<java.util.Map: java.lang.Object put(java.lang.Object,java.lang.Object)>(v24, "\"");
+v25 = <org.yaml.snakeyaml.scanner.ScannerImpl: java.util.Map ESCAPE_REPLACEMENTS>;
+v26 = staticinvoke <java.lang.Character: java.lang.Character valueOf(char)>(92);
+interfaceinvoke v25.<java.util.Map: java.lang.Object put(java.lang.Object,java.lang.Object)>(v26, "\\");
+v27 = <org.yaml.snakeyaml.scanner.ScannerImpl: java.util.Map ESCAPE_REPLACEMENTS>;
+v28 = staticinvoke <java.lang.Character: java.lang.Character valueOf(char)>(78);
+interfaceinvoke v27.<java.util.Map: java.lang.Object put(java.lang.Object,java.lang.Object)>(v28, "\u0085");
+v29 = <org.yaml.snakeyaml.scanner.ScannerImpl: java.util.Map ESCAPE_REPLACEMENTS>;
+v30 = staticinvoke <java.lang.Character: java.lang.Character valueOf(char)>(95);
+interfaceinvoke v29.<java.util.Map: java.lang.Object put(java.lang.Object,java.lang.Object)>(v30, "\u00a0");
+v31 = <org.yaml.snakeyaml.scanner.ScannerImpl: java.util.Map ESCAPE_REPLACEMENTS>;
+v32 = staticinvoke <java.lang.Character: java.lang.Character valueOf(char)>(76);
+interfaceinvoke v31.<java.util.Map: java.lang.Object put(java.lang.Object,java.lang.Object)>(v32, "\u2028");
+v33 = <org.yaml.snakeyaml.scanner.ScannerImpl: java.util.Map ESCAPE_REPLACEMENTS>;
+v34 = staticinvoke <java.lang.Character: java.lang.Character valueOf(char)>(80);
+interfaceinvoke v33.<java.util.Map: java.lang.Object put(java.lang.Object,java.lang.Object)>(v34, "\u2029");
+v35 = <org.yaml.snakeyaml.scanner.ScannerImpl: java.util.Map ESCAPE_CODES>;
+v36 = staticinvoke <java.lang.Character: java.lang.Character valueOf(char)>(120);
+v37 = staticinvoke <java.lang.Integer: java.lang.Integer valueOf(int)>(2);
+interfaceinvoke v35.<java.util.Map: java.lang.Object put(java.lang.Object,java.lang.Object)>(v36, v37);
+v38 = <org.yaml.snakeyaml.scanner.ScannerImpl: java.util.Map ESCAPE_CODES>;
+v39 = staticinvoke <java.lang.Character: java.lang.Character valueOf(char)>(117);
+v40 = staticinvoke <java.lang.Integer: java.lang.Integer valueOf(int)>(4);
+interfaceinvoke v38.<java.util.Map: java.lang.Object put(java.lang.Object,java.lang.Object)>(v39, v40);
+v41 = <org.yaml.snakeyaml.scanner.ScannerImpl: java.util.Map ESCAPE_CODES>;
+v42 = staticinvoke <java.lang.Character: java.lang.Character valueOf(char)>(85);
+v43 = staticinvoke <java.lang.Integer: java.lang.Integer valueOf(int)>(8);
+interfaceinvoke v41.<java.util.Map: java.lang.Object put(java.lang.Object,java.lang.Object)>(v42, v43);
+return;
+}
+}

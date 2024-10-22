@@ -1,0 +1,381 @@
+public class io.netty.handler.codec.http2.StreamBufferingEncoder extends io.netty.handler.codec.http2.DecoratingHttp2ConnectionEncoder
+{
+private final java.util.TreeMap pendingStreams;
+private int maxConcurrentStreams;
+private boolean closed;
+private io.netty.handler.codec.http2.StreamBufferingEncoder$GoAwayDetail goAwayDetail;
+public void <init>(io.netty.handler.codec.http2.Http2ConnectionEncoder)
+{
+io.netty.handler.codec.http2.Http2ConnectionEncoder v1;
+io.netty.handler.codec.http2.StreamBufferingEncoder v0;
+v0 := @this: io.netty.handler.codec.http2.StreamBufferingEncoder;
+v1 := @parameter0: io.netty.handler.codec.http2.Http2ConnectionEncoder;
+specialinvoke v0.<io.netty.handler.codec.http2.StreamBufferingEncoder: void <init>(io.netty.handler.codec.http2.Http2ConnectionEncoder,int)>(v1, 100);
+return;
+}
+public void <init>(io.netty.handler.codec.http2.Http2ConnectionEncoder, int)
+{
+io.netty.handler.codec.http2.StreamBufferingEncoder v0;
+io.netty.handler.codec.http2.Http2Connection v4;
+java.util.TreeMap v3;
+int v2;
+io.netty.handler.codec.http2.StreamBufferingEncoder$1 v5;
+io.netty.handler.codec.http2.Http2ConnectionEncoder v1;
+v0 := @this: io.netty.handler.codec.http2.StreamBufferingEncoder;
+v1 := @parameter0: io.netty.handler.codec.http2.Http2ConnectionEncoder;
+v2 := @parameter1: int;
+specialinvoke v0.<io.netty.handler.codec.http2.DecoratingHttp2ConnectionEncoder: void <init>(io.netty.handler.codec.http2.Http2ConnectionEncoder)>(v1);
+v3 = new java.util.TreeMap;
+specialinvoke v3.<java.util.TreeMap: void <init>()>();
+v0.<io.netty.handler.codec.http2.StreamBufferingEncoder: java.util.TreeMap pendingStreams> = v3;
+v0.<io.netty.handler.codec.http2.StreamBufferingEncoder: int maxConcurrentStreams> = v2;
+v4 = virtualinvoke v0.<io.netty.handler.codec.http2.StreamBufferingEncoder: io.netty.handler.codec.http2.Http2Connection connection()>();
+v5 = new io.netty.handler.codec.http2.StreamBufferingEncoder$1;
+specialinvoke v5.<io.netty.handler.codec.http2.StreamBufferingEncoder$1: void <init>(io.netty.handler.codec.http2.StreamBufferingEncoder)>(v0);
+interfaceinvoke v4.<io.netty.handler.codec.http2.Http2Connection: void addListener(io.netty.handler.codec.http2.Http2Connection$Listener)>(v5);
+return;
+}
+public int numBufferedStreams()
+{
+int v2;
+io.netty.handler.codec.http2.StreamBufferingEncoder v0;
+java.util.TreeMap v1;
+v0 := @this: io.netty.handler.codec.http2.StreamBufferingEncoder;
+v1 = v0.<io.netty.handler.codec.http2.StreamBufferingEncoder: java.util.TreeMap pendingStreams>;
+v2 = virtualinvoke v1.<java.util.TreeMap: int size()>();
+return v2;
+}
+public io.netty.channel.ChannelFuture writeHeaders(io.netty.channel.ChannelHandlerContext, int, io.netty.handler.codec.http2.Http2Headers, int, boolean, io.netty.channel.ChannelPromise)
+{
+io.netty.handler.codec.http2.StreamBufferingEncoder v0;
+io.netty.channel.ChannelFuture v7;
+io.netty.channel.ChannelHandlerContext v1;
+io.netty.channel.ChannelPromise v6;
+io.netty.handler.codec.http2.Http2Headers v3;
+int v2, v4;
+boolean v5;
+v0 := @this: io.netty.handler.codec.http2.StreamBufferingEncoder;
+v1 := @parameter0: io.netty.channel.ChannelHandlerContext;
+v2 := @parameter1: int;
+v3 := @parameter2: io.netty.handler.codec.http2.Http2Headers;
+v4 := @parameter3: int;
+v5 := @parameter4: boolean;
+v6 := @parameter5: io.netty.channel.ChannelPromise;
+v7 = virtualinvoke v0.<io.netty.handler.codec.http2.StreamBufferingEncoder: io.netty.channel.ChannelFuture writeHeaders(io.netty.channel.ChannelHandlerContext,int,io.netty.handler.codec.http2.Http2Headers,int,short,boolean,int,boolean,io.netty.channel.ChannelPromise)>(v1, v2, v3, 0, 16, 0, v4, v5, v6);
+return v7;
+}
+public io.netty.channel.ChannelFuture writeHeaders(io.netty.channel.ChannelHandlerContext, int, io.netty.handler.codec.http2.Http2Headers, int, short, boolean, int, boolean, io.netty.channel.ChannelPromise)
+{
+io.netty.handler.codec.http2.StreamBufferingEncoder v0;
+io.netty.handler.codec.http2.StreamBufferingEncoder$GoAwayDetail v16, v18;
+io.netty.handler.codec.http2.StreamBufferingEncoder$PendingStream v23;
+java.lang.Integer v21, v25;
+io.netty.channel.ChannelHandlerContext v1;
+short v5;
+io.netty.channel.ChannelPromise v12, v19, v9;
+io.netty.handler.codec.http2.StreamBufferingEncoder$HeadersFrame v27;
+int v2, v4, v7;
+boolean v10, v13, v14, v6, v8;
+io.netty.handler.codec.http2.StreamBufferingEncoder$Http2ChannelClosedException v11;
+io.netty.channel.ChannelFuture v15;
+io.netty.handler.codec.http2.StreamBufferingEncoder$Http2GoAwayException v17;
+java.util.TreeMap v20, v24;
+io.netty.handler.codec.http2.Http2Headers v3;
+java.lang.Object v22;
+java.util.Queue v26;
+v0 := @this: io.netty.handler.codec.http2.StreamBufferingEncoder;
+v1 := @parameter0: io.netty.channel.ChannelHandlerContext;
+v2 := @parameter1: int;
+v3 := @parameter2: io.netty.handler.codec.http2.Http2Headers;
+v4 := @parameter3: int;
+v5 := @parameter4: short;
+v6 := @parameter5: boolean;
+v7 := @parameter6: int;
+v8 := @parameter7: boolean;
+v9 := @parameter8: io.netty.channel.ChannelPromise;
+v10 = v0.<io.netty.handler.codec.http2.StreamBufferingEncoder: boolean closed>;
+if v10 == 0 goto label1;
+v11 = new io.netty.handler.codec.http2.StreamBufferingEncoder$Http2ChannelClosedException;
+specialinvoke v11.<io.netty.handler.codec.http2.StreamBufferingEncoder$Http2ChannelClosedException: void <init>()>();
+v12 = interfaceinvoke v9.<io.netty.channel.ChannelPromise: io.netty.channel.ChannelPromise setFailure(java.lang.Throwable)>(v11);
+return v12;
+label1:
+v13 = specialinvoke v0.<io.netty.handler.codec.http2.StreamBufferingEncoder: boolean isExistingStream(int)>(v2);
+if v13 != 0 goto label2;
+v14 = specialinvoke v0.<io.netty.handler.codec.http2.StreamBufferingEncoder: boolean canCreateStream()>();
+if v14 == 0 goto label3;
+label2:
+v15 = specialinvoke v0.<io.netty.handler.codec.http2.DecoratingHttp2ConnectionEncoder: io.netty.channel.ChannelFuture writeHeaders(io.netty.channel.ChannelHandlerContext,int,io.netty.handler.codec.http2.Http2Headers,int,short,boolean,int,boolean,io.netty.channel.ChannelPromise)>(v1, v2, v3, v4, v5, v6, v7, v8, v9);
+return v15;
+label3:
+v16 = v0.<io.netty.handler.codec.http2.StreamBufferingEncoder: io.netty.handler.codec.http2.StreamBufferingEncoder$GoAwayDetail goAwayDetail>;
+if v16 == null goto label4;
+v17 = new io.netty.handler.codec.http2.StreamBufferingEncoder$Http2GoAwayException;
+v18 = v0.<io.netty.handler.codec.http2.StreamBufferingEncoder: io.netty.handler.codec.http2.StreamBufferingEncoder$GoAwayDetail goAwayDetail>;
+specialinvoke v17.<io.netty.handler.codec.http2.StreamBufferingEncoder$Http2GoAwayException: void <init>(io.netty.handler.codec.http2.StreamBufferingEncoder$GoAwayDetail)>(v18);
+v19 = interfaceinvoke v9.<io.netty.channel.ChannelPromise: io.netty.channel.ChannelPromise setFailure(java.lang.Throwable)>(v17);
+return v19;
+label4:
+v20 = v0.<io.netty.handler.codec.http2.StreamBufferingEncoder: java.util.TreeMap pendingStreams>;
+v21 = staticinvoke <java.lang.Integer: java.lang.Integer valueOf(int)>(v2);
+v22 = virtualinvoke v20.<java.util.TreeMap: java.lang.Object get(java.lang.Object)>(v21);
+if v22 != null goto label5;
+v23 = new io.netty.handler.codec.http2.StreamBufferingEncoder$PendingStream;
+specialinvoke v23.<io.netty.handler.codec.http2.StreamBufferingEncoder$PendingStream: void <init>(io.netty.channel.ChannelHandlerContext,int)>(v1, v2);
+v22 = v23;
+v24 = v0.<io.netty.handler.codec.http2.StreamBufferingEncoder: java.util.TreeMap pendingStreams>;
+v25 = staticinvoke <java.lang.Integer: java.lang.Integer valueOf(int)>(v2);
+virtualinvoke v24.<java.util.TreeMap: java.lang.Object put(java.lang.Object,java.lang.Object)>(v25, v23);
+label5:
+v26 = v22.<io.netty.handler.codec.http2.StreamBufferingEncoder$PendingStream: java.util.Queue frames>;
+v27 = new io.netty.handler.codec.http2.StreamBufferingEncoder$HeadersFrame;
+specialinvoke v27.<io.netty.handler.codec.http2.StreamBufferingEncoder$HeadersFrame: void <init>(io.netty.handler.codec.http2.StreamBufferingEncoder,io.netty.handler.codec.http2.Http2Headers,int,short,boolean,int,boolean,io.netty.channel.ChannelPromise)>(v0, v3, v4, v5, v6, v7, v8, v9);
+interfaceinvoke v26.<java.util.Queue: boolean add(java.lang.Object)>(v27);
+return v9;
+}
+public io.netty.channel.ChannelFuture writeRstStream(io.netty.channel.ChannelHandlerContext, int, long, io.netty.channel.ChannelPromise)
+{
+io.netty.handler.codec.http2.StreamBufferingEncoder v0;
+java.lang.Object[] v11;
+long v3;
+java.lang.Integer v12, v8;
+io.netty.channel.ChannelFuture v6;
+io.netty.channel.ChannelHandlerContext v1;
+io.netty.channel.ChannelPromise v4;
+java.util.TreeMap v7;
+io.netty.handler.codec.http2.Http2Exception v13;
+int v2;
+io.netty.handler.codec.http2.Http2Error v10;
+java.lang.Object v9;
+boolean v5;
+v0 := @this: io.netty.handler.codec.http2.StreamBufferingEncoder;
+v1 := @parameter0: io.netty.channel.ChannelHandlerContext;
+v2 := @parameter1: int;
+v3 := @parameter2: long;
+v4 := @parameter3: io.netty.channel.ChannelPromise;
+v5 = specialinvoke v0.<io.netty.handler.codec.http2.StreamBufferingEncoder: boolean isExistingStream(int)>(v2);
+if v5 == 0 goto label1;
+v6 = specialinvoke v0.<io.netty.handler.codec.http2.DecoratingHttp2ConnectionEncoder: io.netty.channel.ChannelFuture writeRstStream(io.netty.channel.ChannelHandlerContext,int,long,io.netty.channel.ChannelPromise)>(v1, v2, v3, v4);
+return v6;
+label1:
+v7 = v0.<io.netty.handler.codec.http2.StreamBufferingEncoder: java.util.TreeMap pendingStreams>;
+v8 = staticinvoke <java.lang.Integer: java.lang.Integer valueOf(int)>(v2);
+v9 = virtualinvoke v7.<java.util.TreeMap: java.lang.Object remove(java.lang.Object)>(v8);
+if v9 == null goto label2;
+virtualinvoke v9.<io.netty.handler.codec.http2.StreamBufferingEncoder$PendingStream: void close(java.lang.Throwable)>(null);
+interfaceinvoke v4.<io.netty.channel.ChannelPromise: io.netty.channel.ChannelPromise setSuccess()>();
+goto label3;
+label2:
+v10 = <io.netty.handler.codec.http2.Http2Error: io.netty.handler.codec.http2.Http2Error PROTOCOL_ERROR>;
+v11 = newarray (java.lang.Object)[1];
+v12 = staticinvoke <java.lang.Integer: java.lang.Integer valueOf(int)>(v2);
+v11[0] = v12;
+v13 = staticinvoke <io.netty.handler.codec.http2.Http2Exception: io.netty.handler.codec.http2.Http2Exception connectionError(io.netty.handler.codec.http2.Http2Error,java.lang.String,java.lang.Object[])>(v10, "Stream does not exist %d", v11);
+interfaceinvoke v4.<io.netty.channel.ChannelPromise: io.netty.channel.ChannelPromise setFailure(java.lang.Throwable)>(v13);
+label3:
+return v4;
+}
+public io.netty.channel.ChannelFuture writeData(io.netty.channel.ChannelHandlerContext, int, io.netty.buffer.ByteBuf, int, boolean, io.netty.channel.ChannelPromise)
+{
+io.netty.handler.codec.http2.StreamBufferingEncoder v0;
+java.lang.Object[] v15;
+java.lang.Integer v10, v16;
+io.netty.channel.ChannelHandlerContext v1;
+io.netty.buffer.ByteBuf v3;
+io.netty.channel.ChannelPromise v6;
+io.netty.handler.codec.http2.Http2Exception v17;
+int v2, v4;
+boolean v5, v7;
+io.netty.handler.codec.http2.StreamBufferingEncoder$DataFrame v13;
+io.netty.channel.ChannelFuture v8;
+java.util.TreeMap v9;
+io.netty.handler.codec.http2.Http2Error v14;
+java.lang.Object v11;
+java.util.Queue v12;
+v0 := @this: io.netty.handler.codec.http2.StreamBufferingEncoder;
+v1 := @parameter0: io.netty.channel.ChannelHandlerContext;
+v2 := @parameter1: int;
+v3 := @parameter2: io.netty.buffer.ByteBuf;
+v4 := @parameter3: int;
+v5 := @parameter4: boolean;
+v6 := @parameter5: io.netty.channel.ChannelPromise;
+v7 = specialinvoke v0.<io.netty.handler.codec.http2.StreamBufferingEncoder: boolean isExistingStream(int)>(v2);
+if v7 == 0 goto label1;
+v8 = specialinvoke v0.<io.netty.handler.codec.http2.DecoratingHttp2ConnectionEncoder: io.netty.channel.ChannelFuture writeData(io.netty.channel.ChannelHandlerContext,int,io.netty.buffer.ByteBuf,int,boolean,io.netty.channel.ChannelPromise)>(v1, v2, v3, v4, v5, v6);
+return v8;
+label1:
+v9 = v0.<io.netty.handler.codec.http2.StreamBufferingEncoder: java.util.TreeMap pendingStreams>;
+v10 = staticinvoke <java.lang.Integer: java.lang.Integer valueOf(int)>(v2);
+v11 = virtualinvoke v9.<java.util.TreeMap: java.lang.Object get(java.lang.Object)>(v10);
+if v11 == null goto label2;
+v12 = v11.<io.netty.handler.codec.http2.StreamBufferingEncoder$PendingStream: java.util.Queue frames>;
+v13 = new io.netty.handler.codec.http2.StreamBufferingEncoder$DataFrame;
+specialinvoke v13.<io.netty.handler.codec.http2.StreamBufferingEncoder$DataFrame: void <init>(io.netty.handler.codec.http2.StreamBufferingEncoder,io.netty.buffer.ByteBuf,int,boolean,io.netty.channel.ChannelPromise)>(v0, v3, v4, v5, v6);
+interfaceinvoke v12.<java.util.Queue: boolean add(java.lang.Object)>(v13);
+goto label3;
+label2:
+staticinvoke <io.netty.util.ReferenceCountUtil: void safeRelease(java.lang.Object)>(v3);
+v14 = <io.netty.handler.codec.http2.Http2Error: io.netty.handler.codec.http2.Http2Error PROTOCOL_ERROR>;
+v15 = newarray (java.lang.Object)[1];
+v16 = staticinvoke <java.lang.Integer: java.lang.Integer valueOf(int)>(v2);
+v15[0] = v16;
+v17 = staticinvoke <io.netty.handler.codec.http2.Http2Exception: io.netty.handler.codec.http2.Http2Exception connectionError(io.netty.handler.codec.http2.Http2Error,java.lang.String,java.lang.Object[])>(v14, "Stream does not exist %d", v15);
+interfaceinvoke v6.<io.netty.channel.ChannelPromise: io.netty.channel.ChannelPromise setFailure(java.lang.Throwable)>(v17);
+label3:
+return v6;
+}
+public void remoteSettings(io.netty.handler.codec.http2.Http2Settings) throws io.netty.handler.codec.http2.Http2Exception
+{
+io.netty.handler.codec.http2.Http2Settings v1;
+io.netty.handler.codec.http2.Http2Connection$Endpoint v3;
+io.netty.handler.codec.http2.StreamBufferingEncoder v0;
+io.netty.handler.codec.http2.Http2Connection v2;
+int v4;
+v0 := @this: io.netty.handler.codec.http2.StreamBufferingEncoder;
+v1 := @parameter0: io.netty.handler.codec.http2.Http2Settings;
+specialinvoke v0.<io.netty.handler.codec.http2.DecoratingHttp2ConnectionEncoder: void remoteSettings(io.netty.handler.codec.http2.Http2Settings)>(v1);
+v2 = virtualinvoke v0.<io.netty.handler.codec.http2.StreamBufferingEncoder: io.netty.handler.codec.http2.Http2Connection connection()>();
+v3 = interfaceinvoke v2.<io.netty.handler.codec.http2.Http2Connection: io.netty.handler.codec.http2.Http2Connection$Endpoint local()>();
+v4 = interfaceinvoke v3.<io.netty.handler.codec.http2.Http2Connection$Endpoint: int maxActiveStreams()>();
+v0.<io.netty.handler.codec.http2.StreamBufferingEncoder: int maxConcurrentStreams> = v4;
+specialinvoke v0.<io.netty.handler.codec.http2.StreamBufferingEncoder: void tryCreatePendingStreams()>();
+return;
+}
+public void close()
+{
+java.lang.Throwable v8;
+io.netty.handler.codec.http2.StreamBufferingEncoder v0;
+java.util.Map$Entry v6;
+io.netty.handler.codec.http2.StreamBufferingEncoder$Http2ChannelClosedException v2;
+java.util.TreeMap v3, v5;
+java.lang.Object v7;
+boolean v1, v4;
+v0 := @this: io.netty.handler.codec.http2.StreamBufferingEncoder;
+label1:
+v1 = v0.<io.netty.handler.codec.http2.StreamBufferingEncoder: boolean closed>;
+if v1 != 0 goto label3;
+v0.<io.netty.handler.codec.http2.StreamBufferingEncoder: boolean closed> = 1;
+v2 = new io.netty.handler.codec.http2.StreamBufferingEncoder$Http2ChannelClosedException;
+specialinvoke v2.<io.netty.handler.codec.http2.StreamBufferingEncoder$Http2ChannelClosedException: void <init>()>();
+label2:
+v3 = v0.<io.netty.handler.codec.http2.StreamBufferingEncoder: java.util.TreeMap pendingStreams>;
+v4 = virtualinvoke v3.<java.util.TreeMap: boolean isEmpty()>();
+if v4 != 0 goto label3;
+v5 = v0.<io.netty.handler.codec.http2.StreamBufferingEncoder: java.util.TreeMap pendingStreams>;
+v6 = virtualinvoke v5.<java.util.TreeMap: java.util.Map$Entry pollFirstEntry()>();
+v7 = interfaceinvoke v6.<java.util.Map$Entry: java.lang.Object getValue()>();
+virtualinvoke v7.<io.netty.handler.codec.http2.StreamBufferingEncoder$PendingStream: void close(java.lang.Throwable)>(v2);
+goto label2;
+label3:
+specialinvoke v0.<io.netty.handler.codec.http2.DecoratingHttp2ConnectionEncoder: void close()>();
+goto label5;
+label4:
+v8 := @caughtexception;
+specialinvoke v0.<io.netty.handler.codec.http2.DecoratingHttp2ConnectionEncoder: void close()>();
+throw v8;
+label5:
+return;
+catch java.lang.Throwable from label1 to label3 with label4;
+}
+private void tryCreatePendingStreams()
+{
+java.lang.Throwable v7;
+io.netty.handler.codec.http2.StreamBufferingEncoder v0;
+java.util.Map$Entry v5;
+java.util.TreeMap v1, v4;
+java.lang.Object v6;
+boolean v2, v3;
+v0 := @this: io.netty.handler.codec.http2.StreamBufferingEncoder;
+label1:
+v1 = v0.<io.netty.handler.codec.http2.StreamBufferingEncoder: java.util.TreeMap pendingStreams>;
+v2 = virtualinvoke v1.<java.util.TreeMap: boolean isEmpty()>();
+if v2 != 0 goto label5;
+v3 = specialinvoke v0.<io.netty.handler.codec.http2.StreamBufferingEncoder: boolean canCreateStream()>();
+if v3 == 0 goto label5;
+v4 = v0.<io.netty.handler.codec.http2.StreamBufferingEncoder: java.util.TreeMap pendingStreams>;
+v5 = virtualinvoke v4.<java.util.TreeMap: java.util.Map$Entry pollFirstEntry()>();
+v6 = interfaceinvoke v5.<java.util.Map$Entry: java.lang.Object getValue()>();
+label2:
+virtualinvoke v6.<io.netty.handler.codec.http2.StreamBufferingEncoder$PendingStream: void sendFrames()>();
+label3:
+goto label1;
+label4:
+v7 := @caughtexception;
+virtualinvoke v6.<io.netty.handler.codec.http2.StreamBufferingEncoder$PendingStream: void close(java.lang.Throwable)>(v7);
+goto label1;
+label5:
+return;
+catch java.lang.Throwable from label2 to label3 with label4;
+}
+private void cancelGoAwayStreams(io.netty.handler.codec.http2.StreamBufferingEncoder$GoAwayDetail)
+{
+io.netty.handler.codec.http2.StreamBufferingEncoder v0;
+java.util.Iterator v4;
+java.util.Collection v3;
+io.netty.handler.codec.http2.StreamBufferingEncoder$GoAwayDetail v1;
+io.netty.handler.codec.http2.StreamBufferingEncoder$Http2GoAwayException v5;
+java.util.TreeMap v2;
+int v8, v9;
+java.lang.Object v7;
+boolean v6;
+v0 := @this: io.netty.handler.codec.http2.StreamBufferingEncoder;
+v1 := @parameter0: io.netty.handler.codec.http2.StreamBufferingEncoder$GoAwayDetail;
+v2 = v0.<io.netty.handler.codec.http2.StreamBufferingEncoder: java.util.TreeMap pendingStreams>;
+v3 = virtualinvoke v2.<java.util.TreeMap: java.util.Collection values()>();
+v4 = interfaceinvoke v3.<java.util.Collection: java.util.Iterator iterator()>();
+v5 = new io.netty.handler.codec.http2.StreamBufferingEncoder$Http2GoAwayException;
+specialinvoke v5.<io.netty.handler.codec.http2.StreamBufferingEncoder$Http2GoAwayException: void <init>(io.netty.handler.codec.http2.StreamBufferingEncoder$GoAwayDetail)>(v1);
+label1:
+v6 = interfaceinvoke v4.<java.util.Iterator: boolean hasNext()>();
+if v6 == 0 goto label2;
+v7 = interfaceinvoke v4.<java.util.Iterator: java.lang.Object next()>();
+v8 = v7.<io.netty.handler.codec.http2.StreamBufferingEncoder$PendingStream: int streamId>;
+v9 = v1.<io.netty.handler.codec.http2.StreamBufferingEncoder$GoAwayDetail: int lastStreamId>;
+if v8 <= v9 goto label1;
+interfaceinvoke v4.<java.util.Iterator: void remove()>();
+virtualinvoke v7.<io.netty.handler.codec.http2.StreamBufferingEncoder$PendingStream: void close(java.lang.Throwable)>(v5);
+goto label1;
+label2:
+return;
+}
+private boolean canCreateStream()
+{
+io.netty.handler.codec.http2.Http2Connection$Endpoint v2;
+io.netty.handler.codec.http2.StreamBufferingEncoder v0;
+io.netty.handler.codec.http2.Http2Connection v1;
+int v3, v4;
+boolean v5;
+v0 := @this: io.netty.handler.codec.http2.StreamBufferingEncoder;
+v1 = virtualinvoke v0.<io.netty.handler.codec.http2.StreamBufferingEncoder: io.netty.handler.codec.http2.Http2Connection connection()>();
+v2 = interfaceinvoke v1.<io.netty.handler.codec.http2.Http2Connection: io.netty.handler.codec.http2.Http2Connection$Endpoint local()>();
+v3 = interfaceinvoke v2.<io.netty.handler.codec.http2.Http2Connection$Endpoint: int numActiveStreams()>();
+v4 = v0.<io.netty.handler.codec.http2.StreamBufferingEncoder: int maxConcurrentStreams>;
+if v3 >= v4 goto label1;
+v5 = 1;
+goto label2;
+label1:
+v5 = 0;
+label2:
+return v5;
+}
+private boolean isExistingStream(int)
+{
+io.netty.handler.codec.http2.Http2Connection$Endpoint v3;
+io.netty.handler.codec.http2.StreamBufferingEncoder v0;
+io.netty.handler.codec.http2.Http2Connection v2;
+int v1, v4;
+boolean v5;
+v0 := @this: io.netty.handler.codec.http2.StreamBufferingEncoder;
+v1 := @parameter0: int;
+v2 = virtualinvoke v0.<io.netty.handler.codec.http2.StreamBufferingEncoder: io.netty.handler.codec.http2.Http2Connection connection()>();
+v3 = interfaceinvoke v2.<io.netty.handler.codec.http2.Http2Connection: io.netty.handler.codec.http2.Http2Connection$Endpoint local()>();
+v4 = interfaceinvoke v3.<io.netty.handler.codec.http2.Http2Connection$Endpoint: int lastStreamCreated()>();
+if v1 > v4 goto label1;
+v5 = 1;
+goto label2;
+label1:
+v5 = 0;
+label2:
+return v5;
+}
+}

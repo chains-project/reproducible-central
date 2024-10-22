@@ -1,0 +1,622 @@
+public class io.vertx.core.net.impl.NetClientImpl extends java.lang.Object implements io.vertx.core.spi.metrics.MetricsProvider, io.vertx.core.net.NetClient, io.vertx.core.Closeable
+{
+private static final io.vertx.core.impl.logging.Logger log;
+protected final int idleTimeout;
+protected final int readIdleTimeout;
+protected final int writeIdleTimeout;
+private final java.util.concurrent.TimeUnit idleTimeoutUnit;
+protected final boolean logEnabled;
+private final io.vertx.core.impl.VertxInternal vertx;
+private final io.vertx.core.net.NetClientOptions options;
+private final io.vertx.core.net.impl.SSLHelper sslHelper;
+private final java.util.concurrent.atomic.AtomicReference sslChannelProvider;
+private final io.netty.channel.group.ChannelGroup channelGroup;
+private final io.vertx.core.spi.metrics.TCPMetrics metrics;
+private final io.vertx.core.impl.CloseFuture closeFuture;
+private final java.util.function.Predicate proxyFilter;
+public void <init>(io.vertx.core.impl.VertxInternal, io.vertx.core.spi.metrics.TCPMetrics, io.vertx.core.net.NetClientOptions, io.vertx.core.impl.CloseFuture)
+{
+io.netty.channel.group.DefaultChannelGroup v6;
+io.vertx.core.net.impl.NetClientImpl v0;
+io.vertx.core.spi.metrics.TCPMetrics v2;
+java.util.concurrent.atomic.AtomicReference v5;
+int v13, v14, v15;
+io.vertx.core.net.impl.ProxyFilter v19;
+boolean v12;
+io.netty.channel.EventLoopGroup v7;
+io.vertx.core.impl.VertxInternal v1;
+io.netty.channel.EventLoop v8;
+io.vertx.core.net.impl.SSLHelper v10;
+io.vertx.core.net.NetClientOptions v3, v9;
+java.util.concurrent.TimeUnit v16;
+java.util.List v11, v17, v18;
+io.vertx.core.impl.CloseFuture v4;
+v0 := @this: io.vertx.core.net.impl.NetClientImpl;
+v1 := @parameter0: io.vertx.core.impl.VertxInternal;
+v2 := @parameter1: io.vertx.core.spi.metrics.TCPMetrics;
+v3 := @parameter2: io.vertx.core.net.NetClientOptions;
+v4 := @parameter3: io.vertx.core.impl.CloseFuture;
+specialinvoke v0.<java.lang.Object: void <init>()>();
+v5 = new java.util.concurrent.atomic.AtomicReference;
+specialinvoke v5.<java.util.concurrent.atomic.AtomicReference: void <init>()>();
+v0.<io.vertx.core.net.impl.NetClientImpl: java.util.concurrent.atomic.AtomicReference sslChannelProvider> = v5;
+v0.<io.vertx.core.net.impl.NetClientImpl: io.vertx.core.impl.VertxInternal vertx> = v1;
+v6 = new io.netty.channel.group.DefaultChannelGroup;
+v7 = interfaceinvoke v1.<io.vertx.core.impl.VertxInternal: io.netty.channel.EventLoopGroup getAcceptorEventLoopGroup()>();
+v8 = interfaceinvoke v7.<io.netty.channel.EventLoopGroup: io.netty.channel.EventLoop next()>();
+specialinvoke v6.<io.netty.channel.group.DefaultChannelGroup: void <init>(io.netty.util.concurrent.EventExecutor)>(v8);
+v0.<io.vertx.core.net.impl.NetClientImpl: io.netty.channel.group.ChannelGroup channelGroup> = v6;
+v9 = new io.vertx.core.net.NetClientOptions;
+specialinvoke v9.<io.vertx.core.net.NetClientOptions: void <init>(io.vertx.core.net.NetClientOptions)>(v3);
+v0.<io.vertx.core.net.impl.NetClientImpl: io.vertx.core.net.NetClientOptions options> = v9;
+v10 = new io.vertx.core.net.impl.SSLHelper;
+v11 = virtualinvoke v3.<io.vertx.core.net.NetClientOptions: java.util.List getApplicationLayerProtocols()>();
+specialinvoke v10.<io.vertx.core.net.impl.SSLHelper: void <init>(io.vertx.core.net.TCPSSLOptions,java.util.List)>(v3, v11);
+v0.<io.vertx.core.net.impl.NetClientImpl: io.vertx.core.net.impl.SSLHelper sslHelper> = v10;
+v0.<io.vertx.core.net.impl.NetClientImpl: io.vertx.core.spi.metrics.TCPMetrics metrics> = v2;
+v12 = virtualinvoke v3.<io.vertx.core.net.NetClientOptions: boolean getLogActivity()>();
+v0.<io.vertx.core.net.impl.NetClientImpl: boolean logEnabled> = v12;
+v13 = virtualinvoke v3.<io.vertx.core.net.NetClientOptions: int getIdleTimeout()>();
+v0.<io.vertx.core.net.impl.NetClientImpl: int idleTimeout> = v13;
+v14 = virtualinvoke v3.<io.vertx.core.net.NetClientOptions: int getReadIdleTimeout()>();
+v0.<io.vertx.core.net.impl.NetClientImpl: int readIdleTimeout> = v14;
+v15 = virtualinvoke v3.<io.vertx.core.net.NetClientOptions: int getWriteIdleTimeout()>();
+v0.<io.vertx.core.net.impl.NetClientImpl: int writeIdleTimeout> = v15;
+v16 = virtualinvoke v3.<io.vertx.core.net.NetClientOptions: java.util.concurrent.TimeUnit getIdleTimeoutUnit()>();
+v0.<io.vertx.core.net.impl.NetClientImpl: java.util.concurrent.TimeUnit idleTimeoutUnit> = v16;
+v0.<io.vertx.core.net.impl.NetClientImpl: io.vertx.core.impl.CloseFuture closeFuture> = v4;
+v17 = virtualinvoke v3.<io.vertx.core.net.NetClientOptions: java.util.List getNonProxyHosts()>();
+if v17 == null goto label1;
+v18 = virtualinvoke v3.<io.vertx.core.net.NetClientOptions: java.util.List getNonProxyHosts()>();
+v19 = staticinvoke <io.vertx.core.net.impl.ProxyFilter: io.vertx.core.net.impl.ProxyFilter nonProxyHosts(java.util.List)>(v18);
+goto label2;
+label1:
+v19 = <io.vertx.core.net.impl.ProxyFilter: io.vertx.core.net.impl.ProxyFilter DEFAULT_PROXY_FILTER>;
+label2:
+v0.<io.vertx.core.net.impl.NetClientImpl: java.util.function.Predicate proxyFilter> = v19;
+return;
+}
+protected void initChannel(io.netty.channel.ChannelPipeline)
+{
+io.netty.handler.logging.LoggingHandler v3;
+io.vertx.core.net.impl.NetClientImpl v0;
+io.netty.handler.stream.ChunkedWriteHandler v11;
+io.vertx.core.spi.transport.Transport v9;
+io.netty.handler.logging.ByteBufFormat v5;
+int v12, v13, v14, v16, v17, v18;
+boolean v10, v2, v7;
+io.vertx.core.impl.VertxInternal v8;
+io.netty.channel.ChannelPipeline v1;
+io.vertx.core.net.NetClientOptions v4, v6;
+java.util.concurrent.TimeUnit v19;
+io.netty.handler.timeout.IdleStateHandler v15;
+v0 := @this: io.vertx.core.net.impl.NetClientImpl;
+v1 := @parameter0: io.netty.channel.ChannelPipeline;
+v2 = v0.<io.vertx.core.net.impl.NetClientImpl: boolean logEnabled>;
+if v2 == 0 goto label1;
+v3 = new io.netty.handler.logging.LoggingHandler;
+v4 = v0.<io.vertx.core.net.impl.NetClientImpl: io.vertx.core.net.NetClientOptions options>;
+v5 = virtualinvoke v4.<io.vertx.core.net.NetClientOptions: io.netty.handler.logging.ByteBufFormat getActivityLogDataFormat()>();
+specialinvoke v3.<io.netty.handler.logging.LoggingHandler: void <init>(io.netty.handler.logging.ByteBufFormat)>(v5);
+interfaceinvoke v1.<io.netty.channel.ChannelPipeline: io.netty.channel.ChannelPipeline addLast(java.lang.String,io.netty.channel.ChannelHandler)>("logging", v3);
+label1:
+v6 = v0.<io.vertx.core.net.impl.NetClientImpl: io.vertx.core.net.NetClientOptions options>;
+v7 = virtualinvoke v6.<io.vertx.core.net.NetClientOptions: boolean isSsl()>();
+if v7 != 0 goto label2;
+v8 = v0.<io.vertx.core.net.impl.NetClientImpl: io.vertx.core.impl.VertxInternal vertx>;
+v9 = interfaceinvoke v8.<io.vertx.core.impl.VertxInternal: io.vertx.core.spi.transport.Transport transport()>();
+v10 = interfaceinvoke v9.<io.vertx.core.spi.transport.Transport: boolean supportFileRegion()>();
+if v10 != 0 goto label3;
+label2:
+v11 = new io.netty.handler.stream.ChunkedWriteHandler;
+specialinvoke v11.<io.netty.handler.stream.ChunkedWriteHandler: void <init>()>();
+interfaceinvoke v1.<io.netty.channel.ChannelPipeline: io.netty.channel.ChannelPipeline addLast(java.lang.String,io.netty.channel.ChannelHandler)>("chunkedWriter", v11);
+label3:
+v12 = v0.<io.vertx.core.net.impl.NetClientImpl: int idleTimeout>;
+if v12 > 0 goto label4;
+v13 = v0.<io.vertx.core.net.impl.NetClientImpl: int readIdleTimeout>;
+if v13 > 0 goto label4;
+v14 = v0.<io.vertx.core.net.impl.NetClientImpl: int writeIdleTimeout>;
+if v14 <= 0 goto label5;
+label4:
+v15 = new io.netty.handler.timeout.IdleStateHandler;
+v16 = v0.<io.vertx.core.net.impl.NetClientImpl: int readIdleTimeout>;
+v17 = v0.<io.vertx.core.net.impl.NetClientImpl: int writeIdleTimeout>;
+v18 = v0.<io.vertx.core.net.impl.NetClientImpl: int idleTimeout>;
+v19 = v0.<io.vertx.core.net.impl.NetClientImpl: java.util.concurrent.TimeUnit idleTimeoutUnit>;
+specialinvoke v15.<io.netty.handler.timeout.IdleStateHandler: void <init>(long,long,long,java.util.concurrent.TimeUnit)>(v16, v17, v18, v19);
+interfaceinvoke v1.<io.netty.channel.ChannelPipeline: io.netty.channel.ChannelPipeline addLast(java.lang.String,io.netty.channel.ChannelHandler)>("idle", v15);
+label5:
+return;
+}
+public io.vertx.core.Future connect(int, java.lang.String)
+{
+io.vertx.core.net.impl.NetClientImpl v0;
+int v1;
+java.lang.String v2, v3;
+io.vertx.core.Future v4;
+v0 := @this: io.vertx.core.net.impl.NetClientImpl;
+v1 := @parameter0: int;
+v2 := @parameter1: java.lang.String;
+v3 = null;
+v4 = virtualinvoke v0.<io.vertx.core.net.impl.NetClientImpl: io.vertx.core.Future connect(int,java.lang.String,java.lang.String)>(v1, v2, v3);
+return v4;
+}
+public io.vertx.core.Future connect(int, java.lang.String, java.lang.String)
+{
+io.vertx.core.net.impl.NetClientImpl v0;
+int v1;
+java.lang.String v2, v3;
+io.vertx.core.Future v5;
+io.vertx.core.net.SocketAddress v4;
+v0 := @this: io.vertx.core.net.impl.NetClientImpl;
+v1 := @parameter0: int;
+v2 := @parameter1: java.lang.String;
+v3 := @parameter2: java.lang.String;
+v4 = staticinvoke <io.vertx.core.net.SocketAddress: io.vertx.core.net.SocketAddress inetSocketAddress(int,java.lang.String)>(v1, v2);
+v5 = virtualinvoke v0.<io.vertx.core.net.impl.NetClientImpl: io.vertx.core.Future connect(io.vertx.core.net.SocketAddress,java.lang.String)>(v4, v3);
+return v5;
+}
+public io.vertx.core.Future connect(io.vertx.core.net.SocketAddress)
+{
+io.vertx.core.net.impl.NetClientImpl v0;
+java.lang.String v2;
+io.vertx.core.Future v3;
+io.vertx.core.net.SocketAddress v1;
+v0 := @this: io.vertx.core.net.impl.NetClientImpl;
+v1 := @parameter0: io.vertx.core.net.SocketAddress;
+v2 = null;
+v3 = virtualinvoke v0.<io.vertx.core.net.impl.NetClientImpl: io.vertx.core.Future connect(io.vertx.core.net.SocketAddress,java.lang.String)>(v1, v2);
+return v3;
+}
+public io.vertx.core.Future connect(io.vertx.core.net.SocketAddress, java.lang.String)
+{
+io.vertx.core.impl.VertxInternal v3;
+io.vertx.core.net.impl.NetClientImpl v0;
+io.vertx.core.impl.ContextInternal v4;
+java.lang.String v2;
+io.vertx.core.Future v5;
+io.vertx.core.net.SocketAddress v1;
+v0 := @this: io.vertx.core.net.impl.NetClientImpl;
+v1 := @parameter0: io.vertx.core.net.SocketAddress;
+v2 := @parameter1: java.lang.String;
+v3 = v0.<io.vertx.core.net.impl.NetClientImpl: io.vertx.core.impl.VertxInternal vertx>;
+v4 = interfaceinvoke v3.<io.vertx.core.impl.VertxInternal: io.vertx.core.impl.ContextInternal getOrCreateContext()>();
+v5 = virtualinvoke v0.<io.vertx.core.net.impl.NetClientImpl: io.vertx.core.Future connect(io.vertx.core.impl.ContextInternal,io.vertx.core.net.SocketAddress,java.lang.String)>(v4, v1, v2);
+return v5;
+}
+public io.vertx.core.Future connect(io.vertx.core.impl.ContextInternal, io.vertx.core.net.SocketAddress, java.lang.String)
+{
+io.vertx.core.impl.future.PromiseInternal v4;
+io.vertx.core.net.impl.NetClientImpl v0;
+io.vertx.core.impl.ContextInternal v1;
+java.lang.String v3;
+io.vertx.core.Future v5;
+io.vertx.core.net.SocketAddress v2;
+v0 := @this: io.vertx.core.net.impl.NetClientImpl;
+v1 := @parameter0: io.vertx.core.impl.ContextInternal;
+v2 := @parameter1: io.vertx.core.net.SocketAddress;
+v3 := @parameter2: java.lang.String;
+v4 = interfaceinvoke v1.<io.vertx.core.impl.ContextInternal: io.vertx.core.impl.future.PromiseInternal promise()>();
+specialinvoke v0.<io.vertx.core.net.impl.NetClientImpl: void connect(io.vertx.core.net.SocketAddress,java.lang.String,io.vertx.core.Promise,io.vertx.core.impl.ContextInternal)>(v2, v3, v4, v1);
+v5 = interfaceinvoke v4.<io.vertx.core.Promise: io.vertx.core.Future future()>();
+return v5;
+}
+public io.vertx.core.net.NetClient connect(int, java.lang.String, io.vertx.core.Handler)
+{
+io.vertx.core.net.impl.NetClientImpl v0;
+int v1;
+java.lang.String v2;
+io.vertx.core.Handler v3;
+io.vertx.core.net.NetClient v4;
+v0 := @this: io.vertx.core.net.impl.NetClientImpl;
+v1 := @parameter0: int;
+v2 := @parameter1: java.lang.String;
+v3 := @parameter2: io.vertx.core.Handler;
+v4 = virtualinvoke v0.<io.vertx.core.net.impl.NetClientImpl: io.vertx.core.net.NetClient connect(int,java.lang.String,java.lang.String,io.vertx.core.Handler)>(v1, v2, null, v3);
+return v4;
+}
+public io.vertx.core.net.NetClient connect(int, java.lang.String, java.lang.String, io.vertx.core.Handler)
+{
+io.vertx.core.net.impl.NetClientImpl v0;
+int v1;
+java.lang.String v2, v3;
+io.vertx.core.Handler v4;
+io.vertx.core.net.NetClient v6;
+io.vertx.core.net.SocketAddress v5;
+v0 := @this: io.vertx.core.net.impl.NetClientImpl;
+v1 := @parameter0: int;
+v2 := @parameter1: java.lang.String;
+v3 := @parameter2: java.lang.String;
+v4 := @parameter3: io.vertx.core.Handler;
+v5 = staticinvoke <io.vertx.core.net.SocketAddress: io.vertx.core.net.SocketAddress inetSocketAddress(int,java.lang.String)>(v1, v2);
+v6 = virtualinvoke v0.<io.vertx.core.net.impl.NetClientImpl: io.vertx.core.net.NetClient connect(io.vertx.core.net.SocketAddress,java.lang.String,io.vertx.core.Handler)>(v5, v3, v4);
+return v6;
+}
+public void close(io.vertx.core.Handler)
+{
+io.vertx.core.impl.VertxInternal v2;
+io.vertx.core.impl.future.PromiseInternal v5;
+io.vertx.core.impl.CloseFuture v4;
+io.vertx.core.net.impl.NetClientImpl v0;
+io.vertx.core.impl.ContextInternal v3;
+io.vertx.core.Handler v1;
+v0 := @this: io.vertx.core.net.impl.NetClientImpl;
+v1 := @parameter0: io.vertx.core.Handler;
+v2 = v0.<io.vertx.core.net.impl.NetClientImpl: io.vertx.core.impl.VertxInternal vertx>;
+v3 = interfaceinvoke v2.<io.vertx.core.impl.VertxInternal: io.vertx.core.impl.ContextInternal getOrCreateContext()>();
+v4 = v0.<io.vertx.core.net.impl.NetClientImpl: io.vertx.core.impl.CloseFuture closeFuture>;
+if v1 == null goto label1;
+v5 = interfaceinvoke v3.<io.vertx.core.impl.ContextInternal: io.vertx.core.impl.future.PromiseInternal promise(io.vertx.core.Handler)>(v1);
+goto label2;
+label1:
+v5 = null;
+label2:
+virtualinvoke v4.<io.vertx.core.impl.CloseFuture: void close(io.vertx.core.Promise)>(v5);
+return;
+}
+public io.vertx.core.Future close()
+{
+io.vertx.core.impl.VertxInternal v1;
+io.vertx.core.impl.future.PromiseInternal v3;
+io.vertx.core.impl.CloseFuture v4;
+io.vertx.core.net.impl.NetClientImpl v0;
+io.vertx.core.impl.ContextInternal v2;
+io.vertx.core.Future v5;
+v0 := @this: io.vertx.core.net.impl.NetClientImpl;
+v1 = v0.<io.vertx.core.net.impl.NetClientImpl: io.vertx.core.impl.VertxInternal vertx>;
+v2 = interfaceinvoke v1.<io.vertx.core.impl.VertxInternal: io.vertx.core.impl.ContextInternal getOrCreateContext()>();
+v3 = interfaceinvoke v2.<io.vertx.core.impl.ContextInternal: io.vertx.core.impl.future.PromiseInternal promise()>();
+v4 = v0.<io.vertx.core.net.impl.NetClientImpl: io.vertx.core.impl.CloseFuture closeFuture>;
+virtualinvoke v4.<io.vertx.core.impl.CloseFuture: void close(io.vertx.core.Promise)>(v3);
+v5 = interfaceinvoke v3.<io.vertx.core.impl.future.PromiseInternal: io.vertx.core.Future future()>();
+return v5;
+}
+public void close(io.vertx.core.Promise)
+{
+io.netty.channel.group.ChannelGroup v2;
+io.vertx.core.Promise v1, v5;
+io.vertx.core.net.impl.NetClientImpl v0;
+io.vertx.core.spi.metrics.TCPMetrics v4;
+io.vertx.core.Future v6, v8;
+java.util.function.Function v7;
+io.netty.channel.group.ChannelGroupFuture v3;
+v0 := @this: io.vertx.core.net.impl.NetClientImpl;
+v1 := @parameter0: io.vertx.core.Promise;
+v2 = v0.<io.vertx.core.net.impl.NetClientImpl: io.netty.channel.group.ChannelGroup channelGroup>;
+v3 = interfaceinvoke v2.<io.netty.channel.group.ChannelGroup: io.netty.channel.group.ChannelGroupFuture close()>();
+v4 = v0.<io.vertx.core.net.impl.NetClientImpl: io.vertx.core.spi.metrics.TCPMetrics metrics>;
+if v4 == null goto label1;
+v5 = staticinvoke <io.vertx.core.Promise: io.vertx.core.Promise promise()>();
+interfaceinvoke v3.<io.netty.channel.group.ChannelGroupFuture: io.netty.channel.group.ChannelGroupFuture addListener(io.netty.util.concurrent.GenericFutureListener)>(v5);
+v6 = interfaceinvoke v5.<io.vertx.core.impl.future.PromiseInternal: io.vertx.core.Future future()>();
+v7 = staticinvoke <io.vertx.core.net.impl.NetClientImpl$lambda_close_0__1332: java.util.function.Function bootstrap$(io.vertx.core.net.impl.NetClientImpl)>(v0);
+v8 = interfaceinvoke v6.<io.vertx.core.Future: io.vertx.core.Future compose(java.util.function.Function)>(v7);
+interfaceinvoke v8.<io.vertx.core.Future: io.vertx.core.Future onComplete(io.vertx.core.Handler)>(v1);
+goto label2;
+label1:
+interfaceinvoke v3.<io.netty.channel.group.ChannelGroupFuture: io.netty.channel.group.ChannelGroupFuture addListener(io.netty.util.concurrent.GenericFutureListener)>(v1);
+label2:
+return;
+}
+public boolean isMetricsEnabled()
+{
+io.vertx.core.spi.metrics.TCPMetrics v1;
+boolean v2;
+io.vertx.core.net.impl.NetClientImpl v0;
+v0 := @this: io.vertx.core.net.impl.NetClientImpl;
+v1 = v0.<io.vertx.core.net.impl.NetClientImpl: io.vertx.core.spi.metrics.TCPMetrics metrics>;
+if v1 == null goto label1;
+v2 = 1;
+goto label2;
+label1:
+v2 = 0;
+label2:
+return v2;
+}
+public io.vertx.core.spi.metrics.Metrics getMetrics()
+{
+io.vertx.core.spi.metrics.TCPMetrics v1;
+io.vertx.core.net.impl.NetClientImpl v0;
+v0 := @this: io.vertx.core.net.impl.NetClientImpl;
+v1 = v0.<io.vertx.core.net.impl.NetClientImpl: io.vertx.core.spi.metrics.TCPMetrics metrics>;
+return v1;
+}
+public io.vertx.core.Future updateSSLOptions(io.vertx.core.net.SSLOptions)
+{
+io.vertx.core.impl.VertxInternal v4;
+io.vertx.core.net.impl.NetClientImpl v0;
+io.vertx.core.impl.ContextInternal v5;
+io.vertx.core.Future v6, v8;
+io.vertx.core.net.impl.SSLHelper v2;
+io.vertx.core.net.SSLOptions v1, v3;
+io.vertx.core.Handler v7;
+v0 := @this: io.vertx.core.net.impl.NetClientImpl;
+v1 := @parameter0: io.vertx.core.net.SSLOptions;
+v2 = v0.<io.vertx.core.net.impl.NetClientImpl: io.vertx.core.net.impl.SSLHelper sslHelper>;
+v3 = new io.vertx.core.net.SSLOptions;
+specialinvoke v3.<io.vertx.core.net.SSLOptions: void <init>(io.vertx.core.net.SSLOptions)>(v1);
+v4 = v0.<io.vertx.core.net.impl.NetClientImpl: io.vertx.core.impl.VertxInternal vertx>;
+v5 = interfaceinvoke v4.<io.vertx.core.impl.VertxInternal: io.vertx.core.impl.ContextInternal getOrCreateContext()>();
+v6 = virtualinvoke v2.<io.vertx.core.net.impl.SSLHelper: io.vertx.core.Future buildChannelProvider(io.vertx.core.net.SSLOptions,io.vertx.core.impl.ContextInternal)>(v3, v5);
+v7 = staticinvoke <io.vertx.core.net.impl.NetClientImpl$lambda_updateSSLOptions_1__1333: io.vertx.core.Handler bootstrap$(io.vertx.core.net.impl.NetClientImpl,io.vertx.core.Future)>(v0, v6);
+interfaceinvoke v6.<io.vertx.core.Future: io.vertx.core.Future onSuccess(io.vertx.core.Handler)>(v7);
+v8 = interfaceinvoke v6.<io.vertx.core.Future: io.vertx.core.Future mapEmpty()>();
+return v8;
+}
+public io.vertx.core.net.NetClient connect(io.vertx.core.net.SocketAddress, java.lang.String, io.vertx.core.Handler)
+{
+io.vertx.core.impl.VertxInternal v4;
+io.vertx.core.impl.future.PromiseInternal v6;
+io.vertx.core.net.impl.NetClientImpl v0;
+io.vertx.core.impl.ContextInternal v5;
+io.vertx.core.Future v7;
+java.lang.String v2;
+io.vertx.core.Handler v3;
+io.vertx.core.net.SocketAddress v1;
+v0 := @this: io.vertx.core.net.impl.NetClientImpl;
+v1 := @parameter0: io.vertx.core.net.SocketAddress;
+v2 := @parameter1: java.lang.String;
+v3 := @parameter2: io.vertx.core.Handler;
+staticinvoke <java.util.Objects: java.lang.Object requireNonNull(java.lang.Object,java.lang.String)>(v3, "No null connectHandler accepted");
+v4 = v0.<io.vertx.core.net.impl.NetClientImpl: io.vertx.core.impl.VertxInternal vertx>;
+v5 = interfaceinvoke v4.<io.vertx.core.impl.VertxInternal: io.vertx.core.impl.ContextInternal getOrCreateContext()>();
+v6 = interfaceinvoke v5.<io.vertx.core.impl.ContextInternal: io.vertx.core.impl.future.PromiseInternal promise()>();
+v7 = interfaceinvoke v6.<io.vertx.core.Promise: io.vertx.core.Future future()>();
+interfaceinvoke v7.<io.vertx.core.Future: io.vertx.core.Future onComplete(io.vertx.core.Handler)>(v3);
+specialinvoke v0.<io.vertx.core.net.impl.NetClientImpl: void connect(io.vertx.core.net.SocketAddress,java.lang.String,io.vertx.core.Promise,io.vertx.core.impl.ContextInternal)>(v1, v2, v6, v5);
+return v0;
+}
+public io.vertx.core.net.NetClient connect(io.vertx.core.net.SocketAddress, io.vertx.core.Handler)
+{
+io.vertx.core.net.impl.NetClientImpl v0;
+io.vertx.core.Handler v2;
+io.vertx.core.net.NetClient v3;
+io.vertx.core.net.SocketAddress v1;
+v0 := @this: io.vertx.core.net.impl.NetClientImpl;
+v1 := @parameter0: io.vertx.core.net.SocketAddress;
+v2 := @parameter1: io.vertx.core.Handler;
+v3 = virtualinvoke v0.<io.vertx.core.net.impl.NetClientImpl: io.vertx.core.net.NetClient connect(io.vertx.core.net.SocketAddress,java.lang.String,io.vertx.core.Handler)>(v1, null, v2);
+return v3;
+}
+private void connect(io.vertx.core.net.SocketAddress, java.lang.String, io.vertx.core.Promise, io.vertx.core.impl.ContextInternal)
+{
+java.lang.IllegalStateException v7;
+io.vertx.core.net.impl.NetClientImpl v0;
+io.vertx.core.impl.ContextInternal v4;
+int v11, v12, v13, v27;
+java.lang.String v14, v2, v9;
+boolean v10, v19, v21, v23, v25, v6;
+io.vertx.core.net.SocketAddress v1, v8;
+io.vertx.core.net.ProxyOptions v16;
+java.util.function.Predicate v17, v18;
+io.vertx.core.Promise v3;
+io.vertx.core.net.NetClientOptions v15, v20, v22, v24, v26;
+io.vertx.core.impl.CloseFuture v5;
+v0 := @this: io.vertx.core.net.impl.NetClientImpl;
+v1 := @parameter0: io.vertx.core.net.SocketAddress;
+v2 := @parameter1: java.lang.String;
+v3 := @parameter2: io.vertx.core.Promise;
+v4 := @parameter3: io.vertx.core.impl.ContextInternal;
+v5 = v0.<io.vertx.core.net.impl.NetClientImpl: io.vertx.core.impl.CloseFuture closeFuture>;
+v6 = virtualinvoke v5.<io.vertx.core.impl.CloseFuture: boolean isClosed()>();
+if v6 == 0 goto label1;
+v7 = new java.lang.IllegalStateException;
+specialinvoke v7.<java.lang.IllegalStateException: void <init>(java.lang.String)>("Client is closed");
+throw v7;
+label1:
+v8 = v1;
+v9 = interfaceinvoke v1.<io.vertx.core.net.SocketAddress: java.lang.String host()>();
+if v9 == null goto label2;
+v10 = virtualinvoke v9.<java.lang.String: boolean endsWith(java.lang.String)>(".");
+if v10 == 0 goto label2;
+v11 = interfaceinvoke v1.<io.vertx.core.net.SocketAddress: int port()>();
+v12 = virtualinvoke v9.<java.lang.String: int length()>();
+v13 = v12 - 1;
+v14 = virtualinvoke v9.<java.lang.String: java.lang.String substring(int,int)>(0, v13);
+v8 = staticinvoke <io.vertx.core.net.SocketAddress: io.vertx.core.net.SocketAddress inetSocketAddress(int,java.lang.String)>(v11, v14);
+label2:
+v15 = v0.<io.vertx.core.net.impl.NetClientImpl: io.vertx.core.net.NetClientOptions options>;
+v16 = virtualinvoke v15.<io.vertx.core.net.NetClientOptions: io.vertx.core.net.ProxyOptions getProxyOptions()>();
+v17 = v0.<io.vertx.core.net.impl.NetClientImpl: java.util.function.Predicate proxyFilter>;
+if v17 == null goto label3;
+v18 = v0.<io.vertx.core.net.impl.NetClientImpl: java.util.function.Predicate proxyFilter>;
+v19 = interfaceinvoke v18.<java.util.function.Predicate: boolean test(java.lang.Object)>(v1);
+if v19 != 0 goto label3;
+v16 = null;
+label3:
+v20 = v0.<io.vertx.core.net.impl.NetClientImpl: io.vertx.core.net.NetClientOptions options>;
+v21 = virtualinvoke v20.<io.vertx.core.net.NetClientOptions: boolean isSsl()>();
+v22 = v0.<io.vertx.core.net.impl.NetClientImpl: io.vertx.core.net.NetClientOptions options>;
+v23 = virtualinvoke v22.<io.vertx.core.net.NetClientOptions: boolean isUseAlpn()>();
+v24 = v0.<io.vertx.core.net.impl.NetClientImpl: io.vertx.core.net.NetClientOptions options>;
+v25 = virtualinvoke v24.<io.vertx.core.net.NetClientOptions: boolean isRegisterWriteHandler()>();
+v26 = v0.<io.vertx.core.net.impl.NetClientImpl: io.vertx.core.net.NetClientOptions options>;
+v27 = virtualinvoke v26.<io.vertx.core.net.NetClientOptions: int getReconnectAttempts()>();
+virtualinvoke v0.<io.vertx.core.net.impl.NetClientImpl: void connectInternal(io.vertx.core.net.ProxyOptions,io.vertx.core.net.SocketAddress,io.vertx.core.net.SocketAddress,java.lang.String,boolean,boolean,boolean,io.vertx.core.Promise,io.vertx.core.impl.ContextInternal,int)>(v16, v1, v8, v2, v21, v23, v25, v3, v4, v27);
+return;
+}
+public void connectInternal(io.vertx.core.net.ProxyOptions, io.vertx.core.net.SocketAddress, io.vertx.core.net.SocketAddress, java.lang.String, boolean, boolean, boolean, io.vertx.core.Promise, io.vertx.core.impl.ContextInternal, int)
+{
+java.lang.IllegalStateException v13;
+io.vertx.core.net.impl.NetClientImpl v0;
+io.vertx.core.impl.ContextInternal v9;
+java.util.concurrent.atomic.AtomicReference v14, v19;
+io.vertx.core.net.SSLOptions v18;
+int v10;
+java.lang.String v4;
+boolean v12, v20, v5, v6, v7;
+io.vertx.core.net.SocketAddress v2, v3;
+io.vertx.core.net.ProxyOptions v1;
+io.vertx.core.Promise v8;
+io.vertx.core.net.impl.SSLHelper v16;
+io.vertx.core.net.NetClientOptions v17;
+io.vertx.core.impl.CloseFuture v11;
+java.lang.Object v15;
+io.vertx.core.Handler v21;
+v0 := @this: io.vertx.core.net.impl.NetClientImpl;
+v1 := @parameter0: io.vertx.core.net.ProxyOptions;
+v2 := @parameter1: io.vertx.core.net.SocketAddress;
+v3 := @parameter2: io.vertx.core.net.SocketAddress;
+v4 := @parameter3: java.lang.String;
+v5 := @parameter4: boolean;
+v6 := @parameter5: boolean;
+v7 := @parameter6: boolean;
+v8 := @parameter7: io.vertx.core.Promise;
+v9 := @parameter8: io.vertx.core.impl.ContextInternal;
+v10 := @parameter9: int;
+v11 = v0.<io.vertx.core.net.impl.NetClientImpl: io.vertx.core.impl.CloseFuture closeFuture>;
+v12 = virtualinvoke v11.<io.vertx.core.impl.CloseFuture: boolean isClosed()>();
+if v12 == 0 goto label1;
+v13 = new java.lang.IllegalStateException;
+specialinvoke v13.<java.lang.IllegalStateException: void <init>(java.lang.String)>("Client is closed");
+interfaceinvoke v8.<io.vertx.core.Promise: void fail(java.lang.Throwable)>(v13);
+goto label3;
+label1:
+v14 = v0.<io.vertx.core.net.impl.NetClientImpl: java.util.concurrent.atomic.AtomicReference sslChannelProvider>;
+v15 = virtualinvoke v14.<java.util.concurrent.atomic.AtomicReference: java.lang.Object get()>();
+if v15 != null goto label2;
+v16 = v0.<io.vertx.core.net.impl.NetClientImpl: io.vertx.core.net.impl.SSLHelper sslHelper>;
+v17 = v0.<io.vertx.core.net.impl.NetClientImpl: io.vertx.core.net.NetClientOptions options>;
+v18 = virtualinvoke v17.<io.vertx.core.net.NetClientOptions: io.vertx.core.net.SSLOptions getSslOptions()>();
+v15 = virtualinvoke v16.<io.vertx.core.net.impl.SSLHelper: io.vertx.core.Future buildChannelProvider(io.vertx.core.net.SSLOptions,io.vertx.core.impl.ContextInternal)>(v18, v9);
+v19 = v0.<io.vertx.core.net.impl.NetClientImpl: java.util.concurrent.atomic.AtomicReference sslChannelProvider>;
+v20 = virtualinvoke v19.<java.util.concurrent.atomic.AtomicReference: boolean compareAndSet(java.lang.Object,java.lang.Object)>(null, v15);
+if v20 == 0 goto label1;
+label2:
+v21 = staticinvoke <io.vertx.core.net.impl.NetClientImpl$lambda_connectInternal_2__1334: io.vertx.core.Handler bootstrap$(io.vertx.core.net.impl.NetClientImpl,io.vertx.core.net.ProxyOptions,io.vertx.core.net.SocketAddress,io.vertx.core.net.SocketAddress,java.lang.String,boolean,boolean,boolean,io.vertx.core.Promise,io.vertx.core.impl.ContextInternal,int)>(v0, v1, v2, v3, v4, v5, v6, v7, v8, v9, v10);
+interfaceinvoke v15.<io.vertx.core.Future: io.vertx.core.Future onComplete(io.vertx.core.Handler)>(v21);
+label3:
+return;
+}
+private void connectInternal2(io.vertx.core.net.ProxyOptions, io.vertx.core.net.SocketAddress, io.vertx.core.net.SocketAddress, io.vertx.core.net.impl.SslChannelProvider, java.lang.String, boolean, boolean, boolean, io.vertx.core.Promise, io.vertx.core.impl.ContextInternal, int)
+{
+io.netty.channel.ChannelOption v15;
+io.vertx.core.net.impl.NetClientImpl v0;
+io.vertx.core.impl.ContextInternal v10;
+java.lang.Runnable v26;
+io.vertx.core.spi.transport.Transport v18;
+io.vertx.core.net.impl.ChannelProvider v21, v22;
+int v11;
+java.lang.String v5;
+boolean v13, v20, v6, v7, v8;
+io.vertx.core.net.SocketAddress v2, v3;
+io.vertx.core.net.ProxyOptions v1;
+io.vertx.core.impl.VertxInternal v17;
+io.vertx.core.Promise v9;
+io.netty.util.concurrent.GenericFutureListener v25;
+io.netty.channel.EventLoop v12;
+io.vertx.core.buffer.impl.PartialPooledByteBufAllocator v16;
+io.vertx.core.net.NetClientOptions v19;
+io.netty.bootstrap.Bootstrap v14;
+io.vertx.core.net.impl.SslChannelProvider v4;
+io.netty.util.concurrent.Future v24;
+io.vertx.core.Handler v23;
+v0 := @this: io.vertx.core.net.impl.NetClientImpl;
+v1 := @parameter0: io.vertx.core.net.ProxyOptions;
+v2 := @parameter1: io.vertx.core.net.SocketAddress;
+v3 := @parameter2: io.vertx.core.net.SocketAddress;
+v4 := @parameter3: io.vertx.core.net.impl.SslChannelProvider;
+v5 := @parameter4: java.lang.String;
+v6 := @parameter5: boolean;
+v7 := @parameter6: boolean;
+v8 := @parameter7: boolean;
+v9 := @parameter8: io.vertx.core.Promise;
+v10 := @parameter9: io.vertx.core.impl.ContextInternal;
+v11 := @parameter10: int;
+v12 = interfaceinvoke v10.<io.vertx.core.impl.ContextInternal: io.netty.channel.EventLoop nettyEventLoop()>();
+v13 = interfaceinvoke v12.<io.netty.channel.EventLoop: boolean inEventLoop()>();
+if v13 == 0 goto label1;
+staticinvoke <java.util.Objects: java.lang.Object requireNonNull(java.lang.Object,java.lang.String)>(v9, "No null connectHandler accepted");
+v14 = new io.netty.bootstrap.Bootstrap;
+specialinvoke v14.<io.netty.bootstrap.Bootstrap: void <init>()>();
+virtualinvoke v14.<io.netty.bootstrap.Bootstrap: io.netty.bootstrap.AbstractBootstrap group(io.netty.channel.EventLoopGroup)>(v12);
+v15 = <io.netty.channel.ChannelOption: io.netty.channel.ChannelOption ALLOCATOR>;
+v16 = <io.vertx.core.buffer.impl.PartialPooledByteBufAllocator: io.vertx.core.buffer.impl.PartialPooledByteBufAllocator INSTANCE>;
+virtualinvoke v14.<io.netty.bootstrap.Bootstrap: io.netty.bootstrap.AbstractBootstrap option(io.netty.channel.ChannelOption,java.lang.Object)>(v15, v16);
+v17 = v0.<io.vertx.core.net.impl.NetClientImpl: io.vertx.core.impl.VertxInternal vertx>;
+v18 = interfaceinvoke v17.<io.vertx.core.impl.VertxInternal: io.vertx.core.spi.transport.Transport transport()>();
+v19 = v0.<io.vertx.core.net.impl.NetClientImpl: io.vertx.core.net.NetClientOptions options>;
+v20 = interfaceinvoke v2.<io.vertx.core.net.SocketAddress: boolean isDomainSocket()>();
+interfaceinvoke v18.<io.vertx.core.spi.transport.Transport: void configure(io.vertx.core.net.ClientOptionsBase,boolean,io.netty.bootstrap.Bootstrap)>(v19, v20, v14);
+v21 = new io.vertx.core.net.impl.ChannelProvider;
+specialinvoke v21.<io.vertx.core.net.impl.ChannelProvider: void <init>(io.netty.bootstrap.Bootstrap,io.vertx.core.net.impl.SslChannelProvider,io.vertx.core.impl.ContextInternal)>(v14, v4, v10);
+v22 = virtualinvoke v21.<io.vertx.core.net.impl.ChannelProvider: io.vertx.core.net.impl.ChannelProvider proxyOptions(io.vertx.core.net.ProxyOptions)>(v1);
+v23 = staticinvoke <io.vertx.core.net.impl.NetClientImpl$lambda_connectInternal2_3__1336: io.vertx.core.Handler bootstrap$(io.vertx.core.net.impl.NetClientImpl,io.vertx.core.impl.ContextInternal,io.vertx.core.Promise,io.vertx.core.net.SocketAddress,io.vertx.core.net.impl.SslChannelProvider,io.vertx.core.net.impl.ChannelProvider,boolean)>(v0, v10, v9, v2, v4, v22, v8);
+virtualinvoke v22.<io.vertx.core.net.impl.ChannelProvider: io.vertx.core.net.impl.ChannelProvider handler(io.vertx.core.Handler)>(v23);
+v24 = virtualinvoke v22.<io.vertx.core.net.impl.ChannelProvider: io.netty.util.concurrent.Future connect(io.vertx.core.net.SocketAddress,io.vertx.core.net.SocketAddress,java.lang.String,boolean,boolean)>(v2, v3, v5, v6, v7);
+v25 = staticinvoke <io.vertx.core.net.impl.NetClientImpl$lambda_connectInternal2_6__1337: io.netty.util.concurrent.GenericFutureListener bootstrap$(io.vertx.core.net.impl.NetClientImpl,int,io.vertx.core.impl.ContextInternal,io.vertx.core.net.ProxyOptions,io.vertx.core.net.SocketAddress,io.vertx.core.net.SocketAddress,java.lang.String,boolean,boolean,boolean,io.vertx.core.Promise)>(v0, v11, v10, v1, v2, v3, v5, v6, v7, v8, v9);
+interfaceinvoke v24.<io.netty.util.concurrent.Future: io.netty.util.concurrent.Future addListener(io.netty.util.concurrent.GenericFutureListener)>(v25);
+goto label2;
+label1:
+v26 = staticinvoke <io.vertx.core.net.impl.NetClientImpl$lambda_connectInternal2_7__1335: java.lang.Runnable bootstrap$(io.vertx.core.net.impl.NetClientImpl,io.vertx.core.net.ProxyOptions,io.vertx.core.net.SocketAddress,io.vertx.core.net.SocketAddress,io.vertx.core.net.impl.SslChannelProvider,java.lang.String,boolean,boolean,boolean,io.vertx.core.Promise,io.vertx.core.impl.ContextInternal,int)>(v0, v1, v2, v3, v4, v5, v6, v7, v8, v9, v10, v11);
+interfaceinvoke v12.<io.netty.channel.EventLoop: void execute(java.lang.Runnable)>(v26);
+label2:
+return;
+}
+private void connected(io.vertx.core.impl.ContextInternal, io.netty.channel.Channel, io.vertx.core.Promise, io.vertx.core.net.SocketAddress, io.vertx.core.net.impl.SslChannelProvider, java.lang.String, boolean)
+{
+io.vertx.core.net.impl.VertxHandler v11;
+io.netty.channel.group.ChannelGroup v8;
+io.vertx.core.Promise v3;
+io.vertx.core.net.impl.NetClientImpl v0;
+io.vertx.core.impl.ContextInternal v1;
+io.netty.channel.ChannelPipeline v14, v9;
+java.util.function.Function v10;
+io.netty.channel.Channel v2;
+io.vertx.core.net.impl.SslChannelProvider v5;
+java.lang.String v6;
+io.vertx.core.Handler v12, v13;
+boolean v7;
+io.vertx.core.net.SocketAddress v4;
+v0 := @this: io.vertx.core.net.impl.NetClientImpl;
+v1 := @parameter0: io.vertx.core.impl.ContextInternal;
+v2 := @parameter1: io.netty.channel.Channel;
+v3 := @parameter2: io.vertx.core.Promise;
+v4 := @parameter3: io.vertx.core.net.SocketAddress;
+v5 := @parameter4: io.vertx.core.net.impl.SslChannelProvider;
+v6 := @parameter5: java.lang.String;
+v7 := @parameter6: boolean;
+v8 = v0.<io.vertx.core.net.impl.NetClientImpl: io.netty.channel.group.ChannelGroup channelGroup>;
+interfaceinvoke v8.<io.netty.channel.group.ChannelGroup: boolean add(java.lang.Object)>(v2);
+v9 = interfaceinvoke v2.<io.netty.channel.Channel: io.netty.channel.ChannelPipeline pipeline()>();
+virtualinvoke v0.<io.vertx.core.net.impl.NetClientImpl: void initChannel(io.netty.channel.ChannelPipeline)>(v9);
+v10 = staticinvoke <io.vertx.core.net.impl.NetClientImpl$lambda_connected_8__1338: java.util.function.Function bootstrap$(io.vertx.core.net.impl.NetClientImpl,io.vertx.core.impl.ContextInternal,io.vertx.core.net.SocketAddress,io.vertx.core.net.impl.SslChannelProvider,java.lang.String,boolean)>(v0, v1, v4, v5, v6, v7);
+v11 = staticinvoke <io.vertx.core.net.impl.VertxHandler: io.vertx.core.net.impl.VertxHandler create(java.util.function.Function)>(v10);
+v12 = staticinvoke <io.vertx.core.net.impl.NetClientImpl$unregisterEventBusHandler__1339: io.vertx.core.Handler bootstrap$()>();
+virtualinvoke v11.<io.vertx.core.net.impl.VertxHandler: io.vertx.core.net.impl.VertxHandler removeHandler(io.vertx.core.Handler)>(v12);
+v13 = staticinvoke <io.vertx.core.net.impl.NetClientImpl$lambda_connected_9__1340: io.vertx.core.Handler bootstrap$(io.vertx.core.net.impl.NetClientImpl,io.vertx.core.Promise)>(v0, v3);
+virtualinvoke v11.<io.vertx.core.net.impl.VertxHandler: io.vertx.core.net.impl.VertxHandler addHandler(io.vertx.core.Handler)>(v13);
+v14 = interfaceinvoke v2.<io.netty.channel.Channel: io.netty.channel.ChannelPipeline pipeline()>();
+interfaceinvoke v14.<io.netty.channel.ChannelPipeline: io.netty.channel.ChannelPipeline addLast(java.lang.String,io.netty.channel.ChannelHandler)>("handler", v11);
+return;
+}
+private void failed(io.vertx.core.impl.ContextInternal, io.netty.channel.Channel, java.lang.Throwable, io.vertx.core.Promise)
+{
+io.netty.channel.Channel v2;
+java.lang.Throwable v3;
+io.vertx.core.Promise v4;
+io.vertx.core.net.impl.NetClientImpl v0;
+io.vertx.core.impl.ContextInternal v1;
+io.vertx.core.Handler v5;
+v0 := @this: io.vertx.core.net.impl.NetClientImpl;
+v1 := @parameter0: io.vertx.core.impl.ContextInternal;
+v2 := @parameter1: io.netty.channel.Channel;
+v3 := @parameter2: java.lang.Throwable;
+v4 := @parameter3: io.vertx.core.Promise;
+if v2 == null goto label1;
+interfaceinvoke v2.<io.netty.channel.Channel: io.netty.channel.ChannelFuture close()>();
+label1:
+virtualinvoke v4.<java.lang.Object: java.lang.Class getClass()>();
+v5 = staticinvoke <io.vertx.core.net.impl.NetClientImpl$tryFail__1341: io.vertx.core.Handler bootstrap$(io.vertx.core.Promise)>(v4);
+interfaceinvoke v1.<io.vertx.core.impl.ContextInternal: void emit(java.lang.Object,io.vertx.core.Handler)>(v3, v5);
+return;
+}
+static void <clinit>()
+{
+io.vertx.core.impl.logging.Logger v0;
+v0 = staticinvoke <io.vertx.core.impl.logging.LoggerFactory: io.vertx.core.impl.logging.Logger getLogger(java.lang.Class)>(class "Lio/vertx/core/net/impl/NetClientImpl;");
+<io.vertx.core.net.impl.NetClientImpl: io.vertx.core.impl.logging.Logger log> = v0;
+return;
+}
+}

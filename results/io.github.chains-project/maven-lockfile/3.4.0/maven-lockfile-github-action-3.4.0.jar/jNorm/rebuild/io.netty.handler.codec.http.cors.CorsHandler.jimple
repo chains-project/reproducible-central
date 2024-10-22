@@ -1,0 +1,524 @@
+public class io.netty.handler.codec.http.cors.CorsHandler extends io.netty.channel.ChannelDuplexHandler
+{
+private static final io.netty.util.internal.logging.InternalLogger logger;
+private static final java.lang.String ANY_ORIGIN;
+private static final java.lang.String NULL_ORIGIN;
+private io.netty.handler.codec.http.cors.CorsConfig config;
+private io.netty.handler.codec.http.HttpRequest request;
+private final java.util.List configList;
+private final boolean isShortCircuit;
+public void <init>(io.netty.handler.codec.http.cors.CorsConfig)
+{
+java.util.List v3;
+io.netty.handler.codec.http.cors.CorsConfig v1;
+io.netty.handler.codec.http.cors.CorsHandler v0;
+java.lang.Object v2;
+boolean v4;
+v0 := @this: io.netty.handler.codec.http.cors.CorsHandler;
+v1 := @parameter0: io.netty.handler.codec.http.cors.CorsConfig;
+v2 = staticinvoke <io.netty.util.internal.ObjectUtil: java.lang.Object checkNotNull(java.lang.Object,java.lang.String)>(v1, "config");
+v3 = staticinvoke <java.util.Collections: java.util.List singletonList(java.lang.Object)>(v2);
+v4 = virtualinvoke v1.<io.netty.handler.codec.http.cors.CorsConfig: boolean isShortCircuit()>();
+specialinvoke v0.<io.netty.handler.codec.http.cors.CorsHandler: void <init>(java.util.List,boolean)>(v3, v4);
+return;
+}
+public void <init>(java.util.List, boolean)
+{
+io.netty.handler.codec.http.cors.CorsHandler v0;
+java.util.List v1;
+boolean v2;
+v0 := @this: io.netty.handler.codec.http.cors.CorsHandler;
+v1 := @parameter0: java.util.List;
+v2 := @parameter1: boolean;
+specialinvoke v0.<io.netty.channel.ChannelDuplexHandler: void <init>()>();
+staticinvoke <io.netty.util.internal.ObjectUtil: java.util.Collection checkNonEmpty(java.util.Collection,java.lang.String)>(v1, "configList");
+v0.<io.netty.handler.codec.http.cors.CorsHandler: java.util.List configList> = v1;
+v0.<io.netty.handler.codec.http.cors.CorsHandler: boolean isShortCircuit> = v2;
+return;
+}
+public void channelRead(io.netty.channel.ChannelHandlerContext, java.lang.Object) throws java.lang.Exception
+{
+io.netty.handler.codec.http.HttpHeaders v5;
+io.netty.handler.codec.http.HttpRequest v11, v14, v4, v9;
+io.netty.handler.codec.http.cors.CorsConfig v13, v8;
+io.netty.util.AsciiString v6;
+io.netty.channel.ChannelHandlerContext v1;
+io.netty.handler.codec.http.cors.CorsHandler v0;
+java.lang.Object v2;
+java.lang.String v7;
+boolean v10, v12, v3;
+v0 := @this: io.netty.handler.codec.http.cors.CorsHandler;
+v1 := @parameter0: io.netty.channel.ChannelHandlerContext;
+v2 := @parameter1: java.lang.Object;
+v3 = v2 instanceof io.netty.handler.codec.http.HttpRequest;
+if v3 == 0 goto label2;
+v0.<io.netty.handler.codec.http.cors.CorsHandler: io.netty.handler.codec.http.HttpRequest request> = v2;
+v4 = v0.<io.netty.handler.codec.http.cors.CorsHandler: io.netty.handler.codec.http.HttpRequest request>;
+v5 = interfaceinvoke v4.<io.netty.handler.codec.http.HttpRequest: io.netty.handler.codec.http.HttpHeaders headers()>();
+v6 = <io.netty.handler.codec.http.HttpHeaderNames: io.netty.util.AsciiString ORIGIN>;
+v7 = virtualinvoke v5.<io.netty.handler.codec.http.HttpHeaders: java.lang.String get(java.lang.CharSequence)>(v6);
+v8 = specialinvoke v0.<io.netty.handler.codec.http.cors.CorsHandler: io.netty.handler.codec.http.cors.CorsConfig getForOrigin(java.lang.String)>(v7);
+v0.<io.netty.handler.codec.http.cors.CorsHandler: io.netty.handler.codec.http.cors.CorsConfig config> = v8;
+v9 = v0.<io.netty.handler.codec.http.cors.CorsHandler: io.netty.handler.codec.http.HttpRequest request>;
+v10 = staticinvoke <io.netty.handler.codec.http.cors.CorsHandler: boolean isPreflightRequest(io.netty.handler.codec.http.HttpRequest)>(v9);
+if v10 == 0 goto label1;
+v11 = v0.<io.netty.handler.codec.http.cors.CorsHandler: io.netty.handler.codec.http.HttpRequest request>;
+specialinvoke v0.<io.netty.handler.codec.http.cors.CorsHandler: void handlePreflight(io.netty.channel.ChannelHandlerContext,io.netty.handler.codec.http.HttpRequest)>(v1, v11);
+return;
+label1:
+v12 = v0.<io.netty.handler.codec.http.cors.CorsHandler: boolean isShortCircuit>;
+if v12 == 0 goto label2;
+if v7 == null goto label2;
+v13 = v0.<io.netty.handler.codec.http.cors.CorsHandler: io.netty.handler.codec.http.cors.CorsConfig config>;
+if v13 != null goto label2;
+v14 = v0.<io.netty.handler.codec.http.cors.CorsHandler: io.netty.handler.codec.http.HttpRequest request>;
+staticinvoke <io.netty.handler.codec.http.cors.CorsHandler: void forbidden(io.netty.channel.ChannelHandlerContext,io.netty.handler.codec.http.HttpRequest)>(v1, v14);
+return;
+label2:
+interfaceinvoke v1.<io.netty.channel.ChannelHandlerContext: io.netty.channel.ChannelHandlerContext fireChannelRead(java.lang.Object)>(v2);
+return;
+}
+private void handlePreflight(io.netty.channel.ChannelHandlerContext, io.netty.handler.codec.http.HttpRequest)
+{
+io.netty.handler.codec.http.HttpVersion v4;
+io.netty.handler.codec.http.HttpHeaders v10, v7;
+io.netty.handler.codec.http.HttpRequest v2;
+io.netty.util.AsciiString v11, v12, v8;
+io.netty.handler.codec.http.HttpResponseStatus v5;
+io.netty.channel.ChannelHandlerContext v1;
+io.netty.handler.codec.http.DefaultFullHttpResponse v3;
+io.netty.handler.codec.http.cors.CorsHandler v0;
+boolean v6, v9;
+v0 := @this: io.netty.handler.codec.http.cors.CorsHandler;
+v1 := @parameter0: io.netty.channel.ChannelHandlerContext;
+v2 := @parameter1: io.netty.handler.codec.http.HttpRequest;
+v3 = new io.netty.handler.codec.http.DefaultFullHttpResponse;
+v4 = interfaceinvoke v2.<io.netty.handler.codec.http.HttpRequest: io.netty.handler.codec.http.HttpVersion protocolVersion()>();
+v5 = <io.netty.handler.codec.http.HttpResponseStatus: io.netty.handler.codec.http.HttpResponseStatus OK>;
+specialinvoke v3.<io.netty.handler.codec.http.DefaultFullHttpResponse: void <init>(io.netty.handler.codec.http.HttpVersion,io.netty.handler.codec.http.HttpResponseStatus,boolean,boolean)>(v4, v5, 1, 1);
+v6 = specialinvoke v0.<io.netty.handler.codec.http.cors.CorsHandler: boolean setOrigin(io.netty.handler.codec.http.HttpResponse)>(v3);
+if v6 == 0 goto label1;
+specialinvoke v0.<io.netty.handler.codec.http.cors.CorsHandler: void setAllowMethods(io.netty.handler.codec.http.HttpResponse)>(v3);
+specialinvoke v0.<io.netty.handler.codec.http.cors.CorsHandler: void setAllowHeaders(io.netty.handler.codec.http.HttpResponse)>(v3);
+specialinvoke v0.<io.netty.handler.codec.http.cors.CorsHandler: void setAllowCredentials(io.netty.handler.codec.http.HttpResponse)>(v3);
+specialinvoke v0.<io.netty.handler.codec.http.cors.CorsHandler: void setMaxAge(io.netty.handler.codec.http.HttpResponse)>(v3);
+specialinvoke v0.<io.netty.handler.codec.http.cors.CorsHandler: void setPreflightHeaders(io.netty.handler.codec.http.HttpResponse)>(v3);
+specialinvoke v0.<io.netty.handler.codec.http.cors.CorsHandler: void setAllowPrivateNetwork(io.netty.handler.codec.http.HttpResponse)>(v3);
+label1:
+v7 = interfaceinvoke v3.<io.netty.handler.codec.http.HttpResponse: io.netty.handler.codec.http.HttpHeaders headers()>();
+v8 = <io.netty.handler.codec.http.HttpHeaderNames: io.netty.util.AsciiString CONTENT_LENGTH>;
+v9 = virtualinvoke v7.<io.netty.handler.codec.http.HttpHeaders: boolean contains(java.lang.CharSequence)>(v8);
+if v9 != 0 goto label2;
+v10 = interfaceinvoke v3.<io.netty.handler.codec.http.HttpResponse: io.netty.handler.codec.http.HttpHeaders headers()>();
+v11 = <io.netty.handler.codec.http.HttpHeaderNames: io.netty.util.AsciiString CONTENT_LENGTH>;
+v12 = <io.netty.handler.codec.http.HttpHeaderValues: io.netty.util.AsciiString ZERO>;
+virtualinvoke v10.<io.netty.handler.codec.http.HttpHeaders: io.netty.handler.codec.http.HttpHeaders set(java.lang.CharSequence,java.lang.Object)>(v11, v12);
+label2:
+staticinvoke <io.netty.util.ReferenceCountUtil: boolean release(java.lang.Object)>(v2);
+staticinvoke <io.netty.handler.codec.http.cors.CorsHandler: void respond(io.netty.channel.ChannelHandlerContext,io.netty.handler.codec.http.HttpRequest,io.netty.handler.codec.http.HttpResponse)>(v1, v2, v3);
+return;
+}
+private void setPreflightHeaders(io.netty.handler.codec.http.HttpResponse)
+{
+io.netty.handler.codec.http.HttpHeaders v2, v4;
+io.netty.handler.codec.http.cors.CorsConfig v3;
+io.netty.handler.codec.http.cors.CorsHandler v0;
+io.netty.handler.codec.http.HttpResponse v1;
+v0 := @this: io.netty.handler.codec.http.cors.CorsHandler;
+v1 := @parameter0: io.netty.handler.codec.http.HttpResponse;
+v2 = interfaceinvoke v1.<io.netty.handler.codec.http.HttpResponse: io.netty.handler.codec.http.HttpHeaders headers()>();
+v3 = v0.<io.netty.handler.codec.http.cors.CorsHandler: io.netty.handler.codec.http.cors.CorsConfig config>;
+v4 = virtualinvoke v3.<io.netty.handler.codec.http.cors.CorsConfig: io.netty.handler.codec.http.HttpHeaders preflightResponseHeaders()>();
+virtualinvoke v2.<io.netty.handler.codec.http.HttpHeaders: io.netty.handler.codec.http.HttpHeaders add(io.netty.handler.codec.http.HttpHeaders)>(v4);
+return;
+}
+private io.netty.handler.codec.http.cors.CorsConfig getForOrigin(java.lang.String)
+{
+java.util.Iterator v3;
+java.util.Set v7;
+java.util.List v2;
+io.netty.handler.codec.http.cors.CorsHandler v0;
+java.lang.Object v5;
+java.lang.String v1, v10;
+boolean v11, v4, v6, v8, v9;
+v0 := @this: io.netty.handler.codec.http.cors.CorsHandler;
+v1 := @parameter0: java.lang.String;
+v2 = v0.<io.netty.handler.codec.http.cors.CorsHandler: java.util.List configList>;
+v3 = interfaceinvoke v2.<java.util.List: java.util.Iterator iterator()>();
+label1:
+v4 = interfaceinvoke v3.<java.util.Iterator: boolean hasNext()>();
+if v4 == 0 goto label5;
+v5 = interfaceinvoke v3.<java.util.Iterator: java.lang.Object next()>();
+v6 = virtualinvoke v5.<io.netty.handler.codec.http.cors.CorsConfig: boolean isAnyOriginSupported()>();
+if v6 == 0 goto label2;
+return v5;
+label2:
+v7 = virtualinvoke v5.<io.netty.handler.codec.http.cors.CorsConfig: java.util.Set origins()>();
+v8 = interfaceinvoke v7.<java.util.Set: boolean contains(java.lang.Object)>(v1);
+if v8 == 0 goto label3;
+return v5;
+label3:
+v9 = virtualinvoke v5.<io.netty.handler.codec.http.cors.CorsConfig: boolean isNullOriginAllowed()>();
+if v9 != 0 goto label4;
+v10 = "null";
+v11 = virtualinvoke v10.<java.lang.String: boolean equals(java.lang.Object)>(v1);
+if v11 == 0 goto label1;
+label4:
+return v5;
+label5:
+return null;
+}
+private boolean setOrigin(io.netty.handler.codec.http.HttpResponse)
+{
+io.netty.handler.codec.http.HttpHeaders v3;
+io.netty.util.AsciiString v4;
+io.netty.handler.codec.http.cors.CorsHandler v0;
+java.lang.String v5, v7;
+boolean v10, v12, v14, v17, v8;
+io.netty.handler.codec.http.HttpRequest v2;
+io.netty.handler.codec.http.cors.CorsConfig v11, v13, v15, v19, v6, v9;
+java.util.Set v16, v20;
+io.netty.util.internal.logging.InternalLogger v18;
+io.netty.handler.codec.http.HttpResponse v1;
+v0 := @this: io.netty.handler.codec.http.cors.CorsHandler;
+v1 := @parameter0: io.netty.handler.codec.http.HttpResponse;
+v2 = v0.<io.netty.handler.codec.http.cors.CorsHandler: io.netty.handler.codec.http.HttpRequest request>;
+v3 = interfaceinvoke v2.<io.netty.handler.codec.http.HttpRequest: io.netty.handler.codec.http.HttpHeaders headers()>();
+v4 = <io.netty.handler.codec.http.HttpHeaderNames: io.netty.util.AsciiString ORIGIN>;
+v5 = virtualinvoke v3.<io.netty.handler.codec.http.HttpHeaders: java.lang.String get(java.lang.CharSequence)>(v4);
+if v5 == null goto label6;
+v6 = v0.<io.netty.handler.codec.http.cors.CorsHandler: io.netty.handler.codec.http.cors.CorsConfig config>;
+if v6 == null goto label6;
+v7 = "null";
+v8 = virtualinvoke v7.<java.lang.String: boolean equals(java.lang.Object)>(v5);
+if v8 == 0 goto label1;
+v9 = v0.<io.netty.handler.codec.http.cors.CorsHandler: io.netty.handler.codec.http.cors.CorsConfig config>;
+v10 = virtualinvoke v9.<io.netty.handler.codec.http.cors.CorsConfig: boolean isNullOriginAllowed()>();
+if v10 == 0 goto label1;
+staticinvoke <io.netty.handler.codec.http.cors.CorsHandler: void setNullOrigin(io.netty.handler.codec.http.HttpResponse)>(v1);
+return 1;
+label1:
+v11 = v0.<io.netty.handler.codec.http.cors.CorsHandler: io.netty.handler.codec.http.cors.CorsConfig config>;
+v12 = virtualinvoke v11.<io.netty.handler.codec.http.cors.CorsConfig: boolean isAnyOriginSupported()>();
+if v12 == 0 goto label4;
+v13 = v0.<io.netty.handler.codec.http.cors.CorsHandler: io.netty.handler.codec.http.cors.CorsConfig config>;
+v14 = virtualinvoke v13.<io.netty.handler.codec.http.cors.CorsConfig: boolean isCredentialsAllowed()>();
+if v14 == 0 goto label2;
+specialinvoke v0.<io.netty.handler.codec.http.cors.CorsHandler: void echoRequestOrigin(io.netty.handler.codec.http.HttpResponse)>(v1);
+staticinvoke <io.netty.handler.codec.http.cors.CorsHandler: void setVaryHeader(io.netty.handler.codec.http.HttpResponse)>(v1);
+goto label3;
+label2:
+staticinvoke <io.netty.handler.codec.http.cors.CorsHandler: void setAnyOrigin(io.netty.handler.codec.http.HttpResponse)>(v1);
+label3:
+return 1;
+label4:
+v15 = v0.<io.netty.handler.codec.http.cors.CorsHandler: io.netty.handler.codec.http.cors.CorsConfig config>;
+v16 = virtualinvoke v15.<io.netty.handler.codec.http.cors.CorsConfig: java.util.Set origins()>();
+v17 = interfaceinvoke v16.<java.util.Set: boolean contains(java.lang.Object)>(v5);
+if v17 == 0 goto label5;
+staticinvoke <io.netty.handler.codec.http.cors.CorsHandler: void setOrigin(io.netty.handler.codec.http.HttpResponse,java.lang.String)>(v1, v5);
+staticinvoke <io.netty.handler.codec.http.cors.CorsHandler: void setVaryHeader(io.netty.handler.codec.http.HttpResponse)>(v1);
+return 1;
+label5:
+v18 = <io.netty.handler.codec.http.cors.CorsHandler: io.netty.util.internal.logging.InternalLogger logger>;
+v19 = v0.<io.netty.handler.codec.http.cors.CorsHandler: io.netty.handler.codec.http.cors.CorsConfig config>;
+v20 = virtualinvoke v19.<io.netty.handler.codec.http.cors.CorsConfig: java.util.Set origins()>();
+interfaceinvoke v18.<io.netty.util.internal.logging.InternalLogger: void debug(java.lang.String,java.lang.Object,java.lang.Object)>("Request origin [{}]] was not among the configured origins [{}]", v5, v20);
+label6:
+return 0;
+}
+private void echoRequestOrigin(io.netty.handler.codec.http.HttpResponse)
+{
+io.netty.handler.codec.http.HttpHeaders v3;
+io.netty.handler.codec.http.HttpRequest v2;
+io.netty.handler.codec.http.cors.CorsHandler v0;
+io.netty.util.AsciiString v4;
+io.netty.handler.codec.http.HttpResponse v1;
+java.lang.String v5;
+v0 := @this: io.netty.handler.codec.http.cors.CorsHandler;
+v1 := @parameter0: io.netty.handler.codec.http.HttpResponse;
+v2 = v0.<io.netty.handler.codec.http.cors.CorsHandler: io.netty.handler.codec.http.HttpRequest request>;
+v3 = interfaceinvoke v2.<io.netty.handler.codec.http.HttpRequest: io.netty.handler.codec.http.HttpHeaders headers()>();
+v4 = <io.netty.handler.codec.http.HttpHeaderNames: io.netty.util.AsciiString ORIGIN>;
+v5 = virtualinvoke v3.<io.netty.handler.codec.http.HttpHeaders: java.lang.String get(java.lang.CharSequence)>(v4);
+staticinvoke <io.netty.handler.codec.http.cors.CorsHandler: void setOrigin(io.netty.handler.codec.http.HttpResponse,java.lang.String)>(v1, v5);
+return;
+}
+private static void setVaryHeader(io.netty.handler.codec.http.HttpResponse)
+{
+io.netty.handler.codec.http.HttpHeaders v1;
+io.netty.util.AsciiString v2, v3;
+io.netty.handler.codec.http.HttpResponse v0;
+v0 := @parameter0: io.netty.handler.codec.http.HttpResponse;
+v1 = interfaceinvoke v0.<io.netty.handler.codec.http.HttpResponse: io.netty.handler.codec.http.HttpHeaders headers()>();
+v2 = <io.netty.handler.codec.http.HttpHeaderNames: io.netty.util.AsciiString VARY>;
+v3 = <io.netty.handler.codec.http.HttpHeaderNames: io.netty.util.AsciiString ORIGIN>;
+virtualinvoke v1.<io.netty.handler.codec.http.HttpHeaders: io.netty.handler.codec.http.HttpHeaders set(java.lang.CharSequence,java.lang.Object)>(v2, v3);
+return;
+}
+private static void setAnyOrigin(io.netty.handler.codec.http.HttpResponse)
+{
+io.netty.handler.codec.http.HttpResponse v0;
+v0 := @parameter0: io.netty.handler.codec.http.HttpResponse;
+staticinvoke <io.netty.handler.codec.http.cors.CorsHandler: void setOrigin(io.netty.handler.codec.http.HttpResponse,java.lang.String)>(v0, "*");
+return;
+}
+private static void setNullOrigin(io.netty.handler.codec.http.HttpResponse)
+{
+io.netty.handler.codec.http.HttpResponse v0;
+v0 := @parameter0: io.netty.handler.codec.http.HttpResponse;
+staticinvoke <io.netty.handler.codec.http.cors.CorsHandler: void setOrigin(io.netty.handler.codec.http.HttpResponse,java.lang.String)>(v0, "null");
+return;
+}
+private static void setOrigin(io.netty.handler.codec.http.HttpResponse, java.lang.String)
+{
+io.netty.handler.codec.http.HttpHeaders v2;
+io.netty.util.AsciiString v3;
+io.netty.handler.codec.http.HttpResponse v0;
+java.lang.String v1;
+v0 := @parameter0: io.netty.handler.codec.http.HttpResponse;
+v1 := @parameter1: java.lang.String;
+v2 = interfaceinvoke v0.<io.netty.handler.codec.http.HttpResponse: io.netty.handler.codec.http.HttpHeaders headers()>();
+v3 = <io.netty.handler.codec.http.HttpHeaderNames: io.netty.util.AsciiString ACCESS_CONTROL_ALLOW_ORIGIN>;
+virtualinvoke v2.<io.netty.handler.codec.http.HttpHeaders: io.netty.handler.codec.http.HttpHeaders set(java.lang.CharSequence,java.lang.Object)>(v3, v1);
+return;
+}
+private void setAllowCredentials(io.netty.handler.codec.http.HttpResponse)
+{
+io.netty.handler.codec.http.HttpHeaders v4, v8;
+io.netty.handler.codec.http.cors.CorsConfig v2;
+io.netty.util.AsciiString v5, v9;
+io.netty.handler.codec.http.cors.CorsHandler v0;
+io.netty.handler.codec.http.HttpResponse v1;
+java.lang.String v6;
+boolean v3, v7;
+v0 := @this: io.netty.handler.codec.http.cors.CorsHandler;
+v1 := @parameter0: io.netty.handler.codec.http.HttpResponse;
+v2 = v0.<io.netty.handler.codec.http.cors.CorsHandler: io.netty.handler.codec.http.cors.CorsConfig config>;
+v3 = virtualinvoke v2.<io.netty.handler.codec.http.cors.CorsConfig: boolean isCredentialsAllowed()>();
+if v3 == 0 goto label1;
+v4 = interfaceinvoke v1.<io.netty.handler.codec.http.HttpResponse: io.netty.handler.codec.http.HttpHeaders headers()>();
+v5 = <io.netty.handler.codec.http.HttpHeaderNames: io.netty.util.AsciiString ACCESS_CONTROL_ALLOW_ORIGIN>;
+v6 = virtualinvoke v4.<io.netty.handler.codec.http.HttpHeaders: java.lang.String get(java.lang.CharSequence)>(v5);
+v7 = virtualinvoke v6.<java.lang.String: boolean equals(java.lang.Object)>("*");
+if v7 != 0 goto label1;
+v8 = interfaceinvoke v1.<io.netty.handler.codec.http.HttpResponse: io.netty.handler.codec.http.HttpHeaders headers()>();
+v9 = <io.netty.handler.codec.http.HttpHeaderNames: io.netty.util.AsciiString ACCESS_CONTROL_ALLOW_CREDENTIALS>;
+virtualinvoke v8.<io.netty.handler.codec.http.HttpHeaders: io.netty.handler.codec.http.HttpHeaders set(java.lang.CharSequence,java.lang.Object)>(v9, "true");
+label1:
+return;
+}
+private static boolean isPreflightRequest(io.netty.handler.codec.http.HttpRequest)
+{
+io.netty.handler.codec.http.HttpHeaders v1;
+io.netty.handler.codec.http.HttpRequest v0;
+io.netty.handler.codec.http.HttpMethod v2, v3;
+io.netty.util.AsciiString v5, v7;
+boolean v4, v6, v8, v9;
+v0 := @parameter0: io.netty.handler.codec.http.HttpRequest;
+v1 = interfaceinvoke v0.<io.netty.handler.codec.http.HttpRequest: io.netty.handler.codec.http.HttpHeaders headers()>();
+v2 = <io.netty.handler.codec.http.HttpMethod: io.netty.handler.codec.http.HttpMethod OPTIONS>;
+v3 = interfaceinvoke v0.<io.netty.handler.codec.http.HttpRequest: io.netty.handler.codec.http.HttpMethod method()>();
+v4 = virtualinvoke v2.<io.netty.handler.codec.http.HttpMethod: boolean equals(java.lang.Object)>(v3);
+if v4 == 0 goto label1;
+v5 = <io.netty.handler.codec.http.HttpHeaderNames: io.netty.util.AsciiString ORIGIN>;
+v6 = virtualinvoke v1.<io.netty.handler.codec.http.HttpHeaders: boolean contains(java.lang.CharSequence)>(v5);
+if v6 == 0 goto label1;
+v7 = <io.netty.handler.codec.http.HttpHeaderNames: io.netty.util.AsciiString ACCESS_CONTROL_REQUEST_METHOD>;
+v8 = virtualinvoke v1.<io.netty.handler.codec.http.HttpHeaders: boolean contains(java.lang.CharSequence)>(v7);
+if v8 == 0 goto label1;
+v9 = 1;
+goto label2;
+label1:
+v9 = 0;
+label2:
+return v9;
+}
+private void setExposeHeaders(io.netty.handler.codec.http.HttpResponse)
+{
+io.netty.handler.codec.http.HttpHeaders v5;
+io.netty.handler.codec.http.cors.CorsConfig v2, v7;
+io.netty.util.AsciiString v6;
+java.util.Set v3, v8;
+io.netty.handler.codec.http.cors.CorsHandler v0;
+io.netty.handler.codec.http.HttpResponse v1;
+boolean v4;
+v0 := @this: io.netty.handler.codec.http.cors.CorsHandler;
+v1 := @parameter0: io.netty.handler.codec.http.HttpResponse;
+v2 = v0.<io.netty.handler.codec.http.cors.CorsHandler: io.netty.handler.codec.http.cors.CorsConfig config>;
+v3 = virtualinvoke v2.<io.netty.handler.codec.http.cors.CorsConfig: java.util.Set exposedHeaders()>();
+v4 = interfaceinvoke v3.<java.util.Set: boolean isEmpty()>();
+if v4 != 0 goto label1;
+v5 = interfaceinvoke v1.<io.netty.handler.codec.http.HttpResponse: io.netty.handler.codec.http.HttpHeaders headers()>();
+v6 = <io.netty.handler.codec.http.HttpHeaderNames: io.netty.util.AsciiString ACCESS_CONTROL_EXPOSE_HEADERS>;
+v7 = v0.<io.netty.handler.codec.http.cors.CorsHandler: io.netty.handler.codec.http.cors.CorsConfig config>;
+v8 = virtualinvoke v7.<io.netty.handler.codec.http.cors.CorsConfig: java.util.Set exposedHeaders()>();
+virtualinvoke v5.<io.netty.handler.codec.http.HttpHeaders: io.netty.handler.codec.http.HttpHeaders set(java.lang.CharSequence,java.lang.Iterable)>(v6, v8);
+label1:
+return;
+}
+private void setAllowMethods(io.netty.handler.codec.http.HttpResponse)
+{
+io.netty.handler.codec.http.HttpHeaders v2;
+io.netty.handler.codec.http.cors.CorsConfig v4;
+io.netty.handler.codec.http.cors.CorsHandler v0;
+io.netty.util.AsciiString v3;
+java.util.Set v5;
+io.netty.handler.codec.http.HttpResponse v1;
+v0 := @this: io.netty.handler.codec.http.cors.CorsHandler;
+v1 := @parameter0: io.netty.handler.codec.http.HttpResponse;
+v2 = interfaceinvoke v1.<io.netty.handler.codec.http.HttpResponse: io.netty.handler.codec.http.HttpHeaders headers()>();
+v3 = <io.netty.handler.codec.http.HttpHeaderNames: io.netty.util.AsciiString ACCESS_CONTROL_ALLOW_METHODS>;
+v4 = v0.<io.netty.handler.codec.http.cors.CorsHandler: io.netty.handler.codec.http.cors.CorsConfig config>;
+v5 = virtualinvoke v4.<io.netty.handler.codec.http.cors.CorsConfig: java.util.Set allowedRequestMethods()>();
+virtualinvoke v2.<io.netty.handler.codec.http.HttpHeaders: io.netty.handler.codec.http.HttpHeaders set(java.lang.CharSequence,java.lang.Iterable)>(v3, v5);
+return;
+}
+private void setAllowHeaders(io.netty.handler.codec.http.HttpResponse)
+{
+io.netty.handler.codec.http.HttpHeaders v2;
+io.netty.handler.codec.http.cors.CorsConfig v4;
+io.netty.handler.codec.http.cors.CorsHandler v0;
+io.netty.util.AsciiString v3;
+java.util.Set v5;
+io.netty.handler.codec.http.HttpResponse v1;
+v0 := @this: io.netty.handler.codec.http.cors.CorsHandler;
+v1 := @parameter0: io.netty.handler.codec.http.HttpResponse;
+v2 = interfaceinvoke v1.<io.netty.handler.codec.http.HttpResponse: io.netty.handler.codec.http.HttpHeaders headers()>();
+v3 = <io.netty.handler.codec.http.HttpHeaderNames: io.netty.util.AsciiString ACCESS_CONTROL_ALLOW_HEADERS>;
+v4 = v0.<io.netty.handler.codec.http.cors.CorsHandler: io.netty.handler.codec.http.cors.CorsConfig config>;
+v5 = virtualinvoke v4.<io.netty.handler.codec.http.cors.CorsConfig: java.util.Set allowedRequestHeaders()>();
+virtualinvoke v2.<io.netty.handler.codec.http.HttpHeaders: io.netty.handler.codec.http.HttpHeaders set(java.lang.CharSequence,java.lang.Iterable)>(v3, v5);
+return;
+}
+private void setMaxAge(io.netty.handler.codec.http.HttpResponse)
+{
+io.netty.handler.codec.http.HttpHeaders v2;
+java.lang.Long v6;
+io.netty.handler.codec.http.cors.CorsConfig v4;
+io.netty.handler.codec.http.cors.CorsHandler v0;
+io.netty.util.AsciiString v3;
+io.netty.handler.codec.http.HttpResponse v1;
+long v5;
+v0 := @this: io.netty.handler.codec.http.cors.CorsHandler;
+v1 := @parameter0: io.netty.handler.codec.http.HttpResponse;
+v2 = interfaceinvoke v1.<io.netty.handler.codec.http.HttpResponse: io.netty.handler.codec.http.HttpHeaders headers()>();
+v3 = <io.netty.handler.codec.http.HttpHeaderNames: io.netty.util.AsciiString ACCESS_CONTROL_MAX_AGE>;
+v4 = v0.<io.netty.handler.codec.http.cors.CorsHandler: io.netty.handler.codec.http.cors.CorsConfig config>;
+v5 = virtualinvoke v4.<io.netty.handler.codec.http.cors.CorsConfig: long maxAge()>();
+v6 = staticinvoke <java.lang.Long: java.lang.Long valueOf(long)>(v5);
+virtualinvoke v2.<io.netty.handler.codec.http.HttpHeaders: io.netty.handler.codec.http.HttpHeaders set(java.lang.CharSequence,java.lang.Object)>(v3, v6);
+return;
+}
+private void setAllowPrivateNetwork(io.netty.handler.codec.http.HttpResponse)
+{
+io.netty.handler.codec.http.HttpHeaders v10, v3, v8;
+io.netty.handler.codec.http.HttpRequest v2;
+io.netty.handler.codec.http.cors.CorsConfig v6;
+io.netty.util.AsciiString v11, v4, v9;
+io.netty.handler.codec.http.cors.CorsHandler v0;
+io.netty.handler.codec.http.HttpResponse v1;
+boolean v5, v7;
+v0 := @this: io.netty.handler.codec.http.cors.CorsHandler;
+v1 := @parameter0: io.netty.handler.codec.http.HttpResponse;
+v2 = v0.<io.netty.handler.codec.http.cors.CorsHandler: io.netty.handler.codec.http.HttpRequest request>;
+v3 = interfaceinvoke v2.<io.netty.handler.codec.http.HttpRequest: io.netty.handler.codec.http.HttpHeaders headers()>();
+v4 = <io.netty.handler.codec.http.HttpHeaderNames: io.netty.util.AsciiString ACCESS_CONTROL_REQUEST_PRIVATE_NETWORK>;
+v5 = virtualinvoke v3.<io.netty.handler.codec.http.HttpHeaders: boolean contains(java.lang.CharSequence)>(v4);
+if v5 == 0 goto label2;
+v6 = v0.<io.netty.handler.codec.http.cors.CorsHandler: io.netty.handler.codec.http.cors.CorsConfig config>;
+v7 = virtualinvoke v6.<io.netty.handler.codec.http.cors.CorsConfig: boolean isPrivateNetworkAllowed()>();
+if v7 == 0 goto label1;
+v8 = interfaceinvoke v1.<io.netty.handler.codec.http.HttpResponse: io.netty.handler.codec.http.HttpHeaders headers()>();
+v9 = <io.netty.handler.codec.http.HttpHeaderNames: io.netty.util.AsciiString ACCESS_CONTROL_ALLOW_PRIVATE_NETWORK>;
+virtualinvoke v8.<io.netty.handler.codec.http.HttpHeaders: io.netty.handler.codec.http.HttpHeaders set(java.lang.CharSequence,java.lang.Object)>(v9, "true");
+goto label2;
+label1:
+v10 = interfaceinvoke v1.<io.netty.handler.codec.http.HttpResponse: io.netty.handler.codec.http.HttpHeaders headers()>();
+v11 = <io.netty.handler.codec.http.HttpHeaderNames: io.netty.util.AsciiString ACCESS_CONTROL_ALLOW_PRIVATE_NETWORK>;
+virtualinvoke v10.<io.netty.handler.codec.http.HttpHeaders: io.netty.handler.codec.http.HttpHeaders set(java.lang.CharSequence,java.lang.Object)>(v11, "false");
+label2:
+return;
+}
+public void write(io.netty.channel.ChannelHandlerContext, java.lang.Object, io.netty.channel.ChannelPromise) throws java.lang.Exception
+{
+io.netty.handler.codec.http.cors.CorsConfig v4, v5;
+io.netty.channel.ChannelHandlerContext v1;
+io.netty.channel.ChannelPromise v3;
+io.netty.handler.codec.http.cors.CorsHandler v0;
+java.lang.Object v2;
+boolean v6, v7, v8;
+v0 := @this: io.netty.handler.codec.http.cors.CorsHandler;
+v1 := @parameter0: io.netty.channel.ChannelHandlerContext;
+v2 := @parameter1: java.lang.Object;
+v3 := @parameter2: io.netty.channel.ChannelPromise;
+v4 = v0.<io.netty.handler.codec.http.cors.CorsHandler: io.netty.handler.codec.http.cors.CorsConfig config>;
+if v4 == null goto label1;
+v5 = v0.<io.netty.handler.codec.http.cors.CorsHandler: io.netty.handler.codec.http.cors.CorsConfig config>;
+v6 = virtualinvoke v5.<io.netty.handler.codec.http.cors.CorsConfig: boolean isCorsSupportEnabled()>();
+if v6 == 0 goto label1;
+v7 = v2 instanceof io.netty.handler.codec.http.HttpResponse;
+if v7 == 0 goto label1;
+v8 = specialinvoke v0.<io.netty.handler.codec.http.cors.CorsHandler: boolean setOrigin(io.netty.handler.codec.http.HttpResponse)>(v2);
+if v8 == 0 goto label1;
+specialinvoke v0.<io.netty.handler.codec.http.cors.CorsHandler: void setAllowCredentials(io.netty.handler.codec.http.HttpResponse)>(v2);
+specialinvoke v0.<io.netty.handler.codec.http.cors.CorsHandler: void setExposeHeaders(io.netty.handler.codec.http.HttpResponse)>(v2);
+label1:
+interfaceinvoke v1.<io.netty.channel.ChannelHandlerContext: io.netty.channel.ChannelFuture write(java.lang.Object,io.netty.channel.ChannelPromise)>(v2, v3);
+return;
+}
+private static void forbidden(io.netty.channel.ChannelHandlerContext, io.netty.handler.codec.http.HttpRequest)
+{
+io.netty.handler.codec.http.HttpVersion v3;
+io.netty.handler.codec.http.HttpHeaders v7;
+io.netty.handler.codec.http.HttpRequest v1;
+io.netty.buffer.ByteBufAllocator v5;
+io.netty.util.AsciiString v8, v9;
+io.netty.handler.codec.http.HttpResponseStatus v4;
+io.netty.channel.ChannelHandlerContext v0;
+io.netty.buffer.ByteBuf v6;
+io.netty.handler.codec.http.DefaultFullHttpResponse v2;
+v0 := @parameter0: io.netty.channel.ChannelHandlerContext;
+v1 := @parameter1: io.netty.handler.codec.http.HttpRequest;
+v2 = new io.netty.handler.codec.http.DefaultFullHttpResponse;
+v3 = interfaceinvoke v1.<io.netty.handler.codec.http.HttpRequest: io.netty.handler.codec.http.HttpVersion protocolVersion()>();
+v4 = <io.netty.handler.codec.http.HttpResponseStatus: io.netty.handler.codec.http.HttpResponseStatus FORBIDDEN>;
+v5 = interfaceinvoke v0.<io.netty.channel.ChannelHandlerContext: io.netty.buffer.ByteBufAllocator alloc()>();
+v6 = interfaceinvoke v5.<io.netty.buffer.ByteBufAllocator: io.netty.buffer.ByteBuf buffer(int)>(0);
+specialinvoke v2.<io.netty.handler.codec.http.DefaultFullHttpResponse: void <init>(io.netty.handler.codec.http.HttpVersion,io.netty.handler.codec.http.HttpResponseStatus,io.netty.buffer.ByteBuf)>(v3, v4, v6);
+v7 = interfaceinvoke v2.<io.netty.handler.codec.http.HttpResponse: io.netty.handler.codec.http.HttpHeaders headers()>();
+v8 = <io.netty.handler.codec.http.HttpHeaderNames: io.netty.util.AsciiString CONTENT_LENGTH>;
+v9 = <io.netty.handler.codec.http.HttpHeaderValues: io.netty.util.AsciiString ZERO>;
+virtualinvoke v7.<io.netty.handler.codec.http.HttpHeaders: io.netty.handler.codec.http.HttpHeaders set(java.lang.CharSequence,java.lang.Object)>(v8, v9);
+staticinvoke <io.netty.util.ReferenceCountUtil: boolean release(java.lang.Object)>(v1);
+staticinvoke <io.netty.handler.codec.http.cors.CorsHandler: void respond(io.netty.channel.ChannelHandlerContext,io.netty.handler.codec.http.HttpRequest,io.netty.handler.codec.http.HttpResponse)>(v0, v1, v2);
+return;
+}
+private static void respond(io.netty.channel.ChannelHandlerContext, io.netty.handler.codec.http.HttpRequest, io.netty.handler.codec.http.HttpResponse)
+{
+io.netty.channel.ChannelHandlerContext v0;
+io.netty.handler.codec.http.HttpRequest v1;
+io.netty.channel.ChannelFutureListener v5;
+io.netty.handler.codec.http.HttpResponse v2;
+boolean v3;
+io.netty.channel.ChannelFuture v4;
+v0 := @parameter0: io.netty.channel.ChannelHandlerContext;
+v1 := @parameter1: io.netty.handler.codec.http.HttpRequest;
+v2 := @parameter2: io.netty.handler.codec.http.HttpResponse;
+v3 = staticinvoke <io.netty.handler.codec.http.HttpUtil: boolean isKeepAlive(io.netty.handler.codec.http.HttpMessage)>(v1);
+staticinvoke <io.netty.handler.codec.http.HttpUtil: void setKeepAlive(io.netty.handler.codec.http.HttpMessage,boolean)>(v2, v3);
+v4 = interfaceinvoke v0.<io.netty.channel.ChannelHandlerContext: io.netty.channel.ChannelFuture writeAndFlush(java.lang.Object)>(v2);
+if v3 != 0 goto label1;
+v5 = <io.netty.channel.ChannelFutureListener: io.netty.channel.ChannelFutureListener CLOSE>;
+interfaceinvoke v4.<io.netty.channel.ChannelFuture: io.netty.channel.ChannelFuture addListener(io.netty.util.concurrent.GenericFutureListener)>(v5);
+label1:
+return;
+}
+static void <clinit>()
+{
+io.netty.util.internal.logging.InternalLogger v0;
+v0 = staticinvoke <io.netty.util.internal.logging.InternalLoggerFactory: io.netty.util.internal.logging.InternalLogger getInstance(java.lang.Class)>(class "Lio/netty/handler/codec/http/cors/CorsHandler;");
+<io.netty.handler.codec.http.cors.CorsHandler: io.netty.util.internal.logging.InternalLogger logger> = v0;
+return;
+}
+}

@@ -1,0 +1,127 @@
+class io.smallrye.mutiny.operators.uni.UniRetryAtMost$UniRetryAtMostProcessor extends io.smallrye.mutiny.operators.uni.UniOperatorProcessor
+{
+private final io.smallrye.mutiny.operators.uni.UniRetryAtMost uniRetryAtMost;
+private volatile int counter;
+private static final java.util.concurrent.atomic.AtomicIntegerFieldUpdater counterUpdater;
+public void <init>(io.smallrye.mutiny.operators.uni.UniRetryAtMost, io.smallrye.mutiny.subscription.UniSubscriber)
+{
+io.smallrye.mutiny.operators.uni.UniRetryAtMost v1;
+io.smallrye.mutiny.subscription.UniSubscriber v2;
+io.smallrye.mutiny.operators.uni.UniRetryAtMost$UniRetryAtMostProcessor v0;
+v0 := @this: io.smallrye.mutiny.operators.uni.UniRetryAtMost$UniRetryAtMostProcessor;
+v1 := @parameter0: io.smallrye.mutiny.operators.uni.UniRetryAtMost;
+v2 := @parameter1: io.smallrye.mutiny.subscription.UniSubscriber;
+specialinvoke v0.<io.smallrye.mutiny.operators.uni.UniOperatorProcessor: void <init>(io.smallrye.mutiny.subscription.UniSubscriber)>(v2);
+v0.<io.smallrye.mutiny.operators.uni.UniRetryAtMost$UniRetryAtMostProcessor: int counter> = 0;
+v0.<io.smallrye.mutiny.operators.uni.UniRetryAtMost$UniRetryAtMostProcessor: io.smallrye.mutiny.operators.uni.UniRetryAtMost uniRetryAtMost> = v1;
+return;
+}
+public void onSubscribe(io.smallrye.mutiny.subscription.UniSubscription)
+{
+io.smallrye.mutiny.subscription.UniSubscription v1;
+java.util.concurrent.atomic.AtomicIntegerFieldUpdater v2;
+io.smallrye.mutiny.operators.uni.UniRetryAtMost$UniRetryAtMostProcessor v0;
+int v3;
+io.smallrye.mutiny.subscription.UniSubscriber v5;
+boolean v4;
+v0 := @this: io.smallrye.mutiny.operators.uni.UniRetryAtMost$UniRetryAtMostProcessor;
+v1 := @parameter0: io.smallrye.mutiny.subscription.UniSubscription;
+v2 = <io.smallrye.mutiny.operators.uni.UniRetryAtMost$UniRetryAtMostProcessor: java.util.concurrent.atomic.AtomicIntegerFieldUpdater counterUpdater>;
+v3 = virtualinvoke v2.<java.util.concurrent.atomic.AtomicIntegerFieldUpdater: int incrementAndGet(java.lang.Object)>(v0);
+v4 = virtualinvoke v0.<io.smallrye.mutiny.operators.uni.UniRetryAtMost$UniRetryAtMostProcessor: boolean compareAndSetUpstreamSubscription(io.smallrye.mutiny.subscription.UniSubscription,io.smallrye.mutiny.subscription.UniSubscription)>(null, v1);
+if v4 == 0 goto label1;
+if v3 != 1 goto label2;
+v5 = v0.<io.smallrye.mutiny.operators.uni.UniRetryAtMost$UniRetryAtMostProcessor: io.smallrye.mutiny.subscription.UniSubscriber downstream>;
+interfaceinvoke v5.<io.smallrye.mutiny.subscription.UniSubscriber: void onSubscribe(io.smallrye.mutiny.subscription.UniSubscription)>(v0);
+goto label2;
+label1:
+interfaceinvoke v1.<io.smallrye.mutiny.subscription.UniSubscription: void cancel()>();
+label2:
+return;
+}
+public void onFailure(java.lang.Throwable)
+{
+java.lang.Throwable v1;
+io.smallrye.mutiny.subscription.UniSubscription v9;
+io.smallrye.mutiny.operators.uni.UniRetryAtMost v10, v5;
+long v6;
+io.smallrye.mutiny.subscription.UniSubscriber v8;
+io.smallrye.mutiny.Uni v11;
+byte v7;
+io.smallrye.mutiny.operators.uni.UniRetryAtMost$UniRetryAtMostProcessor v0;
+int v4;
+boolean v2, v3;
+v0 := @this: io.smallrye.mutiny.operators.uni.UniRetryAtMost$UniRetryAtMostProcessor;
+v1 := @parameter0: java.lang.Throwable;
+v2 = virtualinvoke v0.<io.smallrye.mutiny.operators.uni.UniRetryAtMost$UniRetryAtMostProcessor: boolean isCancelled()>();
+if v2 == 0 goto label1;
+staticinvoke <io.smallrye.mutiny.infrastructure.Infrastructure: void handleDroppedException(java.lang.Throwable)>(v1);
+return;
+label1:
+v3 = specialinvoke v0.<io.smallrye.mutiny.operators.uni.UniRetryAtMost$UniRetryAtMostProcessor: boolean testPredicate(java.lang.Throwable)>(v1);
+if v3 != 0 goto label2;
+return;
+label2:
+v4 = v0.<io.smallrye.mutiny.operators.uni.UniRetryAtMost$UniRetryAtMostProcessor: int counter>;
+v5 = v0.<io.smallrye.mutiny.operators.uni.UniRetryAtMost$UniRetryAtMostProcessor: io.smallrye.mutiny.operators.uni.UniRetryAtMost uniRetryAtMost>;
+v6 = v5.<io.smallrye.mutiny.operators.uni.UniRetryAtMost: long maxAttempts>;
+v7 = v4 cmp v6;
+if v7 <= 0 goto label3;
+v8 = v0.<io.smallrye.mutiny.operators.uni.UniRetryAtMost$UniRetryAtMostProcessor: io.smallrye.mutiny.subscription.UniSubscriber downstream>;
+interfaceinvoke v8.<io.smallrye.mutiny.subscription.UniSubscriber: void onFailure(java.lang.Throwable)>(v1);
+return;
+label3:
+v9 = virtualinvoke v0.<io.smallrye.mutiny.operators.uni.UniRetryAtMost$UniRetryAtMostProcessor: io.smallrye.mutiny.subscription.UniSubscription getAndSetUpstreamSubscription(io.smallrye.mutiny.subscription.UniSubscription)>(null);
+if v9 == null goto label4;
+interfaceinvoke v9.<io.smallrye.mutiny.subscription.UniSubscription: void cancel()>();
+label4:
+v10 = v0.<io.smallrye.mutiny.operators.uni.UniRetryAtMost$UniRetryAtMostProcessor: io.smallrye.mutiny.operators.uni.UniRetryAtMost uniRetryAtMost>;
+v11 = virtualinvoke v10.<io.smallrye.mutiny.operators.uni.UniRetryAtMost: io.smallrye.mutiny.Uni upstream()>();
+staticinvoke <io.smallrye.mutiny.operators.AbstractUni: void subscribe(io.smallrye.mutiny.Uni,io.smallrye.mutiny.subscription.UniSubscriber)>(v11, v0);
+return;
+}
+private boolean testPredicate(java.lang.Throwable)
+{
+java.lang.Throwable v1, v5;
+java.util.function.Predicate v3;
+io.smallrye.mutiny.operators.uni.UniRetryAtMost v2;
+io.smallrye.mutiny.subscription.UniSubscriber v6, v9;
+io.smallrye.mutiny.CompositeException v7;
+io.smallrye.mutiny.operators.uni.UniRetryAtMost$UniRetryAtMostProcessor v0;
+java.lang.Throwable[] v8;
+boolean v4;
+v0 := @this: io.smallrye.mutiny.operators.uni.UniRetryAtMost$UniRetryAtMostProcessor;
+v1 := @parameter0: java.lang.Throwable;
+label1:
+v2 = v0.<io.smallrye.mutiny.operators.uni.UniRetryAtMost$UniRetryAtMostProcessor: io.smallrye.mutiny.operators.uni.UniRetryAtMost uniRetryAtMost>;
+v3 = v2.<io.smallrye.mutiny.operators.uni.UniRetryAtMost: java.util.function.Predicate predicate>;
+v4 = interfaceinvoke v3.<java.util.function.Predicate: boolean test(java.lang.Object)>(v1);
+label2:
+goto label4;
+label3:
+v5 := @caughtexception;
+v6 = v0.<io.smallrye.mutiny.operators.uni.UniRetryAtMost$UniRetryAtMostProcessor: io.smallrye.mutiny.subscription.UniSubscriber downstream>;
+v7 = new io.smallrye.mutiny.CompositeException;
+v8 = newarray (java.lang.Throwable)[2];
+v8[0] = v5;
+v8[1] = v1;
+specialinvoke v7.<io.smallrye.mutiny.CompositeException: void <init>(java.lang.Throwable[])>(v8);
+interfaceinvoke v6.<io.smallrye.mutiny.subscription.UniSubscriber: void onFailure(java.lang.Throwable)>(v7);
+return 0;
+label4:
+if v4 != 0 goto label5;
+v9 = v0.<io.smallrye.mutiny.operators.uni.UniRetryAtMost$UniRetryAtMostProcessor: io.smallrye.mutiny.subscription.UniSubscriber downstream>;
+interfaceinvoke v9.<io.smallrye.mutiny.subscription.UniSubscriber: void onFailure(java.lang.Throwable)>(v1);
+return 0;
+label5:
+return 1;
+catch java.lang.Throwable from label1 to label2 with label3;
+}
+static void <clinit>()
+{
+java.util.concurrent.atomic.AtomicIntegerFieldUpdater v0;
+v0 = staticinvoke <java.util.concurrent.atomic.AtomicIntegerFieldUpdater: java.util.concurrent.atomic.AtomicIntegerFieldUpdater newUpdater(java.lang.Class,java.lang.String)>(class "Lio/smallrye/mutiny/operators/uni/UniRetryAtMost$UniRetryAtMostProcessor;", "counter");
+<io.smallrye.mutiny.operators.uni.UniRetryAtMost$UniRetryAtMostProcessor: java.util.concurrent.atomic.AtomicIntegerFieldUpdater counterUpdater> = v0;
+return;
+}
+}

@@ -1,0 +1,165 @@
+class io.vertx.core.impl.LoaderManager extends java.lang.Object
+{
+private final java.util.Map classLoaders;
+void <init>()
+{
+java.util.HashMap v1;
+io.vertx.core.impl.LoaderManager v0;
+v0 := @this: io.vertx.core.impl.LoaderManager;
+specialinvoke v0.<java.lang.Object: void <init>()>();
+v1 = new java.util.HashMap;
+specialinvoke v1.<java.util.HashMap: void <init>()>();
+v0.<io.vertx.core.impl.LoaderManager: java.util.Map classLoaders> = v1;
+return;
+}
+io.vertx.core.impl.ClassLoaderHolder getClassLoader(io.vertx.core.DeploymentOptions)
+{
+java.lang.Throwable v13;
+java.lang.IllegalStateException v7;
+io.vertx.core.impl.ClassLoaderHolder v8;
+io.vertx.core.DeploymentOptions v1;
+io.vertx.core.impl.LoaderManager v0;
+java.util.Map v10, v3;
+int v11, v12;
+java.lang.Object v4;
+java.lang.ClassLoader v5, v9;
+java.lang.String v2;
+boolean v6;
+v0 := @this: io.vertx.core.impl.LoaderManager;
+v1 := @parameter0: io.vertx.core.DeploymentOptions;
+v2 = virtualinvoke v1.<io.vertx.core.DeploymentOptions: java.lang.String getIsolationGroup()>();
+if v2 != null goto label1;
+return null;
+label1:
+entermonitor v0;
+label2:
+v3 = v0.<io.vertx.core.impl.LoaderManager: java.util.Map classLoaders>;
+v4 = interfaceinvoke v3.<java.util.Map: java.lang.Object get(java.lang.Object)>(v2);
+if v4 != null goto label4;
+v5 = staticinvoke <io.vertx.core.impl.VerticleManager: java.lang.ClassLoader getCurrentClassLoader()>();
+v6 = v5 instanceof java.net.URLClassLoader;
+if v6 != 0 goto label3;
+v7 = new java.lang.IllegalStateException;
+specialinvoke v7.<java.lang.IllegalStateException: void <init>(java.lang.String)>("Current classloader must be URLClassLoader");
+throw v7;
+label3:
+v8 = new io.vertx.core.impl.ClassLoaderHolder;
+v9 = staticinvoke <io.vertx.core.impl.LoaderManager: java.lang.ClassLoader buildLoader(java.net.URLClassLoader,io.vertx.core.DeploymentOptions)>(v5, v1);
+specialinvoke v8.<io.vertx.core.impl.ClassLoaderHolder: void <init>(java.lang.String,java.lang.ClassLoader)>(v2, v9);
+v4 = v8;
+v10 = v0.<io.vertx.core.impl.LoaderManager: java.util.Map classLoaders>;
+interfaceinvoke v10.<java.util.Map: java.lang.Object put(java.lang.Object,java.lang.Object)>(v2, v8);
+label4:
+v11 = v4.<io.vertx.core.impl.ClassLoaderHolder: int refCount>;
+v12 = v11 + 1;
+v4.<io.vertx.core.impl.ClassLoaderHolder: int refCount> = v12;
+exitmonitor v0;
+label5:
+goto label7;
+label6:
+v13 := @caughtexception;
+exitmonitor v0;
+throw v13;
+label7:
+return v4;
+catch java.lang.Throwable from label2 to label5 with label6;
+}
+void release(io.vertx.core.impl.ClassLoaderHolder)
+{
+java.lang.Throwable v10;
+java.io.IOException v9;
+io.vertx.core.impl.ClassLoaderHolder v1;
+io.vertx.core.impl.LoaderManager v0;
+java.util.Map v4;
+int v2, v3;
+java.lang.ClassLoader v6, v8;
+java.lang.String v5;
+boolean v7;
+v0 := @this: io.vertx.core.impl.LoaderManager;
+v1 := @parameter0: io.vertx.core.impl.ClassLoaderHolder;
+entermonitor v0;
+label1:
+v2 = v1.<io.vertx.core.impl.ClassLoaderHolder: int refCount>;
+v3 = v2 - 1;
+v1.<io.vertx.core.impl.ClassLoaderHolder: int refCount> = v3;
+if v3 != 0 goto label5;
+v4 = v0.<io.vertx.core.impl.LoaderManager: java.util.Map classLoaders>;
+v5 = v1.<io.vertx.core.impl.ClassLoaderHolder: java.lang.String group>;
+interfaceinvoke v4.<java.util.Map: java.lang.Object remove(java.lang.Object)>(v5);
+v6 = v1.<io.vertx.core.impl.ClassLoaderHolder: java.lang.ClassLoader loader>;
+v7 = v6 instanceof java.io.Closeable;
+if v7 == 0 goto label5;
+label2:
+v8 = v1.<io.vertx.core.impl.ClassLoaderHolder: java.lang.ClassLoader loader>;
+interfaceinvoke v8.<java.io.Closeable: void close()>();
+label3:
+goto label5;
+label4:
+v9 := @caughtexception;
+label5:
+exitmonitor v0;
+label6:
+goto label8;
+label7:
+v10 := @caughtexception;
+exitmonitor v0;
+throw v10;
+label8:
+return;
+catch java.io.IOException from label2 to label3 with label4;
+catch java.lang.Throwable from label1 to label6 with label7;
+}
+private static java.lang.ClassLoader buildLoader(java.net.URLClassLoader, io.vertx.core.DeploymentOptions)
+{
+java.lang.IllegalStateException v11;
+java.lang.Object[] v16;
+java.net.URL v9;
+java.util.ArrayList v2;
+java.net.URL[] v12, v15;
+java.net.URLClassLoader v0;
+java.net.URI v8;
+boolean v5;
+java.util.Iterator v4;
+java.net.MalformedURLException v10;
+io.vertx.core.impl.IsolatingClassLoader v14;
+java.io.File v7;
+java.util.List v13, v17, v3;
+io.vertx.core.DeploymentOptions v1;
+java.lang.Object v6;
+v0 := @parameter0: java.net.URLClassLoader;
+v1 := @parameter1: io.vertx.core.DeploymentOptions;
+v2 = new java.util.ArrayList;
+specialinvoke v2.<java.util.ArrayList: void <init>()>();
+v3 = virtualinvoke v1.<io.vertx.core.DeploymentOptions: java.util.List getExtraClasspath()>();
+if v3 == null goto label5;
+v4 = interfaceinvoke v3.<java.util.List: java.util.Iterator iterator()>();
+label1:
+v5 = interfaceinvoke v4.<java.util.Iterator: boolean hasNext()>();
+if v5 == 0 goto label5;
+v6 = interfaceinvoke v4.<java.util.Iterator: java.lang.Object next()>();
+v7 = new java.io.File;
+specialinvoke v7.<java.io.File: void <init>(java.lang.String)>(v6);
+label2:
+v8 = virtualinvoke v7.<java.io.File: java.net.URI toURI()>();
+v9 = virtualinvoke v8.<java.net.URI: java.net.URL toURL()>();
+interfaceinvoke v2.<java.util.List: boolean add(java.lang.Object)>(v9);
+label3:
+goto label1;
+label4:
+v10 := @caughtexception;
+v11 = new java.lang.IllegalStateException;
+specialinvoke v11.<java.lang.IllegalStateException: void <init>(java.lang.Throwable)>(v10);
+throw v11;
+label5:
+v12 = virtualinvoke v0.<java.net.URLClassLoader: java.net.URL[] getURLs()>();
+v13 = staticinvoke <java.util.Arrays: java.util.List asList(java.lang.Object[])>(v12);
+interfaceinvoke v2.<java.util.List: boolean addAll(java.util.Collection)>(v13);
+v14 = new io.vertx.core.impl.IsolatingClassLoader;
+v15 = newarray (java.net.URL)[0];
+v16 = interfaceinvoke v2.<java.util.List: java.lang.Object[] toArray(java.lang.Object[])>(v15);
+v17 = virtualinvoke v1.<io.vertx.core.DeploymentOptions: java.util.List getIsolatedClasses()>();
+specialinvoke v14.<io.vertx.core.impl.IsolatingClassLoader: void <init>(java.net.URL[],java.lang.ClassLoader,java.util.List)>(v16, v0, v17);
+return v14;
+catch java.net.MalformedURLException from label2 to label3 with label4;
+}
+}

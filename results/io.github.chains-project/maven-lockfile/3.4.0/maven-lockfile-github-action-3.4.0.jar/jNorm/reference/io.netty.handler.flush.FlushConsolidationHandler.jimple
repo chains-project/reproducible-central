@@ -1,0 +1,245 @@
+public class io.netty.handler.flush.FlushConsolidationHandler extends io.netty.channel.ChannelDuplexHandler
+{
+private final int explicitFlushAfterFlushes;
+private final boolean consolidateWhenNoReadInProgress;
+private final java.lang.Runnable flushTask;
+private int flushPendingCount;
+private boolean readInProgress;
+private io.netty.channel.ChannelHandlerContext ctx;
+private java.util.concurrent.Future nextScheduledFlush;
+public static final int DEFAULT_EXPLICIT_FLUSH_AFTER_FLUSHES;
+public void <init>()
+{
+io.netty.handler.flush.FlushConsolidationHandler v0;
+v0 := @this: io.netty.handler.flush.FlushConsolidationHandler;
+specialinvoke v0.<io.netty.handler.flush.FlushConsolidationHandler: void <init>(int,boolean)>(256, 0);
+return;
+}
+public void <init>(int)
+{
+int v1;
+io.netty.handler.flush.FlushConsolidationHandler v0;
+v0 := @this: io.netty.handler.flush.FlushConsolidationHandler;
+v1 := @parameter0: int;
+specialinvoke v0.<io.netty.handler.flush.FlushConsolidationHandler: void <init>(int,boolean)>(v1, 0);
+return;
+}
+public void <init>(int, boolean)
+{
+io.netty.handler.flush.FlushConsolidationHandler v0;
+int v1, v3;
+io.netty.handler.flush.FlushConsolidationHandler$1 v4;
+boolean v2;
+v0 := @this: io.netty.handler.flush.FlushConsolidationHandler;
+v1 := @parameter0: int;
+v2 := @parameter1: boolean;
+specialinvoke v0.<io.netty.channel.ChannelDuplexHandler: void <init>()>();
+v3 = staticinvoke <io.netty.util.internal.ObjectUtil: int checkPositive(int,java.lang.String)>(v1, "explicitFlushAfterFlushes");
+v0.<io.netty.handler.flush.FlushConsolidationHandler: int explicitFlushAfterFlushes> = v3;
+v0.<io.netty.handler.flush.FlushConsolidationHandler: boolean consolidateWhenNoReadInProgress> = v2;
+if v2 == 0 goto label1;
+v4 = new io.netty.handler.flush.FlushConsolidationHandler$1;
+specialinvoke v4.<io.netty.handler.flush.FlushConsolidationHandler$1: void <init>(io.netty.handler.flush.FlushConsolidationHandler)>(v0);
+goto label2;
+label1:
+v4 = null;
+label2:
+v0.<io.netty.handler.flush.FlushConsolidationHandler: java.lang.Runnable flushTask> = v4;
+return;
+}
+public void handlerAdded(io.netty.channel.ChannelHandlerContext) throws java.lang.Exception
+{
+io.netty.channel.ChannelHandlerContext v1;
+io.netty.handler.flush.FlushConsolidationHandler v0;
+v0 := @this: io.netty.handler.flush.FlushConsolidationHandler;
+v1 := @parameter0: io.netty.channel.ChannelHandlerContext;
+v0.<io.netty.handler.flush.FlushConsolidationHandler: io.netty.channel.ChannelHandlerContext ctx> = v1;
+return;
+}
+public void flush(io.netty.channel.ChannelHandlerContext) throws java.lang.Exception
+{
+io.netty.handler.flush.FlushConsolidationHandler v0;
+io.netty.channel.ChannelHandlerContext v1;
+int v3, v4, v5, v7, v8, v9;
+boolean v2, v6;
+v0 := @this: io.netty.handler.flush.FlushConsolidationHandler;
+v1 := @parameter0: io.netty.channel.ChannelHandlerContext;
+v2 = v0.<io.netty.handler.flush.FlushConsolidationHandler: boolean readInProgress>;
+if v2 == 0 goto label1;
+v3 = v0.<io.netty.handler.flush.FlushConsolidationHandler: int flushPendingCount>;
+v4 = v3 + 1;
+v0.<io.netty.handler.flush.FlushConsolidationHandler: int flushPendingCount> = v4;
+v5 = v0.<io.netty.handler.flush.FlushConsolidationHandler: int explicitFlushAfterFlushes>;
+if v4 != v5 goto label4;
+specialinvoke v0.<io.netty.handler.flush.FlushConsolidationHandler: void flushNow(io.netty.channel.ChannelHandlerContext)>(v1);
+goto label4;
+label1:
+v6 = v0.<io.netty.handler.flush.FlushConsolidationHandler: boolean consolidateWhenNoReadInProgress>;
+if v6 == 0 goto label3;
+v7 = v0.<io.netty.handler.flush.FlushConsolidationHandler: int flushPendingCount>;
+v8 = v7 + 1;
+v0.<io.netty.handler.flush.FlushConsolidationHandler: int flushPendingCount> = v8;
+v9 = v0.<io.netty.handler.flush.FlushConsolidationHandler: int explicitFlushAfterFlushes>;
+if v8 != v9 goto label2;
+specialinvoke v0.<io.netty.handler.flush.FlushConsolidationHandler: void flushNow(io.netty.channel.ChannelHandlerContext)>(v1);
+goto label4;
+label2:
+specialinvoke v0.<io.netty.handler.flush.FlushConsolidationHandler: void scheduleFlush(io.netty.channel.ChannelHandlerContext)>(v1);
+goto label4;
+label3:
+specialinvoke v0.<io.netty.handler.flush.FlushConsolidationHandler: void flushNow(io.netty.channel.ChannelHandlerContext)>(v1);
+label4:
+return;
+}
+public void channelReadComplete(io.netty.channel.ChannelHandlerContext) throws java.lang.Exception
+{
+io.netty.channel.ChannelHandlerContext v1;
+io.netty.handler.flush.FlushConsolidationHandler v0;
+v0 := @this: io.netty.handler.flush.FlushConsolidationHandler;
+v1 := @parameter0: io.netty.channel.ChannelHandlerContext;
+specialinvoke v0.<io.netty.handler.flush.FlushConsolidationHandler: void resetReadAndFlushIfNeeded(io.netty.channel.ChannelHandlerContext)>(v1);
+interfaceinvoke v1.<io.netty.channel.ChannelHandlerContext: io.netty.channel.ChannelHandlerContext fireChannelReadComplete()>();
+return;
+}
+public void channelRead(io.netty.channel.ChannelHandlerContext, java.lang.Object) throws java.lang.Exception
+{
+io.netty.channel.ChannelHandlerContext v1;
+java.lang.Object v2;
+io.netty.handler.flush.FlushConsolidationHandler v0;
+v0 := @this: io.netty.handler.flush.FlushConsolidationHandler;
+v1 := @parameter0: io.netty.channel.ChannelHandlerContext;
+v2 := @parameter1: java.lang.Object;
+v0.<io.netty.handler.flush.FlushConsolidationHandler: boolean readInProgress> = 1;
+interfaceinvoke v1.<io.netty.channel.ChannelHandlerContext: io.netty.channel.ChannelHandlerContext fireChannelRead(java.lang.Object)>(v2);
+return;
+}
+public void exceptionCaught(io.netty.channel.ChannelHandlerContext, java.lang.Throwable) throws java.lang.Exception
+{
+java.lang.Throwable v2;
+io.netty.channel.ChannelHandlerContext v1;
+io.netty.handler.flush.FlushConsolidationHandler v0;
+v0 := @this: io.netty.handler.flush.FlushConsolidationHandler;
+v1 := @parameter0: io.netty.channel.ChannelHandlerContext;
+v2 := @parameter1: java.lang.Throwable;
+specialinvoke v0.<io.netty.handler.flush.FlushConsolidationHandler: void resetReadAndFlushIfNeeded(io.netty.channel.ChannelHandlerContext)>(v1);
+interfaceinvoke v1.<io.netty.channel.ChannelHandlerContext: io.netty.channel.ChannelHandlerContext fireExceptionCaught(java.lang.Throwable)>(v2);
+return;
+}
+public void disconnect(io.netty.channel.ChannelHandlerContext, io.netty.channel.ChannelPromise) throws java.lang.Exception
+{
+io.netty.channel.ChannelHandlerContext v1;
+io.netty.channel.ChannelPromise v2;
+io.netty.handler.flush.FlushConsolidationHandler v0;
+v0 := @this: io.netty.handler.flush.FlushConsolidationHandler;
+v1 := @parameter0: io.netty.channel.ChannelHandlerContext;
+v2 := @parameter1: io.netty.channel.ChannelPromise;
+specialinvoke v0.<io.netty.handler.flush.FlushConsolidationHandler: void resetReadAndFlushIfNeeded(io.netty.channel.ChannelHandlerContext)>(v1);
+interfaceinvoke v1.<io.netty.channel.ChannelHandlerContext: io.netty.channel.ChannelFuture disconnect(io.netty.channel.ChannelPromise)>(v2);
+return;
+}
+public void close(io.netty.channel.ChannelHandlerContext, io.netty.channel.ChannelPromise) throws java.lang.Exception
+{
+io.netty.channel.ChannelHandlerContext v1;
+io.netty.channel.ChannelPromise v2;
+io.netty.handler.flush.FlushConsolidationHandler v0;
+v0 := @this: io.netty.handler.flush.FlushConsolidationHandler;
+v1 := @parameter0: io.netty.channel.ChannelHandlerContext;
+v2 := @parameter1: io.netty.channel.ChannelPromise;
+specialinvoke v0.<io.netty.handler.flush.FlushConsolidationHandler: void resetReadAndFlushIfNeeded(io.netty.channel.ChannelHandlerContext)>(v1);
+interfaceinvoke v1.<io.netty.channel.ChannelHandlerContext: io.netty.channel.ChannelFuture close(io.netty.channel.ChannelPromise)>(v2);
+return;
+}
+public void channelWritabilityChanged(io.netty.channel.ChannelHandlerContext) throws java.lang.Exception
+{
+io.netty.channel.Channel v2;
+io.netty.channel.ChannelHandlerContext v1;
+io.netty.handler.flush.FlushConsolidationHandler v0;
+boolean v3;
+v0 := @this: io.netty.handler.flush.FlushConsolidationHandler;
+v1 := @parameter0: io.netty.channel.ChannelHandlerContext;
+v2 = interfaceinvoke v1.<io.netty.channel.ChannelHandlerContext: io.netty.channel.Channel channel()>();
+v3 = interfaceinvoke v2.<io.netty.channel.Channel: boolean isWritable()>();
+if v3 != 0 goto label1;
+specialinvoke v0.<io.netty.handler.flush.FlushConsolidationHandler: void flushIfNeeded(io.netty.channel.ChannelHandlerContext)>(v1);
+label1:
+interfaceinvoke v1.<io.netty.channel.ChannelHandlerContext: io.netty.channel.ChannelHandlerContext fireChannelWritabilityChanged()>();
+return;
+}
+public void handlerRemoved(io.netty.channel.ChannelHandlerContext) throws java.lang.Exception
+{
+io.netty.channel.ChannelHandlerContext v1;
+io.netty.handler.flush.FlushConsolidationHandler v0;
+v0 := @this: io.netty.handler.flush.FlushConsolidationHandler;
+v1 := @parameter0: io.netty.channel.ChannelHandlerContext;
+specialinvoke v0.<io.netty.handler.flush.FlushConsolidationHandler: void flushIfNeeded(io.netty.channel.ChannelHandlerContext)>(v1);
+return;
+}
+private void resetReadAndFlushIfNeeded(io.netty.channel.ChannelHandlerContext)
+{
+io.netty.channel.ChannelHandlerContext v1;
+io.netty.handler.flush.FlushConsolidationHandler v0;
+v0 := @this: io.netty.handler.flush.FlushConsolidationHandler;
+v1 := @parameter0: io.netty.channel.ChannelHandlerContext;
+v0.<io.netty.handler.flush.FlushConsolidationHandler: boolean readInProgress> = 0;
+specialinvoke v0.<io.netty.handler.flush.FlushConsolidationHandler: void flushIfNeeded(io.netty.channel.ChannelHandlerContext)>(v1);
+return;
+}
+private void flushIfNeeded(io.netty.channel.ChannelHandlerContext)
+{
+int v2;
+io.netty.channel.ChannelHandlerContext v1;
+io.netty.handler.flush.FlushConsolidationHandler v0;
+v0 := @this: io.netty.handler.flush.FlushConsolidationHandler;
+v1 := @parameter0: io.netty.channel.ChannelHandlerContext;
+v2 = v0.<io.netty.handler.flush.FlushConsolidationHandler: int flushPendingCount>;
+if v2 <= 0 goto label1;
+specialinvoke v0.<io.netty.handler.flush.FlushConsolidationHandler: void flushNow(io.netty.channel.ChannelHandlerContext)>(v1);
+label1:
+return;
+}
+private void flushNow(io.netty.channel.ChannelHandlerContext)
+{
+io.netty.channel.ChannelHandlerContext v1;
+io.netty.handler.flush.FlushConsolidationHandler v0;
+v0 := @this: io.netty.handler.flush.FlushConsolidationHandler;
+v1 := @parameter0: io.netty.channel.ChannelHandlerContext;
+specialinvoke v0.<io.netty.handler.flush.FlushConsolidationHandler: void cancelScheduledFlush()>();
+v0.<io.netty.handler.flush.FlushConsolidationHandler: int flushPendingCount> = 0;
+interfaceinvoke v1.<io.netty.channel.ChannelHandlerContext: io.netty.channel.ChannelHandlerContext flush()>();
+return;
+}
+private void scheduleFlush(io.netty.channel.ChannelHandlerContext)
+{
+io.netty.channel.Channel v3;
+io.netty.channel.ChannelHandlerContext v1;
+java.util.concurrent.Future v2;
+io.netty.handler.flush.FlushConsolidationHandler v0;
+io.netty.channel.EventLoop v4;
+io.netty.util.concurrent.Future v6;
+java.lang.Runnable v5;
+v0 := @this: io.netty.handler.flush.FlushConsolidationHandler;
+v1 := @parameter0: io.netty.channel.ChannelHandlerContext;
+v2 = v0.<io.netty.handler.flush.FlushConsolidationHandler: java.util.concurrent.Future nextScheduledFlush>;
+if v2 != null goto label1;
+v3 = interfaceinvoke v1.<io.netty.channel.ChannelHandlerContext: io.netty.channel.Channel channel()>();
+v4 = interfaceinvoke v3.<io.netty.channel.Channel: io.netty.channel.EventLoop eventLoop()>();
+v5 = v0.<io.netty.handler.flush.FlushConsolidationHandler: java.lang.Runnable flushTask>;
+v6 = interfaceinvoke v4.<io.netty.channel.EventLoop: io.netty.util.concurrent.Future submit(java.lang.Runnable)>(v5);
+v0.<io.netty.handler.flush.FlushConsolidationHandler: java.util.concurrent.Future nextScheduledFlush> = v6;
+label1:
+return;
+}
+private void cancelScheduledFlush()
+{
+java.util.concurrent.Future v1, v2;
+io.netty.handler.flush.FlushConsolidationHandler v0;
+v0 := @this: io.netty.handler.flush.FlushConsolidationHandler;
+v1 = v0.<io.netty.handler.flush.FlushConsolidationHandler: java.util.concurrent.Future nextScheduledFlush>;
+if v1 == null goto label1;
+v2 = v0.<io.netty.handler.flush.FlushConsolidationHandler: java.util.concurrent.Future nextScheduledFlush>;
+interfaceinvoke v2.<java.util.concurrent.Future: boolean cancel(boolean)>(0);
+v0.<io.netty.handler.flush.FlushConsolidationHandler: java.util.concurrent.Future nextScheduledFlush> = null;
+label1:
+return;
+}
+}

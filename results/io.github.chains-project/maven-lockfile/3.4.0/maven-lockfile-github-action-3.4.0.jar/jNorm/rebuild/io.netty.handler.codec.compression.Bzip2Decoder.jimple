@@ -1,0 +1,403 @@
+public class io.netty.handler.codec.compression.Bzip2Decoder extends io.netty.handler.codec.ByteToMessageDecoder
+{
+private io.netty.handler.codec.compression.Bzip2Decoder$State currentState;
+private final io.netty.handler.codec.compression.Bzip2BitReader reader;
+private io.netty.handler.codec.compression.Bzip2BlockDecompressor blockDecompressor;
+private io.netty.handler.codec.compression.Bzip2HuffmanStageDecoder huffmanStageDecoder;
+private int blockSize;
+private int blockCRC;
+private int streamCRC;
+public void <init>()
+{
+io.netty.handler.codec.compression.Bzip2BitReader v2;
+io.netty.handler.codec.compression.Bzip2Decoder$State v1;
+io.netty.handler.codec.compression.Bzip2Decoder v0;
+v0 := @this: io.netty.handler.codec.compression.Bzip2Decoder;
+specialinvoke v0.<io.netty.handler.codec.ByteToMessageDecoder: void <init>()>();
+v1 = <io.netty.handler.codec.compression.Bzip2Decoder$State: io.netty.handler.codec.compression.Bzip2Decoder$State INIT>;
+v0.<io.netty.handler.codec.compression.Bzip2Decoder: io.netty.handler.codec.compression.Bzip2Decoder$State currentState> = v1;
+v2 = new io.netty.handler.codec.compression.Bzip2BitReader;
+specialinvoke v2.<io.netty.handler.codec.compression.Bzip2BitReader: void <init>()>();
+v0.<io.netty.handler.codec.compression.Bzip2Decoder: io.netty.handler.codec.compression.Bzip2BitReader reader> = v2;
+return;
+}
+protected void decode(io.netty.channel.ChannelHandlerContext, io.netty.buffer.ByteBuf, java.util.List) throws java.lang.Exception
+{
+byte[] v42, v66, v69, v95;
+io.netty.handler.codec.compression.Bzip2Decoder$State v108, v17, v24, v27, v34, v38, v61, v67, v7, v77, v97;
+byte v13, v76, v93;
+byte[][] v80;
+java.lang.Throwable v116;
+io.netty.handler.codec.compression.Bzip2Decoder v0;
+io.netty.handler.codec.compression.Bzip2MoveToFrontTable v71;
+java.lang.IllegalStateException v118;
+io.netty.buffer.ByteBufAllocator v105;
+io.netty.handler.codec.compression.Bzip2BlockDecompressor v31, v36, v39, v98;
+int[] v6;
+boolean v101, v103, v18, v28, v29, v35, v4, v45, v53, v62, v73, v75, v84, v85, v87, v88, v89, v90, v92, v94;
+io.netty.handler.codec.compression.Bzip2HuffmanStageDecoder v100, v60, v65, v68, v78;
+java.util.List v3;
+io.netty.handler.codec.compression.DecompressionException v12, v15, v23, v25, v57, v59, v64;
+io.netty.channel.ChannelHandlerContext v1;
+io.netty.handler.codec.compression.Bzip2BitReader v5;
+io.netty.buffer.ByteBuf v106, v2;
+int v10, v102, v104, v107, v109, v11, v110, v111, v112, v113, v114, v115, v117, v14, v16, v19, v20, v21, v22, v26, v30, v32, v33, v37, v40, v41, v43, v44, v46, v47, v48, v49, v50, v51, v52, v54, v55, v56, v58, v63, v70, v72, v74, v79, v8, v81, v82, v83, v86, v9, v91, v96, v99;
+v0 := @this: io.netty.handler.codec.compression.Bzip2Decoder;
+v1 := @parameter0: io.netty.channel.ChannelHandlerContext;
+v2 := @parameter1: io.netty.buffer.ByteBuf;
+v3 := @parameter2: java.util.List;
+v4 = virtualinvoke v2.<io.netty.buffer.ByteBuf: boolean isReadable()>();
+if v4 != 0 goto label01;
+return;
+label01:
+v5 = v0.<io.netty.handler.codec.compression.Bzip2Decoder: io.netty.handler.codec.compression.Bzip2BitReader reader>;
+virtualinvoke v5.<io.netty.handler.codec.compression.Bzip2BitReader: void setByteBuf(io.netty.buffer.ByteBuf)>(v2);
+label02:
+v6 = <io.netty.handler.codec.compression.Bzip2Decoder$1: int[] $SwitchMap$io$netty$handler$codec$compression$Bzip2Decoder$State>;
+v7 = v0.<io.netty.handler.codec.compression.Bzip2Decoder: io.netty.handler.codec.compression.Bzip2Decoder$State currentState>;
+v8 = virtualinvoke v7.<io.netty.handler.codec.compression.Bzip2Decoder$State: int ordinal()>();
+v9 = v6[v8];
+tableswitch(v9)
+{
+case 1: goto label03;
+case 2: goto label08;
+case 3: goto label14;
+case 4: goto label16;
+case 5: goto label18;
+case 6: goto label28;
+case 7: goto label32;
+case 8: goto label38;
+case 9: goto label52;
+case 10: goto label61;
+default: goto label62;
+};
+label03:
+v10 = virtualinvoke v2.<io.netty.buffer.ByteBuf: int readableBytes()>();
+if v10 >= 4 goto label04;
+return;
+label04:
+v11 = virtualinvoke v2.<io.netty.buffer.ByteBuf: int readUnsignedMedium()>();
+if v11 == 4348520 goto label05;
+v12 = new io.netty.handler.codec.compression.DecompressionException;
+specialinvoke v12.<io.netty.handler.codec.compression.DecompressionException: void <init>(java.lang.String)>("Unexpected stream identifier contents. Mismatched bzip2 protocol version?");
+throw v12;
+label05:
+v13 = virtualinvoke v2.<io.netty.buffer.ByteBuf: byte readByte()>();
+v14 = v13 - 48;
+if v14 < 1 goto label06;
+if v14 <= 9 goto label07;
+label06:
+v15 = new io.netty.handler.codec.compression.DecompressionException;
+specialinvoke v15.<io.netty.handler.codec.compression.DecompressionException: void <init>(java.lang.String)>("block size is invalid");
+throw v15;
+label07:
+v16 = v14 * 100000;
+v0.<io.netty.handler.codec.compression.Bzip2Decoder: int blockSize> = v16;
+v0.<io.netty.handler.codec.compression.Bzip2Decoder: int streamCRC> = 0;
+v17 = <io.netty.handler.codec.compression.Bzip2Decoder$State: io.netty.handler.codec.compression.Bzip2Decoder$State INIT_BLOCK>;
+v0.<io.netty.handler.codec.compression.Bzip2Decoder: io.netty.handler.codec.compression.Bzip2Decoder$State currentState> = v17;
+label08:
+v18 = virtualinvoke v5.<io.netty.handler.codec.compression.Bzip2BitReader: boolean hasReadableBytes(int)>(10);
+if v18 != 0 goto label09;
+return;
+label09:
+v19 = virtualinvoke v5.<io.netty.handler.codec.compression.Bzip2BitReader: int readBits(int)>(24);
+v20 = virtualinvoke v5.<io.netty.handler.codec.compression.Bzip2BitReader: int readBits(int)>(24);
+if v19 != 1536581 goto label11;
+if v20 != 3690640 goto label11;
+v21 = virtualinvoke v5.<io.netty.handler.codec.compression.Bzip2BitReader: int readInt()>();
+v22 = v0.<io.netty.handler.codec.compression.Bzip2Decoder: int streamCRC>;
+if v21 == v22 goto label10;
+v23 = new io.netty.handler.codec.compression.DecompressionException;
+specialinvoke v23.<io.netty.handler.codec.compression.DecompressionException: void <init>(java.lang.String)>("stream CRC error");
+throw v23;
+label10:
+v24 = <io.netty.handler.codec.compression.Bzip2Decoder$State: io.netty.handler.codec.compression.Bzip2Decoder$State EOF>;
+v0.<io.netty.handler.codec.compression.Bzip2Decoder: io.netty.handler.codec.compression.Bzip2Decoder$State currentState> = v24;
+goto label02;
+label11:
+if v19 != 3227993 goto label12;
+if v20 == 2511705 goto label13;
+label12:
+v25 = new io.netty.handler.codec.compression.DecompressionException;
+specialinvoke v25.<io.netty.handler.codec.compression.DecompressionException: void <init>(java.lang.String)>("bad block header");
+throw v25;
+label13:
+v26 = virtualinvoke v5.<io.netty.handler.codec.compression.Bzip2BitReader: int readInt()>();
+v0.<io.netty.handler.codec.compression.Bzip2Decoder: int blockCRC> = v26;
+v27 = <io.netty.handler.codec.compression.Bzip2Decoder$State: io.netty.handler.codec.compression.Bzip2Decoder$State INIT_BLOCK_PARAMS>;
+v0.<io.netty.handler.codec.compression.Bzip2Decoder: io.netty.handler.codec.compression.Bzip2Decoder$State currentState> = v27;
+label14:
+v28 = virtualinvoke v5.<io.netty.handler.codec.compression.Bzip2BitReader: boolean hasReadableBits(int)>(25);
+if v28 != 0 goto label15;
+return;
+label15:
+v29 = virtualinvoke v5.<io.netty.handler.codec.compression.Bzip2BitReader: boolean readBoolean()>();
+v30 = virtualinvoke v5.<io.netty.handler.codec.compression.Bzip2BitReader: int readBits(int)>(24);
+v31 = new io.netty.handler.codec.compression.Bzip2BlockDecompressor;
+v32 = v0.<io.netty.handler.codec.compression.Bzip2Decoder: int blockSize>;
+v33 = v0.<io.netty.handler.codec.compression.Bzip2Decoder: int blockCRC>;
+specialinvoke v31.<io.netty.handler.codec.compression.Bzip2BlockDecompressor: void <init>(int,int,boolean,int,io.netty.handler.codec.compression.Bzip2BitReader)>(v32, v33, v29, v30, v5);
+v0.<io.netty.handler.codec.compression.Bzip2Decoder: io.netty.handler.codec.compression.Bzip2BlockDecompressor blockDecompressor> = v31;
+v34 = <io.netty.handler.codec.compression.Bzip2Decoder$State: io.netty.handler.codec.compression.Bzip2Decoder$State RECEIVE_HUFFMAN_USED_MAP>;
+v0.<io.netty.handler.codec.compression.Bzip2Decoder: io.netty.handler.codec.compression.Bzip2Decoder$State currentState> = v34;
+label16:
+v35 = virtualinvoke v5.<io.netty.handler.codec.compression.Bzip2BitReader: boolean hasReadableBits(int)>(16);
+if v35 != 0 goto label17;
+return;
+label17:
+v36 = v0.<io.netty.handler.codec.compression.Bzip2Decoder: io.netty.handler.codec.compression.Bzip2BlockDecompressor blockDecompressor>;
+v37 = virtualinvoke v5.<io.netty.handler.codec.compression.Bzip2BitReader: int readBits(int)>(16);
+v36.<io.netty.handler.codec.compression.Bzip2BlockDecompressor: int huffmanInUse16> = v37;
+v38 = <io.netty.handler.codec.compression.Bzip2Decoder$State: io.netty.handler.codec.compression.Bzip2Decoder$State RECEIVE_HUFFMAN_USED_BITMAPS>;
+v0.<io.netty.handler.codec.compression.Bzip2Decoder: io.netty.handler.codec.compression.Bzip2Decoder$State currentState> = v38;
+label18:
+v39 = v0.<io.netty.handler.codec.compression.Bzip2Decoder: io.netty.handler.codec.compression.Bzip2BlockDecompressor blockDecompressor>;
+v40 = v39.<io.netty.handler.codec.compression.Bzip2BlockDecompressor: int huffmanInUse16>;
+v41 = staticinvoke <java.lang.Integer: int bitCount(int)>(v40);
+v42 = v39.<io.netty.handler.codec.compression.Bzip2BlockDecompressor: byte[] huffmanSymbolMap>;
+v43 = v41 * 16;
+v44 = v43 + 3;
+v45 = virtualinvoke v5.<io.netty.handler.codec.compression.Bzip2BitReader: boolean hasReadableBits(int)>(v44);
+if v45 != 0 goto label19;
+return;
+label19:
+v46 = 0;
+if v41 <= 0 goto label24;
+v47 = 0;
+label20:
+if v47 >= 16 goto label24;
+v48 = (int) 32768;
+v49 = v48 >>> v47;
+v50 = v40 & v49;
+if v50 == 0 goto label23;
+v51 = 0;
+v52 = v47 << 4;
+label21:
+if v51 >= 16 goto label23;
+v53 = virtualinvoke v5.<io.netty.handler.codec.compression.Bzip2BitReader: boolean readBoolean()>();
+if v53 == 0 goto label22;
+v54 = v46;
+v46 = v46 + 1;
+v42[v54] = v52;
+label22:
+v51 = v51 + 1;
+v52 = v52 + 1;
+goto label21;
+label23:
+v47 = v47 + 1;
+goto label20;
+label24:
+v55 = v46 + 1;
+v39.<io.netty.handler.codec.compression.Bzip2BlockDecompressor: int huffmanEndOfBlockSymbol> = v55;
+v56 = virtualinvoke v5.<io.netty.handler.codec.compression.Bzip2BitReader: int readBits(int)>(3);
+if v56 < 2 goto label25;
+if v56 <= 6 goto label26;
+label25:
+v57 = new io.netty.handler.codec.compression.DecompressionException;
+specialinvoke v57.<io.netty.handler.codec.compression.DecompressionException: void <init>(java.lang.String)>("incorrect huffman groups number");
+throw v57;
+label26:
+v58 = v46 + 2;
+if v58 <= 258 goto label27;
+v59 = new io.netty.handler.codec.compression.DecompressionException;
+specialinvoke v59.<io.netty.handler.codec.compression.DecompressionException: void <init>(java.lang.String)>("incorrect alphabet size");
+throw v59;
+label27:
+v60 = new io.netty.handler.codec.compression.Bzip2HuffmanStageDecoder;
+specialinvoke v60.<io.netty.handler.codec.compression.Bzip2HuffmanStageDecoder: void <init>(io.netty.handler.codec.compression.Bzip2BitReader,int,int)>(v5, v56, v58);
+v0.<io.netty.handler.codec.compression.Bzip2Decoder: io.netty.handler.codec.compression.Bzip2HuffmanStageDecoder huffmanStageDecoder> = v60;
+v61 = <io.netty.handler.codec.compression.Bzip2Decoder$State: io.netty.handler.codec.compression.Bzip2Decoder$State RECEIVE_SELECTORS_NUMBER>;
+v0.<io.netty.handler.codec.compression.Bzip2Decoder: io.netty.handler.codec.compression.Bzip2Decoder$State currentState> = v61;
+label28:
+v62 = virtualinvoke v5.<io.netty.handler.codec.compression.Bzip2BitReader: boolean hasReadableBits(int)>(15);
+if v62 != 0 goto label29;
+return;
+label29:
+v63 = virtualinvoke v5.<io.netty.handler.codec.compression.Bzip2BitReader: int readBits(int)>(15);
+if v63 < 1 goto label30;
+if v63 <= 18002 goto label31;
+label30:
+v64 = new io.netty.handler.codec.compression.DecompressionException;
+specialinvoke v64.<io.netty.handler.codec.compression.DecompressionException: void <init>(java.lang.String)>("incorrect selectors number");
+throw v64;
+label31:
+v65 = v0.<io.netty.handler.codec.compression.Bzip2Decoder: io.netty.handler.codec.compression.Bzip2HuffmanStageDecoder huffmanStageDecoder>;
+v66 = newarray (byte)[v63];
+v65.<io.netty.handler.codec.compression.Bzip2HuffmanStageDecoder: byte[] selectors> = v66;
+v67 = <io.netty.handler.codec.compression.Bzip2Decoder$State: io.netty.handler.codec.compression.Bzip2Decoder$State RECEIVE_SELECTORS>;
+v0.<io.netty.handler.codec.compression.Bzip2Decoder: io.netty.handler.codec.compression.Bzip2Decoder$State currentState> = v67;
+label32:
+v68 = v0.<io.netty.handler.codec.compression.Bzip2Decoder: io.netty.handler.codec.compression.Bzip2HuffmanStageDecoder huffmanStageDecoder>;
+v69 = v68.<io.netty.handler.codec.compression.Bzip2HuffmanStageDecoder: byte[] selectors>;
+v70 = lengthof v69;
+v71 = v68.<io.netty.handler.codec.compression.Bzip2HuffmanStageDecoder: io.netty.handler.codec.compression.Bzip2MoveToFrontTable tableMTF>;
+v72 = v68.<io.netty.handler.codec.compression.Bzip2HuffmanStageDecoder: int currentSelector>;
+label33:
+if v72 >= v70 goto label37;
+v73 = virtualinvoke v5.<io.netty.handler.codec.compression.Bzip2BitReader: boolean hasReadableBits(int)>(6);
+if v73 != 0 goto label34;
+v68.<io.netty.handler.codec.compression.Bzip2HuffmanStageDecoder: int currentSelector> = v72;
+return;
+label34:
+v74 = 0;
+label35:
+v75 = virtualinvoke v5.<io.netty.handler.codec.compression.Bzip2BitReader: boolean readBoolean()>();
+if v75 == 0 goto label36;
+v74 = v74 + 1;
+goto label35;
+label36:
+v76 = virtualinvoke v71.<io.netty.handler.codec.compression.Bzip2MoveToFrontTable: byte indexToFront(int)>(v74);
+v69[v72] = v76;
+v72 = v72 + 1;
+goto label33;
+label37:
+v77 = <io.netty.handler.codec.compression.Bzip2Decoder$State: io.netty.handler.codec.compression.Bzip2Decoder$State RECEIVE_HUFFMAN_LENGTH>;
+v0.<io.netty.handler.codec.compression.Bzip2Decoder: io.netty.handler.codec.compression.Bzip2Decoder$State currentState> = v77;
+label38:
+v78 = v0.<io.netty.handler.codec.compression.Bzip2Decoder: io.netty.handler.codec.compression.Bzip2HuffmanStageDecoder huffmanStageDecoder>;
+v79 = v78.<io.netty.handler.codec.compression.Bzip2HuffmanStageDecoder: int totalTables>;
+v80 = v78.<io.netty.handler.codec.compression.Bzip2HuffmanStageDecoder: byte[][] tableCodeLengths>;
+v81 = v78.<io.netty.handler.codec.compression.Bzip2HuffmanStageDecoder: int alphabetSize>;
+v82 = v78.<io.netty.handler.codec.compression.Bzip2HuffmanStageDecoder: int currentLength>;
+v83 = 0;
+v84 = v78.<io.netty.handler.codec.compression.Bzip2HuffmanStageDecoder: boolean modifyLength>;
+v85 = 0;
+v86 = v78.<io.netty.handler.codec.compression.Bzip2HuffmanStageDecoder: int currentGroup>;
+label39:
+if v86 >= v79 goto label50;
+v87 = virtualinvoke v5.<io.netty.handler.codec.compression.Bzip2BitReader: boolean hasReadableBits(int)>(5);
+if v87 != 0 goto label40;
+v85 = 1;
+goto label50;
+label40:
+if v82 >= 0 goto label41;
+v82 = virtualinvoke v5.<io.netty.handler.codec.compression.Bzip2BitReader: int readBits(int)>(5);
+label41:
+v83 = v78.<io.netty.handler.codec.compression.Bzip2HuffmanStageDecoder: int currentAlpha>;
+label42:
+if v83 >= v81 goto label49;
+v88 = virtualinvoke v5.<io.netty.handler.codec.compression.Bzip2BitReader: boolean isReadable()>();
+if v88 != 0 goto label43;
+v85 = 1;
+goto label50;
+label43:
+if v84 != 0 goto label44;
+v89 = virtualinvoke v5.<io.netty.handler.codec.compression.Bzip2BitReader: boolean readBoolean()>();
+if v89 == 0 goto label48;
+label44:
+v90 = virtualinvoke v5.<io.netty.handler.codec.compression.Bzip2BitReader: boolean isReadable()>();
+if v90 != 0 goto label45;
+v84 = 1;
+v85 = 1;
+goto label50;
+label45:
+v91 = v82;
+v92 = virtualinvoke v5.<io.netty.handler.codec.compression.Bzip2BitReader: boolean readBoolean()>();
+if v92 == 0 goto label46;
+v93 = -1;
+goto label47;
+label46:
+v93 = 1;
+label47:
+v82 = v91 + v93;
+v84 = 0;
+v94 = virtualinvoke v5.<io.netty.handler.codec.compression.Bzip2BitReader: boolean isReadable()>();
+if v94 != 0 goto label43;
+v85 = 1;
+goto label50;
+label48:
+v95 = v80[v86];
+v95[v83] = v82;
+v83 = v83 + 1;
+goto label42;
+label49:
+v96 = (int) -1;
+v82 = v96;
+v78.<io.netty.handler.codec.compression.Bzip2HuffmanStageDecoder: int currentAlpha> = 0;
+v83 = 0;
+v84 = 0;
+v86 = v86 + 1;
+goto label39;
+label50:
+if v85 == 0 goto label51;
+v78.<io.netty.handler.codec.compression.Bzip2HuffmanStageDecoder: int currentGroup> = v86;
+v78.<io.netty.handler.codec.compression.Bzip2HuffmanStageDecoder: int currentLength> = v82;
+v78.<io.netty.handler.codec.compression.Bzip2HuffmanStageDecoder: int currentAlpha> = v83;
+v78.<io.netty.handler.codec.compression.Bzip2HuffmanStageDecoder: boolean modifyLength> = v84;
+return;
+label51:
+virtualinvoke v78.<io.netty.handler.codec.compression.Bzip2HuffmanStageDecoder: void createHuffmanDecodingTables()>();
+v97 = <io.netty.handler.codec.compression.Bzip2Decoder$State: io.netty.handler.codec.compression.Bzip2Decoder$State DECODE_HUFFMAN_DATA>;
+v0.<io.netty.handler.codec.compression.Bzip2Decoder: io.netty.handler.codec.compression.Bzip2Decoder$State currentState> = v97;
+label52:
+v98 = v0.<io.netty.handler.codec.compression.Bzip2Decoder: io.netty.handler.codec.compression.Bzip2BlockDecompressor blockDecompressor>;
+v99 = virtualinvoke v2.<io.netty.buffer.ByteBuf: int readerIndex()>();
+v100 = v0.<io.netty.handler.codec.compression.Bzip2Decoder: io.netty.handler.codec.compression.Bzip2HuffmanStageDecoder huffmanStageDecoder>;
+v101 = virtualinvoke v98.<io.netty.handler.codec.compression.Bzip2BlockDecompressor: boolean decodeHuffmanData(io.netty.handler.codec.compression.Bzip2HuffmanStageDecoder)>(v100);
+if v101 != 0 goto label53;
+return;
+label53:
+v102 = virtualinvoke v2.<io.netty.buffer.ByteBuf: int readerIndex()>();
+if v102 != v99 goto label54;
+v103 = virtualinvoke v2.<io.netty.buffer.ByteBuf: boolean isReadable()>();
+if v103 == 0 goto label54;
+virtualinvoke v5.<io.netty.handler.codec.compression.Bzip2BitReader: void refill()>();
+label54:
+v104 = virtualinvoke v98.<io.netty.handler.codec.compression.Bzip2BlockDecompressor: int blockLength()>();
+v105 = interfaceinvoke v1.<io.netty.channel.ChannelHandlerContext: io.netty.buffer.ByteBufAllocator alloc()>();
+v106 = interfaceinvoke v105.<io.netty.buffer.ByteBufAllocator: io.netty.buffer.ByteBuf buffer(int)>(v104);
+label55:
+v107 = virtualinvoke v98.<io.netty.handler.codec.compression.Bzip2BlockDecompressor: int read()>();
+if v107 < 0 goto label56;
+virtualinvoke v106.<io.netty.buffer.ByteBuf: io.netty.buffer.ByteBuf writeByte(int)>(v107);
+goto label55;
+label56:
+v108 = <io.netty.handler.codec.compression.Bzip2Decoder$State: io.netty.handler.codec.compression.Bzip2Decoder$State INIT_BLOCK>;
+v0.<io.netty.handler.codec.compression.Bzip2Decoder: io.netty.handler.codec.compression.Bzip2Decoder$State currentState> = v108;
+v109 = virtualinvoke v98.<io.netty.handler.codec.compression.Bzip2BlockDecompressor: int checkCRC()>();
+v110 = v0.<io.netty.handler.codec.compression.Bzip2Decoder: int streamCRC>;
+v111 = v110 << 1;
+v112 = v0.<io.netty.handler.codec.compression.Bzip2Decoder: int streamCRC>;
+v113 = v112 >>> 31;
+v114 = v111 | v113;
+v115 = v114 ^ v109;
+v0.<io.netty.handler.codec.compression.Bzip2Decoder: int streamCRC> = v115;
+interfaceinvoke v3.<java.util.List: boolean add(java.lang.Object)>(v106);
+label57:
+goto label60;
+label58:
+v116 := @caughtexception;
+if v106 == null goto label59;
+virtualinvoke v106.<io.netty.buffer.ByteBuf: boolean release()>();
+label59:
+throw v116;
+label60:
+return;
+label61:
+v117 = virtualinvoke v2.<io.netty.buffer.ByteBuf: int readableBytes()>();
+virtualinvoke v2.<io.netty.buffer.ByteBuf: io.netty.buffer.ByteBuf skipBytes(int)>(v117);
+return;
+label62:
+v118 = new java.lang.IllegalStateException;
+specialinvoke v118.<java.lang.IllegalStateException: void <init>()>();
+throw v118;
+catch java.lang.Throwable from label55 to label57 with label58;
+}
+public boolean isClosed()
+{
+io.netty.handler.codec.compression.Bzip2Decoder$State v1, v2;
+boolean v3;
+io.netty.handler.codec.compression.Bzip2Decoder v0;
+v0 := @this: io.netty.handler.codec.compression.Bzip2Decoder;
+v1 = v0.<io.netty.handler.codec.compression.Bzip2Decoder: io.netty.handler.codec.compression.Bzip2Decoder$State currentState>;
+v2 = <io.netty.handler.codec.compression.Bzip2Decoder$State: io.netty.handler.codec.compression.Bzip2Decoder$State EOF>;
+if v1 != v2 goto label1;
+v3 = 1;
+goto label2;
+label1:
+v3 = 0;
+label2:
+return v3;
+}
+}

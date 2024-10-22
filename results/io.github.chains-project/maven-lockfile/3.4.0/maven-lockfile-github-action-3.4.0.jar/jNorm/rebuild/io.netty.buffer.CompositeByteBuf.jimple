@@ -1,0 +1,4029 @@
+public class io.netty.buffer.CompositeByteBuf extends io.netty.buffer.AbstractReferenceCountedByteBuf implements java.lang.Iterable
+{
+private static final java.nio.ByteBuffer EMPTY_NIO_BUFFER;
+private static final java.util.Iterator EMPTY_ITERATOR;
+private final io.netty.buffer.ByteBufAllocator alloc;
+private final boolean direct;
+private final int maxNumComponents;
+private int componentCount;
+private io.netty.buffer.CompositeByteBuf$Component[] components;
+private boolean freed;
+static final io.netty.buffer.CompositeByteBuf$ByteWrapper BYTE_ARRAY_WRAPPER;
+static final io.netty.buffer.CompositeByteBuf$ByteWrapper BYTE_BUFFER_WRAPPER;
+private io.netty.buffer.CompositeByteBuf$Component lastAccessed;
+static final boolean $assertionsDisabled;
+private void <init>(io.netty.buffer.ByteBufAllocator, boolean, int, int)
+{
+io.netty.buffer.ByteBufAllocator v1;
+java.lang.IllegalArgumentException v6;
+io.netty.buffer.CompositeByteBuf$Component[] v8;
+io.netty.buffer.CompositeByteBuf v0;
+int v3, v4;
+java.lang.Object v5;
+java.lang.String v7;
+boolean v2;
+v0 := @this: io.netty.buffer.CompositeByteBuf;
+v1 := @parameter0: io.netty.buffer.ByteBufAllocator;
+v2 := @parameter1: boolean;
+v3 := @parameter2: int;
+v4 := @parameter3: int;
+specialinvoke v0.<io.netty.buffer.AbstractReferenceCountedByteBuf: void <init>(int)>(2147483647);
+v5 = staticinvoke <io.netty.util.internal.ObjectUtil: java.lang.Object checkNotNull(java.lang.Object,java.lang.String)>(v1, "alloc");
+v0.<io.netty.buffer.CompositeByteBuf: io.netty.buffer.ByteBufAllocator alloc> = v5;
+if v3 >= 1 goto label1;
+v6 = new java.lang.IllegalArgumentException;
+v7 = dynamicinvoke "makeConcatWithConstants" <java.lang.String (int)>(v3) <java.lang.invoke.StringConcatFactory: java.lang.invoke.CallSite makeConcatWithConstants(java.lang.invoke.MethodHandles$Lookup,java.lang.String,java.lang.invoke.MethodType,java.lang.String,java.lang.Object[])>("maxNumComponents: \u0001 (expected: >= 1)");
+specialinvoke v6.<java.lang.IllegalArgumentException: void <init>(java.lang.String)>(v7);
+throw v6;
+label1:
+v0.<io.netty.buffer.CompositeByteBuf: boolean direct> = v2;
+v0.<io.netty.buffer.CompositeByteBuf: int maxNumComponents> = v3;
+v8 = staticinvoke <io.netty.buffer.CompositeByteBuf: io.netty.buffer.CompositeByteBuf$Component[] newCompArray(int,int)>(v4, v3);
+v0.<io.netty.buffer.CompositeByteBuf: io.netty.buffer.CompositeByteBuf$Component[] components> = v8;
+return;
+}
+public void <init>(io.netty.buffer.ByteBufAllocator, boolean, int)
+{
+io.netty.buffer.CompositeByteBuf v0;
+io.netty.buffer.ByteBufAllocator v1;
+int v3;
+boolean v2;
+v0 := @this: io.netty.buffer.CompositeByteBuf;
+v1 := @parameter0: io.netty.buffer.ByteBufAllocator;
+v2 := @parameter1: boolean;
+v3 := @parameter2: int;
+specialinvoke v0.<io.netty.buffer.CompositeByteBuf: void <init>(io.netty.buffer.ByteBufAllocator,boolean,int,int)>(v1, v2, v3, 0);
+return;
+}
+public transient void <init>(io.netty.buffer.ByteBufAllocator, boolean, int, io.netty.buffer.ByteBuf[])
+{
+io.netty.buffer.ByteBuf[] v4;
+io.netty.buffer.CompositeByteBuf v0;
+io.netty.buffer.ByteBufAllocator v1;
+int v3;
+boolean v2;
+v0 := @this: io.netty.buffer.CompositeByteBuf;
+v1 := @parameter0: io.netty.buffer.ByteBufAllocator;
+v2 := @parameter1: boolean;
+v3 := @parameter2: int;
+v4 := @parameter3: io.netty.buffer.ByteBuf[];
+specialinvoke v0.<io.netty.buffer.CompositeByteBuf: void <init>(io.netty.buffer.ByteBufAllocator,boolean,int,io.netty.buffer.ByteBuf[],int)>(v1, v2, v3, v4, 0);
+return;
+}
+void <init>(io.netty.buffer.ByteBufAllocator, boolean, int, io.netty.buffer.ByteBuf[], int)
+{
+io.netty.buffer.ByteBuf[] v4;
+io.netty.buffer.ByteBufAllocator v1;
+io.netty.buffer.CompositeByteBuf v0;
+int v3, v5, v6, v7, v8;
+boolean v2;
+v0 := @this: io.netty.buffer.CompositeByteBuf;
+v1 := @parameter0: io.netty.buffer.ByteBufAllocator;
+v2 := @parameter1: boolean;
+v3 := @parameter2: int;
+v4 := @parameter3: io.netty.buffer.ByteBuf[];
+v5 := @parameter4: int;
+v6 = lengthof v4;
+v7 = v6 - v5;
+specialinvoke v0.<io.netty.buffer.CompositeByteBuf: void <init>(io.netty.buffer.ByteBufAllocator,boolean,int,int)>(v1, v2, v3, v7);
+specialinvoke v0.<io.netty.buffer.CompositeByteBuf: io.netty.buffer.CompositeByteBuf addComponents0(boolean,int,io.netty.buffer.ByteBuf[],int)>(0, 0, v4, v5);
+specialinvoke v0.<io.netty.buffer.CompositeByteBuf: void consolidateIfNeeded()>();
+v8 = virtualinvoke v0.<io.netty.buffer.CompositeByteBuf: int capacity()>();
+virtualinvoke v0.<io.netty.buffer.CompositeByteBuf: void setIndex0(int,int)>(0, v8);
+return;
+}
+public void <init>(io.netty.buffer.ByteBufAllocator, boolean, int, java.lang.Iterable)
+{
+io.netty.buffer.ByteBufAllocator v1;
+java.lang.Iterable v4;
+io.netty.buffer.CompositeByteBuf v0;
+int v3, v6, v7;
+boolean v2, v5;
+v0 := @this: io.netty.buffer.CompositeByteBuf;
+v1 := @parameter0: io.netty.buffer.ByteBufAllocator;
+v2 := @parameter1: boolean;
+v3 := @parameter2: int;
+v4 := @parameter3: java.lang.Iterable;
+v5 = v4 instanceof java.util.Collection;
+if v5 == 0 goto label1;
+v6 = interfaceinvoke v4.<java.util.Collection: int size()>();
+goto label2;
+label1:
+v6 = 0;
+label2:
+specialinvoke v0.<io.netty.buffer.CompositeByteBuf: void <init>(io.netty.buffer.ByteBufAllocator,boolean,int,int)>(v1, v2, v3, v6);
+specialinvoke v0.<io.netty.buffer.CompositeByteBuf: io.netty.buffer.CompositeByteBuf addComponents(boolean,int,java.lang.Iterable)>(0, 0, v4);
+v7 = virtualinvoke v0.<io.netty.buffer.CompositeByteBuf: int capacity()>();
+virtualinvoke v0.<io.netty.buffer.CompositeByteBuf: io.netty.buffer.CompositeByteBuf setIndex(int,int)>(0, v7);
+return;
+}
+void <init>(io.netty.buffer.ByteBufAllocator, boolean, int, io.netty.buffer.CompositeByteBuf$ByteWrapper, java.lang.Object[], int)
+{
+java.lang.Object[] v5;
+io.netty.buffer.ByteBufAllocator v1;
+io.netty.buffer.CompositeByteBuf v0;
+io.netty.buffer.CompositeByteBuf$ByteWrapper v4;
+int v3, v6, v7, v8, v9;
+boolean v2;
+v0 := @this: io.netty.buffer.CompositeByteBuf;
+v1 := @parameter0: io.netty.buffer.ByteBufAllocator;
+v2 := @parameter1: boolean;
+v3 := @parameter2: int;
+v4 := @parameter3: io.netty.buffer.CompositeByteBuf$ByteWrapper;
+v5 := @parameter4: java.lang.Object[];
+v6 := @parameter5: int;
+v7 = lengthof v5;
+v8 = v7 - v6;
+specialinvoke v0.<io.netty.buffer.CompositeByteBuf: void <init>(io.netty.buffer.ByteBufAllocator,boolean,int,int)>(v1, v2, v3, v8);
+specialinvoke v0.<io.netty.buffer.CompositeByteBuf: int addComponents0(boolean,int,io.netty.buffer.CompositeByteBuf$ByteWrapper,java.lang.Object[],int)>(0, 0, v4, v5, v6);
+specialinvoke v0.<io.netty.buffer.CompositeByteBuf: void consolidateIfNeeded()>();
+v9 = virtualinvoke v0.<io.netty.buffer.CompositeByteBuf: int capacity()>();
+virtualinvoke v0.<io.netty.buffer.CompositeByteBuf: io.netty.buffer.CompositeByteBuf setIndex(int,int)>(0, v9);
+return;
+}
+private static io.netty.buffer.CompositeByteBuf$Component[] newCompArray(int, int)
+{
+int v0, v1, v2, v3;
+io.netty.buffer.CompositeByteBuf$Component[] v4;
+v0 := @parameter0: int;
+v1 := @parameter1: int;
+v2 = staticinvoke <java.lang.Math: int min(int,int)>(16, v1);
+v3 = staticinvoke <java.lang.Math: int max(int,int)>(v0, v2);
+v4 = newarray (io.netty.buffer.CompositeByteBuf$Component)[v3];
+return v4;
+}
+void <init>(io.netty.buffer.ByteBufAllocator)
+{
+io.netty.buffer.CompositeByteBuf v0;
+io.netty.buffer.ByteBufAllocator v1;
+v0 := @this: io.netty.buffer.CompositeByteBuf;
+v1 := @parameter0: io.netty.buffer.ByteBufAllocator;
+specialinvoke v0.<io.netty.buffer.AbstractReferenceCountedByteBuf: void <init>(int)>(2147483647);
+v0.<io.netty.buffer.CompositeByteBuf: io.netty.buffer.ByteBufAllocator alloc> = v1;
+v0.<io.netty.buffer.CompositeByteBuf: boolean direct> = 0;
+v0.<io.netty.buffer.CompositeByteBuf: int maxNumComponents> = 0;
+v0.<io.netty.buffer.CompositeByteBuf: io.netty.buffer.CompositeByteBuf$Component[] components> = null;
+return;
+}
+public io.netty.buffer.CompositeByteBuf addComponent(io.netty.buffer.ByteBuf)
+{
+io.netty.buffer.CompositeByteBuf v0, v2;
+io.netty.buffer.ByteBuf v1;
+v0 := @this: io.netty.buffer.CompositeByteBuf;
+v1 := @parameter0: io.netty.buffer.ByteBuf;
+v2 = virtualinvoke v0.<io.netty.buffer.CompositeByteBuf: io.netty.buffer.CompositeByteBuf addComponent(boolean,io.netty.buffer.ByteBuf)>(0, v1);
+return v2;
+}
+public transient io.netty.buffer.CompositeByteBuf addComponents(io.netty.buffer.ByteBuf[])
+{
+io.netty.buffer.ByteBuf[] v1;
+io.netty.buffer.CompositeByteBuf v0, v2;
+v0 := @this: io.netty.buffer.CompositeByteBuf;
+v1 := @parameter0: io.netty.buffer.ByteBuf[];
+v2 = virtualinvoke v0.<io.netty.buffer.CompositeByteBuf: io.netty.buffer.CompositeByteBuf addComponents(boolean,io.netty.buffer.ByteBuf[])>(0, v1);
+return v2;
+}
+public io.netty.buffer.CompositeByteBuf addComponents(java.lang.Iterable)
+{
+io.netty.buffer.CompositeByteBuf v0, v2;
+java.lang.Iterable v1;
+v0 := @this: io.netty.buffer.CompositeByteBuf;
+v1 := @parameter0: java.lang.Iterable;
+v2 = virtualinvoke v0.<io.netty.buffer.CompositeByteBuf: io.netty.buffer.CompositeByteBuf addComponents(boolean,java.lang.Iterable)>(0, v1);
+return v2;
+}
+public io.netty.buffer.CompositeByteBuf addComponent(int, io.netty.buffer.ByteBuf)
+{
+io.netty.buffer.CompositeByteBuf v0, v3;
+io.netty.buffer.ByteBuf v2;
+int v1;
+v0 := @this: io.netty.buffer.CompositeByteBuf;
+v1 := @parameter0: int;
+v2 := @parameter1: io.netty.buffer.ByteBuf;
+v3 = virtualinvoke v0.<io.netty.buffer.CompositeByteBuf: io.netty.buffer.CompositeByteBuf addComponent(boolean,int,io.netty.buffer.ByteBuf)>(0, v1, v2);
+return v3;
+}
+public io.netty.buffer.CompositeByteBuf addComponent(boolean, io.netty.buffer.ByteBuf)
+{
+io.netty.buffer.CompositeByteBuf v0, v4;
+io.netty.buffer.ByteBuf v2;
+int v3;
+boolean v1;
+v0 := @this: io.netty.buffer.CompositeByteBuf;
+v1 := @parameter0: boolean;
+v2 := @parameter1: io.netty.buffer.ByteBuf;
+v3 = v0.<io.netty.buffer.CompositeByteBuf: int componentCount>;
+v4 = virtualinvoke v0.<io.netty.buffer.CompositeByteBuf: io.netty.buffer.CompositeByteBuf addComponent(boolean,int,io.netty.buffer.ByteBuf)>(v1, v3, v2);
+return v4;
+}
+public transient io.netty.buffer.CompositeByteBuf addComponents(boolean, io.netty.buffer.ByteBuf[])
+{
+io.netty.buffer.ByteBuf[] v2;
+io.netty.buffer.CompositeByteBuf v0;
+int v3;
+boolean v1;
+v0 := @this: io.netty.buffer.CompositeByteBuf;
+v1 := @parameter0: boolean;
+v2 := @parameter1: io.netty.buffer.ByteBuf[];
+staticinvoke <io.netty.util.internal.ObjectUtil: java.lang.Object checkNotNull(java.lang.Object,java.lang.String)>(v2, "buffers");
+v3 = v0.<io.netty.buffer.CompositeByteBuf: int componentCount>;
+specialinvoke v0.<io.netty.buffer.CompositeByteBuf: io.netty.buffer.CompositeByteBuf addComponents0(boolean,int,io.netty.buffer.ByteBuf[],int)>(v1, v3, v2, 0);
+specialinvoke v0.<io.netty.buffer.CompositeByteBuf: void consolidateIfNeeded()>();
+return v0;
+}
+public io.netty.buffer.CompositeByteBuf addComponents(boolean, java.lang.Iterable)
+{
+io.netty.buffer.CompositeByteBuf v0, v4;
+int v3;
+java.lang.Iterable v2;
+boolean v1;
+v0 := @this: io.netty.buffer.CompositeByteBuf;
+v1 := @parameter0: boolean;
+v2 := @parameter1: java.lang.Iterable;
+v3 = v0.<io.netty.buffer.CompositeByteBuf: int componentCount>;
+v4 = specialinvoke v0.<io.netty.buffer.CompositeByteBuf: io.netty.buffer.CompositeByteBuf addComponents(boolean,int,java.lang.Iterable)>(v1, v3, v2);
+return v4;
+}
+public io.netty.buffer.CompositeByteBuf addComponent(boolean, int, io.netty.buffer.ByteBuf)
+{
+io.netty.buffer.CompositeByteBuf v0;
+io.netty.buffer.ByteBuf v3;
+int v2;
+boolean v1;
+v0 := @this: io.netty.buffer.CompositeByteBuf;
+v1 := @parameter0: boolean;
+v2 := @parameter1: int;
+v3 := @parameter2: io.netty.buffer.ByteBuf;
+staticinvoke <io.netty.util.internal.ObjectUtil: java.lang.Object checkNotNull(java.lang.Object,java.lang.String)>(v3, "buffer");
+specialinvoke v0.<io.netty.buffer.CompositeByteBuf: int addComponent0(boolean,int,io.netty.buffer.ByteBuf)>(v1, v2, v3);
+specialinvoke v0.<io.netty.buffer.CompositeByteBuf: void consolidateIfNeeded()>();
+return v0;
+}
+private static void checkForOverflow(int, int)
+{
+int v0, v1, v2;
+java.lang.String v4;
+java.lang.IllegalArgumentException v3;
+v0 := @parameter0: int;
+v1 := @parameter1: int;
+v2 = v0 + v1;
+if v2 >= 0 goto label1;
+v3 = new java.lang.IllegalArgumentException;
+v4 = dynamicinvoke "makeConcatWithConstants" <java.lang.String (int,int)>(v1, v0) <java.lang.invoke.StringConcatFactory: java.lang.invoke.CallSite makeConcatWithConstants(java.lang.invoke.MethodHandles$Lookup,java.lang.String,java.lang.invoke.MethodType,java.lang.String,java.lang.Object[])>("Can\'t increase by \u0001 as capacity(\u0001) would overflow 2147483647");
+specialinvoke v3.<java.lang.IllegalArgumentException: void <init>(java.lang.String)>(v4);
+throw v3;
+label1:
+return;
+}
+private int addComponent0(boolean, int, io.netty.buffer.ByteBuf)
+{
+java.lang.Throwable v19;
+java.lang.AssertionError v5;
+io.netty.buffer.CompositeByteBuf$Component v15, v8;
+io.netty.buffer.ByteBuf v3, v7;
+int v10, v11, v12, v14, v16, v17, v18, v2, v9;
+boolean v1, v4, v6;
+io.netty.buffer.CompositeByteBuf$Component[] v13;
+io.netty.buffer.CompositeByteBuf v0;
+v0 := @this: io.netty.buffer.CompositeByteBuf;
+v1 := @parameter0: boolean;
+v2 := @parameter1: int;
+v3 := @parameter2: io.netty.buffer.ByteBuf;
+v4 = <io.netty.buffer.CompositeByteBuf: boolean $assertionsDisabled>;
+if v4 != 0 goto label1;
+if v3 != null goto label1;
+v5 = new java.lang.AssertionError;
+specialinvoke v5.<java.lang.AssertionError: void <init>()>();
+throw v5;
+label1:
+v6 = 0;
+label2:
+specialinvoke v0.<io.netty.buffer.CompositeByteBuf: void checkComponentIndex(int)>(v2);
+v7 = staticinvoke <io.netty.buffer.CompositeByteBuf: io.netty.buffer.ByteBuf ensureAccessible(io.netty.buffer.ByteBuf)>(v3);
+v8 = specialinvoke v0.<io.netty.buffer.CompositeByteBuf: io.netty.buffer.CompositeByteBuf$Component newComponent(io.netty.buffer.ByteBuf,int)>(v7, 0);
+v9 = virtualinvoke v8.<io.netty.buffer.CompositeByteBuf$Component: int length()>();
+v10 = virtualinvoke v0.<io.netty.buffer.CompositeByteBuf: int capacity()>();
+staticinvoke <io.netty.buffer.CompositeByteBuf: void checkForOverflow(int,int)>(v10, v9);
+specialinvoke v0.<io.netty.buffer.CompositeByteBuf: void addComp(int,io.netty.buffer.CompositeByteBuf$Component)>(v2, v8);
+v6 = 1;
+if v9 <= 0 goto label3;
+v11 = v0.<io.netty.buffer.CompositeByteBuf: int componentCount>;
+v12 = v11 - 1;
+if v2 >= v12 goto label3;
+specialinvoke v0.<io.netty.buffer.CompositeByteBuf: void updateComponentOffsets(int)>(v2);
+goto label4;
+label3:
+if v2 <= 0 goto label4;
+v13 = v0.<io.netty.buffer.CompositeByteBuf: io.netty.buffer.CompositeByteBuf$Component[] components>;
+v14 = v2 - 1;
+v15 = v13[v14];
+v16 = v15.<io.netty.buffer.CompositeByteBuf$Component: int endOffset>;
+virtualinvoke v8.<io.netty.buffer.CompositeByteBuf$Component: void reposition(int)>(v16);
+label4:
+if v1 == 0 goto label5;
+v17 = v0.<io.netty.buffer.CompositeByteBuf: int writerIndex>;
+v18 = v17 + v9;
+v0.<io.netty.buffer.CompositeByteBuf: int writerIndex> = v18;
+label5:
+return v2;
+label6:
+v19 := @caughtexception;
+if v6 != 0 goto label7;
+virtualinvoke v3.<io.netty.buffer.ByteBuf: boolean release()>();
+label7:
+throw v19;
+catch java.lang.Throwable from label2 to label5 with label6;
+}
+private static io.netty.buffer.ByteBuf ensureAccessible(io.netty.buffer.ByteBuf)
+{
+io.netty.buffer.ByteBuf v0;
+io.netty.util.IllegalReferenceCountException v3;
+boolean v1, v2;
+v0 := @parameter0: io.netty.buffer.ByteBuf;
+v1 = <io.netty.buffer.CompositeByteBuf: boolean checkAccessible>;
+if v1 == 0 goto label1;
+v2 = virtualinvoke v0.<io.netty.buffer.ByteBuf: boolean isAccessible()>();
+if v2 != 0 goto label1;
+v3 = new io.netty.util.IllegalReferenceCountException;
+specialinvoke v3.<io.netty.util.IllegalReferenceCountException: void <init>(int)>(0);
+throw v3;
+label1:
+return v0;
+}
+private io.netty.buffer.CompositeByteBuf$Component newComponent(io.netty.buffer.ByteBuf, int)
+{
+io.netty.buffer.CompositeByteBuf$Component v17;
+io.netty.buffer.ByteBuf v1, v16, v19, v21, v5;
+int v10, v12, v15, v2, v3, v4, v6;
+boolean v11, v13, v14, v7, v8, v9;
+io.netty.buffer.CompositeByteBuf v0;
+java.nio.ByteOrder v18, v20;
+v0 := @this: io.netty.buffer.CompositeByteBuf;
+v1 := @parameter0: io.netty.buffer.ByteBuf;
+v2 := @parameter1: int;
+v3 = virtualinvoke v1.<io.netty.buffer.ByteBuf: int readerIndex()>();
+v4 = virtualinvoke v1.<io.netty.buffer.ByteBuf: int readableBytes()>();
+v5 = v1;
+v6 = v3;
+label1:
+v7 = v5 instanceof io.netty.buffer.WrappedByteBuf;
+if v7 != 0 goto label2;
+v8 = v5 instanceof io.netty.buffer.SwappedByteBuf;
+if v8 == 0 goto label3;
+label2:
+v5 = virtualinvoke v5.<io.netty.buffer.ByteBuf: io.netty.buffer.ByteBuf unwrap()>();
+goto label1;
+label3:
+v9 = v5 instanceof io.netty.buffer.AbstractUnpooledSlicedByteBuf;
+if v9 == 0 goto label4;
+v10 = virtualinvoke v5.<io.netty.buffer.AbstractUnpooledSlicedByteBuf: int idx(int)>(0);
+v6 = v3 + v10;
+v5 = virtualinvoke v5.<io.netty.buffer.ByteBuf: io.netty.buffer.ByteBuf unwrap()>();
+goto label7;
+label4:
+v11 = v5 instanceof io.netty.buffer.PooledSlicedByteBuf;
+if v11 == 0 goto label5;
+v12 = v5.<io.netty.buffer.PooledSlicedByteBuf: int adjustment>;
+v6 = v3 + v12;
+v5 = virtualinvoke v5.<io.netty.buffer.ByteBuf: io.netty.buffer.ByteBuf unwrap()>();
+goto label7;
+label5:
+v13 = v5 instanceof io.netty.buffer.DuplicatedByteBuf;
+if v13 != 0 goto label6;
+v14 = v5 instanceof io.netty.buffer.PooledDuplicatedByteBuf;
+if v14 == 0 goto label7;
+label6:
+v5 = virtualinvoke v5.<io.netty.buffer.ByteBuf: io.netty.buffer.ByteBuf unwrap()>();
+label7:
+v15 = virtualinvoke v1.<io.netty.buffer.ByteBuf: int capacity()>();
+if v15 != v4 goto label8;
+v16 = v1;
+goto label9;
+label8:
+v16 = null;
+label9:
+v17 = new io.netty.buffer.CompositeByteBuf$Component;
+v18 = <java.nio.ByteOrder: java.nio.ByteOrder BIG_ENDIAN>;
+v19 = virtualinvoke v1.<io.netty.buffer.ByteBuf: io.netty.buffer.ByteBuf order(java.nio.ByteOrder)>(v18);
+v20 = <java.nio.ByteOrder: java.nio.ByteOrder BIG_ENDIAN>;
+v21 = virtualinvoke v5.<io.netty.buffer.ByteBuf: io.netty.buffer.ByteBuf order(java.nio.ByteOrder)>(v20);
+specialinvoke v17.<io.netty.buffer.CompositeByteBuf$Component: void <init>(io.netty.buffer.ByteBuf,int,io.netty.buffer.ByteBuf,int,int,int,io.netty.buffer.ByteBuf)>(v19, v3, v21, v6, v2, v4, v16);
+return v17;
+}
+public transient io.netty.buffer.CompositeByteBuf addComponents(int, io.netty.buffer.ByteBuf[])
+{
+int v1;
+io.netty.buffer.ByteBuf[] v2;
+io.netty.buffer.CompositeByteBuf v0;
+v0 := @this: io.netty.buffer.CompositeByteBuf;
+v1 := @parameter0: int;
+v2 := @parameter1: io.netty.buffer.ByteBuf[];
+staticinvoke <io.netty.util.internal.ObjectUtil: java.lang.Object checkNotNull(java.lang.Object,java.lang.String)>(v2, "buffers");
+specialinvoke v0.<io.netty.buffer.CompositeByteBuf: io.netty.buffer.CompositeByteBuf addComponents0(boolean,int,io.netty.buffer.ByteBuf[],int)>(0, v1, v2, 0);
+specialinvoke v0.<io.netty.buffer.CompositeByteBuf: void consolidateIfNeeded()>();
+return v0;
+}
+private io.netty.buffer.CompositeByteBuf addComponents0(boolean, int, io.netty.buffer.ByteBuf[], int)
+{
+io.netty.buffer.CompositeByteBuf$Component v16, v21, v31, v34, v47, v50;
+boolean v1;
+io.netty.buffer.ByteBuf[] v3;
+io.netty.buffer.CompositeByteBuf$Component[] v14, v22, v29, v33, v45, v49;
+io.netty.buffer.CompositeByteBuf v0;
+java.lang.Throwable v38;
+io.netty.buffer.ByteBuf v11, v19, v20, v26, v42;
+int v10, v12, v13, v15, v17, v18, v2, v23, v24, v25, v27, v28, v30, v32, v35, v36, v37, v39, v4, v40, v41, v43, v44, v46, v48, v5, v51, v52, v53, v6, v7, v8, v9;
+v0 := @this: io.netty.buffer.CompositeByteBuf;
+v1 := @parameter0: boolean;
+v2 := @parameter1: int;
+v3 := @parameter2: io.netty.buffer.ByteBuf[];
+v4 := @parameter3: int;
+v5 = lengthof v3;
+v6 = v5 - v4;
+v7 = 0;
+v8 = virtualinvoke v0.<io.netty.buffer.CompositeByteBuf: int capacity()>();
+v9 = v4;
+label01:
+v10 = lengthof v3;
+if v9 >= v10 goto label02;
+v11 = v3[v9];
+if v11 == null goto label02;
+v12 = virtualinvoke v11.<io.netty.buffer.ByteBuf: int readableBytes()>();
+v7 = v7 + v12;
+staticinvoke <io.netty.buffer.CompositeByteBuf: void checkForOverflow(int,int)>(v8, v7);
+v9 = v9 + 1;
+goto label01;
+label02:
+v13 = 2147483647;
+label03:
+specialinvoke v0.<io.netty.buffer.CompositeByteBuf: void checkComponentIndex(int)>(v2);
+specialinvoke v0.<io.netty.buffer.CompositeByteBuf: void shiftComps(int,int)>(v2, v6);
+if v2 <= 0 goto label04;
+v14 = v0.<io.netty.buffer.CompositeByteBuf: io.netty.buffer.CompositeByteBuf$Component[] components>;
+v15 = v2 - 1;
+v16 = v14[v15];
+v17 = v16.<io.netty.buffer.CompositeByteBuf$Component: int endOffset>;
+goto label05;
+label04:
+v17 = 0;
+label05:
+v18 = v17;
+v13 = v2;
+label06:
+if v4 >= v5 goto label07;
+v19 = v3[v4];
+if v19 == null goto label07;
+v20 = staticinvoke <io.netty.buffer.CompositeByteBuf: io.netty.buffer.ByteBuf ensureAccessible(io.netty.buffer.ByteBuf)>(v19);
+v21 = specialinvoke v0.<io.netty.buffer.CompositeByteBuf: io.netty.buffer.CompositeByteBuf$Component newComponent(io.netty.buffer.ByteBuf,int)>(v20, v18);
+v22 = v0.<io.netty.buffer.CompositeByteBuf: io.netty.buffer.CompositeByteBuf$Component[] components>;
+v22[v13] = v21;
+v18 = v21.<io.netty.buffer.CompositeByteBuf$Component: int endOffset>;
+v4 = v4 + 1;
+v13 = v13 + 1;
+goto label06;
+label07:
+v23 = v0.<io.netty.buffer.CompositeByteBuf: int componentCount>;
+if v13 >= v23 goto label10;
+v24 = v2 + v6;
+if v13 >= v24 goto label09;
+v25 = v2 + v6;
+specialinvoke v0.<io.netty.buffer.CompositeByteBuf: void removeCompRange(int,int)>(v13, v25);
+label08:
+if v4 >= v5 goto label09;
+v26 = v3[v4];
+staticinvoke <io.netty.util.ReferenceCountUtil: void safeRelease(java.lang.Object)>(v26);
+v4 = v4 + 1;
+goto label08;
+label09:
+specialinvoke v0.<io.netty.buffer.CompositeByteBuf: void updateComponentOffsets(int)>(v13);
+label10:
+if v1 == 0 goto label11;
+if v13 <= v2 goto label11;
+v27 = v0.<io.netty.buffer.CompositeByteBuf: int componentCount>;
+if v13 > v27 goto label11;
+v28 = v0.<io.netty.buffer.CompositeByteBuf: int writerIndex>;
+v29 = v0.<io.netty.buffer.CompositeByteBuf: io.netty.buffer.CompositeByteBuf$Component[] components>;
+v30 = v13 - 1;
+v31 = v29[v30];
+v32 = v31.<io.netty.buffer.CompositeByteBuf$Component: int endOffset>;
+v33 = v0.<io.netty.buffer.CompositeByteBuf: io.netty.buffer.CompositeByteBuf$Component[] components>;
+v34 = v33[v2];
+v35 = v34.<io.netty.buffer.CompositeByteBuf$Component: int offset>;
+v36 = v32 - v35;
+v37 = v28 + v36;
+v0.<io.netty.buffer.CompositeByteBuf: int writerIndex> = v37;
+label11:
+return v0;
+label12:
+v38 := @caughtexception;
+v39 = v0.<io.netty.buffer.CompositeByteBuf: int componentCount>;
+if v13 >= v39 goto label15;
+v40 = v2 + v6;
+if v13 >= v40 goto label14;
+v41 = v2 + v6;
+specialinvoke v0.<io.netty.buffer.CompositeByteBuf: void removeCompRange(int,int)>(v13, v41);
+label13:
+if v4 >= v5 goto label14;
+v42 = v3[v4];
+staticinvoke <io.netty.util.ReferenceCountUtil: void safeRelease(java.lang.Object)>(v42);
+v4 = v4 + 1;
+goto label13;
+label14:
+specialinvoke v0.<io.netty.buffer.CompositeByteBuf: void updateComponentOffsets(int)>(v13);
+label15:
+if v1 == 0 goto label16;
+if v13 <= v2 goto label16;
+v43 = v0.<io.netty.buffer.CompositeByteBuf: int componentCount>;
+if v13 > v43 goto label16;
+v44 = v0.<io.netty.buffer.CompositeByteBuf: int writerIndex>;
+v45 = v0.<io.netty.buffer.CompositeByteBuf: io.netty.buffer.CompositeByteBuf$Component[] components>;
+v46 = v13 - 1;
+v47 = v45[v46];
+v48 = v47.<io.netty.buffer.CompositeByteBuf$Component: int endOffset>;
+v49 = v0.<io.netty.buffer.CompositeByteBuf: io.netty.buffer.CompositeByteBuf$Component[] components>;
+v50 = v49[v2];
+v51 = v50.<io.netty.buffer.CompositeByteBuf$Component: int offset>;
+v52 = v48 - v51;
+v53 = v44 + v52;
+v0.<io.netty.buffer.CompositeByteBuf: int writerIndex> = v53;
+label16:
+throw v38;
+catch java.lang.Throwable from label03 to label07 with label12;
+}
+private int addComponents0(boolean, int, io.netty.buffer.CompositeByteBuf$ByteWrapper, java.lang.Object[], int)
+{
+java.lang.Object[] v4;
+io.netty.buffer.CompositeByteBuf v0;
+io.netty.buffer.ByteBuf v10;
+io.netty.buffer.CompositeByteBuf$ByteWrapper v3;
+int v11, v12, v2, v5, v6, v7;
+java.lang.Object v8;
+boolean v1, v9;
+v0 := @this: io.netty.buffer.CompositeByteBuf;
+v1 := @parameter0: boolean;
+v2 := @parameter1: int;
+v3 := @parameter2: io.netty.buffer.CompositeByteBuf$ByteWrapper;
+v4 := @parameter3: java.lang.Object[];
+v5 := @parameter4: int;
+specialinvoke v0.<io.netty.buffer.CompositeByteBuf: void checkComponentIndex(int)>(v2);
+v6 = v5;
+v7 = lengthof v4;
+label1:
+if v6 >= v7 goto label3;
+v8 = v4[v6];
+if v8 == null goto label3;
+v9 = interfaceinvoke v3.<io.netty.buffer.CompositeByteBuf$ByteWrapper: boolean isEmpty(java.lang.Object)>(v8);
+if v9 != 0 goto label2;
+v10 = interfaceinvoke v3.<io.netty.buffer.CompositeByteBuf$ByteWrapper: io.netty.buffer.ByteBuf wrap(java.lang.Object)>(v8);
+v11 = specialinvoke v0.<io.netty.buffer.CompositeByteBuf: int addComponent0(boolean,int,io.netty.buffer.ByteBuf)>(v1, v2, v10);
+v2 = v11 + 1;
+v12 = v0.<io.netty.buffer.CompositeByteBuf: int componentCount>;
+if v2 <= v12 goto label2;
+v2 = v12;
+label2:
+v6 = v6 + 1;
+goto label1;
+label3:
+return v2;
+}
+public io.netty.buffer.CompositeByteBuf addComponents(int, java.lang.Iterable)
+{
+io.netty.buffer.CompositeByteBuf v0, v3;
+int v1;
+java.lang.Iterable v2;
+v0 := @this: io.netty.buffer.CompositeByteBuf;
+v1 := @parameter0: int;
+v2 := @parameter1: java.lang.Iterable;
+v3 = specialinvoke v0.<io.netty.buffer.CompositeByteBuf: io.netty.buffer.CompositeByteBuf addComponents(boolean,int,java.lang.Iterable)>(0, v1, v2);
+return v3;
+}
+public io.netty.buffer.CompositeByteBuf addFlattenedComponents(boolean, io.netty.buffer.ByteBuf)
+{
+io.netty.buffer.CompositeByteBuf$Component v15, v22, v34;
+boolean v1, v5, v7;
+io.netty.buffer.CompositeByteBuf$Component[] v10, v33;
+io.netty.buffer.CompositeByteBuf v0;
+java.lang.Throwable v30;
+io.netty.buffer.ByteBuf v2, v23, v24, v26, v8;
+int v11, v12, v13, v14, v16, v17, v18, v19, v20, v21, v25, v27, v28, v29, v3, v31, v32, v4, v6, v9;
+v0 := @this: io.netty.buffer.CompositeByteBuf;
+v1 := @parameter0: boolean;
+v2 := @parameter1: io.netty.buffer.ByteBuf;
+staticinvoke <io.netty.util.internal.ObjectUtil: java.lang.Object checkNotNull(java.lang.Object,java.lang.String)>(v2, "buffer");
+v3 = virtualinvoke v2.<io.netty.buffer.ByteBuf: int readerIndex()>();
+v4 = virtualinvoke v2.<io.netty.buffer.ByteBuf: int writerIndex()>();
+if v3 != v4 goto label01;
+virtualinvoke v2.<io.netty.buffer.ByteBuf: boolean release()>();
+return v0;
+label01:
+v5 = v2 instanceof io.netty.buffer.CompositeByteBuf;
+if v5 != 0 goto label02;
+v6 = v0.<io.netty.buffer.CompositeByteBuf: int componentCount>;
+specialinvoke v0.<io.netty.buffer.CompositeByteBuf: int addComponent0(boolean,int,io.netty.buffer.ByteBuf)>(v1, v6, v2);
+specialinvoke v0.<io.netty.buffer.CompositeByteBuf: void consolidateIfNeeded()>();
+return v0;
+label02:
+v7 = v2 instanceof io.netty.buffer.WrappedCompositeByteBuf;
+if v7 == 0 goto label03;
+v8 = virtualinvoke v2.<io.netty.buffer.ByteBuf: io.netty.buffer.ByteBuf unwrap()>();
+label03:
+v9 = v4 - v3;
+virtualinvoke v8.<io.netty.buffer.CompositeByteBuf: void checkIndex(int,int)>(v3, v9);
+v10 = v8.<io.netty.buffer.CompositeByteBuf: io.netty.buffer.CompositeByteBuf$Component[] components>;
+v11 = v0.<io.netty.buffer.CompositeByteBuf: int componentCount>;
+v12 = v0.<io.netty.buffer.CompositeByteBuf: int writerIndex>;
+label04:
+v13 = specialinvoke v8.<io.netty.buffer.CompositeByteBuf: int toComponentIndex0(int)>(v3);
+v14 = virtualinvoke v0.<io.netty.buffer.CompositeByteBuf: int capacity()>();
+label05:
+v15 = v10[v13];
+v16 = v15.<io.netty.buffer.CompositeByteBuf$Component: int offset>;
+v17 = staticinvoke <java.lang.Math: int max(int,int)>(v3, v16);
+v18 = v15.<io.netty.buffer.CompositeByteBuf$Component: int endOffset>;
+v19 = staticinvoke <java.lang.Math: int min(int,int)>(v4, v18);
+v20 = v19 - v17;
+if v20 <= 0 goto label06;
+v21 = v0.<io.netty.buffer.CompositeByteBuf: int componentCount>;
+v22 = new io.netty.buffer.CompositeByteBuf$Component;
+v23 = v15.<io.netty.buffer.CompositeByteBuf$Component: io.netty.buffer.ByteBuf srcBuf>;
+v24 = virtualinvoke v23.<io.netty.buffer.ByteBuf: io.netty.buffer.ByteBuf retain()>();
+v25 = virtualinvoke v15.<io.netty.buffer.CompositeByteBuf$Component: int srcIdx(int)>(v17);
+v26 = v15.<io.netty.buffer.CompositeByteBuf$Component: io.netty.buffer.ByteBuf buf>;
+v27 = virtualinvoke v15.<io.netty.buffer.CompositeByteBuf$Component: int idx(int)>(v17);
+specialinvoke v22.<io.netty.buffer.CompositeByteBuf$Component: void <init>(io.netty.buffer.ByteBuf,int,io.netty.buffer.ByteBuf,int,int,int,io.netty.buffer.ByteBuf)>(v24, v25, v26, v27, v14, v20, null);
+specialinvoke v0.<io.netty.buffer.CompositeByteBuf: void addComp(int,io.netty.buffer.CompositeByteBuf$Component)>(v21, v22);
+label06:
+if v4 == v19 goto label07;
+v14 = v14 + v20;
+v13 = v13 + 1;
+goto label05;
+label07:
+if v1 == 0 goto label08;
+v28 = v4 - v3;
+v29 = v12 + v28;
+v0.<io.netty.buffer.CompositeByteBuf: int writerIndex> = v29;
+label08:
+specialinvoke v0.<io.netty.buffer.CompositeByteBuf: void consolidateIfNeeded()>();
+virtualinvoke v2.<io.netty.buffer.ByteBuf: boolean release()>();
+label09:
+return v0;
+label10:
+v30 := @caughtexception;
+if v2 == null goto label13;
+if v1 == 0 goto label11;
+v0.<io.netty.buffer.CompositeByteBuf: int writerIndex> = v12;
+label11:
+v31 = v0.<io.netty.buffer.CompositeByteBuf: int componentCount>;
+v32 = v31 - 1;
+label12:
+if v32 < v11 goto label13;
+v33 = v0.<io.netty.buffer.CompositeByteBuf: io.netty.buffer.CompositeByteBuf$Component[] components>;
+v34 = v33[v32];
+virtualinvoke v34.<io.netty.buffer.CompositeByteBuf$Component: void free()>();
+specialinvoke v0.<io.netty.buffer.CompositeByteBuf: void removeComp(int)>(v32);
+v32 = v32 - 1;
+goto label12;
+label13:
+throw v30;
+catch java.lang.Throwable from label04 to label09 with label10;
+}
+private io.netty.buffer.CompositeByteBuf addComponents(boolean, int, java.lang.Iterable)
+{
+java.lang.Throwable v14;
+java.lang.Iterable v3;
+int v10, v11, v2, v9;
+boolean v1, v12, v15, v4, v7;
+java.util.Iterator v6;
+io.netty.buffer.CompositeByteBuf v0, v5;
+java.lang.Object v13, v16, v8;
+v0 := @this: io.netty.buffer.CompositeByteBuf;
+v1 := @parameter0: boolean;
+v2 := @parameter1: int;
+v3 := @parameter2: java.lang.Iterable;
+v4 = v3 instanceof io.netty.buffer.ByteBuf;
+if v4 == 0 goto label1;
+v5 = virtualinvoke v0.<io.netty.buffer.CompositeByteBuf: io.netty.buffer.CompositeByteBuf addComponent(boolean,int,io.netty.buffer.ByteBuf)>(v1, v2, v3);
+return v5;
+label1:
+staticinvoke <io.netty.util.internal.ObjectUtil: java.lang.Object checkNotNull(java.lang.Object,java.lang.String)>(v3, "buffers");
+v6 = interfaceinvoke v3.<java.lang.Iterable: java.util.Iterator iterator()>();
+label2:
+specialinvoke v0.<io.netty.buffer.CompositeByteBuf: void checkComponentIndex(int)>(v2);
+label3:
+v7 = interfaceinvoke v6.<java.util.Iterator: boolean hasNext()>();
+if v7 == 0 goto label4;
+v8 = interfaceinvoke v6.<java.util.Iterator: java.lang.Object next()>();
+if v8 == null goto label4;
+v9 = specialinvoke v0.<io.netty.buffer.CompositeByteBuf: int addComponent0(boolean,int,io.netty.buffer.ByteBuf)>(v1, v2, v8);
+v10 = v9 + 1;
+v11 = v0.<io.netty.buffer.CompositeByteBuf: int componentCount>;
+v2 = staticinvoke <java.lang.Math: int min(int,int)>(v10, v11);
+goto label3;
+label4:
+v12 = interfaceinvoke v6.<java.util.Iterator: boolean hasNext()>();
+if v12 == 0 goto label8;
+v13 = interfaceinvoke v6.<java.util.Iterator: java.lang.Object next()>();
+staticinvoke <io.netty.util.ReferenceCountUtil: void safeRelease(java.lang.Object)>(v13);
+goto label4;
+label5:
+v14 := @caughtexception;
+label6:
+v15 = interfaceinvoke v6.<java.util.Iterator: boolean hasNext()>();
+if v15 == 0 goto label7;
+v16 = interfaceinvoke v6.<java.util.Iterator: java.lang.Object next()>();
+staticinvoke <io.netty.util.ReferenceCountUtil: void safeRelease(java.lang.Object)>(v16);
+goto label6;
+label7:
+throw v14;
+label8:
+specialinvoke v0.<io.netty.buffer.CompositeByteBuf: void consolidateIfNeeded()>();
+return v0;
+catch java.lang.Throwable from label2 to label4 with label5;
+}
+private void consolidateIfNeeded()
+{
+int v1, v2;
+io.netty.buffer.CompositeByteBuf v0;
+v0 := @this: io.netty.buffer.CompositeByteBuf;
+v1 = v0.<io.netty.buffer.CompositeByteBuf: int componentCount>;
+v2 = v0.<io.netty.buffer.CompositeByteBuf: int maxNumComponents>;
+if v1 <= v2 goto label1;
+specialinvoke v0.<io.netty.buffer.CompositeByteBuf: void consolidate0(int,int)>(0, v1);
+label1:
+return;
+}
+private void checkComponentIndex(int)
+{
+java.lang.IndexOutOfBoundsException v3;
+java.lang.Object[] v4;
+java.lang.Integer v5, v7;
+io.netty.buffer.CompositeByteBuf v0;
+int v1, v2, v6;
+java.lang.String v8;
+v0 := @this: io.netty.buffer.CompositeByteBuf;
+v1 := @parameter0: int;
+virtualinvoke v0.<io.netty.buffer.CompositeByteBuf: void ensureAccessible()>();
+if v1 < 0 goto label1;
+v2 = v0.<io.netty.buffer.CompositeByteBuf: int componentCount>;
+if v1 <= v2 goto label2;
+label1:
+v3 = new java.lang.IndexOutOfBoundsException;
+v4 = newarray (java.lang.Object)[2];
+v5 = staticinvoke <java.lang.Integer: java.lang.Integer valueOf(int)>(v1);
+v4[0] = v5;
+v6 = v0.<io.netty.buffer.CompositeByteBuf: int componentCount>;
+v7 = staticinvoke <java.lang.Integer: java.lang.Integer valueOf(int)>(v6);
+v4[1] = v7;
+v8 = staticinvoke <java.lang.String: java.lang.String format(java.lang.String,java.lang.Object[])>("cIndex: %d (expected: >= 0 && <= numComponents(%d))", v4);
+specialinvoke v3.<java.lang.IndexOutOfBoundsException: void <init>(java.lang.String)>(v8);
+throw v3;
+label2:
+return;
+}
+private void checkComponentIndex(int, int)
+{
+java.lang.IndexOutOfBoundsException v5;
+java.lang.Object[] v6;
+java.lang.Integer v10, v7, v8;
+io.netty.buffer.CompositeByteBuf v0;
+int v1, v2, v3, v4, v9;
+java.lang.String v11;
+v0 := @this: io.netty.buffer.CompositeByteBuf;
+v1 := @parameter0: int;
+v2 := @parameter1: int;
+virtualinvoke v0.<io.netty.buffer.CompositeByteBuf: void ensureAccessible()>();
+if v1 < 0 goto label1;
+v3 = v1 + v2;
+v4 = v0.<io.netty.buffer.CompositeByteBuf: int componentCount>;
+if v3 <= v4 goto label2;
+label1:
+v5 = new java.lang.IndexOutOfBoundsException;
+v6 = newarray (java.lang.Object)[3];
+v7 = staticinvoke <java.lang.Integer: java.lang.Integer valueOf(int)>(v1);
+v6[0] = v7;
+v8 = staticinvoke <java.lang.Integer: java.lang.Integer valueOf(int)>(v2);
+v6[1] = v8;
+v9 = v0.<io.netty.buffer.CompositeByteBuf: int componentCount>;
+v10 = staticinvoke <java.lang.Integer: java.lang.Integer valueOf(int)>(v9);
+v6[2] = v10;
+v11 = staticinvoke <java.lang.String: java.lang.String format(java.lang.String,java.lang.Object[])>("cIndex: %d, numComponents: %d (expected: cIndex >= 0 && cIndex + numComponents <= totalNumComponents(%d))", v6);
+specialinvoke v5.<java.lang.IndexOutOfBoundsException: void <init>(java.lang.String)>(v11);
+throw v5;
+label2:
+return;
+}
+private void updateComponentOffsets(int)
+{
+io.netty.buffer.CompositeByteBuf$Component[] v3, v8;
+io.netty.buffer.CompositeByteBuf$Component v5, v9;
+io.netty.buffer.CompositeByteBuf v0;
+int v1, v2, v4, v6, v7;
+v0 := @this: io.netty.buffer.CompositeByteBuf;
+v1 := @parameter0: int;
+v2 = v0.<io.netty.buffer.CompositeByteBuf: int componentCount>;
+if v2 > v1 goto label1;
+return;
+label1:
+if v1 <= 0 goto label2;
+v3 = v0.<io.netty.buffer.CompositeByteBuf: io.netty.buffer.CompositeByteBuf$Component[] components>;
+v4 = v1 - 1;
+v5 = v3[v4];
+v6 = v5.<io.netty.buffer.CompositeByteBuf$Component: int endOffset>;
+goto label3;
+label2:
+v6 = 0;
+label3:
+v7 = v6;
+label4:
+if v1 >= v2 goto label5;
+v8 = v0.<io.netty.buffer.CompositeByteBuf: io.netty.buffer.CompositeByteBuf$Component[] components>;
+v9 = v8[v1];
+virtualinvoke v9.<io.netty.buffer.CompositeByteBuf$Component: void reposition(int)>(v7);
+v7 = v9.<io.netty.buffer.CompositeByteBuf$Component: int endOffset>;
+v1 = v1 + 1;
+goto label4;
+label5:
+return;
+}
+public io.netty.buffer.CompositeByteBuf removeComponent(int)
+{
+io.netty.buffer.CompositeByteBuf$Component v3, v4;
+io.netty.buffer.CompositeByteBuf v0;
+int v1, v5;
+io.netty.buffer.CompositeByteBuf$Component[] v2;
+v0 := @this: io.netty.buffer.CompositeByteBuf;
+v1 := @parameter0: int;
+specialinvoke v0.<io.netty.buffer.CompositeByteBuf: void checkComponentIndex(int)>(v1);
+v2 = v0.<io.netty.buffer.CompositeByteBuf: io.netty.buffer.CompositeByteBuf$Component[] components>;
+v3 = v2[v1];
+v4 = v0.<io.netty.buffer.CompositeByteBuf: io.netty.buffer.CompositeByteBuf$Component lastAccessed>;
+if v4 != v3 goto label1;
+v0.<io.netty.buffer.CompositeByteBuf: io.netty.buffer.CompositeByteBuf$Component lastAccessed> = null;
+label1:
+virtualinvoke v3.<io.netty.buffer.CompositeByteBuf$Component: void free()>();
+specialinvoke v0.<io.netty.buffer.CompositeByteBuf: void removeComp(int)>(v1);
+v5 = virtualinvoke v3.<io.netty.buffer.CompositeByteBuf$Component: int length()>();
+if v5 <= 0 goto label2;
+specialinvoke v0.<io.netty.buffer.CompositeByteBuf: void updateComponentOffsets(int)>(v1);
+label2:
+return v0;
+}
+public io.netty.buffer.CompositeByteBuf removeComponents(int, int)
+{
+io.netty.buffer.CompositeByteBuf$Component[] v6;
+io.netty.buffer.CompositeByteBuf$Component v7, v9;
+io.netty.buffer.CompositeByteBuf v0;
+int v1, v2, v3, v5, v8;
+boolean v4;
+v0 := @this: io.netty.buffer.CompositeByteBuf;
+v1 := @parameter0: int;
+v2 := @parameter1: int;
+specialinvoke v0.<io.netty.buffer.CompositeByteBuf: void checkComponentIndex(int,int)>(v1, v2);
+if v2 != 0 goto label1;
+return v0;
+label1:
+v3 = v1 + v2;
+v4 = 0;
+v5 = v1;
+label2:
+if v5 >= v3 goto label5;
+v6 = v0.<io.netty.buffer.CompositeByteBuf: io.netty.buffer.CompositeByteBuf$Component[] components>;
+v7 = v6[v5];
+v8 = virtualinvoke v7.<io.netty.buffer.CompositeByteBuf$Component: int length()>();
+if v8 <= 0 goto label3;
+v4 = 1;
+label3:
+v9 = v0.<io.netty.buffer.CompositeByteBuf: io.netty.buffer.CompositeByteBuf$Component lastAccessed>;
+if v9 != v7 goto label4;
+v0.<io.netty.buffer.CompositeByteBuf: io.netty.buffer.CompositeByteBuf$Component lastAccessed> = null;
+label4:
+virtualinvoke v7.<io.netty.buffer.CompositeByteBuf$Component: void free()>();
+v5 = v5 + 1;
+goto label2;
+label5:
+specialinvoke v0.<io.netty.buffer.CompositeByteBuf: void removeCompRange(int,int)>(v1, v3);
+if v4 == 0 goto label6;
+specialinvoke v0.<io.netty.buffer.CompositeByteBuf: void updateComponentOffsets(int)>(v1);
+label6:
+return v0;
+}
+public java.util.Iterator iterator()
+{
+io.netty.buffer.CompositeByteBuf v0;
+java.util.Iterator v2;
+int v1;
+io.netty.buffer.CompositeByteBuf$CompositeByteBufIterator v3;
+v0 := @this: io.netty.buffer.CompositeByteBuf;
+virtualinvoke v0.<io.netty.buffer.CompositeByteBuf: void ensureAccessible()>();
+v1 = v0.<io.netty.buffer.CompositeByteBuf: int componentCount>;
+if v1 != 0 goto label1;
+v2 = <io.netty.buffer.CompositeByteBuf: java.util.Iterator EMPTY_ITERATOR>;
+goto label2;
+label1:
+v3 = new io.netty.buffer.CompositeByteBuf$CompositeByteBufIterator;
+v2 = v3;
+specialinvoke v3.<io.netty.buffer.CompositeByteBuf$CompositeByteBufIterator: void <init>(io.netty.buffer.CompositeByteBuf)>(v0);
+label2:
+return v2;
+}
+protected int forEachByteAsc0(int, int, io.netty.util.ByteProcessor) throws java.lang.Exception
+{
+io.netty.buffer.CompositeByteBuf$Component v8;
+io.netty.buffer.ByteBuf v11;
+int v1, v10, v12, v13, v14, v15, v17, v18, v19, v2, v20, v21, v22, v4, v5, v6, v9;
+boolean v16;
+io.netty.util.ByteProcessor v3;
+io.netty.buffer.CompositeByteBuf$Component[] v7;
+io.netty.buffer.CompositeByteBuf v0;
+v0 := @this: io.netty.buffer.CompositeByteBuf;
+v1 := @parameter0: int;
+v2 := @parameter1: int;
+v3 := @parameter2: io.netty.util.ByteProcessor;
+if v2 > v1 goto label1;
+v4 = (int) -1;
+return v4;
+label1:
+v5 = specialinvoke v0.<io.netty.buffer.CompositeByteBuf: int toComponentIndex0(int)>(v1);
+v6 = v2 - v1;
+label2:
+if v6 <= 0 goto label7;
+v7 = v0.<io.netty.buffer.CompositeByteBuf: io.netty.buffer.CompositeByteBuf$Component[] components>;
+v8 = v7[v5];
+v9 = v8.<io.netty.buffer.CompositeByteBuf$Component: int offset>;
+v10 = v8.<io.netty.buffer.CompositeByteBuf$Component: int endOffset>;
+if v9 == v10 goto label6;
+v11 = v8.<io.netty.buffer.CompositeByteBuf$Component: io.netty.buffer.ByteBuf buf>;
+v12 = virtualinvoke v8.<io.netty.buffer.CompositeByteBuf$Component: int idx(int)>(v1);
+v13 = v8.<io.netty.buffer.CompositeByteBuf$Component: int endOffset>;
+v14 = v13 - v1;
+v15 = staticinvoke <java.lang.Math: int min(int,int)>(v6, v14);
+v16 = v11 instanceof io.netty.buffer.AbstractByteBuf;
+if v16 == 0 goto label3;
+v17 = v12 + v15;
+v18 = virtualinvoke v11.<io.netty.buffer.AbstractByteBuf: int forEachByteAsc0(int,int,io.netty.util.ByteProcessor)>(v12, v17, v3);
+goto label4;
+label3:
+v18 = virtualinvoke v11.<io.netty.buffer.ByteBuf: int forEachByte(int,int,io.netty.util.ByteProcessor)>(v12, v15, v3);
+label4:
+v19 = (int) -1;
+if v18 == v19 goto label5;
+v20 = v8.<io.netty.buffer.CompositeByteBuf$Component: int adjustment>;
+v21 = v18 - v20;
+return v21;
+label5:
+v1 = v1 + v15;
+v6 = v6 - v15;
+label6:
+v5 = v5 + 1;
+goto label2;
+label7:
+v22 = (int) -1;
+return v22;
+}
+protected int forEachByteDesc0(int, int, io.netty.util.ByteProcessor) throws java.lang.Exception
+{
+io.netty.buffer.CompositeByteBuf$Component v9;
+io.netty.buffer.ByteBuf v12;
+int v1, v10, v11, v13, v14, v15, v16, v18, v19, v2, v20, v21, v22, v23, v4, v5, v6, v7;
+boolean v17;
+io.netty.util.ByteProcessor v3;
+io.netty.buffer.CompositeByteBuf$Component[] v8;
+io.netty.buffer.CompositeByteBuf v0;
+v0 := @this: io.netty.buffer.CompositeByteBuf;
+v1 := @parameter0: int;
+v2 := @parameter1: int;
+v3 := @parameter2: io.netty.util.ByteProcessor;
+if v2 <= v1 goto label1;
+v4 = (int) -1;
+return v4;
+label1:
+v5 = specialinvoke v0.<io.netty.buffer.CompositeByteBuf: int toComponentIndex0(int)>(v1);
+v6 = 1 + v1;
+v7 = v6 - v2;
+label2:
+if v7 <= 0 goto label7;
+v8 = v0.<io.netty.buffer.CompositeByteBuf: io.netty.buffer.CompositeByteBuf$Component[] components>;
+v9 = v8[v5];
+v10 = v9.<io.netty.buffer.CompositeByteBuf$Component: int offset>;
+v11 = v9.<io.netty.buffer.CompositeByteBuf$Component: int endOffset>;
+if v10 == v11 goto label6;
+v12 = v9.<io.netty.buffer.CompositeByteBuf$Component: io.netty.buffer.ByteBuf buf>;
+v13 = v7 + v2;
+v14 = virtualinvoke v9.<io.netty.buffer.CompositeByteBuf$Component: int idx(int)>(v13);
+v15 = staticinvoke <java.lang.Math: int min(int,int)>(v7, v14);
+v16 = v14 - v15;
+v17 = v12 instanceof io.netty.buffer.AbstractByteBuf;
+if v17 == 0 goto label3;
+v18 = v14 - 1;
+v19 = virtualinvoke v12.<io.netty.buffer.AbstractByteBuf: int forEachByteDesc0(int,int,io.netty.util.ByteProcessor)>(v18, v16, v3);
+goto label4;
+label3:
+v19 = virtualinvoke v12.<io.netty.buffer.ByteBuf: int forEachByteDesc(int,int,io.netty.util.ByteProcessor)>(v16, v15, v3);
+label4:
+v20 = (int) -1;
+if v19 == v20 goto label5;
+v21 = v9.<io.netty.buffer.CompositeByteBuf$Component: int adjustment>;
+v22 = v19 - v21;
+return v22;
+label5:
+v7 = v7 - v15;
+label6:
+v5 = v5 - 1;
+goto label2;
+label7:
+v23 = (int) -1;
+return v23;
+}
+public java.util.List decompose(int, int)
+{
+java.util.ArrayList v16;
+io.netty.buffer.CompositeByteBuf$Component v20, v6;
+io.netty.buffer.ByteBuf v12, v21, v26, v7;
+int v1, v10, v11, v13, v14, v17, v18, v2, v22, v23, v24, v25, v27, v4, v8, v9;
+io.netty.buffer.CompositeByteBuf$Component[] v19, v5;
+io.netty.buffer.CompositeByteBuf v0;
+java.util.List v15, v3;
+v0 := @this: io.netty.buffer.CompositeByteBuf;
+v1 := @parameter0: int;
+v2 := @parameter1: int;
+virtualinvoke v0.<io.netty.buffer.CompositeByteBuf: void checkIndex(int,int)>(v1, v2);
+if v2 != 0 goto label1;
+v3 = staticinvoke <java.util.Collections: java.util.List emptyList()>();
+return v3;
+label1:
+v4 = specialinvoke v0.<io.netty.buffer.CompositeByteBuf: int toComponentIndex0(int)>(v1);
+v5 = v0.<io.netty.buffer.CompositeByteBuf: io.netty.buffer.CompositeByteBuf$Component[] components>;
+v6 = v5[v4];
+v7 = v6.<io.netty.buffer.CompositeByteBuf$Component: io.netty.buffer.ByteBuf srcBuf>;
+v8 = virtualinvoke v6.<io.netty.buffer.CompositeByteBuf$Component: int srcIdx(int)>(v1);
+v9 = v6.<io.netty.buffer.CompositeByteBuf$Component: int endOffset>;
+v10 = v9 - v1;
+v11 = staticinvoke <java.lang.Math: int min(int,int)>(v10, v2);
+v12 = virtualinvoke v7.<io.netty.buffer.ByteBuf: io.netty.buffer.ByteBuf slice(int,int)>(v8, v11);
+v13 = virtualinvoke v12.<io.netty.buffer.ByteBuf: int readableBytes()>();
+v14 = v2 - v13;
+if v14 != 0 goto label2;
+v15 = staticinvoke <java.util.Collections: java.util.List singletonList(java.lang.Object)>(v12);
+return v15;
+label2:
+v16 = new java.util.ArrayList;
+v17 = v0.<io.netty.buffer.CompositeByteBuf: int componentCount>;
+v18 = v17 - v4;
+specialinvoke v16.<java.util.ArrayList: void <init>(int)>(v18);
+interfaceinvoke v16.<java.util.List: boolean add(java.lang.Object)>(v12);
+label3:
+v19 = v0.<io.netty.buffer.CompositeByteBuf: io.netty.buffer.CompositeByteBuf$Component[] components>;
+v4 = v4 + 1;
+v20 = v19[v4];
+v21 = v20.<io.netty.buffer.CompositeByteBuf$Component: io.netty.buffer.ByteBuf srcBuf>;
+v22 = v20.<io.netty.buffer.CompositeByteBuf$Component: int offset>;
+v23 = virtualinvoke v20.<io.netty.buffer.CompositeByteBuf$Component: int srcIdx(int)>(v22);
+v24 = virtualinvoke v20.<io.netty.buffer.CompositeByteBuf$Component: int length()>();
+v25 = staticinvoke <java.lang.Math: int min(int,int)>(v24, v14);
+v26 = virtualinvoke v21.<io.netty.buffer.ByteBuf: io.netty.buffer.ByteBuf slice(int,int)>(v23, v25);
+v27 = virtualinvoke v26.<io.netty.buffer.ByteBuf: int readableBytes()>();
+v14 = v14 - v27;
+interfaceinvoke v16.<java.util.List: boolean add(java.lang.Object)>(v26);
+if v14 > 0 goto label3;
+return v16;
+}
+public boolean isDirect()
+{
+io.netty.buffer.CompositeByteBuf$Component v4;
+io.netty.buffer.CompositeByteBuf v0;
+io.netty.buffer.ByteBuf v5;
+int v1, v2;
+io.netty.buffer.CompositeByteBuf$Component[] v3;
+boolean v6;
+v0 := @this: io.netty.buffer.CompositeByteBuf;
+v1 = v0.<io.netty.buffer.CompositeByteBuf: int componentCount>;
+if v1 != 0 goto label1;
+return 0;
+label1:
+v2 = 0;
+label2:
+if v2 >= v1 goto label4;
+v3 = v0.<io.netty.buffer.CompositeByteBuf: io.netty.buffer.CompositeByteBuf$Component[] components>;
+v4 = v3[v2];
+v5 = v4.<io.netty.buffer.CompositeByteBuf$Component: io.netty.buffer.ByteBuf buf>;
+v6 = virtualinvoke v5.<io.netty.buffer.ByteBuf: boolean isDirect()>();
+if v6 != 0 goto label3;
+return 0;
+label3:
+v2 = v2 + 1;
+goto label2;
+label4:
+return 1;
+}
+public boolean hasArray()
+{
+io.netty.buffer.CompositeByteBuf$Component v3;
+io.netty.buffer.CompositeByteBuf v0;
+io.netty.buffer.ByteBuf v4;
+int v1;
+io.netty.buffer.CompositeByteBuf$Component[] v2;
+boolean v5;
+v0 := @this: io.netty.buffer.CompositeByteBuf;
+v1 = v0.<io.netty.buffer.CompositeByteBuf: int componentCount>;
+lookupswitch(v1)
+{
+case 0: goto label1;
+case 1: goto label2;
+default: goto label3;
+};
+label1:
+return 1;
+label2:
+v2 = v0.<io.netty.buffer.CompositeByteBuf: io.netty.buffer.CompositeByteBuf$Component[] components>;
+v3 = v2[0];
+v4 = v3.<io.netty.buffer.CompositeByteBuf$Component: io.netty.buffer.ByteBuf buf>;
+v5 = virtualinvoke v4.<io.netty.buffer.ByteBuf: boolean hasArray()>();
+return v5;
+label3:
+return 0;
+}
+public byte[] array()
+{
+byte[] v2, v6;
+java.lang.UnsupportedOperationException v7;
+io.netty.buffer.CompositeByteBuf$Component[] v3;
+io.netty.buffer.CompositeByteBuf$Component v4;
+io.netty.buffer.CompositeByteBuf v0;
+io.netty.buffer.ByteBuf v5;
+int v1;
+v0 := @this: io.netty.buffer.CompositeByteBuf;
+v1 = v0.<io.netty.buffer.CompositeByteBuf: int componentCount>;
+lookupswitch(v1)
+{
+case 0: goto label1;
+case 1: goto label2;
+default: goto label3;
+};
+label1:
+v2 = <io.netty.util.internal.EmptyArrays: byte[] EMPTY_BYTES>;
+return v2;
+label2:
+v3 = v0.<io.netty.buffer.CompositeByteBuf: io.netty.buffer.CompositeByteBuf$Component[] components>;
+v4 = v3[0];
+v5 = v4.<io.netty.buffer.CompositeByteBuf$Component: io.netty.buffer.ByteBuf buf>;
+v6 = virtualinvoke v5.<io.netty.buffer.ByteBuf: byte[] array()>();
+return v6;
+label3:
+v7 = new java.lang.UnsupportedOperationException;
+specialinvoke v7.<java.lang.UnsupportedOperationException: void <init>()>();
+throw v7;
+}
+public int arrayOffset()
+{
+java.lang.UnsupportedOperationException v7;
+io.netty.buffer.CompositeByteBuf$Component[] v2;
+io.netty.buffer.CompositeByteBuf$Component v3;
+io.netty.buffer.CompositeByteBuf v0;
+io.netty.buffer.ByteBuf v4;
+int v1, v5, v6;
+v0 := @this: io.netty.buffer.CompositeByteBuf;
+v1 = v0.<io.netty.buffer.CompositeByteBuf: int componentCount>;
+lookupswitch(v1)
+{
+case 0: goto label1;
+case 1: goto label2;
+default: goto label3;
+};
+label1:
+return 0;
+label2:
+v2 = v0.<io.netty.buffer.CompositeByteBuf: io.netty.buffer.CompositeByteBuf$Component[] components>;
+v3 = v2[0];
+v4 = v3.<io.netty.buffer.CompositeByteBuf$Component: io.netty.buffer.ByteBuf buf>;
+v5 = virtualinvoke v4.<io.netty.buffer.ByteBuf: int arrayOffset()>();
+v6 = virtualinvoke v3.<io.netty.buffer.CompositeByteBuf$Component: int idx(int)>(v5);
+return v6;
+label3:
+v7 = new java.lang.UnsupportedOperationException;
+specialinvoke v7.<java.lang.UnsupportedOperationException: void <init>()>();
+throw v7;
+}
+public boolean hasMemoryAddress()
+{
+io.netty.buffer.CompositeByteBuf$Component[] v4;
+io.netty.buffer.CompositeByteBuf$Component v5;
+io.netty.buffer.CompositeByteBuf v0;
+io.netty.buffer.ByteBuf v2, v6;
+int v1;
+boolean v3, v7;
+v0 := @this: io.netty.buffer.CompositeByteBuf;
+v1 = v0.<io.netty.buffer.CompositeByteBuf: int componentCount>;
+lookupswitch(v1)
+{
+case 0: goto label1;
+case 1: goto label2;
+default: goto label3;
+};
+label1:
+v2 = <io.netty.buffer.Unpooled: io.netty.buffer.ByteBuf EMPTY_BUFFER>;
+v3 = virtualinvoke v2.<io.netty.buffer.ByteBuf: boolean hasMemoryAddress()>();
+return v3;
+label2:
+v4 = v0.<io.netty.buffer.CompositeByteBuf: io.netty.buffer.CompositeByteBuf$Component[] components>;
+v5 = v4[0];
+v6 = v5.<io.netty.buffer.CompositeByteBuf$Component: io.netty.buffer.ByteBuf buf>;
+v7 = virtualinvoke v6.<io.netty.buffer.ByteBuf: boolean hasMemoryAddress()>();
+return v7;
+label3:
+return 0;
+}
+public long memoryAddress()
+{
+java.lang.UnsupportedOperationException v10;
+long v3, v7, v9;
+io.netty.buffer.CompositeByteBuf$Component[] v4;
+io.netty.buffer.CompositeByteBuf$Component v5;
+io.netty.buffer.CompositeByteBuf v0;
+io.netty.buffer.ByteBuf v2, v6;
+int v1, v8;
+v0 := @this: io.netty.buffer.CompositeByteBuf;
+v1 = v0.<io.netty.buffer.CompositeByteBuf: int componentCount>;
+lookupswitch(v1)
+{
+case 0: goto label1;
+case 1: goto label2;
+default: goto label3;
+};
+label1:
+v2 = <io.netty.buffer.Unpooled: io.netty.buffer.ByteBuf EMPTY_BUFFER>;
+v3 = virtualinvoke v2.<io.netty.buffer.ByteBuf: long memoryAddress()>();
+return v3;
+label2:
+v4 = v0.<io.netty.buffer.CompositeByteBuf: io.netty.buffer.CompositeByteBuf$Component[] components>;
+v5 = v4[0];
+v6 = v5.<io.netty.buffer.CompositeByteBuf$Component: io.netty.buffer.ByteBuf buf>;
+v7 = virtualinvoke v6.<io.netty.buffer.ByteBuf: long memoryAddress()>();
+v8 = v5.<io.netty.buffer.CompositeByteBuf$Component: int adjustment>;
+v9 = v7 + v8;
+return v9;
+label3:
+v10 = new java.lang.UnsupportedOperationException;
+specialinvoke v10.<java.lang.UnsupportedOperationException: void <init>()>();
+throw v10;
+}
+public int capacity()
+{
+io.netty.buffer.CompositeByteBuf$Component v4;
+io.netty.buffer.CompositeByteBuf v0;
+int v1, v3, v5;
+io.netty.buffer.CompositeByteBuf$Component[] v2;
+v0 := @this: io.netty.buffer.CompositeByteBuf;
+v1 = v0.<io.netty.buffer.CompositeByteBuf: int componentCount>;
+if v1 <= 0 goto label1;
+v2 = v0.<io.netty.buffer.CompositeByteBuf: io.netty.buffer.CompositeByteBuf$Component[] components>;
+v3 = v1 - 1;
+v4 = v2[v3];
+v5 = v4.<io.netty.buffer.CompositeByteBuf$Component: int endOffset>;
+goto label2;
+label1:
+v5 = 0;
+label2:
+return v5;
+}
+public io.netty.buffer.CompositeByteBuf capacity(int)
+{
+io.netty.buffer.CompositeByteBuf$Component v12;
+io.netty.buffer.ByteBuf v16, v18, v5, v6;
+int v1, v10, v13, v14, v15, v17, v19, v2, v20, v21, v3, v4, v7, v8, v9;
+io.netty.buffer.CompositeByteBuf$Component[] v11;
+io.netty.buffer.CompositeByteBuf v0;
+v0 := @this: io.netty.buffer.CompositeByteBuf;
+v1 := @parameter0: int;
+virtualinvoke v0.<io.netty.buffer.CompositeByteBuf: void checkNewCapacity(int)>(v1);
+v2 = v0.<io.netty.buffer.CompositeByteBuf: int componentCount>;
+v3 = virtualinvoke v0.<io.netty.buffer.CompositeByteBuf: int capacity()>();
+if v1 <= v3 goto label1;
+v4 = v1 - v3;
+v5 = specialinvoke v0.<io.netty.buffer.CompositeByteBuf: io.netty.buffer.ByteBuf allocBuffer(int)>(v4);
+v6 = virtualinvoke v5.<io.netty.buffer.ByteBuf: io.netty.buffer.ByteBuf setIndex(int,int)>(0, v4);
+specialinvoke v0.<io.netty.buffer.CompositeByteBuf: int addComponent0(boolean,int,io.netty.buffer.ByteBuf)>(0, v2, v6);
+v7 = v0.<io.netty.buffer.CompositeByteBuf: int componentCount>;
+v8 = v0.<io.netty.buffer.CompositeByteBuf: int maxNumComponents>;
+if v7 < v8 goto label6;
+specialinvoke v0.<io.netty.buffer.CompositeByteBuf: void consolidateIfNeeded()>();
+goto label6;
+label1:
+if v1 >= v3 goto label6;
+v0.<io.netty.buffer.CompositeByteBuf: io.netty.buffer.CompositeByteBuf$Component lastAccessed> = null;
+v9 = v2 - 1;
+v10 = v3 - v1;
+label2:
+if v9 < 0 goto label4;
+v11 = v0.<io.netty.buffer.CompositeByteBuf: io.netty.buffer.CompositeByteBuf$Component[] components>;
+v12 = v11[v9];
+v13 = virtualinvoke v12.<io.netty.buffer.CompositeByteBuf$Component: int length()>();
+if v10 >= v13 goto label3;
+v14 = v12.<io.netty.buffer.CompositeByteBuf$Component: int endOffset>;
+v15 = v14 - v10;
+v12.<io.netty.buffer.CompositeByteBuf$Component: int endOffset> = v15;
+v16 = v12.<io.netty.buffer.CompositeByteBuf$Component: io.netty.buffer.ByteBuf slice>;
+if v16 == null goto label4;
+v17 = virtualinvoke v12.<io.netty.buffer.CompositeByteBuf$Component: int length()>();
+v18 = virtualinvoke v16.<io.netty.buffer.ByteBuf: io.netty.buffer.ByteBuf slice(int,int)>(0, v17);
+v12.<io.netty.buffer.CompositeByteBuf$Component: io.netty.buffer.ByteBuf slice> = v18;
+goto label4;
+label3:
+virtualinvoke v12.<io.netty.buffer.CompositeByteBuf$Component: void free()>();
+v10 = v10 - v13;
+v9 = v9 - 1;
+goto label2;
+label4:
+v19 = v9 + 1;
+specialinvoke v0.<io.netty.buffer.CompositeByteBuf: void removeCompRange(int,int)>(v19, v2);
+v20 = virtualinvoke v0.<io.netty.buffer.CompositeByteBuf: int readerIndex()>();
+if v20 <= v1 goto label5;
+virtualinvoke v0.<io.netty.buffer.CompositeByteBuf: void setIndex0(int,int)>(v1, v1);
+goto label6;
+label5:
+v21 = v0.<io.netty.buffer.CompositeByteBuf: int writerIndex>;
+if v21 <= v1 goto label6;
+v0.<io.netty.buffer.CompositeByteBuf: int writerIndex> = v1;
+label6:
+return v0;
+}
+public io.netty.buffer.ByteBufAllocator alloc()
+{
+io.netty.buffer.CompositeByteBuf v0;
+io.netty.buffer.ByteBufAllocator v1;
+v0 := @this: io.netty.buffer.CompositeByteBuf;
+v1 = v0.<io.netty.buffer.CompositeByteBuf: io.netty.buffer.ByteBufAllocator alloc>;
+return v1;
+}
+public java.nio.ByteOrder order()
+{
+io.netty.buffer.CompositeByteBuf v0;
+java.nio.ByteOrder v1;
+v0 := @this: io.netty.buffer.CompositeByteBuf;
+v1 = <java.nio.ByteOrder: java.nio.ByteOrder BIG_ENDIAN>;
+return v1;
+}
+public int numComponents()
+{
+int v1;
+io.netty.buffer.CompositeByteBuf v0;
+v0 := @this: io.netty.buffer.CompositeByteBuf;
+v1 = v0.<io.netty.buffer.CompositeByteBuf: int componentCount>;
+return v1;
+}
+public int maxNumComponents()
+{
+int v1;
+io.netty.buffer.CompositeByteBuf v0;
+v0 := @this: io.netty.buffer.CompositeByteBuf;
+v1 = v0.<io.netty.buffer.CompositeByteBuf: int maxNumComponents>;
+return v1;
+}
+public int toComponentIndex(int)
+{
+int v1, v2;
+io.netty.buffer.CompositeByteBuf v0;
+v0 := @this: io.netty.buffer.CompositeByteBuf;
+v1 := @parameter0: int;
+virtualinvoke v0.<io.netty.buffer.CompositeByteBuf: void checkIndex(int)>(v1);
+v2 = specialinvoke v0.<io.netty.buffer.CompositeByteBuf: int toComponentIndex0(int)>(v1);
+return v2;
+}
+private int toComponentIndex0(int)
+{
+java.lang.Error v19;
+io.netty.buffer.CompositeByteBuf$Component v16, v5, v8;
+byte v10;
+int v1, v11, v12, v13, v14, v17, v18, v2, v3, v6, v9;
+io.netty.buffer.CompositeByteBuf$Component[] v15, v4, v7;
+io.netty.buffer.CompositeByteBuf v0;
+v0 := @this: io.netty.buffer.CompositeByteBuf;
+v1 := @parameter0: int;
+v2 = v0.<io.netty.buffer.CompositeByteBuf: int componentCount>;
+if v1 != 0 goto label03;
+v3 = 0;
+label01:
+if v3 >= v2 goto label03;
+v4 = v0.<io.netty.buffer.CompositeByteBuf: io.netty.buffer.CompositeByteBuf$Component[] components>;
+v5 = v4[v3];
+v6 = v5.<io.netty.buffer.CompositeByteBuf$Component: int endOffset>;
+if v6 <= 0 goto label02;
+return v3;
+label02:
+v3 = v3 + 1;
+goto label01;
+label03:
+if v2 > 2 goto label07;
+if v2 == 1 goto label04;
+v7 = v0.<io.netty.buffer.CompositeByteBuf: io.netty.buffer.CompositeByteBuf$Component[] components>;
+v8 = v7[0];
+v9 = v8.<io.netty.buffer.CompositeByteBuf$Component: int endOffset>;
+if v1 >= v9 goto label05;
+label04:
+v10 = 0;
+goto label06;
+label05:
+v10 = 1;
+label06:
+return v10;
+label07:
+v11 = 0;
+v12 = v2;
+label08:
+if v11 > v12 goto label11;
+v13 = v11 + v12;
+v14 = v13 >>> 1;
+v15 = v0.<io.netty.buffer.CompositeByteBuf: io.netty.buffer.CompositeByteBuf$Component[] components>;
+v16 = v15[v14];
+v17 = v16.<io.netty.buffer.CompositeByteBuf$Component: int endOffset>;
+if v1 < v17 goto label09;
+v11 = v14 + 1;
+goto label08;
+label09:
+v18 = v16.<io.netty.buffer.CompositeByteBuf$Component: int offset>;
+if v1 >= v18 goto label10;
+v12 = v14 - 1;
+goto label08;
+label10:
+return v14;
+label11:
+v19 = new java.lang.Error;
+specialinvoke v19.<java.lang.Error: void <init>(java.lang.String)>("should not reach here");
+throw v19;
+}
+public int toByteIndex(int)
+{
+io.netty.buffer.CompositeByteBuf$Component v3;
+io.netty.buffer.CompositeByteBuf v0;
+int v1, v4;
+io.netty.buffer.CompositeByteBuf$Component[] v2;
+v0 := @this: io.netty.buffer.CompositeByteBuf;
+v1 := @parameter0: int;
+specialinvoke v0.<io.netty.buffer.CompositeByteBuf: void checkComponentIndex(int)>(v1);
+v2 = v0.<io.netty.buffer.CompositeByteBuf: io.netty.buffer.CompositeByteBuf$Component[] components>;
+v3 = v2[v1];
+v4 = v3.<io.netty.buffer.CompositeByteBuf$Component: int offset>;
+return v4;
+}
+public byte getByte(int)
+{
+io.netty.buffer.CompositeByteBuf$Component v2;
+io.netty.buffer.CompositeByteBuf v0;
+byte v5;
+io.netty.buffer.ByteBuf v3;
+int v1, v4;
+v0 := @this: io.netty.buffer.CompositeByteBuf;
+v1 := @parameter0: int;
+v2 = specialinvoke v0.<io.netty.buffer.CompositeByteBuf: io.netty.buffer.CompositeByteBuf$Component findComponent(int)>(v1);
+v3 = v2.<io.netty.buffer.CompositeByteBuf$Component: io.netty.buffer.ByteBuf buf>;
+v4 = virtualinvoke v2.<io.netty.buffer.CompositeByteBuf$Component: int idx(int)>(v1);
+v5 = virtualinvoke v3.<io.netty.buffer.ByteBuf: byte getByte(int)>(v4);
+return v5;
+}
+protected byte _getByte(int)
+{
+io.netty.buffer.CompositeByteBuf$Component v2;
+io.netty.buffer.CompositeByteBuf v0;
+byte v5;
+io.netty.buffer.ByteBuf v3;
+int v1, v4;
+v0 := @this: io.netty.buffer.CompositeByteBuf;
+v1 := @parameter0: int;
+v2 = specialinvoke v0.<io.netty.buffer.CompositeByteBuf: io.netty.buffer.CompositeByteBuf$Component findComponent0(int)>(v1);
+v3 = v2.<io.netty.buffer.CompositeByteBuf$Component: io.netty.buffer.ByteBuf buf>;
+v4 = virtualinvoke v2.<io.netty.buffer.CompositeByteBuf$Component: int idx(int)>(v1);
+v5 = virtualinvoke v3.<io.netty.buffer.ByteBuf: byte getByte(int)>(v4);
+return v5;
+}
+protected short _getShort(int)
+{
+io.netty.buffer.CompositeByteBuf$Component v2;
+short v11, v15, v18, v21, v7;
+byte v10, v14, v17, v20;
+io.netty.buffer.ByteBuf v5;
+int v1, v12, v13, v16, v19, v22, v23, v3, v4, v6;
+io.netty.buffer.CompositeByteBuf v0;
+java.nio.ByteOrder v8, v9;
+v0 := @this: io.netty.buffer.CompositeByteBuf;
+v1 := @parameter0: int;
+v2 = specialinvoke v0.<io.netty.buffer.CompositeByteBuf: io.netty.buffer.CompositeByteBuf$Component findComponent0(int)>(v1);
+v3 = v1 + 2;
+v4 = v2.<io.netty.buffer.CompositeByteBuf$Component: int endOffset>;
+if v3 > v4 goto label1;
+v5 = v2.<io.netty.buffer.CompositeByteBuf$Component: io.netty.buffer.ByteBuf buf>;
+v6 = virtualinvoke v2.<io.netty.buffer.CompositeByteBuf$Component: int idx(int)>(v1);
+v7 = virtualinvoke v5.<io.netty.buffer.ByteBuf: short getShort(int)>(v6);
+return v7;
+label1:
+v8 = virtualinvoke v0.<io.netty.buffer.CompositeByteBuf: java.nio.ByteOrder order()>();
+v9 = <java.nio.ByteOrder: java.nio.ByteOrder BIG_ENDIAN>;
+if v8 != v9 goto label2;
+v10 = virtualinvoke v0.<io.netty.buffer.CompositeByteBuf: byte _getByte(int)>(v1);
+v11 = v10 & 255;
+v12 = v11 << 8;
+v13 = v1 + 1;
+v14 = virtualinvoke v0.<io.netty.buffer.CompositeByteBuf: byte _getByte(int)>(v13);
+v15 = v14 & 255;
+v16 = v12 | v15;
+return v16;
+label2:
+v17 = virtualinvoke v0.<io.netty.buffer.CompositeByteBuf: byte _getByte(int)>(v1);
+v18 = v17 & 255;
+v19 = v1 + 1;
+v20 = virtualinvoke v0.<io.netty.buffer.CompositeByteBuf: byte _getByte(int)>(v19);
+v21 = v20 & 255;
+v22 = v21 << 8;
+v23 = v18 | v22;
+return v23;
+}
+protected short _getShortLE(int)
+{
+io.netty.buffer.CompositeByteBuf$Component v2;
+short v11, v14, v18, v22, v7;
+byte v10, v13, v17, v21;
+io.netty.buffer.ByteBuf v5;
+int v1, v12, v15, v16, v19, v20, v23, v3, v4, v6;
+io.netty.buffer.CompositeByteBuf v0;
+java.nio.ByteOrder v8, v9;
+v0 := @this: io.netty.buffer.CompositeByteBuf;
+v1 := @parameter0: int;
+v2 = specialinvoke v0.<io.netty.buffer.CompositeByteBuf: io.netty.buffer.CompositeByteBuf$Component findComponent0(int)>(v1);
+v3 = v1 + 2;
+v4 = v2.<io.netty.buffer.CompositeByteBuf$Component: int endOffset>;
+if v3 > v4 goto label1;
+v5 = v2.<io.netty.buffer.CompositeByteBuf$Component: io.netty.buffer.ByteBuf buf>;
+v6 = virtualinvoke v2.<io.netty.buffer.CompositeByteBuf$Component: int idx(int)>(v1);
+v7 = virtualinvoke v5.<io.netty.buffer.ByteBuf: short getShortLE(int)>(v6);
+return v7;
+label1:
+v8 = virtualinvoke v0.<io.netty.buffer.CompositeByteBuf: java.nio.ByteOrder order()>();
+v9 = <java.nio.ByteOrder: java.nio.ByteOrder BIG_ENDIAN>;
+if v8 != v9 goto label2;
+v10 = virtualinvoke v0.<io.netty.buffer.CompositeByteBuf: byte _getByte(int)>(v1);
+v11 = v10 & 255;
+v12 = v1 + 1;
+v13 = virtualinvoke v0.<io.netty.buffer.CompositeByteBuf: byte _getByte(int)>(v12);
+v14 = v13 & 255;
+v15 = v14 << 8;
+v16 = v11 | v15;
+return v16;
+label2:
+v17 = virtualinvoke v0.<io.netty.buffer.CompositeByteBuf: byte _getByte(int)>(v1);
+v18 = v17 & 255;
+v19 = v18 << 8;
+v20 = v1 + 1;
+v21 = virtualinvoke v0.<io.netty.buffer.CompositeByteBuf: byte _getByte(int)>(v20);
+v22 = v21 & 255;
+v23 = v19 | v22;
+return v23;
+}
+protected int _getUnsignedMedium(int)
+{
+io.netty.buffer.CompositeByteBuf$Component v2;
+short v10, v16, v18, v23;
+byte v15, v22;
+io.netty.buffer.ByteBuf v5;
+int v1, v11, v12, v13, v14, v17, v19, v20, v21, v24, v25, v3, v4, v6, v7;
+io.netty.buffer.CompositeByteBuf v0;
+java.nio.ByteOrder v8, v9;
+v0 := @this: io.netty.buffer.CompositeByteBuf;
+v1 := @parameter0: int;
+v2 = specialinvoke v0.<io.netty.buffer.CompositeByteBuf: io.netty.buffer.CompositeByteBuf$Component findComponent0(int)>(v1);
+v3 = v1 + 3;
+v4 = v2.<io.netty.buffer.CompositeByteBuf$Component: int endOffset>;
+if v3 > v4 goto label1;
+v5 = v2.<io.netty.buffer.CompositeByteBuf$Component: io.netty.buffer.ByteBuf buf>;
+v6 = virtualinvoke v2.<io.netty.buffer.CompositeByteBuf$Component: int idx(int)>(v1);
+v7 = virtualinvoke v5.<io.netty.buffer.ByteBuf: int getUnsignedMedium(int)>(v6);
+return v7;
+label1:
+v8 = virtualinvoke v0.<io.netty.buffer.CompositeByteBuf: java.nio.ByteOrder order()>();
+v9 = <java.nio.ByteOrder: java.nio.ByteOrder BIG_ENDIAN>;
+if v8 != v9 goto label2;
+v10 = virtualinvoke v0.<io.netty.buffer.CompositeByteBuf: short _getShort(int)>(v1);
+v11 = (int) 65535;
+v12 = v10 & v11;
+v13 = v12 << 8;
+v14 = v1 + 2;
+v15 = virtualinvoke v0.<io.netty.buffer.CompositeByteBuf: byte _getByte(int)>(v14);
+v16 = v15 & 255;
+v17 = v13 | v16;
+return v17;
+label2:
+v18 = virtualinvoke v0.<io.netty.buffer.CompositeByteBuf: short _getShort(int)>(v1);
+v19 = (int) 65535;
+v20 = v18 & v19;
+v21 = v1 + 2;
+v22 = virtualinvoke v0.<io.netty.buffer.CompositeByteBuf: byte _getByte(int)>(v21);
+v23 = v22 & 255;
+v24 = v23 << 16;
+v25 = v20 | v24;
+return v25;
+}
+protected int _getUnsignedMediumLE(int)
+{
+io.netty.buffer.CompositeByteBuf$Component v2;
+short v10, v15, v18, v24;
+byte v14, v23;
+io.netty.buffer.ByteBuf v5;
+int v1, v11, v12, v13, v16, v17, v19, v20, v21, v22, v25, v3, v4, v6, v7;
+io.netty.buffer.CompositeByteBuf v0;
+java.nio.ByteOrder v8, v9;
+v0 := @this: io.netty.buffer.CompositeByteBuf;
+v1 := @parameter0: int;
+v2 = specialinvoke v0.<io.netty.buffer.CompositeByteBuf: io.netty.buffer.CompositeByteBuf$Component findComponent0(int)>(v1);
+v3 = v1 + 3;
+v4 = v2.<io.netty.buffer.CompositeByteBuf$Component: int endOffset>;
+if v3 > v4 goto label1;
+v5 = v2.<io.netty.buffer.CompositeByteBuf$Component: io.netty.buffer.ByteBuf buf>;
+v6 = virtualinvoke v2.<io.netty.buffer.CompositeByteBuf$Component: int idx(int)>(v1);
+v7 = virtualinvoke v5.<io.netty.buffer.ByteBuf: int getUnsignedMediumLE(int)>(v6);
+return v7;
+label1:
+v8 = virtualinvoke v0.<io.netty.buffer.CompositeByteBuf: java.nio.ByteOrder order()>();
+v9 = <java.nio.ByteOrder: java.nio.ByteOrder BIG_ENDIAN>;
+if v8 != v9 goto label2;
+v10 = virtualinvoke v0.<io.netty.buffer.CompositeByteBuf: short _getShortLE(int)>(v1);
+v11 = (int) 65535;
+v12 = v10 & v11;
+v13 = v1 + 2;
+v14 = virtualinvoke v0.<io.netty.buffer.CompositeByteBuf: byte _getByte(int)>(v13);
+v15 = v14 & 255;
+v16 = v15 << 16;
+v17 = v12 | v16;
+return v17;
+label2:
+v18 = virtualinvoke v0.<io.netty.buffer.CompositeByteBuf: short _getShortLE(int)>(v1);
+v19 = (int) 65535;
+v20 = v18 & v19;
+v21 = v20 << 8;
+v22 = v1 + 2;
+v23 = virtualinvoke v0.<io.netty.buffer.CompositeByteBuf: byte _getByte(int)>(v22);
+v24 = v23 & 255;
+v25 = v21 | v24;
+return v25;
+}
+protected int _getInt(int)
+{
+io.netty.buffer.CompositeByteBuf$Component v2;
+short v10, v15, v19, v23;
+io.netty.buffer.ByteBuf v5;
+int v1, v11, v12, v13, v14, v16, v17, v18, v20, v21, v22, v24, v25, v26, v27, v3, v4, v6, v7;
+io.netty.buffer.CompositeByteBuf v0;
+java.nio.ByteOrder v8, v9;
+v0 := @this: io.netty.buffer.CompositeByteBuf;
+v1 := @parameter0: int;
+v2 = specialinvoke v0.<io.netty.buffer.CompositeByteBuf: io.netty.buffer.CompositeByteBuf$Component findComponent0(int)>(v1);
+v3 = v1 + 4;
+v4 = v2.<io.netty.buffer.CompositeByteBuf$Component: int endOffset>;
+if v3 > v4 goto label1;
+v5 = v2.<io.netty.buffer.CompositeByteBuf$Component: io.netty.buffer.ByteBuf buf>;
+v6 = virtualinvoke v2.<io.netty.buffer.CompositeByteBuf$Component: int idx(int)>(v1);
+v7 = virtualinvoke v5.<io.netty.buffer.ByteBuf: int getInt(int)>(v6);
+return v7;
+label1:
+v8 = virtualinvoke v0.<io.netty.buffer.CompositeByteBuf: java.nio.ByteOrder order()>();
+v9 = <java.nio.ByteOrder: java.nio.ByteOrder BIG_ENDIAN>;
+if v8 != v9 goto label2;
+v10 = virtualinvoke v0.<io.netty.buffer.CompositeByteBuf: short _getShort(int)>(v1);
+v11 = (int) 65535;
+v12 = v10 & v11;
+v13 = v12 << 16;
+v14 = v1 + 2;
+v15 = virtualinvoke v0.<io.netty.buffer.CompositeByteBuf: short _getShort(int)>(v14);
+v16 = (int) 65535;
+v17 = v15 & v16;
+v18 = v13 | v17;
+return v18;
+label2:
+v19 = virtualinvoke v0.<io.netty.buffer.CompositeByteBuf: short _getShort(int)>(v1);
+v20 = (int) 65535;
+v21 = v19 & v20;
+v22 = v1 + 2;
+v23 = virtualinvoke v0.<io.netty.buffer.CompositeByteBuf: short _getShort(int)>(v22);
+v24 = (int) 65535;
+v25 = v23 & v24;
+v26 = v25 << 16;
+v27 = v21 | v26;
+return v27;
+}
+protected int _getIntLE(int)
+{
+io.netty.buffer.CompositeByteBuf$Component v2;
+short v10, v14, v19, v24;
+io.netty.buffer.ByteBuf v5;
+int v1, v11, v12, v13, v15, v16, v17, v18, v20, v21, v22, v23, v25, v26, v27, v3, v4, v6, v7;
+io.netty.buffer.CompositeByteBuf v0;
+java.nio.ByteOrder v8, v9;
+v0 := @this: io.netty.buffer.CompositeByteBuf;
+v1 := @parameter0: int;
+v2 = specialinvoke v0.<io.netty.buffer.CompositeByteBuf: io.netty.buffer.CompositeByteBuf$Component findComponent0(int)>(v1);
+v3 = v1 + 4;
+v4 = v2.<io.netty.buffer.CompositeByteBuf$Component: int endOffset>;
+if v3 > v4 goto label1;
+v5 = v2.<io.netty.buffer.CompositeByteBuf$Component: io.netty.buffer.ByteBuf buf>;
+v6 = virtualinvoke v2.<io.netty.buffer.CompositeByteBuf$Component: int idx(int)>(v1);
+v7 = virtualinvoke v5.<io.netty.buffer.ByteBuf: int getIntLE(int)>(v6);
+return v7;
+label1:
+v8 = virtualinvoke v0.<io.netty.buffer.CompositeByteBuf: java.nio.ByteOrder order()>();
+v9 = <java.nio.ByteOrder: java.nio.ByteOrder BIG_ENDIAN>;
+if v8 != v9 goto label2;
+v10 = virtualinvoke v0.<io.netty.buffer.CompositeByteBuf: short _getShortLE(int)>(v1);
+v11 = (int) 65535;
+v12 = v10 & v11;
+v13 = v1 + 2;
+v14 = virtualinvoke v0.<io.netty.buffer.CompositeByteBuf: short _getShortLE(int)>(v13);
+v15 = (int) 65535;
+v16 = v14 & v15;
+v17 = v16 << 16;
+v18 = v12 | v17;
+return v18;
+label2:
+v19 = virtualinvoke v0.<io.netty.buffer.CompositeByteBuf: short _getShortLE(int)>(v1);
+v20 = (int) 65535;
+v21 = v19 & v20;
+v22 = v21 << 16;
+v23 = v1 + 2;
+v24 = virtualinvoke v0.<io.netty.buffer.CompositeByteBuf: short _getShortLE(int)>(v23);
+v25 = (int) 65535;
+v26 = v24 & v25;
+v27 = v22 | v26;
+return v27;
+}
+protected long _getLong(int)
+{
+long v11, v12, v15, v16, v18, v21, v22, v23, v7;
+io.netty.buffer.CompositeByteBuf$Component v2;
+io.netty.buffer.ByteBuf v5;
+int v1, v10, v13, v14, v17, v19, v20, v3, v4, v6;
+io.netty.buffer.CompositeByteBuf v0;
+java.nio.ByteOrder v8, v9;
+v0 := @this: io.netty.buffer.CompositeByteBuf;
+v1 := @parameter0: int;
+v2 = specialinvoke v0.<io.netty.buffer.CompositeByteBuf: io.netty.buffer.CompositeByteBuf$Component findComponent0(int)>(v1);
+v3 = v1 + 8;
+v4 = v2.<io.netty.buffer.CompositeByteBuf$Component: int endOffset>;
+if v3 > v4 goto label1;
+v5 = v2.<io.netty.buffer.CompositeByteBuf$Component: io.netty.buffer.ByteBuf buf>;
+v6 = virtualinvoke v2.<io.netty.buffer.CompositeByteBuf$Component: int idx(int)>(v1);
+v7 = virtualinvoke v5.<io.netty.buffer.ByteBuf: long getLong(int)>(v6);
+return v7;
+label1:
+v8 = virtualinvoke v0.<io.netty.buffer.CompositeByteBuf: java.nio.ByteOrder order()>();
+v9 = <java.nio.ByteOrder: java.nio.ByteOrder BIG_ENDIAN>;
+if v8 != v9 goto label2;
+v10 = virtualinvoke v0.<io.netty.buffer.CompositeByteBuf: int _getInt(int)>(v1);
+v11 = v10 & 4294967295L;
+v12 = v11 << 32;
+v13 = v1 + 4;
+v14 = virtualinvoke v0.<io.netty.buffer.CompositeByteBuf: int _getInt(int)>(v13);
+v15 = v14 & 4294967295L;
+v16 = v12 | v15;
+return v16;
+label2:
+v17 = virtualinvoke v0.<io.netty.buffer.CompositeByteBuf: int _getInt(int)>(v1);
+v18 = v17 & 4294967295L;
+v19 = v1 + 4;
+v20 = virtualinvoke v0.<io.netty.buffer.CompositeByteBuf: int _getInt(int)>(v19);
+v21 = v20 & 4294967295L;
+v22 = v21 << 32;
+v23 = v18 | v22;
+return v23;
+}
+protected long _getLongLE(int)
+{
+long v11, v14, v15, v16, v18, v19, v22, v23, v7;
+io.netty.buffer.CompositeByteBuf$Component v2;
+io.netty.buffer.ByteBuf v5;
+int v1, v10, v12, v13, v17, v20, v21, v3, v4, v6;
+io.netty.buffer.CompositeByteBuf v0;
+java.nio.ByteOrder v8, v9;
+v0 := @this: io.netty.buffer.CompositeByteBuf;
+v1 := @parameter0: int;
+v2 = specialinvoke v0.<io.netty.buffer.CompositeByteBuf: io.netty.buffer.CompositeByteBuf$Component findComponent0(int)>(v1);
+v3 = v1 + 8;
+v4 = v2.<io.netty.buffer.CompositeByteBuf$Component: int endOffset>;
+if v3 > v4 goto label1;
+v5 = v2.<io.netty.buffer.CompositeByteBuf$Component: io.netty.buffer.ByteBuf buf>;
+v6 = virtualinvoke v2.<io.netty.buffer.CompositeByteBuf$Component: int idx(int)>(v1);
+v7 = virtualinvoke v5.<io.netty.buffer.ByteBuf: long getLongLE(int)>(v6);
+return v7;
+label1:
+v8 = virtualinvoke v0.<io.netty.buffer.CompositeByteBuf: java.nio.ByteOrder order()>();
+v9 = <java.nio.ByteOrder: java.nio.ByteOrder BIG_ENDIAN>;
+if v8 != v9 goto label2;
+v10 = virtualinvoke v0.<io.netty.buffer.CompositeByteBuf: int _getIntLE(int)>(v1);
+v11 = v10 & 4294967295L;
+v12 = v1 + 4;
+v13 = virtualinvoke v0.<io.netty.buffer.CompositeByteBuf: int _getIntLE(int)>(v12);
+v14 = v13 & 4294967295L;
+v15 = v14 << 32;
+v16 = v11 | v15;
+return v16;
+label2:
+v17 = virtualinvoke v0.<io.netty.buffer.CompositeByteBuf: int _getIntLE(int)>(v1);
+v18 = v17 & 4294967295L;
+v19 = v18 << 32;
+v20 = v1 + 4;
+v21 = virtualinvoke v0.<io.netty.buffer.CompositeByteBuf: int _getIntLE(int)>(v20);
+v22 = v21 & 4294967295L;
+v23 = v19 | v22;
+return v23;
+}
+public io.netty.buffer.CompositeByteBuf getBytes(int, byte[], int, int)
+{
+byte[] v2;
+io.netty.buffer.CompositeByteBuf$Component[] v7;
+io.netty.buffer.CompositeByteBuf$Component v8;
+io.netty.buffer.CompositeByteBuf v0;
+io.netty.buffer.ByteBuf v12;
+int v1, v10, v11, v13, v3, v4, v5, v6, v9;
+v0 := @this: io.netty.buffer.CompositeByteBuf;
+v1 := @parameter0: int;
+v2 := @parameter1: byte[];
+v3 := @parameter2: int;
+v4 := @parameter3: int;
+v5 = lengthof v2;
+virtualinvoke v0.<io.netty.buffer.CompositeByteBuf: void checkDstIndex(int,int,int,int)>(v1, v4, v3, v5);
+if v4 != 0 goto label1;
+return v0;
+label1:
+v6 = specialinvoke v0.<io.netty.buffer.CompositeByteBuf: int toComponentIndex0(int)>(v1);
+label2:
+if v4 <= 0 goto label3;
+v7 = v0.<io.netty.buffer.CompositeByteBuf: io.netty.buffer.CompositeByteBuf$Component[] components>;
+v8 = v7[v6];
+v9 = v8.<io.netty.buffer.CompositeByteBuf$Component: int endOffset>;
+v10 = v9 - v1;
+v11 = staticinvoke <java.lang.Math: int min(int,int)>(v4, v10);
+v12 = v8.<io.netty.buffer.CompositeByteBuf$Component: io.netty.buffer.ByteBuf buf>;
+v13 = virtualinvoke v8.<io.netty.buffer.CompositeByteBuf$Component: int idx(int)>(v1);
+virtualinvoke v12.<io.netty.buffer.ByteBuf: io.netty.buffer.ByteBuf getBytes(int,byte[],int,int)>(v13, v2, v3, v11);
+v1 = v1 + v11;
+v3 = v3 + v11;
+v4 = v4 - v11;
+v6 = v6 + 1;
+goto label2;
+label3:
+return v0;
+}
+public io.netty.buffer.CompositeByteBuf getBytes(int, java.nio.ByteBuffer)
+{
+java.lang.Throwable v15;
+java.nio.ByteBuffer v2;
+io.netty.buffer.CompositeByteBuf$Component v7;
+io.netty.buffer.ByteBuf v13;
+int v1, v10, v11, v12, v14, v3, v4, v5, v8, v9;
+io.netty.buffer.CompositeByteBuf$Component[] v6;
+io.netty.buffer.CompositeByteBuf v0;
+v0 := @this: io.netty.buffer.CompositeByteBuf;
+v1 := @parameter0: int;
+v2 := @parameter1: java.nio.ByteBuffer;
+v3 = virtualinvoke v2.<java.nio.ByteBuffer: int limit()>();
+v4 = virtualinvoke v2.<java.nio.ByteBuffer: int remaining()>();
+virtualinvoke v0.<io.netty.buffer.CompositeByteBuf: void checkIndex(int,int)>(v1, v4);
+if v4 != 0 goto label1;
+return v0;
+label1:
+v5 = specialinvoke v0.<io.netty.buffer.CompositeByteBuf: int toComponentIndex0(int)>(v1);
+label2:
+if v4 <= 0 goto label3;
+v6 = v0.<io.netty.buffer.CompositeByteBuf: io.netty.buffer.CompositeByteBuf$Component[] components>;
+v7 = v6[v5];
+v8 = v7.<io.netty.buffer.CompositeByteBuf$Component: int endOffset>;
+v9 = v8 - v1;
+v10 = staticinvoke <java.lang.Math: int min(int,int)>(v4, v9);
+v11 = virtualinvoke v2.<java.nio.ByteBuffer: int position()>();
+v12 = v11 + v10;
+virtualinvoke v2.<java.nio.ByteBuffer: java.nio.ByteBuffer limit(int)>(v12);
+v13 = v7.<io.netty.buffer.CompositeByteBuf$Component: io.netty.buffer.ByteBuf buf>;
+v14 = virtualinvoke v7.<io.netty.buffer.CompositeByteBuf$Component: int idx(int)>(v1);
+virtualinvoke v13.<io.netty.buffer.ByteBuf: io.netty.buffer.ByteBuf getBytes(int,java.nio.ByteBuffer)>(v14, v2);
+v1 = v1 + v10;
+v4 = v4 - v10;
+v5 = v5 + 1;
+goto label2;
+label3:
+virtualinvoke v2.<java.nio.ByteBuffer: java.nio.ByteBuffer limit(int)>(v3);
+goto label5;
+label4:
+v15 := @caughtexception;
+virtualinvoke v2.<java.nio.ByteBuffer: java.nio.ByteBuffer limit(int)>(v3);
+throw v15;
+label5:
+return v0;
+catch java.lang.Throwable from label2 to label3 with label4;
+}
+public io.netty.buffer.CompositeByteBuf getBytes(int, io.netty.buffer.ByteBuf, int, int)
+{
+io.netty.buffer.CompositeByteBuf$Component[] v7;
+io.netty.buffer.CompositeByteBuf$Component v8;
+io.netty.buffer.CompositeByteBuf v0;
+io.netty.buffer.ByteBuf v12, v2;
+int v1, v10, v11, v13, v3, v4, v5, v6, v9;
+v0 := @this: io.netty.buffer.CompositeByteBuf;
+v1 := @parameter0: int;
+v2 := @parameter1: io.netty.buffer.ByteBuf;
+v3 := @parameter2: int;
+v4 := @parameter3: int;
+v5 = virtualinvoke v2.<io.netty.buffer.ByteBuf: int capacity()>();
+virtualinvoke v0.<io.netty.buffer.CompositeByteBuf: void checkDstIndex(int,int,int,int)>(v1, v4, v3, v5);
+if v4 != 0 goto label1;
+return v0;
+label1:
+v6 = specialinvoke v0.<io.netty.buffer.CompositeByteBuf: int toComponentIndex0(int)>(v1);
+label2:
+if v4 <= 0 goto label3;
+v7 = v0.<io.netty.buffer.CompositeByteBuf: io.netty.buffer.CompositeByteBuf$Component[] components>;
+v8 = v7[v6];
+v9 = v8.<io.netty.buffer.CompositeByteBuf$Component: int endOffset>;
+v10 = v9 - v1;
+v11 = staticinvoke <java.lang.Math: int min(int,int)>(v4, v10);
+v12 = v8.<io.netty.buffer.CompositeByteBuf$Component: io.netty.buffer.ByteBuf buf>;
+v13 = virtualinvoke v8.<io.netty.buffer.CompositeByteBuf$Component: int idx(int)>(v1);
+virtualinvoke v12.<io.netty.buffer.ByteBuf: io.netty.buffer.ByteBuf getBytes(int,io.netty.buffer.ByteBuf,int,int)>(v13, v2, v3, v11);
+v1 = v1 + v11;
+v3 = v3 + v11;
+v4 = v4 - v11;
+v6 = v6 + 1;
+goto label2;
+label3:
+return v0;
+}
+public int getBytes(int, java.nio.channels.GatheringByteChannel, int) throws java.io.IOException
+{
+java.nio.ByteBuffer[] v7;
+long v8;
+java.nio.ByteBuffer v5;
+io.netty.buffer.CompositeByteBuf v0;
+byte v9;
+int v1, v3, v4, v6;
+java.nio.channels.GatheringByteChannel v2;
+v0 := @this: io.netty.buffer.CompositeByteBuf;
+v1 := @parameter0: int;
+v2 := @parameter1: java.nio.channels.GatheringByteChannel;
+v3 := @parameter2: int;
+v4 = virtualinvoke v0.<io.netty.buffer.CompositeByteBuf: int nioBufferCount()>();
+if v4 != 1 goto label1;
+v5 = virtualinvoke v0.<io.netty.buffer.CompositeByteBuf: java.nio.ByteBuffer internalNioBuffer(int,int)>(v1, v3);
+v6 = interfaceinvoke v2.<java.nio.channels.GatheringByteChannel: int write(java.nio.ByteBuffer)>(v5);
+return v6;
+label1:
+v7 = virtualinvoke v0.<io.netty.buffer.CompositeByteBuf: java.nio.ByteBuffer[] nioBuffers(int,int)>(v1, v3);
+v8 = interfaceinvoke v2.<java.nio.channels.GatheringByteChannel: long write(java.nio.ByteBuffer[])>(v7);
+v9 = v8 cmp 2147483647L;
+if v9 <= 0 goto label2;
+return 2147483647;
+label2:
+return v8;
+}
+public int getBytes(int, java.nio.channels.FileChannel, long, int) throws java.io.IOException
+{
+long v13, v3, v8;
+java.nio.ByteBuffer v12, v6;
+byte v15;
+int v1, v10, v11, v14, v4, v5, v7;
+java.nio.ByteBuffer[] v9;
+io.netty.buffer.CompositeByteBuf v0;
+java.nio.channels.FileChannel v2;
+v0 := @this: io.netty.buffer.CompositeByteBuf;
+v1 := @parameter0: int;
+v2 := @parameter1: java.nio.channels.FileChannel;
+v3 := @parameter2: long;
+v4 := @parameter3: int;
+v5 = virtualinvoke v0.<io.netty.buffer.CompositeByteBuf: int nioBufferCount()>();
+if v5 != 1 goto label1;
+v6 = virtualinvoke v0.<io.netty.buffer.CompositeByteBuf: java.nio.ByteBuffer internalNioBuffer(int,int)>(v1, v4);
+v7 = virtualinvoke v2.<java.nio.channels.FileChannel: int write(java.nio.ByteBuffer,long)>(v6, v3);
+return v7;
+label1:
+v8 = 0L;
+v9 = virtualinvoke v0.<io.netty.buffer.CompositeByteBuf: java.nio.ByteBuffer[] nioBuffers(int,int)>(v1, v4);
+v10 = lengthof v9;
+v11 = 0;
+label2:
+if v11 >= v10 goto label3;
+v12 = v9[v11];
+v13 = v3 + v8;
+v14 = virtualinvoke v2.<java.nio.channels.FileChannel: int write(java.nio.ByteBuffer,long)>(v12, v13);
+v8 = v8 + v14;
+v11 = v11 + 1;
+goto label2;
+label3:
+v15 = v8 cmp 2147483647L;
+if v15 <= 0 goto label4;
+return 2147483647;
+label4:
+return v8;
+}
+public io.netty.buffer.CompositeByteBuf getBytes(int, java.io.OutputStream, int) throws java.io.IOException
+{
+java.io.OutputStream v2;
+io.netty.buffer.CompositeByteBuf$Component[] v5;
+io.netty.buffer.CompositeByteBuf$Component v6;
+io.netty.buffer.CompositeByteBuf v0;
+io.netty.buffer.ByteBuf v10;
+int v1, v11, v3, v4, v7, v8, v9;
+v0 := @this: io.netty.buffer.CompositeByteBuf;
+v1 := @parameter0: int;
+v2 := @parameter1: java.io.OutputStream;
+v3 := @parameter2: int;
+virtualinvoke v0.<io.netty.buffer.CompositeByteBuf: void checkIndex(int,int)>(v1, v3);
+if v3 != 0 goto label1;
+return v0;
+label1:
+v4 = specialinvoke v0.<io.netty.buffer.CompositeByteBuf: int toComponentIndex0(int)>(v1);
+label2:
+if v3 <= 0 goto label3;
+v5 = v0.<io.netty.buffer.CompositeByteBuf: io.netty.buffer.CompositeByteBuf$Component[] components>;
+v6 = v5[v4];
+v7 = v6.<io.netty.buffer.CompositeByteBuf$Component: int endOffset>;
+v8 = v7 - v1;
+v9 = staticinvoke <java.lang.Math: int min(int,int)>(v3, v8);
+v10 = v6.<io.netty.buffer.CompositeByteBuf$Component: io.netty.buffer.ByteBuf buf>;
+v11 = virtualinvoke v6.<io.netty.buffer.CompositeByteBuf$Component: int idx(int)>(v1);
+virtualinvoke v10.<io.netty.buffer.ByteBuf: io.netty.buffer.ByteBuf getBytes(int,java.io.OutputStream,int)>(v11, v2, v9);
+v1 = v1 + v9;
+v3 = v3 - v9;
+v4 = v4 + 1;
+goto label2;
+label3:
+return v0;
+}
+public io.netty.buffer.CompositeByteBuf setByte(int, int)
+{
+io.netty.buffer.CompositeByteBuf$Component v3;
+io.netty.buffer.CompositeByteBuf v0;
+io.netty.buffer.ByteBuf v4;
+int v1, v2, v5;
+v0 := @this: io.netty.buffer.CompositeByteBuf;
+v1 := @parameter0: int;
+v2 := @parameter1: int;
+v3 = specialinvoke v0.<io.netty.buffer.CompositeByteBuf: io.netty.buffer.CompositeByteBuf$Component findComponent(int)>(v1);
+v4 = v3.<io.netty.buffer.CompositeByteBuf$Component: io.netty.buffer.ByteBuf buf>;
+v5 = virtualinvoke v3.<io.netty.buffer.CompositeByteBuf$Component: int idx(int)>(v1);
+virtualinvoke v4.<io.netty.buffer.ByteBuf: io.netty.buffer.ByteBuf setByte(int,int)>(v5, v2);
+return v0;
+}
+protected void _setByte(int, int)
+{
+io.netty.buffer.CompositeByteBuf$Component v3;
+io.netty.buffer.CompositeByteBuf v0;
+io.netty.buffer.ByteBuf v4;
+int v1, v2, v5;
+v0 := @this: io.netty.buffer.CompositeByteBuf;
+v1 := @parameter0: int;
+v2 := @parameter1: int;
+v3 = specialinvoke v0.<io.netty.buffer.CompositeByteBuf: io.netty.buffer.CompositeByteBuf$Component findComponent0(int)>(v1);
+v4 = v3.<io.netty.buffer.CompositeByteBuf$Component: io.netty.buffer.ByteBuf buf>;
+v5 = virtualinvoke v3.<io.netty.buffer.CompositeByteBuf$Component: int idx(int)>(v1);
+virtualinvoke v4.<io.netty.buffer.ByteBuf: io.netty.buffer.ByteBuf setByte(int,int)>(v5, v2);
+return;
+}
+public io.netty.buffer.CompositeByteBuf setShort(int, int)
+{
+int v1, v2;
+io.netty.buffer.CompositeByteBuf v0;
+v0 := @this: io.netty.buffer.CompositeByteBuf;
+v1 := @parameter0: int;
+v2 := @parameter1: int;
+virtualinvoke v0.<io.netty.buffer.CompositeByteBuf: void checkIndex(int,int)>(v1, 2);
+virtualinvoke v0.<io.netty.buffer.CompositeByteBuf: void _setShort(int,int)>(v1, v2);
+return v0;
+}
+protected void _setShort(int, int)
+{
+io.netty.buffer.CompositeByteBuf$Component v3;
+byte v12, v13, v14, v15;
+io.netty.buffer.ByteBuf v6;
+int v1, v10, v11, v2, v4, v5, v7;
+io.netty.buffer.CompositeByteBuf v0;
+java.nio.ByteOrder v8, v9;
+v0 := @this: io.netty.buffer.CompositeByteBuf;
+v1 := @parameter0: int;
+v2 := @parameter1: int;
+v3 = specialinvoke v0.<io.netty.buffer.CompositeByteBuf: io.netty.buffer.CompositeByteBuf$Component findComponent0(int)>(v1);
+v4 = v1 + 2;
+v5 = v3.<io.netty.buffer.CompositeByteBuf$Component: int endOffset>;
+if v4 > v5 goto label1;
+v6 = v3.<io.netty.buffer.CompositeByteBuf$Component: io.netty.buffer.ByteBuf buf>;
+v7 = virtualinvoke v3.<io.netty.buffer.CompositeByteBuf$Component: int idx(int)>(v1);
+virtualinvoke v6.<io.netty.buffer.ByteBuf: io.netty.buffer.ByteBuf setShort(int,int)>(v7, v2);
+goto label3;
+label1:
+v8 = virtualinvoke v0.<io.netty.buffer.CompositeByteBuf: java.nio.ByteOrder order()>();
+v9 = <java.nio.ByteOrder: java.nio.ByteOrder BIG_ENDIAN>;
+if v8 != v9 goto label2;
+virtualinvoke v0.<io.netty.buffer.CompositeByteBuf: void _setByte(int,int)>(v1, v14);
+v10 = v1 + 1;
+virtualinvoke v0.<io.netty.buffer.CompositeByteBuf: void _setByte(int,int)>(v10, v15);
+goto label3;
+label2:
+virtualinvoke v0.<io.netty.buffer.CompositeByteBuf: void _setByte(int,int)>(v1, v12);
+v11 = v1 + 1;
+virtualinvoke v0.<io.netty.buffer.CompositeByteBuf: void _setByte(int,int)>(v11, v13);
+label3:
+return;
+}
+protected void _setShortLE(int, int)
+{
+io.netty.buffer.CompositeByteBuf$Component v3;
+byte v12, v13, v14, v15;
+io.netty.buffer.ByteBuf v6;
+int v1, v10, v11, v2, v4, v5, v7;
+io.netty.buffer.CompositeByteBuf v0;
+java.nio.ByteOrder v8, v9;
+v0 := @this: io.netty.buffer.CompositeByteBuf;
+v1 := @parameter0: int;
+v2 := @parameter1: int;
+v3 = specialinvoke v0.<io.netty.buffer.CompositeByteBuf: io.netty.buffer.CompositeByteBuf$Component findComponent0(int)>(v1);
+v4 = v1 + 2;
+v5 = v3.<io.netty.buffer.CompositeByteBuf$Component: int endOffset>;
+if v4 > v5 goto label1;
+v6 = v3.<io.netty.buffer.CompositeByteBuf$Component: io.netty.buffer.ByteBuf buf>;
+v7 = virtualinvoke v3.<io.netty.buffer.CompositeByteBuf$Component: int idx(int)>(v1);
+virtualinvoke v6.<io.netty.buffer.ByteBuf: io.netty.buffer.ByteBuf setShortLE(int,int)>(v7, v2);
+goto label3;
+label1:
+v8 = virtualinvoke v0.<io.netty.buffer.CompositeByteBuf: java.nio.ByteOrder order()>();
+v9 = <java.nio.ByteOrder: java.nio.ByteOrder BIG_ENDIAN>;
+if v8 != v9 goto label2;
+virtualinvoke v0.<io.netty.buffer.CompositeByteBuf: void _setByte(int,int)>(v1, v14);
+v10 = v1 + 1;
+virtualinvoke v0.<io.netty.buffer.CompositeByteBuf: void _setByte(int,int)>(v10, v15);
+goto label3;
+label2:
+virtualinvoke v0.<io.netty.buffer.CompositeByteBuf: void _setByte(int,int)>(v1, v12);
+v11 = v1 + 1;
+virtualinvoke v0.<io.netty.buffer.CompositeByteBuf: void _setByte(int,int)>(v11, v13);
+label3:
+return;
+}
+public io.netty.buffer.CompositeByteBuf setMedium(int, int)
+{
+int v1, v2;
+io.netty.buffer.CompositeByteBuf v0;
+v0 := @this: io.netty.buffer.CompositeByteBuf;
+v1 := @parameter0: int;
+v2 := @parameter1: int;
+virtualinvoke v0.<io.netty.buffer.CompositeByteBuf: void checkIndex(int,int)>(v1, 3);
+virtualinvoke v0.<io.netty.buffer.CompositeByteBuf: void _setMedium(int,int)>(v1, v2);
+return v0;
+}
+protected void _setMedium(int, int)
+{
+io.netty.buffer.CompositeByteBuf$Component v3;
+short v12, v14;
+byte v13, v15;
+io.netty.buffer.ByteBuf v6;
+int v1, v10, v11, v2, v4, v5, v7;
+io.netty.buffer.CompositeByteBuf v0;
+java.nio.ByteOrder v8, v9;
+v0 := @this: io.netty.buffer.CompositeByteBuf;
+v1 := @parameter0: int;
+v2 := @parameter1: int;
+v3 = specialinvoke v0.<io.netty.buffer.CompositeByteBuf: io.netty.buffer.CompositeByteBuf$Component findComponent0(int)>(v1);
+v4 = v1 + 3;
+v5 = v3.<io.netty.buffer.CompositeByteBuf$Component: int endOffset>;
+if v4 > v5 goto label1;
+v6 = v3.<io.netty.buffer.CompositeByteBuf$Component: io.netty.buffer.ByteBuf buf>;
+v7 = virtualinvoke v3.<io.netty.buffer.CompositeByteBuf$Component: int idx(int)>(v1);
+virtualinvoke v6.<io.netty.buffer.ByteBuf: io.netty.buffer.ByteBuf setMedium(int,int)>(v7, v2);
+goto label3;
+label1:
+v8 = virtualinvoke v0.<io.netty.buffer.CompositeByteBuf: java.nio.ByteOrder order()>();
+v9 = <java.nio.ByteOrder: java.nio.ByteOrder BIG_ENDIAN>;
+if v8 != v9 goto label2;
+virtualinvoke v0.<io.netty.buffer.CompositeByteBuf: void _setShort(int,int)>(v1, v14);
+v10 = v1 + 2;
+virtualinvoke v0.<io.netty.buffer.CompositeByteBuf: void _setByte(int,int)>(v10, v15);
+goto label3;
+label2:
+virtualinvoke v0.<io.netty.buffer.CompositeByteBuf: void _setShort(int,int)>(v1, v12);
+v11 = v1 + 2;
+virtualinvoke v0.<io.netty.buffer.CompositeByteBuf: void _setByte(int,int)>(v11, v13);
+label3:
+return;
+}
+protected void _setMediumLE(int, int)
+{
+io.netty.buffer.CompositeByteBuf$Component v3;
+short v12, v14;
+byte v13, v15;
+io.netty.buffer.ByteBuf v6;
+int v1, v10, v11, v2, v4, v5, v7;
+io.netty.buffer.CompositeByteBuf v0;
+java.nio.ByteOrder v8, v9;
+v0 := @this: io.netty.buffer.CompositeByteBuf;
+v1 := @parameter0: int;
+v2 := @parameter1: int;
+v3 = specialinvoke v0.<io.netty.buffer.CompositeByteBuf: io.netty.buffer.CompositeByteBuf$Component findComponent0(int)>(v1);
+v4 = v1 + 3;
+v5 = v3.<io.netty.buffer.CompositeByteBuf$Component: int endOffset>;
+if v4 > v5 goto label1;
+v6 = v3.<io.netty.buffer.CompositeByteBuf$Component: io.netty.buffer.ByteBuf buf>;
+v7 = virtualinvoke v3.<io.netty.buffer.CompositeByteBuf$Component: int idx(int)>(v1);
+virtualinvoke v6.<io.netty.buffer.ByteBuf: io.netty.buffer.ByteBuf setMediumLE(int,int)>(v7, v2);
+goto label3;
+label1:
+v8 = virtualinvoke v0.<io.netty.buffer.CompositeByteBuf: java.nio.ByteOrder order()>();
+v9 = <java.nio.ByteOrder: java.nio.ByteOrder BIG_ENDIAN>;
+if v8 != v9 goto label2;
+virtualinvoke v0.<io.netty.buffer.CompositeByteBuf: void _setShortLE(int,int)>(v1, v14);
+v10 = v1 + 2;
+virtualinvoke v0.<io.netty.buffer.CompositeByteBuf: void _setByte(int,int)>(v10, v15);
+goto label3;
+label2:
+virtualinvoke v0.<io.netty.buffer.CompositeByteBuf: void _setShortLE(int,int)>(v1, v12);
+v11 = v1 + 2;
+virtualinvoke v0.<io.netty.buffer.CompositeByteBuf: void _setByte(int,int)>(v11, v13);
+label3:
+return;
+}
+public io.netty.buffer.CompositeByteBuf setInt(int, int)
+{
+int v1, v2;
+io.netty.buffer.CompositeByteBuf v0;
+v0 := @this: io.netty.buffer.CompositeByteBuf;
+v1 := @parameter0: int;
+v2 := @parameter1: int;
+virtualinvoke v0.<io.netty.buffer.CompositeByteBuf: void checkIndex(int,int)>(v1, 4);
+virtualinvoke v0.<io.netty.buffer.CompositeByteBuf: void _setInt(int,int)>(v1, v2);
+return v0;
+}
+protected void _setInt(int, int)
+{
+io.netty.buffer.CompositeByteBuf$Component v3;
+short v12, v13, v14, v15;
+io.netty.buffer.ByteBuf v6;
+int v1, v10, v11, v2, v4, v5, v7;
+io.netty.buffer.CompositeByteBuf v0;
+java.nio.ByteOrder v8, v9;
+v0 := @this: io.netty.buffer.CompositeByteBuf;
+v1 := @parameter0: int;
+v2 := @parameter1: int;
+v3 = specialinvoke v0.<io.netty.buffer.CompositeByteBuf: io.netty.buffer.CompositeByteBuf$Component findComponent0(int)>(v1);
+v4 = v1 + 4;
+v5 = v3.<io.netty.buffer.CompositeByteBuf$Component: int endOffset>;
+if v4 > v5 goto label1;
+v6 = v3.<io.netty.buffer.CompositeByteBuf$Component: io.netty.buffer.ByteBuf buf>;
+v7 = virtualinvoke v3.<io.netty.buffer.CompositeByteBuf$Component: int idx(int)>(v1);
+virtualinvoke v6.<io.netty.buffer.ByteBuf: io.netty.buffer.ByteBuf setInt(int,int)>(v7, v2);
+goto label3;
+label1:
+v8 = virtualinvoke v0.<io.netty.buffer.CompositeByteBuf: java.nio.ByteOrder order()>();
+v9 = <java.nio.ByteOrder: java.nio.ByteOrder BIG_ENDIAN>;
+if v8 != v9 goto label2;
+virtualinvoke v0.<io.netty.buffer.CompositeByteBuf: void _setShort(int,int)>(v1, v14);
+v10 = v1 + 2;
+virtualinvoke v0.<io.netty.buffer.CompositeByteBuf: void _setShort(int,int)>(v10, v15);
+goto label3;
+label2:
+virtualinvoke v0.<io.netty.buffer.CompositeByteBuf: void _setShort(int,int)>(v1, v12);
+v11 = v1 + 2;
+virtualinvoke v0.<io.netty.buffer.CompositeByteBuf: void _setShort(int,int)>(v11, v13);
+label3:
+return;
+}
+protected void _setIntLE(int, int)
+{
+io.netty.buffer.CompositeByteBuf$Component v3;
+short v12, v13, v14, v15;
+io.netty.buffer.ByteBuf v6;
+int v1, v10, v11, v2, v4, v5, v7;
+io.netty.buffer.CompositeByteBuf v0;
+java.nio.ByteOrder v8, v9;
+v0 := @this: io.netty.buffer.CompositeByteBuf;
+v1 := @parameter0: int;
+v2 := @parameter1: int;
+v3 = specialinvoke v0.<io.netty.buffer.CompositeByteBuf: io.netty.buffer.CompositeByteBuf$Component findComponent0(int)>(v1);
+v4 = v1 + 4;
+v5 = v3.<io.netty.buffer.CompositeByteBuf$Component: int endOffset>;
+if v4 > v5 goto label1;
+v6 = v3.<io.netty.buffer.CompositeByteBuf$Component: io.netty.buffer.ByteBuf buf>;
+v7 = virtualinvoke v3.<io.netty.buffer.CompositeByteBuf$Component: int idx(int)>(v1);
+virtualinvoke v6.<io.netty.buffer.ByteBuf: io.netty.buffer.ByteBuf setIntLE(int,int)>(v7, v2);
+goto label3;
+label1:
+v8 = virtualinvoke v0.<io.netty.buffer.CompositeByteBuf: java.nio.ByteOrder order()>();
+v9 = <java.nio.ByteOrder: java.nio.ByteOrder BIG_ENDIAN>;
+if v8 != v9 goto label2;
+virtualinvoke v0.<io.netty.buffer.CompositeByteBuf: void _setShortLE(int,int)>(v1, v14);
+v10 = v1 + 2;
+virtualinvoke v0.<io.netty.buffer.CompositeByteBuf: void _setShortLE(int,int)>(v10, v15);
+goto label3;
+label2:
+virtualinvoke v0.<io.netty.buffer.CompositeByteBuf: void _setShortLE(int,int)>(v1, v12);
+v11 = v1 + 2;
+virtualinvoke v0.<io.netty.buffer.CompositeByteBuf: void _setShortLE(int,int)>(v11, v13);
+label3:
+return;
+}
+public io.netty.buffer.CompositeByteBuf setLong(int, long)
+{
+int v1;
+io.netty.buffer.CompositeByteBuf v0;
+long v2;
+v0 := @this: io.netty.buffer.CompositeByteBuf;
+v1 := @parameter0: int;
+v2 := @parameter1: long;
+virtualinvoke v0.<io.netty.buffer.CompositeByteBuf: void checkIndex(int,int)>(v1, 8);
+virtualinvoke v0.<io.netty.buffer.CompositeByteBuf: void _setLong(int,long)>(v1, v2);
+return v0;
+}
+protected void _setLong(int, long)
+{
+long v10, v13, v2;
+io.netty.buffer.CompositeByteBuf$Component v3;
+io.netty.buffer.CompositeByteBuf v0;
+java.nio.ByteOrder v8, v9;
+io.netty.buffer.ByteBuf v6;
+int v1, v11, v12, v4, v5, v7;
+v0 := @this: io.netty.buffer.CompositeByteBuf;
+v1 := @parameter0: int;
+v2 := @parameter1: long;
+v3 = specialinvoke v0.<io.netty.buffer.CompositeByteBuf: io.netty.buffer.CompositeByteBuf$Component findComponent0(int)>(v1);
+v4 = v1 + 8;
+v5 = v3.<io.netty.buffer.CompositeByteBuf$Component: int endOffset>;
+if v4 > v5 goto label1;
+v6 = v3.<io.netty.buffer.CompositeByteBuf$Component: io.netty.buffer.ByteBuf buf>;
+v7 = virtualinvoke v3.<io.netty.buffer.CompositeByteBuf$Component: int idx(int)>(v1);
+virtualinvoke v6.<io.netty.buffer.ByteBuf: io.netty.buffer.ByteBuf setLong(int,long)>(v7, v2);
+goto label3;
+label1:
+v8 = virtualinvoke v0.<io.netty.buffer.CompositeByteBuf: java.nio.ByteOrder order()>();
+v9 = <java.nio.ByteOrder: java.nio.ByteOrder BIG_ENDIAN>;
+if v8 != v9 goto label2;
+v10 = v2 >>> 32;
+virtualinvoke v0.<io.netty.buffer.CompositeByteBuf: void _setInt(int,int)>(v1, v10);
+v11 = v1 + 4;
+virtualinvoke v0.<io.netty.buffer.CompositeByteBuf: void _setInt(int,int)>(v11, v2);
+goto label3;
+label2:
+virtualinvoke v0.<io.netty.buffer.CompositeByteBuf: void _setInt(int,int)>(v1, v2);
+v12 = v1 + 4;
+v13 = v2 >>> 32;
+virtualinvoke v0.<io.netty.buffer.CompositeByteBuf: void _setInt(int,int)>(v12, v13);
+label3:
+return;
+}
+protected void _setLongLE(int, long)
+{
+long v11, v12, v2;
+io.netty.buffer.CompositeByteBuf$Component v3;
+io.netty.buffer.CompositeByteBuf v0;
+java.nio.ByteOrder v8, v9;
+io.netty.buffer.ByteBuf v6;
+int v1, v10, v13, v4, v5, v7;
+v0 := @this: io.netty.buffer.CompositeByteBuf;
+v1 := @parameter0: int;
+v2 := @parameter1: long;
+v3 = specialinvoke v0.<io.netty.buffer.CompositeByteBuf: io.netty.buffer.CompositeByteBuf$Component findComponent0(int)>(v1);
+v4 = v1 + 8;
+v5 = v3.<io.netty.buffer.CompositeByteBuf$Component: int endOffset>;
+if v4 > v5 goto label1;
+v6 = v3.<io.netty.buffer.CompositeByteBuf$Component: io.netty.buffer.ByteBuf buf>;
+v7 = virtualinvoke v3.<io.netty.buffer.CompositeByteBuf$Component: int idx(int)>(v1);
+virtualinvoke v6.<io.netty.buffer.ByteBuf: io.netty.buffer.ByteBuf setLongLE(int,long)>(v7, v2);
+goto label3;
+label1:
+v8 = virtualinvoke v0.<io.netty.buffer.CompositeByteBuf: java.nio.ByteOrder order()>();
+v9 = <java.nio.ByteOrder: java.nio.ByteOrder BIG_ENDIAN>;
+if v8 != v9 goto label2;
+virtualinvoke v0.<io.netty.buffer.CompositeByteBuf: void _setIntLE(int,int)>(v1, v2);
+v10 = v1 + 4;
+v11 = v2 >>> 32;
+virtualinvoke v0.<io.netty.buffer.CompositeByteBuf: void _setIntLE(int,int)>(v10, v11);
+goto label3;
+label2:
+v12 = v2 >>> 32;
+virtualinvoke v0.<io.netty.buffer.CompositeByteBuf: void _setIntLE(int,int)>(v1, v12);
+v13 = v1 + 4;
+virtualinvoke v0.<io.netty.buffer.CompositeByteBuf: void _setIntLE(int,int)>(v13, v2);
+label3:
+return;
+}
+public io.netty.buffer.CompositeByteBuf setBytes(int, byte[], int, int)
+{
+byte[] v2;
+io.netty.buffer.CompositeByteBuf$Component[] v7;
+io.netty.buffer.CompositeByteBuf$Component v8;
+io.netty.buffer.CompositeByteBuf v0;
+io.netty.buffer.ByteBuf v12;
+int v1, v10, v11, v13, v3, v4, v5, v6, v9;
+v0 := @this: io.netty.buffer.CompositeByteBuf;
+v1 := @parameter0: int;
+v2 := @parameter1: byte[];
+v3 := @parameter2: int;
+v4 := @parameter3: int;
+v5 = lengthof v2;
+virtualinvoke v0.<io.netty.buffer.CompositeByteBuf: void checkSrcIndex(int,int,int,int)>(v1, v4, v3, v5);
+if v4 != 0 goto label1;
+return v0;
+label1:
+v6 = specialinvoke v0.<io.netty.buffer.CompositeByteBuf: int toComponentIndex0(int)>(v1);
+label2:
+if v4 <= 0 goto label3;
+v7 = v0.<io.netty.buffer.CompositeByteBuf: io.netty.buffer.CompositeByteBuf$Component[] components>;
+v8 = v7[v6];
+v9 = v8.<io.netty.buffer.CompositeByteBuf$Component: int endOffset>;
+v10 = v9 - v1;
+v11 = staticinvoke <java.lang.Math: int min(int,int)>(v4, v10);
+v12 = v8.<io.netty.buffer.CompositeByteBuf$Component: io.netty.buffer.ByteBuf buf>;
+v13 = virtualinvoke v8.<io.netty.buffer.CompositeByteBuf$Component: int idx(int)>(v1);
+virtualinvoke v12.<io.netty.buffer.ByteBuf: io.netty.buffer.ByteBuf setBytes(int,byte[],int,int)>(v13, v2, v3, v11);
+v1 = v1 + v11;
+v3 = v3 + v11;
+v4 = v4 - v11;
+v6 = v6 + 1;
+goto label2;
+label3:
+return v0;
+}
+public io.netty.buffer.CompositeByteBuf setBytes(int, java.nio.ByteBuffer)
+{
+java.lang.Throwable v15;
+java.nio.ByteBuffer v2;
+io.netty.buffer.CompositeByteBuf$Component v7;
+io.netty.buffer.ByteBuf v13;
+int v1, v10, v11, v12, v14, v3, v4, v5, v8, v9;
+io.netty.buffer.CompositeByteBuf$Component[] v6;
+io.netty.buffer.CompositeByteBuf v0;
+v0 := @this: io.netty.buffer.CompositeByteBuf;
+v1 := @parameter0: int;
+v2 := @parameter1: java.nio.ByteBuffer;
+v3 = virtualinvoke v2.<java.nio.ByteBuffer: int limit()>();
+v4 = virtualinvoke v2.<java.nio.ByteBuffer: int remaining()>();
+virtualinvoke v0.<io.netty.buffer.CompositeByteBuf: void checkIndex(int,int)>(v1, v4);
+if v4 != 0 goto label1;
+return v0;
+label1:
+v5 = specialinvoke v0.<io.netty.buffer.CompositeByteBuf: int toComponentIndex0(int)>(v1);
+label2:
+if v4 <= 0 goto label3;
+v6 = v0.<io.netty.buffer.CompositeByteBuf: io.netty.buffer.CompositeByteBuf$Component[] components>;
+v7 = v6[v5];
+v8 = v7.<io.netty.buffer.CompositeByteBuf$Component: int endOffset>;
+v9 = v8 - v1;
+v10 = staticinvoke <java.lang.Math: int min(int,int)>(v4, v9);
+v11 = virtualinvoke v2.<java.nio.ByteBuffer: int position()>();
+v12 = v11 + v10;
+virtualinvoke v2.<java.nio.ByteBuffer: java.nio.ByteBuffer limit(int)>(v12);
+v13 = v7.<io.netty.buffer.CompositeByteBuf$Component: io.netty.buffer.ByteBuf buf>;
+v14 = virtualinvoke v7.<io.netty.buffer.CompositeByteBuf$Component: int idx(int)>(v1);
+virtualinvoke v13.<io.netty.buffer.ByteBuf: io.netty.buffer.ByteBuf setBytes(int,java.nio.ByteBuffer)>(v14, v2);
+v1 = v1 + v10;
+v4 = v4 - v10;
+v5 = v5 + 1;
+goto label2;
+label3:
+virtualinvoke v2.<java.nio.ByteBuffer: java.nio.ByteBuffer limit(int)>(v3);
+goto label5;
+label4:
+v15 := @caughtexception;
+virtualinvoke v2.<java.nio.ByteBuffer: java.nio.ByteBuffer limit(int)>(v3);
+throw v15;
+label5:
+return v0;
+catch java.lang.Throwable from label2 to label3 with label4;
+}
+public io.netty.buffer.CompositeByteBuf setBytes(int, io.netty.buffer.ByteBuf, int, int)
+{
+io.netty.buffer.CompositeByteBuf$Component[] v7;
+io.netty.buffer.CompositeByteBuf$Component v8;
+io.netty.buffer.CompositeByteBuf v0;
+io.netty.buffer.ByteBuf v12, v2;
+int v1, v10, v11, v13, v3, v4, v5, v6, v9;
+v0 := @this: io.netty.buffer.CompositeByteBuf;
+v1 := @parameter0: int;
+v2 := @parameter1: io.netty.buffer.ByteBuf;
+v3 := @parameter2: int;
+v4 := @parameter3: int;
+v5 = virtualinvoke v2.<io.netty.buffer.ByteBuf: int capacity()>();
+virtualinvoke v0.<io.netty.buffer.CompositeByteBuf: void checkSrcIndex(int,int,int,int)>(v1, v4, v3, v5);
+if v4 != 0 goto label1;
+return v0;
+label1:
+v6 = specialinvoke v0.<io.netty.buffer.CompositeByteBuf: int toComponentIndex0(int)>(v1);
+label2:
+if v4 <= 0 goto label3;
+v7 = v0.<io.netty.buffer.CompositeByteBuf: io.netty.buffer.CompositeByteBuf$Component[] components>;
+v8 = v7[v6];
+v9 = v8.<io.netty.buffer.CompositeByteBuf$Component: int endOffset>;
+v10 = v9 - v1;
+v11 = staticinvoke <java.lang.Math: int min(int,int)>(v4, v10);
+v12 = v8.<io.netty.buffer.CompositeByteBuf$Component: io.netty.buffer.ByteBuf buf>;
+v13 = virtualinvoke v8.<io.netty.buffer.CompositeByteBuf$Component: int idx(int)>(v1);
+virtualinvoke v12.<io.netty.buffer.ByteBuf: io.netty.buffer.ByteBuf setBytes(int,io.netty.buffer.ByteBuf,int,int)>(v13, v2, v3, v11);
+v1 = v1 + v11;
+v3 = v3 + v11;
+v4 = v4 - v11;
+v6 = v6 + 1;
+goto label2;
+label3:
+return v0;
+}
+public int setBytes(int, java.io.InputStream, int) throws java.io.IOException
+{
+byte[] v4;
+io.netty.buffer.CompositeByteBuf$Component v9;
+io.netty.buffer.ByteBuf v13;
+int v1, v10, v11, v12, v14, v15, v16, v3, v5, v6, v7;
+io.netty.buffer.CompositeByteBuf$Component[] v8;
+io.netty.buffer.CompositeByteBuf v0;
+java.io.InputStream v2;
+v0 := @this: io.netty.buffer.CompositeByteBuf;
+v1 := @parameter0: int;
+v2 := @parameter1: java.io.InputStream;
+v3 := @parameter2: int;
+virtualinvoke v0.<io.netty.buffer.CompositeByteBuf: void checkIndex(int,int)>(v1, v3);
+if v3 != 0 goto label1;
+v4 = <io.netty.util.internal.EmptyArrays: byte[] EMPTY_BYTES>;
+v5 = virtualinvoke v2.<java.io.InputStream: int read(byte[])>(v4);
+return v5;
+label1:
+v6 = specialinvoke v0.<io.netty.buffer.CompositeByteBuf: int toComponentIndex0(int)>(v1);
+v7 = 0;
+label2:
+v8 = v0.<io.netty.buffer.CompositeByteBuf: io.netty.buffer.CompositeByteBuf$Component[] components>;
+v9 = v8[v6];
+v10 = v9.<io.netty.buffer.CompositeByteBuf$Component: int endOffset>;
+v11 = v10 - v1;
+v12 = staticinvoke <java.lang.Math: int min(int,int)>(v3, v11);
+if v12 != 0 goto label3;
+v6 = v6 + 1;
+goto label5;
+label3:
+v13 = v9.<io.netty.buffer.CompositeByteBuf$Component: io.netty.buffer.ByteBuf buf>;
+v14 = virtualinvoke v9.<io.netty.buffer.CompositeByteBuf$Component: int idx(int)>(v1);
+v15 = virtualinvoke v13.<io.netty.buffer.ByteBuf: int setBytes(int,java.io.InputStream,int)>(v14, v2, v12);
+if v15 >= 0 goto label4;
+if v7 != 0 goto label6;
+v16 = (int) -1;
+return v16;
+label4:
+v1 = v1 + v15;
+v3 = v3 - v15;
+v7 = v7 + v15;
+if v15 != v12 goto label5;
+v6 = v6 + 1;
+label5:
+if v3 > 0 goto label2;
+label6:
+return v7;
+}
+public int setBytes(int, java.nio.channels.ScatteringByteChannel, int) throws java.io.IOException
+{
+java.nio.ByteBuffer v4;
+io.netty.buffer.CompositeByteBuf$Component v9;
+io.netty.buffer.ByteBuf v13;
+int v1, v10, v11, v12, v14, v15, v16, v3, v5, v6, v7;
+java.nio.channels.ScatteringByteChannel v2;
+io.netty.buffer.CompositeByteBuf$Component[] v8;
+io.netty.buffer.CompositeByteBuf v0;
+v0 := @this: io.netty.buffer.CompositeByteBuf;
+v1 := @parameter0: int;
+v2 := @parameter1: java.nio.channels.ScatteringByteChannel;
+v3 := @parameter2: int;
+virtualinvoke v0.<io.netty.buffer.CompositeByteBuf: void checkIndex(int,int)>(v1, v3);
+if v3 != 0 goto label1;
+v4 = <io.netty.buffer.CompositeByteBuf: java.nio.ByteBuffer EMPTY_NIO_BUFFER>;
+v5 = interfaceinvoke v2.<java.nio.channels.ScatteringByteChannel: int read(java.nio.ByteBuffer)>(v4);
+return v5;
+label1:
+v6 = specialinvoke v0.<io.netty.buffer.CompositeByteBuf: int toComponentIndex0(int)>(v1);
+v7 = 0;
+label2:
+v8 = v0.<io.netty.buffer.CompositeByteBuf: io.netty.buffer.CompositeByteBuf$Component[] components>;
+v9 = v8[v6];
+v10 = v9.<io.netty.buffer.CompositeByteBuf$Component: int endOffset>;
+v11 = v10 - v1;
+v12 = staticinvoke <java.lang.Math: int min(int,int)>(v3, v11);
+if v12 != 0 goto label3;
+v6 = v6 + 1;
+goto label5;
+label3:
+v13 = v9.<io.netty.buffer.CompositeByteBuf$Component: io.netty.buffer.ByteBuf buf>;
+v14 = virtualinvoke v9.<io.netty.buffer.CompositeByteBuf$Component: int idx(int)>(v1);
+v15 = virtualinvoke v13.<io.netty.buffer.ByteBuf: int setBytes(int,java.nio.channels.ScatteringByteChannel,int)>(v14, v2, v12);
+if v15 == 0 goto label6;
+if v15 >= 0 goto label4;
+if v7 != 0 goto label6;
+v16 = (int) -1;
+return v16;
+label4:
+v1 = v1 + v15;
+v3 = v3 - v15;
+v7 = v7 + v15;
+if v15 != v12 goto label5;
+v6 = v6 + 1;
+label5:
+if v3 > 0 goto label2;
+label6:
+return v7;
+}
+public int setBytes(int, java.nio.channels.FileChannel, long, int) throws java.io.IOException
+{
+long v16, v3;
+java.nio.ByteBuffer v5;
+io.netty.buffer.CompositeByteBuf$Component v10;
+io.netty.buffer.ByteBuf v14;
+int v1, v11, v12, v13, v15, v17, v18, v4, v6, v7, v8;
+io.netty.buffer.CompositeByteBuf$Component[] v9;
+io.netty.buffer.CompositeByteBuf v0;
+java.nio.channels.FileChannel v2;
+v0 := @this: io.netty.buffer.CompositeByteBuf;
+v1 := @parameter0: int;
+v2 := @parameter1: java.nio.channels.FileChannel;
+v3 := @parameter2: long;
+v4 := @parameter3: int;
+virtualinvoke v0.<io.netty.buffer.CompositeByteBuf: void checkIndex(int,int)>(v1, v4);
+if v4 != 0 goto label1;
+v5 = <io.netty.buffer.CompositeByteBuf: java.nio.ByteBuffer EMPTY_NIO_BUFFER>;
+v6 = virtualinvoke v2.<java.nio.channels.FileChannel: int read(java.nio.ByteBuffer,long)>(v5, v3);
+return v6;
+label1:
+v7 = specialinvoke v0.<io.netty.buffer.CompositeByteBuf: int toComponentIndex0(int)>(v1);
+v8 = 0;
+label2:
+v9 = v0.<io.netty.buffer.CompositeByteBuf: io.netty.buffer.CompositeByteBuf$Component[] components>;
+v10 = v9[v7];
+v11 = v10.<io.netty.buffer.CompositeByteBuf$Component: int endOffset>;
+v12 = v11 - v1;
+v13 = staticinvoke <java.lang.Math: int min(int,int)>(v4, v12);
+if v13 != 0 goto label3;
+v7 = v7 + 1;
+goto label5;
+label3:
+v14 = v10.<io.netty.buffer.CompositeByteBuf$Component: io.netty.buffer.ByteBuf buf>;
+v15 = virtualinvoke v10.<io.netty.buffer.CompositeByteBuf$Component: int idx(int)>(v1);
+v16 = v3 + v8;
+v17 = virtualinvoke v14.<io.netty.buffer.ByteBuf: int setBytes(int,java.nio.channels.FileChannel,long,int)>(v15, v2, v16, v13);
+if v17 == 0 goto label6;
+if v17 >= 0 goto label4;
+if v8 != 0 goto label6;
+v18 = (int) -1;
+return v18;
+label4:
+v1 = v1 + v17;
+v4 = v4 - v17;
+v8 = v8 + v17;
+if v17 != v13 goto label5;
+v7 = v7 + 1;
+label5:
+if v4 > 0 goto label2;
+label6:
+return v8;
+}
+public io.netty.buffer.ByteBuf copy(int, int)
+{
+io.netty.buffer.CompositeByteBuf v0;
+io.netty.buffer.ByteBuf v3;
+int v1, v2, v4;
+v0 := @this: io.netty.buffer.CompositeByteBuf;
+v1 := @parameter0: int;
+v2 := @parameter1: int;
+virtualinvoke v0.<io.netty.buffer.CompositeByteBuf: void checkIndex(int,int)>(v1, v2);
+v3 = specialinvoke v0.<io.netty.buffer.CompositeByteBuf: io.netty.buffer.ByteBuf allocBuffer(int)>(v2);
+if v2 == 0 goto label1;
+v4 = specialinvoke v0.<io.netty.buffer.CompositeByteBuf: int toComponentIndex0(int)>(v1);
+specialinvoke v0.<io.netty.buffer.CompositeByteBuf: void copyTo(int,int,int,io.netty.buffer.ByteBuf)>(v1, v2, v4, v3);
+label1:
+return v3;
+}
+private void copyTo(int, int, int, io.netty.buffer.ByteBuf)
+{
+io.netty.buffer.CompositeByteBuf$Component[] v7;
+io.netty.buffer.CompositeByteBuf$Component v8;
+io.netty.buffer.CompositeByteBuf v0;
+io.netty.buffer.ByteBuf v12, v4;
+int v1, v10, v11, v13, v14, v2, v3, v5, v6, v9;
+v0 := @this: io.netty.buffer.CompositeByteBuf;
+v1 := @parameter0: int;
+v2 := @parameter1: int;
+v3 := @parameter2: int;
+v4 := @parameter3: io.netty.buffer.ByteBuf;
+v5 = 0;
+v6 = v3;
+label1:
+if v2 <= 0 goto label2;
+v7 = v0.<io.netty.buffer.CompositeByteBuf: io.netty.buffer.CompositeByteBuf$Component[] components>;
+v8 = v7[v6];
+v9 = v8.<io.netty.buffer.CompositeByteBuf$Component: int endOffset>;
+v10 = v9 - v1;
+v11 = staticinvoke <java.lang.Math: int min(int,int)>(v2, v10);
+v12 = v8.<io.netty.buffer.CompositeByteBuf$Component: io.netty.buffer.ByteBuf buf>;
+v13 = virtualinvoke v8.<io.netty.buffer.CompositeByteBuf$Component: int idx(int)>(v1);
+virtualinvoke v12.<io.netty.buffer.ByteBuf: io.netty.buffer.ByteBuf getBytes(int,io.netty.buffer.ByteBuf,int,int)>(v13, v4, v5, v11);
+v1 = v1 + v11;
+v5 = v5 + v11;
+v2 = v2 - v11;
+v6 = v6 + 1;
+goto label1;
+label2:
+v14 = virtualinvoke v4.<io.netty.buffer.ByteBuf: int capacity()>();
+virtualinvoke v4.<io.netty.buffer.ByteBuf: io.netty.buffer.ByteBuf writerIndex(int)>(v14);
+return;
+}
+public io.netty.buffer.ByteBuf component(int)
+{
+io.netty.buffer.CompositeByteBuf$Component v3;
+io.netty.buffer.CompositeByteBuf v0;
+io.netty.buffer.ByteBuf v4;
+int v1;
+io.netty.buffer.CompositeByteBuf$Component[] v2;
+v0 := @this: io.netty.buffer.CompositeByteBuf;
+v1 := @parameter0: int;
+specialinvoke v0.<io.netty.buffer.CompositeByteBuf: void checkComponentIndex(int)>(v1);
+v2 = v0.<io.netty.buffer.CompositeByteBuf: io.netty.buffer.CompositeByteBuf$Component[] components>;
+v3 = v2[v1];
+v4 = virtualinvoke v3.<io.netty.buffer.CompositeByteBuf$Component: io.netty.buffer.ByteBuf duplicate()>();
+return v4;
+}
+public io.netty.buffer.ByteBuf componentAtOffset(int)
+{
+io.netty.buffer.CompositeByteBuf$Component v2;
+io.netty.buffer.CompositeByteBuf v0;
+io.netty.buffer.ByteBuf v3;
+int v1;
+v0 := @this: io.netty.buffer.CompositeByteBuf;
+v1 := @parameter0: int;
+v2 = specialinvoke v0.<io.netty.buffer.CompositeByteBuf: io.netty.buffer.CompositeByteBuf$Component findComponent(int)>(v1);
+v3 = virtualinvoke v2.<io.netty.buffer.CompositeByteBuf$Component: io.netty.buffer.ByteBuf duplicate()>();
+return v3;
+}
+public io.netty.buffer.ByteBuf internalComponent(int)
+{
+io.netty.buffer.CompositeByteBuf$Component v3;
+io.netty.buffer.CompositeByteBuf v0;
+io.netty.buffer.ByteBuf v4;
+int v1;
+io.netty.buffer.CompositeByteBuf$Component[] v2;
+v0 := @this: io.netty.buffer.CompositeByteBuf;
+v1 := @parameter0: int;
+specialinvoke v0.<io.netty.buffer.CompositeByteBuf: void checkComponentIndex(int)>(v1);
+v2 = v0.<io.netty.buffer.CompositeByteBuf: io.netty.buffer.CompositeByteBuf$Component[] components>;
+v3 = v2[v1];
+v4 = virtualinvoke v3.<io.netty.buffer.CompositeByteBuf$Component: io.netty.buffer.ByteBuf slice()>();
+return v4;
+}
+public io.netty.buffer.ByteBuf internalComponentAtOffset(int)
+{
+io.netty.buffer.CompositeByteBuf$Component v2;
+io.netty.buffer.CompositeByteBuf v0;
+io.netty.buffer.ByteBuf v3;
+int v1;
+v0 := @this: io.netty.buffer.CompositeByteBuf;
+v1 := @parameter0: int;
+v2 = specialinvoke v0.<io.netty.buffer.CompositeByteBuf: io.netty.buffer.CompositeByteBuf$Component findComponent(int)>(v1);
+v3 = virtualinvoke v2.<io.netty.buffer.CompositeByteBuf$Component: io.netty.buffer.ByteBuf slice()>();
+return v3;
+}
+private io.netty.buffer.CompositeByteBuf$Component findComponent(int)
+{
+io.netty.buffer.CompositeByteBuf$Component v2, v5;
+io.netty.buffer.CompositeByteBuf v0;
+int v1, v3, v4;
+v0 := @this: io.netty.buffer.CompositeByteBuf;
+v1 := @parameter0: int;
+v2 = v0.<io.netty.buffer.CompositeByteBuf: io.netty.buffer.CompositeByteBuf$Component lastAccessed>;
+if v2 == null goto label1;
+v3 = v2.<io.netty.buffer.CompositeByteBuf$Component: int offset>;
+if v1 < v3 goto label1;
+v4 = v2.<io.netty.buffer.CompositeByteBuf$Component: int endOffset>;
+if v1 >= v4 goto label1;
+virtualinvoke v0.<io.netty.buffer.CompositeByteBuf: void ensureAccessible()>();
+return v2;
+label1:
+virtualinvoke v0.<io.netty.buffer.CompositeByteBuf: void checkIndex(int)>(v1);
+v5 = specialinvoke v0.<io.netty.buffer.CompositeByteBuf: io.netty.buffer.CompositeByteBuf$Component findIt(int)>(v1);
+return v5;
+}
+private io.netty.buffer.CompositeByteBuf$Component findComponent0(int)
+{
+io.netty.buffer.CompositeByteBuf$Component v2, v5;
+io.netty.buffer.CompositeByteBuf v0;
+int v1, v3, v4;
+v0 := @this: io.netty.buffer.CompositeByteBuf;
+v1 := @parameter0: int;
+v2 = v0.<io.netty.buffer.CompositeByteBuf: io.netty.buffer.CompositeByteBuf$Component lastAccessed>;
+if v2 == null goto label1;
+v3 = v2.<io.netty.buffer.CompositeByteBuf$Component: int offset>;
+if v1 < v3 goto label1;
+v4 = v2.<io.netty.buffer.CompositeByteBuf$Component: int endOffset>;
+if v1 >= v4 goto label1;
+return v2;
+label1:
+v5 = specialinvoke v0.<io.netty.buffer.CompositeByteBuf: io.netty.buffer.CompositeByteBuf$Component findIt(int)>(v1);
+return v5;
+}
+private io.netty.buffer.CompositeByteBuf$Component findIt(int)
+{
+java.lang.IllegalStateException v8;
+java.lang.Error v11;
+io.netty.buffer.CompositeByteBuf$Component[] v6;
+io.netty.buffer.CompositeByteBuf$Component v7;
+io.netty.buffer.CompositeByteBuf v0;
+int v1, v10, v2, v3, v4, v5, v9;
+v0 := @this: io.netty.buffer.CompositeByteBuf;
+v1 := @parameter0: int;
+v2 = 0;
+v3 = v0.<io.netty.buffer.CompositeByteBuf: int componentCount>;
+label1:
+if v2 > v3 goto label5;
+v4 = v2 + v3;
+v5 = v4 >>> 1;
+v6 = v0.<io.netty.buffer.CompositeByteBuf: io.netty.buffer.CompositeByteBuf$Component[] components>;
+v7 = v6[v5];
+if v7 != null goto label2;
+v8 = new java.lang.IllegalStateException;
+specialinvoke v8.<java.lang.IllegalStateException: void <init>(java.lang.String)>("No component found for offset. Composite buffer layout might be outdated, e.g. from a discardReadBytes call.");
+throw v8;
+label2:
+v9 = v7.<io.netty.buffer.CompositeByteBuf$Component: int endOffset>;
+if v1 < v9 goto label3;
+v2 = v5 + 1;
+goto label1;
+label3:
+v10 = v7.<io.netty.buffer.CompositeByteBuf$Component: int offset>;
+if v1 >= v10 goto label4;
+v3 = v5 - 1;
+goto label1;
+label4:
+v0.<io.netty.buffer.CompositeByteBuf: io.netty.buffer.CompositeByteBuf$Component lastAccessed> = v7;
+return v7;
+label5:
+v11 = new java.lang.Error;
+specialinvoke v11.<java.lang.Error: void <init>(java.lang.String)>("should not reach here");
+throw v11;
+}
+public int nioBufferCount()
+{
+io.netty.buffer.CompositeByteBuf$Component[] v2, v8;
+io.netty.buffer.CompositeByteBuf$Component v3, v9;
+io.netty.buffer.CompositeByteBuf v0;
+io.netty.buffer.ByteBuf v10, v4;
+int v1, v11, v5, v6, v7;
+v0 := @this: io.netty.buffer.CompositeByteBuf;
+v1 = v0.<io.netty.buffer.CompositeByteBuf: int componentCount>;
+lookupswitch(v1)
+{
+case 0: goto label1;
+case 1: goto label2;
+default: goto label3;
+};
+label1:
+return 1;
+label2:
+v2 = v0.<io.netty.buffer.CompositeByteBuf: io.netty.buffer.CompositeByteBuf$Component[] components>;
+v3 = v2[0];
+v4 = v3.<io.netty.buffer.CompositeByteBuf$Component: io.netty.buffer.ByteBuf buf>;
+v5 = virtualinvoke v4.<io.netty.buffer.ByteBuf: int nioBufferCount()>();
+return v5;
+label3:
+v6 = 0;
+v7 = 0;
+label4:
+if v7 >= v1 goto label5;
+v8 = v0.<io.netty.buffer.CompositeByteBuf: io.netty.buffer.CompositeByteBuf$Component[] components>;
+v9 = v8[v7];
+v10 = v9.<io.netty.buffer.CompositeByteBuf$Component: io.netty.buffer.ByteBuf buf>;
+v11 = virtualinvoke v10.<io.netty.buffer.ByteBuf: int nioBufferCount()>();
+v6 = v6 + v11;
+v7 = v7 + 1;
+goto label4;
+label5:
+return v6;
+}
+public java.nio.ByteBuffer internalNioBuffer(int, int)
+{
+java.lang.UnsupportedOperationException v8;
+io.netty.buffer.CompositeByteBuf$Component[] v5;
+java.nio.ByteBuffer v4, v7;
+io.netty.buffer.CompositeByteBuf$Component v6;
+io.netty.buffer.CompositeByteBuf v0;
+int v1, v2, v3;
+v0 := @this: io.netty.buffer.CompositeByteBuf;
+v1 := @parameter0: int;
+v2 := @parameter1: int;
+v3 = v0.<io.netty.buffer.CompositeByteBuf: int componentCount>;
+lookupswitch(v3)
+{
+case 0: goto label1;
+case 1: goto label2;
+default: goto label3;
+};
+label1:
+v4 = <io.netty.buffer.CompositeByteBuf: java.nio.ByteBuffer EMPTY_NIO_BUFFER>;
+return v4;
+label2:
+v5 = v0.<io.netty.buffer.CompositeByteBuf: io.netty.buffer.CompositeByteBuf$Component[] components>;
+v6 = v5[0];
+v7 = virtualinvoke v6.<io.netty.buffer.CompositeByteBuf$Component: java.nio.ByteBuffer internalNioBuffer(int,int)>(v1, v2);
+return v7;
+label3:
+v8 = new java.lang.UnsupportedOperationException;
+specialinvoke v8.<java.lang.UnsupportedOperationException: void <init>()>();
+throw v8;
+}
+public java.nio.ByteBuffer nioBuffer(int, int)
+{
+java.nio.ByteBuffer v10, v13, v14, v16, v19, v4;
+io.netty.buffer.CompositeByteBuf$Component v6;
+io.netty.buffer.ByteBuf v7;
+int v1, v12, v17, v18, v2, v3, v8, v9;
+java.nio.ByteBuffer[] v11;
+io.netty.buffer.CompositeByteBuf$Component[] v5;
+io.netty.buffer.CompositeByteBuf v0;
+java.nio.ByteOrder v15;
+v0 := @this: io.netty.buffer.CompositeByteBuf;
+v1 := @parameter0: int;
+v2 := @parameter1: int;
+virtualinvoke v0.<io.netty.buffer.CompositeByteBuf: void checkIndex(int,int)>(v1, v2);
+v3 = v0.<io.netty.buffer.CompositeByteBuf: int componentCount>;
+lookupswitch(v3)
+{
+case 0: goto label1;
+case 1: goto label2;
+default: goto label3;
+};
+label1:
+v4 = <io.netty.buffer.CompositeByteBuf: java.nio.ByteBuffer EMPTY_NIO_BUFFER>;
+return v4;
+label2:
+v5 = v0.<io.netty.buffer.CompositeByteBuf: io.netty.buffer.CompositeByteBuf$Component[] components>;
+v6 = v5[0];
+v7 = v6.<io.netty.buffer.CompositeByteBuf$Component: io.netty.buffer.ByteBuf buf>;
+v8 = virtualinvoke v7.<io.netty.buffer.ByteBuf: int nioBufferCount()>();
+if v8 != 1 goto label3;
+v9 = virtualinvoke v6.<io.netty.buffer.CompositeByteBuf$Component: int idx(int)>(v1);
+v10 = virtualinvoke v7.<io.netty.buffer.ByteBuf: java.nio.ByteBuffer nioBuffer(int,int)>(v9, v2);
+return v10;
+label3:
+v11 = virtualinvoke v0.<io.netty.buffer.CompositeByteBuf: java.nio.ByteBuffer[] nioBuffers(int,int)>(v1, v2);
+v12 = lengthof v11;
+if v12 != 1 goto label4;
+v13 = v11[0];
+return v13;
+label4:
+v14 = staticinvoke <java.nio.ByteBuffer: java.nio.ByteBuffer allocate(int)>(v2);
+v15 = virtualinvoke v0.<io.netty.buffer.CompositeByteBuf: java.nio.ByteOrder order()>();
+v16 = virtualinvoke v14.<java.nio.ByteBuffer: java.nio.ByteBuffer order(java.nio.ByteOrder)>(v15);
+v17 = lengthof v11;
+v18 = 0;
+label5:
+if v18 >= v17 goto label6;
+v19 = v11[v18];
+virtualinvoke v16.<java.nio.ByteBuffer: java.nio.ByteBuffer put(java.nio.ByteBuffer)>(v19);
+v18 = v18 + 1;
+goto label5;
+label6:
+virtualinvoke v16.<java.nio.ByteBuffer: java.nio.ByteBuffer flip()>();
+return v16;
+}
+public java.nio.ByteBuffer[] nioBuffers(int, int)
+{
+java.lang.Throwable v22;
+java.lang.Object[] v21;
+java.nio.ByteBuffer v17, v4;
+io.netty.buffer.CompositeByteBuf$Component v9;
+io.netty.util.internal.RecyclableArrayList v6;
+io.netty.buffer.ByteBuf v10;
+int v1, v11, v12, v13, v14, v16, v18, v2, v5, v7;
+java.lang.UnsupportedOperationException v15;
+java.nio.ByteBuffer[] v19, v20, v3;
+io.netty.buffer.CompositeByteBuf$Component[] v8;
+io.netty.buffer.CompositeByteBuf v0;
+v0 := @this: io.netty.buffer.CompositeByteBuf;
+v1 := @parameter0: int;
+v2 := @parameter1: int;
+virtualinvoke v0.<io.netty.buffer.CompositeByteBuf: void checkIndex(int,int)>(v1, v2);
+if v2 != 0 goto label01;
+v3 = newarray (java.nio.ByteBuffer)[1];
+v4 = <io.netty.buffer.CompositeByteBuf: java.nio.ByteBuffer EMPTY_NIO_BUFFER>;
+v3[0] = v4;
+return v3;
+label01:
+v5 = v0.<io.netty.buffer.CompositeByteBuf: int componentCount>;
+v6 = staticinvoke <io.netty.util.internal.RecyclableArrayList: io.netty.util.internal.RecyclableArrayList newInstance(int)>(v5);
+label02:
+v7 = specialinvoke v0.<io.netty.buffer.CompositeByteBuf: int toComponentIndex0(int)>(v1);
+label03:
+if v2 <= 0 goto label08;
+v8 = v0.<io.netty.buffer.CompositeByteBuf: io.netty.buffer.CompositeByteBuf$Component[] components>;
+v9 = v8[v7];
+v10 = v9.<io.netty.buffer.CompositeByteBuf$Component: io.netty.buffer.ByteBuf buf>;
+v11 = v9.<io.netty.buffer.CompositeByteBuf$Component: int endOffset>;
+v12 = v11 - v1;
+v13 = staticinvoke <java.lang.Math: int min(int,int)>(v2, v12);
+v14 = virtualinvoke v10.<io.netty.buffer.ByteBuf: int nioBufferCount()>();
+lookupswitch(v14)
+{
+case 0: goto label04;
+case 1: goto label05;
+default: goto label06;
+};
+label04:
+v15 = new java.lang.UnsupportedOperationException;
+specialinvoke v15.<java.lang.UnsupportedOperationException: void <init>()>();
+throw v15;
+label05:
+v16 = virtualinvoke v9.<io.netty.buffer.CompositeByteBuf$Component: int idx(int)>(v1);
+v17 = virtualinvoke v10.<io.netty.buffer.ByteBuf: java.nio.ByteBuffer nioBuffer(int,int)>(v16, v13);
+virtualinvoke v6.<io.netty.util.internal.RecyclableArrayList: boolean add(java.lang.Object)>(v17);
+goto label07;
+label06:
+v18 = virtualinvoke v9.<io.netty.buffer.CompositeByteBuf$Component: int idx(int)>(v1);
+v19 = virtualinvoke v10.<io.netty.buffer.ByteBuf: java.nio.ByteBuffer[] nioBuffers(int,int)>(v18, v13);
+staticinvoke <java.util.Collections: boolean addAll(java.util.Collection,java.lang.Object[])>(v6, v19);
+label07:
+v1 = v1 + v13;
+v2 = v2 - v13;
+v7 = v7 + 1;
+goto label03;
+label08:
+v20 = newarray (java.nio.ByteBuffer)[0];
+v21 = virtualinvoke v6.<io.netty.util.internal.RecyclableArrayList: java.lang.Object[] toArray(java.lang.Object[])>(v20);
+label09:
+virtualinvoke v6.<io.netty.util.internal.RecyclableArrayList: boolean recycle()>();
+return v21;
+label10:
+v22 := @caughtexception;
+virtualinvoke v6.<io.netty.util.internal.RecyclableArrayList: boolean recycle()>();
+throw v22;
+catch java.lang.Throwable from label02 to label09 with label10;
+}
+public io.netty.buffer.CompositeByteBuf consolidate()
+{
+int v1;
+io.netty.buffer.CompositeByteBuf v0;
+v0 := @this: io.netty.buffer.CompositeByteBuf;
+virtualinvoke v0.<io.netty.buffer.CompositeByteBuf: void ensureAccessible()>();
+v1 = v0.<io.netty.buffer.CompositeByteBuf: int componentCount>;
+specialinvoke v0.<io.netty.buffer.CompositeByteBuf: void consolidate0(int,int)>(0, v1);
+return v0;
+}
+public io.netty.buffer.CompositeByteBuf consolidate(int, int)
+{
+int v1, v2;
+io.netty.buffer.CompositeByteBuf v0;
+v0 := @this: io.netty.buffer.CompositeByteBuf;
+v1 := @parameter0: int;
+v2 := @parameter1: int;
+specialinvoke v0.<io.netty.buffer.CompositeByteBuf: void checkComponentIndex(int,int)>(v1, v2);
+specialinvoke v0.<io.netty.buffer.CompositeByteBuf: void consolidate0(int,int)>(v1, v2);
+return v0;
+}
+private void consolidate0(int, int)
+{
+io.netty.buffer.CompositeByteBuf$Component v15, v18, v5, v9;
+io.netty.buffer.ByteBuf v12;
+int v1, v10, v11, v13, v16, v19, v2, v3, v6, v8;
+io.netty.buffer.CompositeByteBuf$Component[] v14, v17, v4, v7;
+io.netty.buffer.CompositeByteBuf v0;
+v0 := @this: io.netty.buffer.CompositeByteBuf;
+v1 := @parameter0: int;
+v2 := @parameter1: int;
+if v2 > 1 goto label1;
+return;
+label1:
+v3 = v1 + v2;
+if v1 == 0 goto label2;
+v4 = v0.<io.netty.buffer.CompositeByteBuf: io.netty.buffer.CompositeByteBuf$Component[] components>;
+v5 = v4[v1];
+v6 = v5.<io.netty.buffer.CompositeByteBuf$Component: int offset>;
+goto label3;
+label2:
+v6 = 0;
+label3:
+v7 = v0.<io.netty.buffer.CompositeByteBuf: io.netty.buffer.CompositeByteBuf$Component[] components>;
+v8 = v3 - 1;
+v9 = v7[v8];
+v10 = v9.<io.netty.buffer.CompositeByteBuf$Component: int endOffset>;
+v11 = v10 - v6;
+v12 = specialinvoke v0.<io.netty.buffer.CompositeByteBuf: io.netty.buffer.ByteBuf allocBuffer(int)>(v11);
+v13 = v1;
+label4:
+if v13 >= v3 goto label5;
+v14 = v0.<io.netty.buffer.CompositeByteBuf: io.netty.buffer.CompositeByteBuf$Component[] components>;
+v15 = v14[v13];
+virtualinvoke v15.<io.netty.buffer.CompositeByteBuf$Component: void transferTo(io.netty.buffer.ByteBuf)>(v12);
+v13 = v13 + 1;
+goto label4;
+label5:
+v0.<io.netty.buffer.CompositeByteBuf: io.netty.buffer.CompositeByteBuf$Component lastAccessed> = null;
+v16 = v1 + 1;
+specialinvoke v0.<io.netty.buffer.CompositeByteBuf: void removeCompRange(int,int)>(v16, v3);
+v17 = v0.<io.netty.buffer.CompositeByteBuf: io.netty.buffer.CompositeByteBuf$Component[] components>;
+v18 = specialinvoke v0.<io.netty.buffer.CompositeByteBuf: io.netty.buffer.CompositeByteBuf$Component newComponent(io.netty.buffer.ByteBuf,int)>(v12, 0);
+v17[v1] = v18;
+if v1 != 0 goto label6;
+v19 = v0.<io.netty.buffer.CompositeByteBuf: int componentCount>;
+if v2 == v19 goto label7;
+label6:
+specialinvoke v0.<io.netty.buffer.CompositeByteBuf: void updateComponentOffsets(int)>(v1);
+label7:
+return;
+}
+public io.netty.buffer.CompositeByteBuf discardReadComponents()
+{
+io.netty.buffer.CompositeByteBuf$Component v13, v7, v9;
+int v1, v10, v12, v14, v15, v16, v17, v2, v3, v4, v5, v8;
+io.netty.buffer.CompositeByteBuf$Component[] v11, v6;
+io.netty.buffer.CompositeByteBuf v0;
+v0 := @this: io.netty.buffer.CompositeByteBuf;
+virtualinvoke v0.<io.netty.buffer.CompositeByteBuf: void ensureAccessible()>();
+v1 = virtualinvoke v0.<io.netty.buffer.CompositeByteBuf: int readerIndex()>();
+if v1 != 0 goto label1;
+return v0;
+label1:
+v2 = virtualinvoke v0.<io.netty.buffer.CompositeByteBuf: int writerIndex()>();
+if v1 != v2 goto label4;
+v3 = virtualinvoke v0.<io.netty.buffer.CompositeByteBuf: int capacity()>();
+if v2 != v3 goto label4;
+v4 = 0;
+v5 = v0.<io.netty.buffer.CompositeByteBuf: int componentCount>;
+label2:
+if v4 >= v5 goto label3;
+v6 = v0.<io.netty.buffer.CompositeByteBuf: io.netty.buffer.CompositeByteBuf$Component[] components>;
+v7 = v6[v4];
+virtualinvoke v7.<io.netty.buffer.CompositeByteBuf$Component: void free()>();
+v4 = v4 + 1;
+goto label2;
+label3:
+v0.<io.netty.buffer.CompositeByteBuf: io.netty.buffer.CompositeByteBuf$Component lastAccessed> = null;
+specialinvoke v0.<io.netty.buffer.CompositeByteBuf: void clearComps()>();
+virtualinvoke v0.<io.netty.buffer.CompositeByteBuf: io.netty.buffer.CompositeByteBuf setIndex(int,int)>(0, 0);
+virtualinvoke v0.<io.netty.buffer.CompositeByteBuf: void adjustMarkers(int)>(v1);
+return v0;
+label4:
+v8 = 0;
+v9 = null;
+v10 = v0.<io.netty.buffer.CompositeByteBuf: int componentCount>;
+label5:
+if v8 >= v10 goto label6;
+v11 = v0.<io.netty.buffer.CompositeByteBuf: io.netty.buffer.CompositeByteBuf$Component[] components>;
+v9 = v11[v8];
+v12 = v9.<io.netty.buffer.CompositeByteBuf$Component: int endOffset>;
+if v12 > v1 goto label6;
+virtualinvoke v9.<io.netty.buffer.CompositeByteBuf$Component: void free()>();
+v8 = v8 + 1;
+goto label5;
+label6:
+if v8 != 0 goto label7;
+return v0;
+label7:
+v13 = v0.<io.netty.buffer.CompositeByteBuf: io.netty.buffer.CompositeByteBuf$Component lastAccessed>;
+if v13 == null goto label8;
+v14 = v13.<io.netty.buffer.CompositeByteBuf$Component: int endOffset>;
+if v14 > v1 goto label8;
+v0.<io.netty.buffer.CompositeByteBuf: io.netty.buffer.CompositeByteBuf$Component lastAccessed> = null;
+label8:
+specialinvoke v0.<io.netty.buffer.CompositeByteBuf: void removeCompRange(int,int)>(0, v8);
+v15 = v9.<io.netty.buffer.CompositeByteBuf$Component: int offset>;
+specialinvoke v0.<io.netty.buffer.CompositeByteBuf: void updateComponentOffsets(int)>(0);
+v16 = v1 - v15;
+v17 = v2 - v15;
+virtualinvoke v0.<io.netty.buffer.CompositeByteBuf: io.netty.buffer.CompositeByteBuf setIndex(int,int)>(v16, v17);
+virtualinvoke v0.<io.netty.buffer.CompositeByteBuf: void adjustMarkers(int)>(v15);
+return v0;
+}
+public io.netty.buffer.CompositeByteBuf discardReadBytes()
+{
+io.netty.buffer.CompositeByteBuf$Component v24, v7, v9;
+io.netty.buffer.ByteBuf v21, v23;
+int v1, v10, v12, v13, v14, v15, v16, v17, v18, v19, v2, v20, v22, v25, v26, v3, v4, v5, v8;
+io.netty.buffer.CompositeByteBuf$Component[] v11, v6;
+io.netty.buffer.CompositeByteBuf v0;
+v0 := @this: io.netty.buffer.CompositeByteBuf;
+virtualinvoke v0.<io.netty.buffer.CompositeByteBuf: void ensureAccessible()>();
+v1 = virtualinvoke v0.<io.netty.buffer.CompositeByteBuf: int readerIndex()>();
+if v1 != 0 goto label1;
+return v0;
+label1:
+v2 = virtualinvoke v0.<io.netty.buffer.CompositeByteBuf: int writerIndex()>();
+if v1 != v2 goto label4;
+v3 = virtualinvoke v0.<io.netty.buffer.CompositeByteBuf: int capacity()>();
+if v2 != v3 goto label4;
+v4 = 0;
+v5 = v0.<io.netty.buffer.CompositeByteBuf: int componentCount>;
+label2:
+if v4 >= v5 goto label3;
+v6 = v0.<io.netty.buffer.CompositeByteBuf: io.netty.buffer.CompositeByteBuf$Component[] components>;
+v7 = v6[v4];
+virtualinvoke v7.<io.netty.buffer.CompositeByteBuf$Component: void free()>();
+v4 = v4 + 1;
+goto label2;
+label3:
+v0.<io.netty.buffer.CompositeByteBuf: io.netty.buffer.CompositeByteBuf$Component lastAccessed> = null;
+specialinvoke v0.<io.netty.buffer.CompositeByteBuf: void clearComps()>();
+virtualinvoke v0.<io.netty.buffer.CompositeByteBuf: io.netty.buffer.CompositeByteBuf setIndex(int,int)>(0, 0);
+virtualinvoke v0.<io.netty.buffer.CompositeByteBuf: void adjustMarkers(int)>(v1);
+return v0;
+label4:
+v8 = 0;
+v9 = null;
+v10 = v0.<io.netty.buffer.CompositeByteBuf: int componentCount>;
+label5:
+if v8 >= v10 goto label6;
+v11 = v0.<io.netty.buffer.CompositeByteBuf: io.netty.buffer.CompositeByteBuf$Component[] components>;
+v9 = v11[v8];
+v12 = v9.<io.netty.buffer.CompositeByteBuf$Component: int endOffset>;
+if v12 > v1 goto label6;
+virtualinvoke v9.<io.netty.buffer.CompositeByteBuf$Component: void free()>();
+v8 = v8 + 1;
+goto label5;
+label6:
+v13 = v9.<io.netty.buffer.CompositeByteBuf$Component: int offset>;
+v14 = v1 - v13;
+v9.<io.netty.buffer.CompositeByteBuf$Component: int offset> = 0;
+v15 = v9.<io.netty.buffer.CompositeByteBuf$Component: int endOffset>;
+v16 = v15 - v1;
+v9.<io.netty.buffer.CompositeByteBuf$Component: int endOffset> = v16;
+v17 = v9.<io.netty.buffer.CompositeByteBuf$Component: int srcAdjustment>;
+v18 = v17 + v1;
+v9.<io.netty.buffer.CompositeByteBuf$Component: int srcAdjustment> = v18;
+v19 = v9.<io.netty.buffer.CompositeByteBuf$Component: int adjustment>;
+v20 = v19 + v1;
+v9.<io.netty.buffer.CompositeByteBuf$Component: int adjustment> = v20;
+v21 = v9.<io.netty.buffer.CompositeByteBuf$Component: io.netty.buffer.ByteBuf slice>;
+if v21 == null goto label7;
+v22 = virtualinvoke v9.<io.netty.buffer.CompositeByteBuf$Component: int length()>();
+v23 = virtualinvoke v21.<io.netty.buffer.ByteBuf: io.netty.buffer.ByteBuf slice(int,int)>(v14, v22);
+v9.<io.netty.buffer.CompositeByteBuf$Component: io.netty.buffer.ByteBuf slice> = v23;
+label7:
+v24 = v0.<io.netty.buffer.CompositeByteBuf: io.netty.buffer.CompositeByteBuf$Component lastAccessed>;
+if v24 == null goto label8;
+v25 = v24.<io.netty.buffer.CompositeByteBuf$Component: int endOffset>;
+if v25 > v1 goto label8;
+v0.<io.netty.buffer.CompositeByteBuf: io.netty.buffer.CompositeByteBuf$Component lastAccessed> = null;
+label8:
+specialinvoke v0.<io.netty.buffer.CompositeByteBuf: void removeCompRange(int,int)>(0, v8);
+specialinvoke v0.<io.netty.buffer.CompositeByteBuf: void updateComponentOffsets(int)>(0);
+v26 = v2 - v1;
+virtualinvoke v0.<io.netty.buffer.CompositeByteBuf: io.netty.buffer.CompositeByteBuf setIndex(int,int)>(0, v26);
+virtualinvoke v0.<io.netty.buffer.CompositeByteBuf: void adjustMarkers(int)>(v1);
+return v0;
+}
+private io.netty.buffer.ByteBuf allocBuffer(int)
+{
+io.netty.buffer.CompositeByteBuf v0;
+io.netty.buffer.ByteBuf v4;
+io.netty.buffer.ByteBufAllocator v3, v5;
+int v1;
+boolean v2;
+v0 := @this: io.netty.buffer.CompositeByteBuf;
+v1 := @parameter0: int;
+v2 = v0.<io.netty.buffer.CompositeByteBuf: boolean direct>;
+if v2 == 0 goto label1;
+v3 = virtualinvoke v0.<io.netty.buffer.CompositeByteBuf: io.netty.buffer.ByteBufAllocator alloc()>();
+v4 = interfaceinvoke v3.<io.netty.buffer.ByteBufAllocator: io.netty.buffer.ByteBuf directBuffer(int)>(v1);
+goto label2;
+label1:
+v5 = virtualinvoke v0.<io.netty.buffer.CompositeByteBuf: io.netty.buffer.ByteBufAllocator alloc()>();
+v4 = interfaceinvoke v5.<io.netty.buffer.ByteBufAllocator: io.netty.buffer.ByteBuf heapBuffer(int)>(v1);
+label2:
+return v4;
+}
+public java.lang.String toString()
+{
+io.netty.buffer.CompositeByteBuf v0;
+int v2, v3, v5;
+java.lang.String v1, v4, v6;
+v0 := @this: io.netty.buffer.CompositeByteBuf;
+v1 = specialinvoke v0.<io.netty.buffer.AbstractReferenceCountedByteBuf: java.lang.String toString()>();
+v2 = virtualinvoke v1.<java.lang.String: int length()>();
+v3 = v2 - 1;
+v4 = virtualinvoke v1.<java.lang.String: java.lang.String substring(int,int)>(0, v3);
+v5 = v0.<io.netty.buffer.CompositeByteBuf: int componentCount>;
+v6 = dynamicinvoke "makeConcatWithConstants" <java.lang.String (java.lang.String,int)>(v4, v5) <java.lang.invoke.StringConcatFactory: java.lang.invoke.CallSite makeConcatWithConstants(java.lang.invoke.MethodHandles$Lookup,java.lang.String,java.lang.invoke.MethodType,java.lang.String,java.lang.Object[])>("\u0001, components=\u0001)");
+return v6;
+}
+public io.netty.buffer.CompositeByteBuf readerIndex(int)
+{
+int v1;
+io.netty.buffer.CompositeByteBuf v0;
+v0 := @this: io.netty.buffer.CompositeByteBuf;
+v1 := @parameter0: int;
+specialinvoke v0.<io.netty.buffer.AbstractReferenceCountedByteBuf: io.netty.buffer.ByteBuf readerIndex(int)>(v1);
+return v0;
+}
+public io.netty.buffer.CompositeByteBuf writerIndex(int)
+{
+int v1;
+io.netty.buffer.CompositeByteBuf v0;
+v0 := @this: io.netty.buffer.CompositeByteBuf;
+v1 := @parameter0: int;
+specialinvoke v0.<io.netty.buffer.AbstractReferenceCountedByteBuf: io.netty.buffer.ByteBuf writerIndex(int)>(v1);
+return v0;
+}
+public io.netty.buffer.CompositeByteBuf setIndex(int, int)
+{
+int v1, v2;
+io.netty.buffer.CompositeByteBuf v0;
+v0 := @this: io.netty.buffer.CompositeByteBuf;
+v1 := @parameter0: int;
+v2 := @parameter1: int;
+specialinvoke v0.<io.netty.buffer.AbstractReferenceCountedByteBuf: io.netty.buffer.ByteBuf setIndex(int,int)>(v1, v2);
+return v0;
+}
+public io.netty.buffer.CompositeByteBuf clear()
+{
+io.netty.buffer.CompositeByteBuf v0;
+v0 := @this: io.netty.buffer.CompositeByteBuf;
+specialinvoke v0.<io.netty.buffer.AbstractReferenceCountedByteBuf: io.netty.buffer.ByteBuf clear()>();
+return v0;
+}
+public io.netty.buffer.CompositeByteBuf markReaderIndex()
+{
+io.netty.buffer.CompositeByteBuf v0;
+v0 := @this: io.netty.buffer.CompositeByteBuf;
+specialinvoke v0.<io.netty.buffer.AbstractReferenceCountedByteBuf: io.netty.buffer.ByteBuf markReaderIndex()>();
+return v0;
+}
+public io.netty.buffer.CompositeByteBuf resetReaderIndex()
+{
+io.netty.buffer.CompositeByteBuf v0;
+v0 := @this: io.netty.buffer.CompositeByteBuf;
+specialinvoke v0.<io.netty.buffer.AbstractReferenceCountedByteBuf: io.netty.buffer.ByteBuf resetReaderIndex()>();
+return v0;
+}
+public io.netty.buffer.CompositeByteBuf markWriterIndex()
+{
+io.netty.buffer.CompositeByteBuf v0;
+v0 := @this: io.netty.buffer.CompositeByteBuf;
+specialinvoke v0.<io.netty.buffer.AbstractReferenceCountedByteBuf: io.netty.buffer.ByteBuf markWriterIndex()>();
+return v0;
+}
+public io.netty.buffer.CompositeByteBuf resetWriterIndex()
+{
+io.netty.buffer.CompositeByteBuf v0;
+v0 := @this: io.netty.buffer.CompositeByteBuf;
+specialinvoke v0.<io.netty.buffer.AbstractReferenceCountedByteBuf: io.netty.buffer.ByteBuf resetWriterIndex()>();
+return v0;
+}
+public io.netty.buffer.CompositeByteBuf ensureWritable(int)
+{
+int v1;
+io.netty.buffer.CompositeByteBuf v0;
+v0 := @this: io.netty.buffer.CompositeByteBuf;
+v1 := @parameter0: int;
+specialinvoke v0.<io.netty.buffer.AbstractReferenceCountedByteBuf: io.netty.buffer.ByteBuf ensureWritable(int)>(v1);
+return v0;
+}
+public io.netty.buffer.CompositeByteBuf getBytes(int, io.netty.buffer.ByteBuf)
+{
+io.netty.buffer.CompositeByteBuf v0, v4;
+io.netty.buffer.ByteBuf v2;
+int v1, v3;
+v0 := @this: io.netty.buffer.CompositeByteBuf;
+v1 := @parameter0: int;
+v2 := @parameter1: io.netty.buffer.ByteBuf;
+v3 = virtualinvoke v2.<io.netty.buffer.ByteBuf: int writableBytes()>();
+v4 = virtualinvoke v0.<io.netty.buffer.CompositeByteBuf: io.netty.buffer.CompositeByteBuf getBytes(int,io.netty.buffer.ByteBuf,int)>(v1, v2, v3);
+return v4;
+}
+public io.netty.buffer.CompositeByteBuf getBytes(int, io.netty.buffer.ByteBuf, int)
+{
+io.netty.buffer.CompositeByteBuf v0;
+io.netty.buffer.ByteBuf v2;
+int v1, v3, v4, v5, v6;
+v0 := @this: io.netty.buffer.CompositeByteBuf;
+v1 := @parameter0: int;
+v2 := @parameter1: io.netty.buffer.ByteBuf;
+v3 := @parameter2: int;
+v4 = virtualinvoke v2.<io.netty.buffer.ByteBuf: int writerIndex()>();
+virtualinvoke v0.<io.netty.buffer.CompositeByteBuf: io.netty.buffer.CompositeByteBuf getBytes(int,io.netty.buffer.ByteBuf,int,int)>(v1, v2, v4, v3);
+v5 = virtualinvoke v2.<io.netty.buffer.ByteBuf: int writerIndex()>();
+v6 = v5 + v3;
+virtualinvoke v2.<io.netty.buffer.ByteBuf: io.netty.buffer.ByteBuf writerIndex(int)>(v6);
+return v0;
+}
+public io.netty.buffer.CompositeByteBuf getBytes(int, byte[])
+{
+byte[] v2;
+io.netty.buffer.CompositeByteBuf v0, v4;
+int v1, v3;
+v0 := @this: io.netty.buffer.CompositeByteBuf;
+v1 := @parameter0: int;
+v2 := @parameter1: byte[];
+v3 = lengthof v2;
+v4 = virtualinvoke v0.<io.netty.buffer.CompositeByteBuf: io.netty.buffer.CompositeByteBuf getBytes(int,byte[],int,int)>(v1, v2, 0, v3);
+return v4;
+}
+public io.netty.buffer.CompositeByteBuf setBoolean(int, boolean)
+{
+io.netty.buffer.CompositeByteBuf v0, v4;
+byte v3;
+int v1;
+boolean v2;
+v0 := @this: io.netty.buffer.CompositeByteBuf;
+v1 := @parameter0: int;
+v2 := @parameter1: boolean;
+if v2 == 0 goto label1;
+v3 = 1;
+goto label2;
+label1:
+v3 = 0;
+label2:
+v4 = virtualinvoke v0.<io.netty.buffer.CompositeByteBuf: io.netty.buffer.CompositeByteBuf setByte(int,int)>(v1, v3);
+return v4;
+}
+public io.netty.buffer.CompositeByteBuf setChar(int, int)
+{
+io.netty.buffer.CompositeByteBuf v0, v3;
+int v1, v2;
+v0 := @this: io.netty.buffer.CompositeByteBuf;
+v1 := @parameter0: int;
+v2 := @parameter1: int;
+v3 = virtualinvoke v0.<io.netty.buffer.CompositeByteBuf: io.netty.buffer.CompositeByteBuf setShort(int,int)>(v1, v2);
+return v3;
+}
+public io.netty.buffer.CompositeByteBuf setFloat(int, float)
+{
+io.netty.buffer.CompositeByteBuf v0, v4;
+int v1, v3;
+float v2;
+v0 := @this: io.netty.buffer.CompositeByteBuf;
+v1 := @parameter0: int;
+v2 := @parameter1: float;
+v3 = staticinvoke <java.lang.Float: int floatToRawIntBits(float)>(v2);
+v4 = virtualinvoke v0.<io.netty.buffer.CompositeByteBuf: io.netty.buffer.CompositeByteBuf setInt(int,int)>(v1, v3);
+return v4;
+}
+public io.netty.buffer.CompositeByteBuf setDouble(int, double)
+{
+io.netty.buffer.CompositeByteBuf v0, v4;
+int v1;
+long v3;
+double v2;
+v0 := @this: io.netty.buffer.CompositeByteBuf;
+v1 := @parameter0: int;
+v2 := @parameter1: double;
+v3 = staticinvoke <java.lang.Double: long doubleToRawLongBits(double)>(v2);
+v4 = virtualinvoke v0.<io.netty.buffer.CompositeByteBuf: io.netty.buffer.CompositeByteBuf setLong(int,long)>(v1, v3);
+return v4;
+}
+public io.netty.buffer.CompositeByteBuf setBytes(int, io.netty.buffer.ByteBuf)
+{
+io.netty.buffer.CompositeByteBuf v0;
+io.netty.buffer.ByteBuf v2;
+int v1, v3;
+v0 := @this: io.netty.buffer.CompositeByteBuf;
+v1 := @parameter0: int;
+v2 := @parameter1: io.netty.buffer.ByteBuf;
+v3 = virtualinvoke v2.<io.netty.buffer.ByteBuf: int readableBytes()>();
+specialinvoke v0.<io.netty.buffer.AbstractReferenceCountedByteBuf: io.netty.buffer.ByteBuf setBytes(int,io.netty.buffer.ByteBuf,int)>(v1, v2, v3);
+return v0;
+}
+public io.netty.buffer.CompositeByteBuf setBytes(int, io.netty.buffer.ByteBuf, int)
+{
+io.netty.buffer.CompositeByteBuf v0;
+io.netty.buffer.ByteBuf v2;
+int v1, v3;
+v0 := @this: io.netty.buffer.CompositeByteBuf;
+v1 := @parameter0: int;
+v2 := @parameter1: io.netty.buffer.ByteBuf;
+v3 := @parameter2: int;
+specialinvoke v0.<io.netty.buffer.AbstractReferenceCountedByteBuf: io.netty.buffer.ByteBuf setBytes(int,io.netty.buffer.ByteBuf,int)>(v1, v2, v3);
+return v0;
+}
+public io.netty.buffer.CompositeByteBuf setBytes(int, byte[])
+{
+byte[] v2;
+io.netty.buffer.CompositeByteBuf v0, v4;
+int v1, v3;
+v0 := @this: io.netty.buffer.CompositeByteBuf;
+v1 := @parameter0: int;
+v2 := @parameter1: byte[];
+v3 = lengthof v2;
+v4 = virtualinvoke v0.<io.netty.buffer.CompositeByteBuf: io.netty.buffer.CompositeByteBuf setBytes(int,byte[],int,int)>(v1, v2, 0, v3);
+return v4;
+}
+public io.netty.buffer.CompositeByteBuf setZero(int, int)
+{
+int v1, v2;
+io.netty.buffer.CompositeByteBuf v0;
+v0 := @this: io.netty.buffer.CompositeByteBuf;
+v1 := @parameter0: int;
+v2 := @parameter1: int;
+specialinvoke v0.<io.netty.buffer.AbstractReferenceCountedByteBuf: io.netty.buffer.ByteBuf setZero(int,int)>(v1, v2);
+return v0;
+}
+public io.netty.buffer.CompositeByteBuf readBytes(io.netty.buffer.ByteBuf)
+{
+int v2;
+io.netty.buffer.CompositeByteBuf v0;
+io.netty.buffer.ByteBuf v1;
+v0 := @this: io.netty.buffer.CompositeByteBuf;
+v1 := @parameter0: io.netty.buffer.ByteBuf;
+v2 = virtualinvoke v1.<io.netty.buffer.ByteBuf: int writableBytes()>();
+specialinvoke v0.<io.netty.buffer.AbstractReferenceCountedByteBuf: io.netty.buffer.ByteBuf readBytes(io.netty.buffer.ByteBuf,int)>(v1, v2);
+return v0;
+}
+public io.netty.buffer.CompositeByteBuf readBytes(io.netty.buffer.ByteBuf, int)
+{
+int v2;
+io.netty.buffer.CompositeByteBuf v0;
+io.netty.buffer.ByteBuf v1;
+v0 := @this: io.netty.buffer.CompositeByteBuf;
+v1 := @parameter0: io.netty.buffer.ByteBuf;
+v2 := @parameter1: int;
+specialinvoke v0.<io.netty.buffer.AbstractReferenceCountedByteBuf: io.netty.buffer.ByteBuf readBytes(io.netty.buffer.ByteBuf,int)>(v1, v2);
+return v0;
+}
+public io.netty.buffer.CompositeByteBuf readBytes(io.netty.buffer.ByteBuf, int, int)
+{
+io.netty.buffer.CompositeByteBuf v0;
+io.netty.buffer.ByteBuf v1;
+int v2, v3;
+v0 := @this: io.netty.buffer.CompositeByteBuf;
+v1 := @parameter0: io.netty.buffer.ByteBuf;
+v2 := @parameter1: int;
+v3 := @parameter2: int;
+specialinvoke v0.<io.netty.buffer.AbstractReferenceCountedByteBuf: io.netty.buffer.ByteBuf readBytes(io.netty.buffer.ByteBuf,int,int)>(v1, v2, v3);
+return v0;
+}
+public io.netty.buffer.CompositeByteBuf readBytes(byte[])
+{
+int v2;
+byte[] v1;
+io.netty.buffer.CompositeByteBuf v0;
+v0 := @this: io.netty.buffer.CompositeByteBuf;
+v1 := @parameter0: byte[];
+v2 = lengthof v1;
+specialinvoke v0.<io.netty.buffer.AbstractReferenceCountedByteBuf: io.netty.buffer.ByteBuf readBytes(byte[],int,int)>(v1, 0, v2);
+return v0;
+}
+public io.netty.buffer.CompositeByteBuf readBytes(byte[], int, int)
+{
+byte[] v1;
+io.netty.buffer.CompositeByteBuf v0;
+int v2, v3;
+v0 := @this: io.netty.buffer.CompositeByteBuf;
+v1 := @parameter0: byte[];
+v2 := @parameter1: int;
+v3 := @parameter2: int;
+specialinvoke v0.<io.netty.buffer.AbstractReferenceCountedByteBuf: io.netty.buffer.ByteBuf readBytes(byte[],int,int)>(v1, v2, v3);
+return v0;
+}
+public io.netty.buffer.CompositeByteBuf readBytes(java.nio.ByteBuffer)
+{
+io.netty.buffer.CompositeByteBuf v0;
+java.nio.ByteBuffer v1;
+v0 := @this: io.netty.buffer.CompositeByteBuf;
+v1 := @parameter0: java.nio.ByteBuffer;
+specialinvoke v0.<io.netty.buffer.AbstractReferenceCountedByteBuf: io.netty.buffer.ByteBuf readBytes(java.nio.ByteBuffer)>(v1);
+return v0;
+}
+public io.netty.buffer.CompositeByteBuf readBytes(java.io.OutputStream, int) throws java.io.IOException
+{
+int v2;
+java.io.OutputStream v1;
+io.netty.buffer.CompositeByteBuf v0;
+v0 := @this: io.netty.buffer.CompositeByteBuf;
+v1 := @parameter0: java.io.OutputStream;
+v2 := @parameter1: int;
+specialinvoke v0.<io.netty.buffer.AbstractReferenceCountedByteBuf: io.netty.buffer.ByteBuf readBytes(java.io.OutputStream,int)>(v1, v2);
+return v0;
+}
+public io.netty.buffer.CompositeByteBuf skipBytes(int)
+{
+int v1;
+io.netty.buffer.CompositeByteBuf v0;
+v0 := @this: io.netty.buffer.CompositeByteBuf;
+v1 := @parameter0: int;
+specialinvoke v0.<io.netty.buffer.AbstractReferenceCountedByteBuf: io.netty.buffer.ByteBuf skipBytes(int)>(v1);
+return v0;
+}
+public io.netty.buffer.CompositeByteBuf writeBoolean(boolean)
+{
+io.netty.buffer.CompositeByteBuf v0;
+byte v2;
+boolean v1;
+v0 := @this: io.netty.buffer.CompositeByteBuf;
+v1 := @parameter0: boolean;
+if v1 == 0 goto label1;
+v2 = 1;
+goto label2;
+label1:
+v2 = 0;
+label2:
+virtualinvoke v0.<io.netty.buffer.CompositeByteBuf: io.netty.buffer.CompositeByteBuf writeByte(int)>(v2);
+return v0;
+}
+public io.netty.buffer.CompositeByteBuf writeByte(int)
+{
+io.netty.buffer.CompositeByteBuf v0;
+int v1, v2, v3;
+v0 := @this: io.netty.buffer.CompositeByteBuf;
+v1 := @parameter0: int;
+virtualinvoke v0.<io.netty.buffer.CompositeByteBuf: void ensureWritable0(int)>(1);
+v2 = v0.<io.netty.buffer.CompositeByteBuf: int writerIndex>;
+v3 = v2 + 1;
+v0.<io.netty.buffer.CompositeByteBuf: int writerIndex> = v3;
+virtualinvoke v0.<io.netty.buffer.CompositeByteBuf: void _setByte(int,int)>(v2, v1);
+return v0;
+}
+public io.netty.buffer.CompositeByteBuf writeShort(int)
+{
+int v1;
+io.netty.buffer.CompositeByteBuf v0;
+v0 := @this: io.netty.buffer.CompositeByteBuf;
+v1 := @parameter0: int;
+specialinvoke v0.<io.netty.buffer.AbstractReferenceCountedByteBuf: io.netty.buffer.ByteBuf writeShort(int)>(v1);
+return v0;
+}
+public io.netty.buffer.CompositeByteBuf writeMedium(int)
+{
+int v1;
+io.netty.buffer.CompositeByteBuf v0;
+v0 := @this: io.netty.buffer.CompositeByteBuf;
+v1 := @parameter0: int;
+specialinvoke v0.<io.netty.buffer.AbstractReferenceCountedByteBuf: io.netty.buffer.ByteBuf writeMedium(int)>(v1);
+return v0;
+}
+public io.netty.buffer.CompositeByteBuf writeInt(int)
+{
+int v1;
+io.netty.buffer.CompositeByteBuf v0;
+v0 := @this: io.netty.buffer.CompositeByteBuf;
+v1 := @parameter0: int;
+specialinvoke v0.<io.netty.buffer.AbstractReferenceCountedByteBuf: io.netty.buffer.ByteBuf writeInt(int)>(v1);
+return v0;
+}
+public io.netty.buffer.CompositeByteBuf writeLong(long)
+{
+io.netty.buffer.CompositeByteBuf v0;
+long v1;
+v0 := @this: io.netty.buffer.CompositeByteBuf;
+v1 := @parameter0: long;
+specialinvoke v0.<io.netty.buffer.AbstractReferenceCountedByteBuf: io.netty.buffer.ByteBuf writeLong(long)>(v1);
+return v0;
+}
+public io.netty.buffer.CompositeByteBuf writeChar(int)
+{
+int v1;
+io.netty.buffer.CompositeByteBuf v0;
+v0 := @this: io.netty.buffer.CompositeByteBuf;
+v1 := @parameter0: int;
+specialinvoke v0.<io.netty.buffer.AbstractReferenceCountedByteBuf: io.netty.buffer.ByteBuf writeShort(int)>(v1);
+return v0;
+}
+public io.netty.buffer.CompositeByteBuf writeFloat(float)
+{
+int v2;
+float v1;
+io.netty.buffer.CompositeByteBuf v0;
+v0 := @this: io.netty.buffer.CompositeByteBuf;
+v1 := @parameter0: float;
+v2 = staticinvoke <java.lang.Float: int floatToRawIntBits(float)>(v1);
+specialinvoke v0.<io.netty.buffer.AbstractReferenceCountedByteBuf: io.netty.buffer.ByteBuf writeInt(int)>(v2);
+return v0;
+}
+public io.netty.buffer.CompositeByteBuf writeDouble(double)
+{
+io.netty.buffer.CompositeByteBuf v0;
+long v2;
+double v1;
+v0 := @this: io.netty.buffer.CompositeByteBuf;
+v1 := @parameter0: double;
+v2 = staticinvoke <java.lang.Double: long doubleToRawLongBits(double)>(v1);
+specialinvoke v0.<io.netty.buffer.AbstractReferenceCountedByteBuf: io.netty.buffer.ByteBuf writeLong(long)>(v2);
+return v0;
+}
+public io.netty.buffer.CompositeByteBuf writeBytes(io.netty.buffer.ByteBuf)
+{
+int v2;
+io.netty.buffer.CompositeByteBuf v0;
+io.netty.buffer.ByteBuf v1;
+v0 := @this: io.netty.buffer.CompositeByteBuf;
+v1 := @parameter0: io.netty.buffer.ByteBuf;
+v2 = virtualinvoke v1.<io.netty.buffer.ByteBuf: int readableBytes()>();
+specialinvoke v0.<io.netty.buffer.AbstractReferenceCountedByteBuf: io.netty.buffer.ByteBuf writeBytes(io.netty.buffer.ByteBuf,int)>(v1, v2);
+return v0;
+}
+public io.netty.buffer.CompositeByteBuf writeBytes(io.netty.buffer.ByteBuf, int)
+{
+int v2;
+io.netty.buffer.CompositeByteBuf v0;
+io.netty.buffer.ByteBuf v1;
+v0 := @this: io.netty.buffer.CompositeByteBuf;
+v1 := @parameter0: io.netty.buffer.ByteBuf;
+v2 := @parameter1: int;
+specialinvoke v0.<io.netty.buffer.AbstractReferenceCountedByteBuf: io.netty.buffer.ByteBuf writeBytes(io.netty.buffer.ByteBuf,int)>(v1, v2);
+return v0;
+}
+public io.netty.buffer.CompositeByteBuf writeBytes(io.netty.buffer.ByteBuf, int, int)
+{
+io.netty.buffer.CompositeByteBuf v0;
+io.netty.buffer.ByteBuf v1;
+int v2, v3;
+v0 := @this: io.netty.buffer.CompositeByteBuf;
+v1 := @parameter0: io.netty.buffer.ByteBuf;
+v2 := @parameter1: int;
+v3 := @parameter2: int;
+specialinvoke v0.<io.netty.buffer.AbstractReferenceCountedByteBuf: io.netty.buffer.ByteBuf writeBytes(io.netty.buffer.ByteBuf,int,int)>(v1, v2, v3);
+return v0;
+}
+public io.netty.buffer.CompositeByteBuf writeBytes(byte[])
+{
+int v2;
+byte[] v1;
+io.netty.buffer.CompositeByteBuf v0;
+v0 := @this: io.netty.buffer.CompositeByteBuf;
+v1 := @parameter0: byte[];
+v2 = lengthof v1;
+specialinvoke v0.<io.netty.buffer.AbstractReferenceCountedByteBuf: io.netty.buffer.ByteBuf writeBytes(byte[],int,int)>(v1, 0, v2);
+return v0;
+}
+public io.netty.buffer.CompositeByteBuf writeBytes(byte[], int, int)
+{
+byte[] v1;
+io.netty.buffer.CompositeByteBuf v0;
+int v2, v3;
+v0 := @this: io.netty.buffer.CompositeByteBuf;
+v1 := @parameter0: byte[];
+v2 := @parameter1: int;
+v3 := @parameter2: int;
+specialinvoke v0.<io.netty.buffer.AbstractReferenceCountedByteBuf: io.netty.buffer.ByteBuf writeBytes(byte[],int,int)>(v1, v2, v3);
+return v0;
+}
+public io.netty.buffer.CompositeByteBuf writeBytes(java.nio.ByteBuffer)
+{
+io.netty.buffer.CompositeByteBuf v0;
+java.nio.ByteBuffer v1;
+v0 := @this: io.netty.buffer.CompositeByteBuf;
+v1 := @parameter0: java.nio.ByteBuffer;
+specialinvoke v0.<io.netty.buffer.AbstractReferenceCountedByteBuf: io.netty.buffer.ByteBuf writeBytes(java.nio.ByteBuffer)>(v1);
+return v0;
+}
+public io.netty.buffer.CompositeByteBuf writeZero(int)
+{
+int v1;
+io.netty.buffer.CompositeByteBuf v0;
+v0 := @this: io.netty.buffer.CompositeByteBuf;
+v1 := @parameter0: int;
+specialinvoke v0.<io.netty.buffer.AbstractReferenceCountedByteBuf: io.netty.buffer.ByteBuf writeZero(int)>(v1);
+return v0;
+}
+public io.netty.buffer.CompositeByteBuf retain(int)
+{
+int v1;
+io.netty.buffer.CompositeByteBuf v0;
+v0 := @this: io.netty.buffer.CompositeByteBuf;
+v1 := @parameter0: int;
+specialinvoke v0.<io.netty.buffer.AbstractReferenceCountedByteBuf: io.netty.buffer.ByteBuf retain(int)>(v1);
+return v0;
+}
+public io.netty.buffer.CompositeByteBuf retain()
+{
+io.netty.buffer.CompositeByteBuf v0;
+v0 := @this: io.netty.buffer.CompositeByteBuf;
+specialinvoke v0.<io.netty.buffer.AbstractReferenceCountedByteBuf: io.netty.buffer.ByteBuf retain()>();
+return v0;
+}
+public io.netty.buffer.CompositeByteBuf touch()
+{
+io.netty.buffer.CompositeByteBuf v0;
+v0 := @this: io.netty.buffer.CompositeByteBuf;
+return v0;
+}
+public io.netty.buffer.CompositeByteBuf touch(java.lang.Object)
+{
+io.netty.buffer.CompositeByteBuf v0;
+java.lang.Object v1;
+v0 := @this: io.netty.buffer.CompositeByteBuf;
+v1 := @parameter0: java.lang.Object;
+return v0;
+}
+public java.nio.ByteBuffer[] nioBuffers()
+{
+io.netty.buffer.CompositeByteBuf v0;
+java.nio.ByteBuffer[] v3;
+int v1, v2;
+v0 := @this: io.netty.buffer.CompositeByteBuf;
+v1 = virtualinvoke v0.<io.netty.buffer.CompositeByteBuf: int readerIndex()>();
+v2 = virtualinvoke v0.<io.netty.buffer.CompositeByteBuf: int readableBytes()>();
+v3 = virtualinvoke v0.<io.netty.buffer.CompositeByteBuf: java.nio.ByteBuffer[] nioBuffers(int,int)>(v1, v2);
+return v3;
+}
+public io.netty.buffer.CompositeByteBuf discardSomeReadBytes()
+{
+io.netty.buffer.CompositeByteBuf v0, v1;
+v0 := @this: io.netty.buffer.CompositeByteBuf;
+v1 = virtualinvoke v0.<io.netty.buffer.CompositeByteBuf: io.netty.buffer.CompositeByteBuf discardReadComponents()>();
+return v1;
+}
+protected void deallocate()
+{
+io.netty.buffer.CompositeByteBuf$Component v5;
+io.netty.buffer.CompositeByteBuf v0;
+int v2, v3;
+io.netty.buffer.CompositeByteBuf$Component[] v4;
+boolean v1;
+v0 := @this: io.netty.buffer.CompositeByteBuf;
+v1 = v0.<io.netty.buffer.CompositeByteBuf: boolean freed>;
+if v1 == 0 goto label1;
+return;
+label1:
+v0.<io.netty.buffer.CompositeByteBuf: boolean freed> = 1;
+v2 = 0;
+v3 = v0.<io.netty.buffer.CompositeByteBuf: int componentCount>;
+label2:
+if v2 >= v3 goto label3;
+v4 = v0.<io.netty.buffer.CompositeByteBuf: io.netty.buffer.CompositeByteBuf$Component[] components>;
+v5 = v4[v2];
+virtualinvoke v5.<io.netty.buffer.CompositeByteBuf$Component: void free()>();
+v2 = v2 + 1;
+goto label2;
+label3:
+return;
+}
+boolean isAccessible()
+{
+io.netty.buffer.CompositeByteBuf v0;
+boolean v1, v2;
+v0 := @this: io.netty.buffer.CompositeByteBuf;
+v1 = v0.<io.netty.buffer.CompositeByteBuf: boolean freed>;
+if v1 != 0 goto label1;
+v2 = 1;
+goto label2;
+label1:
+v2 = 0;
+label2:
+return v2;
+}
+public io.netty.buffer.ByteBuf unwrap()
+{
+io.netty.buffer.CompositeByteBuf v0;
+v0 := @this: io.netty.buffer.CompositeByteBuf;
+return null;
+}
+private void clearComps()
+{
+int v1;
+io.netty.buffer.CompositeByteBuf v0;
+v0 := @this: io.netty.buffer.CompositeByteBuf;
+v1 = v0.<io.netty.buffer.CompositeByteBuf: int componentCount>;
+specialinvoke v0.<io.netty.buffer.CompositeByteBuf: void removeCompRange(int,int)>(0, v1);
+return;
+}
+private void removeComp(int)
+{
+int v1, v2;
+io.netty.buffer.CompositeByteBuf v0;
+v0 := @this: io.netty.buffer.CompositeByteBuf;
+v1 := @parameter0: int;
+v2 = v1 + 1;
+specialinvoke v0.<io.netty.buffer.CompositeByteBuf: void removeCompRange(int,int)>(v1, v2);
+return;
+}
+private void removeCompRange(int, int)
+{
+java.lang.AssertionError v5;
+io.netty.buffer.CompositeByteBuf$Component[] v12, v6, v7;
+io.netty.buffer.CompositeByteBuf v0;
+int v1, v10, v11, v2, v3, v8, v9;
+boolean v4;
+v0 := @this: io.netty.buffer.CompositeByteBuf;
+v1 := @parameter0: int;
+v2 := @parameter1: int;
+if v1 < v2 goto label1;
+return;
+label1:
+v3 = v0.<io.netty.buffer.CompositeByteBuf: int componentCount>;
+v4 = <io.netty.buffer.CompositeByteBuf: boolean $assertionsDisabled>;
+if v4 != 0 goto label3;
+if v1 < 0 goto label2;
+if v2 <= v3 goto label3;
+label2:
+v5 = new java.lang.AssertionError;
+specialinvoke v5.<java.lang.AssertionError: void <init>()>();
+throw v5;
+label3:
+if v2 >= v3 goto label4;
+v6 = v0.<io.netty.buffer.CompositeByteBuf: io.netty.buffer.CompositeByteBuf$Component[] components>;
+v7 = v0.<io.netty.buffer.CompositeByteBuf: io.netty.buffer.CompositeByteBuf$Component[] components>;
+v8 = v3 - v2;
+staticinvoke <java.lang.System: void arraycopy(java.lang.Object,int,java.lang.Object,int,int)>(v6, v2, v7, v1, v8);
+label4:
+v9 = v3 - v2;
+v10 = v9 + v1;
+v11 = v10;
+label5:
+if v11 >= v3 goto label6;
+v12 = v0.<io.netty.buffer.CompositeByteBuf: io.netty.buffer.CompositeByteBuf$Component[] components>;
+v12[v11] = null;
+v11 = v11 + 1;
+goto label5;
+label6:
+v0.<io.netty.buffer.CompositeByteBuf: int componentCount> = v10;
+return;
+}
+private void addComp(int, io.netty.buffer.CompositeByteBuf$Component)
+{
+io.netty.buffer.CompositeByteBuf$Component v2;
+io.netty.buffer.CompositeByteBuf v0;
+int v1;
+io.netty.buffer.CompositeByteBuf$Component[] v3;
+v0 := @this: io.netty.buffer.CompositeByteBuf;
+v1 := @parameter0: int;
+v2 := @parameter1: io.netty.buffer.CompositeByteBuf$Component;
+specialinvoke v0.<io.netty.buffer.CompositeByteBuf: void shiftComps(int,int)>(v1, 1);
+v3 = v0.<io.netty.buffer.CompositeByteBuf: io.netty.buffer.CompositeByteBuf$Component[] components>;
+v3[v1] = v2;
+return;
+}
+private void shiftComps(int, int)
+{
+java.lang.Object[] v13;
+java.lang.AssertionError v6;
+int v1, v10, v11, v16, v17, v2, v20, v21, v3, v4, v8, v9;
+boolean v5;
+io.netty.buffer.CompositeByteBuf$Component[] v12, v14, v15, v18, v19, v7;
+io.netty.buffer.CompositeByteBuf v0;
+v0 := @this: io.netty.buffer.CompositeByteBuf;
+v1 := @parameter0: int;
+v2 := @parameter1: int;
+v3 = v0.<io.netty.buffer.CompositeByteBuf: int componentCount>;
+v4 = v3 + v2;
+v5 = <io.netty.buffer.CompositeByteBuf: boolean $assertionsDisabled>;
+if v5 != 0 goto label2;
+if v1 < 0 goto label1;
+if v1 > v3 goto label1;
+if v2 > 0 goto label2;
+label1:
+v6 = new java.lang.AssertionError;
+specialinvoke v6.<java.lang.AssertionError: void <init>()>();
+throw v6;
+label2:
+v7 = v0.<io.netty.buffer.CompositeByteBuf: io.netty.buffer.CompositeByteBuf$Component[] components>;
+v8 = lengthof v7;
+if v4 <= v8 goto label6;
+v9 = v3 >> 1;
+v10 = v3 + v9;
+v11 = staticinvoke <java.lang.Math: int max(int,int)>(v10, v4);
+if v1 != v3 goto label3;
+v12 = v0.<io.netty.buffer.CompositeByteBuf: io.netty.buffer.CompositeByteBuf$Component[] components>;
+v13 = staticinvoke <java.util.Arrays: java.lang.Object[] copyOf(java.lang.Object[],int,java.lang.Class)>(v12, v11, class "[Lio/netty/buffer/CompositeByteBuf$Component;");
+goto label5;
+label3:
+v13 = newarray (io.netty.buffer.CompositeByteBuf$Component)[v11];
+if v1 <= 0 goto label4;
+v14 = v0.<io.netty.buffer.CompositeByteBuf: io.netty.buffer.CompositeByteBuf$Component[] components>;
+staticinvoke <java.lang.System: void arraycopy(java.lang.Object,int,java.lang.Object,int,int)>(v14, 0, v13, 0, v1);
+label4:
+if v1 >= v3 goto label5;
+v15 = v0.<io.netty.buffer.CompositeByteBuf: io.netty.buffer.CompositeByteBuf$Component[] components>;
+v16 = v1 + v2;
+v17 = v3 - v1;
+staticinvoke <java.lang.System: void arraycopy(java.lang.Object,int,java.lang.Object,int,int)>(v15, v1, v13, v16, v17);
+label5:
+v0.<io.netty.buffer.CompositeByteBuf: io.netty.buffer.CompositeByteBuf$Component[] components> = v13;
+goto label7;
+label6:
+if v1 >= v3 goto label7;
+v18 = v0.<io.netty.buffer.CompositeByteBuf: io.netty.buffer.CompositeByteBuf$Component[] components>;
+v19 = v0.<io.netty.buffer.CompositeByteBuf: io.netty.buffer.CompositeByteBuf$Component[] components>;
+v20 = v1 + v2;
+v21 = v3 - v1;
+staticinvoke <java.lang.System: void arraycopy(java.lang.Object,int,java.lang.Object,int,int)>(v18, v1, v19, v20, v21);
+label7:
+v0.<io.netty.buffer.CompositeByteBuf: int componentCount> = v4;
+return;
+}
+static void <clinit>()
+{
+java.util.Iterator v6;
+java.nio.ByteBuffer v4;
+java.util.List v5;
+io.netty.buffer.CompositeByteBuf$1 v7;
+io.netty.buffer.ByteBuf v3;
+io.netty.buffer.CompositeByteBuf$2 v8;
+java.lang.Class v0;
+boolean v1, v2;
+v0 = class "Lio/netty/buffer/CompositeByteBuf;";
+v1 = virtualinvoke v0.<java.lang.Class: boolean desiredAssertionStatus()>();
+if v1 != 0 goto label1;
+v2 = 1;
+goto label2;
+label1:
+v2 = 0;
+label2:
+<io.netty.buffer.CompositeByteBuf: boolean $assertionsDisabled> = v2;
+v3 = <io.netty.buffer.Unpooled: io.netty.buffer.ByteBuf EMPTY_BUFFER>;
+v4 = virtualinvoke v3.<io.netty.buffer.ByteBuf: java.nio.ByteBuffer nioBuffer()>();
+<io.netty.buffer.CompositeByteBuf: java.nio.ByteBuffer EMPTY_NIO_BUFFER> = v4;
+v5 = staticinvoke <java.util.Collections: java.util.List emptyList()>();
+v6 = interfaceinvoke v5.<java.util.List: java.util.Iterator iterator()>();
+<io.netty.buffer.CompositeByteBuf: java.util.Iterator EMPTY_ITERATOR> = v6;
+v7 = new io.netty.buffer.CompositeByteBuf$1;
+specialinvoke v7.<io.netty.buffer.CompositeByteBuf$1: void <init>()>();
+<io.netty.buffer.CompositeByteBuf: io.netty.buffer.CompositeByteBuf$ByteWrapper BYTE_ARRAY_WRAPPER> = v7;
+v8 = new io.netty.buffer.CompositeByteBuf$2;
+specialinvoke v8.<io.netty.buffer.CompositeByteBuf$2: void <init>()>();
+<io.netty.buffer.CompositeByteBuf: io.netty.buffer.CompositeByteBuf$ByteWrapper BYTE_BUFFER_WRAPPER> = v8;
+return;
+}
+}

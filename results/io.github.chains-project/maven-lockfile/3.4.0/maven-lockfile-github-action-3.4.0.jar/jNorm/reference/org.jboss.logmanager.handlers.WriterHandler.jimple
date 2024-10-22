@@ -1,0 +1,269 @@
+public class org.jboss.logmanager.handlers.WriterHandler extends org.jboss.logmanager.ExtHandler
+{
+protected final java.lang.Object outputLock;
+private java.io.Writer writer;
+public void <init>()
+{
+org.jboss.logmanager.handlers.WriterHandler v0;
+java.lang.Object v1;
+v0 := @this: org.jboss.logmanager.handlers.WriterHandler;
+specialinvoke v0.<org.jboss.logmanager.ExtHandler: void <init>()>();
+v1 = new java.lang.Object;
+specialinvoke v1.<java.lang.Object: void <init>()>();
+v0.<org.jboss.logmanager.handlers.WriterHandler: java.lang.Object outputLock> = v1;
+return;
+}
+protected void doPublish(org.jboss.logmanager.ExtLogRecord)
+{
+java.lang.Throwable v9;
+org.jboss.logmanager.handlers.WriterHandler v0;
+org.jboss.logmanager.ExtLogRecord v1;
+java.util.logging.Formatter v2;
+java.lang.Exception v10, v4;
+int v5;
+java.io.Writer v7, v8;
+java.lang.Object v6;
+java.lang.String v3;
+v0 := @this: org.jboss.logmanager.handlers.WriterHandler;
+v1 := @parameter0: org.jboss.logmanager.ExtLogRecord;
+v2 = virtualinvoke v0.<org.jboss.logmanager.handlers.WriterHandler: java.util.logging.Formatter getFormatter()>();
+label01:
+v3 = virtualinvoke v2.<java.util.logging.Formatter: java.lang.String format(java.util.logging.LogRecord)>(v1);
+label02:
+goto label04;
+label03:
+v4 := @caughtexception;
+virtualinvoke v0.<org.jboss.logmanager.handlers.WriterHandler: void reportError(java.lang.String,java.lang.Exception,int)>("Formatting error", v4, 5);
+return;
+label04:
+v5 = virtualinvoke v3.<java.lang.String: int length()>();
+if v5 != 0 goto label05;
+return;
+label05:
+v6 = v0.<org.jboss.logmanager.handlers.WriterHandler: java.lang.Object outputLock>;
+entermonitor v6;
+label06:
+v7 = v0.<org.jboss.logmanager.handlers.WriterHandler: java.io.Writer writer>;
+if v7 != null goto label08;
+exitmonitor v6;
+label07:
+return;
+label08:
+virtualinvoke v0.<org.jboss.logmanager.handlers.WriterHandler: void preWrite(org.jboss.logmanager.ExtLogRecord)>(v1);
+v8 = v0.<org.jboss.logmanager.handlers.WriterHandler: java.io.Writer writer>;
+if v8 != null goto label10;
+exitmonitor v6;
+label09:
+return;
+label10:
+virtualinvoke v8.<java.io.Writer: void write(java.lang.String)>(v3);
+specialinvoke v0.<org.jboss.logmanager.ExtHandler: void doPublish(org.jboss.logmanager.ExtLogRecord)>(v1);
+exitmonitor v6;
+label11:
+goto label14;
+label12:
+v9 := @caughtexception;
+exitmonitor v6;
+throw v9;
+label13:
+v10 := @caughtexception;
+virtualinvoke v0.<org.jboss.logmanager.handlers.WriterHandler: void reportError(java.lang.String,java.lang.Exception,int)>("Error writing log message", v10, 1);
+return;
+label14:
+return;
+catch java.lang.Exception from label01 to label02 with label03;
+catch java.lang.Throwable from label06 to label07 with label12;
+catch java.lang.Throwable from label08 to label09 with label12;
+catch java.lang.Throwable from label10 to label11 with label12;
+catch java.lang.Exception from label05 to label07 with label13;
+catch java.lang.Exception from label08 to label09 with label13;
+catch java.lang.Exception from label10 to label13 with label13;
+}
+protected void preWrite(org.jboss.logmanager.ExtLogRecord)
+{
+org.jboss.logmanager.handlers.WriterHandler v0;
+org.jboss.logmanager.ExtLogRecord v1;
+v0 := @this: org.jboss.logmanager.handlers.WriterHandler;
+v1 := @parameter0: org.jboss.logmanager.ExtLogRecord;
+return;
+}
+public void setWriter(java.io.Writer)
+{
+java.lang.Throwable v6, v7;
+java.io.BufferedWriter v5;
+org.jboss.logmanager.handlers.WriterHandler v0;
+java.io.Writer v1, v2;
+java.lang.Object v4;
+boolean v3;
+v0 := @this: org.jboss.logmanager.handlers.WriterHandler;
+v1 := @parameter0: java.io.Writer;
+v2 = null;
+v3 = 0;
+label01:
+v4 = v0.<org.jboss.logmanager.handlers.WriterHandler: java.lang.Object outputLock>;
+entermonitor v4;
+label02:
+v2 = v0.<org.jboss.logmanager.handlers.WriterHandler: java.io.Writer writer>;
+if v2 == null goto label03;
+specialinvoke v0.<org.jboss.logmanager.handlers.WriterHandler: void writeTail(java.io.Writer)>(v2);
+virtualinvoke v0.<org.jboss.logmanager.handlers.WriterHandler: void safeFlush(java.io.Flushable)>(v2);
+label03:
+if v1 == null goto label04;
+v5 = new java.io.BufferedWriter;
+specialinvoke v5.<java.io.BufferedWriter: void <init>(java.io.Writer)>(v1);
+v0.<org.jboss.logmanager.handlers.WriterHandler: java.io.Writer writer> = v5;
+specialinvoke v0.<org.jboss.logmanager.handlers.WriterHandler: void writeHead(java.io.Writer)>(v5);
+goto label05;
+label04:
+v0.<org.jboss.logmanager.handlers.WriterHandler: java.io.Writer writer> = null;
+label05:
+v3 = 1;
+exitmonitor v4;
+label06:
+goto label08;
+label07:
+v6 := @caughtexception;
+exitmonitor v4;
+throw v6;
+label08:
+virtualinvoke v0.<org.jboss.logmanager.handlers.WriterHandler: void safeClose(java.io.Closeable)>(v2);
+goto label11;
+label09:
+v7 := @caughtexception;
+virtualinvoke v0.<org.jboss.logmanager.handlers.WriterHandler: void safeClose(java.io.Closeable)>(v2);
+if v3 != 0 goto label10;
+virtualinvoke v0.<org.jboss.logmanager.handlers.WriterHandler: void safeClose(java.io.Closeable)>(v1);
+label10:
+throw v7;
+label11:
+return;
+catch java.lang.Throwable from label02 to label06 with label07;
+catch java.lang.Throwable from label01 to label08 with label09;
+}
+private void writeHead(java.io.Writer)
+{
+java.io.Writer v1;
+org.jboss.logmanager.handlers.WriterHandler v0;
+java.lang.String v3;
+java.util.logging.Formatter v2;
+java.lang.Exception v4;
+v0 := @this: org.jboss.logmanager.handlers.WriterHandler;
+v1 := @parameter0: java.io.Writer;
+label1:
+v2 = virtualinvoke v0.<org.jboss.logmanager.handlers.WriterHandler: java.util.logging.Formatter getFormatter()>();
+if v2 == null goto label4;
+v3 = virtualinvoke v2.<java.util.logging.Formatter: java.lang.String getHead(java.util.logging.Handler)>(v0);
+virtualinvoke v1.<java.io.Writer: void write(java.lang.String)>(v3);
+label2:
+goto label4;
+label3:
+v4 := @caughtexception;
+virtualinvoke v0.<org.jboss.logmanager.handlers.WriterHandler: void reportError(java.lang.String,java.lang.Exception,int)>("Error writing section header", v4, 1);
+label4:
+return;
+catch java.lang.Exception from label1 to label2 with label3;
+}
+private void writeTail(java.io.Writer)
+{
+java.io.Writer v1;
+org.jboss.logmanager.handlers.WriterHandler v0;
+java.lang.String v3;
+java.util.logging.Formatter v2;
+java.lang.Exception v4;
+v0 := @this: org.jboss.logmanager.handlers.WriterHandler;
+v1 := @parameter0: java.io.Writer;
+label1:
+v2 = virtualinvoke v0.<org.jboss.logmanager.handlers.WriterHandler: java.util.logging.Formatter getFormatter()>();
+if v2 == null goto label4;
+v3 = virtualinvoke v2.<java.util.logging.Formatter: java.lang.String getTail(java.util.logging.Handler)>(v0);
+virtualinvoke v1.<java.io.Writer: void write(java.lang.String)>(v3);
+label2:
+goto label4;
+label3:
+v4 := @caughtexception;
+virtualinvoke v0.<org.jboss.logmanager.handlers.WriterHandler: void reportError(java.lang.String,java.lang.Exception,int)>("Error writing section tail", v4, 1);
+label4:
+return;
+catch java.lang.Exception from label1 to label2 with label3;
+}
+public void flush()
+{
+java.lang.Throwable v3;
+java.io.Writer v2;
+org.jboss.logmanager.handlers.WriterHandler v0;
+java.lang.Object v1;
+v0 := @this: org.jboss.logmanager.handlers.WriterHandler;
+v1 = v0.<org.jboss.logmanager.handlers.WriterHandler: java.lang.Object outputLock>;
+entermonitor v1;
+label1:
+v2 = v0.<org.jboss.logmanager.handlers.WriterHandler: java.io.Writer writer>;
+virtualinvoke v0.<org.jboss.logmanager.handlers.WriterHandler: void safeFlush(java.io.Flushable)>(v2);
+exitmonitor v1;
+label2:
+goto label4;
+label3:
+v3 := @caughtexception;
+exitmonitor v1;
+throw v3;
+label4:
+specialinvoke v0.<org.jboss.logmanager.ExtHandler: void flush()>();
+return;
+catch java.lang.Throwable from label1 to label2 with label3;
+}
+public void close() throws java.lang.SecurityException
+{
+org.jboss.logmanager.handlers.WriterHandler v0;
+v0 := @this: org.jboss.logmanager.handlers.WriterHandler;
+virtualinvoke v0.<org.jboss.logmanager.handlers.WriterHandler: void setWriter(java.io.Writer)>(null);
+specialinvoke v0.<org.jboss.logmanager.ExtHandler: void close()>();
+return;
+}
+protected void safeClose(java.io.Closeable)
+{
+java.lang.Throwable v3;
+java.io.Closeable v1;
+org.jboss.logmanager.handlers.WriterHandler v0;
+java.lang.Exception v2;
+v0 := @this: org.jboss.logmanager.handlers.WriterHandler;
+v1 := @parameter0: java.io.Closeable;
+label1:
+if v1 == null goto label5;
+interfaceinvoke v1.<java.io.Closeable: void close()>();
+label2:
+goto label5;
+label3:
+v2 := @caughtexception;
+virtualinvoke v0.<org.jboss.logmanager.handlers.WriterHandler: void reportError(java.lang.String,java.lang.Exception,int)>("Error closing resource", v2, 3);
+goto label5;
+label4:
+v3 := @caughtexception;
+label5:
+return;
+catch java.lang.Exception from label1 to label2 with label3;
+catch java.lang.Throwable from label1 to label2 with label4;
+}
+void safeFlush(java.io.Flushable)
+{
+java.lang.Throwable v3;
+org.jboss.logmanager.handlers.WriterHandler v0;
+java.lang.Exception v2;
+java.io.Flushable v1;
+v0 := @this: org.jboss.logmanager.handlers.WriterHandler;
+v1 := @parameter0: java.io.Flushable;
+label1:
+if v1 == null goto label5;
+interfaceinvoke v1.<java.io.Flushable: void flush()>();
+label2:
+goto label5;
+label3:
+v2 := @caughtexception;
+virtualinvoke v0.<org.jboss.logmanager.handlers.WriterHandler: void reportError(java.lang.String,java.lang.Exception,int)>("Error on flush", v2, 2);
+goto label5;
+label4:
+v3 := @caughtexception;
+label5:
+return;
+catch java.lang.Exception from label1 to label2 with label3;
+catch java.lang.Throwable from label1 to label2 with label4;
+}
+}

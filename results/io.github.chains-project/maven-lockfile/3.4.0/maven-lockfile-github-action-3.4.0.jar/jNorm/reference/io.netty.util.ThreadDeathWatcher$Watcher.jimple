@@ -1,0 +1,141 @@
+final class io.netty.util.ThreadDeathWatcher$Watcher extends java.lang.Object implements java.lang.Runnable
+{
+private final java.util.List watchees;
+static final boolean $assertionsDisabled;
+private void <init>()
+{
+io.netty.util.ThreadDeathWatcher$Watcher v0;
+java.util.ArrayList v1;
+v0 := @this: io.netty.util.ThreadDeathWatcher$Watcher;
+specialinvoke v0.<java.lang.Object: void <init>()>();
+v1 = new java.util.ArrayList;
+specialinvoke v1.<java.util.ArrayList: void <init>()>();
+v0.<io.netty.util.ThreadDeathWatcher$Watcher: java.util.List watchees> = v1;
+return;
+}
+public void run()
+{
+java.util.concurrent.atomic.AtomicBoolean v12, v6;
+java.lang.AssertionError v9;
+java.util.List v2;
+java.lang.InterruptedException v1;
+io.netty.util.ThreadDeathWatcher$Watcher v0;
+java.util.Queue v10, v4;
+boolean v11, v13, v3, v5, v7, v8;
+v0 := @this: io.netty.util.ThreadDeathWatcher$Watcher;
+label1:
+specialinvoke v0.<io.netty.util.ThreadDeathWatcher$Watcher: void fetchWatchees()>();
+specialinvoke v0.<io.netty.util.ThreadDeathWatcher$Watcher: void notifyWatchees()>();
+specialinvoke v0.<io.netty.util.ThreadDeathWatcher$Watcher: void fetchWatchees()>();
+specialinvoke v0.<io.netty.util.ThreadDeathWatcher$Watcher: void notifyWatchees()>();
+label2:
+staticinvoke <java.lang.Thread: void sleep(long)>(1000L);
+label3:
+goto label5;
+label4:
+v1 := @caughtexception;
+label5:
+v2 = v0.<io.netty.util.ThreadDeathWatcher$Watcher: java.util.List watchees>;
+v3 = interfaceinvoke v2.<java.util.List: boolean isEmpty()>();
+if v3 == 0 goto label1;
+v4 = <io.netty.util.ThreadDeathWatcher: java.util.Queue pendingEntries>;
+v5 = interfaceinvoke v4.<java.util.Queue: boolean isEmpty()>();
+if v5 == 0 goto label1;
+v6 = <io.netty.util.ThreadDeathWatcher: java.util.concurrent.atomic.AtomicBoolean started>;
+v7 = virtualinvoke v6.<java.util.concurrent.atomic.AtomicBoolean: boolean compareAndSet(boolean,boolean)>(1, 0);
+v8 = <io.netty.util.ThreadDeathWatcher$Watcher: boolean $assertionsDisabled>;
+if v8 != 0 goto label6;
+if v7 != 0 goto label6;
+v9 = new java.lang.AssertionError;
+specialinvoke v9.<java.lang.AssertionError: void <init>()>();
+throw v9;
+label6:
+v10 = <io.netty.util.ThreadDeathWatcher: java.util.Queue pendingEntries>;
+v11 = interfaceinvoke v10.<java.util.Queue: boolean isEmpty()>();
+if v11 != 0 goto label7;
+v12 = <io.netty.util.ThreadDeathWatcher: java.util.concurrent.atomic.AtomicBoolean started>;
+v13 = virtualinvoke v12.<java.util.concurrent.atomic.AtomicBoolean: boolean compareAndSet(boolean,boolean)>(0, 1);
+if v13 != 0 goto label1;
+label7:
+return;
+catch java.lang.InterruptedException from label2 to label3 with label4;
+}
+private void fetchWatchees()
+{
+java.util.List v4, v5;
+io.netty.util.ThreadDeathWatcher$Watcher v0;
+java.lang.Object v2;
+java.util.Queue v1;
+boolean v3;
+v0 := @this: io.netty.util.ThreadDeathWatcher$Watcher;
+label1:
+v1 = <io.netty.util.ThreadDeathWatcher: java.util.Queue pendingEntries>;
+v2 = interfaceinvoke v1.<java.util.Queue: java.lang.Object poll()>();
+if v2 == null goto label3;
+v3 = v2.<io.netty.util.ThreadDeathWatcher$Entry: boolean isWatch>;
+if v3 == 0 goto label2;
+v4 = v0.<io.netty.util.ThreadDeathWatcher$Watcher: java.util.List watchees>;
+interfaceinvoke v4.<java.util.List: boolean add(java.lang.Object)>(v2);
+goto label1;
+label2:
+v5 = v0.<io.netty.util.ThreadDeathWatcher$Watcher: java.util.List watchees>;
+interfaceinvoke v5.<java.util.List: boolean remove(java.lang.Object)>(v2);
+goto label1;
+label3:
+return;
+}
+private void notifyWatchees()
+{
+java.lang.Throwable v8;
+java.lang.Runnable v7;
+java.util.List v1;
+io.netty.util.internal.logging.InternalLogger v9;
+java.lang.Thread v5;
+int v2, v3;
+io.netty.util.ThreadDeathWatcher$Watcher v0;
+java.lang.Object v4;
+boolean v6;
+v0 := @this: io.netty.util.ThreadDeathWatcher$Watcher;
+v1 = v0.<io.netty.util.ThreadDeathWatcher$Watcher: java.util.List watchees>;
+v2 = 0;
+label1:
+v3 = interfaceinvoke v1.<java.util.List: int size()>();
+if v2 >= v3 goto label6;
+v4 = interfaceinvoke v1.<java.util.List: java.lang.Object get(int)>(v2);
+v5 = v4.<io.netty.util.ThreadDeathWatcher$Entry: java.lang.Thread thread>;
+v6 = virtualinvoke v5.<java.lang.Thread: boolean isAlive()>();
+if v6 != 0 goto label5;
+interfaceinvoke v1.<java.util.List: java.lang.Object remove(int)>(v2);
+label2:
+v7 = v4.<io.netty.util.ThreadDeathWatcher$Entry: java.lang.Runnable task>;
+interfaceinvoke v7.<java.lang.Runnable: void run()>();
+label3:
+goto label1;
+label4:
+v8 := @caughtexception;
+v9 = <io.netty.util.ThreadDeathWatcher: io.netty.util.internal.logging.InternalLogger logger>;
+interfaceinvoke v9.<io.netty.util.internal.logging.InternalLogger: void warn(java.lang.String,java.lang.Throwable)>("Thread death watcher task raised an exception:", v8);
+goto label1;
+label5:
+v2 = v2 + 1;
+goto label1;
+label6:
+return;
+catch java.lang.Throwable from label2 to label3 with label4;
+}
+static void <clinit>()
+{
+java.lang.Class v0;
+boolean v1, v2;
+v0 = class "Lio/netty/util/ThreadDeathWatcher;";
+v1 = virtualinvoke v0.<java.lang.Class: boolean desiredAssertionStatus()>();
+if v1 != 0 goto label1;
+v2 = 1;
+goto label2;
+label1:
+v2 = 0;
+label2:
+<io.netty.util.ThreadDeathWatcher$Watcher: boolean $assertionsDisabled> = v2;
+return;
+}
+}

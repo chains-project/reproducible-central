@@ -1,0 +1,503 @@
+public class io.vertx.core.http.impl.HttpServerWorker extends java.lang.Object implements java.util.function.BiConsumer
+{
+final io.vertx.core.impl.EventLoopContext context;
+private final java.util.function.Supplier streamContextSupplier;
+private final io.vertx.core.impl.VertxInternal vertx;
+private final io.vertx.core.http.impl.HttpServerImpl server;
+private final io.vertx.core.http.HttpServerOptions options;
+private final java.lang.String serverOrigin;
+private final boolean logEnabled;
+private final boolean disableH2C;
+final io.vertx.core.Handler connectionHandler;
+private final io.vertx.core.Handler exceptionHandler;
+private final io.netty.handler.codec.compression.CompressionOptions[] compressionOptions;
+private final java.util.function.Function encodingDetector;
+public void <init>(io.vertx.core.impl.EventLoopContext, java.util.function.Supplier, io.vertx.core.http.impl.HttpServerImpl, io.vertx.core.impl.VertxInternal, io.vertx.core.http.HttpServerOptions, java.lang.String, boolean, io.vertx.core.Handler, io.vertx.core.Handler)
+{
+io.vertx.core.http.impl.HttpServerImpl v3;
+java.lang.Object[] v17;
+java.util.function.Function v20;
+java.util.function.Supplier v2;
+io.vertx.core.http.impl.HttpServerWorker v0;
+int v12;
+io.netty.handler.codec.compression.DeflateOptions v15;
+java.lang.String v6;
+boolean v10, v18, v7;
+io.netty.handler.codec.compression.CompressionOptions[] v13, v16;
+io.vertx.core.impl.VertxInternal v4;
+io.netty.handler.codec.compression.GzipOptions v14;
+io.vertx.core.impl.EventLoopContext v1;
+java.util.List v11;
+io.vertx.core.http.HttpServerOptions v5;
+io.vertx.core.Handler v8, v9;
+io.vertx.core.http.impl.HttpServerWorker$EncodingDetector v19;
+v0 := @this: io.vertx.core.http.impl.HttpServerWorker;
+v1 := @parameter0: io.vertx.core.impl.EventLoopContext;
+v2 := @parameter1: java.util.function.Supplier;
+v3 := @parameter2: io.vertx.core.http.impl.HttpServerImpl;
+v4 := @parameter3: io.vertx.core.impl.VertxInternal;
+v5 := @parameter4: io.vertx.core.http.HttpServerOptions;
+v6 := @parameter5: java.lang.String;
+v7 := @parameter6: boolean;
+v8 := @parameter7: io.vertx.core.Handler;
+v9 := @parameter8: io.vertx.core.Handler;
+specialinvoke v0.<java.lang.Object: void <init>()>();
+v10 = virtualinvoke v5.<io.vertx.core.http.HttpServerOptions: boolean isCompressionSupported()>();
+if v10 == 0 goto label2;
+v11 = virtualinvoke v5.<io.vertx.core.http.HttpServerOptions: java.util.List getCompressors()>();
+if v11 != null goto label1;
+v12 = virtualinvoke v5.<io.vertx.core.http.HttpServerOptions: int getCompressionLevel()>();
+v13 = newarray (io.netty.handler.codec.compression.CompressionOptions)[2];
+v14 = staticinvoke <io.netty.handler.codec.compression.StandardCompressionOptions: io.netty.handler.codec.compression.GzipOptions gzip(int,int,int)>(v12, 15, 8);
+v13[0] = v14;
+v15 = staticinvoke <io.netty.handler.codec.compression.StandardCompressionOptions: io.netty.handler.codec.compression.DeflateOptions deflate(int,int,int)>(v12, 15, 8);
+v13[1] = v15;
+goto label2;
+label1:
+v16 = newarray (io.netty.handler.codec.compression.CompressionOptions)[0];
+v17 = interfaceinvoke v11.<java.util.List: java.lang.Object[] toArray(java.lang.Object[])>(v16);
+label2:
+v0.<io.vertx.core.http.impl.HttpServerWorker: io.vertx.core.impl.EventLoopContext context> = v1;
+v0.<io.vertx.core.http.impl.HttpServerWorker: java.util.function.Supplier streamContextSupplier> = v2;
+v0.<io.vertx.core.http.impl.HttpServerWorker: io.vertx.core.http.impl.HttpServerImpl server> = v3;
+v0.<io.vertx.core.http.impl.HttpServerWorker: io.vertx.core.impl.VertxInternal vertx> = v4;
+v0.<io.vertx.core.http.impl.HttpServerWorker: io.vertx.core.http.HttpServerOptions options> = v5;
+v0.<io.vertx.core.http.impl.HttpServerWorker: java.lang.String serverOrigin> = v6;
+v18 = virtualinvoke v5.<io.vertx.core.http.HttpServerOptions: boolean getLogActivity()>();
+v0.<io.vertx.core.http.impl.HttpServerWorker: boolean logEnabled> = v18;
+v0.<io.vertx.core.http.impl.HttpServerWorker: boolean disableH2C> = v7;
+v0.<io.vertx.core.http.impl.HttpServerWorker: io.vertx.core.Handler connectionHandler> = v8;
+v0.<io.vertx.core.http.impl.HttpServerWorker: io.vertx.core.Handler exceptionHandler> = v9;
+v0.<io.vertx.core.http.impl.HttpServerWorker: io.netty.handler.codec.compression.CompressionOptions[] compressionOptions> = v17;
+if v17 == null goto label3;
+v19 = new io.vertx.core.http.impl.HttpServerWorker$EncodingDetector;
+specialinvoke v19.<io.vertx.core.http.impl.HttpServerWorker$EncodingDetector: void <init>(io.netty.handler.codec.compression.CompressionOptions[])>(v17);
+virtualinvoke v19.<java.lang.Object: java.lang.Class getClass()>();
+v20 = staticinvoke <io.vertx.core.http.impl.HttpServerWorker$determineEncoding__1052: java.util.function.Function bootstrap$(io.vertx.core.http.impl.HttpServerWorker$EncodingDetector)>(v19);
+goto label4;
+label3:
+v20 = null;
+label4:
+v0.<io.vertx.core.http.impl.HttpServerWorker: java.util.function.Function encodingDetector> = v20;
+return;
+}
+public void accept(io.netty.channel.Channel, io.vertx.core.net.impl.SslChannelProvider)
+{
+io.vertx.core.net.impl.HAProxyMessageCompletionHandler v23;
+long v12, v17;
+byte v13;
+io.vertx.core.http.impl.HttpServerWorker v0;
+boolean v4, v5;
+io.netty.util.concurrent.Promise v7;
+io.netty.util.concurrent.GenericFutureListener v24;
+io.netty.channel.ChannelPipeline v14, v21, v8;
+io.netty.channel.EventLoop v6;
+io.netty.channel.ChannelHandler[] v22, v9;
+io.netty.channel.Channel v1;
+java.util.concurrent.TimeUnit v19;
+io.netty.handler.codec.haproxy.HAProxyMessageDecoder v10;
+io.netty.handler.timeout.IdleStateHandler v15, v20;
+io.vertx.core.net.impl.SslChannelProvider v2;
+io.vertx.core.http.HttpServerOptions v11, v16, v18, v3;
+v0 := @this: io.vertx.core.http.impl.HttpServerWorker;
+v1 := @parameter0: io.netty.channel.Channel;
+v2 := @parameter1: io.vertx.core.net.impl.SslChannelProvider;
+v3 = v0.<io.vertx.core.http.impl.HttpServerWorker: io.vertx.core.http.HttpServerOptions options>;
+v4 = virtualinvoke v3.<io.vertx.core.http.HttpServerOptions: boolean isUseProxyProtocol()>();
+v5 = staticinvoke <io.vertx.core.net.impl.HAProxyMessageCompletionHandler: boolean canUseProxyProtocol(boolean)>(v4);
+if v5 == 0 goto label3;
+v6 = interfaceinvoke v1.<io.netty.channel.Channel: io.netty.channel.EventLoop eventLoop()>();
+v7 = interfaceinvoke v6.<io.netty.channel.EventLoop: io.netty.util.concurrent.Promise newPromise()>();
+v8 = interfaceinvoke v1.<io.netty.channel.Channel: io.netty.channel.ChannelPipeline pipeline()>();
+v9 = newarray (io.netty.channel.ChannelHandler)[1];
+v10 = new io.netty.handler.codec.haproxy.HAProxyMessageDecoder;
+specialinvoke v10.<io.netty.handler.codec.haproxy.HAProxyMessageDecoder: void <init>()>();
+v9[0] = v10;
+interfaceinvoke v8.<io.netty.channel.ChannelPipeline: io.netty.channel.ChannelPipeline addLast(io.netty.channel.ChannelHandler[])>(v9);
+v11 = v0.<io.vertx.core.http.impl.HttpServerWorker: io.vertx.core.http.HttpServerOptions options>;
+v12 = virtualinvoke v11.<io.vertx.core.http.HttpServerOptions: long getProxyProtocolTimeout()>();
+v13 = v12 cmp 0L;
+if v13 <= 0 goto label1;
+v14 = interfaceinvoke v1.<io.netty.channel.Channel: io.netty.channel.ChannelPipeline pipeline()>();
+v15 = new io.netty.handler.timeout.IdleStateHandler;
+v16 = v0.<io.vertx.core.http.impl.HttpServerWorker: io.vertx.core.http.HttpServerOptions options>;
+v17 = virtualinvoke v16.<io.vertx.core.http.HttpServerOptions: long getProxyProtocolTimeout()>();
+v18 = v0.<io.vertx.core.http.impl.HttpServerWorker: io.vertx.core.http.HttpServerOptions options>;
+v19 = virtualinvoke v18.<io.vertx.core.http.HttpServerOptions: java.util.concurrent.TimeUnit getProxyProtocolTimeoutUnit()>();
+specialinvoke v15.<io.netty.handler.timeout.IdleStateHandler: void <init>(long,long,long,java.util.concurrent.TimeUnit)>(0L, 0L, v17, v19);
+v20 = v15;
+interfaceinvoke v14.<io.netty.channel.ChannelPipeline: io.netty.channel.ChannelPipeline addLast(java.lang.String,io.netty.channel.ChannelHandler)>("idle", v15);
+goto label2;
+label1:
+v20 = null;
+label2:
+v21 = interfaceinvoke v1.<io.netty.channel.Channel: io.netty.channel.ChannelPipeline pipeline()>();
+v22 = newarray (io.netty.channel.ChannelHandler)[1];
+v23 = new io.vertx.core.net.impl.HAProxyMessageCompletionHandler;
+specialinvoke v23.<io.vertx.core.net.impl.HAProxyMessageCompletionHandler: void <init>(io.netty.util.concurrent.Promise)>(v7);
+v22[0] = v23;
+interfaceinvoke v21.<io.netty.channel.ChannelPipeline: io.netty.channel.ChannelPipeline addLast(io.netty.channel.ChannelHandler[])>(v22);
+v24 = staticinvoke <io.vertx.core.http.impl.HttpServerWorker$lambda_accept_0__1053: io.netty.util.concurrent.GenericFutureListener bootstrap$(io.vertx.core.http.impl.HttpServerWorker,io.netty.handler.timeout.IdleStateHandler,io.netty.channel.Channel,io.vertx.core.net.impl.SslChannelProvider)>(v0, v20, v1, v2);
+interfaceinvoke v7.<io.netty.util.concurrent.Promise: io.netty.util.concurrent.Promise addListener(io.netty.util.concurrent.GenericFutureListener)>(v24);
+goto label4;
+label3:
+specialinvoke v0.<io.vertx.core.http.impl.HttpServerWorker: void configurePipeline(io.netty.channel.Channel,io.vertx.core.net.impl.SslChannelProvider)>(v1, v2);
+label4:
+return;
+}
+private void configurePipeline(io.netty.channel.Channel, io.vertx.core.net.impl.SslChannelProvider)
+{
+io.vertx.core.net.impl.SslHandshakeCompletionHandler v8;
+io.netty.channel.ChannelPromise v7;
+io.vertx.core.http.impl.HttpServerWorker v0;
+int v12, v14, v16;
+boolean v10, v5;
+io.netty.util.concurrent.GenericFutureListener v9;
+io.netty.channel.ChannelPipeline v3;
+io.netty.channel.ChannelHandler[] v21;
+io.vertx.core.http.impl.HttpServerWorker$1 v22;
+io.netty.channel.Channel v1;
+java.util.concurrent.TimeUnit v19;
+io.netty.handler.timeout.IdleStateHandler v17, v20;
+io.vertx.core.net.impl.SslChannelProvider v2;
+io.vertx.core.http.HttpServerOptions v11, v13, v15, v18, v4;
+io.netty.channel.ChannelHandler v6;
+v0 := @this: io.vertx.core.http.impl.HttpServerWorker;
+v1 := @parameter0: io.netty.channel.Channel;
+v2 := @parameter1: io.vertx.core.net.impl.SslChannelProvider;
+v3 = interfaceinvoke v1.<io.netty.channel.Channel: io.netty.channel.ChannelPipeline pipeline()>();
+v4 = v0.<io.vertx.core.http.impl.HttpServerWorker: io.vertx.core.http.HttpServerOptions options>;
+v5 = virtualinvoke v4.<io.vertx.core.http.HttpServerOptions: boolean isSsl()>();
+if v5 == 0 goto label1;
+v6 = virtualinvoke v2.<io.vertx.core.net.impl.SslChannelProvider: io.netty.channel.ChannelHandler createServerHandler()>();
+interfaceinvoke v3.<io.netty.channel.ChannelPipeline: io.netty.channel.ChannelPipeline addLast(java.lang.String,io.netty.channel.ChannelHandler)>("ssl", v6);
+v7 = interfaceinvoke v1.<io.netty.channel.Channel: io.netty.channel.ChannelPromise newPromise()>();
+v8 = new io.vertx.core.net.impl.SslHandshakeCompletionHandler;
+specialinvoke v8.<io.vertx.core.net.impl.SslHandshakeCompletionHandler: void <init>(io.netty.util.concurrent.Promise)>(v7);
+interfaceinvoke v3.<io.netty.channel.ChannelPipeline: io.netty.channel.ChannelPipeline addLast(java.lang.String,io.netty.channel.ChannelHandler)>("handshaker", v8);
+v9 = staticinvoke <io.vertx.core.http.impl.HttpServerWorker$lambda_configurePipeline_1__1054: io.netty.util.concurrent.GenericFutureListener bootstrap$(io.vertx.core.http.impl.HttpServerWorker,io.netty.channel.ChannelPipeline,io.netty.channel.Channel,io.vertx.core.net.impl.SslChannelProvider)>(v0, v3, v1, v2);
+interfaceinvoke v7.<io.netty.channel.ChannelPromise: io.netty.channel.ChannelPromise addListener(io.netty.util.concurrent.GenericFutureListener)>(v9);
+goto label6;
+label1:
+v10 = v0.<io.vertx.core.http.impl.HttpServerWorker: boolean disableH2C>;
+if v10 == 0 goto label2;
+specialinvoke v0.<io.vertx.core.http.impl.HttpServerWorker: void handleHttp1(io.netty.channel.Channel,io.vertx.core.net.impl.SslChannelProvider)>(v1, v2);
+goto label6;
+label2:
+v11 = v0.<io.vertx.core.http.impl.HttpServerWorker: io.vertx.core.http.HttpServerOptions options>;
+v12 = virtualinvoke v11.<io.vertx.core.http.HttpServerOptions: int getIdleTimeout()>();
+v13 = v0.<io.vertx.core.http.impl.HttpServerWorker: io.vertx.core.http.HttpServerOptions options>;
+v14 = virtualinvoke v13.<io.vertx.core.http.HttpServerOptions: int getReadIdleTimeout()>();
+v15 = v0.<io.vertx.core.http.impl.HttpServerWorker: io.vertx.core.http.HttpServerOptions options>;
+v16 = virtualinvoke v15.<io.vertx.core.http.HttpServerOptions: int getWriteIdleTimeout()>();
+if v12 > 0 goto label3;
+if v14 > 0 goto label3;
+if v16 <= 0 goto label4;
+label3:
+v17 = new io.netty.handler.timeout.IdleStateHandler;
+v18 = v0.<io.vertx.core.http.impl.HttpServerWorker: io.vertx.core.http.HttpServerOptions options>;
+v19 = virtualinvoke v18.<io.vertx.core.http.HttpServerOptions: java.util.concurrent.TimeUnit getIdleTimeoutUnit()>();
+specialinvoke v17.<io.netty.handler.timeout.IdleStateHandler: void <init>(long,long,long,java.util.concurrent.TimeUnit)>(v14, v16, v12, v19);
+v20 = v17;
+interfaceinvoke v3.<io.netty.channel.ChannelPipeline: io.netty.channel.ChannelPipeline addLast(java.lang.String,io.netty.channel.ChannelHandler)>("idle", v17);
+goto label5;
+label4:
+v20 = null;
+label5:
+v21 = newarray (io.netty.channel.ChannelHandler)[1];
+v22 = new io.vertx.core.http.impl.HttpServerWorker$1;
+specialinvoke v22.<io.vertx.core.http.impl.HttpServerWorker$1: void <init>(io.vertx.core.http.impl.HttpServerWorker,io.netty.handler.timeout.IdleStateHandler,io.netty.channel.ChannelPipeline,io.netty.channel.Channel,io.vertx.core.net.impl.SslChannelProvider)>(v0, v20, v3, v1, v2);
+v21[0] = v22;
+interfaceinvoke v3.<io.netty.channel.ChannelPipeline: io.netty.channel.ChannelPipeline addLast(io.netty.channel.ChannelHandler[])>(v21);
+label6:
+return;
+}
+private void handleException(java.lang.Throwable)
+{
+java.lang.Throwable v1;
+io.vertx.core.impl.EventLoopContext v2;
+io.vertx.core.http.impl.HttpServerWorker v0;
+io.vertx.core.Handler v3;
+v0 := @this: io.vertx.core.http.impl.HttpServerWorker;
+v1 := @parameter0: java.lang.Throwable;
+v2 = v0.<io.vertx.core.http.impl.HttpServerWorker: io.vertx.core.impl.EventLoopContext context>;
+v3 = v0.<io.vertx.core.http.impl.HttpServerWorker: io.vertx.core.Handler exceptionHandler>;
+virtualinvoke v2.<io.vertx.core.impl.EventLoopContext: void emit(java.lang.Object,io.vertx.core.Handler)>(v1, v3);
+return;
+}
+private void handleHttp1(io.netty.channel.Channel, io.vertx.core.net.impl.SslChannelProvider)
+{
+io.netty.channel.Channel v1;
+io.vertx.core.net.impl.SslChannelProvider v2;
+io.vertx.core.http.impl.HttpServerWorker v0;
+io.netty.channel.ChannelPipeline v3;
+v0 := @this: io.vertx.core.http.impl.HttpServerWorker;
+v1 := @parameter0: io.netty.channel.Channel;
+v2 := @parameter1: io.vertx.core.net.impl.SslChannelProvider;
+v3 = interfaceinvoke v1.<io.netty.channel.Channel: io.netty.channel.ChannelPipeline pipeline()>();
+specialinvoke v0.<io.vertx.core.http.impl.HttpServerWorker: void configureHttp1OrH2C(io.netty.channel.ChannelPipeline,io.vertx.core.net.impl.SslChannelProvider)>(v3, v2);
+return;
+}
+private void sendServiceUnavailable(io.netty.channel.Channel)
+{
+io.netty.channel.Channel v1;
+io.netty.buffer.ByteBuf v3;
+java.nio.charset.Charset v2;
+io.vertx.core.http.impl.HttpServerWorker v0;
+io.netty.channel.ChannelFutureListener v5;
+io.netty.channel.ChannelFuture v4;
+v0 := @this: io.vertx.core.http.impl.HttpServerWorker;
+v1 := @parameter0: io.netty.channel.Channel;
+v2 = <java.nio.charset.StandardCharsets: java.nio.charset.Charset ISO_8859_1>;
+v3 = staticinvoke <io.netty.buffer.Unpooled: io.netty.buffer.ByteBuf copiedBuffer(java.lang.CharSequence,java.nio.charset.Charset)>("HTTP/1.1 503 Service Unavailable\r\nContent-Length:0\r\n\r\n", v2);
+v4 = interfaceinvoke v1.<io.netty.channel.Channel: io.netty.channel.ChannelFuture writeAndFlush(java.lang.Object)>(v3);
+v5 = <io.netty.channel.ChannelFutureListener: io.netty.channel.ChannelFutureListener CLOSE>;
+interfaceinvoke v4.<io.netty.channel.ChannelFuture: io.netty.channel.ChannelFuture addListener(io.netty.util.concurrent.GenericFutureListener)>(v5);
+return;
+}
+private void handleHttp2(io.netty.channel.Channel)
+{
+io.netty.channel.Channel v1;
+io.vertx.core.http.impl.VertxHttp2ConnectionHandler v4;
+io.vertx.core.impl.EventLoopContext v2;
+io.vertx.core.http.impl.HttpServerWorker v0;
+io.netty.channel.ChannelPipeline v5, v6;
+io.vertx.core.Handler v3;
+v0 := @this: io.vertx.core.http.impl.HttpServerWorker;
+v1 := @parameter0: io.netty.channel.Channel;
+v2 = v0.<io.vertx.core.http.impl.HttpServerWorker: io.vertx.core.impl.EventLoopContext context>;
+v3 = v0.<io.vertx.core.http.impl.HttpServerWorker: io.vertx.core.Handler connectionHandler>;
+v4 = virtualinvoke v0.<io.vertx.core.http.impl.HttpServerWorker: io.vertx.core.http.impl.VertxHttp2ConnectionHandler buildHttp2ConnectionHandler(io.vertx.core.impl.EventLoopContext,io.vertx.core.Handler)>(v2, v3);
+v5 = interfaceinvoke v1.<io.netty.channel.Channel: io.netty.channel.ChannelPipeline pipeline()>();
+interfaceinvoke v5.<io.netty.channel.ChannelPipeline: io.netty.channel.ChannelPipeline addLast(java.lang.String,io.netty.channel.ChannelHandler)>("handler", v4);
+v6 = interfaceinvoke v1.<io.netty.channel.Channel: io.netty.channel.ChannelPipeline pipeline()>();
+virtualinvoke v0.<io.vertx.core.http.impl.HttpServerWorker: void configureHttp2(io.netty.channel.ChannelPipeline)>(v6);
+return;
+}
+void configureHttp2(io.netty.channel.ChannelPipeline)
+{
+io.vertx.core.http.impl.HttpServerImpl v2;
+io.netty.channel.ChannelPipeline v1;
+io.netty.channel.Channel v4;
+java.util.concurrent.TimeUnit v13;
+io.netty.handler.timeout.IdleStateHandler v11;
+io.vertx.core.http.impl.HttpServerWorker v0;
+int v10, v6, v8;
+io.vertx.core.http.HttpServerOptions v12, v5, v7, v9;
+boolean v3;
+v0 := @this: io.vertx.core.http.impl.HttpServerWorker;
+v1 := @parameter0: io.netty.channel.ChannelPipeline;
+v2 = v0.<io.vertx.core.http.impl.HttpServerWorker: io.vertx.core.http.impl.HttpServerImpl server>;
+v3 = virtualinvoke v2.<io.vertx.core.http.impl.HttpServerImpl: boolean requestAccept()>();
+if v3 != 0 goto label1;
+v4 = interfaceinvoke v1.<io.netty.channel.ChannelPipeline: io.netty.channel.Channel channel()>();
+interfaceinvoke v4.<io.netty.channel.Channel: io.netty.channel.ChannelFuture close()>();
+return;
+label1:
+v5 = v0.<io.vertx.core.http.impl.HttpServerWorker: io.vertx.core.http.HttpServerOptions options>;
+v6 = virtualinvoke v5.<io.vertx.core.http.HttpServerOptions: int getIdleTimeout()>();
+v7 = v0.<io.vertx.core.http.impl.HttpServerWorker: io.vertx.core.http.HttpServerOptions options>;
+v8 = virtualinvoke v7.<io.vertx.core.http.HttpServerOptions: int getReadIdleTimeout()>();
+v9 = v0.<io.vertx.core.http.impl.HttpServerWorker: io.vertx.core.http.HttpServerOptions options>;
+v10 = virtualinvoke v9.<io.vertx.core.http.HttpServerOptions: int getWriteIdleTimeout()>();
+if v6 > 0 goto label2;
+if v8 > 0 goto label2;
+if v10 <= 0 goto label3;
+label2:
+v11 = new io.netty.handler.timeout.IdleStateHandler;
+v12 = v0.<io.vertx.core.http.impl.HttpServerWorker: io.vertx.core.http.HttpServerOptions options>;
+v13 = virtualinvoke v12.<io.vertx.core.http.HttpServerOptions: java.util.concurrent.TimeUnit getIdleTimeoutUnit()>();
+specialinvoke v11.<io.netty.handler.timeout.IdleStateHandler: void <init>(long,long,long,java.util.concurrent.TimeUnit)>(v8, v10, v6, v13);
+interfaceinvoke v1.<io.netty.channel.ChannelPipeline: io.netty.channel.ChannelPipeline addBefore(java.lang.String,java.lang.String,io.netty.channel.ChannelHandler)>("handler", "idle", v11);
+label3:
+return;
+}
+io.vertx.core.http.impl.VertxHttp2ConnectionHandler buildHttp2ConnectionHandler(io.vertx.core.impl.EventLoopContext, io.vertx.core.Handler)
+{
+io.vertx.core.http.impl.HttpServerImpl v3;
+io.vertx.core.http.impl.VertxHttp2ConnectionHandlerBuilder v11, v14, v16, v18, v5, v6, v8;
+io.vertx.core.spi.metrics.TCPMetrics v4;
+io.vertx.core.http.Http2Settings v13;
+java.util.function.Function v15;
+io.vertx.core.http.impl.HttpServerWorker v0;
+boolean v10, v17;
+io.vertx.core.http.impl.VertxHttp2ConnectionHandler v19;
+io.netty.handler.codec.compression.CompressionOptions[] v7;
+io.vertx.core.impl.EventLoopContext v1;
+io.vertx.core.http.HttpServerOptions v12, v9;
+io.vertx.core.Handler v2, v20;
+v0 := @this: io.vertx.core.http.impl.HttpServerWorker;
+v1 := @parameter0: io.vertx.core.impl.EventLoopContext;
+v2 := @parameter1: io.vertx.core.Handler;
+v3 = v0.<io.vertx.core.http.impl.HttpServerWorker: io.vertx.core.http.impl.HttpServerImpl server>;
+v4 = virtualinvoke v3.<io.vertx.core.http.impl.HttpServerImpl: io.vertx.core.spi.metrics.TCPMetrics getMetrics()>();
+v5 = new io.vertx.core.http.impl.VertxHttp2ConnectionHandlerBuilder;
+specialinvoke v5.<io.vertx.core.http.impl.VertxHttp2ConnectionHandlerBuilder: void <init>()>();
+v6 = virtualinvoke v5.<io.vertx.core.http.impl.VertxHttp2ConnectionHandlerBuilder: io.vertx.core.http.impl.VertxHttp2ConnectionHandlerBuilder server(boolean)>(1);
+v7 = v0.<io.vertx.core.http.impl.HttpServerWorker: io.netty.handler.codec.compression.CompressionOptions[] compressionOptions>;
+v8 = virtualinvoke v6.<io.vertx.core.http.impl.VertxHttp2ConnectionHandlerBuilder: io.vertx.core.http.impl.VertxHttp2ConnectionHandlerBuilder useCompression(io.netty.handler.codec.compression.CompressionOptions[])>(v7);
+v9 = v0.<io.vertx.core.http.impl.HttpServerWorker: io.vertx.core.http.HttpServerOptions options>;
+v10 = virtualinvoke v9.<io.vertx.core.http.HttpServerOptions: boolean isDecompressionSupported()>();
+v11 = virtualinvoke v8.<io.vertx.core.http.impl.VertxHttp2ConnectionHandlerBuilder: io.vertx.core.http.impl.VertxHttp2ConnectionHandlerBuilder useDecompression(boolean)>(v10);
+v12 = v0.<io.vertx.core.http.impl.HttpServerWorker: io.vertx.core.http.HttpServerOptions options>;
+v13 = virtualinvoke v12.<io.vertx.core.http.HttpServerOptions: io.vertx.core.http.Http2Settings getInitialSettings()>();
+v14 = virtualinvoke v11.<io.vertx.core.http.impl.VertxHttp2ConnectionHandlerBuilder: io.vertx.core.http.impl.VertxHttp2ConnectionHandlerBuilder initialSettings(io.vertx.core.http.Http2Settings)>(v13);
+v15 = staticinvoke <io.vertx.core.http.impl.HttpServerWorker$lambda_buildHttp2ConnectionHandler_2__1055: java.util.function.Function bootstrap$(io.vertx.core.http.impl.HttpServerWorker,io.vertx.core.impl.EventLoopContext,io.vertx.core.spi.metrics.HttpServerMetrics)>(v0, v1, v4);
+v16 = virtualinvoke v14.<io.vertx.core.http.impl.VertxHttp2ConnectionHandlerBuilder: io.vertx.core.http.impl.VertxHttp2ConnectionHandlerBuilder connectionFactory(java.util.function.Function)>(v15);
+v17 = v0.<io.vertx.core.http.impl.HttpServerWorker: boolean logEnabled>;
+v18 = virtualinvoke v16.<io.vertx.core.http.impl.VertxHttp2ConnectionHandlerBuilder: io.vertx.core.http.impl.VertxHttp2ConnectionHandlerBuilder logEnabled(boolean)>(v17);
+v19 = virtualinvoke v18.<io.vertx.core.http.impl.VertxHttp2ConnectionHandlerBuilder: io.vertx.core.http.impl.VertxHttp2ConnectionHandler build()>();
+v20 = staticinvoke <io.vertx.core.http.impl.HttpServerWorker$lambda_buildHttp2ConnectionHandler_3__1056: io.vertx.core.Handler bootstrap$(io.vertx.core.http.impl.HttpServerWorker,io.vertx.core.Handler)>(v0, v2);
+virtualinvoke v19.<io.vertx.core.http.impl.VertxHttp2ConnectionHandler: io.vertx.core.http.impl.VertxHttp2ConnectionHandler addHandler(io.vertx.core.Handler)>(v20);
+return v19;
+}
+private void configureHttp1OrH2C(io.netty.channel.ChannelPipeline, io.vertx.core.net.impl.SslChannelProvider)
+{
+io.netty.handler.stream.ChunkedWriteHandler v26;
+io.netty.handler.logging.ByteBufFormat v6;
+io.vertx.core.http.impl.HttpServerWorker v0;
+boolean v13, v16, v20, v22, v25, v3, v36, v39, v41, v7;
+io.vertx.core.http.impl.Http1xUpgradeToH2CHandler v37;
+io.vertx.core.http.impl.VertxHttpRequestDecoder v9;
+io.netty.channel.ChannelPipeline v1;
+io.vertx.core.net.impl.SslChannelProvider v2;
+io.netty.handler.logging.LoggingHandler v4;
+io.vertx.core.http.impl.cgbystrom.FlashPolicyHandler v8;
+io.vertx.core.spi.transport.Transport v24;
+io.vertx.core.http.impl.VertxHttpResponseEncoder v11;
+int v28, v30, v32;
+io.netty.handler.codec.compression.CompressionOptions[] v18;
+io.vertx.core.impl.VertxInternal v23;
+java.util.concurrent.TimeUnit v35;
+io.netty.handler.timeout.IdleStateHandler v33;
+io.vertx.core.http.HttpServerOptions v10, v12, v15, v19, v21, v27, v29, v31, v34, v38, v40, v5;
+io.netty.handler.codec.http.HttpContentDecompressor v14;
+io.vertx.core.http.impl.HttpChunkContentCompressor v17;
+v0 := @this: io.vertx.core.http.impl.HttpServerWorker;
+v1 := @parameter0: io.netty.channel.ChannelPipeline;
+v2 := @parameter1: io.vertx.core.net.impl.SslChannelProvider;
+v3 = v0.<io.vertx.core.http.impl.HttpServerWorker: boolean logEnabled>;
+if v3 == 0 goto label01;
+v4 = new io.netty.handler.logging.LoggingHandler;
+v5 = v0.<io.vertx.core.http.impl.HttpServerWorker: io.vertx.core.http.HttpServerOptions options>;
+v6 = virtualinvoke v5.<io.vertx.core.http.HttpServerOptions: io.netty.handler.logging.ByteBufFormat getActivityLogDataFormat()>();
+specialinvoke v4.<io.netty.handler.logging.LoggingHandler: void <init>(io.netty.handler.logging.ByteBufFormat)>(v6);
+interfaceinvoke v1.<io.netty.channel.ChannelPipeline: io.netty.channel.ChannelPipeline addLast(java.lang.String,io.netty.channel.ChannelHandler)>("logging", v4);
+label01:
+v7 = <io.vertx.core.http.impl.HttpServerImpl: boolean USE_FLASH_POLICY_HANDLER>;
+if v7 == 0 goto label02;
+v8 = new io.vertx.core.http.impl.cgbystrom.FlashPolicyHandler;
+specialinvoke v8.<io.vertx.core.http.impl.cgbystrom.FlashPolicyHandler: void <init>()>();
+interfaceinvoke v1.<io.netty.channel.ChannelPipeline: io.netty.channel.ChannelPipeline addLast(java.lang.String,io.netty.channel.ChannelHandler)>("flashpolicy", v8);
+label02:
+v9 = new io.vertx.core.http.impl.VertxHttpRequestDecoder;
+v10 = v0.<io.vertx.core.http.impl.HttpServerWorker: io.vertx.core.http.HttpServerOptions options>;
+specialinvoke v9.<io.vertx.core.http.impl.VertxHttpRequestDecoder: void <init>(io.vertx.core.http.HttpServerOptions)>(v10);
+interfaceinvoke v1.<io.netty.channel.ChannelPipeline: io.netty.channel.ChannelPipeline addLast(java.lang.String,io.netty.channel.ChannelHandler)>("httpDecoder", v9);
+v11 = new io.vertx.core.http.impl.VertxHttpResponseEncoder;
+specialinvoke v11.<io.vertx.core.http.impl.VertxHttpResponseEncoder: void <init>()>();
+interfaceinvoke v1.<io.netty.channel.ChannelPipeline: io.netty.channel.ChannelPipeline addLast(java.lang.String,io.netty.channel.ChannelHandler)>("httpEncoder", v11);
+v12 = v0.<io.vertx.core.http.impl.HttpServerWorker: io.vertx.core.http.HttpServerOptions options>;
+v13 = virtualinvoke v12.<io.vertx.core.http.HttpServerOptions: boolean isDecompressionSupported()>();
+if v13 == 0 goto label03;
+v14 = new io.netty.handler.codec.http.HttpContentDecompressor;
+specialinvoke v14.<io.netty.handler.codec.http.HttpContentDecompressor: void <init>(boolean)>(0);
+interfaceinvoke v1.<io.netty.channel.ChannelPipeline: io.netty.channel.ChannelPipeline addLast(java.lang.String,io.netty.channel.ChannelHandler)>("inflater", v14);
+label03:
+v15 = v0.<io.vertx.core.http.impl.HttpServerWorker: io.vertx.core.http.HttpServerOptions options>;
+v16 = virtualinvoke v15.<io.vertx.core.http.HttpServerOptions: boolean isCompressionSupported()>();
+if v16 == 0 goto label04;
+v17 = new io.vertx.core.http.impl.HttpChunkContentCompressor;
+v18 = v0.<io.vertx.core.http.impl.HttpServerWorker: io.netty.handler.codec.compression.CompressionOptions[] compressionOptions>;
+specialinvoke v17.<io.vertx.core.http.impl.HttpChunkContentCompressor: void <init>(io.netty.handler.codec.compression.CompressionOptions[])>(v18);
+interfaceinvoke v1.<io.netty.channel.ChannelPipeline: io.netty.channel.ChannelPipeline addLast(java.lang.String,io.netty.channel.ChannelHandler)>("deflater", v17);
+label04:
+v19 = v0.<io.vertx.core.http.impl.HttpServerWorker: io.vertx.core.http.HttpServerOptions options>;
+v20 = virtualinvoke v19.<io.vertx.core.http.HttpServerOptions: boolean isSsl()>();
+if v20 != 0 goto label05;
+v21 = v0.<io.vertx.core.http.impl.HttpServerWorker: io.vertx.core.http.HttpServerOptions options>;
+v22 = virtualinvoke v21.<io.vertx.core.http.HttpServerOptions: boolean isCompressionSupported()>();
+if v22 != 0 goto label05;
+v23 = v0.<io.vertx.core.http.impl.HttpServerWorker: io.vertx.core.impl.VertxInternal vertx>;
+v24 = interfaceinvoke v23.<io.vertx.core.impl.VertxInternal: io.vertx.core.spi.transport.Transport transport()>();
+v25 = interfaceinvoke v24.<io.vertx.core.spi.transport.Transport: boolean supportFileRegion()>();
+if v25 != 0 goto label06;
+label05:
+v26 = new io.netty.handler.stream.ChunkedWriteHandler;
+specialinvoke v26.<io.netty.handler.stream.ChunkedWriteHandler: void <init>()>();
+interfaceinvoke v1.<io.netty.channel.ChannelPipeline: io.netty.channel.ChannelPipeline addLast(java.lang.String,io.netty.channel.ChannelHandler)>("chunkedWriter", v26);
+label06:
+v27 = v0.<io.vertx.core.http.impl.HttpServerWorker: io.vertx.core.http.HttpServerOptions options>;
+v28 = virtualinvoke v27.<io.vertx.core.http.HttpServerOptions: int getIdleTimeout()>();
+v29 = v0.<io.vertx.core.http.impl.HttpServerWorker: io.vertx.core.http.HttpServerOptions options>;
+v30 = virtualinvoke v29.<io.vertx.core.http.HttpServerOptions: int getReadIdleTimeout()>();
+v31 = v0.<io.vertx.core.http.impl.HttpServerWorker: io.vertx.core.http.HttpServerOptions options>;
+v32 = virtualinvoke v31.<io.vertx.core.http.HttpServerOptions: int getWriteIdleTimeout()>();
+if v28 > 0 goto label07;
+if v30 > 0 goto label07;
+if v32 <= 0 goto label08;
+label07:
+v33 = new io.netty.handler.timeout.IdleStateHandler;
+v34 = v0.<io.vertx.core.http.impl.HttpServerWorker: io.vertx.core.http.HttpServerOptions options>;
+v35 = virtualinvoke v34.<io.vertx.core.http.HttpServerOptions: java.util.concurrent.TimeUnit getIdleTimeoutUnit()>();
+specialinvoke v33.<io.netty.handler.timeout.IdleStateHandler: void <init>(long,long,long,java.util.concurrent.TimeUnit)>(v30, v32, v28, v35);
+interfaceinvoke v1.<io.netty.channel.ChannelPipeline: io.netty.channel.ChannelPipeline addLast(java.lang.String,io.netty.channel.ChannelHandler)>("idle", v33);
+label08:
+v36 = v0.<io.vertx.core.http.impl.HttpServerWorker: boolean disableH2C>;
+if v36 == 0 goto label09;
+virtualinvoke v0.<io.vertx.core.http.impl.HttpServerWorker: void configureHttp1(io.netty.channel.ChannelPipeline,io.vertx.core.net.impl.SslChannelProvider)>(v1, v2);
+goto label10;
+label09:
+v37 = new io.vertx.core.http.impl.Http1xUpgradeToH2CHandler;
+v38 = v0.<io.vertx.core.http.impl.HttpServerWorker: io.vertx.core.http.HttpServerOptions options>;
+v39 = virtualinvoke v38.<io.vertx.core.http.HttpServerOptions: boolean isCompressionSupported()>();
+v40 = v0.<io.vertx.core.http.impl.HttpServerWorker: io.vertx.core.http.HttpServerOptions options>;
+v41 = virtualinvoke v40.<io.vertx.core.http.HttpServerOptions: boolean isDecompressionSupported()>();
+specialinvoke v37.<io.vertx.core.http.impl.Http1xUpgradeToH2CHandler: void <init>(io.vertx.core.http.impl.HttpServerWorker,io.vertx.core.net.impl.SslChannelProvider,boolean,boolean)>(v0, v2, v39, v41);
+interfaceinvoke v1.<io.netty.channel.ChannelPipeline: io.netty.channel.ChannelPipeline addLast(java.lang.String,io.netty.channel.ChannelHandler)>("h2c", v37);
+label10:
+return;
+}
+void configureHttp1(io.netty.channel.ChannelPipeline, io.vertx.core.net.impl.SslChannelProvider)
+{
+io.vertx.core.http.impl.HttpServerImpl v3, v6;
+io.vertx.core.net.impl.VertxHandler v9;
+io.vertx.core.spi.metrics.TCPMetrics v7;
+io.netty.channel.ChannelPipeline v1;
+io.vertx.core.net.impl.ConnectionBase v10;
+java.util.function.Function v8;
+io.netty.channel.Channel v5;
+io.vertx.core.net.impl.SslChannelProvider v2;
+io.vertx.core.http.impl.HttpServerWorker v0;
+java.lang.Object v13;
+java.lang.String v12;
+io.vertx.core.Handler v14;
+boolean v4;
+io.vertx.core.net.SocketAddress v11;
+v0 := @this: io.vertx.core.http.impl.HttpServerWorker;
+v1 := @parameter0: io.netty.channel.ChannelPipeline;
+v2 := @parameter1: io.vertx.core.net.impl.SslChannelProvider;
+v3 = v0.<io.vertx.core.http.impl.HttpServerWorker: io.vertx.core.http.impl.HttpServerImpl server>;
+v4 = virtualinvoke v3.<io.vertx.core.http.impl.HttpServerImpl: boolean requestAccept()>();
+if v4 != 0 goto label1;
+v5 = interfaceinvoke v1.<io.netty.channel.ChannelPipeline: io.netty.channel.Channel channel()>();
+specialinvoke v0.<io.vertx.core.http.impl.HttpServerWorker: void sendServiceUnavailable(io.netty.channel.Channel)>(v5);
+return;
+label1:
+v6 = v0.<io.vertx.core.http.impl.HttpServerWorker: io.vertx.core.http.impl.HttpServerImpl server>;
+v7 = virtualinvoke v6.<io.vertx.core.http.impl.HttpServerImpl: io.vertx.core.spi.metrics.TCPMetrics getMetrics()>();
+v8 = staticinvoke <io.vertx.core.http.impl.HttpServerWorker$lambda_configureHttp1_4__1057: java.util.function.Function bootstrap$(io.vertx.core.http.impl.HttpServerWorker,io.vertx.core.net.impl.SslChannelProvider,io.vertx.core.spi.metrics.HttpServerMetrics)>(v0, v2, v7);
+v9 = staticinvoke <io.vertx.core.net.impl.VertxHandler: io.vertx.core.net.impl.VertxHandler create(java.util.function.Function)>(v8);
+interfaceinvoke v1.<io.netty.channel.ChannelPipeline: io.netty.channel.ChannelPipeline addLast(java.lang.String,io.netty.channel.ChannelHandler)>("handler", v9);
+v10 = virtualinvoke v9.<io.vertx.core.net.impl.VertxHandler: io.vertx.core.net.impl.ConnectionBase getConnection()>();
+if v7 == null goto label2;
+v11 = virtualinvoke v10.<io.vertx.core.http.impl.Http1xServerConnection: io.vertx.core.net.SocketAddress remoteAddress()>();
+v12 = virtualinvoke v10.<io.vertx.core.http.impl.Http1xServerConnection: java.lang.String remoteName()>();
+v13 = interfaceinvoke v7.<io.vertx.core.spi.metrics.HttpServerMetrics: java.lang.Object connected(io.vertx.core.net.SocketAddress,java.lang.String)>(v11, v12);
+virtualinvoke v10.<io.vertx.core.http.impl.Http1xServerConnection: void metric(java.lang.Object)>(v13);
+label2:
+v14 = v0.<io.vertx.core.http.impl.HttpServerWorker: io.vertx.core.Handler connectionHandler>;
+interfaceinvoke v14.<io.vertx.core.Handler: void handle(java.lang.Object)>(v10);
+return;
+}
+}

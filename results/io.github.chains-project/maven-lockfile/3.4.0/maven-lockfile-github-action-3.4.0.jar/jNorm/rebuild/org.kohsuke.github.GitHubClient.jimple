@@ -1,0 +1,1141 @@
+class org.kohsuke.github.GitHubClient extends java.lang.Object
+{
+static final int CONNECTION_ERROR_RETRIES;
+static final int retryTimeoutMillis;
+private final java.lang.String apiUrl;
+private final org.kohsuke.github.GitHubRateLimitHandler rateLimitHandler;
+private final org.kohsuke.github.GitHubAbuseLimitHandler abuseLimitHandler;
+private final org.kohsuke.github.GitHubRateLimitChecker rateLimitChecker;
+private final org.kohsuke.github.authorization.AuthorizationProvider authorizationProvider;
+private org.kohsuke.github.connector.GitHubConnector connector;
+private final java.util.concurrent.atomic.AtomicReference rateLimit;
+private static final java.util.logging.Logger LOGGER;
+private static final com.fasterxml.jackson.databind.ObjectMapper MAPPER;
+static final java.lang.String GITHUB_URL;
+private static final java.time.format.DateTimeFormatter DATE_TIME_PARSER_SLASHES;
+void <init>(java.lang.String, org.kohsuke.github.connector.GitHubConnector, org.kohsuke.github.GitHubRateLimitHandler, org.kohsuke.github.GitHubAbuseLimitHandler, org.kohsuke.github.GitHubRateLimitChecker, org.kohsuke.github.authorization.AuthorizationProvider) throws java.io.IOException
+{
+org.kohsuke.github.GitHubRateLimitHandler v3;
+org.kohsuke.github.GitHubRateLimitChecker v5;
+org.kohsuke.github.GitHubAbuseLimitHandler v4;
+org.kohsuke.github.GitHubClient v0;
+java.util.concurrent.atomic.AtomicReference v7;
+org.kohsuke.github.connector.GitHubConnector v2;
+org.kohsuke.github.authorization.AuthorizationProvider v6;
+int v10, v11;
+java.lang.String v1;
+org.kohsuke.github.GHRateLimit v8;
+boolean v9;
+v0 := @this: org.kohsuke.github.GitHubClient;
+v1 := @parameter0: java.lang.String;
+v2 := @parameter1: org.kohsuke.github.connector.GitHubConnector;
+v3 := @parameter2: org.kohsuke.github.GitHubRateLimitHandler;
+v4 := @parameter3: org.kohsuke.github.GitHubAbuseLimitHandler;
+v5 := @parameter4: org.kohsuke.github.GitHubRateLimitChecker;
+v6 := @parameter5: org.kohsuke.github.authorization.AuthorizationProvider;
+specialinvoke v0.<java.lang.Object: void <init>()>();
+v7 = new java.util.concurrent.atomic.AtomicReference;
+v8 = <org.kohsuke.github.GHRateLimit: org.kohsuke.github.GHRateLimit DEFAULT>;
+specialinvoke v7.<java.util.concurrent.atomic.AtomicReference: void <init>(java.lang.Object)>(v8);
+v0.<org.kohsuke.github.GitHubClient: java.util.concurrent.atomic.AtomicReference rateLimit> = v7;
+v9 = virtualinvoke v1.<java.lang.String: boolean endsWith(java.lang.String)>("/");
+if v9 == 0 goto label1;
+v10 = virtualinvoke v1.<java.lang.String: int length()>();
+v11 = v10 - 1;
+v1 = virtualinvoke v1.<java.lang.String: java.lang.String substring(int,int)>(0, v11);
+label1:
+if null != v2 goto label2;
+v2 = <org.kohsuke.github.connector.GitHubConnector: org.kohsuke.github.connector.GitHubConnector DEFAULT>;
+label2:
+v0.<org.kohsuke.github.GitHubClient: java.lang.String apiUrl> = v1;
+v0.<org.kohsuke.github.GitHubClient: org.kohsuke.github.connector.GitHubConnector connector> = v2;
+v0.<org.kohsuke.github.GitHubClient: org.kohsuke.github.authorization.AuthorizationProvider authorizationProvider> = v6;
+v0.<org.kohsuke.github.GitHubClient: org.kohsuke.github.GitHubRateLimitHandler rateLimitHandler> = v3;
+v0.<org.kohsuke.github.GitHubClient: org.kohsuke.github.GitHubAbuseLimitHandler abuseLimitHandler> = v4;
+v0.<org.kohsuke.github.GitHubClient: org.kohsuke.github.GitHubRateLimitChecker rateLimitChecker> = v5;
+return;
+}
+java.lang.String getLogin()
+{
+org.kohsuke.github.GitHubClient v0;
+java.io.IOException v7;
+org.kohsuke.github.authorization.AuthorizationProvider v1, v3, v5;
+java.lang.String v4, v6;
+boolean v2;
+v0 := @this: org.kohsuke.github.GitHubClient;
+label1:
+v1 = v0.<org.kohsuke.github.GitHubClient: org.kohsuke.github.authorization.AuthorizationProvider authorizationProvider>;
+v2 = v1 instanceof org.kohsuke.github.authorization.UserAuthorizationProvider;
+if v2 == 0 goto label4;
+v3 = v0.<org.kohsuke.github.GitHubClient: org.kohsuke.github.authorization.AuthorizationProvider authorizationProvider>;
+v4 = interfaceinvoke v3.<org.kohsuke.github.authorization.AuthorizationProvider: java.lang.String getEncodedAuthorization()>();
+if v4 == null goto label4;
+v5 = v0.<org.kohsuke.github.GitHubClient: org.kohsuke.github.authorization.AuthorizationProvider authorizationProvider>;
+v6 = interfaceinvoke v5.<org.kohsuke.github.authorization.UserAuthorizationProvider: java.lang.String getLogin()>();
+label2:
+return v6;
+label3:
+v7 := @caughtexception;
+label4:
+return null;
+catch java.io.IOException from label1 to label2 with label3;
+}
+private java.lang.Object fetch(java.lang.Class, java.lang.String) throws java.io.IOException
+{
+org.kohsuke.github.GitHubClient v0;
+java.lang.String[] v6;
+org.kohsuke.github.GitHubRequest$Builder v3, v5, v7;
+org.kohsuke.github.GitHubClient$BodyHandler v9;
+org.kohsuke.github.GitHubRequest v8;
+org.kohsuke.github.GitHubResponse v10;
+java.lang.Class v1;
+java.lang.Object v11;
+java.lang.String v2, v4;
+v0 := @this: org.kohsuke.github.GitHubClient;
+v1 := @parameter0: java.lang.Class;
+v2 := @parameter1: java.lang.String;
+v3 = staticinvoke <org.kohsuke.github.GitHubRequest: org.kohsuke.github.GitHubRequest$Builder newBuilder()>();
+v4 = virtualinvoke v0.<org.kohsuke.github.GitHubClient: java.lang.String getApiUrl()>();
+v5 = virtualinvoke v3.<org.kohsuke.github.GitHubRequest$Builder: org.kohsuke.github.GitHubRequest$Builder withApiUrl(java.lang.String)>(v4);
+v6 = newarray (java.lang.String)[0];
+v7 = virtualinvoke v5.<org.kohsuke.github.GitHubRequest$Builder: org.kohsuke.github.GitHubRequest$Builder withUrlPath(java.lang.String,java.lang.String[])>(v2, v6);
+v8 = virtualinvoke v7.<org.kohsuke.github.GitHubRequest$Builder: org.kohsuke.github.GitHubRequest build()>();
+v9 = staticinvoke <org.kohsuke.github.GitHubClient$lambda_fetch_0__65: org.kohsuke.github.GitHubClient$BodyHandler bootstrap$(java.lang.Class)>(v1);
+v10 = virtualinvoke v0.<org.kohsuke.github.GitHubClient: org.kohsuke.github.GitHubResponse sendRequest(org.kohsuke.github.GitHubRequest,org.kohsuke.github.GitHubClient$BodyHandler)>(v8, v9);
+v11 = virtualinvoke v10.<org.kohsuke.github.GitHubResponse: java.lang.Object body()>();
+return v11;
+}
+public boolean isCredentialValid()
+{
+org.kohsuke.github.GitHubClient v0;
+java.io.IOException v1;
+java.lang.String v4, v5, v6;
+java.util.logging.Logger v2;
+java.util.logging.Level v3;
+v0 := @this: org.kohsuke.github.GitHubClient;
+label1:
+virtualinvoke v0.<org.kohsuke.github.GitHubClient: org.kohsuke.github.GHRateLimit getRateLimit()>();
+label2:
+return 1;
+label3:
+v1 := @caughtexception;
+v2 = <org.kohsuke.github.GitHubClient: java.util.logging.Logger LOGGER>;
+v3 = <java.util.logging.Level: java.util.logging.Level FINE>;
+v4 = virtualinvoke v0.<org.kohsuke.github.GitHubClient: java.lang.String getApiUrl()>();
+v5 = virtualinvoke v0.<org.kohsuke.github.GitHubClient: java.lang.String getLogin()>();
+v6 = dynamicinvoke "makeConcatWithConstants" <java.lang.String (java.lang.String,java.lang.String,java.io.IOException)>(v4, v5, v1) <java.lang.invoke.StringConcatFactory: java.lang.invoke.CallSite makeConcatWithConstants(java.lang.invoke.MethodHandles$Lookup,java.lang.String,java.lang.invoke.MethodType,java.lang.String,java.lang.Object[])>("Exception validating credentials on \u0001 with login \'\u0001\' \u0001");
+virtualinvoke v2.<java.util.logging.Logger: void log(java.util.logging.Level,java.lang.String,java.lang.Throwable)>(v3, v6, v1);
+return 0;
+catch java.io.IOException from label1 to label2 with label3;
+}
+public boolean isOffline()
+{
+org.kohsuke.github.GitHubClient v0;
+org.kohsuke.github.connector.GitHubConnector v1, v2;
+boolean v3;
+v0 := @this: org.kohsuke.github.GitHubClient;
+v1 = v0.<org.kohsuke.github.GitHubClient: org.kohsuke.github.connector.GitHubConnector connector>;
+v2 = <org.kohsuke.github.connector.GitHubConnector: org.kohsuke.github.connector.GitHubConnector OFFLINE>;
+if v1 != v2 goto label1;
+v3 = 1;
+goto label2;
+label1:
+v3 = 0;
+label2:
+return v3;
+}
+public org.kohsuke.github.HttpConnector getConnector()
+{
+java.lang.UnsupportedOperationException v3;
+org.kohsuke.github.GitHubClient v0;
+java.util.logging.Logger v4;
+org.kohsuke.github.connector.GitHubConnector v1, v5;
+boolean v2;
+v0 := @this: org.kohsuke.github.GitHubClient;
+v1 = v0.<org.kohsuke.github.GitHubClient: org.kohsuke.github.connector.GitHubConnector connector>;
+v2 = v1 instanceof org.kohsuke.github.HttpConnector;
+if v2 != 0 goto label1;
+v3 = new java.lang.UnsupportedOperationException;
+specialinvoke v3.<java.lang.UnsupportedOperationException: void <init>(java.lang.String)>("This GitHubConnector does not support HttpConnector.connect().");
+throw v3;
+label1:
+v4 = <org.kohsuke.github.GitHubClient: java.util.logging.Logger LOGGER>;
+virtualinvoke v4.<java.util.logging.Logger: void warning(java.lang.String)>("HttpConnector and getConnector() are deprecated. Please file an issue describing your use case.");
+v5 = v0.<org.kohsuke.github.GitHubClient: org.kohsuke.github.connector.GitHubConnector connector>;
+return v5;
+}
+public void setConnector(org.kohsuke.github.connector.GitHubConnector)
+{
+org.kohsuke.github.GitHubClient v0;
+java.util.logging.Logger v2;
+org.kohsuke.github.connector.GitHubConnector v1;
+v0 := @this: org.kohsuke.github.GitHubClient;
+v1 := @parameter0: org.kohsuke.github.connector.GitHubConnector;
+v2 = <org.kohsuke.github.GitHubClient: java.util.logging.Logger LOGGER>;
+virtualinvoke v2.<java.util.logging.Logger: void warning(java.lang.String)>("Connector should not be changed. Please file an issue describing your use case.");
+v0.<org.kohsuke.github.GitHubClient: org.kohsuke.github.connector.GitHubConnector connector> = v1;
+return;
+}
+public boolean isAnonymous()
+{
+org.kohsuke.github.GitHubClient v0;
+java.io.IOException v5;
+java.lang.String v1, v3;
+boolean v4;
+org.kohsuke.github.authorization.AuthorizationProvider v2;
+v0 := @this: org.kohsuke.github.GitHubClient;
+label1:
+v1 = virtualinvoke v0.<org.kohsuke.github.GitHubClient: java.lang.String getLogin()>();
+if v1 != null goto label2;
+v2 = v0.<org.kohsuke.github.GitHubClient: org.kohsuke.github.authorization.AuthorizationProvider authorizationProvider>;
+v3 = interfaceinvoke v2.<org.kohsuke.github.authorization.AuthorizationProvider: java.lang.String getEncodedAuthorization()>();
+if v3 != null goto label2;
+v4 = 1;
+goto label3;
+label2:
+v4 = 0;
+label3:
+return v4;
+label4:
+v5 := @caughtexception;
+return 0;
+catch java.io.IOException from label1 to label3 with label4;
+}
+public org.kohsuke.github.GHRateLimit getRateLimit() throws java.io.IOException
+{
+org.kohsuke.github.GitHubClient v0;
+org.kohsuke.github.GHRateLimit v2;
+org.kohsuke.github.RateLimitTarget v1;
+v0 := @this: org.kohsuke.github.GitHubClient;
+v1 = <org.kohsuke.github.RateLimitTarget: org.kohsuke.github.RateLimitTarget NONE>;
+v2 = virtualinvoke v0.<org.kohsuke.github.GitHubClient: org.kohsuke.github.GHRateLimit getRateLimit(org.kohsuke.github.RateLimitTarget)>(v1);
+return v2;
+}
+java.lang.String getEncodedAuthorization() throws java.io.IOException
+{
+org.kohsuke.github.GitHubClient v0;
+java.lang.String v2;
+org.kohsuke.github.authorization.AuthorizationProvider v1;
+v0 := @this: org.kohsuke.github.GitHubClient;
+v1 = v0.<org.kohsuke.github.GitHubClient: org.kohsuke.github.authorization.AuthorizationProvider authorizationProvider>;
+v2 = interfaceinvoke v1.<org.kohsuke.github.authorization.AuthorizationProvider: java.lang.String getEncodedAuthorization()>();
+return v2;
+}
+org.kohsuke.github.GHRateLimit getRateLimit(org.kohsuke.github.RateLimitTarget) throws java.io.IOException
+{
+java.lang.String[] v7;
+org.kohsuke.github.GitHubRequest$Builder v2, v4, v6, v8;
+java.util.logging.Level v16;
+java.lang.String v5;
+org.kohsuke.github.GitHubClient v0;
+java.util.logging.Logger v15;
+org.kohsuke.github.GitHubClient$BodyHandler v10;
+java.io.FileNotFoundException v14;
+org.kohsuke.github.GitHubRequest v9;
+org.kohsuke.github.GitHubResponse v11;
+java.lang.Object v12;
+org.kohsuke.github.GHRateLimit v13, v18;
+org.kohsuke.github.GHRateLimit$Record v17;
+org.kohsuke.github.RateLimitTarget v1, v3;
+v0 := @this: org.kohsuke.github.GitHubClient;
+v1 := @parameter0: org.kohsuke.github.RateLimitTarget;
+label1:
+v2 = staticinvoke <org.kohsuke.github.GitHubRequest: org.kohsuke.github.GitHubRequest$Builder newBuilder()>();
+v3 = <org.kohsuke.github.RateLimitTarget: org.kohsuke.github.RateLimitTarget NONE>;
+v4 = virtualinvoke v2.<org.kohsuke.github.GitHubRequest$Builder: org.kohsuke.github.GitHubRequest$Builder rateLimit(org.kohsuke.github.RateLimitTarget)>(v3);
+v5 = virtualinvoke v0.<org.kohsuke.github.GitHubClient: java.lang.String getApiUrl()>();
+v6 = virtualinvoke v4.<org.kohsuke.github.GitHubRequest$Builder: org.kohsuke.github.GitHubRequest$Builder withApiUrl(java.lang.String)>(v5);
+v7 = newarray (java.lang.String)[0];
+v8 = virtualinvoke v6.<org.kohsuke.github.GitHubRequest$Builder: org.kohsuke.github.GitHubRequest$Builder withUrlPath(java.lang.String,java.lang.String[])>("/rate_limit", v7);
+v9 = virtualinvoke v8.<org.kohsuke.github.GitHubRequest$Builder: org.kohsuke.github.GitHubRequest build()>();
+v10 = staticinvoke <org.kohsuke.github.GitHubClient$lambda_getRateLimit_1__66: org.kohsuke.github.GitHubClient$BodyHandler bootstrap$()>();
+v11 = virtualinvoke v0.<org.kohsuke.github.GitHubClient: org.kohsuke.github.GitHubResponse sendRequest(org.kohsuke.github.GitHubRequest,org.kohsuke.github.GitHubClient$BodyHandler)>(v9, v10);
+v12 = virtualinvoke v11.<org.kohsuke.github.GitHubResponse: java.lang.Object body()>();
+v13 = v12.<org.kohsuke.github.JsonRateLimit: org.kohsuke.github.GHRateLimit resources>;
+label2:
+goto label4;
+label3:
+v14 := @caughtexception;
+v15 = <org.kohsuke.github.GitHubClient: java.util.logging.Logger LOGGER>;
+v16 = <java.util.logging.Level: java.util.logging.Level FINE>;
+virtualinvoke v15.<java.util.logging.Logger: void log(java.util.logging.Level,java.lang.String)>(v16, "/rate_limit returned 404 Not Found.");
+v17 = staticinvoke <org.kohsuke.github.GHRateLimit$UnknownLimitRecord: org.kohsuke.github.GHRateLimit$Record current()>();
+v13 = staticinvoke <org.kohsuke.github.GHRateLimit: org.kohsuke.github.GHRateLimit fromRecord(org.kohsuke.github.GHRateLimit$Record,org.kohsuke.github.RateLimitTarget)>(v17, v1);
+label4:
+v18 = specialinvoke v0.<org.kohsuke.github.GitHubClient: org.kohsuke.github.GHRateLimit updateRateLimit(org.kohsuke.github.GHRateLimit)>(v13);
+return v18;
+catch java.io.FileNotFoundException from label1 to label2 with label3;
+}
+org.kohsuke.github.GHRateLimit lastRateLimit()
+{
+org.kohsuke.github.GitHubClient v0;
+java.lang.Object v2;
+java.util.concurrent.atomic.AtomicReference v1;
+v0 := @this: org.kohsuke.github.GitHubClient;
+v1 = v0.<org.kohsuke.github.GitHubClient: java.util.concurrent.atomic.AtomicReference rateLimit>;
+v2 = virtualinvoke v1.<java.util.concurrent.atomic.AtomicReference: java.lang.Object get()>();
+return v2;
+}
+org.kohsuke.github.GHRateLimit rateLimit(org.kohsuke.github.RateLimitTarget) throws java.io.IOException
+{
+java.lang.Throwable v10;
+org.kohsuke.github.GitHubClient v0;
+java.util.concurrent.atomic.AtomicReference v11, v2, v6;
+java.lang.Object v3, v7;
+org.kohsuke.github.GHRateLimit$Record v4, v8;
+org.kohsuke.github.RateLimitTarget v1;
+boolean v5, v9;
+v0 := @this: org.kohsuke.github.GitHubClient;
+v1 := @parameter0: org.kohsuke.github.RateLimitTarget;
+v2 = v0.<org.kohsuke.github.GitHubClient: java.util.concurrent.atomic.AtomicReference rateLimit>;
+v3 = virtualinvoke v2.<java.util.concurrent.atomic.AtomicReference: java.lang.Object get()>();
+v4 = virtualinvoke v3.<org.kohsuke.github.GHRateLimit: org.kohsuke.github.GHRateLimit$Record getRecord(org.kohsuke.github.RateLimitTarget)>(v1);
+v5 = virtualinvoke v4.<org.kohsuke.github.GHRateLimit$Record: boolean isExpired()>();
+if v5 == 0 goto label6;
+entermonitor v0;
+label1:
+v6 = v0.<org.kohsuke.github.GitHubClient: java.util.concurrent.atomic.AtomicReference rateLimit>;
+v7 = virtualinvoke v6.<java.util.concurrent.atomic.AtomicReference: java.lang.Object get()>();
+v8 = virtualinvoke v7.<org.kohsuke.github.GHRateLimit: org.kohsuke.github.GHRateLimit$Record getRecord(org.kohsuke.github.RateLimitTarget)>(v1);
+v9 = virtualinvoke v8.<org.kohsuke.github.GHRateLimit$Record: boolean isExpired()>();
+if v9 == 0 goto label2;
+virtualinvoke v0.<org.kohsuke.github.GitHubClient: org.kohsuke.github.GHRateLimit getRateLimit(org.kohsuke.github.RateLimitTarget)>(v1);
+label2:
+exitmonitor v0;
+label3:
+goto label5;
+label4:
+v10 := @caughtexception;
+exitmonitor v0;
+throw v10;
+label5:
+v11 = v0.<org.kohsuke.github.GitHubClient: java.util.concurrent.atomic.AtomicReference rateLimit>;
+virtualinvoke v11.<java.util.concurrent.atomic.AtomicReference: java.lang.Object get()>();
+label6:
+return v3;
+catch java.lang.Throwable from label1 to label3 with label4;
+}
+private org.kohsuke.github.GHRateLimit updateRateLimit(org.kohsuke.github.GHRateLimit)
+{
+org.kohsuke.github.GitHubClient v0;
+java.util.logging.Logger v5;
+java.util.concurrent.atomic.AtomicReference v2, v7;
+java.util.function.BinaryOperator v3;
+java.util.logging.Level v6;
+java.lang.Object v4, v8;
+org.kohsuke.github.GHRateLimit v1;
+v0 := @this: org.kohsuke.github.GitHubClient;
+v1 := @parameter0: org.kohsuke.github.GHRateLimit;
+v2 = v0.<org.kohsuke.github.GitHubClient: java.util.concurrent.atomic.AtomicReference rateLimit>;
+v3 = staticinvoke <org.kohsuke.github.GitHubClient$lambda_updateRateLimit_2__67: java.util.function.BinaryOperator bootstrap$()>();
+v4 = virtualinvoke v2.<java.util.concurrent.atomic.AtomicReference: java.lang.Object accumulateAndGet(java.lang.Object,java.util.function.BinaryOperator)>(v1, v3);
+v5 = <org.kohsuke.github.GitHubClient: java.util.logging.Logger LOGGER>;
+v6 = <java.util.logging.Level: java.util.logging.Level FINEST>;
+v7 = v0.<org.kohsuke.github.GitHubClient: java.util.concurrent.atomic.AtomicReference rateLimit>;
+v8 = virtualinvoke v7.<java.util.concurrent.atomic.AtomicReference: java.lang.Object get()>();
+virtualinvoke v5.<java.util.logging.Logger: void log(java.util.logging.Level,java.lang.String,java.lang.Object)>(v6, "Rate limit now: {0}", v8);
+return v4;
+}
+public void checkApiUrlValidity() throws java.io.IOException
+{
+java.lang.Throwable v8;
+org.kohsuke.github.GitHubClient v0;
+java.io.IOException v3, v5;
+java.lang.Object v1;
+java.lang.String v2, v6, v7;
+boolean v4;
+v0 := @this: org.kohsuke.github.GitHubClient;
+label1:
+v1 = specialinvoke v0.<org.kohsuke.github.GitHubClient: java.lang.Object fetch(java.lang.Class,java.lang.String)>(class "Lorg/kohsuke/github/GitHubClient$GHApiInfo;", "/");
+v2 = virtualinvoke v0.<org.kohsuke.github.GitHubClient: java.lang.String getApiUrl()>();
+virtualinvoke v1.<org.kohsuke.github.GitHubClient$GHApiInfo: void check(java.lang.String)>(v2);
+label2:
+goto label5;
+label3:
+v3 := @caughtexception;
+v4 = specialinvoke v0.<org.kohsuke.github.GitHubClient: boolean isPrivateModeEnabled()>();
+if v4 == 0 goto label4;
+v5 = new java.io.IOException;
+v6 = virtualinvoke v0.<org.kohsuke.github.GitHubClient: java.lang.String getApiUrl()>();
+v7 = dynamicinvoke "makeConcatWithConstants" <java.lang.String (java.lang.String)>(v6) <java.lang.invoke.StringConcatFactory: java.lang.invoke.CallSite makeConcatWithConstants(java.lang.invoke.MethodHandles$Lookup,java.lang.String,java.lang.invoke.MethodType,java.lang.String,java.lang.Object[])>("GitHub Enterprise server (\u0001) with private mode enabled");
+specialinvoke v5.<java.io.IOException: void <init>(java.lang.String)>(v7);
+v8 = virtualinvoke v5.<java.io.IOException: java.lang.Throwable initCause(java.lang.Throwable)>(v3);
+throw v8;
+label4:
+throw v3;
+label5:
+return;
+catch java.io.IOException from label1 to label2 with label3;
+}
+public java.lang.String getApiUrl()
+{
+org.kohsuke.github.GitHubClient v0;
+java.lang.String v1;
+v0 := @this: org.kohsuke.github.GitHubClient;
+v1 = v0.<org.kohsuke.github.GitHubClient: java.lang.String apiUrl>;
+return v1;
+}
+public org.kohsuke.github.GitHubResponse sendRequest(org.kohsuke.github.GitHubRequest$Builder, org.kohsuke.github.GitHubClient$BodyHandler) throws java.io.IOException
+{
+org.kohsuke.github.GitHubResponse v4;
+org.kohsuke.github.GitHubClient v0;
+org.kohsuke.github.GitHubRequest$Builder v1;
+org.kohsuke.github.GitHubClient$BodyHandler v2;
+org.kohsuke.github.GitHubRequest v3;
+v0 := @this: org.kohsuke.github.GitHubClient;
+v1 := @parameter0: org.kohsuke.github.GitHubRequest$Builder;
+v2 := @parameter1: org.kohsuke.github.GitHubClient$BodyHandler;
+v3 = virtualinvoke v1.<org.kohsuke.github.GitHubRequest$Builder: org.kohsuke.github.GitHubRequest build()>();
+v4 = virtualinvoke v0.<org.kohsuke.github.GitHubClient: org.kohsuke.github.GitHubResponse sendRequest(org.kohsuke.github.GitHubRequest,org.kohsuke.github.GitHubClient$BodyHandler)>(v3, v2);
+return v4;
+}
+public org.kohsuke.github.GitHubResponse sendRequest(org.kohsuke.github.GitHubRequest, org.kohsuke.github.GitHubClient$BodyHandler) throws java.io.IOException
+{
+java.lang.Throwable v20;
+org.kohsuke.github.connector.GitHubConnectorRequest v14, v4;
+java.net.URL v16, v22;
+org.kohsuke.github.GitHubRateLimitChecker v6;
+org.kohsuke.github.GitHubClient$RetryRequestException v13;
+int v3;
+java.lang.String v23, v24;
+org.kohsuke.github.GHIOException v21;
+org.kohsuke.github.connector.GitHubConnectorResponse v10, v5;
+boolean v11;
+org.kohsuke.github.GitHubClient v0;
+java.io.IOException v15, v17, v18, v19;
+org.kohsuke.github.GitHubClient$BodyHandler v2;
+org.kohsuke.github.connector.GitHubConnector v8;
+org.kohsuke.github.GitHubRequest v1;
+org.kohsuke.github.GitHubResponse v12;
+org.kohsuke.github.RateLimitTarget v7, v9;
+v0 := @this: org.kohsuke.github.GitHubClient;
+v1 := @parameter0: org.kohsuke.github.GitHubRequest;
+v2 := @parameter1: org.kohsuke.github.GitHubClient$BodyHandler;
+v3 = 2;
+v4 = specialinvoke v0.<org.kohsuke.github.GitHubClient: org.kohsuke.github.connector.GitHubConnectorRequest prepareConnectorRequest(org.kohsuke.github.GitHubRequest)>(v1);
+label01:
+v5 = null;
+label02:
+specialinvoke v0.<org.kohsuke.github.GitHubClient: void logRequest(org.kohsuke.github.connector.GitHubConnectorRequest)>(v4);
+v6 = v0.<org.kohsuke.github.GitHubClient: org.kohsuke.github.GitHubRateLimitChecker rateLimitChecker>;
+v7 = virtualinvoke v1.<org.kohsuke.github.GitHubRequest: org.kohsuke.github.RateLimitTarget rateLimitTarget()>();
+virtualinvoke v6.<org.kohsuke.github.GitHubRateLimitChecker: void checkRateLimit(org.kohsuke.github.GitHubClient,org.kohsuke.github.RateLimitTarget)>(v0, v7);
+v8 = v0.<org.kohsuke.github.GitHubClient: org.kohsuke.github.connector.GitHubConnector connector>;
+v5 = interfaceinvoke v8.<org.kohsuke.github.connector.GitHubConnector: org.kohsuke.github.connector.GitHubConnectorResponse send(org.kohsuke.github.connector.GitHubConnectorRequest)>(v4);
+specialinvoke v0.<org.kohsuke.github.GitHubClient: void logResponse(org.kohsuke.github.connector.GitHubConnectorResponse)>(v5);
+v9 = virtualinvoke v1.<org.kohsuke.github.GitHubRequest: org.kohsuke.github.RateLimitTarget rateLimitTarget()>();
+specialinvoke v0.<org.kohsuke.github.GitHubClient: void noteRateLimit(org.kohsuke.github.RateLimitTarget,org.kohsuke.github.connector.GitHubConnectorResponse)>(v9, v5);
+v10 = v5;
+if v2 == null goto label03;
+v11 = 1;
+goto label04;
+label03:
+v11 = 0;
+label04:
+specialinvoke v0.<org.kohsuke.github.GitHubClient: void detectKnownErrors(org.kohsuke.github.connector.GitHubConnectorResponse,org.kohsuke.github.GitHubRequest,boolean)>(v10, v1, v11);
+v12 = staticinvoke <org.kohsuke.github.GitHubClient: org.kohsuke.github.GitHubResponse createResponse(org.kohsuke.github.connector.GitHubConnectorResponse,org.kohsuke.github.GitHubClient$BodyHandler)>(v5, v2);
+label05:
+staticinvoke <org.apache.commons.io.IOUtils: void closeQuietly(java.io.Closeable)>(v5);
+return v12;
+label06:
+v13 := @caughtexception;
+if v3 <= 0 goto label07;
+v14 = v13.<org.kohsuke.github.GitHubClient$RetryRequestException: org.kohsuke.github.connector.GitHubConnectorRequest connectorRequest>;
+if v14 == null goto label07;
+v4 = v13.<org.kohsuke.github.GitHubClient$RetryRequestException: org.kohsuke.github.connector.GitHubConnectorRequest connectorRequest>;
+label07:
+staticinvoke <org.apache.commons.io.IOUtils: void closeQuietly(java.io.Closeable)>(v5);
+goto label13;
+label08:
+v15 := @caughtexception;
+if v3 <= 0 goto label10;
+v16 = virtualinvoke v1.<org.kohsuke.github.GitHubRequest: java.net.URL url()>();
+staticinvoke <org.kohsuke.github.GitHubClient: void logRetryConnectionError(java.io.IOException,java.net.URL,int)>(v15, v16, v3);
+label09:
+staticinvoke <org.apache.commons.io.IOUtils: void closeQuietly(java.io.Closeable)>(v5);
+goto label13;
+label10:
+v17 = staticinvoke <org.kohsuke.github.GitHubClient: java.io.IOException interpretApiError(java.io.IOException,org.kohsuke.github.connector.GitHubConnectorRequest,org.kohsuke.github.connector.GitHubConnectorResponse)>(v15, v4, v5);
+throw v17;
+label11:
+v18 := @caughtexception;
+v19 = staticinvoke <org.kohsuke.github.GitHubClient: java.io.IOException interpretApiError(java.io.IOException,org.kohsuke.github.connector.GitHubConnectorRequest,org.kohsuke.github.connector.GitHubConnectorResponse)>(v18, v4, v5);
+throw v19;
+label12:
+v20 := @caughtexception;
+staticinvoke <org.apache.commons.io.IOUtils: void closeQuietly(java.io.Closeable)>(v5);
+throw v20;
+label13:
+v3 = v3 - 1;
+if v3 >= 0 goto label01;
+v21 = new org.kohsuke.github.GHIOException;
+v22 = virtualinvoke v1.<org.kohsuke.github.GitHubRequest: java.net.URL url()>();
+v23 = virtualinvoke v22.<java.net.URL: java.lang.String toString()>();
+v24 = dynamicinvoke "makeConcatWithConstants" <java.lang.String (java.lang.String)>(v23) <java.lang.invoke.StringConcatFactory: java.lang.invoke.CallSite makeConcatWithConstants(java.lang.invoke.MethodHandles$Lookup,java.lang.String,java.lang.invoke.MethodType,java.lang.String,java.lang.Object[])>("Ran out of retries for URL: \u0001");
+specialinvoke v21.<org.kohsuke.github.GHIOException: void <init>(java.lang.String)>(v24);
+throw v21;
+catch org.kohsuke.github.GitHubClient$RetryRequestException from label02 to label05 with label06;
+catch java.net.SocketException from label02 to label05 with label08;
+catch java.net.SocketTimeoutException from label02 to label05 with label08;
+catch javax.net.ssl.SSLHandshakeException from label02 to label05 with label08;
+catch java.io.IOException from label02 to label05 with label11;
+catch java.lang.Throwable from label02 to label05 with label12;
+catch java.lang.Throwable from label06 to label07 with label12;
+catch java.lang.Throwable from label08 to label09 with label12;
+}
+private void detectKnownErrors(org.kohsuke.github.connector.GitHubConnectorResponse, org.kohsuke.github.GitHubRequest, boolean) throws java.io.IOException
+{
+org.kohsuke.github.GitHubRateLimitHandler v4, v6;
+org.kohsuke.github.GitHubAbuseLimitHandler v10, v8;
+org.kohsuke.github.GitHubClient v0;
+org.kohsuke.github.GitHubRequest v2;
+org.kohsuke.github.GitHubConnectorResponseErrorHandler v12, v14;
+org.kohsuke.github.GitHubClient$RetryRequestException v11, v7;
+org.kohsuke.github.connector.GitHubConnectorResponse v1;
+boolean v13, v3, v5, v9;
+v0 := @this: org.kohsuke.github.GitHubClient;
+v1 := @parameter0: org.kohsuke.github.connector.GitHubConnectorResponse;
+v2 := @parameter1: org.kohsuke.github.GitHubRequest;
+v3 := @parameter2: boolean;
+staticinvoke <org.kohsuke.github.GitHubClient: void detectOTPRequired(org.kohsuke.github.connector.GitHubConnectorResponse)>(v1);
+specialinvoke v0.<org.kohsuke.github.GitHubClient: void detectInvalidCached404Response(org.kohsuke.github.connector.GitHubConnectorResponse,org.kohsuke.github.GitHubRequest)>(v1, v2);
+specialinvoke v0.<org.kohsuke.github.GitHubClient: void detectRedirect(org.kohsuke.github.connector.GitHubConnectorResponse)>(v1);
+v4 = v0.<org.kohsuke.github.GitHubClient: org.kohsuke.github.GitHubRateLimitHandler rateLimitHandler>;
+v5 = virtualinvoke v4.<org.kohsuke.github.GitHubRateLimitHandler: boolean isError(org.kohsuke.github.connector.GitHubConnectorResponse)>(v1);
+if v5 == 0 goto label1;
+v6 = v0.<org.kohsuke.github.GitHubClient: org.kohsuke.github.GitHubRateLimitHandler rateLimitHandler>;
+virtualinvoke v6.<org.kohsuke.github.GitHubRateLimitHandler: void onError(org.kohsuke.github.connector.GitHubConnectorResponse)>(v1);
+v7 = new org.kohsuke.github.GitHubClient$RetryRequestException;
+specialinvoke v7.<org.kohsuke.github.GitHubClient$RetryRequestException: void <init>()>();
+throw v7;
+label1:
+v8 = v0.<org.kohsuke.github.GitHubClient: org.kohsuke.github.GitHubAbuseLimitHandler abuseLimitHandler>;
+v9 = virtualinvoke v8.<org.kohsuke.github.GitHubAbuseLimitHandler: boolean isError(org.kohsuke.github.connector.GitHubConnectorResponse)>(v1);
+if v9 == 0 goto label2;
+v10 = v0.<org.kohsuke.github.GitHubClient: org.kohsuke.github.GitHubAbuseLimitHandler abuseLimitHandler>;
+virtualinvoke v10.<org.kohsuke.github.GitHubAbuseLimitHandler: void onError(org.kohsuke.github.connector.GitHubConnectorResponse)>(v1);
+v11 = new org.kohsuke.github.GitHubClient$RetryRequestException;
+specialinvoke v11.<org.kohsuke.github.GitHubClient$RetryRequestException: void <init>()>();
+throw v11;
+label2:
+if v3 == 0 goto label3;
+v12 = <org.kohsuke.github.GitHubConnectorResponseErrorHandler: org.kohsuke.github.GitHubConnectorResponseErrorHandler STATUS_HTTP_BAD_REQUEST_OR_GREATER>;
+v13 = virtualinvoke v12.<org.kohsuke.github.GitHubConnectorResponseErrorHandler: boolean isError(org.kohsuke.github.connector.GitHubConnectorResponse)>(v1);
+if v13 == 0 goto label3;
+v14 = <org.kohsuke.github.GitHubConnectorResponseErrorHandler: org.kohsuke.github.GitHubConnectorResponseErrorHandler STATUS_HTTP_BAD_REQUEST_OR_GREATER>;
+virtualinvoke v14.<org.kohsuke.github.GitHubConnectorResponseErrorHandler: void onError(org.kohsuke.github.connector.GitHubConnectorResponse)>(v1);
+label3:
+return;
+}
+private void detectRedirect(org.kohsuke.github.connector.GitHubConnectorResponse) throws java.io.IOException
+{
+org.kohsuke.github.HttpException v4;
+org.kohsuke.github.connector.GitHubConnectorRequest v6;
+java.net.URL v7;
+org.kohsuke.github.GitHubClient v0;
+int v2, v3, v5;
+java.lang.String v8;
+org.kohsuke.github.connector.GitHubConnectorResponse v1;
+v0 := @this: org.kohsuke.github.GitHubClient;
+v1 := @parameter0: org.kohsuke.github.connector.GitHubConnectorResponse;
+v2 = virtualinvoke v1.<org.kohsuke.github.connector.GitHubConnectorResponse: int statusCode()>();
+if v2 == 301 goto label1;
+v3 = virtualinvoke v1.<org.kohsuke.github.connector.GitHubConnectorResponse: int statusCode()>();
+if v3 != 302 goto label2;
+label1:
+v4 = new org.kohsuke.github.HttpException;
+v5 = virtualinvoke v1.<org.kohsuke.github.connector.GitHubConnectorResponse: int statusCode()>();
+v6 = virtualinvoke v1.<org.kohsuke.github.connector.GitHubConnectorResponse: org.kohsuke.github.connector.GitHubConnectorRequest request()>();
+v7 = interfaceinvoke v6.<org.kohsuke.github.connector.GitHubConnectorRequest: java.net.URL url()>();
+v8 = virtualinvoke v7.<java.net.URL: java.lang.String toString()>();
+specialinvoke v4.<org.kohsuke.github.HttpException: void <init>(java.lang.String,int,java.lang.String,java.lang.String)>("GitHubConnnector did not automatically follow redirect.\nChange your http client configuration to automatically follow redirects as appropriate.", v5, "Redirect", v8);
+throw v4;
+label2:
+return;
+}
+private org.kohsuke.github.connector.GitHubConnectorRequest prepareConnectorRequest(org.kohsuke.github.GitHubRequest) throws java.io.IOException
+{
+byte[] v20;
+java.util.HashMap v11;
+org.kohsuke.github.GitHubRequest$Builder v2;
+java.io.ByteArrayInputStream v18;
+java.util.Map v3;
+java.lang.String v10, v16, v5, v6, v9;
+boolean v14, v4, v7;
+java.util.Iterator v13;
+com.fasterxml.jackson.databind.ObjectWriter v19;
+org.kohsuke.github.GitHubClient v0;
+org.kohsuke.github.GitHubRequest v1, v21;
+java.util.List v12;
+java.lang.Object v15, v17;
+java.io.InputStream v8;
+v0 := @this: org.kohsuke.github.GitHubClient;
+v1 := @parameter0: org.kohsuke.github.GitHubRequest;
+v2 = virtualinvoke v1.<org.kohsuke.github.GitHubRequest: org.kohsuke.github.GitHubRequest$Builder toBuilder()>();
+v3 = virtualinvoke v1.<org.kohsuke.github.GitHubRequest: java.util.Map allHeaders()>();
+v4 = interfaceinvoke v3.<java.util.Map: boolean containsKey(java.lang.Object)>("Authorization");
+if v4 != 0 goto label1;
+v5 = virtualinvoke v0.<org.kohsuke.github.GitHubClient: java.lang.String getEncodedAuthorization()>();
+if v5 == null goto label1;
+virtualinvoke v2.<org.kohsuke.github.GitHubRequest$Builder: org.kohsuke.github.GitHubRequest$Builder setHeader(java.lang.String,java.lang.String)>("Authorization", v5);
+label1:
+v6 = virtualinvoke v1.<org.kohsuke.github.GitHubRequest: java.lang.String header(java.lang.String)>("Accept");
+if v6 != null goto label2;
+virtualinvoke v2.<org.kohsuke.github.GitHubRequest$Builder: org.kohsuke.github.GitHubRequest$Builder setHeader(java.lang.String,java.lang.String)>("Accept", "application/vnd.github.v3+json");
+label2:
+virtualinvoke v2.<org.kohsuke.github.GitHubRequest$Builder: org.kohsuke.github.GitHubRequest$Builder setHeader(java.lang.String,java.lang.String)>("Accept-Encoding", "gzip");
+v7 = virtualinvoke v1.<org.kohsuke.github.GitHubRequest: boolean hasBody()>();
+if v7 == 0 goto label6;
+v8 = virtualinvoke v1.<org.kohsuke.github.GitHubRequest: java.io.InputStream body()>();
+if v8 == null goto label3;
+v9 = virtualinvoke v1.<org.kohsuke.github.GitHubRequest: java.lang.String contentType()>();
+v10 = staticinvoke <org.apache.commons.lang3.StringUtils: java.lang.String defaultString(java.lang.String,java.lang.String)>(v9, "application/x-www-form-urlencoded");
+virtualinvoke v2.<org.kohsuke.github.GitHubRequest$Builder: org.kohsuke.github.GitHubRequest$Builder contentType(java.lang.String)>(v10);
+goto label6;
+label3:
+virtualinvoke v2.<org.kohsuke.github.GitHubRequest$Builder: org.kohsuke.github.GitHubRequest$Builder contentType(java.lang.String)>("application/json");
+v11 = new java.util.HashMap;
+specialinvoke v11.<java.util.HashMap: void <init>()>();
+v12 = virtualinvoke v1.<org.kohsuke.github.GitHubRequest: java.util.List args()>();
+v13 = interfaceinvoke v12.<java.util.List: java.util.Iterator iterator()>();
+label4:
+v14 = interfaceinvoke v13.<java.util.Iterator: boolean hasNext()>();
+if v14 == 0 goto label5;
+v15 = interfaceinvoke v13.<java.util.Iterator: java.lang.Object next()>();
+v16 = v15.<org.kohsuke.github.GitHubRequest$Entry: java.lang.String key>;
+v17 = v15.<org.kohsuke.github.GitHubRequest$Entry: java.lang.Object value>;
+interfaceinvoke v11.<java.util.Map: java.lang.Object put(java.lang.Object,java.lang.Object)>(v16, v17);
+goto label4;
+label5:
+v18 = new java.io.ByteArrayInputStream;
+v19 = staticinvoke <org.kohsuke.github.GitHubClient: com.fasterxml.jackson.databind.ObjectWriter getMappingObjectWriter()>();
+v20 = virtualinvoke v19.<com.fasterxml.jackson.databind.ObjectWriter: byte[] writeValueAsBytes(java.lang.Object)>(v11);
+specialinvoke v18.<java.io.ByteArrayInputStream: void <init>(byte[])>(v20);
+virtualinvoke v2.<org.kohsuke.github.GitHubRequest$Builder: org.kohsuke.github.GitHubRequest$Builder 'with'(java.io.InputStream)>(v18);
+label6:
+v21 = virtualinvoke v2.<org.kohsuke.github.GitHubRequest$Builder: org.kohsuke.github.GitHubRequest build()>();
+return v21;
+}
+private void logRequest(org.kohsuke.github.connector.GitHubConnectorRequest)
+{
+org.kohsuke.github.connector.GitHubConnectorRequest v1;
+org.kohsuke.github.GitHubClient v0;
+java.util.logging.Logger v2;
+java.util.function.Supplier v4;
+java.util.logging.Level v3;
+v0 := @this: org.kohsuke.github.GitHubClient;
+v1 := @parameter0: org.kohsuke.github.connector.GitHubConnectorRequest;
+v2 = <org.kohsuke.github.GitHubClient: java.util.logging.Logger LOGGER>;
+v3 = <java.util.logging.Level: java.util.logging.Level FINE>;
+v4 = staticinvoke <org.kohsuke.github.GitHubClient$lambda_logRequest_3__68: java.util.function.Supplier bootstrap$(org.kohsuke.github.GitHubClient,org.kohsuke.github.connector.GitHubConnectorRequest)>(v0, v1);
+virtualinvoke v2.<java.util.logging.Logger: void log(java.util.logging.Level,java.util.function.Supplier)>(v3, v4);
+return;
+}
+private void logResponse(org.kohsuke.github.connector.GitHubConnectorResponse)
+{
+org.kohsuke.github.GitHubClient v0;
+java.util.logging.Logger v2;
+org.kohsuke.github.connector.GitHubConnectorResponse v1;
+java.util.function.Supplier v4;
+java.util.logging.Level v3;
+v0 := @this: org.kohsuke.github.GitHubClient;
+v1 := @parameter0: org.kohsuke.github.connector.GitHubConnectorResponse;
+v2 = <org.kohsuke.github.GitHubClient: java.util.logging.Logger LOGGER>;
+v3 = <java.util.logging.Level: java.util.logging.Level FINE>;
+v4 = staticinvoke <org.kohsuke.github.GitHubClient$lambda_logResponse_4__69: java.util.function.Supplier bootstrap$(org.kohsuke.github.GitHubClient,org.kohsuke.github.connector.GitHubConnectorResponse)>(v0, v1);
+virtualinvoke v2.<java.util.logging.Logger: void log(java.util.logging.Level,java.util.function.Supplier)>(v3, v4);
+return;
+}
+private static org.kohsuke.github.GitHubResponse createResponse(org.kohsuke.github.connector.GitHubConnectorResponse, org.kohsuke.github.GitHubClient$BodyHandler) throws java.io.IOException
+{
+org.kohsuke.github.GitHubResponse v4;
+java.lang.Object v2;
+org.kohsuke.github.GitHubClient$BodyHandler v1;
+org.kohsuke.github.connector.GitHubConnectorResponse v0;
+boolean v3;
+v0 := @parameter0: org.kohsuke.github.connector.GitHubConnectorResponse;
+v1 := @parameter1: org.kohsuke.github.GitHubClient$BodyHandler;
+v2 = null;
+if v1 == null goto label1;
+v3 = staticinvoke <org.kohsuke.github.GitHubClient: boolean shouldIgnoreBody(org.kohsuke.github.connector.GitHubConnectorResponse)>(v0);
+if v3 != 0 goto label1;
+v2 = interfaceinvoke v1.<org.kohsuke.github.GitHubClient$BodyHandler: java.lang.Object apply(java.lang.Object)>(v0);
+label1:
+v4 = new org.kohsuke.github.GitHubResponse;
+specialinvoke v4.<org.kohsuke.github.GitHubResponse: void <init>(org.kohsuke.github.connector.GitHubConnectorResponse,java.lang.Object)>(v0, v2);
+return v4;
+}
+private static boolean shouldIgnoreBody(org.kohsuke.github.connector.GitHubConnectorResponse)
+{
+org.kohsuke.github.connector.GitHubConnectorRequest v5;
+java.net.URL v6;
+java.util.logging.Logger v3;
+java.util.logging.Level v4;
+int v1, v2;
+java.lang.String v7, v8;
+org.kohsuke.github.connector.GitHubConnectorResponse v0;
+v0 := @parameter0: org.kohsuke.github.connector.GitHubConnectorResponse;
+v1 = virtualinvoke v0.<org.kohsuke.github.connector.GitHubConnectorResponse: int statusCode()>();
+if v1 != 304 goto label1;
+return 1;
+label1:
+v2 = virtualinvoke v0.<org.kohsuke.github.connector.GitHubConnectorResponse: int statusCode()>();
+if v2 != 202 goto label2;
+v3 = <org.kohsuke.github.GitHubClient: java.util.logging.Logger LOGGER>;
+v4 = <java.util.logging.Level: java.util.logging.Level FINE>;
+v5 = virtualinvoke v0.<org.kohsuke.github.connector.GitHubConnectorResponse: org.kohsuke.github.connector.GitHubConnectorRequest request()>();
+v6 = interfaceinvoke v5.<org.kohsuke.github.connector.GitHubConnectorRequest: java.net.URL url()>();
+v7 = virtualinvoke v6.<java.net.URL: java.lang.String toString()>();
+v8 = dynamicinvoke "makeConcatWithConstants" <java.lang.String (java.lang.String)>(v7) <java.lang.invoke.StringConcatFactory: java.lang.invoke.CallSite makeConcatWithConstants(java.lang.invoke.MethodHandles$Lookup,java.lang.String,java.lang.invoke.MethodType,java.lang.String,java.lang.Object[])>("Received HTTP_ACCEPTED(202) from \u0001 . Please try again in 5 seconds.");
+virtualinvoke v3.<java.util.logging.Logger: void log(java.util.logging.Level,java.lang.String)>(v4, v8);
+return 1;
+label2:
+return 0;
+}
+private static java.io.IOException interpretApiError(java.io.IOException, org.kohsuke.github.connector.GitHubConnectorRequest, org.kohsuke.github.connector.GitHubConnectorResponse) throws java.io.IOException
+{
+org.kohsuke.github.connector.GitHubConnectorRequest v1;
+java.net.URL v16, v21;
+java.util.HashMap v7;
+org.kohsuke.github.GHFileNotFoundException v12;
+java.util.Map v8;
+int v10, v4, v5;
+java.lang.String v13, v14, v17, v22, v6, v9;
+org.kohsuke.github.GHIOException v18;
+org.kohsuke.github.connector.GitHubConnectorResponse v2;
+boolean v11, v19, v3;
+org.kohsuke.github.HttpException v15, v20;
+java.io.IOException v0;
+v0 := @parameter0: java.io.IOException;
+v1 := @parameter1: org.kohsuke.github.connector.GitHubConnectorRequest;
+v2 := @parameter2: org.kohsuke.github.connector.GitHubConnectorResponse;
+v3 = v0 instanceof org.kohsuke.github.GHIOException;
+if v3 == 0 goto label1;
+return v0;
+label1:
+v4 = (int) -1;
+v5 = v4;
+v6 = null;
+v7 = new java.util.HashMap;
+specialinvoke v7.<java.util.HashMap: void <init>()>();
+v8 = v7;
+v9 = null;
+if v2 == null goto label2;
+v5 = virtualinvoke v2.<org.kohsuke.github.connector.GitHubConnectorResponse: int statusCode()>();
+v6 = virtualinvoke v2.<org.kohsuke.github.connector.GitHubConnectorResponse: java.lang.String header(java.lang.String)>("Status");
+v8 = virtualinvoke v2.<org.kohsuke.github.connector.GitHubConnectorResponse: java.util.Map allHeaders()>();
+v10 = virtualinvoke v2.<org.kohsuke.github.connector.GitHubConnectorResponse: int statusCode()>();
+if v10 < 400 goto label2;
+v9 = staticinvoke <org.kohsuke.github.GitHubResponse: java.lang.String getBodyAsStringOrNull(org.kohsuke.github.connector.GitHubConnectorResponse)>(v2);
+label2:
+if v9 == null goto label5;
+v11 = v0 instanceof java.io.FileNotFoundException;
+if v11 == 0 goto label3;
+v12 = new org.kohsuke.github.GHFileNotFoundException;
+v13 = virtualinvoke v0.<java.io.IOException: java.lang.String getMessage()>();
+v14 = dynamicinvoke "makeConcatWithConstants" <java.lang.String (java.lang.String,java.lang.String)>(v13, v9) <java.lang.invoke.StringConcatFactory: java.lang.invoke.CallSite makeConcatWithConstants(java.lang.invoke.MethodHandles$Lookup,java.lang.String,java.lang.invoke.MethodType,java.lang.String,java.lang.Object[])>("\u0001 \u0001");
+specialinvoke v12.<org.kohsuke.github.GHFileNotFoundException: void <init>(java.lang.String,java.lang.Throwable)>(v14, v0);
+v0 = virtualinvoke v12.<org.kohsuke.github.GHFileNotFoundException: org.kohsuke.github.GHFileNotFoundException withResponseHeaderFields(java.util.Map)>(v8);
+goto label6;
+label3:
+if v5 < 0 goto label4;
+v15 = new org.kohsuke.github.HttpException;
+v16 = interfaceinvoke v1.<org.kohsuke.github.connector.GitHubConnectorRequest: java.net.URL url()>();
+v17 = virtualinvoke v16.<java.net.URL: java.lang.String toString()>();
+specialinvoke v15.<org.kohsuke.github.HttpException: void <init>(java.lang.String,int,java.lang.String,java.lang.String,java.lang.Throwable)>(v9, v5, v6, v17, v0);
+v0 = v15;
+goto label6;
+label4:
+v18 = new org.kohsuke.github.GHIOException;
+specialinvoke v18.<org.kohsuke.github.GHIOException: void <init>(java.lang.String)>(v9);
+v0 = virtualinvoke v18.<org.kohsuke.github.GHIOException: org.kohsuke.github.GHIOException withResponseHeaderFields(java.util.Map)>(v8);
+goto label6;
+label5:
+v19 = v0 instanceof java.io.FileNotFoundException;
+if v19 != 0 goto label6;
+v20 = new org.kohsuke.github.HttpException;
+v21 = interfaceinvoke v1.<org.kohsuke.github.connector.GitHubConnectorRequest: java.net.URL url()>();
+v22 = virtualinvoke v21.<java.net.URL: java.lang.String toString()>();
+specialinvoke v20.<org.kohsuke.github.HttpException: void <init>(int,java.lang.String,java.lang.String,java.lang.Throwable)>(v5, v6, v22, v0);
+v0 = v20;
+label6:
+return v0;
+}
+private static void logRetryConnectionError(java.io.IOException, java.net.URL, int) throws java.io.IOException
+{
+java.lang.Throwable v9;
+java.net.URL v1;
+java.io.IOException v0;
+java.util.logging.Logger v3;
+java.io.InterruptedIOException v8;
+java.util.logging.Level v4;
+java.lang.InterruptedException v7;
+int v2;
+java.lang.String v5, v6;
+v0 := @parameter0: java.io.IOException;
+v1 := @parameter1: java.net.URL;
+v2 := @parameter2: int;
+v3 = <org.kohsuke.github.GitHubClient: java.util.logging.Logger LOGGER>;
+v4 = <java.util.logging.Level: java.util.logging.Level INFO>;
+v5 = virtualinvoke v0.<java.io.IOException: java.lang.String getMessage()>();
+v6 = dynamicinvoke "makeConcatWithConstants" <java.lang.String (java.lang.String,java.net.URL,int)>(v5, v1, v2) <java.lang.invoke.StringConcatFactory: java.lang.invoke.CallSite makeConcatWithConstants(java.lang.invoke.MethodHandles$Lookup,java.lang.String,java.lang.invoke.MethodType,java.lang.String,java.lang.Object[])>("\u0001 while connecting to \u0001. Sleeping 100 milliseconds before retrying... ; will try \u0001 more time(s)");
+virtualinvoke v3.<java.util.logging.Logger: void log(java.util.logging.Level,java.lang.String)>(v4, v6);
+label1:
+staticinvoke <java.lang.Thread: void sleep(long)>(100L);
+label2:
+goto label4;
+label3:
+v7 := @caughtexception;
+v8 = new java.io.InterruptedIOException;
+specialinvoke v8.<java.io.InterruptedIOException: void <init>()>();
+v9 = virtualinvoke v8.<java.io.InterruptedIOException: java.lang.Throwable initCause(java.lang.Throwable)>(v0);
+throw v9;
+label4:
+return;
+catch java.lang.InterruptedException from label1 to label2 with label3;
+}
+private void detectInvalidCached404Response(org.kohsuke.github.connector.GitHubConnectorResponse, org.kohsuke.github.GitHubRequest) throws java.io.IOException
+{
+org.kohsuke.github.connector.GitHubConnectorRequest v13, v20, v4, v8;
+java.net.URL v14;
+org.kohsuke.github.GitHubRequest$Builder v17, v18;
+java.util.logging.Level v12;
+org.kohsuke.github.GitHubClient$RetryRequestException v16;
+int v3;
+java.lang.String v15, v5, v7, v9;
+org.kohsuke.github.connector.GitHubConnectorResponse v1;
+boolean v10, v6;
+org.kohsuke.github.GitHubClient v0;
+java.util.logging.Logger v11;
+org.kohsuke.github.GitHubRequest v19, v2;
+v0 := @this: org.kohsuke.github.GitHubClient;
+v1 := @parameter0: org.kohsuke.github.connector.GitHubConnectorResponse;
+v2 := @parameter1: org.kohsuke.github.GitHubRequest;
+v3 = virtualinvoke v1.<org.kohsuke.github.connector.GitHubConnectorResponse: int statusCode()>();
+if v3 != 404 goto label1;
+v4 = virtualinvoke v1.<org.kohsuke.github.connector.GitHubConnectorResponse: org.kohsuke.github.connector.GitHubConnectorRequest request()>();
+v5 = interfaceinvoke v4.<org.kohsuke.github.connector.GitHubConnectorRequest: java.lang.String method()>();
+v6 = staticinvoke <java.util.Objects: boolean equals(java.lang.Object,java.lang.Object)>(v5, "GET");
+if v6 == 0 goto label1;
+v7 = virtualinvoke v1.<org.kohsuke.github.connector.GitHubConnectorResponse: java.lang.String header(java.lang.String)>("ETag");
+if v7 == null goto label1;
+v8 = virtualinvoke v1.<org.kohsuke.github.connector.GitHubConnectorResponse: org.kohsuke.github.connector.GitHubConnectorRequest request()>();
+v9 = interfaceinvoke v8.<org.kohsuke.github.connector.GitHubConnectorRequest: java.lang.String header(java.lang.String)>("Cache-Control");
+v10 = staticinvoke <java.util.Objects: boolean equals(java.lang.Object,java.lang.Object)>(v9, "no-cache");
+if v10 != 0 goto label1;
+v11 = <org.kohsuke.github.GitHubClient: java.util.logging.Logger LOGGER>;
+v12 = <java.util.logging.Level: java.util.logging.Level FINE>;
+v13 = virtualinvoke v1.<org.kohsuke.github.connector.GitHubConnectorResponse: org.kohsuke.github.connector.GitHubConnectorRequest request()>();
+v14 = interfaceinvoke v13.<org.kohsuke.github.connector.GitHubConnectorRequest: java.net.URL url()>();
+v15 = dynamicinvoke "makeConcatWithConstants" <java.lang.String (java.net.URL)>(v14) <java.lang.invoke.StringConcatFactory: java.lang.invoke.CallSite makeConcatWithConstants(java.lang.invoke.MethodHandles$Lookup,java.lang.String,java.lang.invoke.MethodType,java.lang.String,java.lang.Object[])>("Encountered GitHub invalid cached 404 from \u0001. Retrying with \"Cache-Control\"=\"no-cache\"...");
+virtualinvoke v11.<java.util.logging.Logger: void log(java.util.logging.Level,java.lang.String)>(v12, v15);
+v16 = new org.kohsuke.github.GitHubClient$RetryRequestException;
+v17 = virtualinvoke v2.<org.kohsuke.github.GitHubRequest: org.kohsuke.github.GitHubRequest$Builder toBuilder()>();
+v18 = virtualinvoke v17.<org.kohsuke.github.GitHubRequest$Builder: org.kohsuke.github.GitHubRequest$Builder setHeader(java.lang.String,java.lang.String)>("Cache-Control", "no-cache");
+v19 = virtualinvoke v18.<org.kohsuke.github.GitHubRequest$Builder: org.kohsuke.github.GitHubRequest build()>();
+v20 = specialinvoke v0.<org.kohsuke.github.GitHubClient: org.kohsuke.github.connector.GitHubConnectorRequest prepareConnectorRequest(org.kohsuke.github.GitHubRequest)>(v19);
+specialinvoke v16.<org.kohsuke.github.GitHubClient$RetryRequestException: void <init>(org.kohsuke.github.connector.GitHubConnectorRequest)>(v20);
+throw v16;
+label1:
+return;
+}
+private void noteRateLimit(org.kohsuke.github.RateLimitTarget, org.kohsuke.github.connector.GitHubConnectorResponse)
+{
+org.kohsuke.github.GitHubClient v0;
+java.lang.NumberFormatException v8;
+java.util.logging.Logger v9;
+java.util.logging.Level v10;
+int v3, v4, v5;
+org.kohsuke.github.GHRateLimit v7;
+org.kohsuke.github.GHRateLimit$Record v6;
+org.kohsuke.github.RateLimitTarget v1;
+org.kohsuke.github.connector.GitHubConnectorResponse v2;
+v0 := @this: org.kohsuke.github.GitHubClient;
+v1 := @parameter0: org.kohsuke.github.RateLimitTarget;
+v2 := @parameter1: org.kohsuke.github.connector.GitHubConnectorResponse;
+label1:
+v3 = virtualinvoke v2.<org.kohsuke.github.connector.GitHubConnectorResponse: int parseInt(java.lang.String)>("X-RateLimit-Limit");
+v4 = virtualinvoke v2.<org.kohsuke.github.connector.GitHubConnectorResponse: int parseInt(java.lang.String)>("X-RateLimit-Remaining");
+v5 = virtualinvoke v2.<org.kohsuke.github.connector.GitHubConnectorResponse: int parseInt(java.lang.String)>("X-RateLimit-Reset");
+v6 = new org.kohsuke.github.GHRateLimit$Record;
+specialinvoke v6.<org.kohsuke.github.GHRateLimit$Record: void <init>(int,int,long,org.kohsuke.github.connector.GitHubConnectorResponse)>(v3, v4, v5, v2);
+v7 = staticinvoke <org.kohsuke.github.GHRateLimit: org.kohsuke.github.GHRateLimit fromRecord(org.kohsuke.github.GHRateLimit$Record,org.kohsuke.github.RateLimitTarget)>(v6, v1);
+specialinvoke v0.<org.kohsuke.github.GitHubClient: org.kohsuke.github.GHRateLimit updateRateLimit(org.kohsuke.github.GHRateLimit)>(v7);
+label2:
+goto label4;
+label3:
+v8 := @caughtexception;
+v9 = <org.kohsuke.github.GitHubClient: java.util.logging.Logger LOGGER>;
+v10 = <java.util.logging.Level: java.util.logging.Level FINEST>;
+virtualinvoke v9.<java.util.logging.Logger: void log(java.util.logging.Level,java.lang.String,java.lang.Throwable)>(v10, "Missing or malformed X-RateLimit header: ", v8);
+label4:
+return;
+catch java.lang.NumberFormatException from label1 to label2 with label3;
+}
+private static void detectOTPRequired(org.kohsuke.github.connector.GitHubConnectorResponse) throws org.kohsuke.github.GHIOException
+{
+java.util.Map v4;
+int v1;
+org.kohsuke.github.GHOTPRequiredException v3;
+java.lang.String v2;
+org.kohsuke.github.GHIOException v5;
+org.kohsuke.github.connector.GitHubConnectorResponse v0;
+v0 := @parameter0: org.kohsuke.github.connector.GitHubConnectorResponse;
+v1 = virtualinvoke v0.<org.kohsuke.github.connector.GitHubConnectorResponse: int statusCode()>();
+if v1 != 401 goto label1;
+v2 = virtualinvoke v0.<org.kohsuke.github.connector.GitHubConnectorResponse: java.lang.String header(java.lang.String)>("X-GitHub-OTP");
+if v2 == null goto label1;
+v3 = new org.kohsuke.github.GHOTPRequiredException;
+specialinvoke v3.<org.kohsuke.github.GHOTPRequiredException: void <init>()>();
+v4 = virtualinvoke v0.<org.kohsuke.github.connector.GitHubConnectorResponse: java.util.Map allHeaders()>();
+v5 = virtualinvoke v3.<org.kohsuke.github.GHOTPRequiredException: org.kohsuke.github.GHIOException withResponseHeaderFields(java.util.Map)>(v4);
+throw v5;
+label1:
+return;
+}
+void requireCredential()
+{
+java.lang.IllegalStateException v2;
+org.kohsuke.github.GitHubClient v0;
+boolean v1;
+v0 := @this: org.kohsuke.github.GitHubClient;
+v1 = virtualinvoke v0.<org.kohsuke.github.GitHubClient: boolean isAnonymous()>();
+if v1 == 0 goto label1;
+v2 = new java.lang.IllegalStateException;
+specialinvoke v2.<java.lang.IllegalStateException: void <init>(java.lang.String)>("This operation requires a credential but none is given to the GitHub constructor");
+throw v2;
+label1:
+return;
+}
+private boolean isPrivateModeEnabled()
+{
+org.kohsuke.github.GitHubClient v0;
+java.io.IOException v8;
+org.kohsuke.github.GitHubRequest$Builder v1, v3;
+int v5;
+org.kohsuke.github.GitHubResponse v4;
+java.lang.String v2, v6;
+boolean v7;
+v0 := @this: org.kohsuke.github.GitHubClient;
+label1:
+v1 = staticinvoke <org.kohsuke.github.GitHubRequest: org.kohsuke.github.GitHubRequest$Builder newBuilder()>();
+v2 = virtualinvoke v0.<org.kohsuke.github.GitHubClient: java.lang.String getApiUrl()>();
+v3 = virtualinvoke v1.<org.kohsuke.github.GitHubRequest$Builder: org.kohsuke.github.GitHubRequest$Builder withApiUrl(java.lang.String)>(v2);
+v4 = virtualinvoke v0.<org.kohsuke.github.GitHubClient: org.kohsuke.github.GitHubResponse sendRequest(org.kohsuke.github.GitHubRequest$Builder,org.kohsuke.github.GitHubClient$BodyHandler)>(v3, null);
+v5 = virtualinvoke v4.<org.kohsuke.github.GitHubResponse: int statusCode()>();
+if v5 != 401 goto label2;
+v6 = virtualinvoke v4.<org.kohsuke.github.GitHubResponse: java.lang.String header(java.lang.String)>("X-GitHub-Media-Type");
+if v6 == null goto label2;
+v7 = 1;
+goto label3;
+label2:
+v7 = 0;
+label3:
+return v7;
+label4:
+v8 := @caughtexception;
+return 0;
+catch java.io.IOException from label1 to label3 with label4;
+}
+static java.net.URL parseURL(java.lang.String)
+{
+java.lang.IllegalStateException v3;
+java.net.MalformedURLException v2;
+java.net.URL v1;
+java.lang.String v0, v4;
+v0 := @parameter0: java.lang.String;
+label1:
+if v0 != null goto label2;
+v1 = null;
+goto label3;
+label2:
+v1 = new java.net.URL;
+specialinvoke v1.<java.net.URL: void <init>(java.lang.String)>(v0);
+label3:
+return v1;
+label4:
+v2 := @caughtexception;
+v3 = new java.lang.IllegalStateException;
+v4 = dynamicinvoke "makeConcatWithConstants" <java.lang.String (java.lang.String)>(v0) <java.lang.invoke.StringConcatFactory: java.lang.invoke.CallSite makeConcatWithConstants(java.lang.invoke.MethodHandles$Lookup,java.lang.String,java.lang.invoke.MethodType,java.lang.String,java.lang.Object[])>("Invalid URL: \u0001");
+specialinvoke v3.<java.lang.IllegalStateException: void <init>(java.lang.String)>(v4);
+throw v3;
+catch java.net.MalformedURLException from label1 to label3 with label4;
+}
+static java.util.Date parseDate(java.lang.String)
+{
+java.lang.String v0;
+java.time.Instant v1;
+java.util.Date v2;
+v0 := @parameter0: java.lang.String;
+if v0 != null goto label1;
+return null;
+label1:
+v1 = staticinvoke <org.kohsuke.github.GitHubClient: java.time.Instant parseInstant(java.lang.String)>(v0);
+v2 = staticinvoke <java.util.Date: java.util.Date 'from'(java.time.Instant)>(v1);
+return v2;
+}
+static java.time.Instant parseInstant(java.lang.String)
+{
+char v1;
+java.time.Instant v4, v7;
+java.time.temporal.TemporalAccessor v3, v6;
+java.time.format.DateTimeFormatter v2, v5;
+java.lang.String v0;
+v0 := @parameter0: java.lang.String;
+if v0 != null goto label1;
+return null;
+label1:
+v1 = virtualinvoke v0.<java.lang.String: char charAt(int)>(4);
+if v1 != 47 goto label2;
+v2 = <org.kohsuke.github.GitHubClient: java.time.format.DateTimeFormatter DATE_TIME_PARSER_SLASHES>;
+v3 = virtualinvoke v2.<java.time.format.DateTimeFormatter: java.time.temporal.TemporalAccessor parse(java.lang.CharSequence)>(v0);
+v4 = staticinvoke <java.time.Instant: java.time.Instant 'from'(java.time.temporal.TemporalAccessor)>(v3);
+return v4;
+label2:
+v5 = <java.time.format.DateTimeFormatter: java.time.format.DateTimeFormatter ISO_OFFSET_DATE_TIME>;
+v6 = virtualinvoke v5.<java.time.format.DateTimeFormatter: java.time.temporal.TemporalAccessor parse(java.lang.CharSequence)>(v0);
+v7 = staticinvoke <java.time.Instant: java.time.Instant 'from'(java.time.temporal.TemporalAccessor)>(v6);
+return v7;
+}
+static java.lang.String printDate(java.util.Date)
+{
+java.time.temporal.ChronoUnit v4;
+java.util.Date v0;
+java.time.format.DateTimeFormatter v1;
+long v2;
+java.lang.String v6;
+java.time.Instant v3, v5;
+v0 := @parameter0: java.util.Date;
+v1 = <java.time.format.DateTimeFormatter: java.time.format.DateTimeFormatter ISO_INSTANT>;
+v2 = virtualinvoke v0.<java.util.Date: long getTime()>();
+v3 = staticinvoke <java.time.Instant: java.time.Instant ofEpochMilli(long)>(v2);
+v4 = <java.time.temporal.ChronoUnit: java.time.temporal.ChronoUnit SECONDS>;
+v5 = virtualinvoke v3.<java.time.Instant: java.time.Instant truncatedTo(java.time.temporal.TemporalUnit)>(v4);
+v6 = virtualinvoke v1.<java.time.format.DateTimeFormatter: java.lang.String format(java.time.temporal.TemporalAccessor)>(v5);
+return v6;
+}
+static com.fasterxml.jackson.databind.ObjectWriter getMappingObjectWriter()
+{
+com.fasterxml.jackson.databind.ObjectMapper v0;
+com.fasterxml.jackson.databind.ObjectWriter v1;
+v0 = <org.kohsuke.github.GitHubClient: com.fasterxml.jackson.databind.ObjectMapper MAPPER>;
+v1 = virtualinvoke v0.<com.fasterxml.jackson.databind.ObjectMapper: com.fasterxml.jackson.databind.ObjectWriter writer()>();
+return v1;
+}
+static com.fasterxml.jackson.databind.ObjectReader getMappingObjectReader(org.kohsuke.github.GitHub)
+{
+com.fasterxml.jackson.databind.ObjectReader v2;
+com.fasterxml.jackson.databind.InjectableValues v3;
+org.kohsuke.github.connector.GitHubConnectorResponse v1;
+org.kohsuke.github.GitHub v0;
+v0 := @parameter0: org.kohsuke.github.GitHub;
+v1 = null;
+v2 = staticinvoke <org.kohsuke.github.GitHubClient: com.fasterxml.jackson.databind.ObjectReader getMappingObjectReader(org.kohsuke.github.connector.GitHubConnectorResponse)>(v1);
+v3 = virtualinvoke v2.<com.fasterxml.jackson.databind.ObjectReader: com.fasterxml.jackson.databind.InjectableValues getInjectableValues()>();
+virtualinvoke v3.<com.fasterxml.jackson.databind.InjectableValues$Std: com.fasterxml.jackson.databind.InjectableValues$Std addValue(java.lang.Class,java.lang.Object)>(class "Lorg/kohsuke/github/GitHub;", v0);
+return v2;
+}
+static com.fasterxml.jackson.databind.ObjectReader getMappingObjectReader(org.kohsuke.github.connector.GitHubConnectorResponse)
+{
+org.kohsuke.github.connector.GitHubConnectorRequest v10, v8;
+com.fasterxml.jackson.databind.ObjectMapper v12;
+com.fasterxml.jackson.databind.InjectableValues$Std v13;
+java.util.HashMap v1;
+com.fasterxml.jackson.databind.ObjectReader v14;
+java.util.Map v11;
+java.lang.Class v2, v4, v6;
+java.lang.String v3, v5, v7;
+org.kohsuke.github.connector.GitHubConnectorResponse v0;
+boolean v9;
+v0 := @parameter0: org.kohsuke.github.connector.GitHubConnectorResponse;
+v1 = new java.util.HashMap;
+specialinvoke v1.<java.util.HashMap: void <init>()>();
+v2 = class "Lorg/kohsuke/github/connector/GitHubConnectorResponse;";
+v3 = virtualinvoke v2.<java.lang.Class: java.lang.String getName()>();
+interfaceinvoke v1.<java.util.Map: java.lang.Object put(java.lang.Object,java.lang.Object)>(v3, null);
+v4 = class "Lorg/kohsuke/github/GitHub;";
+v5 = virtualinvoke v4.<java.lang.Class: java.lang.String getName()>();
+interfaceinvoke v1.<java.util.Map: java.lang.Object put(java.lang.Object,java.lang.Object)>(v5, null);
+if v0 == null goto label1;
+v6 = class "Lorg/kohsuke/github/connector/GitHubConnectorResponse;";
+v7 = virtualinvoke v6.<java.lang.Class: java.lang.String getName()>();
+interfaceinvoke v1.<java.util.Map: java.lang.Object put(java.lang.Object,java.lang.Object)>(v7, v0);
+v8 = virtualinvoke v0.<org.kohsuke.github.connector.GitHubConnectorResponse: org.kohsuke.github.connector.GitHubConnectorRequest request()>();
+v9 = v8 instanceof org.kohsuke.github.GitHubRequest;
+if v9 == 0 goto label1;
+v10 = virtualinvoke v0.<org.kohsuke.github.connector.GitHubConnectorResponse: org.kohsuke.github.connector.GitHubConnectorRequest request()>();
+v11 = virtualinvoke v10.<org.kohsuke.github.GitHubRequest: java.util.Map injectedMappingValues()>();
+interfaceinvoke v1.<java.util.Map: void putAll(java.util.Map)>(v11);
+label1:
+v12 = <org.kohsuke.github.GitHubClient: com.fasterxml.jackson.databind.ObjectMapper MAPPER>;
+v13 = new com.fasterxml.jackson.databind.InjectableValues$Std;
+specialinvoke v13.<com.fasterxml.jackson.databind.InjectableValues$Std: void <init>(java.util.Map)>(v1);
+v14 = virtualinvoke v12.<com.fasterxml.jackson.databind.ObjectMapper: com.fasterxml.jackson.databind.ObjectReader reader(com.fasterxml.jackson.databind.InjectableValues)>(v13);
+return v14;
+}
+static java.util.Map unmodifiableMapOrNull(java.util.Map)
+{
+java.util.Map v0, v1;
+v0 := @parameter0: java.util.Map;
+if v0 != null goto label1;
+v1 = null;
+goto label2;
+label1:
+v1 = staticinvoke <java.util.Collections: java.util.Map unmodifiableMap(java.util.Map)>(v0);
+label2:
+return v1;
+}
+static java.util.List unmodifiableListOrNull(java.util.List)
+{
+java.util.List v0, v1;
+v0 := @parameter0: java.util.List;
+if v0 != null goto label1;
+v1 = null;
+goto label2;
+label1:
+v1 = staticinvoke <java.util.Collections: java.util.List unmodifiableList(java.util.List)>(v0);
+label2:
+return v1;
+}
+static void <clinit>()
+{
+com.fasterxml.jackson.databind.DeserializationFeature v13;
+com.fasterxml.jackson.databind.MapperFeature v15;
+java.lang.String v1;
+com.fasterxml.jackson.databind.introspect.VisibilityChecker$Std v6;
+com.fasterxml.jackson.databind.PropertyNamingStrategy v17;
+com.fasterxml.jackson.databind.ObjectMapper v12, v14, v16, v3, v5;
+java.util.logging.Logger v2;
+com.fasterxml.jackson.'annotation'.JsonAutoDetect$Visibility v10, v11, v7, v8, v9;
+java.time.format.DateTimeFormatter v4;
+java.lang.Class v0;
+v0 = class "Lorg/kohsuke/github/GitHubClient;";
+v1 = virtualinvoke v0.<java.lang.Class: java.lang.String getName()>();
+v2 = staticinvoke <java.util.logging.Logger: java.util.logging.Logger getLogger(java.lang.String)>(v1);
+<org.kohsuke.github.GitHubClient: java.util.logging.Logger LOGGER> = v2;
+v3 = new com.fasterxml.jackson.databind.ObjectMapper;
+specialinvoke v3.<com.fasterxml.jackson.databind.ObjectMapper: void <init>()>();
+<org.kohsuke.github.GitHubClient: com.fasterxml.jackson.databind.ObjectMapper MAPPER> = v3;
+v4 = staticinvoke <java.time.format.DateTimeFormatter: java.time.format.DateTimeFormatter ofPattern(java.lang.String)>("yyyy/MM/dd HH:mm:ss Z");
+<org.kohsuke.github.GitHubClient: java.time.format.DateTimeFormatter DATE_TIME_PARSER_SLASHES> = v4;
+v5 = <org.kohsuke.github.GitHubClient: com.fasterxml.jackson.databind.ObjectMapper MAPPER>;
+v6 = new com.fasterxml.jackson.databind.introspect.VisibilityChecker$Std;
+v7 = <com.fasterxml.jackson.'annotation'.JsonAutoDetect$Visibility: com.fasterxml.jackson.'annotation'.JsonAutoDetect$Visibility NONE>;
+v8 = <com.fasterxml.jackson.'annotation'.JsonAutoDetect$Visibility: com.fasterxml.jackson.'annotation'.JsonAutoDetect$Visibility NONE>;
+v9 = <com.fasterxml.jackson.'annotation'.JsonAutoDetect$Visibility: com.fasterxml.jackson.'annotation'.JsonAutoDetect$Visibility NONE>;
+v10 = <com.fasterxml.jackson.'annotation'.JsonAutoDetect$Visibility: com.fasterxml.jackson.'annotation'.JsonAutoDetect$Visibility NONE>;
+v11 = <com.fasterxml.jackson.'annotation'.JsonAutoDetect$Visibility: com.fasterxml.jackson.'annotation'.JsonAutoDetect$Visibility ANY>;
+specialinvoke v6.<com.fasterxml.jackson.databind.introspect.VisibilityChecker$Std: void <init>(com.fasterxml.jackson.'annotation'.JsonAutoDetect$Visibility,com.fasterxml.jackson.'annotation'.JsonAutoDetect$Visibility,com.fasterxml.jackson.'annotation'.JsonAutoDetect$Visibility,com.fasterxml.jackson.'annotation'.JsonAutoDetect$Visibility,com.fasterxml.jackson.'annotation'.JsonAutoDetect$Visibility)>(v7, v8, v9, v10, v11);
+virtualinvoke v5.<com.fasterxml.jackson.databind.ObjectMapper: com.fasterxml.jackson.databind.ObjectMapper setVisibility(com.fasterxml.jackson.databind.introspect.VisibilityChecker)>(v6);
+v12 = <org.kohsuke.github.GitHubClient: com.fasterxml.jackson.databind.ObjectMapper MAPPER>;
+v13 = <com.fasterxml.jackson.databind.DeserializationFeature: com.fasterxml.jackson.databind.DeserializationFeature FAIL_ON_UNKNOWN_PROPERTIES>;
+virtualinvoke v12.<com.fasterxml.jackson.databind.ObjectMapper: com.fasterxml.jackson.databind.ObjectMapper configure(com.fasterxml.jackson.databind.DeserializationFeature,boolean)>(v13, 0);
+v14 = <org.kohsuke.github.GitHubClient: com.fasterxml.jackson.databind.ObjectMapper MAPPER>;
+v15 = <com.fasterxml.jackson.databind.MapperFeature: com.fasterxml.jackson.databind.MapperFeature ACCEPT_CASE_INSENSITIVE_ENUMS>;
+virtualinvoke v14.<com.fasterxml.jackson.databind.ObjectMapper: com.fasterxml.jackson.databind.ObjectMapper configure(com.fasterxml.jackson.databind.MapperFeature,boolean)>(v15, 1);
+v16 = <org.kohsuke.github.GitHubClient: com.fasterxml.jackson.databind.ObjectMapper MAPPER>;
+v17 = <com.fasterxml.jackson.databind.PropertyNamingStrategy: com.fasterxml.jackson.databind.PropertyNamingStrategy SNAKE_CASE>;
+virtualinvoke v16.<com.fasterxml.jackson.databind.ObjectMapper: com.fasterxml.jackson.databind.ObjectMapper setPropertyNamingStrategy(com.fasterxml.jackson.databind.PropertyNamingStrategy)>(v17);
+return;
+}
+}

@@ -1,0 +1,408 @@
+public class io.netty.handler.codec.haproxy.HAProxyMessageDecoder extends io.netty.handler.codec.ByteToMessageDecoder
+{
+private static final int V1_MAX_LENGTH;
+private static final int V2_MAX_LENGTH;
+private static final int V2_MIN_LENGTH;
+private static final int V2_MAX_TLV;
+private static final int BINARY_PREFIX_LENGTH;
+private static final io.netty.handler.codec.ProtocolDetectionResult DETECTION_RESULT_V1;
+private static final io.netty.handler.codec.ProtocolDetectionResult DETECTION_RESULT_V2;
+private io.netty.handler.codec.haproxy.HAProxyMessageDecoder$HeaderExtractor headerExtractor;
+private boolean discarding;
+private int discardedBytes;
+private final boolean failFast;
+private boolean finished;
+private int version;
+private final int v2MaxHeaderSize;
+public void <init>()
+{
+io.netty.handler.codec.haproxy.HAProxyMessageDecoder v0;
+v0 := @this: io.netty.handler.codec.haproxy.HAProxyMessageDecoder;
+specialinvoke v0.<io.netty.handler.codec.haproxy.HAProxyMessageDecoder: void <init>(boolean)>(1);
+return;
+}
+public void <init>(boolean)
+{
+int v2;
+io.netty.handler.codec.haproxy.HAProxyMessageDecoder v0;
+boolean v1;
+v0 := @this: io.netty.handler.codec.haproxy.HAProxyMessageDecoder;
+v1 := @parameter0: boolean;
+specialinvoke v0.<io.netty.handler.codec.ByteToMessageDecoder: void <init>()>();
+v2 = (int) -1;
+v0.<io.netty.handler.codec.haproxy.HAProxyMessageDecoder: int version> = v2;
+v0.<io.netty.handler.codec.haproxy.HAProxyMessageDecoder: int v2MaxHeaderSize> = 65551;
+v0.<io.netty.handler.codec.haproxy.HAProxyMessageDecoder: boolean failFast> = v1;
+return;
+}
+public void <init>(int)
+{
+int v1;
+io.netty.handler.codec.haproxy.HAProxyMessageDecoder v0;
+v0 := @this: io.netty.handler.codec.haproxy.HAProxyMessageDecoder;
+v1 := @parameter0: int;
+specialinvoke v0.<io.netty.handler.codec.haproxy.HAProxyMessageDecoder: void <init>(int,boolean)>(v1, 1);
+return;
+}
+public void <init>(int, boolean)
+{
+io.netty.handler.codec.haproxy.HAProxyMessageDecoder v0;
+int v1, v3, v4, v5;
+boolean v2;
+v0 := @this: io.netty.handler.codec.haproxy.HAProxyMessageDecoder;
+v1 := @parameter0: int;
+v2 := @parameter1: boolean;
+specialinvoke v0.<io.netty.handler.codec.ByteToMessageDecoder: void <init>()>();
+v3 = (int) -1;
+v0.<io.netty.handler.codec.haproxy.HAProxyMessageDecoder: int version> = v3;
+if v1 >= 1 goto label1;
+v0.<io.netty.handler.codec.haproxy.HAProxyMessageDecoder: int v2MaxHeaderSize> = 232;
+goto label4;
+label1:
+v4 = (int) 65319;
+if v1 <= v4 goto label2;
+v0.<io.netty.handler.codec.haproxy.HAProxyMessageDecoder: int v2MaxHeaderSize> = 65551;
+goto label4;
+label2:
+v5 = v1 + 232;
+if v5 <= 65551 goto label3;
+v0.<io.netty.handler.codec.haproxy.HAProxyMessageDecoder: int v2MaxHeaderSize> = 65551;
+goto label4;
+label3:
+v0.<io.netty.handler.codec.haproxy.HAProxyMessageDecoder: int v2MaxHeaderSize> = v5;
+label4:
+v0.<io.netty.handler.codec.haproxy.HAProxyMessageDecoder: boolean failFast> = v2;
+return;
+}
+private static int findVersion(io.netty.buffer.ByteBuf)
+{
+byte[] v4;
+byte v8;
+io.netty.buffer.ByteBuf v0;
+int v1, v2, v3, v6, v7;
+boolean v5;
+v0 := @parameter0: io.netty.buffer.ByteBuf;
+v1 = virtualinvoke v0.<io.netty.buffer.ByteBuf: int readableBytes()>();
+if v1 >= 13 goto label1;
+v2 = (int) -1;
+return v2;
+label1:
+v3 = virtualinvoke v0.<io.netty.buffer.ByteBuf: int readerIndex()>();
+v4 = <io.netty.handler.codec.haproxy.HAProxyConstants: byte[] BINARY_PREFIX>;
+v5 = staticinvoke <io.netty.handler.codec.haproxy.HAProxyMessageDecoder: boolean match(byte[],io.netty.buffer.ByteBuf,int)>(v4, v0, v3);
+if v5 == 0 goto label2;
+v6 = <io.netty.handler.codec.haproxy.HAProxyMessageDecoder: int BINARY_PREFIX_LENGTH>;
+v7 = v3 + v6;
+v8 = virtualinvoke v0.<io.netty.buffer.ByteBuf: byte getByte(int)>(v7);
+goto label3;
+label2:
+v8 = 1;
+label3:
+return v8;
+}
+private static int findEndOfHeader(io.netty.buffer.ByteBuf)
+{
+io.netty.buffer.ByteBuf v0;
+int v1, v2, v3, v4, v5, v6, v7;
+v0 := @parameter0: io.netty.buffer.ByteBuf;
+v1 = virtualinvoke v0.<io.netty.buffer.ByteBuf: int readableBytes()>();
+if v1 >= 16 goto label1;
+v2 = (int) -1;
+return v2;
+label1:
+v3 = virtualinvoke v0.<io.netty.buffer.ByteBuf: int readerIndex()>();
+v4 = v3 + 14;
+v5 = virtualinvoke v0.<io.netty.buffer.ByteBuf: int getUnsignedShort(int)>(v4);
+v6 = 16 + v5;
+if v1 < v6 goto label2;
+return v6;
+label2:
+v7 = (int) -1;
+return v7;
+}
+private static int findEndOfLine(io.netty.buffer.ByteBuf)
+{
+byte v3, v6;
+io.netty.buffer.ByteBuf v0;
+int v1, v2, v4, v5, v7;
+v0 := @parameter0: io.netty.buffer.ByteBuf;
+v1 = virtualinvoke v0.<io.netty.buffer.ByteBuf: int writerIndex()>();
+v2 = virtualinvoke v0.<io.netty.buffer.ByteBuf: int readerIndex()>();
+label1:
+if v2 >= v1 goto label3;
+v3 = virtualinvoke v0.<io.netty.buffer.ByteBuf: byte getByte(int)>(v2);
+if v3 != 13 goto label2;
+v4 = v1 - 1;
+if v2 >= v4 goto label2;
+v5 = v2 + 1;
+v6 = virtualinvoke v0.<io.netty.buffer.ByteBuf: byte getByte(int)>(v5);
+if v6 != 10 goto label2;
+return v2;
+label2:
+v2 = v2 + 1;
+goto label1;
+label3:
+v7 = (int) -1;
+return v7;
+}
+public boolean isSingleDecode()
+{
+io.netty.handler.codec.haproxy.HAProxyMessageDecoder v0;
+v0 := @this: io.netty.handler.codec.haproxy.HAProxyMessageDecoder;
+return 1;
+}
+public void channelRead(io.netty.channel.ChannelHandlerContext, java.lang.Object) throws java.lang.Exception
+{
+io.netty.channel.ChannelHandlerContext v1;
+io.netty.handler.codec.haproxy.HAProxyMessageDecoder v0;
+java.lang.Object v2;
+io.netty.channel.ChannelPipeline v4;
+boolean v3;
+v0 := @this: io.netty.handler.codec.haproxy.HAProxyMessageDecoder;
+v1 := @parameter0: io.netty.channel.ChannelHandlerContext;
+v2 := @parameter1: java.lang.Object;
+specialinvoke v0.<io.netty.handler.codec.ByteToMessageDecoder: void channelRead(io.netty.channel.ChannelHandlerContext,java.lang.Object)>(v1, v2);
+v3 = v0.<io.netty.handler.codec.haproxy.HAProxyMessageDecoder: boolean finished>;
+if v3 == 0 goto label1;
+v4 = interfaceinvoke v1.<io.netty.channel.ChannelHandlerContext: io.netty.channel.ChannelPipeline pipeline()>();
+interfaceinvoke v4.<io.netty.channel.ChannelPipeline: io.netty.channel.ChannelPipeline remove(io.netty.channel.ChannelHandler)>(v0);
+label1:
+return;
+}
+protected final void decode(io.netty.channel.ChannelHandlerContext, io.netty.buffer.ByteBuf, java.util.List) throws java.lang.Exception
+{
+io.netty.handler.codec.haproxy.HAProxyProtocolException v15;
+io.netty.channel.ChannelHandlerContext v1;
+io.netty.buffer.ByteBuf v2, v9;
+java.nio.charset.Charset v11;
+int v10, v4, v5, v6, v7, v8;
+java.lang.String v12;
+io.netty.handler.codec.haproxy.HAProxyMessage v13, v14;
+io.netty.handler.codec.haproxy.HAProxyMessageDecoder v0;
+java.util.List v3;
+v0 := @this: io.netty.handler.codec.haproxy.HAProxyMessageDecoder;
+v1 := @parameter0: io.netty.channel.ChannelHandlerContext;
+v2 := @parameter1: io.netty.buffer.ByteBuf;
+v3 := @parameter2: java.util.List;
+v4 = v0.<io.netty.handler.codec.haproxy.HAProxyMessageDecoder: int version>;
+v5 = (int) -1;
+if v4 != v5 goto label1;
+v6 = staticinvoke <io.netty.handler.codec.haproxy.HAProxyMessageDecoder: int findVersion(io.netty.buffer.ByteBuf)>(v2);
+v0.<io.netty.handler.codec.haproxy.HAProxyMessageDecoder: int version> = v6;
+v7 = (int) -1;
+if v6 != v7 goto label1;
+return;
+label1:
+v8 = v0.<io.netty.handler.codec.haproxy.HAProxyMessageDecoder: int version>;
+if v8 != 1 goto label2;
+v9 = specialinvoke v0.<io.netty.handler.codec.haproxy.HAProxyMessageDecoder: io.netty.buffer.ByteBuf decodeLine(io.netty.channel.ChannelHandlerContext,io.netty.buffer.ByteBuf)>(v1, v2);
+goto label3;
+label2:
+v9 = specialinvoke v0.<io.netty.handler.codec.haproxy.HAProxyMessageDecoder: io.netty.buffer.ByteBuf decodeStruct(io.netty.channel.ChannelHandlerContext,io.netty.buffer.ByteBuf)>(v1, v2);
+label3:
+if v9 == null goto label8;
+v0.<io.netty.handler.codec.haproxy.HAProxyMessageDecoder: boolean finished> = 1;
+label4:
+v10 = v0.<io.netty.handler.codec.haproxy.HAProxyMessageDecoder: int version>;
+if v10 != 1 goto label5;
+v11 = <io.netty.util.CharsetUtil: java.nio.charset.Charset US_ASCII>;
+v12 = virtualinvoke v9.<io.netty.buffer.ByteBuf: java.lang.String toString(java.nio.charset.Charset)>(v11);
+v13 = staticinvoke <io.netty.handler.codec.haproxy.HAProxyMessage: io.netty.handler.codec.haproxy.HAProxyMessage decodeHeader(java.lang.String)>(v12);
+interfaceinvoke v3.<java.util.List: boolean add(java.lang.Object)>(v13);
+goto label8;
+label5:
+v14 = staticinvoke <io.netty.handler.codec.haproxy.HAProxyMessage: io.netty.handler.codec.haproxy.HAProxyMessage decodeHeader(io.netty.buffer.ByteBuf)>(v9);
+interfaceinvoke v3.<java.util.List: boolean add(java.lang.Object)>(v14);
+label6:
+goto label8;
+label7:
+v15 := @caughtexception;
+specialinvoke v0.<io.netty.handler.codec.haproxy.HAProxyMessageDecoder: void fail(io.netty.channel.ChannelHandlerContext,java.lang.String,java.lang.Exception)>(v1, null, v15);
+label8:
+return;
+catch io.netty.handler.codec.haproxy.HAProxyProtocolException from label4 to label6 with label7;
+}
+private io.netty.buffer.ByteBuf decodeStruct(io.netty.channel.ChannelHandlerContext, io.netty.buffer.ByteBuf) throws java.lang.Exception
+{
+io.netty.handler.codec.haproxy.HAProxyMessageDecoder$StructHeaderExtractor v4;
+io.netty.channel.ChannelHandlerContext v1;
+io.netty.handler.codec.haproxy.HAProxyMessageDecoder v0;
+io.netty.buffer.ByteBuf v2, v7;
+int v5;
+io.netty.handler.codec.haproxy.HAProxyMessageDecoder$HeaderExtractor v3, v6;
+v0 := @this: io.netty.handler.codec.haproxy.HAProxyMessageDecoder;
+v1 := @parameter0: io.netty.channel.ChannelHandlerContext;
+v2 := @parameter1: io.netty.buffer.ByteBuf;
+v3 = v0.<io.netty.handler.codec.haproxy.HAProxyMessageDecoder: io.netty.handler.codec.haproxy.HAProxyMessageDecoder$HeaderExtractor headerExtractor>;
+if v3 != null goto label1;
+v4 = new io.netty.handler.codec.haproxy.HAProxyMessageDecoder$StructHeaderExtractor;
+v5 = v0.<io.netty.handler.codec.haproxy.HAProxyMessageDecoder: int v2MaxHeaderSize>;
+specialinvoke v4.<io.netty.handler.codec.haproxy.HAProxyMessageDecoder$StructHeaderExtractor: void <init>(io.netty.handler.codec.haproxy.HAProxyMessageDecoder,int)>(v0, v5);
+v0.<io.netty.handler.codec.haproxy.HAProxyMessageDecoder: io.netty.handler.codec.haproxy.HAProxyMessageDecoder$HeaderExtractor headerExtractor> = v4;
+label1:
+v6 = v0.<io.netty.handler.codec.haproxy.HAProxyMessageDecoder: io.netty.handler.codec.haproxy.HAProxyMessageDecoder$HeaderExtractor headerExtractor>;
+v7 = virtualinvoke v6.<io.netty.handler.codec.haproxy.HAProxyMessageDecoder$HeaderExtractor: io.netty.buffer.ByteBuf extract(io.netty.channel.ChannelHandlerContext,io.netty.buffer.ByteBuf)>(v1, v2);
+return v7;
+}
+private io.netty.buffer.ByteBuf decodeLine(io.netty.channel.ChannelHandlerContext, io.netty.buffer.ByteBuf) throws java.lang.Exception
+{
+io.netty.channel.ChannelHandlerContext v1;
+io.netty.handler.codec.haproxy.HAProxyMessageDecoder v0;
+io.netty.buffer.ByteBuf v2, v6;
+io.netty.handler.codec.haproxy.HAProxyMessageDecoder$HeaderExtractor v3, v5;
+io.netty.handler.codec.haproxy.HAProxyMessageDecoder$LineHeaderExtractor v4;
+v0 := @this: io.netty.handler.codec.haproxy.HAProxyMessageDecoder;
+v1 := @parameter0: io.netty.channel.ChannelHandlerContext;
+v2 := @parameter1: io.netty.buffer.ByteBuf;
+v3 = v0.<io.netty.handler.codec.haproxy.HAProxyMessageDecoder: io.netty.handler.codec.haproxy.HAProxyMessageDecoder$HeaderExtractor headerExtractor>;
+if v3 != null goto label1;
+v4 = new io.netty.handler.codec.haproxy.HAProxyMessageDecoder$LineHeaderExtractor;
+specialinvoke v4.<io.netty.handler.codec.haproxy.HAProxyMessageDecoder$LineHeaderExtractor: void <init>(io.netty.handler.codec.haproxy.HAProxyMessageDecoder,int)>(v0, 108);
+v0.<io.netty.handler.codec.haproxy.HAProxyMessageDecoder: io.netty.handler.codec.haproxy.HAProxyMessageDecoder$HeaderExtractor headerExtractor> = v4;
+label1:
+v5 = v0.<io.netty.handler.codec.haproxy.HAProxyMessageDecoder: io.netty.handler.codec.haproxy.HAProxyMessageDecoder$HeaderExtractor headerExtractor>;
+v6 = virtualinvoke v5.<io.netty.handler.codec.haproxy.HAProxyMessageDecoder$HeaderExtractor: io.netty.buffer.ByteBuf extract(io.netty.channel.ChannelHandlerContext,io.netty.buffer.ByteBuf)>(v1, v2);
+return v6;
+}
+private void failOverLimit(io.netty.channel.ChannelHandlerContext, int)
+{
+io.netty.channel.ChannelHandlerContext v1;
+io.netty.handler.codec.haproxy.HAProxyMessageDecoder v0;
+int v2;
+java.lang.String v3;
+v0 := @this: io.netty.handler.codec.haproxy.HAProxyMessageDecoder;
+v1 := @parameter0: io.netty.channel.ChannelHandlerContext;
+v2 := @parameter1: int;
+v3 = staticinvoke <java.lang.String: java.lang.String valueOf(int)>(v2);
+specialinvoke v0.<io.netty.handler.codec.haproxy.HAProxyMessageDecoder: void failOverLimit(io.netty.channel.ChannelHandlerContext,java.lang.String)>(v1, v3);
+return;
+}
+private void failOverLimit(io.netty.channel.ChannelHandlerContext, java.lang.String)
+{
+io.netty.channel.ChannelHandlerContext v1;
+io.netty.handler.codec.haproxy.HAProxyMessageDecoder v0;
+int v3, v4;
+java.lang.String v2, v5;
+v0 := @this: io.netty.handler.codec.haproxy.HAProxyMessageDecoder;
+v1 := @parameter0: io.netty.channel.ChannelHandlerContext;
+v2 := @parameter1: java.lang.String;
+v3 = v0.<io.netty.handler.codec.haproxy.HAProxyMessageDecoder: int version>;
+if v3 != 1 goto label1;
+v4 = 108;
+goto label2;
+label1:
+v4 = v0.<io.netty.handler.codec.haproxy.HAProxyMessageDecoder: int v2MaxHeaderSize>;
+label2:
+v5 = dynamicinvoke "makeConcatWithConstants" <java.lang.String (java.lang.String,int)>(v2, v4) <java.lang.invoke.StringConcatFactory: java.lang.invoke.CallSite makeConcatWithConstants(java.lang.invoke.MethodHandles$Lookup,java.lang.String,java.lang.invoke.MethodType,java.lang.String,java.lang.Object[])>("header length (\u0001) exceeds the allowed maximum (\u0001)");
+specialinvoke v0.<io.netty.handler.codec.haproxy.HAProxyMessageDecoder: void fail(io.netty.channel.ChannelHandlerContext,java.lang.String,java.lang.Exception)>(v1, v5, null);
+return;
+}
+private void fail(io.netty.channel.ChannelHandlerContext, java.lang.String, java.lang.Exception)
+{
+io.netty.handler.codec.haproxy.HAProxyProtocolException v4, v5, v6, v7, v8;
+java.lang.Exception v3;
+io.netty.channel.ChannelHandlerContext v1;
+io.netty.handler.codec.haproxy.HAProxyMessageDecoder v0;
+java.lang.String v2;
+v0 := @this: io.netty.handler.codec.haproxy.HAProxyMessageDecoder;
+v1 := @parameter0: io.netty.channel.ChannelHandlerContext;
+v2 := @parameter1: java.lang.String;
+v3 := @parameter2: java.lang.Exception;
+v0.<io.netty.handler.codec.haproxy.HAProxyMessageDecoder: boolean finished> = 1;
+interfaceinvoke v1.<io.netty.channel.ChannelHandlerContext: io.netty.channel.ChannelFuture close()>();
+if v2 == null goto label2;
+if v3 == null goto label1;
+v4 = new io.netty.handler.codec.haproxy.HAProxyProtocolException;
+specialinvoke v4.<io.netty.handler.codec.haproxy.HAProxyProtocolException: void <init>(java.lang.String,java.lang.Throwable)>(v2, v3);
+v5 = v4;
+goto label4;
+label1:
+if v2 == null goto label2;
+v6 = new io.netty.handler.codec.haproxy.HAProxyProtocolException;
+specialinvoke v6.<io.netty.handler.codec.haproxy.HAProxyProtocolException: void <init>(java.lang.String)>(v2);
+v5 = v6;
+goto label4;
+label2:
+if v3 == null goto label3;
+v7 = new io.netty.handler.codec.haproxy.HAProxyProtocolException;
+specialinvoke v7.<io.netty.handler.codec.haproxy.HAProxyProtocolException: void <init>(java.lang.Throwable)>(v3);
+v5 = v7;
+goto label4;
+label3:
+v8 = new io.netty.handler.codec.haproxy.HAProxyProtocolException;
+specialinvoke v8.<io.netty.handler.codec.haproxy.HAProxyProtocolException: void <init>()>();
+v5 = v8;
+label4:
+throw v5;
+}
+public static io.netty.handler.codec.ProtocolDetectionResult detectProtocol(io.netty.buffer.ByteBuf)
+{
+byte[] v4, v7;
+io.netty.handler.codec.ProtocolDetectionResult v10, v2, v6, v9;
+io.netty.buffer.ByteBuf v0;
+int v1, v3;
+boolean v5, v8;
+v0 := @parameter0: io.netty.buffer.ByteBuf;
+v1 = virtualinvoke v0.<io.netty.buffer.ByteBuf: int readableBytes()>();
+if v1 >= 12 goto label1;
+v2 = staticinvoke <io.netty.handler.codec.ProtocolDetectionResult: io.netty.handler.codec.ProtocolDetectionResult needsMoreData()>();
+return v2;
+label1:
+v3 = virtualinvoke v0.<io.netty.buffer.ByteBuf: int readerIndex()>();
+v4 = <io.netty.handler.codec.haproxy.HAProxyConstants: byte[] BINARY_PREFIX>;
+v5 = staticinvoke <io.netty.handler.codec.haproxy.HAProxyMessageDecoder: boolean match(byte[],io.netty.buffer.ByteBuf,int)>(v4, v0, v3);
+if v5 == 0 goto label2;
+v6 = <io.netty.handler.codec.haproxy.HAProxyMessageDecoder: io.netty.handler.codec.ProtocolDetectionResult DETECTION_RESULT_V2>;
+return v6;
+label2:
+v7 = <io.netty.handler.codec.haproxy.HAProxyConstants: byte[] TEXT_PREFIX>;
+v8 = staticinvoke <io.netty.handler.codec.haproxy.HAProxyMessageDecoder: boolean match(byte[],io.netty.buffer.ByteBuf,int)>(v7, v0, v3);
+if v8 == 0 goto label3;
+v9 = <io.netty.handler.codec.haproxy.HAProxyMessageDecoder: io.netty.handler.codec.ProtocolDetectionResult DETECTION_RESULT_V1>;
+return v9;
+label3:
+v10 = staticinvoke <io.netty.handler.codec.ProtocolDetectionResult: io.netty.handler.codec.ProtocolDetectionResult invalid()>();
+return v10;
+}
+private static boolean match(byte[], io.netty.buffer.ByteBuf, int)
+{
+byte[] v0;
+byte v6, v7;
+io.netty.buffer.ByteBuf v1;
+int v2, v3, v4, v5;
+v0 := @parameter0: byte[];
+v1 := @parameter1: io.netty.buffer.ByteBuf;
+v2 := @parameter2: int;
+v3 = 0;
+label1:
+v4 = lengthof v0;
+if v3 >= v4 goto label3;
+v5 = v2 + v3;
+v6 = virtualinvoke v1.<io.netty.buffer.ByteBuf: byte getByte(int)>(v5);
+v7 = v0[v3];
+if v6 == v7 goto label2;
+return 0;
+label2:
+v3 = v3 + 1;
+goto label1;
+label3:
+return 1;
+}
+static void <clinit>()
+{
+byte[] v0;
+io.netty.handler.codec.haproxy.HAProxyProtocolVersion v2, v4;
+io.netty.handler.codec.ProtocolDetectionResult v3, v5;
+int v1;
+v0 = <io.netty.handler.codec.haproxy.HAProxyConstants: byte[] BINARY_PREFIX>;
+v1 = lengthof v0;
+<io.netty.handler.codec.haproxy.HAProxyMessageDecoder: int BINARY_PREFIX_LENGTH> = v1;
+v2 = <io.netty.handler.codec.haproxy.HAProxyProtocolVersion: io.netty.handler.codec.haproxy.HAProxyProtocolVersion V1>;
+v3 = staticinvoke <io.netty.handler.codec.ProtocolDetectionResult: io.netty.handler.codec.ProtocolDetectionResult detected(java.lang.Object)>(v2);
+<io.netty.handler.codec.haproxy.HAProxyMessageDecoder: io.netty.handler.codec.ProtocolDetectionResult DETECTION_RESULT_V1> = v3;
+v4 = <io.netty.handler.codec.haproxy.HAProxyProtocolVersion: io.netty.handler.codec.haproxy.HAProxyProtocolVersion V2>;
+v5 = staticinvoke <io.netty.handler.codec.ProtocolDetectionResult: io.netty.handler.codec.ProtocolDetectionResult detected(java.lang.Object)>(v4);
+<io.netty.handler.codec.haproxy.HAProxyMessageDecoder: io.netty.handler.codec.ProtocolDetectionResult DETECTION_RESULT_V2> = v5;
+return;
+}
+}

@@ -1,0 +1,264 @@
+final class io.netty.handler.ssl.PemReader extends java.lang.Object
+{
+private static final io.netty.util.internal.logging.InternalLogger logger;
+private static final java.util.regex.Pattern CERT_HEADER;
+private static final java.util.regex.Pattern CERT_FOOTER;
+private static final java.util.regex.Pattern KEY_HEADER;
+private static final java.util.regex.Pattern KEY_FOOTER;
+private static final java.util.regex.Pattern BODY;
+static io.netty.buffer.ByteBuf[] readCertificates(java.io.File) throws java.security.cert.CertificateException
+{
+java.lang.Throwable v3;
+io.netty.buffer.ByteBuf[] v2;
+java.io.FileInputStream v1;
+java.lang.String v6;
+java.security.cert.CertificateException v5;
+java.io.File v0;
+java.io.FileNotFoundException v4;
+v0 := @parameter0: java.io.File;
+label1:
+v1 = new java.io.FileInputStream;
+specialinvoke v1.<java.io.FileInputStream: void <init>(java.io.File)>(v0);
+label2:
+v2 = staticinvoke <io.netty.handler.ssl.PemReader: io.netty.buffer.ByteBuf[] readCertificates(java.io.InputStream)>(v1);
+label3:
+staticinvoke <io.netty.handler.ssl.PemReader: void safeClose(java.io.InputStream)>(v1);
+label4:
+return v2;
+label5:
+v3 := @caughtexception;
+staticinvoke <io.netty.handler.ssl.PemReader: void safeClose(java.io.InputStream)>(v1);
+throw v3;
+label6:
+v4 := @caughtexception;
+v5 = new java.security.cert.CertificateException;
+v6 = dynamicinvoke "makeConcatWithConstants" <java.lang.String (java.io.File)>(v0) <java.lang.invoke.StringConcatFactory: java.lang.invoke.CallSite makeConcatWithConstants(java.lang.invoke.MethodHandles$Lookup,java.lang.String,java.lang.invoke.MethodType,java.lang.String,java.lang.Object[])>("could not find certificate file: \u0001");
+specialinvoke v5.<java.security.cert.CertificateException: void <init>(java.lang.String)>(v6);
+throw v5;
+catch java.lang.Throwable from label2 to label3 with label5;
+catch java.io.FileNotFoundException from label1 to label4 with label6;
+}
+static io.netty.buffer.ByteBuf[] readCertificates(java.io.InputStream) throws java.security.cert.CertificateException
+{
+java.lang.Object[] v21;
+java.util.ArrayList v4;
+java.util.regex.Matcher v6;
+io.netty.buffer.ByteBuf v13, v16;
+java.nio.charset.Charset v12;
+int v7;
+java.lang.String v1, v11;
+boolean v10, v15, v18, v8;
+io.netty.buffer.ByteBuf[] v20;
+java.io.IOException v2;
+java.security.cert.CertificateException v19, v3;
+java.util.regex.Pattern v14, v17, v5, v9;
+java.io.InputStream v0;
+v0 := @parameter0: java.io.InputStream;
+label1:
+v1 = staticinvoke <io.netty.handler.ssl.PemReader: java.lang.String readContent(java.io.InputStream)>(v0);
+label2:
+goto label4;
+label3:
+v2 := @caughtexception;
+v3 = new java.security.cert.CertificateException;
+specialinvoke v3.<java.security.cert.CertificateException: void <init>(java.lang.String,java.lang.Throwable)>("failed to read certificate input stream", v2);
+throw v3;
+label4:
+v4 = new java.util.ArrayList;
+specialinvoke v4.<java.util.ArrayList: void <init>()>();
+v5 = <io.netty.handler.ssl.PemReader: java.util.regex.Pattern CERT_HEADER>;
+v6 = virtualinvoke v5.<java.util.regex.Pattern: java.util.regex.Matcher matcher(java.lang.CharSequence)>(v1);
+v7 = 0;
+label5:
+v8 = virtualinvoke v6.<java.util.regex.Matcher: boolean find(int)>(v7);
+if v8 == 0 goto label6;
+v9 = <io.netty.handler.ssl.PemReader: java.util.regex.Pattern BODY>;
+virtualinvoke v6.<java.util.regex.Matcher: java.util.regex.Matcher usePattern(java.util.regex.Pattern)>(v9);
+v10 = virtualinvoke v6.<java.util.regex.Matcher: boolean find()>();
+if v10 == 0 goto label6;
+v11 = virtualinvoke v6.<java.util.regex.Matcher: java.lang.String group(int)>(0);
+v12 = <io.netty.util.CharsetUtil: java.nio.charset.Charset US_ASCII>;
+v13 = staticinvoke <io.netty.buffer.Unpooled: io.netty.buffer.ByteBuf copiedBuffer(java.lang.CharSequence,java.nio.charset.Charset)>(v11, v12);
+v14 = <io.netty.handler.ssl.PemReader: java.util.regex.Pattern CERT_FOOTER>;
+virtualinvoke v6.<java.util.regex.Matcher: java.util.regex.Matcher usePattern(java.util.regex.Pattern)>(v14);
+v15 = virtualinvoke v6.<java.util.regex.Matcher: boolean find()>();
+if v15 == 0 goto label6;
+v16 = staticinvoke <io.netty.handler.codec.base64.Base64: io.netty.buffer.ByteBuf decode(io.netty.buffer.ByteBuf)>(v13);
+virtualinvoke v13.<io.netty.buffer.ByteBuf: boolean release()>();
+interfaceinvoke v4.<java.util.List: boolean add(java.lang.Object)>(v16);
+v7 = virtualinvoke v6.<java.util.regex.Matcher: int end()>();
+v17 = <io.netty.handler.ssl.PemReader: java.util.regex.Pattern CERT_HEADER>;
+virtualinvoke v6.<java.util.regex.Matcher: java.util.regex.Matcher usePattern(java.util.regex.Pattern)>(v17);
+goto label5;
+label6:
+v18 = interfaceinvoke v4.<java.util.List: boolean isEmpty()>();
+if v18 == 0 goto label7;
+v19 = new java.security.cert.CertificateException;
+specialinvoke v19.<java.security.cert.CertificateException: void <init>(java.lang.String)>("found no certificates in input stream");
+throw v19;
+label7:
+v20 = newarray (io.netty.buffer.ByteBuf)[0];
+v21 = interfaceinvoke v4.<java.util.List: java.lang.Object[] toArray(java.lang.Object[])>(v20);
+return v21;
+catch java.io.IOException from label1 to label2 with label3;
+}
+static io.netty.buffer.ByteBuf readPrivateKey(java.io.File) throws java.security.KeyException
+{
+java.lang.Throwable v3;
+io.netty.buffer.ByteBuf v2;
+java.security.KeyException v5;
+java.io.FileInputStream v1;
+java.lang.String v6;
+java.io.File v0;
+java.io.FileNotFoundException v4;
+v0 := @parameter0: java.io.File;
+label1:
+v1 = new java.io.FileInputStream;
+specialinvoke v1.<java.io.FileInputStream: void <init>(java.io.File)>(v0);
+label2:
+v2 = staticinvoke <io.netty.handler.ssl.PemReader: io.netty.buffer.ByteBuf readPrivateKey(java.io.InputStream)>(v1);
+label3:
+staticinvoke <io.netty.handler.ssl.PemReader: void safeClose(java.io.InputStream)>(v1);
+label4:
+return v2;
+label5:
+v3 := @caughtexception;
+staticinvoke <io.netty.handler.ssl.PemReader: void safeClose(java.io.InputStream)>(v1);
+throw v3;
+label6:
+v4 := @caughtexception;
+v5 = new java.security.KeyException;
+v6 = dynamicinvoke "makeConcatWithConstants" <java.lang.String (java.io.File)>(v0) <java.lang.invoke.StringConcatFactory: java.lang.invoke.CallSite makeConcatWithConstants(java.lang.invoke.MethodHandles$Lookup,java.lang.String,java.lang.invoke.MethodType,java.lang.String,java.lang.Object[])>("could not find key file: \u0001");
+specialinvoke v5.<java.security.KeyException: void <init>(java.lang.String)>(v6);
+throw v5;
+catch java.lang.Throwable from label2 to label3 with label5;
+catch java.io.FileNotFoundException from label1 to label4 with label6;
+}
+static io.netty.buffer.ByteBuf readPrivateKey(java.io.InputStream) throws java.security.KeyException
+{
+java.security.KeyException v10, v16, v3, v7;
+java.util.regex.Matcher v5;
+io.netty.buffer.ByteBuf v13, v17;
+java.nio.charset.Charset v12;
+java.lang.String v1, v11;
+boolean v15, v6, v9;
+java.io.IOException v2;
+java.util.regex.Pattern v14, v4, v8;
+java.io.InputStream v0;
+v0 := @parameter0: java.io.InputStream;
+label1:
+v1 = staticinvoke <io.netty.handler.ssl.PemReader: java.lang.String readContent(java.io.InputStream)>(v0);
+label2:
+goto label4;
+label3:
+v2 := @caughtexception;
+v3 = new java.security.KeyException;
+specialinvoke v3.<java.security.KeyException: void <init>(java.lang.String,java.lang.Throwable)>("failed to read key input stream", v2);
+throw v3;
+label4:
+v4 = <io.netty.handler.ssl.PemReader: java.util.regex.Pattern KEY_HEADER>;
+v5 = virtualinvoke v4.<java.util.regex.Pattern: java.util.regex.Matcher matcher(java.lang.CharSequence)>(v1);
+v6 = virtualinvoke v5.<java.util.regex.Matcher: boolean find()>();
+if v6 != 0 goto label5;
+v7 = staticinvoke <io.netty.handler.ssl.PemReader: java.security.KeyException keyNotFoundException()>();
+throw v7;
+label5:
+v8 = <io.netty.handler.ssl.PemReader: java.util.regex.Pattern BODY>;
+virtualinvoke v5.<java.util.regex.Matcher: java.util.regex.Matcher usePattern(java.util.regex.Pattern)>(v8);
+v9 = virtualinvoke v5.<java.util.regex.Matcher: boolean find()>();
+if v9 != 0 goto label6;
+v10 = staticinvoke <io.netty.handler.ssl.PemReader: java.security.KeyException keyNotFoundException()>();
+throw v10;
+label6:
+v11 = virtualinvoke v5.<java.util.regex.Matcher: java.lang.String group(int)>(0);
+v12 = <io.netty.util.CharsetUtil: java.nio.charset.Charset US_ASCII>;
+v13 = staticinvoke <io.netty.buffer.Unpooled: io.netty.buffer.ByteBuf copiedBuffer(java.lang.CharSequence,java.nio.charset.Charset)>(v11, v12);
+v14 = <io.netty.handler.ssl.PemReader: java.util.regex.Pattern KEY_FOOTER>;
+virtualinvoke v5.<java.util.regex.Matcher: java.util.regex.Matcher usePattern(java.util.regex.Pattern)>(v14);
+v15 = virtualinvoke v5.<java.util.regex.Matcher: boolean find()>();
+if v15 != 0 goto label7;
+v16 = staticinvoke <io.netty.handler.ssl.PemReader: java.security.KeyException keyNotFoundException()>();
+throw v16;
+label7:
+v17 = staticinvoke <io.netty.handler.codec.base64.Base64: io.netty.buffer.ByteBuf decode(io.netty.buffer.ByteBuf)>(v13);
+virtualinvoke v13.<io.netty.buffer.ByteBuf: boolean release()>();
+return v17;
+catch java.io.IOException from label1 to label2 with label3;
+}
+private static java.security.KeyException keyNotFoundException()
+{
+java.security.KeyException v0;
+v0 = new java.security.KeyException;
+specialinvoke v0.<java.security.KeyException: void <init>(java.lang.String)>("could not find a PKCS #8 private key in input stream (see https://netty.io/wiki/sslcontextbuilder-and-private-key.html for more information)");
+return v0;
+}
+private static java.lang.String readContent(java.io.InputStream) throws java.io.IOException
+{
+java.lang.Throwable v7;
+byte[] v2;
+java.io.ByteArrayOutputStream v1;
+java.nio.charset.Charset v4;
+int v3;
+java.lang.String v5, v6;
+java.io.InputStream v0;
+v0 := @parameter0: java.io.InputStream;
+v1 = new java.io.ByteArrayOutputStream;
+specialinvoke v1.<java.io.ByteArrayOutputStream: void <init>()>();
+label1:
+v2 = newarray (byte)[8192];
+label2:
+v3 = virtualinvoke v0.<java.io.InputStream: int read(byte[])>(v2);
+if v3 < 0 goto label3;
+virtualinvoke v1.<java.io.ByteArrayOutputStream: void write(byte[],int,int)>(v2, 0, v3);
+goto label2;
+label3:
+v4 = <io.netty.util.CharsetUtil: java.nio.charset.Charset US_ASCII>;
+v5 = virtualinvoke v4.<java.nio.charset.Charset: java.lang.String name()>();
+v6 = virtualinvoke v1.<java.io.ByteArrayOutputStream: java.lang.String toString(java.lang.String)>(v5);
+label4:
+staticinvoke <io.netty.handler.ssl.PemReader: void safeClose(java.io.OutputStream)>(v1);
+return v6;
+label5:
+v7 := @caughtexception;
+staticinvoke <io.netty.handler.ssl.PemReader: void safeClose(java.io.OutputStream)>(v1);
+throw v7;
+catch java.lang.Throwable from label1 to label4 with label5;
+}
+private static void safeClose(java.io.InputStream)
+{
+java.io.InputStream v0;
+v0 := @parameter0: java.io.InputStream;
+return;
+}
+private static void safeClose(java.io.OutputStream)
+{
+java.io.OutputStream v0;
+v0 := @parameter0: java.io.OutputStream;
+return;
+}
+private void <init>()
+{
+io.netty.handler.ssl.PemReader v0;
+v0 := @this: io.netty.handler.ssl.PemReader;
+specialinvoke v0.<java.lang.Object: void <init>()>();
+return;
+}
+static void <clinit>()
+{
+io.netty.util.internal.logging.InternalLogger v0;
+java.util.regex.Pattern v1, v2, v3, v4, v5;
+v0 = staticinvoke <io.netty.util.internal.logging.InternalLoggerFactory: io.netty.util.internal.logging.InternalLogger getInstance(java.lang.Class)>(class "Lio/netty/handler/ssl/PemReader;");
+<io.netty.handler.ssl.PemReader: io.netty.util.internal.logging.InternalLogger logger> = v0;
+v1 = staticinvoke <java.util.regex.Pattern: java.util.regex.Pattern compile(java.lang.String)>("-+BEGIN\\s[^-\\r\\n]*CERTIFICATE[^-\\r\\n]*-+(?:\\s|\\r|\\n)+");
+<io.netty.handler.ssl.PemReader: java.util.regex.Pattern CERT_HEADER> = v1;
+v2 = staticinvoke <java.util.regex.Pattern: java.util.regex.Pattern compile(java.lang.String)>("-+END\\s[^-\\r\\n]*CERTIFICATE[^-\\r\\n]*-+(?:\\s|\\r|\\n)*");
+<io.netty.handler.ssl.PemReader: java.util.regex.Pattern CERT_FOOTER> = v2;
+v3 = staticinvoke <java.util.regex.Pattern: java.util.regex.Pattern compile(java.lang.String)>("-+BEGIN\\s[^-\\r\\n]*PRIVATE\\s+KEY[^-\\r\\n]*-+(?:\\s|\\r|\\n)+");
+<io.netty.handler.ssl.PemReader: java.util.regex.Pattern KEY_HEADER> = v3;
+v4 = staticinvoke <java.util.regex.Pattern: java.util.regex.Pattern compile(java.lang.String)>("-+END\\s[^-\\r\\n]*PRIVATE\\s+KEY[^-\\r\\n]*-+(?:\\s|\\r|\\n)*");
+<io.netty.handler.ssl.PemReader: java.util.regex.Pattern KEY_FOOTER> = v4;
+v5 = staticinvoke <java.util.regex.Pattern: java.util.regex.Pattern compile(java.lang.String,int)>("[a-z0-9+/=][a-z0-9+/=\\r\\n]*", 2);
+<io.netty.handler.ssl.PemReader: java.util.regex.Pattern BODY> = v5;
+return;
+}
+}

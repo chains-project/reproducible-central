@@ -1,0 +1,1290 @@
+public final class io.netty.channel.nio.NioEventLoop extends io.netty.channel.SingleThreadEventLoop
+{
+private static final io.netty.util.internal.logging.InternalLogger logger;
+private static final int CLEANUP_INTERVAL;
+private static final boolean DISABLE_KEY_SET_OPTIMIZATION;
+private static final int MIN_PREMATURE_SELECTOR_RETURNS;
+private static final int SELECTOR_AUTO_REBUILD_THRESHOLD;
+private final io.netty.util.IntSupplier selectNowSupplier;
+private java.nio.channels.Selector selector;
+private java.nio.channels.Selector unwrappedSelector;
+private io.netty.channel.nio.SelectedSelectionKeySet selectedKeys;
+private final java.nio.channels.spi.SelectorProvider provider;
+private static final long AWAKE;
+private static final long NONE;
+private final java.util.concurrent.atomic.AtomicLong nextWakeupNanos;
+private final io.netty.channel.SelectStrategy selectStrategy;
+private volatile int ioRatio;
+private int cancelledKeys;
+private boolean needsToSelectAgain;
+static final boolean $assertionsDisabled;
+void <init>(io.netty.channel.nio.NioEventLoopGroup, java.util.concurrent.Executor, java.nio.channels.spi.SelectorProvider, io.netty.channel.SelectStrategy, io.netty.util.concurrent.RejectedExecutionHandler, io.netty.channel.EventLoopTaskQueueFactory, io.netty.channel.EventLoopTaskQueueFactory)
+{
+java.nio.channels.Selector v15, v16;
+io.netty.channel.nio.NioEventLoop$SelectorTuple v14;
+java.nio.channels.spi.SelectorProvider v3;
+io.netty.channel.nio.NioEventLoop$1 v10;
+io.netty.util.concurrent.RejectedExecutionHandler v5;
+io.netty.channel.EventLoopTaskQueueFactory v6, v7;
+java.util.concurrent.Executor v2;
+io.netty.channel.SelectStrategy v4;
+io.netty.channel.nio.NioEventLoopGroup v1;
+java.util.concurrent.atomic.AtomicLong v11;
+io.netty.channel.nio.NioEventLoop v0;
+java.lang.Object v12, v13;
+java.util.Queue v8, v9;
+v0 := @this: io.netty.channel.nio.NioEventLoop;
+v1 := @parameter0: io.netty.channel.nio.NioEventLoopGroup;
+v2 := @parameter1: java.util.concurrent.Executor;
+v3 := @parameter2: java.nio.channels.spi.SelectorProvider;
+v4 := @parameter3: io.netty.channel.SelectStrategy;
+v5 := @parameter4: io.netty.util.concurrent.RejectedExecutionHandler;
+v6 := @parameter5: io.netty.channel.EventLoopTaskQueueFactory;
+v7 := @parameter6: io.netty.channel.EventLoopTaskQueueFactory;
+v8 = staticinvoke <io.netty.channel.nio.NioEventLoop: java.util.Queue newTaskQueue(io.netty.channel.EventLoopTaskQueueFactory)>(v6);
+v9 = staticinvoke <io.netty.channel.nio.NioEventLoop: java.util.Queue newTaskQueue(io.netty.channel.EventLoopTaskQueueFactory)>(v7);
+specialinvoke v0.<io.netty.channel.SingleThreadEventLoop: void <init>(io.netty.channel.EventLoopGroup,java.util.concurrent.Executor,boolean,java.util.Queue,java.util.Queue,io.netty.util.concurrent.RejectedExecutionHandler)>(v1, v2, 0, v8, v9, v5);
+v10 = new io.netty.channel.nio.NioEventLoop$1;
+specialinvoke v10.<io.netty.channel.nio.NioEventLoop$1: void <init>(io.netty.channel.nio.NioEventLoop)>(v0);
+v0.<io.netty.channel.nio.NioEventLoop: io.netty.util.IntSupplier selectNowSupplier> = v10;
+v11 = new java.util.concurrent.atomic.AtomicLong;
+specialinvoke v11.<java.util.concurrent.atomic.AtomicLong: void <init>(long)>(-1L);
+v0.<io.netty.channel.nio.NioEventLoop: java.util.concurrent.atomic.AtomicLong nextWakeupNanos> = v11;
+v0.<io.netty.channel.nio.NioEventLoop: int ioRatio> = 50;
+v12 = staticinvoke <io.netty.util.internal.ObjectUtil: java.lang.Object checkNotNull(java.lang.Object,java.lang.String)>(v3, "selectorProvider");
+v0.<io.netty.channel.nio.NioEventLoop: java.nio.channels.spi.SelectorProvider provider> = v12;
+v13 = staticinvoke <io.netty.util.internal.ObjectUtil: java.lang.Object checkNotNull(java.lang.Object,java.lang.String)>(v4, "selectStrategy");
+v0.<io.netty.channel.nio.NioEventLoop: io.netty.channel.SelectStrategy selectStrategy> = v13;
+v14 = specialinvoke v0.<io.netty.channel.nio.NioEventLoop: io.netty.channel.nio.NioEventLoop$SelectorTuple openSelector()>();
+v15 = v14.<io.netty.channel.nio.NioEventLoop$SelectorTuple: java.nio.channels.Selector selector>;
+v0.<io.netty.channel.nio.NioEventLoop: java.nio.channels.Selector selector> = v15;
+v16 = v14.<io.netty.channel.nio.NioEventLoop$SelectorTuple: java.nio.channels.Selector unwrappedSelector>;
+v0.<io.netty.channel.nio.NioEventLoop: java.nio.channels.Selector unwrappedSelector> = v16;
+return;
+}
+private static java.util.Queue newTaskQueue(io.netty.channel.EventLoopTaskQueueFactory)
+{
+io.netty.channel.EventLoopTaskQueueFactory v0;
+int v1, v3;
+java.util.Queue v2, v4;
+v0 := @parameter0: io.netty.channel.EventLoopTaskQueueFactory;
+if v0 != null goto label1;
+v1 = <io.netty.channel.nio.NioEventLoop: int DEFAULT_MAX_PENDING_TASKS>;
+v2 = staticinvoke <io.netty.channel.nio.NioEventLoop: java.util.Queue newTaskQueue0(int)>(v1);
+return v2;
+label1:
+v3 = <io.netty.channel.nio.NioEventLoop: int DEFAULT_MAX_PENDING_TASKS>;
+v4 = interfaceinvoke v0.<io.netty.channel.EventLoopTaskQueueFactory: java.util.Queue newTaskQueue(int)>(v3);
+return v4;
+}
+private io.netty.channel.nio.NioEventLoop$SelectorTuple openSelector()
+{
+io.netty.channel.nio.SelectedSelectionKeySet v15;
+io.netty.channel.nio.NioEventLoop$SelectorTuple v14, v20, v22, v6;
+java.nio.channels.spi.AbstractSelector v2;
+io.netty.channel.nio.SelectedSelectionKeySetSelector v23;
+java.nio.channels.spi.SelectorProvider v1;
+io.netty.channel.nio.NioEventLoop$3 v7;
+io.netty.channel.nio.NioEventLoop$4 v16;
+boolean v11, v12, v18, v5, v9;
+java.io.IOException v3;
+io.netty.channel.ChannelException v4;
+io.netty.util.internal.logging.InternalLogger v13, v19, v21;
+io.netty.channel.nio.NioEventLoop v0;
+java.lang.Class v10;
+java.lang.Object v17, v8;
+v0 := @this: io.netty.channel.nio.NioEventLoop;
+label1:
+v1 = v0.<io.netty.channel.nio.NioEventLoop: java.nio.channels.spi.SelectorProvider provider>;
+v2 = virtualinvoke v1.<java.nio.channels.spi.SelectorProvider: java.nio.channels.spi.AbstractSelector openSelector()>();
+label2:
+goto label4;
+label3:
+v3 := @caughtexception;
+v4 = new io.netty.channel.ChannelException;
+specialinvoke v4.<io.netty.channel.ChannelException: void <init>(java.lang.String,java.lang.Throwable)>("failed to open a new selector", v3);
+throw v4;
+label4:
+v5 = <io.netty.channel.nio.NioEventLoop: boolean DISABLE_KEY_SET_OPTIMIZATION>;
+if v5 == 0 goto label5;
+v6 = new io.netty.channel.nio.NioEventLoop$SelectorTuple;
+specialinvoke v6.<io.netty.channel.nio.NioEventLoop$SelectorTuple: void <init>(java.nio.channels.Selector)>(v2);
+return v6;
+label5:
+v7 = new io.netty.channel.nio.NioEventLoop$3;
+specialinvoke v7.<io.netty.channel.nio.NioEventLoop$3: void <init>(io.netty.channel.nio.NioEventLoop)>(v0);
+v8 = staticinvoke <java.security.AccessController: java.lang.Object doPrivileged(java.security.PrivilegedAction)>(v7);
+v9 = v8 instanceof java.lang.Class;
+if v9 == 0 goto label6;
+v10 = virtualinvoke v2.<java.lang.Object: java.lang.Class getClass()>();
+v11 = virtualinvoke v8.<java.lang.Class: boolean isAssignableFrom(java.lang.Class)>(v10);
+if v11 != 0 goto label8;
+label6:
+v12 = v8 instanceof java.lang.Throwable;
+if v12 == 0 goto label7;
+v13 = <io.netty.channel.nio.NioEventLoop: io.netty.util.internal.logging.InternalLogger logger>;
+interfaceinvoke v13.<io.netty.util.internal.logging.InternalLogger: void trace(java.lang.String,java.lang.Object,java.lang.Object)>("failed to instrument a special java.util.Set into: {}", v2, v8);
+label7:
+v14 = new io.netty.channel.nio.NioEventLoop$SelectorTuple;
+specialinvoke v14.<io.netty.channel.nio.NioEventLoop$SelectorTuple: void <init>(java.nio.channels.Selector)>(v2);
+return v14;
+label8:
+v15 = new io.netty.channel.nio.SelectedSelectionKeySet;
+specialinvoke v15.<io.netty.channel.nio.SelectedSelectionKeySet: void <init>()>();
+v16 = new io.netty.channel.nio.NioEventLoop$4;
+specialinvoke v16.<io.netty.channel.nio.NioEventLoop$4: void <init>(io.netty.channel.nio.NioEventLoop,java.lang.Class,java.nio.channels.Selector,io.netty.channel.nio.SelectedSelectionKeySet)>(v0, v8, v2, v15);
+v17 = staticinvoke <java.security.AccessController: java.lang.Object doPrivileged(java.security.PrivilegedAction)>(v16);
+v18 = v17 instanceof java.lang.Exception;
+if v18 == 0 goto label9;
+v0.<io.netty.channel.nio.NioEventLoop: io.netty.channel.nio.SelectedSelectionKeySet selectedKeys> = null;
+v19 = <io.netty.channel.nio.NioEventLoop: io.netty.util.internal.logging.InternalLogger logger>;
+interfaceinvoke v19.<io.netty.util.internal.logging.InternalLogger: void trace(java.lang.String,java.lang.Object,java.lang.Object)>("failed to instrument a special java.util.Set into: {}", v2, v17);
+v20 = new io.netty.channel.nio.NioEventLoop$SelectorTuple;
+specialinvoke v20.<io.netty.channel.nio.NioEventLoop$SelectorTuple: void <init>(java.nio.channels.Selector)>(v2);
+return v20;
+label9:
+v0.<io.netty.channel.nio.NioEventLoop: io.netty.channel.nio.SelectedSelectionKeySet selectedKeys> = v15;
+v21 = <io.netty.channel.nio.NioEventLoop: io.netty.util.internal.logging.InternalLogger logger>;
+interfaceinvoke v21.<io.netty.util.internal.logging.InternalLogger: void trace(java.lang.String,java.lang.Object)>("instrumented a special java.util.Set into: {}", v2);
+v22 = new io.netty.channel.nio.NioEventLoop$SelectorTuple;
+v23 = new io.netty.channel.nio.SelectedSelectionKeySetSelector;
+specialinvoke v23.<io.netty.channel.nio.SelectedSelectionKeySetSelector: void <init>(java.nio.channels.Selector,io.netty.channel.nio.SelectedSelectionKeySet)>(v2, v15);
+specialinvoke v22.<io.netty.channel.nio.NioEventLoop$SelectorTuple: void <init>(java.nio.channels.Selector,java.nio.channels.Selector)>(v2, v23);
+return v22;
+catch java.io.IOException from label1 to label2 with label3;
+}
+public java.nio.channels.spi.SelectorProvider selectorProvider()
+{
+io.netty.channel.nio.NioEventLoop v0;
+java.nio.channels.spi.SelectorProvider v1;
+v0 := @this: io.netty.channel.nio.NioEventLoop;
+v1 = v0.<io.netty.channel.nio.NioEventLoop: java.nio.channels.spi.SelectorProvider provider>;
+return v1;
+}
+protected java.util.Queue newTaskQueue(int)
+{
+int v1;
+io.netty.channel.nio.NioEventLoop v0;
+java.util.Queue v2;
+v0 := @this: io.netty.channel.nio.NioEventLoop;
+v1 := @parameter0: int;
+v2 = staticinvoke <io.netty.channel.nio.NioEventLoop: java.util.Queue newTaskQueue0(int)>(v1);
+return v2;
+}
+private static java.util.Queue newTaskQueue0(int)
+{
+int v0;
+java.util.Queue v1;
+v0 := @parameter0: int;
+if v0 != 2147483647 goto label1;
+v1 = staticinvoke <io.netty.util.internal.PlatformDependent: java.util.Queue newMpscQueue()>();
+goto label2;
+label1:
+v1 = staticinvoke <io.netty.util.internal.PlatformDependent: java.util.Queue newMpscQueue(int)>(v0);
+label2:
+return v1;
+}
+public void register(java.nio.channels.SelectableChannel, int, io.netty.channel.nio.NioTask)
+{
+java.lang.IllegalStateException v13;
+io.netty.channel.nio.NioTask v3;
+java.lang.Thread v18;
+int v10, v2, v5, v6, v7, v8;
+java.lang.String v11;
+io.netty.channel.nio.NioEventLoop$5 v15;
+boolean v12, v14;
+java.lang.IllegalArgumentException v4, v9;
+java.lang.InterruptedException v17;
+java.nio.channels.SelectableChannel v1;
+io.netty.channel.nio.NioEventLoop v0;
+io.netty.util.concurrent.Future v16;
+v0 := @this: io.netty.channel.nio.NioEventLoop;
+v1 := @parameter0: java.nio.channels.SelectableChannel;
+v2 := @parameter1: int;
+v3 := @parameter2: io.netty.channel.nio.NioTask;
+staticinvoke <io.netty.util.internal.ObjectUtil: java.lang.Object checkNotNull(java.lang.Object,java.lang.String)>(v1, "ch");
+if v2 != 0 goto label1;
+v4 = new java.lang.IllegalArgumentException;
+specialinvoke v4.<java.lang.IllegalArgumentException: void <init>(java.lang.String)>("interestOps must be non-zero.");
+throw v4;
+label1:
+v5 = virtualinvoke v1.<java.nio.channels.SelectableChannel: int validOps()>();
+v6 = (int) -1;
+v7 = v5 ^ v6;
+v8 = v2 & v7;
+if v8 == 0 goto label2;
+v9 = new java.lang.IllegalArgumentException;
+v10 = virtualinvoke v1.<java.nio.channels.SelectableChannel: int validOps()>();
+v11 = dynamicinvoke "makeConcatWithConstants" <java.lang.String (int,int)>(v2, v10) <java.lang.invoke.StringConcatFactory: java.lang.invoke.CallSite makeConcatWithConstants(java.lang.invoke.MethodHandles$Lookup,java.lang.String,java.lang.invoke.MethodType,java.lang.String,java.lang.Object[])>("invalid interestOps: \u0001(validOps: \u0001)");
+specialinvoke v9.<java.lang.IllegalArgumentException: void <init>(java.lang.String)>(v11);
+throw v9;
+label2:
+staticinvoke <io.netty.util.internal.ObjectUtil: java.lang.Object checkNotNull(java.lang.Object,java.lang.String)>(v3, "task");
+v12 = virtualinvoke v0.<io.netty.channel.nio.NioEventLoop: boolean isShutdown()>();
+if v12 == 0 goto label3;
+v13 = new java.lang.IllegalStateException;
+specialinvoke v13.<java.lang.IllegalStateException: void <init>(java.lang.String)>("event loop shut down");
+throw v13;
+label3:
+v14 = virtualinvoke v0.<io.netty.channel.nio.NioEventLoop: boolean inEventLoop()>();
+if v14 == 0 goto label4;
+specialinvoke v0.<io.netty.channel.nio.NioEventLoop: void register0(java.nio.channels.SelectableChannel,int,io.netty.channel.nio.NioTask)>(v1, v2, v3);
+goto label7;
+label4:
+v15 = new io.netty.channel.nio.NioEventLoop$5;
+specialinvoke v15.<io.netty.channel.nio.NioEventLoop$5: void <init>(io.netty.channel.nio.NioEventLoop,java.nio.channels.SelectableChannel,int,io.netty.channel.nio.NioTask)>(v0, v1, v2, v3);
+v16 = virtualinvoke v0.<io.netty.channel.nio.NioEventLoop: io.netty.util.concurrent.Future submit(java.lang.Runnable)>(v15);
+interfaceinvoke v16.<io.netty.util.concurrent.Future: io.netty.util.concurrent.Future sync()>();
+label5:
+goto label7;
+label6:
+v17 := @caughtexception;
+v18 = staticinvoke <java.lang.Thread: java.lang.Thread currentThread()>();
+virtualinvoke v18.<java.lang.Thread: void interrupt()>();
+label7:
+return;
+catch java.lang.InterruptedException from label4 to label5 with label6;
+}
+private void register0(java.nio.channels.SelectableChannel, int, io.netty.channel.nio.NioTask)
+{
+io.netty.channel.EventLoopException v6;
+java.nio.channels.SelectableChannel v1;
+java.nio.channels.Selector v4;
+int v2;
+io.netty.channel.nio.NioEventLoop v0;
+io.netty.channel.nio.NioTask v3;
+java.lang.Exception v5;
+v0 := @this: io.netty.channel.nio.NioEventLoop;
+v1 := @parameter0: java.nio.channels.SelectableChannel;
+v2 := @parameter1: int;
+v3 := @parameter2: io.netty.channel.nio.NioTask;
+label1:
+v4 = v0.<io.netty.channel.nio.NioEventLoop: java.nio.channels.Selector unwrappedSelector>;
+virtualinvoke v1.<java.nio.channels.SelectableChannel: java.nio.channels.SelectionKey register(java.nio.channels.Selector,int,java.lang.Object)>(v4, v2, v3);
+label2:
+goto label4;
+label3:
+v5 := @caughtexception;
+v6 = new io.netty.channel.EventLoopException;
+specialinvoke v6.<io.netty.channel.EventLoopException: void <init>(java.lang.String,java.lang.Throwable)>("failed to register a channel", v5);
+throw v6;
+label4:
+return;
+catch java.lang.Exception from label1 to label2 with label3;
+}
+public int getIoRatio()
+{
+int v1;
+io.netty.channel.nio.NioEventLoop v0;
+v0 := @this: io.netty.channel.nio.NioEventLoop;
+v1 = v0.<io.netty.channel.nio.NioEventLoop: int ioRatio>;
+return v1;
+}
+public void setIoRatio(int)
+{
+int v1;
+io.netty.channel.nio.NioEventLoop v0;
+java.lang.String v3;
+java.lang.IllegalArgumentException v2;
+v0 := @this: io.netty.channel.nio.NioEventLoop;
+v1 := @parameter0: int;
+if v1 <= 0 goto label1;
+if v1 <= 100 goto label2;
+label1:
+v2 = new java.lang.IllegalArgumentException;
+v3 = dynamicinvoke "makeConcatWithConstants" <java.lang.String (int)>(v1) <java.lang.invoke.StringConcatFactory: java.lang.invoke.CallSite makeConcatWithConstants(java.lang.invoke.MethodHandles$Lookup,java.lang.String,java.lang.invoke.MethodType,java.lang.String,java.lang.Object[])>("ioRatio: \u0001 (expected: 0 < ioRatio <= 100)");
+specialinvoke v2.<java.lang.IllegalArgumentException: void <init>(java.lang.String)>(v3);
+throw v2;
+label2:
+v0.<io.netty.channel.nio.NioEventLoop: int ioRatio> = v1;
+return;
+}
+public void rebuildSelector()
+{
+io.netty.channel.nio.NioEventLoop v0;
+io.netty.channel.nio.NioEventLoop$6 v2;
+boolean v1;
+v0 := @this: io.netty.channel.nio.NioEventLoop;
+v1 = virtualinvoke v0.<io.netty.channel.nio.NioEventLoop: boolean inEventLoop()>();
+if v1 != 0 goto label1;
+v2 = new io.netty.channel.nio.NioEventLoop$6;
+specialinvoke v2.<io.netty.channel.nio.NioEventLoop$6: void <init>(io.netty.channel.nio.NioEventLoop)>(v0);
+virtualinvoke v0.<io.netty.channel.nio.NioEventLoop: void execute(java.lang.Runnable)>(v2);
+return;
+label1:
+specialinvoke v0.<io.netty.channel.nio.NioEventLoop: void rebuildSelector0()>();
+return;
+}
+public int registeredChannels()
+{
+java.nio.channels.Selector v1;
+int v3, v4, v5;
+io.netty.channel.nio.NioEventLoop v0;
+java.util.Set v2;
+v0 := @this: io.netty.channel.nio.NioEventLoop;
+v1 = v0.<io.netty.channel.nio.NioEventLoop: java.nio.channels.Selector selector>;
+v2 = virtualinvoke v1.<java.nio.channels.Selector: java.util.Set keys()>();
+v3 = interfaceinvoke v2.<java.util.Set: int size()>();
+v4 = v0.<io.netty.channel.nio.NioEventLoop: int cancelledKeys>;
+v5 = v3 - v4;
+return v5;
+}
+public java.util.Iterator registeredChannelsIterator()
+{
+java.util.Iterator v7;
+java.nio.channels.Selector v4;
+java.util.Set v5;
+java.lang.AssertionError v3;
+io.netty.channel.nio.NioEventLoop v0;
+io.netty.channel.nio.NioEventLoop$7 v8;
+boolean v1, v2, v6;
+v0 := @this: io.netty.channel.nio.NioEventLoop;
+v1 = <io.netty.channel.nio.NioEventLoop: boolean $assertionsDisabled>;
+if v1 != 0 goto label1;
+v2 = virtualinvoke v0.<io.netty.channel.nio.NioEventLoop: boolean inEventLoop()>();
+if v2 != 0 goto label1;
+v3 = new java.lang.AssertionError;
+specialinvoke v3.<java.lang.AssertionError: void <init>()>();
+throw v3;
+label1:
+v4 = v0.<io.netty.channel.nio.NioEventLoop: java.nio.channels.Selector selector>;
+v5 = virtualinvoke v4.<java.nio.channels.Selector: java.util.Set keys()>();
+v6 = interfaceinvoke v5.<java.util.Set: boolean isEmpty()>();
+if v6 == 0 goto label2;
+v7 = staticinvoke <io.netty.channel.SingleThreadEventLoop$ChannelsReadOnlyIterator: java.util.Iterator empty()>();
+return v7;
+label2:
+v8 = new io.netty.channel.nio.NioEventLoop$7;
+specialinvoke v8.<io.netty.channel.nio.NioEventLoop$7: void <init>(io.netty.channel.nio.NioEventLoop,java.util.Set)>(v0, v5);
+return v8;
+}
+private void rebuildSelector0()
+{
+io.netty.channel.ChannelPromise v25;
+boolean v11, v19, v22, v29, v8;
+java.util.Set v6;
+java.lang.Exception v20, v3;
+io.netty.util.internal.logging.InternalLogger v21, v28, v30, v4;
+java.nio.channels.Selector v1, v13, v17, v26, v27;
+io.netty.channel.nio.NioEventLoop$SelectorTuple v2;
+int v15, v5;
+java.lang.String v31;
+io.netty.channel.nio.AbstractNioChannel$NioUnsafe v23, v24;
+java.util.Iterator v7;
+java.nio.channels.SelectionKey v14, v18;
+java.nio.channels.SelectableChannel v12, v16;
+io.netty.channel.nio.NioEventLoop v0;
+java.lang.Object v10, v9;
+v0 := @this: io.netty.channel.nio.NioEventLoop;
+v1 = v0.<io.netty.channel.nio.NioEventLoop: java.nio.channels.Selector selector>;
+if v1 != null goto label01;
+return;
+label01:
+v2 = specialinvoke v0.<io.netty.channel.nio.NioEventLoop: io.netty.channel.nio.NioEventLoop$SelectorTuple openSelector()>();
+label02:
+goto label04;
+label03:
+v3 := @caughtexception;
+v4 = <io.netty.channel.nio.NioEventLoop: io.netty.util.internal.logging.InternalLogger logger>;
+interfaceinvoke v4.<io.netty.util.internal.logging.InternalLogger: void warn(java.lang.String,java.lang.Throwable)>("Failed to create a new Selector.", v3);
+return;
+label04:
+v5 = 0;
+v6 = virtualinvoke v1.<java.nio.channels.Selector: java.util.Set keys()>();
+v7 = interfaceinvoke v6.<java.util.Set: java.util.Iterator iterator()>();
+label05:
+v8 = interfaceinvoke v7.<java.util.Iterator: boolean hasNext()>();
+if v8 == 0 goto label12;
+v9 = interfaceinvoke v7.<java.util.Iterator: java.lang.Object next()>();
+v10 = virtualinvoke v9.<java.nio.channels.SelectionKey: java.lang.Object attachment()>();
+label06:
+v11 = virtualinvoke v9.<java.nio.channels.SelectionKey: boolean isValid()>();
+if v11 == 0 goto label05;
+v12 = virtualinvoke v9.<java.nio.channels.SelectionKey: java.nio.channels.SelectableChannel channel()>();
+v13 = v2.<io.netty.channel.nio.NioEventLoop$SelectorTuple: java.nio.channels.Selector unwrappedSelector>;
+v14 = virtualinvoke v12.<java.nio.channels.SelectableChannel: java.nio.channels.SelectionKey keyFor(java.nio.channels.Selector)>(v13);
+if v14 != null goto label05;
+label07:
+v15 = virtualinvoke v9.<java.nio.channels.SelectionKey: int interestOps()>();
+virtualinvoke v9.<java.nio.channels.SelectionKey: void cancel()>();
+v16 = virtualinvoke v9.<java.nio.channels.SelectionKey: java.nio.channels.SelectableChannel channel()>();
+v17 = v2.<io.netty.channel.nio.NioEventLoop$SelectorTuple: java.nio.channels.Selector unwrappedSelector>;
+v18 = virtualinvoke v16.<java.nio.channels.SelectableChannel: java.nio.channels.SelectionKey register(java.nio.channels.Selector,int,java.lang.Object)>(v17, v15, v10);
+v19 = v10 instanceof io.netty.channel.nio.AbstractNioChannel;
+if v19 == 0 goto label08;
+v10.<io.netty.channel.nio.AbstractNioChannel: java.nio.channels.SelectionKey selectionKey> = v18;
+label08:
+v5 = v5 + 1;
+label09:
+goto label05;
+label10:
+v20 := @caughtexception;
+v21 = <io.netty.channel.nio.NioEventLoop: io.netty.util.internal.logging.InternalLogger logger>;
+interfaceinvoke v21.<io.netty.util.internal.logging.InternalLogger: void warn(java.lang.String,java.lang.Throwable)>("Failed to re-register a Channel to the new Selector.", v20);
+v22 = v10 instanceof io.netty.channel.nio.AbstractNioChannel;
+if v22 == 0 goto label11;
+v23 = virtualinvoke v10.<io.netty.channel.nio.AbstractNioChannel: io.netty.channel.nio.AbstractNioChannel$NioUnsafe unsafe()>();
+v24 = virtualinvoke v10.<io.netty.channel.nio.AbstractNioChannel: io.netty.channel.nio.AbstractNioChannel$NioUnsafe unsafe()>();
+v25 = interfaceinvoke v24.<io.netty.channel.nio.AbstractNioChannel$NioUnsafe: io.netty.channel.ChannelPromise voidPromise()>();
+interfaceinvoke v23.<io.netty.channel.nio.AbstractNioChannel$NioUnsafe: void close(io.netty.channel.ChannelPromise)>(v25);
+goto label05;
+label11:
+staticinvoke <io.netty.channel.nio.NioEventLoop: void invokeChannelUnregistered(io.netty.channel.nio.NioTask,java.nio.channels.SelectionKey,java.lang.Throwable)>(v10, v9, v20);
+goto label05;
+label12:
+v26 = v2.<io.netty.channel.nio.NioEventLoop$SelectorTuple: java.nio.channels.Selector selector>;
+v0.<io.netty.channel.nio.NioEventLoop: java.nio.channels.Selector selector> = v26;
+v27 = v2.<io.netty.channel.nio.NioEventLoop$SelectorTuple: java.nio.channels.Selector unwrappedSelector>;
+v0.<io.netty.channel.nio.NioEventLoop: java.nio.channels.Selector unwrappedSelector> = v27;
+v28 = <io.netty.channel.nio.NioEventLoop: io.netty.util.internal.logging.InternalLogger logger>;
+v29 = interfaceinvoke v28.<io.netty.util.internal.logging.InternalLogger: boolean isInfoEnabled()>();
+if v29 == 0 goto label13;
+v30 = <io.netty.channel.nio.NioEventLoop: io.netty.util.internal.logging.InternalLogger logger>;
+v31 = dynamicinvoke "makeConcatWithConstants" <java.lang.String (int)>(v5) <java.lang.invoke.StringConcatFactory: java.lang.invoke.CallSite makeConcatWithConstants(java.lang.invoke.MethodHandles$Lookup,java.lang.String,java.lang.invoke.MethodType,java.lang.String,java.lang.Object[])>("Migrated \u0001 channel(s) to the new Selector.");
+interfaceinvoke v30.<io.netty.util.internal.logging.InternalLogger: void info(java.lang.String)>(v31);
+label13:
+return;
+catch java.lang.Exception from label01 to label02 with label03;
+catch java.lang.Exception from label06 to label07 with label10;
+catch java.lang.Exception from label07 to label09 with label10;
+}
+protected void run()
+{
+java.lang.Integer v41;
+byte v11;
+io.netty.util.internal.logging.InternalLogger v37, v39, v49, v51;
+java.lang.Throwable v15, v21, v24, v31, v47, v59, v61, v65, v66, v70, v9;
+java.nio.channels.CancelledKeyException v48;
+java.nio.channels.Selector v42, v55;
+java.lang.Error v20, v46, v58, v60, v64, v69, v8;
+long v10, v25, v26, v27, v29, v30, v32, v33, v35, v36;
+java.lang.String v53, v54;
+io.netty.channel.SelectStrategy v2;
+java.io.IOException v17;
+java.util.concurrent.atomic.AtomicLong v12, v14, v16;
+io.netty.channel.nio.NioEventLoop v0;
+boolean v13, v18, v19, v23, v38, v4, v43, v44, v45, v50, v56, v57, v6, v62, v63, v67, v68, v7;
+io.netty.util.IntSupplier v3;
+int v1, v22, v28, v34, v40, v5;
+java.lang.Class v52;
+v0 := @this: io.netty.channel.nio.NioEventLoop;
+v1 = 0;
+label01:
+v2 = v0.<io.netty.channel.nio.NioEventLoop: io.netty.channel.SelectStrategy selectStrategy>;
+v3 = v0.<io.netty.channel.nio.NioEventLoop: io.netty.util.IntSupplier selectNowSupplier>;
+v4 = virtualinvoke v0.<io.netty.channel.nio.NioEventLoop: boolean hasTasks()>();
+v5 = interfaceinvoke v2.<io.netty.channel.SelectStrategy: int calculateStrategy(io.netty.util.IntSupplier,boolean)>(v3, v4);
+tableswitch(v5)
+{
+case -3: goto label06;
+case -2: goto label02;
+case -1: goto label06;
+default: goto label16;
+};
+label02:
+v6 = virtualinvoke v0.<io.netty.channel.nio.NioEventLoop: boolean isShuttingDown()>();
+if v6 == 0 goto label01;
+specialinvoke v0.<io.netty.channel.nio.NioEventLoop: void closeAll()>();
+v7 = virtualinvoke v0.<io.netty.channel.nio.NioEventLoop: boolean confirmShutdown()>();
+if v7 == 0 goto label01;
+label03:
+return;
+label04:
+v8 := @caughtexception;
+throw v8;
+label05:
+v9 := @caughtexception;
+staticinvoke <io.netty.channel.nio.NioEventLoop: void handleLoopException(java.lang.Throwable)>(v9);
+goto label01;
+label06:
+v10 = virtualinvoke v0.<io.netty.channel.nio.NioEventLoop: long nextScheduledTaskDeadlineNanos()>();
+v11 = v10 cmp -1L;
+if v11 != 0 goto label07;
+v10 = 9223372036854775807L;
+label07:
+v12 = v0.<io.netty.channel.nio.NioEventLoop: java.util.concurrent.atomic.AtomicLong nextWakeupNanos>;
+virtualinvoke v12.<java.util.concurrent.atomic.AtomicLong: void set(long)>(v10);
+label08:
+v13 = virtualinvoke v0.<io.netty.channel.nio.NioEventLoop: boolean hasTasks()>();
+if v13 != 0 goto label09;
+v5 = specialinvoke v0.<io.netty.channel.nio.NioEventLoop: int select(long)>(v10);
+label09:
+v14 = v0.<io.netty.channel.nio.NioEventLoop: java.util.concurrent.atomic.AtomicLong nextWakeupNanos>;
+virtualinvoke v14.<java.util.concurrent.atomic.AtomicLong: void lazySet(long)>(-1L);
+goto label16;
+label10:
+v15 := @caughtexception;
+v16 = v0.<io.netty.channel.nio.NioEventLoop: java.util.concurrent.atomic.AtomicLong nextWakeupNanos>;
+virtualinvoke v16.<java.util.concurrent.atomic.AtomicLong: void lazySet(long)>(-1L);
+throw v15;
+label11:
+v17 := @caughtexception;
+specialinvoke v0.<io.netty.channel.nio.NioEventLoop: void rebuildSelector0()>();
+v1 = 0;
+staticinvoke <io.netty.channel.nio.NioEventLoop: void handleLoopException(java.lang.Throwable)>(v17);
+label12:
+v18 = virtualinvoke v0.<io.netty.channel.nio.NioEventLoop: boolean isShuttingDown()>();
+if v18 == 0 goto label01;
+specialinvoke v0.<io.netty.channel.nio.NioEventLoop: void closeAll()>();
+v19 = virtualinvoke v0.<io.netty.channel.nio.NioEventLoop: boolean confirmShutdown()>();
+if v19 == 0 goto label01;
+label13:
+return;
+label14:
+v20 := @caughtexception;
+throw v20;
+label15:
+v21 := @caughtexception;
+staticinvoke <io.netty.channel.nio.NioEventLoop: void handleLoopException(java.lang.Throwable)>(v21);
+goto label01;
+label16:
+v1 = v1 + 1;
+v0.<io.netty.channel.nio.NioEventLoop: int cancelledKeys> = 0;
+v0.<io.netty.channel.nio.NioEventLoop: boolean needsToSelectAgain> = 0;
+v22 = v0.<io.netty.channel.nio.NioEventLoop: int ioRatio>;
+if v22 != 100 goto label20;
+label17:
+if v5 <= 0 goto label18;
+specialinvoke v0.<io.netty.channel.nio.NioEventLoop: void processSelectedKeys()>();
+label18:
+v23 = virtualinvoke v0.<io.netty.channel.nio.NioEventLoop: boolean runAllTasks()>();
+goto label25;
+label19:
+v24 := @caughtexception;
+virtualinvoke v0.<io.netty.channel.nio.NioEventLoop: boolean runAllTasks()>();
+throw v24;
+label20:
+if v5 <= 0 goto label24;
+v25 = staticinvoke <java.lang.System: long nanoTime()>();
+label21:
+specialinvoke v0.<io.netty.channel.nio.NioEventLoop: void processSelectedKeys()>();
+label22:
+v26 = staticinvoke <java.lang.System: long nanoTime()>();
+v27 = v26 - v25;
+v28 = 100 - v22;
+v29 = v27 * v28;
+v30 = v29 / v22;
+v23 = virtualinvoke v0.<io.netty.channel.nio.NioEventLoop: boolean runAllTasks(long)>(v30);
+goto label25;
+label23:
+v31 := @caughtexception;
+v32 = staticinvoke <java.lang.System: long nanoTime()>();
+v33 = v32 - v25;
+v34 = 100 - v22;
+v35 = v33 * v34;
+v36 = v35 / v22;
+virtualinvoke v0.<io.netty.channel.nio.NioEventLoop: boolean runAllTasks(long)>(v36);
+throw v31;
+label24:
+v23 = virtualinvoke v0.<io.netty.channel.nio.NioEventLoop: boolean runAllTasks(long)>(0L);
+label25:
+if v23 != 0 goto label26;
+if v5 <= 0 goto label28;
+label26:
+if v1 <= 3 goto label27;
+v37 = <io.netty.channel.nio.NioEventLoop: io.netty.util.internal.logging.InternalLogger logger>;
+v38 = interfaceinvoke v37.<io.netty.util.internal.logging.InternalLogger: boolean isDebugEnabled()>();
+if v38 == 0 goto label27;
+v39 = <io.netty.channel.nio.NioEventLoop: io.netty.util.internal.logging.InternalLogger logger>;
+v40 = v1 - 1;
+v41 = staticinvoke <java.lang.Integer: java.lang.Integer valueOf(int)>(v40);
+v42 = v0.<io.netty.channel.nio.NioEventLoop: java.nio.channels.Selector selector>;
+interfaceinvoke v39.<io.netty.util.internal.logging.InternalLogger: void debug(java.lang.String,java.lang.Object,java.lang.Object)>("Selector.select() returned prematurely {} times in a row for Selector {}.", v41, v42);
+label27:
+v1 = 0;
+goto label29;
+label28:
+v43 = specialinvoke v0.<io.netty.channel.nio.NioEventLoop: boolean unexpectedSelectorWakeup(int)>(v1);
+if v43 == 0 goto label29;
+v1 = 0;
+label29:
+v44 = virtualinvoke v0.<io.netty.channel.nio.NioEventLoop: boolean isShuttingDown()>();
+if v44 == 0 goto label01;
+specialinvoke v0.<io.netty.channel.nio.NioEventLoop: void closeAll()>();
+v45 = virtualinvoke v0.<io.netty.channel.nio.NioEventLoop: boolean confirmShutdown()>();
+if v45 == 0 goto label01;
+label30:
+return;
+label31:
+v46 := @caughtexception;
+throw v46;
+label32:
+v47 := @caughtexception;
+staticinvoke <io.netty.channel.nio.NioEventLoop: void handleLoopException(java.lang.Throwable)>(v47);
+goto label01;
+label33:
+v48 := @caughtexception;
+v49 = <io.netty.channel.nio.NioEventLoop: io.netty.util.internal.logging.InternalLogger logger>;
+v50 = interfaceinvoke v49.<io.netty.util.internal.logging.InternalLogger: boolean isDebugEnabled()>();
+if v50 == 0 goto label34;
+v51 = <io.netty.channel.nio.NioEventLoop: io.netty.util.internal.logging.InternalLogger logger>;
+v52 = class "Ljava/nio/channels/CancelledKeyException;";
+v53 = virtualinvoke v52.<java.lang.Class: java.lang.String getSimpleName()>();
+v54 = dynamicinvoke "makeConcatWithConstants" <java.lang.String (java.lang.String)>(v53) <java.lang.invoke.StringConcatFactory: java.lang.invoke.CallSite makeConcatWithConstants(java.lang.invoke.MethodHandles$Lookup,java.lang.String,java.lang.invoke.MethodType,java.lang.String,java.lang.Object[])>("\u0001 raised by a Selector {} - JDK bug?");
+v55 = v0.<io.netty.channel.nio.NioEventLoop: java.nio.channels.Selector selector>;
+interfaceinvoke v51.<io.netty.util.internal.logging.InternalLogger: void debug(java.lang.String,java.lang.Object,java.lang.Object)>(v54, v55, v48);
+label34:
+v56 = virtualinvoke v0.<io.netty.channel.nio.NioEventLoop: boolean isShuttingDown()>();
+if v56 == 0 goto label01;
+specialinvoke v0.<io.netty.channel.nio.NioEventLoop: void closeAll()>();
+v57 = virtualinvoke v0.<io.netty.channel.nio.NioEventLoop: boolean confirmShutdown()>();
+if v57 == 0 goto label01;
+label35:
+return;
+label36:
+v58 := @caughtexception;
+throw v58;
+label37:
+v59 := @caughtexception;
+staticinvoke <io.netty.channel.nio.NioEventLoop: void handleLoopException(java.lang.Throwable)>(v59);
+goto label01;
+label38:
+v60 := @caughtexception;
+throw v60;
+label39:
+v61 := @caughtexception;
+staticinvoke <io.netty.channel.nio.NioEventLoop: void handleLoopException(java.lang.Throwable)>(v61);
+label40:
+v62 = virtualinvoke v0.<io.netty.channel.nio.NioEventLoop: boolean isShuttingDown()>();
+if v62 == 0 goto label01;
+specialinvoke v0.<io.netty.channel.nio.NioEventLoop: void closeAll()>();
+v63 = virtualinvoke v0.<io.netty.channel.nio.NioEventLoop: boolean confirmShutdown()>();
+if v63 == 0 goto label01;
+label41:
+return;
+label42:
+v64 := @caughtexception;
+throw v64;
+label43:
+v65 := @caughtexception;
+staticinvoke <io.netty.channel.nio.NioEventLoop: void handleLoopException(java.lang.Throwable)>(v65);
+goto label01;
+label44:
+v66 := @caughtexception;
+label45:
+v67 = virtualinvoke v0.<io.netty.channel.nio.NioEventLoop: boolean isShuttingDown()>();
+if v67 == 0 goto label49;
+specialinvoke v0.<io.netty.channel.nio.NioEventLoop: void closeAll()>();
+v68 = virtualinvoke v0.<io.netty.channel.nio.NioEventLoop: boolean confirmShutdown()>();
+if v68 == 0 goto label49;
+label46:
+return;
+label47:
+v69 := @caughtexception;
+throw v69;
+label48:
+v70 := @caughtexception;
+staticinvoke <io.netty.channel.nio.NioEventLoop: void handleLoopException(java.lang.Throwable)>(v70);
+label49:
+throw v66;
+catch java.lang.Error from label02 to label03 with label04;
+catch java.lang.Throwable from label02 to label03 with label05;
+catch java.lang.Throwable from label08 to label09 with label10;
+catch java.io.IOException from label01 to label02 with label11;
+catch java.io.IOException from label06 to label11 with label11;
+catch java.lang.Error from label12 to label13 with label14;
+catch java.lang.Throwable from label12 to label13 with label15;
+catch java.lang.Throwable from label17 to label18 with label19;
+catch java.lang.Throwable from label21 to label22 with label23;
+catch java.lang.Error from label29 to label30 with label31;
+catch java.lang.Throwable from label29 to label30 with label32;
+catch java.nio.channels.CancelledKeyException from label01 to label02 with label33;
+catch java.nio.channels.CancelledKeyException from label06 to label12 with label33;
+catch java.nio.channels.CancelledKeyException from label16 to label29 with label33;
+catch java.lang.Error from label34 to label35 with label36;
+catch java.lang.Throwable from label34 to label35 with label37;
+catch java.lang.Error from label01 to label02 with label38;
+catch java.lang.Error from label06 to label12 with label38;
+catch java.lang.Error from label16 to label29 with label38;
+catch java.lang.Throwable from label01 to label02 with label39;
+catch java.lang.Throwable from label06 to label12 with label39;
+catch java.lang.Throwable from label16 to label29 with label39;
+catch java.lang.Error from label40 to label41 with label42;
+catch java.lang.Throwable from label40 to label41 with label43;
+catch java.lang.Throwable from label33 to label34 with label44;
+catch java.lang.Throwable from label38 to label40 with label44;
+catch java.lang.Error from label45 to label46 with label47;
+catch java.lang.Throwable from label45 to label46 with label48;
+}
+private boolean unexpectedSelectorWakeup(int)
+{
+java.nio.channels.Selector v10;
+java.lang.Integer v9;
+io.netty.util.internal.logging.InternalLogger v3, v5, v8;
+int v1, v6, v7;
+io.netty.channel.nio.NioEventLoop v0;
+boolean v2, v4;
+v0 := @this: io.netty.channel.nio.NioEventLoop;
+v1 := @parameter0: int;
+v2 = staticinvoke <java.lang.Thread: boolean interrupted()>();
+if v2 == 0 goto label2;
+v3 = <io.netty.channel.nio.NioEventLoop: io.netty.util.internal.logging.InternalLogger logger>;
+v4 = interfaceinvoke v3.<io.netty.util.internal.logging.InternalLogger: boolean isDebugEnabled()>();
+if v4 == 0 goto label1;
+v5 = <io.netty.channel.nio.NioEventLoop: io.netty.util.internal.logging.InternalLogger logger>;
+interfaceinvoke v5.<io.netty.util.internal.logging.InternalLogger: void debug(java.lang.String)>("Selector.select() returned prematurely because Thread.currentThread().interrupt() was called. Use NioEventLoop.shutdownGracefully() to shutdown the NioEventLoop.");
+label1:
+return 1;
+label2:
+v6 = <io.netty.channel.nio.NioEventLoop: int SELECTOR_AUTO_REBUILD_THRESHOLD>;
+if v6 <= 0 goto label3;
+v7 = <io.netty.channel.nio.NioEventLoop: int SELECTOR_AUTO_REBUILD_THRESHOLD>;
+if v1 < v7 goto label3;
+v8 = <io.netty.channel.nio.NioEventLoop: io.netty.util.internal.logging.InternalLogger logger>;
+v9 = staticinvoke <java.lang.Integer: java.lang.Integer valueOf(int)>(v1);
+v10 = v0.<io.netty.channel.nio.NioEventLoop: java.nio.channels.Selector selector>;
+interfaceinvoke v8.<io.netty.util.internal.logging.InternalLogger: void warn(java.lang.String,java.lang.Object,java.lang.Object)>("Selector.select() returned prematurely {} times in a row; rebuilding Selector {}.", v9, v10);
+virtualinvoke v0.<io.netty.channel.nio.NioEventLoop: void rebuildSelector()>();
+return 1;
+label3:
+return 0;
+}
+private static void handleLoopException(java.lang.Throwable)
+{
+java.lang.Throwable v0;
+java.lang.InterruptedException v2;
+io.netty.util.internal.logging.InternalLogger v1;
+v0 := @parameter0: java.lang.Throwable;
+v1 = <io.netty.channel.nio.NioEventLoop: io.netty.util.internal.logging.InternalLogger logger>;
+interfaceinvoke v1.<io.netty.util.internal.logging.InternalLogger: void warn(java.lang.String,java.lang.Throwable)>("Unexpected exception in the selector loop.", v0);
+label1:
+staticinvoke <java.lang.Thread: void sleep(long)>(1000L);
+label2:
+goto label4;
+label3:
+v2 := @caughtexception;
+label4:
+return;
+catch java.lang.InterruptedException from label1 to label2 with label3;
+}
+private void processSelectedKeys()
+{
+io.netty.channel.nio.SelectedSelectionKeySet v1;
+java.nio.channels.Selector v2;
+io.netty.channel.nio.NioEventLoop v0;
+java.util.Set v3;
+v0 := @this: io.netty.channel.nio.NioEventLoop;
+v1 = v0.<io.netty.channel.nio.NioEventLoop: io.netty.channel.nio.SelectedSelectionKeySet selectedKeys>;
+if v1 == null goto label1;
+specialinvoke v0.<io.netty.channel.nio.NioEventLoop: void processSelectedKeysOptimized()>();
+goto label2;
+label1:
+v2 = v0.<io.netty.channel.nio.NioEventLoop: java.nio.channels.Selector selector>;
+v3 = virtualinvoke v2.<java.nio.channels.Selector: java.util.Set selectedKeys()>();
+specialinvoke v0.<io.netty.channel.nio.NioEventLoop: void processSelectedKeysPlain(java.util.Set)>(v3);
+label2:
+return;
+}
+protected void cleanup()
+{
+io.netty.util.internal.logging.InternalLogger v3;
+java.nio.channels.Selector v1;
+io.netty.channel.nio.NioEventLoop v0;
+java.io.IOException v2;
+v0 := @this: io.netty.channel.nio.NioEventLoop;
+label1:
+v1 = v0.<io.netty.channel.nio.NioEventLoop: java.nio.channels.Selector selector>;
+virtualinvoke v1.<java.nio.channels.Selector: void close()>();
+label2:
+goto label4;
+label3:
+v2 := @caughtexception;
+v3 = <io.netty.channel.nio.NioEventLoop: io.netty.util.internal.logging.InternalLogger logger>;
+interfaceinvoke v3.<io.netty.util.internal.logging.InternalLogger: void warn(java.lang.String,java.lang.Throwable)>("Failed to close a selector.", v2);
+label4:
+return;
+catch java.io.IOException from label1 to label2 with label3;
+}
+void cancel(java.nio.channels.SelectionKey)
+{
+java.nio.channels.SelectionKey v1;
+int v2, v3, v4;
+io.netty.channel.nio.NioEventLoop v0;
+v0 := @this: io.netty.channel.nio.NioEventLoop;
+v1 := @parameter0: java.nio.channels.SelectionKey;
+virtualinvoke v1.<java.nio.channels.SelectionKey: void cancel()>();
+v2 = v0.<io.netty.channel.nio.NioEventLoop: int cancelledKeys>;
+v3 = v2 + 1;
+v0.<io.netty.channel.nio.NioEventLoop: int cancelledKeys> = v3;
+v4 = v0.<io.netty.channel.nio.NioEventLoop: int cancelledKeys>;
+if v4 < 256 goto label1;
+v0.<io.netty.channel.nio.NioEventLoop: int cancelledKeys> = 0;
+v0.<io.netty.channel.nio.NioEventLoop: boolean needsToSelectAgain> = 1;
+label1:
+return;
+}
+private void processSelectedKeysPlain(java.util.Set)
+{
+java.util.Iterator v3;
+java.nio.channels.Selector v9;
+java.util.Set v1, v10;
+io.netty.channel.nio.NioEventLoop v0;
+java.lang.Object v4, v5;
+boolean v11, v2, v6, v7, v8;
+v0 := @this: io.netty.channel.nio.NioEventLoop;
+v1 := @parameter0: java.util.Set;
+v2 = interfaceinvoke v1.<java.util.Set: boolean isEmpty()>();
+if v2 == 0 goto label1;
+return;
+label1:
+v3 = interfaceinvoke v1.<java.util.Set: java.util.Iterator iterator()>();
+label2:
+v4 = interfaceinvoke v3.<java.util.Iterator: java.lang.Object next()>();
+v5 = virtualinvoke v4.<java.nio.channels.SelectionKey: java.lang.Object attachment()>();
+interfaceinvoke v3.<java.util.Iterator: void remove()>();
+v6 = v5 instanceof io.netty.channel.nio.AbstractNioChannel;
+if v6 == 0 goto label3;
+specialinvoke v0.<io.netty.channel.nio.NioEventLoop: void processSelectedKey(java.nio.channels.SelectionKey,io.netty.channel.nio.AbstractNioChannel)>(v4, v5);
+goto label4;
+label3:
+staticinvoke <io.netty.channel.nio.NioEventLoop: void processSelectedKey(java.nio.channels.SelectionKey,io.netty.channel.nio.NioTask)>(v4, v5);
+label4:
+v7 = interfaceinvoke v3.<java.util.Iterator: boolean hasNext()>();
+if v7 == 0 goto label5;
+v8 = v0.<io.netty.channel.nio.NioEventLoop: boolean needsToSelectAgain>;
+if v8 == 0 goto label2;
+specialinvoke v0.<io.netty.channel.nio.NioEventLoop: void selectAgain()>();
+v9 = v0.<io.netty.channel.nio.NioEventLoop: java.nio.channels.Selector selector>;
+v10 = virtualinvoke v9.<java.nio.channels.Selector: java.util.Set selectedKeys()>();
+v11 = interfaceinvoke v10.<java.util.Set: boolean isEmpty()>();
+if v11 != 0 goto label5;
+v3 = interfaceinvoke v10.<java.util.Set: java.util.Iterator iterator()>();
+goto label2;
+label5:
+return;
+}
+private void processSelectedKeysOptimized()
+{
+io.netty.channel.nio.SelectedSelectionKeySet v12, v2, v4, v7;
+java.nio.channels.SelectionKey v6;
+java.nio.channels.SelectionKey[] v5, v8;
+int v1, v13, v14, v3;
+io.netty.channel.nio.NioEventLoop v0;
+java.lang.Object v9;
+boolean v10, v11;
+v0 := @this: io.netty.channel.nio.NioEventLoop;
+v1 = 0;
+label1:
+v2 = v0.<io.netty.channel.nio.NioEventLoop: io.netty.channel.nio.SelectedSelectionKeySet selectedKeys>;
+v3 = v2.<io.netty.channel.nio.SelectedSelectionKeySet: int size>;
+if v1 >= v3 goto label5;
+v4 = v0.<io.netty.channel.nio.NioEventLoop: io.netty.channel.nio.SelectedSelectionKeySet selectedKeys>;
+v5 = v4.<io.netty.channel.nio.SelectedSelectionKeySet: java.nio.channels.SelectionKey[] keys>;
+v6 = v5[v1];
+v7 = v0.<io.netty.channel.nio.NioEventLoop: io.netty.channel.nio.SelectedSelectionKeySet selectedKeys>;
+v8 = v7.<io.netty.channel.nio.SelectedSelectionKeySet: java.nio.channels.SelectionKey[] keys>;
+v8[v1] = null;
+v9 = virtualinvoke v6.<java.nio.channels.SelectionKey: java.lang.Object attachment()>();
+v10 = v9 instanceof io.netty.channel.nio.AbstractNioChannel;
+if v10 == 0 goto label2;
+specialinvoke v0.<io.netty.channel.nio.NioEventLoop: void processSelectedKey(java.nio.channels.SelectionKey,io.netty.channel.nio.AbstractNioChannel)>(v6, v9);
+goto label3;
+label2:
+staticinvoke <io.netty.channel.nio.NioEventLoop: void processSelectedKey(java.nio.channels.SelectionKey,io.netty.channel.nio.NioTask)>(v6, v9);
+label3:
+v11 = v0.<io.netty.channel.nio.NioEventLoop: boolean needsToSelectAgain>;
+if v11 == 0 goto label4;
+v12 = v0.<io.netty.channel.nio.NioEventLoop: io.netty.channel.nio.SelectedSelectionKeySet selectedKeys>;
+v13 = v1 + 1;
+virtualinvoke v12.<io.netty.channel.nio.SelectedSelectionKeySet: void reset(int)>(v13);
+specialinvoke v0.<io.netty.channel.nio.NioEventLoop: void selectAgain()>();
+v14 = (int) -1;
+v1 = v14;
+label4:
+v1 = v1 + 1;
+goto label1;
+label5:
+return;
+}
+private void processSelectedKey(java.nio.channels.SelectionKey, io.netty.channel.nio.AbstractNioChannel)
+{
+java.lang.Throwable v6;
+java.nio.channels.CancelledKeyException v15;
+io.netty.channel.ChannelPromise v16, v7;
+int v10, v11, v12, v13, v14, v8, v9;
+io.netty.channel.nio.AbstractNioChannel v2;
+boolean v4;
+io.netty.channel.nio.AbstractNioChannel$NioUnsafe v3;
+java.nio.channels.SelectionKey v1;
+io.netty.channel.nio.NioEventLoop v0, v5;
+v0 := @this: io.netty.channel.nio.NioEventLoop;
+v1 := @parameter0: java.nio.channels.SelectionKey;
+v2 := @parameter1: io.netty.channel.nio.AbstractNioChannel;
+v3 = virtualinvoke v2.<io.netty.channel.nio.AbstractNioChannel: io.netty.channel.nio.AbstractNioChannel$NioUnsafe unsafe()>();
+v4 = virtualinvoke v1.<java.nio.channels.SelectionKey: boolean isValid()>();
+if v4 != 0 goto label06;
+label01:
+v5 = virtualinvoke v2.<io.netty.channel.nio.AbstractNioChannel: io.netty.channel.nio.NioEventLoop eventLoop()>();
+label02:
+goto label04;
+label03:
+v6 := @caughtexception;
+return;
+label04:
+if v5 != v0 goto label05;
+v7 = interfaceinvoke v3.<io.netty.channel.nio.AbstractNioChannel$NioUnsafe: io.netty.channel.ChannelPromise voidPromise()>();
+interfaceinvoke v3.<io.netty.channel.nio.AbstractNioChannel$NioUnsafe: void close(io.netty.channel.ChannelPromise)>(v7);
+label05:
+return;
+label06:
+v8 = virtualinvoke v1.<java.nio.channels.SelectionKey: int readyOps()>();
+v9 = v8 & 8;
+if v9 == 0 goto label07;
+v10 = virtualinvoke v1.<java.nio.channels.SelectionKey: int interestOps()>();
+v11 = (int) -9;
+v12 = v10 & v11;
+virtualinvoke v1.<java.nio.channels.SelectionKey: java.nio.channels.SelectionKey interestOps(int)>(v12);
+interfaceinvoke v3.<io.netty.channel.nio.AbstractNioChannel$NioUnsafe: void finishConnect()>();
+label07:
+v13 = v8 & 4;
+if v13 == 0 goto label08;
+interfaceinvoke v3.<io.netty.channel.nio.AbstractNioChannel$NioUnsafe: void forceFlush()>();
+label08:
+v14 = v8 & 17;
+if v14 != 0 goto label09;
+if v8 != 0 goto label12;
+label09:
+interfaceinvoke v3.<io.netty.channel.nio.AbstractNioChannel$NioUnsafe: void read()>();
+label10:
+goto label12;
+label11:
+v15 := @caughtexception;
+v16 = interfaceinvoke v3.<io.netty.channel.nio.AbstractNioChannel$NioUnsafe: io.netty.channel.ChannelPromise voidPromise()>();
+interfaceinvoke v3.<io.netty.channel.nio.AbstractNioChannel$NioUnsafe: void close(io.netty.channel.ChannelPromise)>(v16);
+label12:
+return;
+catch java.lang.Throwable from label01 to label02 with label03;
+catch java.nio.channels.CancelledKeyException from label06 to label10 with label11;
+}
+private static void processSelectedKey(java.nio.channels.SelectionKey, io.netty.channel.nio.NioTask)
+{
+java.lang.Throwable v6;
+java.nio.channels.SelectionKey v0;
+io.netty.channel.nio.NioTask v1;
+java.lang.Exception v4;
+java.nio.channels.SelectableChannel v2;
+boolean v3, v5, v7;
+v0 := @parameter0: java.nio.channels.SelectionKey;
+v1 := @parameter1: io.netty.channel.nio.NioTask;
+label01:
+v2 = virtualinvoke v0.<java.nio.channels.SelectionKey: java.nio.channels.SelectableChannel channel()>();
+interfaceinvoke v1.<io.netty.channel.nio.NioTask: void channelReady(java.nio.channels.SelectableChannel,java.nio.channels.SelectionKey)>(v2, v0);
+label02:
+lookupswitch(1)
+{
+case 0: goto label03;
+case 1: goto label04;
+default: goto label13;
+};
+label03:
+virtualinvoke v0.<java.nio.channels.SelectionKey: void cancel()>();
+staticinvoke <io.netty.channel.nio.NioEventLoop: void invokeChannelUnregistered(io.netty.channel.nio.NioTask,java.nio.channels.SelectionKey,java.lang.Throwable)>(v1, v0, null);
+goto label13;
+label04:
+v3 = virtualinvoke v0.<java.nio.channels.SelectionKey: boolean isValid()>();
+if v3 != 0 goto label13;
+staticinvoke <io.netty.channel.nio.NioEventLoop: void invokeChannelUnregistered(io.netty.channel.nio.NioTask,java.nio.channels.SelectionKey,java.lang.Throwable)>(v1, v0, null);
+goto label13;
+label05:
+v4 := @caughtexception;
+virtualinvoke v0.<java.nio.channels.SelectionKey: void cancel()>();
+staticinvoke <io.netty.channel.nio.NioEventLoop: void invokeChannelUnregistered(io.netty.channel.nio.NioTask,java.nio.channels.SelectionKey,java.lang.Throwable)>(v1, v0, v4);
+label06:
+lookupswitch(2)
+{
+case 0: goto label07;
+case 1: goto label08;
+default: goto label13;
+};
+label07:
+virtualinvoke v0.<java.nio.channels.SelectionKey: void cancel()>();
+staticinvoke <io.netty.channel.nio.NioEventLoop: void invokeChannelUnregistered(io.netty.channel.nio.NioTask,java.nio.channels.SelectionKey,java.lang.Throwable)>(v1, v0, null);
+goto label13;
+label08:
+v5 = virtualinvoke v0.<java.nio.channels.SelectionKey: boolean isValid()>();
+if v5 != 0 goto label13;
+staticinvoke <io.netty.channel.nio.NioEventLoop: void invokeChannelUnregistered(io.netty.channel.nio.NioTask,java.nio.channels.SelectionKey,java.lang.Throwable)>(v1, v0, null);
+goto label13;
+label09:
+v6 := @caughtexception;
+lookupswitch(0)
+{
+case 0: goto label10;
+case 1: goto label11;
+default: goto label12;
+};
+label10:
+virtualinvoke v0.<java.nio.channels.SelectionKey: void cancel()>();
+staticinvoke <io.netty.channel.nio.NioEventLoop: void invokeChannelUnregistered(io.netty.channel.nio.NioTask,java.nio.channels.SelectionKey,java.lang.Throwable)>(v1, v0, null);
+goto label12;
+label11:
+v7 = virtualinvoke v0.<java.nio.channels.SelectionKey: boolean isValid()>();
+if v7 != 0 goto label12;
+staticinvoke <io.netty.channel.nio.NioEventLoop: void invokeChannelUnregistered(io.netty.channel.nio.NioTask,java.nio.channels.SelectionKey,java.lang.Throwable)>(v1, v0, null);
+label12:
+throw v6;
+label13:
+return;
+catch java.lang.Exception from label01 to label02 with label05;
+catch java.lang.Throwable from label01 to label02 with label09;
+catch java.lang.Throwable from label05 to label06 with label09;
+}
+private void closeAll()
+{
+java.nio.channels.Selector v1;
+java.util.ArrayList v3;
+io.netty.channel.ChannelPromise v15;
+int v4;
+boolean v11, v6, v9;
+io.netty.channel.nio.AbstractNioChannel$NioUnsafe v13, v14;
+java.util.Iterator v10, v5;
+java.util.Set v2;
+io.netty.channel.nio.NioEventLoop v0;
+java.lang.Object v12, v7, v8;
+v0 := @this: io.netty.channel.nio.NioEventLoop;
+specialinvoke v0.<io.netty.channel.nio.NioEventLoop: void selectAgain()>();
+v1 = v0.<io.netty.channel.nio.NioEventLoop: java.nio.channels.Selector selector>;
+v2 = virtualinvoke v1.<java.nio.channels.Selector: java.util.Set keys()>();
+v3 = new java.util.ArrayList;
+v4 = interfaceinvoke v2.<java.util.Set: int size()>();
+specialinvoke v3.<java.util.ArrayList: void <init>(int)>(v4);
+v5 = interfaceinvoke v2.<java.util.Set: java.util.Iterator iterator()>();
+label1:
+v6 = interfaceinvoke v5.<java.util.Iterator: boolean hasNext()>();
+if v6 == 0 goto label3;
+v7 = interfaceinvoke v5.<java.util.Iterator: java.lang.Object next()>();
+v8 = virtualinvoke v7.<java.nio.channels.SelectionKey: java.lang.Object attachment()>();
+v9 = v8 instanceof io.netty.channel.nio.AbstractNioChannel;
+if v9 == 0 goto label2;
+interfaceinvoke v3.<java.util.Collection: boolean add(java.lang.Object)>(v8);
+goto label1;
+label2:
+virtualinvoke v7.<java.nio.channels.SelectionKey: void cancel()>();
+staticinvoke <io.netty.channel.nio.NioEventLoop: void invokeChannelUnregistered(io.netty.channel.nio.NioTask,java.nio.channels.SelectionKey,java.lang.Throwable)>(v8, v7, null);
+goto label1;
+label3:
+v10 = interfaceinvoke v3.<java.util.Collection: java.util.Iterator iterator()>();
+label4:
+v11 = interfaceinvoke v10.<java.util.Iterator: boolean hasNext()>();
+if v11 == 0 goto label5;
+v12 = interfaceinvoke v10.<java.util.Iterator: java.lang.Object next()>();
+v13 = virtualinvoke v12.<io.netty.channel.nio.AbstractNioChannel: io.netty.channel.nio.AbstractNioChannel$NioUnsafe unsafe()>();
+v14 = virtualinvoke v12.<io.netty.channel.nio.AbstractNioChannel: io.netty.channel.nio.AbstractNioChannel$NioUnsafe unsafe()>();
+v15 = interfaceinvoke v14.<io.netty.channel.nio.AbstractNioChannel$NioUnsafe: io.netty.channel.ChannelPromise voidPromise()>();
+interfaceinvoke v13.<io.netty.channel.nio.AbstractNioChannel$NioUnsafe: void close(io.netty.channel.ChannelPromise)>(v15);
+goto label4;
+label5:
+return;
+}
+private static void invokeChannelUnregistered(io.netty.channel.nio.NioTask, java.nio.channels.SelectionKey, java.lang.Throwable)
+{
+java.lang.Throwable v2;
+java.nio.channels.SelectableChannel v3;
+java.nio.channels.SelectionKey v1;
+io.netty.util.internal.logging.InternalLogger v5;
+io.netty.channel.nio.NioTask v0;
+java.lang.Exception v4;
+v0 := @parameter0: io.netty.channel.nio.NioTask;
+v1 := @parameter1: java.nio.channels.SelectionKey;
+v2 := @parameter2: java.lang.Throwable;
+label1:
+v3 = virtualinvoke v1.<java.nio.channels.SelectionKey: java.nio.channels.SelectableChannel channel()>();
+interfaceinvoke v0.<io.netty.channel.nio.NioTask: void channelUnregistered(java.nio.channels.SelectableChannel,java.lang.Throwable)>(v3, v2);
+label2:
+goto label4;
+label3:
+v4 := @caughtexception;
+v5 = <io.netty.channel.nio.NioEventLoop: io.netty.util.internal.logging.InternalLogger logger>;
+interfaceinvoke v5.<io.netty.util.internal.logging.InternalLogger: void warn(java.lang.String,java.lang.Throwable)>("Unexpected exception while running NioTask.channelUnregistered()", v4);
+label4:
+return;
+catch java.lang.Exception from label1 to label2 with label3;
+}
+protected void wakeup(boolean)
+{
+java.util.concurrent.atomic.AtomicLong v2;
+byte v4;
+java.nio.channels.Selector v5;
+io.netty.channel.nio.NioEventLoop v0;
+long v3;
+boolean v1;
+v0 := @this: io.netty.channel.nio.NioEventLoop;
+v1 := @parameter0: boolean;
+if v1 != 0 goto label1;
+v2 = v0.<io.netty.channel.nio.NioEventLoop: java.util.concurrent.atomic.AtomicLong nextWakeupNanos>;
+v3 = virtualinvoke v2.<java.util.concurrent.atomic.AtomicLong: long getAndSet(long)>(-1L);
+v4 = v3 cmp -1L;
+if v4 == 0 goto label1;
+v5 = v0.<io.netty.channel.nio.NioEventLoop: java.nio.channels.Selector selector>;
+virtualinvoke v5.<java.nio.channels.Selector: java.nio.channels.Selector wakeup()>();
+label1:
+return;
+}
+protected boolean beforeScheduledTaskSubmitted(long)
+{
+java.util.concurrent.atomic.AtomicLong v2;
+byte v4;
+io.netty.channel.nio.NioEventLoop v0;
+long v1, v3;
+boolean v5;
+v0 := @this: io.netty.channel.nio.NioEventLoop;
+v1 := @parameter0: long;
+v2 = v0.<io.netty.channel.nio.NioEventLoop: java.util.concurrent.atomic.AtomicLong nextWakeupNanos>;
+v3 = virtualinvoke v2.<java.util.concurrent.atomic.AtomicLong: long get()>();
+v4 = v1 cmp v3;
+if v4 >= 0 goto label1;
+v5 = 1;
+goto label2;
+label1:
+v5 = 0;
+label2:
+return v5;
+}
+protected boolean afterScheduledTaskSubmitted(long)
+{
+java.util.concurrent.atomic.AtomicLong v2;
+byte v4;
+io.netty.channel.nio.NioEventLoop v0;
+long v1, v3;
+boolean v5;
+v0 := @this: io.netty.channel.nio.NioEventLoop;
+v1 := @parameter0: long;
+v2 = v0.<io.netty.channel.nio.NioEventLoop: java.util.concurrent.atomic.AtomicLong nextWakeupNanos>;
+v3 = virtualinvoke v2.<java.util.concurrent.atomic.AtomicLong: long get()>();
+v4 = v1 cmp v3;
+if v4 >= 0 goto label1;
+v5 = 1;
+goto label2;
+label1:
+v5 = 0;
+label2:
+return v5;
+}
+java.nio.channels.Selector unwrappedSelector()
+{
+io.netty.channel.nio.NioEventLoop v0;
+java.nio.channels.Selector v1;
+v0 := @this: io.netty.channel.nio.NioEventLoop;
+v1 = v0.<io.netty.channel.nio.NioEventLoop: java.nio.channels.Selector unwrappedSelector>;
+return v1;
+}
+int selectNow() throws java.io.IOException
+{
+int v2;
+io.netty.channel.nio.NioEventLoop v0;
+java.nio.channels.Selector v1;
+v0 := @this: io.netty.channel.nio.NioEventLoop;
+v1 = v0.<io.netty.channel.nio.NioEventLoop: java.nio.channels.Selector selector>;
+v2 = virtualinvoke v1.<java.nio.channels.Selector: int selectNow()>();
+return v2;
+}
+private int select(long) throws java.io.IOException
+{
+java.nio.channels.Selector v11, v3, v9;
+long v1, v5, v6, v7;
+byte v2, v8;
+int v10, v4;
+io.netty.channel.nio.NioEventLoop v0;
+v0 := @this: io.netty.channel.nio.NioEventLoop;
+v1 := @parameter0: long;
+v2 = v1 cmp 9223372036854775807L;
+if v2 != 0 goto label1;
+v3 = v0.<io.netty.channel.nio.NioEventLoop: java.nio.channels.Selector selector>;
+v4 = virtualinvoke v3.<java.nio.channels.Selector: int select()>();
+return v4;
+label1:
+v5 = v1 + 995000L;
+v6 = staticinvoke <io.netty.channel.nio.NioEventLoop: long deadlineToDelayNanos(long)>(v5);
+v7 = v6 / 1000000L;
+v8 = v7 cmp 0L;
+if v8 > 0 goto label2;
+v9 = v0.<io.netty.channel.nio.NioEventLoop: java.nio.channels.Selector selector>;
+v10 = virtualinvoke v9.<java.nio.channels.Selector: int selectNow()>();
+goto label3;
+label2:
+v11 = v0.<io.netty.channel.nio.NioEventLoop: java.nio.channels.Selector selector>;
+v10 = virtualinvoke v11.<java.nio.channels.Selector: int select(long)>(v7);
+label3:
+return v10;
+}
+private void selectAgain()
+{
+java.lang.Throwable v2;
+io.netty.util.internal.logging.InternalLogger v3;
+java.nio.channels.Selector v1;
+io.netty.channel.nio.NioEventLoop v0;
+v0 := @this: io.netty.channel.nio.NioEventLoop;
+v0.<io.netty.channel.nio.NioEventLoop: boolean needsToSelectAgain> = 0;
+label1:
+v1 = v0.<io.netty.channel.nio.NioEventLoop: java.nio.channels.Selector selector>;
+virtualinvoke v1.<java.nio.channels.Selector: int selectNow()>();
+label2:
+goto label4;
+label3:
+v2 := @caughtexception;
+v3 = <io.netty.channel.nio.NioEventLoop: io.netty.util.internal.logging.InternalLogger logger>;
+interfaceinvoke v3.<io.netty.util.internal.logging.InternalLogger: void warn(java.lang.String,java.lang.Throwable)>("Failed to update SelectionKeys.", v2);
+label4:
+return;
+catch java.lang.Throwable from label1 to label2 with label3;
+}
+static void <clinit>()
+{
+java.lang.Integer v18;
+int v10, v17, v5;
+io.netty.channel.nio.NioEventLoop$2 v7;
+java.lang.Boolean v15;
+java.lang.SecurityException v8;
+java.lang.String v6;
+boolean v1, v12, v14, v2, v4;
+io.netty.util.internal.logging.InternalLogger v11, v13, v16, v3, v9;
+java.lang.Class v0;
+v0 = class "Lio/netty/channel/nio/NioEventLoop;";
+v1 = virtualinvoke v0.<java.lang.Class: boolean desiredAssertionStatus()>();
+if v1 != 0 goto label1;
+v2 = 1;
+goto label2;
+label1:
+v2 = 0;
+label2:
+<io.netty.channel.nio.NioEventLoop: boolean $assertionsDisabled> = v2;
+v3 = staticinvoke <io.netty.util.internal.logging.InternalLoggerFactory: io.netty.util.internal.logging.InternalLogger getInstance(java.lang.Class)>(class "Lio/netty/channel/nio/NioEventLoop;");
+<io.netty.channel.nio.NioEventLoop: io.netty.util.internal.logging.InternalLogger logger> = v3;
+v4 = staticinvoke <io.netty.util.internal.SystemPropertyUtil: boolean getBoolean(java.lang.String,boolean)>("io.netty.noKeySetOptimization", 0);
+<io.netty.channel.nio.NioEventLoop: boolean DISABLE_KEY_SET_OPTIMIZATION> = v4;
+v5 = staticinvoke <io.netty.util.internal.PlatformDependent: int javaVersion()>();
+if v5 >= 7 goto label6;
+v6 = staticinvoke <io.netty.util.internal.SystemPropertyUtil: java.lang.String get(java.lang.String)>("sun.nio.ch.bugLevel");
+if v6 != null goto label6;
+label3:
+v7 = new io.netty.channel.nio.NioEventLoop$2;
+specialinvoke v7.<io.netty.channel.nio.NioEventLoop$2: void <init>()>();
+staticinvoke <java.security.AccessController: java.lang.Object doPrivileged(java.security.PrivilegedAction)>(v7);
+label4:
+goto label6;
+label5:
+v8 := @caughtexception;
+v9 = <io.netty.channel.nio.NioEventLoop: io.netty.util.internal.logging.InternalLogger logger>;
+interfaceinvoke v9.<io.netty.util.internal.logging.InternalLogger: void debug(java.lang.String,java.lang.Throwable)>("Unable to get/set System Property: sun.nio.ch.bugLevel", v8);
+label6:
+v10 = staticinvoke <io.netty.util.internal.SystemPropertyUtil: int getInt(java.lang.String,int)>("io.netty.selectorAutoRebuildThreshold", 512);
+if v10 >= 3 goto label7;
+v10 = 0;
+label7:
+<io.netty.channel.nio.NioEventLoop: int SELECTOR_AUTO_REBUILD_THRESHOLD> = v10;
+v11 = <io.netty.channel.nio.NioEventLoop: io.netty.util.internal.logging.InternalLogger logger>;
+v12 = interfaceinvoke v11.<io.netty.util.internal.logging.InternalLogger: boolean isDebugEnabled()>();
+if v12 == 0 goto label8;
+v13 = <io.netty.channel.nio.NioEventLoop: io.netty.util.internal.logging.InternalLogger logger>;
+v14 = <io.netty.channel.nio.NioEventLoop: boolean DISABLE_KEY_SET_OPTIMIZATION>;
+v15 = staticinvoke <java.lang.Boolean: java.lang.Boolean valueOf(boolean)>(v14);
+interfaceinvoke v13.<io.netty.util.internal.logging.InternalLogger: void debug(java.lang.String,java.lang.Object)>("-Dio.netty.noKeySetOptimization: {}", v15);
+v16 = <io.netty.channel.nio.NioEventLoop: io.netty.util.internal.logging.InternalLogger logger>;
+v17 = <io.netty.channel.nio.NioEventLoop: int SELECTOR_AUTO_REBUILD_THRESHOLD>;
+v18 = staticinvoke <java.lang.Integer: java.lang.Integer valueOf(int)>(v17);
+interfaceinvoke v16.<io.netty.util.internal.logging.InternalLogger: void debug(java.lang.String,java.lang.Object)>("-Dio.netty.selectorAutoRebuildThreshold: {}", v18);
+label8:
+return;
+catch java.lang.SecurityException from label3 to label4 with label5;
+}
+}

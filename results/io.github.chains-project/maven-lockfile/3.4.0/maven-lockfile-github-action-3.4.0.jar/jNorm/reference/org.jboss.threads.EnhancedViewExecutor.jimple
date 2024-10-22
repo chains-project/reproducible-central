@@ -1,0 +1,646 @@
+final class org.jboss.threads.EnhancedViewExecutor extends org.jboss.threads.ViewExecutor
+{
+private static final org.jboss.logging.Logger log;
+private static final long stateOffset;
+private static final int QUEUE_FAILURE_LOG_INTERVAL;
+private static final int MAX_QUEUE_SPINS;
+private static final long SHUTDOWN_MASK;
+private static final long ACTIVE_COUNT_MASK;
+private static final int QUEUED_SIZE_OFFSET;
+private static final long QUEUED_SIZE_MASK;
+private final java.util.concurrent.Executor delegate;
+private final int maxCount;
+private final int queueLimit;
+private final java.util.concurrent.locks.Lock executeLock;
+private final java.lang.Object shutdownLock;
+private final java.util.Set activeRunnables;
+private final java.util.Queue queue;
+private volatile long state;
+private volatile boolean interrupted;
+static final boolean $assertionsDisabled;
+void <init>(java.util.concurrent.Executor, int, int, java.lang.Thread$UncaughtExceptionHandler)
+{
+java.util.concurrent.Executor v1;
+java.lang.Thread$UncaughtExceptionHandler v4;
+java.util.concurrent.ConcurrentHashMap$KeySetView v6;
+org.wildfly.common.lock.ExtendedLock v9;
+int v2, v3;
+java.lang.Object v5, v8;
+org.jboss.threads.EnhancedViewExecutor v0;
+java.util.concurrent.ConcurrentLinkedQueue v7;
+v0 := @this: org.jboss.threads.EnhancedViewExecutor;
+v1 := @parameter0: java.util.concurrent.Executor;
+v2 := @parameter1: int;
+v3 := @parameter2: int;
+v4 := @parameter3: java.lang.Thread$UncaughtExceptionHandler;
+specialinvoke v0.<org.jboss.threads.ViewExecutor: void <init>()>();
+v5 = new java.lang.Object;
+specialinvoke v5.<java.lang.Object: void <init>()>();
+v0.<org.jboss.threads.EnhancedViewExecutor: java.lang.Object shutdownLock> = v5;
+v6 = staticinvoke <java.util.concurrent.ConcurrentHashMap: java.util.concurrent.ConcurrentHashMap$KeySetView newKeySet()>();
+v0.<org.jboss.threads.EnhancedViewExecutor: java.util.Set activeRunnables> = v6;
+v7 = new java.util.concurrent.ConcurrentLinkedQueue;
+specialinvoke v7.<java.util.concurrent.ConcurrentLinkedQueue: void <init>()>();
+v0.<org.jboss.threads.EnhancedViewExecutor: java.util.Queue queue> = v7;
+v0.<org.jboss.threads.EnhancedViewExecutor: boolean interrupted> = 0;
+v8 = staticinvoke <org.wildfly.common.Assert: java.lang.Object checkNotNullParam(java.lang.String,java.lang.Object)>("delegate", v1);
+v0.<org.jboss.threads.EnhancedViewExecutor: java.util.concurrent.Executor delegate> = v8;
+v0.<org.jboss.threads.EnhancedViewExecutor: int maxCount> = v2;
+v0.<org.jboss.threads.EnhancedViewExecutor: int queueLimit> = v3;
+if v3 != 0 goto label1;
+v9 = null;
+goto label2;
+label1:
+v9 = staticinvoke <org.wildfly.common.lock.Locks: org.wildfly.common.lock.ExtendedLock reentrantLock()>();
+label2:
+v0.<org.jboss.threads.EnhancedViewExecutor: java.util.concurrent.locks.Lock executeLock> = v9;
+virtualinvoke v0.<org.jboss.threads.EnhancedViewExecutor: void setExceptionHandler(java.lang.Thread$UncaughtExceptionHandler)>(v4);
+return;
+}
+public void shutdown(boolean)
+{
+java.util.Set v6;
+long v2, v4;
+java.util.function.Consumer v7;
+org.jboss.threads.EnhancedViewExecutor v0;
+boolean v1, v3, v5;
+v0 := @this: org.jboss.threads.EnhancedViewExecutor;
+v1 := @parameter0: boolean;
+label1:
+v2 = v0.<org.jboss.threads.EnhancedViewExecutor: long state>;
+v3 = staticinvoke <org.jboss.threads.EnhancedViewExecutor: boolean isShutdown(long)>(v2);
+if v3 != 0 goto label2;
+v4 = v2 | -9223372036854775808L;
+v5 = specialinvoke v0.<org.jboss.threads.EnhancedViewExecutor: boolean compareAndSwapState(long,long)>(v2, v4);
+if v5 == 0 goto label1;
+specialinvoke v0.<org.jboss.threads.EnhancedViewExecutor: void notifyWaitersIfTerminated(long)>(v4);
+label2:
+if v1 == 0 goto label3;
+v0.<org.jboss.threads.EnhancedViewExecutor: boolean interrupted> = 1;
+v6 = v0.<org.jboss.threads.EnhancedViewExecutor: java.util.Set activeRunnables>;
+v7 = staticinvoke <org.jboss.threads.EnhancedViewExecutor$interrupt__3216: java.util.function.Consumer bootstrap$()>();
+interfaceinvoke v6.<java.util.Set: void forEach(java.util.function.Consumer)>(v7);
+label3:
+return;
+}
+public java.util.List shutdownNow()
+{
+org.jboss.threads.EnhancedViewExecutor$EnhancedViewExecutorRunnable v11;
+java.util.Set v7;
+long v1, v4, v5;
+java.lang.Runnable v12;
+java.util.ArrayList v9;
+java.util.function.Consumer v8;
+java.util.List v13;
+int v10, v2;
+org.jboss.threads.EnhancedViewExecutor v0;
+boolean v3, v6;
+v0 := @this: org.jboss.threads.EnhancedViewExecutor;
+label1:
+v1 = v0.<org.jboss.threads.EnhancedViewExecutor: long state>;
+v2 = staticinvoke <org.jboss.threads.EnhancedViewExecutor: int getQueueSize(long)>(v1);
+v3 = staticinvoke <org.jboss.threads.EnhancedViewExecutor: boolean isShutdown(long)>(v1);
+if v3 == 0 goto label2;
+if v2 == 0 goto label3;
+label2:
+v4 = v1 | -9223372036854775808L;
+v5 = v4 & -4611686016279904257L;
+v6 = specialinvoke v0.<org.jboss.threads.EnhancedViewExecutor: boolean compareAndSwapState(long,long)>(v1, v5);
+if v6 == 0 goto label1;
+specialinvoke v0.<org.jboss.threads.EnhancedViewExecutor: void notifyWaitersIfTerminated(long)>(v5);
+label3:
+v0.<org.jboss.threads.EnhancedViewExecutor: boolean interrupted> = 1;
+v7 = v0.<org.jboss.threads.EnhancedViewExecutor: java.util.Set activeRunnables>;
+v8 = staticinvoke <org.jboss.threads.EnhancedViewExecutor$interrupt__3217: java.util.function.Consumer bootstrap$()>();
+interfaceinvoke v7.<java.util.Set: void forEach(java.util.function.Consumer)>(v8);
+if v2 <= 0 goto label6;
+v9 = new java.util.ArrayList;
+specialinvoke v9.<java.util.ArrayList: void <init>(int)>(v2);
+v10 = 0;
+label4:
+if v10 >= v2 goto label5;
+v11 = specialinvoke v0.<org.jboss.threads.EnhancedViewExecutor: org.jboss.threads.EnhancedViewExecutor$EnhancedViewExecutorRunnable blockingTake()>();
+v12 = v11.<org.jboss.threads.EnhancedViewExecutor$EnhancedViewExecutorRunnable: java.lang.Runnable delegate>;
+virtualinvoke v9.<java.util.ArrayList: boolean add(java.lang.Object)>(v12);
+v10 = v10 + 1;
+goto label4;
+label5:
+return v9;
+label6:
+v13 = staticinvoke <java.util.Collections: java.util.List emptyList()>();
+return v13;
+}
+public boolean isShutdown()
+{
+long v1;
+org.jboss.threads.EnhancedViewExecutor v0;
+boolean v2;
+v0 := @this: org.jboss.threads.EnhancedViewExecutor;
+v1 = v0.<org.jboss.threads.EnhancedViewExecutor: long state>;
+v2 = staticinvoke <org.jboss.threads.EnhancedViewExecutor: boolean isShutdown(long)>(v1);
+return v2;
+}
+private static boolean isShutdown(long)
+{
+byte v2;
+long v0, v1;
+boolean v3;
+v0 := @parameter0: long;
+v1 = v0 & -9223372036854775808L;
+v2 = v1 cmp 0L;
+if v2 == 0 goto label1;
+v3 = 1;
+goto label2;
+label1:
+v3 = 0;
+label2:
+return v3;
+}
+public boolean isTerminated()
+{
+long v1;
+org.jboss.threads.EnhancedViewExecutor v0;
+boolean v2;
+v0 := @this: org.jboss.threads.EnhancedViewExecutor;
+v1 = v0.<org.jboss.threads.EnhancedViewExecutor: long state>;
+v2 = staticinvoke <org.jboss.threads.EnhancedViewExecutor: boolean isTerminated(long)>(v1);
+return v2;
+}
+private static boolean isTerminated(long)
+{
+long v0;
+byte v1;
+boolean v2;
+v0 := @parameter0: long;
+v1 = v0 cmp -9223372036854775808L;
+if v1 != 0 goto label1;
+v2 = 1;
+goto label2;
+label1:
+v2 = 0;
+label2:
+return v2;
+}
+private void notifyWaitersIfTerminated(long)
+{
+java.lang.Throwable v5;
+long v1;
+java.lang.AssertionError v9;
+java.lang.Object v3, v4;
+java.util.Queue v7;
+org.jboss.threads.EnhancedViewExecutor v0;
+boolean v2, v6, v8;
+v0 := @this: org.jboss.threads.EnhancedViewExecutor;
+v1 := @parameter0: long;
+v2 = staticinvoke <org.jboss.threads.EnhancedViewExecutor: boolean isTerminated(long)>(v1);
+if v2 == 0 goto label6;
+v3 = v0.<org.jboss.threads.EnhancedViewExecutor: java.lang.Object shutdownLock>;
+entermonitor v3;
+label1:
+v4 = v0.<org.jboss.threads.EnhancedViewExecutor: java.lang.Object shutdownLock>;
+virtualinvoke v4.<java.lang.Object: void notifyAll()>();
+exitmonitor v3;
+label2:
+goto label4;
+label3:
+v5 := @caughtexception;
+exitmonitor v3;
+throw v5;
+label4:
+v6 = <org.jboss.threads.EnhancedViewExecutor: boolean $assertionsDisabled>;
+if v6 != 0 goto label5;
+v7 = v0.<org.jboss.threads.EnhancedViewExecutor: java.util.Queue queue>;
+v8 = interfaceinvoke v7.<java.util.Queue: boolean isEmpty()>();
+if v8 != 0 goto label5;
+v9 = new java.lang.AssertionError;
+specialinvoke v9.<java.lang.AssertionError: void <init>()>();
+throw v9;
+label5:
+virtualinvoke v0.<org.jboss.threads.EnhancedViewExecutor: void runTermination()>();
+label6:
+return;
+catch java.lang.Throwable from label1 to label2 with label3;
+}
+public boolean awaitTermination(long, java.util.concurrent.TimeUnit) throws java.lang.InterruptedException
+{
+java.lang.Throwable v16;
+long v1, v10, v13, v3, v4, v7, v8, v9;
+byte v14;
+org.jboss.threads.EnhancedViewExecutor v0;
+boolean v6;
+java.util.concurrent.TimeUnit v11, v12, v2;
+java.lang.Object v15, v5;
+v0 := @this: org.jboss.threads.EnhancedViewExecutor;
+v1 := @parameter0: long;
+v2 := @parameter1: java.util.concurrent.TimeUnit;
+v3 = virtualinvoke v2.<java.util.concurrent.TimeUnit: long toNanos(long)>(v1);
+v4 = staticinvoke <java.lang.System: long nanoTime()>();
+v5 = v0.<org.jboss.threads.EnhancedViewExecutor: java.lang.Object shutdownLock>;
+entermonitor v5;
+label1:
+v6 = virtualinvoke v0.<org.jboss.threads.EnhancedViewExecutor: boolean isTerminated()>();
+if v6 != 0 goto label4;
+v7 = neg v4;
+v8 = staticinvoke <java.lang.System: long nanoTime()>();
+v4 = v8;
+v9 = v7 + v8;
+v10 = staticinvoke <java.lang.Math: long max(long,long)>(v9, 0L);
+v3 = v3 - v10;
+v11 = <java.util.concurrent.TimeUnit: java.util.concurrent.TimeUnit MILLISECONDS>;
+v12 = <java.util.concurrent.TimeUnit: java.util.concurrent.TimeUnit NANOSECONDS>;
+v13 = virtualinvoke v11.<java.util.concurrent.TimeUnit: long convert(long,java.util.concurrent.TimeUnit)>(v3, v12);
+v14 = v13 cmp 0L;
+if v14 > 0 goto label3;
+exitmonitor v5;
+label2:
+return 0;
+label3:
+v15 = v0.<org.jboss.threads.EnhancedViewExecutor: java.lang.Object shutdownLock>;
+virtualinvoke v15.<java.lang.Object: void wait(long)>(v13);
+goto label1;
+label4:
+exitmonitor v5;
+label5:
+return 1;
+label6:
+v16 := @caughtexception;
+exitmonitor v5;
+throw v16;
+catch java.lang.Throwable from label1 to label2 with label6;
+catch java.lang.Throwable from label3 to label5 with label6;
+}
+public void execute(java.lang.Runnable)
+{
+java.lang.Runnable v1;
+java.lang.Thread v3;
+boolean v14, v20, v23, v29, v9;
+java.lang.ClassLoader v4;
+java.lang.Throwable v22, v31;
+long v18, v19, v26, v27, v28, v8;
+java.lang.AssertionError v16, v24;
+java.util.concurrent.RejectedExecutionException v10, v30;
+int v11, v12, v13, v15, v17, v25, v5, v6;
+org.jboss.threads.EnhancedViewExecutor v0;
+org.jboss.threads.EnhancedViewExecutor$EnhancedViewExecutorRunnable v2;
+java.util.concurrent.Executor v21;
+java.util.concurrent.locks.Lock v7;
+v0 := @this: org.jboss.threads.EnhancedViewExecutor;
+v1 := @parameter0: java.lang.Runnable;
+staticinvoke <org.wildfly.common.Assert: java.lang.Object checkNotNullParam(java.lang.String,java.lang.Object)>("task", v1);
+v2 = new org.jboss.threads.EnhancedViewExecutor$EnhancedViewExecutorRunnable;
+v3 = staticinvoke <java.lang.Thread: java.lang.Thread currentThread()>();
+v4 = staticinvoke <org.jboss.threads.JBossExecutors: java.lang.ClassLoader getContextClassLoader(java.lang.Thread)>(v3);
+specialinvoke v2.<org.jboss.threads.EnhancedViewExecutor$EnhancedViewExecutorRunnable: void <init>(org.jboss.threads.EnhancedViewExecutor,java.lang.Runnable,java.lang.ClassLoader)>(v0, v1, v4);
+v5 = v0.<org.jboss.threads.EnhancedViewExecutor: int maxCount>;
+v6 = v0.<org.jboss.threads.EnhancedViewExecutor: int queueLimit>;
+v7 = null;
+label01:
+v8 = v0.<org.jboss.threads.EnhancedViewExecutor: long state>;
+v9 = staticinvoke <org.jboss.threads.EnhancedViewExecutor: boolean isShutdown(long)>(v8);
+if v9 == 0 goto label02;
+v10 = new java.util.concurrent.RejectedExecutionException;
+specialinvoke v10.<java.util.concurrent.RejectedExecutionException: void <init>(java.lang.String)>("Executor has been shut down");
+throw v10;
+label02:
+v11 = staticinvoke <org.jboss.threads.EnhancedViewExecutor: int getActiveCount(long)>(v8);
+v12 = staticinvoke <org.jboss.threads.EnhancedViewExecutor: int getQueueSize(long)>(v8);
+if v6 == 0 goto label03;
+if v7 != null goto label03;
+if v12 != 0 goto label03;
+v13 = v5 - 1;
+if v11 < v13 goto label03;
+v7 = v0.<org.jboss.threads.EnhancedViewExecutor: java.util.concurrent.locks.Lock executeLock>;
+interfaceinvoke v7.<java.util.concurrent.locks.Lock: void lock()>();
+goto label01;
+label03:
+if v11 >= v5 goto label09;
+v14 = <org.jboss.threads.EnhancedViewExecutor: boolean $assertionsDisabled>;
+if v14 != 0 goto label04;
+v15 = staticinvoke <org.jboss.threads.EnhancedViewExecutor: int getQueueSize(long)>(v8);
+if v15 == 0 goto label04;
+v16 = new java.lang.AssertionError;
+specialinvoke v16.<java.lang.AssertionError: void <init>()>();
+throw v16;
+label04:
+v17 = v11 + 1;
+v18 = v8 & -2147483648L;
+v19 = v17 | v18;
+v20 = specialinvoke v0.<org.jboss.threads.EnhancedViewExecutor: boolean compareAndSwapState(long,long)>(v8, v19);
+if v20 == 0 goto label01;
+label05:
+v21 = v0.<org.jboss.threads.EnhancedViewExecutor: java.util.concurrent.Executor delegate>;
+interfaceinvoke v21.<java.util.concurrent.Executor: void execute(java.lang.Runnable)>(v2);
+label06:
+if v7 == null goto label07;
+interfaceinvoke v7.<java.util.concurrent.locks.Lock: void unlock()>();
+label07:
+return;
+label08:
+v22 := @caughtexception;
+specialinvoke v0.<org.jboss.threads.EnhancedViewExecutor: org.jboss.threads.EnhancedViewExecutor$EnhancedViewExecutorRunnable taskComplete(boolean)>(0);
+throw v22;
+label09:
+if v12 >= v6 goto label13;
+v23 = <org.jboss.threads.EnhancedViewExecutor: boolean $assertionsDisabled>;
+if v23 != 0 goto label10;
+if v11 == v5 goto label10;
+v24 = new java.lang.AssertionError;
+specialinvoke v24.<java.lang.AssertionError: void <init>()>();
+throw v24;
+label10:
+v25 = v12 + 1;
+v26 = v25 << 31;
+v27 = v8 & -4611686016279904257L;
+v28 = v26 | v27;
+v29 = specialinvoke v0.<org.jboss.threads.EnhancedViewExecutor: boolean compareAndSwapState(long,long)>(v8, v28);
+if v29 == 0 goto label01;
+specialinvoke v0.<org.jboss.threads.EnhancedViewExecutor: void enqueue(org.jboss.threads.EnhancedViewExecutor$EnhancedViewExecutorRunnable)>(v2);
+label11:
+if v7 == null goto label12;
+interfaceinvoke v7.<java.util.concurrent.locks.Lock: void unlock()>();
+label12:
+return;
+label13:
+v30 = new java.util.concurrent.RejectedExecutionException;
+specialinvoke v30.<java.util.concurrent.RejectedExecutionException: void <init>(java.lang.String)>("No executor queue space remaining");
+throw v30;
+label14:
+v31 := @caughtexception;
+if v7 == null goto label15;
+interfaceinvoke v7.<java.util.concurrent.locks.Lock: void unlock()>();
+label15:
+throw v31;
+catch java.lang.Throwable from label05 to label06 with label08;
+catch java.lang.Throwable from label01 to label06 with label14;
+catch java.lang.Throwable from label08 to label11 with label14;
+}
+private void enqueue(org.jboss.threads.EnhancedViewExecutor$EnhancedViewExecutorRunnable)
+{
+java.lang.Throwable v6;
+org.jboss.threads.EnhancedViewExecutor$EnhancedViewExecutorRunnable v1;
+org.jboss.logging.Logger v8;
+java.util.concurrent.RejectedExecutionException v5;
+int v2, v9;
+java.util.Queue v3;
+org.jboss.threads.EnhancedViewExecutor v0;
+boolean v4, v7;
+v0 := @this: org.jboss.threads.EnhancedViewExecutor;
+v1 := @parameter0: org.jboss.threads.EnhancedViewExecutor$EnhancedViewExecutorRunnable;
+v2 = 0;
+label1:
+v3 = v0.<org.jboss.threads.EnhancedViewExecutor: java.util.Queue queue>;
+v4 = interfaceinvoke v3.<java.util.Queue: boolean offer(java.lang.Object)>(v1);
+if v4 == 0 goto label3;
+label2:
+return;
+label3:
+v5 = new java.util.concurrent.RejectedExecutionException;
+specialinvoke v5.<java.util.concurrent.RejectedExecutionException: void <init>(java.lang.String)>("Task was rejected by the queue. This should never happen.");
+throw v5;
+label4:
+v6 := @caughtexception;
+v7 = specialinvoke v0.<org.jboss.threads.EnhancedViewExecutor: boolean decrementQueueSize()>();
+if v7 == 0 goto label5;
+throw v6;
+label5:
+if v2 != 0 goto label6;
+v8 = <org.jboss.threads.EnhancedViewExecutor: org.jboss.logging.Logger log>;
+virtualinvoke v8.<org.jboss.logging.Logger: void error(java.lang.Object,java.lang.Throwable)>("Failed to submit a task to the queue. This should never happen.", v6);
+label6:
+v2 = v2 + 1;
+v9 = <org.jboss.threads.EnhancedViewExecutor: int QUEUE_FAILURE_LOG_INTERVAL>;
+if v2 < v9 goto label7;
+v2 = 0;
+label7:
+staticinvoke <java.lang.Thread: void yield()>();
+goto label1;
+catch java.lang.Throwable from label1 to label2 with label4;
+}
+private boolean decrementQueueSize()
+{
+long v1, v4, v5, v6;
+int v2, v3;
+org.jboss.threads.EnhancedViewExecutor v0;
+boolean v7;
+v0 := @this: org.jboss.threads.EnhancedViewExecutor;
+label1:
+v1 = v0.<org.jboss.threads.EnhancedViewExecutor: long state>;
+v2 = staticinvoke <org.jboss.threads.EnhancedViewExecutor: int getQueueSize(long)>(v1);
+if v2 != 0 goto label2;
+return 0;
+label2:
+v3 = v2 - 1;
+v4 = v1 & -4611686016279904257L;
+v5 = v3 << 31;
+v6 = v4 | v5;
+v7 = specialinvoke v0.<org.jboss.threads.EnhancedViewExecutor: boolean compareAndSwapState(long,long)>(v1, v6);
+if v7 == 0 goto label1;
+specialinvoke v0.<org.jboss.threads.EnhancedViewExecutor: void notifyWaitersIfTerminated(long)>(v6);
+return 1;
+}
+private org.jboss.threads.EnhancedViewExecutor$EnhancedViewExecutorRunnable blockingTake()
+{
+java.lang.Throwable v6;
+org.jboss.logging.Logger v7;
+int v1, v2, v5, v8;
+java.lang.Object v4;
+java.util.Queue v3;
+org.jboss.threads.EnhancedViewExecutor v0;
+v0 := @this: org.jboss.threads.EnhancedViewExecutor;
+v1 = 0;
+v2 = 0;
+label1:
+v3 = v0.<org.jboss.threads.EnhancedViewExecutor: java.util.Queue queue>;
+v4 = interfaceinvoke v3.<java.util.Queue: java.lang.Object poll()>();
+if v4 == null goto label3;
+label2:
+return v4;
+label3:
+v5 = <org.jboss.threads.EnhancedViewExecutor: int MAX_QUEUE_SPINS>;
+if v1 >= v5 goto label4;
+v1 = v1 + 1;
+staticinvoke <org.jboss.threads.JDKSpecific: void onSpinWait()>();
+goto label1;
+label4:
+staticinvoke <java.lang.Thread: void yield()>();
+label5:
+goto label1;
+label6:
+v6 := @caughtexception;
+if v2 != 0 goto label7;
+v7 = <org.jboss.threads.EnhancedViewExecutor: org.jboss.logging.Logger log>;
+virtualinvoke v7.<org.jboss.logging.Logger: void error(java.lang.Object,java.lang.Throwable)>("Failed to read from the queue. This should never happen.", v6);
+label7:
+v2 = v2 + 1;
+v8 = <org.jboss.threads.EnhancedViewExecutor: int QUEUE_FAILURE_LOG_INTERVAL>;
+if v2 < v8 goto label8;
+v2 = 0;
+label8:
+staticinvoke <java.lang.Thread: void yield()>();
+goto label1;
+catch java.lang.Throwable from label1 to label2 with label6;
+catch java.lang.Throwable from label3 to label5 with label6;
+}
+private org.jboss.threads.EnhancedViewExecutor$EnhancedViewExecutorRunnable taskComplete(boolean)
+{
+java.lang.Throwable v11;
+long v14, v15, v2, v5, v6, v7;
+int v12, v13, v3, v4;
+org.jboss.threads.EnhancedViewExecutor v0;
+boolean v1, v16, v8;
+org.jboss.threads.EnhancedViewExecutor$EnhancedViewExecutorRunnable v9;
+java.util.concurrent.Executor v10;
+v0 := @this: org.jboss.threads.EnhancedViewExecutor;
+v1 := @parameter0: boolean;
+label1:
+v2 = v0.<org.jboss.threads.EnhancedViewExecutor: long state>;
+v3 = staticinvoke <org.jboss.threads.EnhancedViewExecutor: int getQueueSize(long)>(v2);
+if v3 <= 0 goto label5;
+if v1 == 0 goto label5;
+v4 = v3 - 1;
+v5 = v4 << 31;
+v6 = v2 & -4611686016279904257L;
+v7 = v5 | v6;
+v8 = specialinvoke v0.<org.jboss.threads.EnhancedViewExecutor: boolean compareAndSwapState(long,long)>(v2, v7);
+if v8 == 0 goto label1;
+v9 = specialinvoke v0.<org.jboss.threads.EnhancedViewExecutor: org.jboss.threads.EnhancedViewExecutor$EnhancedViewExecutorRunnable blockingTake()>();
+label2:
+v10 = v0.<org.jboss.threads.EnhancedViewExecutor: java.util.concurrent.Executor delegate>;
+interfaceinvoke v10.<java.util.concurrent.Executor: void execute(java.lang.Runnable)>(v9);
+label3:
+return null;
+label4:
+v11 := @caughtexception;
+return v9;
+label5:
+v12 = staticinvoke <org.jboss.threads.EnhancedViewExecutor: int getActiveCount(long)>(v2);
+v13 = v12 - 1;
+v14 = v2 & -2147483648L;
+v15 = v13 | v14;
+v16 = specialinvoke v0.<org.jboss.threads.EnhancedViewExecutor: boolean compareAndSwapState(long,long)>(v2, v15);
+if v16 == 0 goto label1;
+specialinvoke v0.<org.jboss.threads.EnhancedViewExecutor: void notifyWaitersIfTerminated(long)>(v15);
+return null;
+catch java.lang.Throwable from label2 to label3 with label4;
+}
+private static int getActiveCount(long)
+{
+long v0, v1;
+v0 := @parameter0: long;
+v1 = v0 & 2147483647L;
+return v1;
+}
+private static int getQueueSize(long)
+{
+long v0, v1, v2;
+v0 := @parameter0: long;
+v1 = v0 & 4611686016279904256L;
+v2 = v1 >> 31;
+return v2;
+}
+private boolean compareAndSwapState(long, long)
+{
+sun.misc.Unsafe v3;
+long v1, v2, v4;
+org.jboss.threads.EnhancedViewExecutor v0;
+boolean v5;
+v0 := @this: org.jboss.threads.EnhancedViewExecutor;
+v1 := @parameter0: long;
+v2 := @parameter1: long;
+v3 = <org.jboss.threads.JBossExecutors: sun.misc.Unsafe unsafe>;
+v4 = <org.jboss.threads.EnhancedViewExecutor: long stateOffset>;
+v5 = virtualinvoke v3.<sun.misc.Unsafe: boolean compareAndSwapLong(java.lang.Object,long,long,long)>(v0, v4, v1, v2);
+return v5;
+}
+private java.lang.Thread$UncaughtExceptionHandler uncaughtExceptionHandler()
+{
+java.lang.Thread$UncaughtExceptionHandler v1, v3, v4;
+java.lang.Thread v2;
+org.jboss.threads.EnhancedViewExecutor v0;
+v0 := @this: org.jboss.threads.EnhancedViewExecutor;
+v1 = virtualinvoke v0.<org.jboss.threads.EnhancedViewExecutor: java.lang.Thread$UncaughtExceptionHandler getExceptionHandler()>();
+if v1 == null goto label1;
+return v1;
+label1:
+v2 = staticinvoke <java.lang.Thread: java.lang.Thread currentThread()>();
+v3 = virtualinvoke v2.<java.lang.Thread: java.lang.Thread$UncaughtExceptionHandler getUncaughtExceptionHandler()>();
+if v3 == null goto label2;
+v4 = v3;
+goto label3;
+label2:
+v4 = staticinvoke <org.jboss.threads.JBossExecutors: java.lang.Thread$UncaughtExceptionHandler loggingExceptionHandler()>();
+label3:
+return v4;
+}
+public java.lang.String toString()
+{
+java.util.concurrent.Executor v6;
+long v1;
+int v2, v3;
+java.lang.String v7;
+org.jboss.threads.EnhancedViewExecutor v0;
+boolean v4, v5;
+v0 := @this: org.jboss.threads.EnhancedViewExecutor;
+v1 = v0.<org.jboss.threads.EnhancedViewExecutor: long state>;
+v2 = staticinvoke <org.jboss.threads.EnhancedViewExecutor: int getActiveCount(long)>(v1);
+v3 = staticinvoke <org.jboss.threads.EnhancedViewExecutor: int getQueueSize(long)>(v1);
+v4 = staticinvoke <org.jboss.threads.EnhancedViewExecutor: boolean isShutdown(long)>(v1);
+v5 = staticinvoke <org.jboss.threads.EnhancedViewExecutor: boolean isTerminated(long)>(v1);
+v6 = v0.<org.jboss.threads.EnhancedViewExecutor: java.util.concurrent.Executor delegate>;
+v7 = dynamicinvoke "makeConcatWithConstants" <java.lang.String (java.util.concurrent.Executor,int,int,boolean,boolean)>(v6, v2, v3, v4, v5) <java.lang.invoke.StringConcatFactory: java.lang.invoke.CallSite makeConcatWithConstants(java.lang.invoke.MethodHandles$Lookup,java.lang.String,java.lang.invoke.MethodType,java.lang.String,java.lang.Object[])>("EnhancedViewExecutor{delegate=\u0001, active=\u0001, queued=\u0001, shutdown=\u0001, terminated=\u0001}");
+return v7;
+}
+static void <clinit>()
+{
+sun.misc.Unsafe v4;
+org.jboss.logging.Logger v3;
+long v7;
+java.lang.reflect.Field v6;
+java.lang.NoSuchFieldError v9;
+short v13;
+java.lang.NoSuchFieldException v8;
+int v11, v12, v14;
+java.lang.Class v0, v5;
+java.lang.String v10;
+boolean v1, v2;
+v0 = class "Lorg/jboss/threads/EnhancedViewExecutor;";
+v1 = virtualinvoke v0.<java.lang.Class: boolean desiredAssertionStatus()>();
+if v1 != 0 goto label1;
+v2 = 1;
+goto label2;
+label1:
+v2 = 0;
+label2:
+<org.jboss.threads.EnhancedViewExecutor: boolean $assertionsDisabled> = v2;
+v3 = staticinvoke <org.jboss.logging.Logger: org.jboss.logging.Logger getLogger(java.lang.String)>("org.jboss.threads.view-executor");
+<org.jboss.threads.EnhancedViewExecutor: org.jboss.logging.Logger log> = v3;
+label3:
+v4 = <org.jboss.threads.JBossExecutors: sun.misc.Unsafe unsafe>;
+v5 = class "Lorg/jboss/threads/EnhancedViewExecutor;";
+v6 = virtualinvoke v5.<java.lang.Class: java.lang.reflect.Field getDeclaredField(java.lang.String)>("state");
+v7 = virtualinvoke v4.<sun.misc.Unsafe: long objectFieldOffset(java.lang.reflect.Field)>(v6);
+<org.jboss.threads.EnhancedViewExecutor: long stateOffset> = v7;
+label4:
+goto label6;
+label5:
+v8 := @caughtexception;
+v9 = new java.lang.NoSuchFieldError;
+v10 = virtualinvoke v8.<java.lang.NoSuchFieldException: java.lang.String getMessage()>();
+specialinvoke v9.<java.lang.NoSuchFieldError: void <init>(java.lang.String)>(v10);
+throw v9;
+label6:
+v11 = staticinvoke <org.jboss.threads.EnhancedViewExecutor: int readIntPropertyPrefixed(java.lang.String,int)>("queue.failure.log.interval", 1000000);
+<org.jboss.threads.EnhancedViewExecutor: int QUEUE_FAILURE_LOG_INTERVAL> = v11;
+v12 = staticinvoke <org.wildfly.common.cpu.ProcessorInfo: int availableProcessors()>();
+if v12 != 1 goto label7;
+v13 = 0;
+goto label8;
+label7:
+v13 = 128;
+label8:
+v14 = staticinvoke <org.jboss.threads.EnhancedViewExecutor: int readIntPropertyPrefixed(java.lang.String,int)>("queue.poll.spins", v13);
+<org.jboss.threads.EnhancedViewExecutor: int MAX_QUEUE_SPINS> = v14;
+return;
+catch java.lang.NoSuchFieldException from label3 to label4 with label5;
+}
+}

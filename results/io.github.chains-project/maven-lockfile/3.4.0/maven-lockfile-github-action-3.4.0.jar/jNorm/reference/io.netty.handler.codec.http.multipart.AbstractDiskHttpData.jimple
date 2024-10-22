@@ -1,0 +1,784 @@
+public abstract class io.netty.handler.codec.http.multipart.AbstractDiskHttpData extends io.netty.handler.codec.http.multipart.AbstractHttpData
+{
+private static final io.netty.util.internal.logging.InternalLogger logger;
+private java.io.File file;
+private boolean isRenamed;
+private java.nio.channels.FileChannel fileChannel;
+protected void <init>(java.lang.String, java.nio.charset.Charset, long)
+{
+java.nio.charset.Charset v2;
+long v3;
+java.lang.String v1;
+io.netty.handler.codec.http.multipart.AbstractDiskHttpData v0;
+v0 := @this: io.netty.handler.codec.http.multipart.AbstractDiskHttpData;
+v1 := @parameter0: java.lang.String;
+v2 := @parameter1: java.nio.charset.Charset;
+v3 := @parameter2: long;
+specialinvoke v0.<io.netty.handler.codec.http.multipart.AbstractHttpData: void <init>(java.lang.String,java.nio.charset.Charset,long)>(v1, v2, v3);
+return;
+}
+protected abstract java.lang.String getDiskFilename();
+protected abstract java.lang.String getPrefix();
+protected abstract java.lang.String getBaseDirectory();
+protected abstract java.lang.String getPostfix();
+protected abstract boolean deleteOnExit();
+private java.io.File tempFile() throws java.io.IOException
+{
+java.io.File v7, v9;
+int v2;
+java.lang.String v1, v10, v12, v3, v4, v5, v6, v8;
+io.netty.handler.codec.http.multipart.AbstractDiskHttpData v0;
+boolean v11;
+v0 := @this: io.netty.handler.codec.http.multipart.AbstractDiskHttpData;
+v1 = virtualinvoke v0.<io.netty.handler.codec.http.multipart.AbstractDiskHttpData: java.lang.String getDiskFilename()>();
+if v1 == null goto label1;
+v2 = virtualinvoke v1.<java.lang.String: int hashCode()>();
+v3 = staticinvoke <java.lang.Integer: java.lang.String toString(int)>(v2);
+v4 = dynamicinvoke "makeConcatWithConstants" <java.lang.String (java.lang.String)>(v3) <java.lang.invoke.StringConcatFactory: java.lang.invoke.CallSite makeConcatWithConstants(java.lang.invoke.MethodHandles$Lookup,java.lang.String,java.lang.invoke.MethodType,java.lang.String,java.lang.Object[])>("_\u0001");
+goto label2;
+label1:
+v4 = virtualinvoke v0.<io.netty.handler.codec.http.multipart.AbstractDiskHttpData: java.lang.String getPostfix()>();
+label2:
+v5 = virtualinvoke v0.<io.netty.handler.codec.http.multipart.AbstractDiskHttpData: java.lang.String getBaseDirectory()>();
+if v5 != null goto label3;
+v6 = virtualinvoke v0.<io.netty.handler.codec.http.multipart.AbstractDiskHttpData: java.lang.String getPrefix()>();
+v7 = staticinvoke <io.netty.util.internal.PlatformDependent: java.io.File createTempFile(java.lang.String,java.lang.String,java.io.File)>(v6, v4, null);
+goto label4;
+label3:
+v8 = virtualinvoke v0.<io.netty.handler.codec.http.multipart.AbstractDiskHttpData: java.lang.String getPrefix()>();
+v9 = new java.io.File;
+v10 = virtualinvoke v0.<io.netty.handler.codec.http.multipart.AbstractDiskHttpData: java.lang.String getBaseDirectory()>();
+specialinvoke v9.<java.io.File: void <init>(java.lang.String)>(v10);
+v7 = staticinvoke <io.netty.util.internal.PlatformDependent: java.io.File createTempFile(java.lang.String,java.lang.String,java.io.File)>(v8, v4, v9);
+label4:
+v11 = virtualinvoke v0.<io.netty.handler.codec.http.multipart.AbstractDiskHttpData: boolean deleteOnExit()>();
+if v11 == 0 goto label5;
+v12 = virtualinvoke v7.<java.io.File: java.lang.String getPath()>();
+staticinvoke <io.netty.handler.codec.http.multipart.DeleteFileOnExitHook: void add(java.lang.String)>(v12);
+label5:
+return v7;
+}
+public void setContent(io.netty.buffer.ByteBuf) throws java.io.IOException
+{
+java.io.RandomAccessFile v28;
+java.nio.ByteBuffer v31;
+byte v20, v34, v5, v8;
+io.netty.handler.codec.http.multipart.AbstractDiskHttpData v0;
+boolean v17, v22, v24;
+java.lang.Throwable v38, v39;
+long v10, v11, v19, v3, v33, v4, v6, v7;
+io.netty.buffer.ByteBuf v1;
+int v15, v2, v32, v35, v36, v37;
+java.lang.String v12, v27;
+java.io.IOException v25, v9;
+java.io.File v13, v14, v16, v18, v21, v23, v26, v29;
+java.nio.channels.FileChannel v30;
+v0 := @this: io.netty.handler.codec.http.multipart.AbstractDiskHttpData;
+v1 := @parameter0: io.netty.buffer.ByteBuf;
+staticinvoke <io.netty.util.internal.ObjectUtil: java.lang.Object checkNotNull(java.lang.Object,java.lang.String)>(v1, "buffer");
+label01:
+v2 = virtualinvoke v1.<io.netty.buffer.ByteBuf: int readableBytes()>();
+v0.<io.netty.handler.codec.http.multipart.AbstractDiskHttpData: long size> = v2;
+v3 = v0.<io.netty.handler.codec.http.multipart.AbstractDiskHttpData: long size>;
+virtualinvoke v0.<io.netty.handler.codec.http.multipart.AbstractDiskHttpData: void checkSize(long)>(v3);
+v4 = v0.<io.netty.handler.codec.http.multipart.AbstractDiskHttpData: long definedSize>;
+v5 = v4 cmp 0L;
+if v5 <= 0 goto label02;
+v6 = v0.<io.netty.handler.codec.http.multipart.AbstractDiskHttpData: long definedSize>;
+v7 = v0.<io.netty.handler.codec.http.multipart.AbstractDiskHttpData: long size>;
+v8 = v6 cmp v7;
+if v8 >= 0 goto label02;
+v9 = new java.io.IOException;
+v10 = v0.<io.netty.handler.codec.http.multipart.AbstractDiskHttpData: long size>;
+v11 = v0.<io.netty.handler.codec.http.multipart.AbstractDiskHttpData: long definedSize>;
+v12 = dynamicinvoke "makeConcatWithConstants" <java.lang.String (long,long)>(v10, v11) <java.lang.invoke.StringConcatFactory: java.lang.invoke.CallSite makeConcatWithConstants(java.lang.invoke.MethodHandles$Lookup,java.lang.String,java.lang.invoke.MethodType,java.lang.String,java.lang.Object[])>("Out of size: \u0001 > \u0001");
+specialinvoke v9.<java.io.IOException: void <init>(java.lang.String)>(v12);
+throw v9;
+label02:
+v13 = v0.<io.netty.handler.codec.http.multipart.AbstractDiskHttpData: java.io.File file>;
+if v13 != null goto label03;
+v14 = specialinvoke v0.<io.netty.handler.codec.http.multipart.AbstractDiskHttpData: java.io.File tempFile()>();
+v0.<io.netty.handler.codec.http.multipart.AbstractDiskHttpData: java.io.File file> = v14;
+label03:
+v15 = virtualinvoke v1.<io.netty.buffer.ByteBuf: int readableBytes()>();
+if v15 != 0 goto label08;
+v16 = v0.<io.netty.handler.codec.http.multipart.AbstractDiskHttpData: java.io.File file>;
+v17 = virtualinvoke v16.<java.io.File: boolean createNewFile()>();
+if v17 != 0 goto label07;
+v18 = v0.<io.netty.handler.codec.http.multipart.AbstractDiskHttpData: java.io.File file>;
+v19 = virtualinvoke v18.<java.io.File: long length()>();
+v20 = v19 cmp 0L;
+if v20 != 0 goto label05;
+label04:
+virtualinvoke v1.<io.netty.buffer.ByteBuf: boolean release()>();
+return;
+label05:
+v21 = v0.<io.netty.handler.codec.http.multipart.AbstractDiskHttpData: java.io.File file>;
+v22 = virtualinvoke v21.<java.io.File: boolean delete()>();
+if v22 == 0 goto label06;
+v23 = v0.<io.netty.handler.codec.http.multipart.AbstractDiskHttpData: java.io.File file>;
+v24 = virtualinvoke v23.<java.io.File: boolean createNewFile()>();
+if v24 != 0 goto label07;
+label06:
+v25 = new java.io.IOException;
+v26 = v0.<io.netty.handler.codec.http.multipart.AbstractDiskHttpData: java.io.File file>;
+v27 = dynamicinvoke "makeConcatWithConstants" <java.lang.String (java.io.File)>(v26) <java.lang.invoke.StringConcatFactory: java.lang.invoke.CallSite makeConcatWithConstants(java.lang.invoke.MethodHandles$Lookup,java.lang.String,java.lang.invoke.MethodType,java.lang.String,java.lang.Object[])>("file exists already: \u0001");
+specialinvoke v25.<java.io.IOException: void <init>(java.lang.String)>(v27);
+throw v25;
+label07:
+virtualinvoke v1.<io.netty.buffer.ByteBuf: boolean release()>();
+return;
+label08:
+v28 = new java.io.RandomAccessFile;
+v29 = v0.<io.netty.handler.codec.http.multipart.AbstractDiskHttpData: java.io.File file>;
+specialinvoke v28.<java.io.RandomAccessFile: void <init>(java.io.File,java.lang.String)>(v29, "rw");
+label09:
+virtualinvoke v28.<java.io.RandomAccessFile: void setLength(long)>(0L);
+v30 = virtualinvoke v28.<java.io.RandomAccessFile: java.nio.channels.FileChannel getChannel()>();
+v31 = virtualinvoke v1.<io.netty.buffer.ByteBuf: java.nio.ByteBuffer nioBuffer()>();
+v32 = 0;
+label10:
+v33 = v0.<io.netty.handler.codec.http.multipart.AbstractDiskHttpData: long size>;
+v34 = v32 cmp v33;
+if v34 >= 0 goto label11;
+v35 = virtualinvoke v30.<java.nio.channels.FileChannel: int write(java.nio.ByteBuffer)>(v31);
+v32 = v32 + v35;
+goto label10;
+label11:
+v36 = virtualinvoke v1.<io.netty.buffer.ByteBuf: int readerIndex()>();
+v37 = v36 + v32;
+virtualinvoke v1.<io.netty.buffer.ByteBuf: io.netty.buffer.ByteBuf readerIndex(int)>(v37);
+virtualinvoke v30.<java.nio.channels.FileChannel: void force(boolean)>(0);
+label12:
+virtualinvoke v28.<java.io.RandomAccessFile: void close()>();
+goto label14;
+label13:
+v38 := @caughtexception;
+virtualinvoke v28.<java.io.RandomAccessFile: void close()>();
+throw v38;
+label14:
+virtualinvoke v0.<io.netty.handler.codec.http.multipart.AbstractDiskHttpData: void setCompleted()>();
+label15:
+virtualinvoke v1.<io.netty.buffer.ByteBuf: boolean release()>();
+goto label17;
+label16:
+v39 := @caughtexception;
+virtualinvoke v1.<io.netty.buffer.ByteBuf: boolean release()>();
+throw v39;
+label17:
+return;
+catch java.lang.Throwable from label09 to label12 with label13;
+catch java.lang.Throwable from label01 to label04 with label16;
+catch java.lang.Throwable from label05 to label07 with label16;
+catch java.lang.Throwable from label08 to label15 with label16;
+}
+public void addContent(io.netty.buffer.ByteBuf, boolean) throws java.io.IOException
+{
+java.io.RandomAccessFile v20, v37;
+byte v11, v7;
+io.netty.handler.codec.http.multipart.AbstractDiskHttpData v0;
+boolean v2;
+java.lang.Throwable v33, v42;
+long v10, v13, v14, v15, v25, v30, v32, v4, v5, v6, v8, v9;
+io.netty.buffer.ByteBuf v1;
+int v23, v26, v28, v3, v31;
+java.lang.String v16;
+java.io.IOException v12;
+java.io.File v17, v18, v21, v34, v35, v38;
+java.nio.channels.FileChannel v19, v22, v24, v27, v29, v36, v39, v40, v41, v43;
+v0 := @this: io.netty.handler.codec.http.multipart.AbstractDiskHttpData;
+v1 := @parameter0: io.netty.buffer.ByteBuf;
+v2 := @parameter1: boolean;
+if v1 == null goto label09;
+label01:
+v3 = virtualinvoke v1.<io.netty.buffer.ByteBuf: int readableBytes()>();
+v4 = v0.<io.netty.handler.codec.http.multipart.AbstractDiskHttpData: long size>;
+v5 = v4 + v3;
+virtualinvoke v0.<io.netty.handler.codec.http.multipart.AbstractDiskHttpData: void checkSize(long)>(v5);
+v6 = v0.<io.netty.handler.codec.http.multipart.AbstractDiskHttpData: long definedSize>;
+v7 = v6 cmp 0L;
+if v7 <= 0 goto label02;
+v8 = v0.<io.netty.handler.codec.http.multipart.AbstractDiskHttpData: long definedSize>;
+v9 = v0.<io.netty.handler.codec.http.multipart.AbstractDiskHttpData: long size>;
+v10 = v9 + v3;
+v11 = v8 cmp v10;
+if v11 >= 0 goto label02;
+v12 = new java.io.IOException;
+v13 = v0.<io.netty.handler.codec.http.multipart.AbstractDiskHttpData: long size>;
+v14 = v13 + v3;
+v15 = v0.<io.netty.handler.codec.http.multipart.AbstractDiskHttpData: long definedSize>;
+v16 = dynamicinvoke "makeConcatWithConstants" <java.lang.String (long,long)>(v14, v15) <java.lang.invoke.StringConcatFactory: java.lang.invoke.CallSite makeConcatWithConstants(java.lang.invoke.MethodHandles$Lookup,java.lang.String,java.lang.invoke.MethodType,java.lang.String,java.lang.Object[])>("Out of size: \u0001 > \u0001");
+specialinvoke v12.<java.io.IOException: void <init>(java.lang.String)>(v16);
+throw v12;
+label02:
+v17 = v0.<io.netty.handler.codec.http.multipart.AbstractDiskHttpData: java.io.File file>;
+if v17 != null goto label03;
+v18 = specialinvoke v0.<io.netty.handler.codec.http.multipart.AbstractDiskHttpData: java.io.File tempFile()>();
+v0.<io.netty.handler.codec.http.multipart.AbstractDiskHttpData: java.io.File file> = v18;
+label03:
+v19 = v0.<io.netty.handler.codec.http.multipart.AbstractDiskHttpData: java.nio.channels.FileChannel fileChannel>;
+if v19 != null goto label04;
+v20 = new java.io.RandomAccessFile;
+v21 = v0.<io.netty.handler.codec.http.multipart.AbstractDiskHttpData: java.io.File file>;
+specialinvoke v20.<java.io.RandomAccessFile: void <init>(java.io.File,java.lang.String)>(v21, "rw");
+v22 = virtualinvoke v20.<java.io.RandomAccessFile: java.nio.channels.FileChannel getChannel()>();
+v0.<io.netty.handler.codec.http.multipart.AbstractDiskHttpData: java.nio.channels.FileChannel fileChannel> = v22;
+label04:
+v23 = v3;
+v24 = v0.<io.netty.handler.codec.http.multipart.AbstractDiskHttpData: java.nio.channels.FileChannel fileChannel>;
+v25 = virtualinvoke v24.<java.nio.channels.FileChannel: long position()>();
+v26 = virtualinvoke v1.<io.netty.buffer.ByteBuf: int readerIndex()>();
+label05:
+if v23 <= 0 goto label06;
+v27 = v0.<io.netty.handler.codec.http.multipart.AbstractDiskHttpData: java.nio.channels.FileChannel fileChannel>;
+v28 = virtualinvoke v1.<io.netty.buffer.ByteBuf: int getBytes(int,java.nio.channels.FileChannel,long,int)>(v26, v27, v25, v23);
+if v28 < 0 goto label06;
+v23 = v23 - v28;
+v25 = v25 + v28;
+v26 = v26 + v28;
+goto label05;
+label06:
+v29 = v0.<io.netty.handler.codec.http.multipart.AbstractDiskHttpData: java.nio.channels.FileChannel fileChannel>;
+virtualinvoke v29.<java.nio.channels.FileChannel: java.nio.channels.FileChannel position(long)>(v25);
+virtualinvoke v1.<io.netty.buffer.ByteBuf: io.netty.buffer.ByteBuf readerIndex(int)>(v26);
+v30 = v0.<io.netty.handler.codec.http.multipart.AbstractDiskHttpData: long size>;
+v31 = v3 - v23;
+v32 = v30 + v31;
+v0.<io.netty.handler.codec.http.multipart.AbstractDiskHttpData: long size> = v32;
+label07:
+virtualinvoke v1.<io.netty.buffer.ByteBuf: boolean release()>();
+goto label09;
+label08:
+v33 := @caughtexception;
+virtualinvoke v1.<io.netty.buffer.ByteBuf: boolean release()>();
+throw v33;
+label09:
+if v2 == 0 goto label15;
+v34 = v0.<io.netty.handler.codec.http.multipart.AbstractDiskHttpData: java.io.File file>;
+if v34 != null goto label10;
+v35 = specialinvoke v0.<io.netty.handler.codec.http.multipart.AbstractDiskHttpData: java.io.File tempFile()>();
+v0.<io.netty.handler.codec.http.multipart.AbstractDiskHttpData: java.io.File file> = v35;
+label10:
+v36 = v0.<io.netty.handler.codec.http.multipart.AbstractDiskHttpData: java.nio.channels.FileChannel fileChannel>;
+if v36 != null goto label11;
+v37 = new java.io.RandomAccessFile;
+v38 = v0.<io.netty.handler.codec.http.multipart.AbstractDiskHttpData: java.io.File file>;
+specialinvoke v37.<java.io.RandomAccessFile: void <init>(java.io.File,java.lang.String)>(v38, "rw");
+v39 = virtualinvoke v37.<java.io.RandomAccessFile: java.nio.channels.FileChannel getChannel()>();
+v0.<io.netty.handler.codec.http.multipart.AbstractDiskHttpData: java.nio.channels.FileChannel fileChannel> = v39;
+label11:
+v40 = v0.<io.netty.handler.codec.http.multipart.AbstractDiskHttpData: java.nio.channels.FileChannel fileChannel>;
+virtualinvoke v40.<java.nio.channels.FileChannel: void force(boolean)>(0);
+label12:
+v41 = v0.<io.netty.handler.codec.http.multipart.AbstractDiskHttpData: java.nio.channels.FileChannel fileChannel>;
+virtualinvoke v41.<java.nio.channels.FileChannel: void close()>();
+goto label14;
+label13:
+v42 := @caughtexception;
+v43 = v0.<io.netty.handler.codec.http.multipart.AbstractDiskHttpData: java.nio.channels.FileChannel fileChannel>;
+virtualinvoke v43.<java.nio.channels.FileChannel: void close()>();
+throw v42;
+label14:
+v0.<io.netty.handler.codec.http.multipart.AbstractDiskHttpData: java.nio.channels.FileChannel fileChannel> = null;
+virtualinvoke v0.<io.netty.handler.codec.http.multipart.AbstractDiskHttpData: void setCompleted()>();
+goto label16;
+label15:
+staticinvoke <io.netty.util.internal.ObjectUtil: java.lang.Object checkNotNull(java.lang.Object,java.lang.String)>(v1, "buffer");
+label16:
+return;
+catch java.lang.Throwable from label01 to label07 with label08;
+catch java.lang.Throwable from label11 to label12 with label13;
+}
+public void setContent(java.io.File) throws java.io.IOException
+{
+long v2;
+io.netty.handler.codec.http.multipart.AbstractDiskHttpData v0;
+java.io.File v1, v3;
+v0 := @this: io.netty.handler.codec.http.multipart.AbstractDiskHttpData;
+v1 := @parameter0: java.io.File;
+v2 = virtualinvoke v1.<java.io.File: long length()>();
+virtualinvoke v0.<io.netty.handler.codec.http.multipart.AbstractDiskHttpData: void checkSize(long)>(v2);
+v0.<io.netty.handler.codec.http.multipart.AbstractDiskHttpData: long size> = v2;
+v3 = v0.<io.netty.handler.codec.http.multipart.AbstractDiskHttpData: java.io.File file>;
+if v3 == null goto label1;
+virtualinvoke v0.<io.netty.handler.codec.http.multipart.AbstractDiskHttpData: void delete()>();
+label1:
+v0.<io.netty.handler.codec.http.multipart.AbstractDiskHttpData: java.io.File file> = v1;
+v0.<io.netty.handler.codec.http.multipart.AbstractDiskHttpData: boolean isRenamed> = 1;
+virtualinvoke v0.<io.netty.handler.codec.http.multipart.AbstractDiskHttpData: void setCompleted()>();
+return;
+}
+public void setContent(java.io.InputStream) throws java.io.IOException
+{
+java.lang.Throwable v13;
+byte[] v8;
+java.io.RandomAccessFile v4;
+long v14, v16, v17, v24, v25;
+java.nio.ByteBuffer v11, v9;
+byte v15, v18;
+int v10, v12, v6;
+java.lang.String v26;
+io.netty.handler.codec.http.multipart.AbstractDiskHttpData v0;
+boolean v20;
+java.io.IOException v23;
+java.io.File v19, v2, v22, v3, v5;
+io.netty.util.internal.logging.InternalLogger v21;
+java.nio.channels.FileChannel v7;
+java.io.InputStream v1;
+v0 := @this: io.netty.handler.codec.http.multipart.AbstractDiskHttpData;
+v1 := @parameter0: java.io.InputStream;
+staticinvoke <io.netty.util.internal.ObjectUtil: java.lang.Object checkNotNull(java.lang.Object,java.lang.String)>(v1, "inputStream");
+v2 = v0.<io.netty.handler.codec.http.multipart.AbstractDiskHttpData: java.io.File file>;
+if v2 == null goto label1;
+virtualinvoke v0.<io.netty.handler.codec.http.multipart.AbstractDiskHttpData: void delete()>();
+label1:
+v3 = specialinvoke v0.<io.netty.handler.codec.http.multipart.AbstractDiskHttpData: java.io.File tempFile()>();
+v0.<io.netty.handler.codec.http.multipart.AbstractDiskHttpData: java.io.File file> = v3;
+v4 = new java.io.RandomAccessFile;
+v5 = v0.<io.netty.handler.codec.http.multipart.AbstractDiskHttpData: java.io.File file>;
+specialinvoke v4.<java.io.RandomAccessFile: void <init>(java.io.File,java.lang.String)>(v5, "rw");
+v6 = 0;
+label2:
+virtualinvoke v4.<java.io.RandomAccessFile: void setLength(long)>(0L);
+v7 = virtualinvoke v4.<java.io.RandomAccessFile: java.nio.channels.FileChannel getChannel()>();
+v8 = newarray (byte)[16384];
+v9 = staticinvoke <java.nio.ByteBuffer: java.nio.ByteBuffer wrap(byte[])>(v8);
+v10 = virtualinvoke v1.<java.io.InputStream: int read(byte[])>(v8);
+label3:
+if v10 <= 0 goto label4;
+v11 = virtualinvoke v9.<java.nio.ByteBuffer: java.nio.ByteBuffer position(int)>(v10);
+virtualinvoke v11.<java.nio.ByteBuffer: java.nio.ByteBuffer flip()>();
+v12 = virtualinvoke v7.<java.nio.channels.FileChannel: int write(java.nio.ByteBuffer)>(v9);
+v6 = v6 + v12;
+virtualinvoke v0.<io.netty.handler.codec.http.multipart.AbstractDiskHttpData: void checkSize(long)>(v6);
+v10 = virtualinvoke v1.<java.io.InputStream: int read(byte[])>(v8);
+goto label3;
+label4:
+virtualinvoke v7.<java.nio.channels.FileChannel: void force(boolean)>(0);
+label5:
+virtualinvoke v4.<java.io.RandomAccessFile: void close()>();
+goto label7;
+label6:
+v13 := @caughtexception;
+virtualinvoke v4.<java.io.RandomAccessFile: void close()>();
+throw v13;
+label7:
+v0.<io.netty.handler.codec.http.multipart.AbstractDiskHttpData: long size> = v6;
+v14 = v0.<io.netty.handler.codec.http.multipart.AbstractDiskHttpData: long definedSize>;
+v15 = v14 cmp 0L;
+if v15 <= 0 goto label9;
+v16 = v0.<io.netty.handler.codec.http.multipart.AbstractDiskHttpData: long definedSize>;
+v17 = v0.<io.netty.handler.codec.http.multipart.AbstractDiskHttpData: long size>;
+v18 = v16 cmp v17;
+if v18 >= 0 goto label9;
+v19 = v0.<io.netty.handler.codec.http.multipart.AbstractDiskHttpData: java.io.File file>;
+v20 = virtualinvoke v19.<java.io.File: boolean delete()>();
+if v20 != 0 goto label8;
+v21 = <io.netty.handler.codec.http.multipart.AbstractDiskHttpData: io.netty.util.internal.logging.InternalLogger logger>;
+v22 = v0.<io.netty.handler.codec.http.multipart.AbstractDiskHttpData: java.io.File file>;
+interfaceinvoke v21.<io.netty.util.internal.logging.InternalLogger: void warn(java.lang.String,java.lang.Object)>("Failed to delete: {}", v22);
+label8:
+v0.<io.netty.handler.codec.http.multipart.AbstractDiskHttpData: java.io.File file> = null;
+v23 = new java.io.IOException;
+v24 = v0.<io.netty.handler.codec.http.multipart.AbstractDiskHttpData: long size>;
+v25 = v0.<io.netty.handler.codec.http.multipart.AbstractDiskHttpData: long definedSize>;
+v26 = dynamicinvoke "makeConcatWithConstants" <java.lang.String (long,long)>(v24, v25) <java.lang.invoke.StringConcatFactory: java.lang.invoke.CallSite makeConcatWithConstants(java.lang.invoke.MethodHandles$Lookup,java.lang.String,java.lang.invoke.MethodType,java.lang.String,java.lang.Object[])>("Out of size: \u0001 > \u0001");
+specialinvoke v23.<java.io.IOException: void <init>(java.lang.String)>(v26);
+throw v23;
+label9:
+v0.<io.netty.handler.codec.http.multipart.AbstractDiskHttpData: boolean isRenamed> = 1;
+virtualinvoke v0.<io.netty.handler.codec.http.multipart.AbstractDiskHttpData: void setCompleted()>();
+return;
+catch java.lang.Throwable from label2 to label5 with label6;
+}
+public void delete()
+{
+java.lang.Throwable v11;
+java.lang.String v16;
+io.netty.handler.codec.http.multipart.AbstractDiskHttpData v0;
+boolean v15, v19, v22, v25;
+java.io.IOException v13, v4, v6, v9;
+java.io.File v17, v18, v20, v21, v24;
+io.netty.util.internal.logging.InternalLogger v10, v14, v23, v5, v7;
+java.nio.channels.FileChannel v1, v12, v2, v3, v8;
+v0 := @this: io.netty.handler.codec.http.multipart.AbstractDiskHttpData;
+v1 = v0.<io.netty.handler.codec.http.multipart.AbstractDiskHttpData: java.nio.channels.FileChannel fileChannel>;
+if v1 == null goto label15;
+label01:
+v2 = v0.<io.netty.handler.codec.http.multipart.AbstractDiskHttpData: java.nio.channels.FileChannel fileChannel>;
+virtualinvoke v2.<java.nio.channels.FileChannel: void force(boolean)>(0);
+label02:
+v3 = v0.<io.netty.handler.codec.http.multipart.AbstractDiskHttpData: java.nio.channels.FileChannel fileChannel>;
+virtualinvoke v3.<java.nio.channels.FileChannel: void close()>();
+label03:
+goto label14;
+label04:
+v4 := @caughtexception;
+v5 = <io.netty.handler.codec.http.multipart.AbstractDiskHttpData: io.netty.util.internal.logging.InternalLogger logger>;
+interfaceinvoke v5.<io.netty.util.internal.logging.InternalLogger: void warn(java.lang.String,java.lang.Throwable)>("Failed to close a file.", v4);
+goto label14;
+label05:
+v6 := @caughtexception;
+v7 = <io.netty.handler.codec.http.multipart.AbstractDiskHttpData: io.netty.util.internal.logging.InternalLogger logger>;
+interfaceinvoke v7.<io.netty.util.internal.logging.InternalLogger: void warn(java.lang.String,java.lang.Throwable)>("Failed to force.", v6);
+label06:
+v8 = v0.<io.netty.handler.codec.http.multipart.AbstractDiskHttpData: java.nio.channels.FileChannel fileChannel>;
+virtualinvoke v8.<java.nio.channels.FileChannel: void close()>();
+label07:
+goto label14;
+label08:
+v9 := @caughtexception;
+v10 = <io.netty.handler.codec.http.multipart.AbstractDiskHttpData: io.netty.util.internal.logging.InternalLogger logger>;
+interfaceinvoke v10.<io.netty.util.internal.logging.InternalLogger: void warn(java.lang.String,java.lang.Throwable)>("Failed to close a file.", v9);
+goto label14;
+label09:
+v11 := @caughtexception;
+label10:
+v12 = v0.<io.netty.handler.codec.http.multipart.AbstractDiskHttpData: java.nio.channels.FileChannel fileChannel>;
+virtualinvoke v12.<java.nio.channels.FileChannel: void close()>();
+label11:
+goto label13;
+label12:
+v13 := @caughtexception;
+v14 = <io.netty.handler.codec.http.multipart.AbstractDiskHttpData: io.netty.util.internal.logging.InternalLogger logger>;
+interfaceinvoke v14.<io.netty.util.internal.logging.InternalLogger: void warn(java.lang.String,java.lang.Throwable)>("Failed to close a file.", v13);
+label13:
+throw v11;
+label14:
+v0.<io.netty.handler.codec.http.multipart.AbstractDiskHttpData: java.nio.channels.FileChannel fileChannel> = null;
+label15:
+v15 = v0.<io.netty.handler.codec.http.multipart.AbstractDiskHttpData: boolean isRenamed>;
+if v15 != 0 goto label18;
+v16 = null;
+v17 = v0.<io.netty.handler.codec.http.multipart.AbstractDiskHttpData: java.io.File file>;
+if v17 == null goto label16;
+v18 = v0.<io.netty.handler.codec.http.multipart.AbstractDiskHttpData: java.io.File file>;
+v19 = virtualinvoke v18.<java.io.File: boolean exists()>();
+if v19 == 0 goto label16;
+v20 = v0.<io.netty.handler.codec.http.multipart.AbstractDiskHttpData: java.io.File file>;
+v16 = virtualinvoke v20.<java.io.File: java.lang.String getPath()>();
+v21 = v0.<io.netty.handler.codec.http.multipart.AbstractDiskHttpData: java.io.File file>;
+v22 = virtualinvoke v21.<java.io.File: boolean delete()>();
+if v22 != 0 goto label16;
+v16 = null;
+v23 = <io.netty.handler.codec.http.multipart.AbstractDiskHttpData: io.netty.util.internal.logging.InternalLogger logger>;
+v24 = v0.<io.netty.handler.codec.http.multipart.AbstractDiskHttpData: java.io.File file>;
+interfaceinvoke v23.<io.netty.util.internal.logging.InternalLogger: void warn(java.lang.String,java.lang.Object)>("Failed to delete: {}", v24);
+label16:
+v25 = virtualinvoke v0.<io.netty.handler.codec.http.multipart.AbstractDiskHttpData: boolean deleteOnExit()>();
+if v25 == 0 goto label17;
+if v16 == null goto label17;
+staticinvoke <io.netty.handler.codec.http.multipart.DeleteFileOnExitHook: void remove(java.lang.String)>(v16);
+label17:
+v0.<io.netty.handler.codec.http.multipart.AbstractDiskHttpData: java.io.File file> = null;
+label18:
+return;
+catch java.io.IOException from label02 to label03 with label04;
+catch java.io.IOException from label01 to label02 with label05;
+catch java.io.IOException from label06 to label07 with label08;
+catch java.lang.Throwable from label01 to label02 with label09;
+catch java.lang.Throwable from label05 to label06 with label09;
+catch java.io.IOException from label10 to label11 with label12;
+}
+public byte[] get() throws java.io.IOException
+{
+byte[] v2, v4;
+io.netty.handler.codec.http.multipart.AbstractDiskHttpData v0;
+java.io.File v1, v3;
+v0 := @this: io.netty.handler.codec.http.multipart.AbstractDiskHttpData;
+v1 = v0.<io.netty.handler.codec.http.multipart.AbstractDiskHttpData: java.io.File file>;
+if v1 != null goto label1;
+v2 = <io.netty.util.internal.EmptyArrays: byte[] EMPTY_BYTES>;
+return v2;
+label1:
+v3 = v0.<io.netty.handler.codec.http.multipart.AbstractDiskHttpData: java.io.File file>;
+v4 = staticinvoke <io.netty.handler.codec.http.multipart.AbstractDiskHttpData: byte[] readFrom(java.io.File)>(v3);
+return v4;
+}
+public io.netty.buffer.ByteBuf getByteBuf() throws java.io.IOException
+{
+byte[] v4;
+io.netty.buffer.ByteBuf v2, v5;
+io.netty.handler.codec.http.multipart.AbstractDiskHttpData v0;
+java.io.File v1, v3;
+v0 := @this: io.netty.handler.codec.http.multipart.AbstractDiskHttpData;
+v1 = v0.<io.netty.handler.codec.http.multipart.AbstractDiskHttpData: java.io.File file>;
+if v1 != null goto label1;
+v2 = <io.netty.buffer.Unpooled: io.netty.buffer.ByteBuf EMPTY_BUFFER>;
+return v2;
+label1:
+v3 = v0.<io.netty.handler.codec.http.multipart.AbstractDiskHttpData: java.io.File file>;
+v4 = staticinvoke <io.netty.handler.codec.http.multipart.AbstractDiskHttpData: byte[] readFrom(java.io.File)>(v3);
+v5 = staticinvoke <io.netty.buffer.Unpooled: io.netty.buffer.ByteBuf wrappedBuffer(byte[])>(v4);
+return v5;
+}
+public io.netty.buffer.ByteBuf getChunk(int) throws java.io.IOException
+{
+java.io.RandomAccessFile v5;
+java.nio.ByteBuffer v9;
+io.netty.buffer.ByteBuf v16, v17, v3;
+int v1, v11, v12, v8;
+io.netty.handler.codec.http.multipart.AbstractDiskHttpData v0;
+java.io.IOException v14;
+java.io.File v2, v6;
+java.nio.channels.FileChannel v10, v13, v15, v4, v7;
+v0 := @this: io.netty.handler.codec.http.multipart.AbstractDiskHttpData;
+v1 := @parameter0: int;
+v2 = v0.<io.netty.handler.codec.http.multipart.AbstractDiskHttpData: java.io.File file>;
+if v2 == null goto label1;
+if v1 != 0 goto label2;
+label1:
+v3 = <io.netty.buffer.Unpooled: io.netty.buffer.ByteBuf EMPTY_BUFFER>;
+return v3;
+label2:
+v4 = v0.<io.netty.handler.codec.http.multipart.AbstractDiskHttpData: java.nio.channels.FileChannel fileChannel>;
+if v4 != null goto label3;
+v5 = new java.io.RandomAccessFile;
+v6 = v0.<io.netty.handler.codec.http.multipart.AbstractDiskHttpData: java.io.File file>;
+specialinvoke v5.<java.io.RandomAccessFile: void <init>(java.io.File,java.lang.String)>(v6, "r");
+v7 = virtualinvoke v5.<java.io.RandomAccessFile: java.nio.channels.FileChannel getChannel()>();
+v0.<io.netty.handler.codec.http.multipart.AbstractDiskHttpData: java.nio.channels.FileChannel fileChannel> = v7;
+label3:
+v8 = 0;
+v9 = staticinvoke <java.nio.ByteBuffer: java.nio.ByteBuffer allocate(int)>(v1);
+label4:
+if v8 >= v1 goto label7;
+v10 = v0.<io.netty.handler.codec.http.multipart.AbstractDiskHttpData: java.nio.channels.FileChannel fileChannel>;
+v11 = virtualinvoke v10.<java.nio.channels.FileChannel: int read(java.nio.ByteBuffer)>(v9);
+v12 = (int) -1;
+if v11 != v12 goto label5;
+v13 = v0.<io.netty.handler.codec.http.multipart.AbstractDiskHttpData: java.nio.channels.FileChannel fileChannel>;
+virtualinvoke v13.<java.nio.channels.FileChannel: void close()>();
+v0.<io.netty.handler.codec.http.multipart.AbstractDiskHttpData: java.nio.channels.FileChannel fileChannel> = null;
+goto label7;
+label5:
+v8 = v8 + v11;
+goto label4;
+label6:
+v14 := @caughtexception;
+v15 = v0.<io.netty.handler.codec.http.multipart.AbstractDiskHttpData: java.nio.channels.FileChannel fileChannel>;
+virtualinvoke v15.<java.nio.channels.FileChannel: void close()>();
+v0.<io.netty.handler.codec.http.multipart.AbstractDiskHttpData: java.nio.channels.FileChannel fileChannel> = null;
+throw v14;
+label7:
+if v8 != 0 goto label8;
+v16 = <io.netty.buffer.Unpooled: io.netty.buffer.ByteBuf EMPTY_BUFFER>;
+return v16;
+label8:
+virtualinvoke v9.<java.nio.ByteBuffer: java.nio.ByteBuffer flip()>();
+v17 = staticinvoke <io.netty.buffer.Unpooled: io.netty.buffer.ByteBuf wrappedBuffer(java.nio.ByteBuffer)>(v9);
+virtualinvoke v17.<io.netty.buffer.ByteBuf: io.netty.buffer.ByteBuf readerIndex(int)>(0);
+virtualinvoke v17.<io.netty.buffer.ByteBuf: io.netty.buffer.ByteBuf writerIndex(int)>(v8);
+return v17;
+catch java.io.IOException from label4 to label6 with label6;
+}
+public java.lang.String getString() throws java.io.IOException
+{
+java.lang.String v2;
+java.nio.charset.Charset v1;
+io.netty.handler.codec.http.multipart.AbstractDiskHttpData v0;
+v0 := @this: io.netty.handler.codec.http.multipart.AbstractDiskHttpData;
+v1 = <io.netty.handler.codec.http.HttpConstants: java.nio.charset.Charset DEFAULT_CHARSET>;
+v2 = virtualinvoke v0.<io.netty.handler.codec.http.multipart.AbstractDiskHttpData: java.lang.String getString(java.nio.charset.Charset)>(v1);
+return v2;
+}
+public java.lang.String getString(java.nio.charset.Charset) throws java.io.IOException
+{
+byte[] v4, v9;
+java.io.File v2, v3, v8;
+java.nio.charset.Charset v1, v6;
+java.lang.String v10, v11, v5, v7;
+io.netty.handler.codec.http.multipart.AbstractDiskHttpData v0;
+v0 := @this: io.netty.handler.codec.http.multipart.AbstractDiskHttpData;
+v1 := @parameter0: java.nio.charset.Charset;
+v2 = v0.<io.netty.handler.codec.http.multipart.AbstractDiskHttpData: java.io.File file>;
+if v2 != null goto label1;
+return "";
+label1:
+if v1 != null goto label2;
+v3 = v0.<io.netty.handler.codec.http.multipart.AbstractDiskHttpData: java.io.File file>;
+v4 = staticinvoke <io.netty.handler.codec.http.multipart.AbstractDiskHttpData: byte[] readFrom(java.io.File)>(v3);
+v5 = new java.lang.String;
+v6 = <io.netty.handler.codec.http.HttpConstants: java.nio.charset.Charset DEFAULT_CHARSET>;
+v7 = virtualinvoke v6.<java.nio.charset.Charset: java.lang.String name()>();
+specialinvoke v5.<java.lang.String: void <init>(byte[],java.lang.String)>(v4, v7);
+return v5;
+label2:
+v8 = v0.<io.netty.handler.codec.http.multipart.AbstractDiskHttpData: java.io.File file>;
+v9 = staticinvoke <io.netty.handler.codec.http.multipart.AbstractDiskHttpData: byte[] readFrom(java.io.File)>(v8);
+v10 = new java.lang.String;
+v11 = virtualinvoke v1.<java.nio.charset.Charset: java.lang.String name()>();
+specialinvoke v10.<java.lang.String: void <init>(byte[],java.lang.String)>(v9, v11);
+return v10;
+}
+public boolean isInMemory()
+{
+io.netty.handler.codec.http.multipart.AbstractDiskHttpData v0;
+v0 := @this: io.netty.handler.codec.http.multipart.AbstractDiskHttpData;
+return 0;
+}
+public boolean renameTo(java.io.File) throws java.io.IOException
+{
+java.io.RandomAccessFile v11, v31, v32, v9;
+byte v15, v18, v24;
+io.netty.handler.codec.http.multipart.AbstractDiskHttpData v0;
+boolean v26, v29, v5;
+io.netty.util.internal.logging.InternalLogger v27, v30;
+java.lang.Throwable v22;
+long v14, v16, v17, v19, v20, v23, v7, v8;
+java.io.IOException v21, v3, v6;
+java.io.File v1, v10, v2, v25, v28, v4;
+java.nio.channels.FileChannel v12, v13;
+v0 := @this: io.netty.handler.codec.http.multipart.AbstractDiskHttpData;
+v1 := @parameter0: java.io.File;
+staticinvoke <io.netty.util.internal.ObjectUtil: java.lang.Object checkNotNull(java.lang.Object,java.lang.String)>(v1, "dest");
+v2 = v0.<io.netty.handler.codec.http.multipart.AbstractDiskHttpData: java.io.File file>;
+if v2 != null goto label01;
+v3 = new java.io.IOException;
+specialinvoke v3.<java.io.IOException: void <init>(java.lang.String)>("No file defined so cannot be renamed");
+throw v3;
+label01:
+v4 = v0.<io.netty.handler.codec.http.multipart.AbstractDiskHttpData: java.io.File file>;
+v5 = virtualinvoke v4.<java.io.File: boolean renameTo(java.io.File)>(v1);
+if v5 != 0 goto label14;
+v6 = null;
+v7 = 8196L;
+v8 = 0L;
+label02:
+v9 = new java.io.RandomAccessFile;
+v10 = v0.<io.netty.handler.codec.http.multipart.AbstractDiskHttpData: java.io.File file>;
+specialinvoke v9.<java.io.RandomAccessFile: void <init>(java.io.File,java.lang.String)>(v10, "r");
+v11 = new java.io.RandomAccessFile;
+specialinvoke v11.<java.io.RandomAccessFile: void <init>(java.io.File,java.lang.String)>(v1, "rw");
+v12 = virtualinvoke v9.<java.io.RandomAccessFile: java.nio.channels.FileChannel getChannel()>();
+v13 = virtualinvoke v11.<java.io.RandomAccessFile: java.nio.channels.FileChannel getChannel()>();
+label03:
+v14 = v0.<io.netty.handler.codec.http.multipart.AbstractDiskHttpData: long size>;
+v15 = v8 cmp v14;
+if v15 >= 0 goto label05;
+v16 = v0.<io.netty.handler.codec.http.multipart.AbstractDiskHttpData: long size>;
+v17 = v16 - v8;
+v18 = v7 cmp v17;
+if v18 >= 0 goto label04;
+v19 = v0.<io.netty.handler.codec.http.multipart.AbstractDiskHttpData: long size>;
+v7 = v19 - v8;
+label04:
+v20 = virtualinvoke v12.<java.nio.channels.FileChannel: long transferTo(long,long,java.nio.channels.WritableByteChannel)>(v8, v7, v13);
+v8 = v8 + v20;
+goto label03;
+label05:
+goto label09;
+label06:
+v21 := @caughtexception;
+v6 = v21;
+label07:
+goto label09;
+label08:
+v22 := @caughtexception;
+throw v22;
+label09:
+if v6 == null goto label10;
+throw v6;
+label10:
+v23 = v0.<io.netty.handler.codec.http.multipart.AbstractDiskHttpData: long size>;
+v24 = v8 cmp v23;
+if v24 != 0 goto label12;
+v25 = v0.<io.netty.handler.codec.http.multipart.AbstractDiskHttpData: java.io.File file>;
+v26 = virtualinvoke v25.<java.io.File: boolean delete()>();
+if v26 != 0 goto label11;
+v27 = <io.netty.handler.codec.http.multipart.AbstractDiskHttpData: io.netty.util.internal.logging.InternalLogger logger>;
+v28 = v0.<io.netty.handler.codec.http.multipart.AbstractDiskHttpData: java.io.File file>;
+interfaceinvoke v27.<io.netty.util.internal.logging.InternalLogger: void warn(java.lang.String,java.lang.Object)>("Failed to delete: {}", v28);
+label11:
+v0.<io.netty.handler.codec.http.multipart.AbstractDiskHttpData: java.io.File file> = v1;
+v0.<io.netty.handler.codec.http.multipart.AbstractDiskHttpData: boolean isRenamed> = 1;
+return 1;
+label12:
+v29 = virtualinvoke v1.<java.io.File: boolean delete()>();
+if v29 != 0 goto label13;
+v30 = <io.netty.handler.codec.http.multipart.AbstractDiskHttpData: io.netty.util.internal.logging.InternalLogger logger>;
+interfaceinvoke v30.<io.netty.util.internal.logging.InternalLogger: void warn(java.lang.String,java.lang.Object)>("Failed to delete: {}", v1);
+label13:
+return 0;
+label14:
+v0.<io.netty.handler.codec.http.multipart.AbstractDiskHttpData: java.io.File file> = v1;
+v0.<io.netty.handler.codec.http.multipart.AbstractDiskHttpData: boolean isRenamed> = 1;
+return 1;
+catch java.io.IOException from label02 to label05 with label06;
+catch java.lang.Throwable from label02 to label05 with label08;
+catch java.lang.Throwable from label06 to label07 with label08;
+}
+private static byte[] readFrom(java.io.File) throws java.io.IOException
+{
+java.lang.Throwable v11;
+byte[] v5;
+java.io.RandomAccessFile v4;
+long v1;
+java.lang.IllegalArgumentException v3;
+java.io.File v0;
+java.nio.ByteBuffer v7;
+byte v2, v9;
+int v10, v8;
+java.nio.channels.FileChannel v6;
+v0 := @parameter0: java.io.File;
+v1 = virtualinvoke v0.<java.io.File: long length()>();
+v2 = v1 cmp 2147483647L;
+if v2 <= 0 goto label1;
+v3 = new java.lang.IllegalArgumentException;
+specialinvoke v3.<java.lang.IllegalArgumentException: void <init>(java.lang.String)>("File too big to be loaded in memory");
+throw v3;
+label1:
+v4 = new java.io.RandomAccessFile;
+specialinvoke v4.<java.io.RandomAccessFile: void <init>(java.io.File,java.lang.String)>(v0, "r");
+v5 = newarray (byte)[v1];
+label2:
+v6 = virtualinvoke v4.<java.io.RandomAccessFile: java.nio.channels.FileChannel getChannel()>();
+v7 = staticinvoke <java.nio.ByteBuffer: java.nio.ByteBuffer wrap(byte[])>(v5);
+v8 = 0;
+label3:
+v9 = v8 cmp v1;
+if v9 >= 0 goto label4;
+v10 = virtualinvoke v6.<java.nio.channels.FileChannel: int read(java.nio.ByteBuffer)>(v7);
+v8 = v8 + v10;
+goto label3;
+label4:
+virtualinvoke v4.<java.io.RandomAccessFile: void close()>();
+goto label6;
+label5:
+v11 := @caughtexception;
+virtualinvoke v4.<java.io.RandomAccessFile: void close()>();
+throw v11;
+label6:
+return v5;
+catch java.lang.Throwable from label2 to label4 with label5;
+}
+public java.io.File getFile() throws java.io.IOException
+{
+io.netty.handler.codec.http.multipart.AbstractDiskHttpData v0;
+java.io.File v1;
+v0 := @this: io.netty.handler.codec.http.multipart.AbstractDiskHttpData;
+v1 = v0.<io.netty.handler.codec.http.multipart.AbstractDiskHttpData: java.io.File file>;
+return v1;
+}
+public io.netty.handler.codec.http.multipart.HttpData touch()
+{
+io.netty.handler.codec.http.multipart.AbstractDiskHttpData v0;
+v0 := @this: io.netty.handler.codec.http.multipart.AbstractDiskHttpData;
+return v0;
+}
+public io.netty.handler.codec.http.multipart.HttpData touch(java.lang.Object)
+{
+java.lang.Object v1;
+io.netty.handler.codec.http.multipart.AbstractDiskHttpData v0;
+v0 := @this: io.netty.handler.codec.http.multipart.AbstractDiskHttpData;
+v1 := @parameter0: java.lang.Object;
+return v0;
+}
+static void <clinit>()
+{
+io.netty.util.internal.logging.InternalLogger v0;
+v0 = staticinvoke <io.netty.util.internal.logging.InternalLoggerFactory: io.netty.util.internal.logging.InternalLogger getInstance(java.lang.Class)>(class "Lio/netty/handler/codec/http/multipart/AbstractDiskHttpData;");
+<io.netty.handler.codec.http.multipart.AbstractDiskHttpData: io.netty.util.internal.logging.InternalLogger logger> = v0;
+return;
+}
+}

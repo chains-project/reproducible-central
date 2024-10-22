@@ -1,0 +1,1909 @@
+abstract class io.netty.channel.AbstractChannelHandlerContext extends java.lang.Object implements io.netty.channel.ChannelHandlerContext, io.netty.util.ResourceLeakHint
+{
+private static final io.netty.util.internal.logging.InternalLogger logger;
+volatile io.netty.channel.AbstractChannelHandlerContext next;
+volatile io.netty.channel.AbstractChannelHandlerContext prev;
+private static final java.util.concurrent.atomic.AtomicIntegerFieldUpdater HANDLER_STATE_UPDATER;
+private static final int ADD_PENDING;
+private static final int ADD_COMPLETE;
+private static final int REMOVE_COMPLETE;
+private static final int INIT;
+private final io.netty.channel.DefaultChannelPipeline pipeline;
+private final java.lang.String name;
+private final boolean ordered;
+private final int executionMask;
+final io.netty.util.concurrent.EventExecutor executor;
+private io.netty.channel.ChannelFuture succeededFuture;
+private io.netty.channel.AbstractChannelHandlerContext$Tasks invokeTasks;
+private volatile int handlerState;
+static final boolean $assertionsDisabled;
+void <init>(io.netty.channel.DefaultChannelPipeline, io.netty.util.concurrent.EventExecutor, java.lang.String, java.lang.Class)
+{
+io.netty.util.concurrent.EventExecutor v2;
+int v6;
+io.netty.channel.AbstractChannelHandlerContext v0;
+java.lang.Class v4;
+java.lang.Object v5;
+java.lang.String v3;
+io.netty.channel.DefaultChannelPipeline v1;
+boolean v7, v8;
+v0 := @this: io.netty.channel.AbstractChannelHandlerContext;
+v1 := @parameter0: io.netty.channel.DefaultChannelPipeline;
+v2 := @parameter1: io.netty.util.concurrent.EventExecutor;
+v3 := @parameter2: java.lang.String;
+v4 := @parameter3: java.lang.Class;
+specialinvoke v0.<java.lang.Object: void <init>()>();
+v0.<io.netty.channel.AbstractChannelHandlerContext: int handlerState> = 0;
+v5 = staticinvoke <io.netty.util.internal.ObjectUtil: java.lang.Object checkNotNull(java.lang.Object,java.lang.String)>(v3, "name");
+v0.<io.netty.channel.AbstractChannelHandlerContext: java.lang.String name> = v5;
+v0.<io.netty.channel.AbstractChannelHandlerContext: io.netty.channel.DefaultChannelPipeline pipeline> = v1;
+v0.<io.netty.channel.AbstractChannelHandlerContext: io.netty.util.concurrent.EventExecutor executor> = v2;
+v6 = staticinvoke <io.netty.channel.ChannelHandlerMask: int mask(java.lang.Class)>(v4);
+v0.<io.netty.channel.AbstractChannelHandlerContext: int executionMask> = v6;
+if v2 == null goto label1;
+v7 = v2 instanceof io.netty.util.concurrent.OrderedEventExecutor;
+if v7 == 0 goto label2;
+label1:
+v8 = 1;
+goto label3;
+label2:
+v8 = 0;
+label3:
+v0.<io.netty.channel.AbstractChannelHandlerContext: boolean ordered> = v8;
+return;
+}
+public io.netty.channel.Channel channel()
+{
+io.netty.channel.Channel v2;
+io.netty.channel.AbstractChannelHandlerContext v0;
+io.netty.channel.DefaultChannelPipeline v1;
+v0 := @this: io.netty.channel.AbstractChannelHandlerContext;
+v1 = v0.<io.netty.channel.AbstractChannelHandlerContext: io.netty.channel.DefaultChannelPipeline pipeline>;
+v2 = virtualinvoke v1.<io.netty.channel.DefaultChannelPipeline: io.netty.channel.Channel channel()>();
+return v2;
+}
+public io.netty.channel.ChannelPipeline pipeline()
+{
+io.netty.channel.AbstractChannelHandlerContext v0;
+io.netty.channel.DefaultChannelPipeline v1;
+v0 := @this: io.netty.channel.AbstractChannelHandlerContext;
+v1 = v0.<io.netty.channel.AbstractChannelHandlerContext: io.netty.channel.DefaultChannelPipeline pipeline>;
+return v1;
+}
+public io.netty.buffer.ByteBufAllocator alloc()
+{
+io.netty.channel.Channel v1;
+io.netty.channel.ChannelConfig v2;
+io.netty.buffer.ByteBufAllocator v3;
+io.netty.channel.AbstractChannelHandlerContext v0;
+v0 := @this: io.netty.channel.AbstractChannelHandlerContext;
+v1 = virtualinvoke v0.<io.netty.channel.AbstractChannelHandlerContext: io.netty.channel.Channel channel()>();
+v2 = interfaceinvoke v1.<io.netty.channel.Channel: io.netty.channel.ChannelConfig config()>();
+v3 = interfaceinvoke v2.<io.netty.channel.ChannelConfig: io.netty.buffer.ByteBufAllocator getAllocator()>();
+return v3;
+}
+public io.netty.util.concurrent.EventExecutor executor()
+{
+io.netty.channel.Channel v2;
+io.netty.util.concurrent.EventExecutor v1, v4;
+io.netty.channel.AbstractChannelHandlerContext v0;
+io.netty.channel.EventLoop v3;
+v0 := @this: io.netty.channel.AbstractChannelHandlerContext;
+v1 = v0.<io.netty.channel.AbstractChannelHandlerContext: io.netty.util.concurrent.EventExecutor executor>;
+if v1 != null goto label1;
+v2 = virtualinvoke v0.<io.netty.channel.AbstractChannelHandlerContext: io.netty.channel.Channel channel()>();
+v3 = interfaceinvoke v2.<io.netty.channel.Channel: io.netty.channel.EventLoop eventLoop()>();
+return v3;
+label1:
+v4 = v0.<io.netty.channel.AbstractChannelHandlerContext: io.netty.util.concurrent.EventExecutor executor>;
+return v4;
+}
+public java.lang.String name()
+{
+io.netty.channel.AbstractChannelHandlerContext v0;
+java.lang.String v1;
+v0 := @this: io.netty.channel.AbstractChannelHandlerContext;
+v1 = v0.<io.netty.channel.AbstractChannelHandlerContext: java.lang.String name>;
+return v1;
+}
+public io.netty.channel.ChannelHandlerContext fireChannelRegistered()
+{
+io.netty.channel.AbstractChannelHandlerContext v0, v1;
+v0 := @this: io.netty.channel.AbstractChannelHandlerContext;
+v1 = specialinvoke v0.<io.netty.channel.AbstractChannelHandlerContext: io.netty.channel.AbstractChannelHandlerContext findContextInbound(int)>(2);
+staticinvoke <io.netty.channel.AbstractChannelHandlerContext: void invokeChannelRegistered(io.netty.channel.AbstractChannelHandlerContext)>(v1);
+return v0;
+}
+static void invokeChannelRegistered(io.netty.channel.AbstractChannelHandlerContext)
+{
+io.netty.util.concurrent.EventExecutor v1;
+io.netty.channel.AbstractChannelHandlerContext$1 v3;
+io.netty.channel.AbstractChannelHandlerContext v0;
+boolean v2;
+v0 := @parameter0: io.netty.channel.AbstractChannelHandlerContext;
+v1 = virtualinvoke v0.<io.netty.channel.AbstractChannelHandlerContext: io.netty.util.concurrent.EventExecutor executor()>();
+v2 = interfaceinvoke v1.<io.netty.util.concurrent.EventExecutor: boolean inEventLoop()>();
+if v2 == 0 goto label1;
+specialinvoke v0.<io.netty.channel.AbstractChannelHandlerContext: void invokeChannelRegistered()>();
+goto label2;
+label1:
+v3 = new io.netty.channel.AbstractChannelHandlerContext$1;
+specialinvoke v3.<io.netty.channel.AbstractChannelHandlerContext$1: void <init>(io.netty.channel.AbstractChannelHandlerContext)>(v0);
+interfaceinvoke v1.<io.netty.util.concurrent.EventExecutor: void execute(java.lang.Runnable)>(v3);
+label2:
+return;
+}
+private void invokeChannelRegistered()
+{
+java.lang.Throwable v6;
+io.netty.channel.DefaultChannelPipeline$HeadContext v4;
+io.netty.channel.AbstractChannelHandlerContext v0;
+io.netty.channel.ChannelHandler v2;
+io.netty.channel.DefaultChannelPipeline v3;
+boolean v1, v5;
+v0 := @this: io.netty.channel.AbstractChannelHandlerContext;
+v1 = specialinvoke v0.<io.netty.channel.AbstractChannelHandlerContext: boolean invokeHandler()>();
+if v1 == 0 goto label6;
+label1:
+v2 = virtualinvoke v0.<io.netty.channel.AbstractChannelHandlerContext: io.netty.channel.ChannelHandler handler()>();
+v3 = v0.<io.netty.channel.AbstractChannelHandlerContext: io.netty.channel.DefaultChannelPipeline pipeline>;
+v4 = v3.<io.netty.channel.DefaultChannelPipeline: io.netty.channel.DefaultChannelPipeline$HeadContext head>;
+if v2 != v4 goto label2;
+virtualinvoke v4.<io.netty.channel.DefaultChannelPipeline$HeadContext: void channelRegistered(io.netty.channel.ChannelHandlerContext)>(v0);
+goto label7;
+label2:
+v5 = v2 instanceof io.netty.channel.ChannelDuplexHandler;
+if v5 == 0 goto label3;
+virtualinvoke v2.<io.netty.channel.ChannelDuplexHandler: void channelRegistered(io.netty.channel.ChannelHandlerContext)>(v0);
+goto label7;
+label3:
+interfaceinvoke v2.<io.netty.channel.ChannelInboundHandler: void channelRegistered(io.netty.channel.ChannelHandlerContext)>(v0);
+label4:
+goto label7;
+label5:
+v6 := @caughtexception;
+specialinvoke v0.<io.netty.channel.AbstractChannelHandlerContext: void invokeExceptionCaught(java.lang.Throwable)>(v6);
+goto label7;
+label6:
+virtualinvoke v0.<io.netty.channel.AbstractChannelHandlerContext: io.netty.channel.ChannelHandlerContext fireChannelRegistered()>();
+label7:
+return;
+catch java.lang.Throwable from label1 to label4 with label5;
+}
+public io.netty.channel.ChannelHandlerContext fireChannelUnregistered()
+{
+io.netty.channel.AbstractChannelHandlerContext v0, v1;
+v0 := @this: io.netty.channel.AbstractChannelHandlerContext;
+v1 = specialinvoke v0.<io.netty.channel.AbstractChannelHandlerContext: io.netty.channel.AbstractChannelHandlerContext findContextInbound(int)>(4);
+staticinvoke <io.netty.channel.AbstractChannelHandlerContext: void invokeChannelUnregistered(io.netty.channel.AbstractChannelHandlerContext)>(v1);
+return v0;
+}
+static void invokeChannelUnregistered(io.netty.channel.AbstractChannelHandlerContext)
+{
+io.netty.util.concurrent.EventExecutor v1;
+io.netty.channel.AbstractChannelHandlerContext$2 v3;
+io.netty.channel.AbstractChannelHandlerContext v0;
+boolean v2;
+v0 := @parameter0: io.netty.channel.AbstractChannelHandlerContext;
+v1 = virtualinvoke v0.<io.netty.channel.AbstractChannelHandlerContext: io.netty.util.concurrent.EventExecutor executor()>();
+v2 = interfaceinvoke v1.<io.netty.util.concurrent.EventExecutor: boolean inEventLoop()>();
+if v2 == 0 goto label1;
+specialinvoke v0.<io.netty.channel.AbstractChannelHandlerContext: void invokeChannelUnregistered()>();
+goto label2;
+label1:
+v3 = new io.netty.channel.AbstractChannelHandlerContext$2;
+specialinvoke v3.<io.netty.channel.AbstractChannelHandlerContext$2: void <init>(io.netty.channel.AbstractChannelHandlerContext)>(v0);
+interfaceinvoke v1.<io.netty.util.concurrent.EventExecutor: void execute(java.lang.Runnable)>(v3);
+label2:
+return;
+}
+private void invokeChannelUnregistered()
+{
+java.lang.Throwable v6;
+io.netty.channel.DefaultChannelPipeline$HeadContext v4;
+io.netty.channel.AbstractChannelHandlerContext v0;
+io.netty.channel.ChannelHandler v2;
+io.netty.channel.DefaultChannelPipeline v3;
+boolean v1, v5;
+v0 := @this: io.netty.channel.AbstractChannelHandlerContext;
+v1 = specialinvoke v0.<io.netty.channel.AbstractChannelHandlerContext: boolean invokeHandler()>();
+if v1 == 0 goto label6;
+label1:
+v2 = virtualinvoke v0.<io.netty.channel.AbstractChannelHandlerContext: io.netty.channel.ChannelHandler handler()>();
+v3 = v0.<io.netty.channel.AbstractChannelHandlerContext: io.netty.channel.DefaultChannelPipeline pipeline>;
+v4 = v3.<io.netty.channel.DefaultChannelPipeline: io.netty.channel.DefaultChannelPipeline$HeadContext head>;
+if v2 != v4 goto label2;
+virtualinvoke v4.<io.netty.channel.DefaultChannelPipeline$HeadContext: void channelUnregistered(io.netty.channel.ChannelHandlerContext)>(v0);
+goto label7;
+label2:
+v5 = v2 instanceof io.netty.channel.ChannelDuplexHandler;
+if v5 == 0 goto label3;
+virtualinvoke v2.<io.netty.channel.ChannelDuplexHandler: void channelUnregistered(io.netty.channel.ChannelHandlerContext)>(v0);
+goto label7;
+label3:
+interfaceinvoke v2.<io.netty.channel.ChannelInboundHandler: void channelUnregistered(io.netty.channel.ChannelHandlerContext)>(v0);
+label4:
+goto label7;
+label5:
+v6 := @caughtexception;
+specialinvoke v0.<io.netty.channel.AbstractChannelHandlerContext: void invokeExceptionCaught(java.lang.Throwable)>(v6);
+goto label7;
+label6:
+virtualinvoke v0.<io.netty.channel.AbstractChannelHandlerContext: io.netty.channel.ChannelHandlerContext fireChannelUnregistered()>();
+label7:
+return;
+catch java.lang.Throwable from label1 to label4 with label5;
+}
+public io.netty.channel.ChannelHandlerContext fireChannelActive()
+{
+io.netty.channel.AbstractChannelHandlerContext v0, v1;
+v0 := @this: io.netty.channel.AbstractChannelHandlerContext;
+v1 = specialinvoke v0.<io.netty.channel.AbstractChannelHandlerContext: io.netty.channel.AbstractChannelHandlerContext findContextInbound(int)>(8);
+staticinvoke <io.netty.channel.AbstractChannelHandlerContext: void invokeChannelActive(io.netty.channel.AbstractChannelHandlerContext)>(v1);
+return v0;
+}
+static void invokeChannelActive(io.netty.channel.AbstractChannelHandlerContext)
+{
+io.netty.util.concurrent.EventExecutor v1;
+io.netty.channel.AbstractChannelHandlerContext$3 v3;
+io.netty.channel.AbstractChannelHandlerContext v0;
+boolean v2;
+v0 := @parameter0: io.netty.channel.AbstractChannelHandlerContext;
+v1 = virtualinvoke v0.<io.netty.channel.AbstractChannelHandlerContext: io.netty.util.concurrent.EventExecutor executor()>();
+v2 = interfaceinvoke v1.<io.netty.util.concurrent.EventExecutor: boolean inEventLoop()>();
+if v2 == 0 goto label1;
+specialinvoke v0.<io.netty.channel.AbstractChannelHandlerContext: void invokeChannelActive()>();
+goto label2;
+label1:
+v3 = new io.netty.channel.AbstractChannelHandlerContext$3;
+specialinvoke v3.<io.netty.channel.AbstractChannelHandlerContext$3: void <init>(io.netty.channel.AbstractChannelHandlerContext)>(v0);
+interfaceinvoke v1.<io.netty.util.concurrent.EventExecutor: void execute(java.lang.Runnable)>(v3);
+label2:
+return;
+}
+private void invokeChannelActive()
+{
+java.lang.Throwable v6;
+io.netty.channel.DefaultChannelPipeline$HeadContext v4;
+io.netty.channel.AbstractChannelHandlerContext v0;
+io.netty.channel.ChannelHandler v2;
+io.netty.channel.DefaultChannelPipeline v3;
+boolean v1, v5;
+v0 := @this: io.netty.channel.AbstractChannelHandlerContext;
+v1 = specialinvoke v0.<io.netty.channel.AbstractChannelHandlerContext: boolean invokeHandler()>();
+if v1 == 0 goto label6;
+label1:
+v2 = virtualinvoke v0.<io.netty.channel.AbstractChannelHandlerContext: io.netty.channel.ChannelHandler handler()>();
+v3 = v0.<io.netty.channel.AbstractChannelHandlerContext: io.netty.channel.DefaultChannelPipeline pipeline>;
+v4 = v3.<io.netty.channel.DefaultChannelPipeline: io.netty.channel.DefaultChannelPipeline$HeadContext head>;
+if v2 != v4 goto label2;
+virtualinvoke v4.<io.netty.channel.DefaultChannelPipeline$HeadContext: void channelActive(io.netty.channel.ChannelHandlerContext)>(v0);
+goto label7;
+label2:
+v5 = v2 instanceof io.netty.channel.ChannelDuplexHandler;
+if v5 == 0 goto label3;
+virtualinvoke v2.<io.netty.channel.ChannelDuplexHandler: void channelActive(io.netty.channel.ChannelHandlerContext)>(v0);
+goto label7;
+label3:
+interfaceinvoke v2.<io.netty.channel.ChannelInboundHandler: void channelActive(io.netty.channel.ChannelHandlerContext)>(v0);
+label4:
+goto label7;
+label5:
+v6 := @caughtexception;
+specialinvoke v0.<io.netty.channel.AbstractChannelHandlerContext: void invokeExceptionCaught(java.lang.Throwable)>(v6);
+goto label7;
+label6:
+virtualinvoke v0.<io.netty.channel.AbstractChannelHandlerContext: io.netty.channel.ChannelHandlerContext fireChannelActive()>();
+label7:
+return;
+catch java.lang.Throwable from label1 to label4 with label5;
+}
+public io.netty.channel.ChannelHandlerContext fireChannelInactive()
+{
+io.netty.channel.AbstractChannelHandlerContext v0, v1;
+v0 := @this: io.netty.channel.AbstractChannelHandlerContext;
+v1 = specialinvoke v0.<io.netty.channel.AbstractChannelHandlerContext: io.netty.channel.AbstractChannelHandlerContext findContextInbound(int)>(16);
+staticinvoke <io.netty.channel.AbstractChannelHandlerContext: void invokeChannelInactive(io.netty.channel.AbstractChannelHandlerContext)>(v1);
+return v0;
+}
+static void invokeChannelInactive(io.netty.channel.AbstractChannelHandlerContext)
+{
+io.netty.util.concurrent.EventExecutor v1;
+io.netty.channel.AbstractChannelHandlerContext$4 v3;
+io.netty.channel.AbstractChannelHandlerContext v0;
+boolean v2;
+v0 := @parameter0: io.netty.channel.AbstractChannelHandlerContext;
+v1 = virtualinvoke v0.<io.netty.channel.AbstractChannelHandlerContext: io.netty.util.concurrent.EventExecutor executor()>();
+v2 = interfaceinvoke v1.<io.netty.util.concurrent.EventExecutor: boolean inEventLoop()>();
+if v2 == 0 goto label1;
+specialinvoke v0.<io.netty.channel.AbstractChannelHandlerContext: void invokeChannelInactive()>();
+goto label2;
+label1:
+v3 = new io.netty.channel.AbstractChannelHandlerContext$4;
+specialinvoke v3.<io.netty.channel.AbstractChannelHandlerContext$4: void <init>(io.netty.channel.AbstractChannelHandlerContext)>(v0);
+interfaceinvoke v1.<io.netty.util.concurrent.EventExecutor: void execute(java.lang.Runnable)>(v3);
+label2:
+return;
+}
+private void invokeChannelInactive()
+{
+java.lang.Throwable v6;
+io.netty.channel.DefaultChannelPipeline$HeadContext v4;
+io.netty.channel.AbstractChannelHandlerContext v0;
+io.netty.channel.ChannelHandler v2;
+io.netty.channel.DefaultChannelPipeline v3;
+boolean v1, v5;
+v0 := @this: io.netty.channel.AbstractChannelHandlerContext;
+v1 = specialinvoke v0.<io.netty.channel.AbstractChannelHandlerContext: boolean invokeHandler()>();
+if v1 == 0 goto label6;
+label1:
+v2 = virtualinvoke v0.<io.netty.channel.AbstractChannelHandlerContext: io.netty.channel.ChannelHandler handler()>();
+v3 = v0.<io.netty.channel.AbstractChannelHandlerContext: io.netty.channel.DefaultChannelPipeline pipeline>;
+v4 = v3.<io.netty.channel.DefaultChannelPipeline: io.netty.channel.DefaultChannelPipeline$HeadContext head>;
+if v2 != v4 goto label2;
+virtualinvoke v4.<io.netty.channel.DefaultChannelPipeline$HeadContext: void channelInactive(io.netty.channel.ChannelHandlerContext)>(v0);
+goto label7;
+label2:
+v5 = v2 instanceof io.netty.channel.ChannelDuplexHandler;
+if v5 == 0 goto label3;
+virtualinvoke v2.<io.netty.channel.ChannelDuplexHandler: void channelInactive(io.netty.channel.ChannelHandlerContext)>(v0);
+goto label7;
+label3:
+interfaceinvoke v2.<io.netty.channel.ChannelInboundHandler: void channelInactive(io.netty.channel.ChannelHandlerContext)>(v0);
+label4:
+goto label7;
+label5:
+v6 := @caughtexception;
+specialinvoke v0.<io.netty.channel.AbstractChannelHandlerContext: void invokeExceptionCaught(java.lang.Throwable)>(v6);
+goto label7;
+label6:
+virtualinvoke v0.<io.netty.channel.AbstractChannelHandlerContext: io.netty.channel.ChannelHandlerContext fireChannelInactive()>();
+label7:
+return;
+catch java.lang.Throwable from label1 to label4 with label5;
+}
+public io.netty.channel.ChannelHandlerContext fireExceptionCaught(java.lang.Throwable)
+{
+java.lang.Throwable v1;
+io.netty.channel.AbstractChannelHandlerContext v0, v2;
+v0 := @this: io.netty.channel.AbstractChannelHandlerContext;
+v1 := @parameter0: java.lang.Throwable;
+v2 = specialinvoke v0.<io.netty.channel.AbstractChannelHandlerContext: io.netty.channel.AbstractChannelHandlerContext findContextInbound(int)>(1);
+staticinvoke <io.netty.channel.AbstractChannelHandlerContext: void invokeExceptionCaught(io.netty.channel.AbstractChannelHandlerContext,java.lang.Throwable)>(v2, v1);
+return v0;
+}
+static void invokeExceptionCaught(io.netty.channel.AbstractChannelHandlerContext, java.lang.Throwable)
+{
+io.netty.util.concurrent.EventExecutor v2;
+java.lang.Throwable v1, v5;
+io.netty.util.internal.logging.InternalLogger v6, v8, v9;
+io.netty.channel.AbstractChannelHandlerContext v0;
+io.netty.channel.AbstractChannelHandlerContext$5 v4;
+boolean v3, v7;
+v0 := @parameter0: io.netty.channel.AbstractChannelHandlerContext;
+v1 := @parameter1: java.lang.Throwable;
+staticinvoke <io.netty.util.internal.ObjectUtil: java.lang.Object checkNotNull(java.lang.Object,java.lang.String)>(v1, "cause");
+v2 = virtualinvoke v0.<io.netty.channel.AbstractChannelHandlerContext: io.netty.util.concurrent.EventExecutor executor()>();
+v3 = interfaceinvoke v2.<io.netty.util.concurrent.EventExecutor: boolean inEventLoop()>();
+if v3 == 0 goto label1;
+specialinvoke v0.<io.netty.channel.AbstractChannelHandlerContext: void invokeExceptionCaught(java.lang.Throwable)>(v1);
+goto label4;
+label1:
+v4 = new io.netty.channel.AbstractChannelHandlerContext$5;
+specialinvoke v4.<io.netty.channel.AbstractChannelHandlerContext$5: void <init>(io.netty.channel.AbstractChannelHandlerContext,java.lang.Throwable)>(v0, v1);
+interfaceinvoke v2.<io.netty.util.concurrent.EventExecutor: void execute(java.lang.Runnable)>(v4);
+label2:
+goto label4;
+label3:
+v5 := @caughtexception;
+v6 = <io.netty.channel.AbstractChannelHandlerContext: io.netty.util.internal.logging.InternalLogger logger>;
+v7 = interfaceinvoke v6.<io.netty.util.internal.logging.InternalLogger: boolean isWarnEnabled()>();
+if v7 == 0 goto label4;
+v8 = <io.netty.channel.AbstractChannelHandlerContext: io.netty.util.internal.logging.InternalLogger logger>;
+interfaceinvoke v8.<io.netty.util.internal.logging.InternalLogger: void warn(java.lang.String,java.lang.Throwable)>("Failed to submit an exceptionCaught() event.", v5);
+v9 = <io.netty.channel.AbstractChannelHandlerContext: io.netty.util.internal.logging.InternalLogger logger>;
+interfaceinvoke v9.<io.netty.util.internal.logging.InternalLogger: void warn(java.lang.String,java.lang.Throwable)>("The exceptionCaught() event that was failed to submit was:", v1);
+label4:
+return;
+catch java.lang.Throwable from label1 to label2 with label3;
+}
+private void invokeExceptionCaught(java.lang.Throwable)
+{
+java.lang.Throwable v1, v4;
+io.netty.util.internal.logging.InternalLogger v11, v5, v7, v9;
+io.netty.channel.AbstractChannelHandlerContext v0;
+io.netty.channel.ChannelHandler v3;
+java.lang.String v8;
+boolean v10, v2, v6;
+v0 := @this: io.netty.channel.AbstractChannelHandlerContext;
+v1 := @parameter0: java.lang.Throwable;
+v2 = specialinvoke v0.<io.netty.channel.AbstractChannelHandlerContext: boolean invokeHandler()>();
+if v2 == 0 goto label5;
+label1:
+v3 = virtualinvoke v0.<io.netty.channel.AbstractChannelHandlerContext: io.netty.channel.ChannelHandler handler()>();
+interfaceinvoke v3.<io.netty.channel.ChannelHandler: void exceptionCaught(io.netty.channel.ChannelHandlerContext,java.lang.Throwable)>(v0, v1);
+label2:
+goto label6;
+label3:
+v4 := @caughtexception;
+v5 = <io.netty.channel.AbstractChannelHandlerContext: io.netty.util.internal.logging.InternalLogger logger>;
+v6 = interfaceinvoke v5.<io.netty.util.internal.logging.InternalLogger: boolean isDebugEnabled()>();
+if v6 == 0 goto label4;
+v7 = <io.netty.channel.AbstractChannelHandlerContext: io.netty.util.internal.logging.InternalLogger logger>;
+v8 = staticinvoke <io.netty.util.internal.ThrowableUtil: java.lang.String stackTraceToString(java.lang.Throwable)>(v4);
+interfaceinvoke v7.<io.netty.util.internal.logging.InternalLogger: void debug(java.lang.String,java.lang.Object,java.lang.Object)>("An exception {}was thrown by a user handler\'s exceptionCaught() method while handling the following exception:", v8, v1);
+goto label6;
+label4:
+v9 = <io.netty.channel.AbstractChannelHandlerContext: io.netty.util.internal.logging.InternalLogger logger>;
+v10 = interfaceinvoke v9.<io.netty.util.internal.logging.InternalLogger: boolean isWarnEnabled()>();
+if v10 == 0 goto label6;
+v11 = <io.netty.channel.AbstractChannelHandlerContext: io.netty.util.internal.logging.InternalLogger logger>;
+interfaceinvoke v11.<io.netty.util.internal.logging.InternalLogger: void warn(java.lang.String,java.lang.Object,java.lang.Object)>("An exception \'{}\' [enable DEBUG level for full stacktrace] was thrown by a user handler\'s exceptionCaught() method while handling the following exception:", v4, v1);
+goto label6;
+label5:
+virtualinvoke v0.<io.netty.channel.AbstractChannelHandlerContext: io.netty.channel.ChannelHandlerContext fireExceptionCaught(java.lang.Throwable)>(v1);
+label6:
+return;
+catch java.lang.Throwable from label1 to label2 with label3;
+}
+public io.netty.channel.ChannelHandlerContext fireUserEventTriggered(java.lang.Object)
+{
+io.netty.channel.AbstractChannelHandlerContext v0, v2;
+java.lang.Object v1;
+v0 := @this: io.netty.channel.AbstractChannelHandlerContext;
+v1 := @parameter0: java.lang.Object;
+v2 = specialinvoke v0.<io.netty.channel.AbstractChannelHandlerContext: io.netty.channel.AbstractChannelHandlerContext findContextInbound(int)>(128);
+staticinvoke <io.netty.channel.AbstractChannelHandlerContext: void invokeUserEventTriggered(io.netty.channel.AbstractChannelHandlerContext,java.lang.Object)>(v2, v1);
+return v0;
+}
+static void invokeUserEventTriggered(io.netty.channel.AbstractChannelHandlerContext, java.lang.Object)
+{
+io.netty.util.concurrent.EventExecutor v2;
+io.netty.channel.AbstractChannelHandlerContext$6 v4;
+io.netty.channel.AbstractChannelHandlerContext v0;
+java.lang.Object v1;
+boolean v3;
+v0 := @parameter0: io.netty.channel.AbstractChannelHandlerContext;
+v1 := @parameter1: java.lang.Object;
+staticinvoke <io.netty.util.internal.ObjectUtil: java.lang.Object checkNotNull(java.lang.Object,java.lang.String)>(v1, "event");
+v2 = virtualinvoke v0.<io.netty.channel.AbstractChannelHandlerContext: io.netty.util.concurrent.EventExecutor executor()>();
+v3 = interfaceinvoke v2.<io.netty.util.concurrent.EventExecutor: boolean inEventLoop()>();
+if v3 == 0 goto label1;
+specialinvoke v0.<io.netty.channel.AbstractChannelHandlerContext: void invokeUserEventTriggered(java.lang.Object)>(v1);
+goto label2;
+label1:
+v4 = new io.netty.channel.AbstractChannelHandlerContext$6;
+specialinvoke v4.<io.netty.channel.AbstractChannelHandlerContext$6: void <init>(io.netty.channel.AbstractChannelHandlerContext,java.lang.Object)>(v0, v1);
+interfaceinvoke v2.<io.netty.util.concurrent.EventExecutor: void execute(java.lang.Runnable)>(v4);
+label2:
+return;
+}
+private void invokeUserEventTriggered(java.lang.Object)
+{
+java.lang.Throwable v7;
+io.netty.channel.DefaultChannelPipeline$HeadContext v5;
+io.netty.channel.AbstractChannelHandlerContext v0;
+io.netty.channel.ChannelHandler v3;
+java.lang.Object v1;
+io.netty.channel.DefaultChannelPipeline v4;
+boolean v2, v6;
+v0 := @this: io.netty.channel.AbstractChannelHandlerContext;
+v1 := @parameter0: java.lang.Object;
+v2 = specialinvoke v0.<io.netty.channel.AbstractChannelHandlerContext: boolean invokeHandler()>();
+if v2 == 0 goto label6;
+label1:
+v3 = virtualinvoke v0.<io.netty.channel.AbstractChannelHandlerContext: io.netty.channel.ChannelHandler handler()>();
+v4 = v0.<io.netty.channel.AbstractChannelHandlerContext: io.netty.channel.DefaultChannelPipeline pipeline>;
+v5 = v4.<io.netty.channel.DefaultChannelPipeline: io.netty.channel.DefaultChannelPipeline$HeadContext head>;
+if v3 != v5 goto label2;
+virtualinvoke v5.<io.netty.channel.DefaultChannelPipeline$HeadContext: void userEventTriggered(io.netty.channel.ChannelHandlerContext,java.lang.Object)>(v0, v1);
+goto label7;
+label2:
+v6 = v3 instanceof io.netty.channel.ChannelDuplexHandler;
+if v6 == 0 goto label3;
+virtualinvoke v3.<io.netty.channel.ChannelDuplexHandler: void userEventTriggered(io.netty.channel.ChannelHandlerContext,java.lang.Object)>(v0, v1);
+goto label7;
+label3:
+interfaceinvoke v3.<io.netty.channel.ChannelInboundHandler: void userEventTriggered(io.netty.channel.ChannelHandlerContext,java.lang.Object)>(v0, v1);
+label4:
+goto label7;
+label5:
+v7 := @caughtexception;
+specialinvoke v0.<io.netty.channel.AbstractChannelHandlerContext: void invokeExceptionCaught(java.lang.Throwable)>(v7);
+goto label7;
+label6:
+virtualinvoke v0.<io.netty.channel.AbstractChannelHandlerContext: io.netty.channel.ChannelHandlerContext fireUserEventTriggered(java.lang.Object)>(v1);
+label7:
+return;
+catch java.lang.Throwable from label1 to label4 with label5;
+}
+public io.netty.channel.ChannelHandlerContext fireChannelRead(java.lang.Object)
+{
+io.netty.channel.AbstractChannelHandlerContext v0, v2;
+java.lang.Object v1;
+v0 := @this: io.netty.channel.AbstractChannelHandlerContext;
+v1 := @parameter0: java.lang.Object;
+v2 = specialinvoke v0.<io.netty.channel.AbstractChannelHandlerContext: io.netty.channel.AbstractChannelHandlerContext findContextInbound(int)>(32);
+staticinvoke <io.netty.channel.AbstractChannelHandlerContext: void invokeChannelRead(io.netty.channel.AbstractChannelHandlerContext,java.lang.Object)>(v2, v1);
+return v0;
+}
+static void invokeChannelRead(io.netty.channel.AbstractChannelHandlerContext, java.lang.Object)
+{
+io.netty.util.concurrent.EventExecutor v5;
+io.netty.channel.AbstractChannelHandlerContext v0;
+java.lang.Object v1, v3, v4;
+io.netty.channel.AbstractChannelHandlerContext$7 v7;
+io.netty.channel.DefaultChannelPipeline v2;
+boolean v6;
+v0 := @parameter0: io.netty.channel.AbstractChannelHandlerContext;
+v1 := @parameter1: java.lang.Object;
+v2 = v0.<io.netty.channel.AbstractChannelHandlerContext: io.netty.channel.DefaultChannelPipeline pipeline>;
+v3 = staticinvoke <io.netty.util.internal.ObjectUtil: java.lang.Object checkNotNull(java.lang.Object,java.lang.String)>(v1, "msg");
+v4 = virtualinvoke v2.<io.netty.channel.DefaultChannelPipeline: java.lang.Object touch(java.lang.Object,io.netty.channel.AbstractChannelHandlerContext)>(v3, v0);
+v5 = virtualinvoke v0.<io.netty.channel.AbstractChannelHandlerContext: io.netty.util.concurrent.EventExecutor executor()>();
+v6 = interfaceinvoke v5.<io.netty.util.concurrent.EventExecutor: boolean inEventLoop()>();
+if v6 == 0 goto label1;
+specialinvoke v0.<io.netty.channel.AbstractChannelHandlerContext: void invokeChannelRead(java.lang.Object)>(v4);
+goto label2;
+label1:
+v7 = new io.netty.channel.AbstractChannelHandlerContext$7;
+specialinvoke v7.<io.netty.channel.AbstractChannelHandlerContext$7: void <init>(io.netty.channel.AbstractChannelHandlerContext,java.lang.Object)>(v0, v4);
+interfaceinvoke v5.<io.netty.util.concurrent.EventExecutor: void execute(java.lang.Runnable)>(v7);
+label2:
+return;
+}
+private void invokeChannelRead(java.lang.Object)
+{
+java.lang.Throwable v7;
+io.netty.channel.DefaultChannelPipeline$HeadContext v5;
+io.netty.channel.AbstractChannelHandlerContext v0;
+io.netty.channel.ChannelHandler v3;
+java.lang.Object v1;
+io.netty.channel.DefaultChannelPipeline v4;
+boolean v2, v6;
+v0 := @this: io.netty.channel.AbstractChannelHandlerContext;
+v1 := @parameter0: java.lang.Object;
+v2 = specialinvoke v0.<io.netty.channel.AbstractChannelHandlerContext: boolean invokeHandler()>();
+if v2 == 0 goto label6;
+label1:
+v3 = virtualinvoke v0.<io.netty.channel.AbstractChannelHandlerContext: io.netty.channel.ChannelHandler handler()>();
+v4 = v0.<io.netty.channel.AbstractChannelHandlerContext: io.netty.channel.DefaultChannelPipeline pipeline>;
+v5 = v4.<io.netty.channel.DefaultChannelPipeline: io.netty.channel.DefaultChannelPipeline$HeadContext head>;
+if v3 != v5 goto label2;
+virtualinvoke v5.<io.netty.channel.DefaultChannelPipeline$HeadContext: void channelRead(io.netty.channel.ChannelHandlerContext,java.lang.Object)>(v0, v1);
+goto label7;
+label2:
+v6 = v3 instanceof io.netty.channel.ChannelDuplexHandler;
+if v6 == 0 goto label3;
+virtualinvoke v3.<io.netty.channel.ChannelDuplexHandler: void channelRead(io.netty.channel.ChannelHandlerContext,java.lang.Object)>(v0, v1);
+goto label7;
+label3:
+interfaceinvoke v3.<io.netty.channel.ChannelInboundHandler: void channelRead(io.netty.channel.ChannelHandlerContext,java.lang.Object)>(v0, v1);
+label4:
+goto label7;
+label5:
+v7 := @caughtexception;
+specialinvoke v0.<io.netty.channel.AbstractChannelHandlerContext: void invokeExceptionCaught(java.lang.Throwable)>(v7);
+goto label7;
+label6:
+virtualinvoke v0.<io.netty.channel.AbstractChannelHandlerContext: io.netty.channel.ChannelHandlerContext fireChannelRead(java.lang.Object)>(v1);
+label7:
+return;
+catch java.lang.Throwable from label1 to label4 with label5;
+}
+public io.netty.channel.ChannelHandlerContext fireChannelReadComplete()
+{
+io.netty.channel.AbstractChannelHandlerContext v0, v1;
+v0 := @this: io.netty.channel.AbstractChannelHandlerContext;
+v1 = specialinvoke v0.<io.netty.channel.AbstractChannelHandlerContext: io.netty.channel.AbstractChannelHandlerContext findContextInbound(int)>(64);
+staticinvoke <io.netty.channel.AbstractChannelHandlerContext: void invokeChannelReadComplete(io.netty.channel.AbstractChannelHandlerContext)>(v1);
+return v0;
+}
+static void invokeChannelReadComplete(io.netty.channel.AbstractChannelHandlerContext)
+{
+io.netty.util.concurrent.EventExecutor v1;
+io.netty.channel.AbstractChannelHandlerContext v0;
+io.netty.channel.AbstractChannelHandlerContext$Tasks v3, v4;
+java.lang.Runnable v5;
+boolean v2;
+v0 := @parameter0: io.netty.channel.AbstractChannelHandlerContext;
+v1 = virtualinvoke v0.<io.netty.channel.AbstractChannelHandlerContext: io.netty.util.concurrent.EventExecutor executor()>();
+v2 = interfaceinvoke v1.<io.netty.util.concurrent.EventExecutor: boolean inEventLoop()>();
+if v2 == 0 goto label1;
+specialinvoke v0.<io.netty.channel.AbstractChannelHandlerContext: void invokeChannelReadComplete()>();
+goto label3;
+label1:
+v3 = v0.<io.netty.channel.AbstractChannelHandlerContext: io.netty.channel.AbstractChannelHandlerContext$Tasks invokeTasks>;
+if v3 != null goto label2;
+v4 = new io.netty.channel.AbstractChannelHandlerContext$Tasks;
+specialinvoke v4.<io.netty.channel.AbstractChannelHandlerContext$Tasks: void <init>(io.netty.channel.AbstractChannelHandlerContext)>(v0);
+v3 = v4;
+v0.<io.netty.channel.AbstractChannelHandlerContext: io.netty.channel.AbstractChannelHandlerContext$Tasks invokeTasks> = v4;
+label2:
+v5 = v3.<io.netty.channel.AbstractChannelHandlerContext$Tasks: java.lang.Runnable invokeChannelReadCompleteTask>;
+interfaceinvoke v1.<io.netty.util.concurrent.EventExecutor: void execute(java.lang.Runnable)>(v5);
+label3:
+return;
+}
+private void invokeChannelReadComplete()
+{
+java.lang.Throwable v6;
+io.netty.channel.DefaultChannelPipeline$HeadContext v4;
+io.netty.channel.AbstractChannelHandlerContext v0;
+io.netty.channel.ChannelHandler v2;
+io.netty.channel.DefaultChannelPipeline v3;
+boolean v1, v5;
+v0 := @this: io.netty.channel.AbstractChannelHandlerContext;
+v1 = specialinvoke v0.<io.netty.channel.AbstractChannelHandlerContext: boolean invokeHandler()>();
+if v1 == 0 goto label6;
+label1:
+v2 = virtualinvoke v0.<io.netty.channel.AbstractChannelHandlerContext: io.netty.channel.ChannelHandler handler()>();
+v3 = v0.<io.netty.channel.AbstractChannelHandlerContext: io.netty.channel.DefaultChannelPipeline pipeline>;
+v4 = v3.<io.netty.channel.DefaultChannelPipeline: io.netty.channel.DefaultChannelPipeline$HeadContext head>;
+if v2 != v4 goto label2;
+virtualinvoke v4.<io.netty.channel.DefaultChannelPipeline$HeadContext: void channelReadComplete(io.netty.channel.ChannelHandlerContext)>(v0);
+goto label7;
+label2:
+v5 = v2 instanceof io.netty.channel.ChannelDuplexHandler;
+if v5 == 0 goto label3;
+virtualinvoke v2.<io.netty.channel.ChannelDuplexHandler: void channelReadComplete(io.netty.channel.ChannelHandlerContext)>(v0);
+goto label7;
+label3:
+interfaceinvoke v2.<io.netty.channel.ChannelInboundHandler: void channelReadComplete(io.netty.channel.ChannelHandlerContext)>(v0);
+label4:
+goto label7;
+label5:
+v6 := @caughtexception;
+specialinvoke v0.<io.netty.channel.AbstractChannelHandlerContext: void invokeExceptionCaught(java.lang.Throwable)>(v6);
+goto label7;
+label6:
+virtualinvoke v0.<io.netty.channel.AbstractChannelHandlerContext: io.netty.channel.ChannelHandlerContext fireChannelReadComplete()>();
+label7:
+return;
+catch java.lang.Throwable from label1 to label4 with label5;
+}
+public io.netty.channel.ChannelHandlerContext fireChannelWritabilityChanged()
+{
+io.netty.channel.AbstractChannelHandlerContext v0, v1;
+v0 := @this: io.netty.channel.AbstractChannelHandlerContext;
+v1 = specialinvoke v0.<io.netty.channel.AbstractChannelHandlerContext: io.netty.channel.AbstractChannelHandlerContext findContextInbound(int)>(256);
+staticinvoke <io.netty.channel.AbstractChannelHandlerContext: void invokeChannelWritabilityChanged(io.netty.channel.AbstractChannelHandlerContext)>(v1);
+return v0;
+}
+static void invokeChannelWritabilityChanged(io.netty.channel.AbstractChannelHandlerContext)
+{
+io.netty.util.concurrent.EventExecutor v1;
+io.netty.channel.AbstractChannelHandlerContext v0;
+io.netty.channel.AbstractChannelHandlerContext$Tasks v3, v4;
+java.lang.Runnable v5;
+boolean v2;
+v0 := @parameter0: io.netty.channel.AbstractChannelHandlerContext;
+v1 = virtualinvoke v0.<io.netty.channel.AbstractChannelHandlerContext: io.netty.util.concurrent.EventExecutor executor()>();
+v2 = interfaceinvoke v1.<io.netty.util.concurrent.EventExecutor: boolean inEventLoop()>();
+if v2 == 0 goto label1;
+specialinvoke v0.<io.netty.channel.AbstractChannelHandlerContext: void invokeChannelWritabilityChanged()>();
+goto label3;
+label1:
+v3 = v0.<io.netty.channel.AbstractChannelHandlerContext: io.netty.channel.AbstractChannelHandlerContext$Tasks invokeTasks>;
+if v3 != null goto label2;
+v4 = new io.netty.channel.AbstractChannelHandlerContext$Tasks;
+specialinvoke v4.<io.netty.channel.AbstractChannelHandlerContext$Tasks: void <init>(io.netty.channel.AbstractChannelHandlerContext)>(v0);
+v3 = v4;
+v0.<io.netty.channel.AbstractChannelHandlerContext: io.netty.channel.AbstractChannelHandlerContext$Tasks invokeTasks> = v4;
+label2:
+v5 = v3.<io.netty.channel.AbstractChannelHandlerContext$Tasks: java.lang.Runnable invokeChannelWritableStateChangedTask>;
+interfaceinvoke v1.<io.netty.util.concurrent.EventExecutor: void execute(java.lang.Runnable)>(v5);
+label3:
+return;
+}
+private void invokeChannelWritabilityChanged()
+{
+java.lang.Throwable v6;
+io.netty.channel.DefaultChannelPipeline$HeadContext v4;
+io.netty.channel.AbstractChannelHandlerContext v0;
+io.netty.channel.ChannelHandler v2;
+io.netty.channel.DefaultChannelPipeline v3;
+boolean v1, v5;
+v0 := @this: io.netty.channel.AbstractChannelHandlerContext;
+v1 = specialinvoke v0.<io.netty.channel.AbstractChannelHandlerContext: boolean invokeHandler()>();
+if v1 == 0 goto label6;
+label1:
+v2 = virtualinvoke v0.<io.netty.channel.AbstractChannelHandlerContext: io.netty.channel.ChannelHandler handler()>();
+v3 = v0.<io.netty.channel.AbstractChannelHandlerContext: io.netty.channel.DefaultChannelPipeline pipeline>;
+v4 = v3.<io.netty.channel.DefaultChannelPipeline: io.netty.channel.DefaultChannelPipeline$HeadContext head>;
+if v2 != v4 goto label2;
+virtualinvoke v4.<io.netty.channel.DefaultChannelPipeline$HeadContext: void channelWritabilityChanged(io.netty.channel.ChannelHandlerContext)>(v0);
+goto label7;
+label2:
+v5 = v2 instanceof io.netty.channel.ChannelDuplexHandler;
+if v5 == 0 goto label3;
+virtualinvoke v2.<io.netty.channel.ChannelDuplexHandler: void channelWritabilityChanged(io.netty.channel.ChannelHandlerContext)>(v0);
+goto label7;
+label3:
+interfaceinvoke v2.<io.netty.channel.ChannelInboundHandler: void channelWritabilityChanged(io.netty.channel.ChannelHandlerContext)>(v0);
+label4:
+goto label7;
+label5:
+v6 := @caughtexception;
+specialinvoke v0.<io.netty.channel.AbstractChannelHandlerContext: void invokeExceptionCaught(java.lang.Throwable)>(v6);
+goto label7;
+label6:
+virtualinvoke v0.<io.netty.channel.AbstractChannelHandlerContext: io.netty.channel.ChannelHandlerContext fireChannelWritabilityChanged()>();
+label7:
+return;
+catch java.lang.Throwable from label1 to label4 with label5;
+}
+public io.netty.channel.ChannelFuture bind(java.net.SocketAddress)
+{
+io.netty.channel.ChannelPromise v2;
+java.net.SocketAddress v1;
+io.netty.channel.AbstractChannelHandlerContext v0;
+io.netty.channel.ChannelFuture v3;
+v0 := @this: io.netty.channel.AbstractChannelHandlerContext;
+v1 := @parameter0: java.net.SocketAddress;
+v2 = virtualinvoke v0.<io.netty.channel.AbstractChannelHandlerContext: io.netty.channel.ChannelPromise newPromise()>();
+v3 = virtualinvoke v0.<io.netty.channel.AbstractChannelHandlerContext: io.netty.channel.ChannelFuture bind(java.net.SocketAddress,io.netty.channel.ChannelPromise)>(v1, v2);
+return v3;
+}
+public io.netty.channel.ChannelFuture connect(java.net.SocketAddress)
+{
+io.netty.channel.ChannelPromise v2;
+java.net.SocketAddress v1;
+io.netty.channel.AbstractChannelHandlerContext v0;
+io.netty.channel.ChannelFuture v3;
+v0 := @this: io.netty.channel.AbstractChannelHandlerContext;
+v1 := @parameter0: java.net.SocketAddress;
+v2 = virtualinvoke v0.<io.netty.channel.AbstractChannelHandlerContext: io.netty.channel.ChannelPromise newPromise()>();
+v3 = virtualinvoke v0.<io.netty.channel.AbstractChannelHandlerContext: io.netty.channel.ChannelFuture connect(java.net.SocketAddress,io.netty.channel.ChannelPromise)>(v1, v2);
+return v3;
+}
+public io.netty.channel.ChannelFuture connect(java.net.SocketAddress, java.net.SocketAddress)
+{
+io.netty.channel.ChannelPromise v3;
+java.net.SocketAddress v1, v2;
+io.netty.channel.AbstractChannelHandlerContext v0;
+io.netty.channel.ChannelFuture v4;
+v0 := @this: io.netty.channel.AbstractChannelHandlerContext;
+v1 := @parameter0: java.net.SocketAddress;
+v2 := @parameter1: java.net.SocketAddress;
+v3 = virtualinvoke v0.<io.netty.channel.AbstractChannelHandlerContext: io.netty.channel.ChannelPromise newPromise()>();
+v4 = virtualinvoke v0.<io.netty.channel.AbstractChannelHandlerContext: io.netty.channel.ChannelFuture connect(java.net.SocketAddress,java.net.SocketAddress,io.netty.channel.ChannelPromise)>(v1, v2, v3);
+return v4;
+}
+public io.netty.channel.ChannelFuture disconnect()
+{
+io.netty.channel.AbstractChannelHandlerContext v0;
+io.netty.channel.ChannelPromise v1;
+io.netty.channel.ChannelFuture v2;
+v0 := @this: io.netty.channel.AbstractChannelHandlerContext;
+v1 = virtualinvoke v0.<io.netty.channel.AbstractChannelHandlerContext: io.netty.channel.ChannelPromise newPromise()>();
+v2 = virtualinvoke v0.<io.netty.channel.AbstractChannelHandlerContext: io.netty.channel.ChannelFuture disconnect(io.netty.channel.ChannelPromise)>(v1);
+return v2;
+}
+public io.netty.channel.ChannelFuture close()
+{
+io.netty.channel.AbstractChannelHandlerContext v0;
+io.netty.channel.ChannelPromise v1;
+io.netty.channel.ChannelFuture v2;
+v0 := @this: io.netty.channel.AbstractChannelHandlerContext;
+v1 = virtualinvoke v0.<io.netty.channel.AbstractChannelHandlerContext: io.netty.channel.ChannelPromise newPromise()>();
+v2 = virtualinvoke v0.<io.netty.channel.AbstractChannelHandlerContext: io.netty.channel.ChannelFuture close(io.netty.channel.ChannelPromise)>(v1);
+return v2;
+}
+public io.netty.channel.ChannelFuture deregister()
+{
+io.netty.channel.AbstractChannelHandlerContext v0;
+io.netty.channel.ChannelPromise v1;
+io.netty.channel.ChannelFuture v2;
+v0 := @this: io.netty.channel.AbstractChannelHandlerContext;
+v1 = virtualinvoke v0.<io.netty.channel.AbstractChannelHandlerContext: io.netty.channel.ChannelPromise newPromise()>();
+v2 = virtualinvoke v0.<io.netty.channel.AbstractChannelHandlerContext: io.netty.channel.ChannelFuture deregister(io.netty.channel.ChannelPromise)>(v1);
+return v2;
+}
+public io.netty.channel.ChannelFuture bind(java.net.SocketAddress, io.netty.channel.ChannelPromise)
+{
+io.netty.util.concurrent.EventExecutor v5;
+java.net.SocketAddress v1;
+io.netty.channel.ChannelPromise v2;
+io.netty.channel.AbstractChannelHandlerContext v0, v4;
+io.netty.channel.AbstractChannelHandlerContext$8 v7;
+boolean v3, v6;
+v0 := @this: io.netty.channel.AbstractChannelHandlerContext;
+v1 := @parameter0: java.net.SocketAddress;
+v2 := @parameter1: io.netty.channel.ChannelPromise;
+staticinvoke <io.netty.util.internal.ObjectUtil: java.lang.Object checkNotNull(java.lang.Object,java.lang.String)>(v1, "localAddress");
+v3 = specialinvoke v0.<io.netty.channel.AbstractChannelHandlerContext: boolean isNotValidPromise(io.netty.channel.ChannelPromise,boolean)>(v2, 0);
+if v3 == 0 goto label1;
+return v2;
+label1:
+v4 = specialinvoke v0.<io.netty.channel.AbstractChannelHandlerContext: io.netty.channel.AbstractChannelHandlerContext findContextOutbound(int)>(512);
+v5 = virtualinvoke v4.<io.netty.channel.AbstractChannelHandlerContext: io.netty.util.concurrent.EventExecutor executor()>();
+v6 = interfaceinvoke v5.<io.netty.util.concurrent.EventExecutor: boolean inEventLoop()>();
+if v6 == 0 goto label2;
+specialinvoke v4.<io.netty.channel.AbstractChannelHandlerContext: void invokeBind(java.net.SocketAddress,io.netty.channel.ChannelPromise)>(v1, v2);
+goto label3;
+label2:
+v7 = new io.netty.channel.AbstractChannelHandlerContext$8;
+specialinvoke v7.<io.netty.channel.AbstractChannelHandlerContext$8: void <init>(io.netty.channel.AbstractChannelHandlerContext,io.netty.channel.AbstractChannelHandlerContext,java.net.SocketAddress,io.netty.channel.ChannelPromise)>(v0, v4, v1, v2);
+staticinvoke <io.netty.channel.AbstractChannelHandlerContext: boolean safeExecute(io.netty.util.concurrent.EventExecutor,java.lang.Runnable,io.netty.channel.ChannelPromise,java.lang.Object,boolean)>(v5, v7, v2, null, 0);
+label3:
+return v2;
+}
+private void invokeBind(java.net.SocketAddress, io.netty.channel.ChannelPromise)
+{
+java.lang.Throwable v8;
+java.net.SocketAddress v1;
+io.netty.channel.DefaultChannelPipeline$HeadContext v6;
+io.netty.channel.ChannelPromise v2;
+io.netty.channel.AbstractChannelHandlerContext v0;
+io.netty.channel.ChannelHandler v4;
+io.netty.channel.DefaultChannelPipeline v5;
+boolean v3, v7;
+v0 := @this: io.netty.channel.AbstractChannelHandlerContext;
+v1 := @parameter0: java.net.SocketAddress;
+v2 := @parameter1: io.netty.channel.ChannelPromise;
+v3 = specialinvoke v0.<io.netty.channel.AbstractChannelHandlerContext: boolean invokeHandler()>();
+if v3 == 0 goto label6;
+label1:
+v4 = virtualinvoke v0.<io.netty.channel.AbstractChannelHandlerContext: io.netty.channel.ChannelHandler handler()>();
+v5 = v0.<io.netty.channel.AbstractChannelHandlerContext: io.netty.channel.DefaultChannelPipeline pipeline>;
+v6 = v5.<io.netty.channel.DefaultChannelPipeline: io.netty.channel.DefaultChannelPipeline$HeadContext head>;
+if v4 != v6 goto label2;
+virtualinvoke v6.<io.netty.channel.DefaultChannelPipeline$HeadContext: void bind(io.netty.channel.ChannelHandlerContext,java.net.SocketAddress,io.netty.channel.ChannelPromise)>(v0, v1, v2);
+goto label7;
+label2:
+v7 = v4 instanceof io.netty.channel.ChannelDuplexHandler;
+if v7 == 0 goto label3;
+virtualinvoke v4.<io.netty.channel.ChannelDuplexHandler: void bind(io.netty.channel.ChannelHandlerContext,java.net.SocketAddress,io.netty.channel.ChannelPromise)>(v0, v1, v2);
+goto label7;
+label3:
+interfaceinvoke v4.<io.netty.channel.ChannelOutboundHandler: void bind(io.netty.channel.ChannelHandlerContext,java.net.SocketAddress,io.netty.channel.ChannelPromise)>(v0, v1, v2);
+label4:
+goto label7;
+label5:
+v8 := @caughtexception;
+staticinvoke <io.netty.channel.AbstractChannelHandlerContext: void notifyOutboundHandlerException(java.lang.Throwable,io.netty.channel.ChannelPromise)>(v8, v2);
+goto label7;
+label6:
+virtualinvoke v0.<io.netty.channel.AbstractChannelHandlerContext: io.netty.channel.ChannelFuture bind(java.net.SocketAddress,io.netty.channel.ChannelPromise)>(v1, v2);
+label7:
+return;
+catch java.lang.Throwable from label1 to label4 with label5;
+}
+public io.netty.channel.ChannelFuture connect(java.net.SocketAddress, io.netty.channel.ChannelPromise)
+{
+io.netty.channel.ChannelPromise v2;
+java.net.SocketAddress v1;
+io.netty.channel.AbstractChannelHandlerContext v0;
+io.netty.channel.ChannelFuture v3;
+v0 := @this: io.netty.channel.AbstractChannelHandlerContext;
+v1 := @parameter0: java.net.SocketAddress;
+v2 := @parameter1: io.netty.channel.ChannelPromise;
+v3 = virtualinvoke v0.<io.netty.channel.AbstractChannelHandlerContext: io.netty.channel.ChannelFuture connect(java.net.SocketAddress,java.net.SocketAddress,io.netty.channel.ChannelPromise)>(v1, null, v2);
+return v3;
+}
+public io.netty.channel.ChannelFuture connect(java.net.SocketAddress, java.net.SocketAddress, io.netty.channel.ChannelPromise)
+{
+io.netty.util.concurrent.EventExecutor v6;
+java.net.SocketAddress v1, v2;
+io.netty.channel.ChannelPromise v3;
+io.netty.channel.AbstractChannelHandlerContext v0, v5;
+io.netty.channel.AbstractChannelHandlerContext$9 v8;
+boolean v4, v7;
+v0 := @this: io.netty.channel.AbstractChannelHandlerContext;
+v1 := @parameter0: java.net.SocketAddress;
+v2 := @parameter1: java.net.SocketAddress;
+v3 := @parameter2: io.netty.channel.ChannelPromise;
+staticinvoke <io.netty.util.internal.ObjectUtil: java.lang.Object checkNotNull(java.lang.Object,java.lang.String)>(v1, "remoteAddress");
+v4 = specialinvoke v0.<io.netty.channel.AbstractChannelHandlerContext: boolean isNotValidPromise(io.netty.channel.ChannelPromise,boolean)>(v3, 0);
+if v4 == 0 goto label1;
+return v3;
+label1:
+v5 = specialinvoke v0.<io.netty.channel.AbstractChannelHandlerContext: io.netty.channel.AbstractChannelHandlerContext findContextOutbound(int)>(1024);
+v6 = virtualinvoke v5.<io.netty.channel.AbstractChannelHandlerContext: io.netty.util.concurrent.EventExecutor executor()>();
+v7 = interfaceinvoke v6.<io.netty.util.concurrent.EventExecutor: boolean inEventLoop()>();
+if v7 == 0 goto label2;
+specialinvoke v5.<io.netty.channel.AbstractChannelHandlerContext: void invokeConnect(java.net.SocketAddress,java.net.SocketAddress,io.netty.channel.ChannelPromise)>(v1, v2, v3);
+goto label3;
+label2:
+v8 = new io.netty.channel.AbstractChannelHandlerContext$9;
+specialinvoke v8.<io.netty.channel.AbstractChannelHandlerContext$9: void <init>(io.netty.channel.AbstractChannelHandlerContext,io.netty.channel.AbstractChannelHandlerContext,java.net.SocketAddress,java.net.SocketAddress,io.netty.channel.ChannelPromise)>(v0, v5, v1, v2, v3);
+staticinvoke <io.netty.channel.AbstractChannelHandlerContext: boolean safeExecute(io.netty.util.concurrent.EventExecutor,java.lang.Runnable,io.netty.channel.ChannelPromise,java.lang.Object,boolean)>(v6, v8, v3, null, 0);
+label3:
+return v3;
+}
+private void invokeConnect(java.net.SocketAddress, java.net.SocketAddress, io.netty.channel.ChannelPromise)
+{
+java.lang.Throwable v9;
+java.net.SocketAddress v1, v2;
+io.netty.channel.DefaultChannelPipeline$HeadContext v7;
+io.netty.channel.ChannelPromise v3;
+io.netty.channel.AbstractChannelHandlerContext v0;
+io.netty.channel.ChannelHandler v5;
+io.netty.channel.DefaultChannelPipeline v6;
+boolean v4, v8;
+v0 := @this: io.netty.channel.AbstractChannelHandlerContext;
+v1 := @parameter0: java.net.SocketAddress;
+v2 := @parameter1: java.net.SocketAddress;
+v3 := @parameter2: io.netty.channel.ChannelPromise;
+v4 = specialinvoke v0.<io.netty.channel.AbstractChannelHandlerContext: boolean invokeHandler()>();
+if v4 == 0 goto label6;
+label1:
+v5 = virtualinvoke v0.<io.netty.channel.AbstractChannelHandlerContext: io.netty.channel.ChannelHandler handler()>();
+v6 = v0.<io.netty.channel.AbstractChannelHandlerContext: io.netty.channel.DefaultChannelPipeline pipeline>;
+v7 = v6.<io.netty.channel.DefaultChannelPipeline: io.netty.channel.DefaultChannelPipeline$HeadContext head>;
+if v5 != v7 goto label2;
+virtualinvoke v7.<io.netty.channel.DefaultChannelPipeline$HeadContext: void connect(io.netty.channel.ChannelHandlerContext,java.net.SocketAddress,java.net.SocketAddress,io.netty.channel.ChannelPromise)>(v0, v1, v2, v3);
+goto label7;
+label2:
+v8 = v5 instanceof io.netty.channel.ChannelDuplexHandler;
+if v8 == 0 goto label3;
+virtualinvoke v5.<io.netty.channel.ChannelDuplexHandler: void connect(io.netty.channel.ChannelHandlerContext,java.net.SocketAddress,java.net.SocketAddress,io.netty.channel.ChannelPromise)>(v0, v1, v2, v3);
+goto label7;
+label3:
+interfaceinvoke v5.<io.netty.channel.ChannelOutboundHandler: void connect(io.netty.channel.ChannelHandlerContext,java.net.SocketAddress,java.net.SocketAddress,io.netty.channel.ChannelPromise)>(v0, v1, v2, v3);
+label4:
+goto label7;
+label5:
+v9 := @caughtexception;
+staticinvoke <io.netty.channel.AbstractChannelHandlerContext: void notifyOutboundHandlerException(java.lang.Throwable,io.netty.channel.ChannelPromise)>(v9, v3);
+goto label7;
+label6:
+virtualinvoke v0.<io.netty.channel.AbstractChannelHandlerContext: io.netty.channel.ChannelFuture connect(java.net.SocketAddress,java.net.SocketAddress,io.netty.channel.ChannelPromise)>(v1, v2, v3);
+label7:
+return;
+catch java.lang.Throwable from label1 to label4 with label5;
+}
+public io.netty.channel.ChannelFuture disconnect(io.netty.channel.ChannelPromise)
+{
+io.netty.util.concurrent.EventExecutor v8;
+io.netty.channel.AbstractChannelHandlerContext$10 v10;
+io.netty.channel.ChannelFuture v5;
+io.netty.channel.Channel v2;
+io.netty.channel.ChannelPromise v1;
+io.netty.channel.AbstractChannelHandlerContext v0, v7;
+io.netty.channel.ChannelMetadata v3;
+boolean v4, v6, v9;
+v0 := @this: io.netty.channel.AbstractChannelHandlerContext;
+v1 := @parameter0: io.netty.channel.ChannelPromise;
+v2 = virtualinvoke v0.<io.netty.channel.AbstractChannelHandlerContext: io.netty.channel.Channel channel()>();
+v3 = interfaceinvoke v2.<io.netty.channel.Channel: io.netty.channel.ChannelMetadata metadata()>();
+v4 = virtualinvoke v3.<io.netty.channel.ChannelMetadata: boolean hasDisconnect()>();
+if v4 != 0 goto label1;
+v5 = virtualinvoke v0.<io.netty.channel.AbstractChannelHandlerContext: io.netty.channel.ChannelFuture close(io.netty.channel.ChannelPromise)>(v1);
+return v5;
+label1:
+v6 = specialinvoke v0.<io.netty.channel.AbstractChannelHandlerContext: boolean isNotValidPromise(io.netty.channel.ChannelPromise,boolean)>(v1, 0);
+if v6 == 0 goto label2;
+return v1;
+label2:
+v7 = specialinvoke v0.<io.netty.channel.AbstractChannelHandlerContext: io.netty.channel.AbstractChannelHandlerContext findContextOutbound(int)>(2048);
+v8 = virtualinvoke v7.<io.netty.channel.AbstractChannelHandlerContext: io.netty.util.concurrent.EventExecutor executor()>();
+v9 = interfaceinvoke v8.<io.netty.util.concurrent.EventExecutor: boolean inEventLoop()>();
+if v9 == 0 goto label3;
+specialinvoke v7.<io.netty.channel.AbstractChannelHandlerContext: void invokeDisconnect(io.netty.channel.ChannelPromise)>(v1);
+goto label4;
+label3:
+v10 = new io.netty.channel.AbstractChannelHandlerContext$10;
+specialinvoke v10.<io.netty.channel.AbstractChannelHandlerContext$10: void <init>(io.netty.channel.AbstractChannelHandlerContext,io.netty.channel.AbstractChannelHandlerContext,io.netty.channel.ChannelPromise)>(v0, v7, v1);
+staticinvoke <io.netty.channel.AbstractChannelHandlerContext: boolean safeExecute(io.netty.util.concurrent.EventExecutor,java.lang.Runnable,io.netty.channel.ChannelPromise,java.lang.Object,boolean)>(v8, v10, v1, null, 0);
+label4:
+return v1;
+}
+private void invokeDisconnect(io.netty.channel.ChannelPromise)
+{
+java.lang.Throwable v7;
+io.netty.channel.DefaultChannelPipeline$HeadContext v5;
+io.netty.channel.ChannelPromise v1;
+io.netty.channel.AbstractChannelHandlerContext v0;
+io.netty.channel.ChannelHandler v3;
+io.netty.channel.DefaultChannelPipeline v4;
+boolean v2, v6;
+v0 := @this: io.netty.channel.AbstractChannelHandlerContext;
+v1 := @parameter0: io.netty.channel.ChannelPromise;
+v2 = specialinvoke v0.<io.netty.channel.AbstractChannelHandlerContext: boolean invokeHandler()>();
+if v2 == 0 goto label6;
+label1:
+v3 = virtualinvoke v0.<io.netty.channel.AbstractChannelHandlerContext: io.netty.channel.ChannelHandler handler()>();
+v4 = v0.<io.netty.channel.AbstractChannelHandlerContext: io.netty.channel.DefaultChannelPipeline pipeline>;
+v5 = v4.<io.netty.channel.DefaultChannelPipeline: io.netty.channel.DefaultChannelPipeline$HeadContext head>;
+if v3 != v5 goto label2;
+virtualinvoke v5.<io.netty.channel.DefaultChannelPipeline$HeadContext: void disconnect(io.netty.channel.ChannelHandlerContext,io.netty.channel.ChannelPromise)>(v0, v1);
+goto label7;
+label2:
+v6 = v3 instanceof io.netty.channel.ChannelDuplexHandler;
+if v6 == 0 goto label3;
+virtualinvoke v3.<io.netty.channel.ChannelDuplexHandler: void disconnect(io.netty.channel.ChannelHandlerContext,io.netty.channel.ChannelPromise)>(v0, v1);
+goto label7;
+label3:
+interfaceinvoke v3.<io.netty.channel.ChannelOutboundHandler: void disconnect(io.netty.channel.ChannelHandlerContext,io.netty.channel.ChannelPromise)>(v0, v1);
+label4:
+goto label7;
+label5:
+v7 := @caughtexception;
+staticinvoke <io.netty.channel.AbstractChannelHandlerContext: void notifyOutboundHandlerException(java.lang.Throwable,io.netty.channel.ChannelPromise)>(v7, v1);
+goto label7;
+label6:
+virtualinvoke v0.<io.netty.channel.AbstractChannelHandlerContext: io.netty.channel.ChannelFuture disconnect(io.netty.channel.ChannelPromise)>(v1);
+label7:
+return;
+catch java.lang.Throwable from label1 to label4 with label5;
+}
+public io.netty.channel.ChannelFuture close(io.netty.channel.ChannelPromise)
+{
+io.netty.util.concurrent.EventExecutor v4;
+io.netty.channel.ChannelPromise v1;
+io.netty.channel.AbstractChannelHandlerContext$11 v6;
+io.netty.channel.AbstractChannelHandlerContext v0, v3;
+boolean v2, v5;
+v0 := @this: io.netty.channel.AbstractChannelHandlerContext;
+v1 := @parameter0: io.netty.channel.ChannelPromise;
+v2 = specialinvoke v0.<io.netty.channel.AbstractChannelHandlerContext: boolean isNotValidPromise(io.netty.channel.ChannelPromise,boolean)>(v1, 0);
+if v2 == 0 goto label1;
+return v1;
+label1:
+v3 = specialinvoke v0.<io.netty.channel.AbstractChannelHandlerContext: io.netty.channel.AbstractChannelHandlerContext findContextOutbound(int)>(4096);
+v4 = virtualinvoke v3.<io.netty.channel.AbstractChannelHandlerContext: io.netty.util.concurrent.EventExecutor executor()>();
+v5 = interfaceinvoke v4.<io.netty.util.concurrent.EventExecutor: boolean inEventLoop()>();
+if v5 == 0 goto label2;
+specialinvoke v3.<io.netty.channel.AbstractChannelHandlerContext: void invokeClose(io.netty.channel.ChannelPromise)>(v1);
+goto label3;
+label2:
+v6 = new io.netty.channel.AbstractChannelHandlerContext$11;
+specialinvoke v6.<io.netty.channel.AbstractChannelHandlerContext$11: void <init>(io.netty.channel.AbstractChannelHandlerContext,io.netty.channel.AbstractChannelHandlerContext,io.netty.channel.ChannelPromise)>(v0, v3, v1);
+staticinvoke <io.netty.channel.AbstractChannelHandlerContext: boolean safeExecute(io.netty.util.concurrent.EventExecutor,java.lang.Runnable,io.netty.channel.ChannelPromise,java.lang.Object,boolean)>(v4, v6, v1, null, 0);
+label3:
+return v1;
+}
+private void invokeClose(io.netty.channel.ChannelPromise)
+{
+java.lang.Throwable v7;
+io.netty.channel.DefaultChannelPipeline$HeadContext v5;
+io.netty.channel.ChannelPromise v1;
+io.netty.channel.AbstractChannelHandlerContext v0;
+io.netty.channel.ChannelHandler v3;
+io.netty.channel.DefaultChannelPipeline v4;
+boolean v2, v6;
+v0 := @this: io.netty.channel.AbstractChannelHandlerContext;
+v1 := @parameter0: io.netty.channel.ChannelPromise;
+v2 = specialinvoke v0.<io.netty.channel.AbstractChannelHandlerContext: boolean invokeHandler()>();
+if v2 == 0 goto label6;
+label1:
+v3 = virtualinvoke v0.<io.netty.channel.AbstractChannelHandlerContext: io.netty.channel.ChannelHandler handler()>();
+v4 = v0.<io.netty.channel.AbstractChannelHandlerContext: io.netty.channel.DefaultChannelPipeline pipeline>;
+v5 = v4.<io.netty.channel.DefaultChannelPipeline: io.netty.channel.DefaultChannelPipeline$HeadContext head>;
+if v3 != v5 goto label2;
+virtualinvoke v5.<io.netty.channel.DefaultChannelPipeline$HeadContext: void close(io.netty.channel.ChannelHandlerContext,io.netty.channel.ChannelPromise)>(v0, v1);
+goto label7;
+label2:
+v6 = v3 instanceof io.netty.channel.ChannelDuplexHandler;
+if v6 == 0 goto label3;
+virtualinvoke v3.<io.netty.channel.ChannelDuplexHandler: void close(io.netty.channel.ChannelHandlerContext,io.netty.channel.ChannelPromise)>(v0, v1);
+goto label7;
+label3:
+interfaceinvoke v3.<io.netty.channel.ChannelOutboundHandler: void close(io.netty.channel.ChannelHandlerContext,io.netty.channel.ChannelPromise)>(v0, v1);
+label4:
+goto label7;
+label5:
+v7 := @caughtexception;
+staticinvoke <io.netty.channel.AbstractChannelHandlerContext: void notifyOutboundHandlerException(java.lang.Throwable,io.netty.channel.ChannelPromise)>(v7, v1);
+goto label7;
+label6:
+virtualinvoke v0.<io.netty.channel.AbstractChannelHandlerContext: io.netty.channel.ChannelFuture close(io.netty.channel.ChannelPromise)>(v1);
+label7:
+return;
+catch java.lang.Throwable from label1 to label4 with label5;
+}
+public io.netty.channel.ChannelFuture deregister(io.netty.channel.ChannelPromise)
+{
+io.netty.util.concurrent.EventExecutor v4;
+io.netty.channel.ChannelPromise v1;
+io.netty.channel.AbstractChannelHandlerContext v0, v3;
+io.netty.channel.AbstractChannelHandlerContext$12 v6;
+boolean v2, v5;
+v0 := @this: io.netty.channel.AbstractChannelHandlerContext;
+v1 := @parameter0: io.netty.channel.ChannelPromise;
+v2 = specialinvoke v0.<io.netty.channel.AbstractChannelHandlerContext: boolean isNotValidPromise(io.netty.channel.ChannelPromise,boolean)>(v1, 0);
+if v2 == 0 goto label1;
+return v1;
+label1:
+v3 = specialinvoke v0.<io.netty.channel.AbstractChannelHandlerContext: io.netty.channel.AbstractChannelHandlerContext findContextOutbound(int)>(8192);
+v4 = virtualinvoke v3.<io.netty.channel.AbstractChannelHandlerContext: io.netty.util.concurrent.EventExecutor executor()>();
+v5 = interfaceinvoke v4.<io.netty.util.concurrent.EventExecutor: boolean inEventLoop()>();
+if v5 == 0 goto label2;
+specialinvoke v3.<io.netty.channel.AbstractChannelHandlerContext: void invokeDeregister(io.netty.channel.ChannelPromise)>(v1);
+goto label3;
+label2:
+v6 = new io.netty.channel.AbstractChannelHandlerContext$12;
+specialinvoke v6.<io.netty.channel.AbstractChannelHandlerContext$12: void <init>(io.netty.channel.AbstractChannelHandlerContext,io.netty.channel.AbstractChannelHandlerContext,io.netty.channel.ChannelPromise)>(v0, v3, v1);
+staticinvoke <io.netty.channel.AbstractChannelHandlerContext: boolean safeExecute(io.netty.util.concurrent.EventExecutor,java.lang.Runnable,io.netty.channel.ChannelPromise,java.lang.Object,boolean)>(v4, v6, v1, null, 0);
+label3:
+return v1;
+}
+private void invokeDeregister(io.netty.channel.ChannelPromise)
+{
+java.lang.Throwable v7;
+io.netty.channel.DefaultChannelPipeline$HeadContext v5;
+io.netty.channel.ChannelPromise v1;
+io.netty.channel.AbstractChannelHandlerContext v0;
+io.netty.channel.ChannelHandler v3;
+io.netty.channel.DefaultChannelPipeline v4;
+boolean v2, v6;
+v0 := @this: io.netty.channel.AbstractChannelHandlerContext;
+v1 := @parameter0: io.netty.channel.ChannelPromise;
+v2 = specialinvoke v0.<io.netty.channel.AbstractChannelHandlerContext: boolean invokeHandler()>();
+if v2 == 0 goto label6;
+label1:
+v3 = virtualinvoke v0.<io.netty.channel.AbstractChannelHandlerContext: io.netty.channel.ChannelHandler handler()>();
+v4 = v0.<io.netty.channel.AbstractChannelHandlerContext: io.netty.channel.DefaultChannelPipeline pipeline>;
+v5 = v4.<io.netty.channel.DefaultChannelPipeline: io.netty.channel.DefaultChannelPipeline$HeadContext head>;
+if v3 != v5 goto label2;
+virtualinvoke v5.<io.netty.channel.DefaultChannelPipeline$HeadContext: void deregister(io.netty.channel.ChannelHandlerContext,io.netty.channel.ChannelPromise)>(v0, v1);
+goto label7;
+label2:
+v6 = v3 instanceof io.netty.channel.ChannelDuplexHandler;
+if v6 == 0 goto label3;
+virtualinvoke v3.<io.netty.channel.ChannelDuplexHandler: void deregister(io.netty.channel.ChannelHandlerContext,io.netty.channel.ChannelPromise)>(v0, v1);
+goto label7;
+label3:
+interfaceinvoke v3.<io.netty.channel.ChannelOutboundHandler: void deregister(io.netty.channel.ChannelHandlerContext,io.netty.channel.ChannelPromise)>(v0, v1);
+label4:
+goto label7;
+label5:
+v7 := @caughtexception;
+staticinvoke <io.netty.channel.AbstractChannelHandlerContext: void notifyOutboundHandlerException(java.lang.Throwable,io.netty.channel.ChannelPromise)>(v7, v1);
+goto label7;
+label6:
+virtualinvoke v0.<io.netty.channel.AbstractChannelHandlerContext: io.netty.channel.ChannelFuture deregister(io.netty.channel.ChannelPromise)>(v1);
+label7:
+return;
+catch java.lang.Throwable from label1 to label4 with label5;
+}
+public io.netty.channel.ChannelHandlerContext read()
+{
+io.netty.util.concurrent.EventExecutor v2;
+io.netty.channel.AbstractChannelHandlerContext v0, v1;
+io.netty.channel.AbstractChannelHandlerContext$Tasks v4, v5;
+java.lang.Runnable v6;
+boolean v3;
+v0 := @this: io.netty.channel.AbstractChannelHandlerContext;
+v1 = specialinvoke v0.<io.netty.channel.AbstractChannelHandlerContext: io.netty.channel.AbstractChannelHandlerContext findContextOutbound(int)>(16384);
+v2 = virtualinvoke v1.<io.netty.channel.AbstractChannelHandlerContext: io.netty.util.concurrent.EventExecutor executor()>();
+v3 = interfaceinvoke v2.<io.netty.util.concurrent.EventExecutor: boolean inEventLoop()>();
+if v3 == 0 goto label1;
+specialinvoke v1.<io.netty.channel.AbstractChannelHandlerContext: void invokeRead()>();
+goto label3;
+label1:
+v4 = v1.<io.netty.channel.AbstractChannelHandlerContext: io.netty.channel.AbstractChannelHandlerContext$Tasks invokeTasks>;
+if v4 != null goto label2;
+v5 = new io.netty.channel.AbstractChannelHandlerContext$Tasks;
+specialinvoke v5.<io.netty.channel.AbstractChannelHandlerContext$Tasks: void <init>(io.netty.channel.AbstractChannelHandlerContext)>(v1);
+v4 = v5;
+v1.<io.netty.channel.AbstractChannelHandlerContext: io.netty.channel.AbstractChannelHandlerContext$Tasks invokeTasks> = v5;
+label2:
+v6 = v4.<io.netty.channel.AbstractChannelHandlerContext$Tasks: java.lang.Runnable invokeReadTask>;
+interfaceinvoke v2.<io.netty.util.concurrent.EventExecutor: void execute(java.lang.Runnable)>(v6);
+label3:
+return v0;
+}
+private void invokeRead()
+{
+java.lang.Throwable v6;
+io.netty.channel.DefaultChannelPipeline$HeadContext v4;
+io.netty.channel.AbstractChannelHandlerContext v0;
+io.netty.channel.ChannelHandler v2;
+io.netty.channel.DefaultChannelPipeline v3;
+boolean v1, v5;
+v0 := @this: io.netty.channel.AbstractChannelHandlerContext;
+v1 = specialinvoke v0.<io.netty.channel.AbstractChannelHandlerContext: boolean invokeHandler()>();
+if v1 == 0 goto label6;
+label1:
+v2 = virtualinvoke v0.<io.netty.channel.AbstractChannelHandlerContext: io.netty.channel.ChannelHandler handler()>();
+v3 = v0.<io.netty.channel.AbstractChannelHandlerContext: io.netty.channel.DefaultChannelPipeline pipeline>;
+v4 = v3.<io.netty.channel.DefaultChannelPipeline: io.netty.channel.DefaultChannelPipeline$HeadContext head>;
+if v2 != v4 goto label2;
+virtualinvoke v4.<io.netty.channel.DefaultChannelPipeline$HeadContext: void read(io.netty.channel.ChannelHandlerContext)>(v0);
+goto label7;
+label2:
+v5 = v2 instanceof io.netty.channel.ChannelDuplexHandler;
+if v5 == 0 goto label3;
+virtualinvoke v2.<io.netty.channel.ChannelDuplexHandler: void read(io.netty.channel.ChannelHandlerContext)>(v0);
+goto label7;
+label3:
+interfaceinvoke v2.<io.netty.channel.ChannelOutboundHandler: void read(io.netty.channel.ChannelHandlerContext)>(v0);
+label4:
+goto label7;
+label5:
+v6 := @caughtexception;
+specialinvoke v0.<io.netty.channel.AbstractChannelHandlerContext: void invokeExceptionCaught(java.lang.Throwable)>(v6);
+goto label7;
+label6:
+virtualinvoke v0.<io.netty.channel.AbstractChannelHandlerContext: io.netty.channel.ChannelHandlerContext read()>();
+label7:
+return;
+catch java.lang.Throwable from label1 to label4 with label5;
+}
+public io.netty.channel.ChannelFuture write(java.lang.Object)
+{
+io.netty.channel.ChannelPromise v2;
+io.netty.channel.AbstractChannelHandlerContext v0;
+java.lang.Object v1;
+io.netty.channel.ChannelFuture v3;
+v0 := @this: io.netty.channel.AbstractChannelHandlerContext;
+v1 := @parameter0: java.lang.Object;
+v2 = virtualinvoke v0.<io.netty.channel.AbstractChannelHandlerContext: io.netty.channel.ChannelPromise newPromise()>();
+v3 = virtualinvoke v0.<io.netty.channel.AbstractChannelHandlerContext: io.netty.channel.ChannelFuture write(java.lang.Object,io.netty.channel.ChannelPromise)>(v1, v2);
+return v3;
+}
+public io.netty.channel.ChannelFuture write(java.lang.Object, io.netty.channel.ChannelPromise)
+{
+io.netty.channel.AbstractChannelHandlerContext v0;
+java.lang.Object v1;
+io.netty.channel.ChannelPromise v2;
+v0 := @this: io.netty.channel.AbstractChannelHandlerContext;
+v1 := @parameter0: java.lang.Object;
+v2 := @parameter1: io.netty.channel.ChannelPromise;
+specialinvoke v0.<io.netty.channel.AbstractChannelHandlerContext: void write(java.lang.Object,boolean,io.netty.channel.ChannelPromise)>(v1, 0, v2);
+return v2;
+}
+void invokeWrite(java.lang.Object, io.netty.channel.ChannelPromise)
+{
+io.netty.channel.ChannelPromise v2;
+io.netty.channel.AbstractChannelHandlerContext v0;
+java.lang.Object v1;
+boolean v3;
+v0 := @this: io.netty.channel.AbstractChannelHandlerContext;
+v1 := @parameter0: java.lang.Object;
+v2 := @parameter1: io.netty.channel.ChannelPromise;
+v3 = specialinvoke v0.<io.netty.channel.AbstractChannelHandlerContext: boolean invokeHandler()>();
+if v3 == 0 goto label1;
+specialinvoke v0.<io.netty.channel.AbstractChannelHandlerContext: void invokeWrite0(java.lang.Object,io.netty.channel.ChannelPromise)>(v1, v2);
+goto label2;
+label1:
+virtualinvoke v0.<io.netty.channel.AbstractChannelHandlerContext: io.netty.channel.ChannelFuture write(java.lang.Object,io.netty.channel.ChannelPromise)>(v1, v2);
+label2:
+return;
+}
+private void invokeWrite0(java.lang.Object, io.netty.channel.ChannelPromise)
+{
+java.lang.Throwable v7;
+io.netty.channel.DefaultChannelPipeline$HeadContext v5;
+io.netty.channel.ChannelPromise v2;
+io.netty.channel.AbstractChannelHandlerContext v0;
+io.netty.channel.ChannelHandler v3;
+java.lang.Object v1;
+io.netty.channel.DefaultChannelPipeline v4;
+boolean v6;
+v0 := @this: io.netty.channel.AbstractChannelHandlerContext;
+v1 := @parameter0: java.lang.Object;
+v2 := @parameter1: io.netty.channel.ChannelPromise;
+label1:
+v3 = virtualinvoke v0.<io.netty.channel.AbstractChannelHandlerContext: io.netty.channel.ChannelHandler handler()>();
+v4 = v0.<io.netty.channel.AbstractChannelHandlerContext: io.netty.channel.DefaultChannelPipeline pipeline>;
+v5 = v4.<io.netty.channel.DefaultChannelPipeline: io.netty.channel.DefaultChannelPipeline$HeadContext head>;
+if v3 != v5 goto label2;
+virtualinvoke v5.<io.netty.channel.DefaultChannelPipeline$HeadContext: void write(io.netty.channel.ChannelHandlerContext,java.lang.Object,io.netty.channel.ChannelPromise)>(v0, v1, v2);
+goto label6;
+label2:
+v6 = v3 instanceof io.netty.channel.ChannelDuplexHandler;
+if v6 == 0 goto label3;
+virtualinvoke v3.<io.netty.channel.ChannelDuplexHandler: void write(io.netty.channel.ChannelHandlerContext,java.lang.Object,io.netty.channel.ChannelPromise)>(v0, v1, v2);
+goto label6;
+label3:
+interfaceinvoke v3.<io.netty.channel.ChannelOutboundHandler: void write(io.netty.channel.ChannelHandlerContext,java.lang.Object,io.netty.channel.ChannelPromise)>(v0, v1, v2);
+label4:
+goto label6;
+label5:
+v7 := @caughtexception;
+staticinvoke <io.netty.channel.AbstractChannelHandlerContext: void notifyOutboundHandlerException(java.lang.Throwable,io.netty.channel.ChannelPromise)>(v7, v2);
+label6:
+return;
+catch java.lang.Throwable from label1 to label4 with label5;
+}
+public io.netty.channel.ChannelHandlerContext flush()
+{
+io.netty.util.concurrent.EventExecutor v2;
+java.lang.Runnable v6;
+io.netty.channel.Channel v7;
+io.netty.channel.ChannelPromise v8;
+io.netty.channel.AbstractChannelHandlerContext v0, v1;
+io.netty.channel.AbstractChannelHandlerContext$Tasks v4, v5;
+boolean v3;
+v0 := @this: io.netty.channel.AbstractChannelHandlerContext;
+v1 = specialinvoke v0.<io.netty.channel.AbstractChannelHandlerContext: io.netty.channel.AbstractChannelHandlerContext findContextOutbound(int)>(65536);
+v2 = virtualinvoke v1.<io.netty.channel.AbstractChannelHandlerContext: io.netty.util.concurrent.EventExecutor executor()>();
+v3 = interfaceinvoke v2.<io.netty.util.concurrent.EventExecutor: boolean inEventLoop()>();
+if v3 == 0 goto label1;
+specialinvoke v1.<io.netty.channel.AbstractChannelHandlerContext: void invokeFlush()>();
+goto label3;
+label1:
+v4 = v1.<io.netty.channel.AbstractChannelHandlerContext: io.netty.channel.AbstractChannelHandlerContext$Tasks invokeTasks>;
+if v4 != null goto label2;
+v5 = new io.netty.channel.AbstractChannelHandlerContext$Tasks;
+specialinvoke v5.<io.netty.channel.AbstractChannelHandlerContext$Tasks: void <init>(io.netty.channel.AbstractChannelHandlerContext)>(v1);
+v4 = v5;
+v1.<io.netty.channel.AbstractChannelHandlerContext: io.netty.channel.AbstractChannelHandlerContext$Tasks invokeTasks> = v5;
+label2:
+v6 = v4.<io.netty.channel.AbstractChannelHandlerContext$Tasks: java.lang.Runnable invokeFlushTask>;
+v7 = virtualinvoke v0.<io.netty.channel.AbstractChannelHandlerContext: io.netty.channel.Channel channel()>();
+v8 = interfaceinvoke v7.<io.netty.channel.Channel: io.netty.channel.ChannelPromise voidPromise()>();
+staticinvoke <io.netty.channel.AbstractChannelHandlerContext: boolean safeExecute(io.netty.util.concurrent.EventExecutor,java.lang.Runnable,io.netty.channel.ChannelPromise,java.lang.Object,boolean)>(v2, v6, v8, null, 0);
+label3:
+return v0;
+}
+private void invokeFlush()
+{
+io.netty.channel.AbstractChannelHandlerContext v0;
+boolean v1;
+v0 := @this: io.netty.channel.AbstractChannelHandlerContext;
+v1 = specialinvoke v0.<io.netty.channel.AbstractChannelHandlerContext: boolean invokeHandler()>();
+if v1 == 0 goto label1;
+specialinvoke v0.<io.netty.channel.AbstractChannelHandlerContext: void invokeFlush0()>();
+goto label2;
+label1:
+virtualinvoke v0.<io.netty.channel.AbstractChannelHandlerContext: io.netty.channel.ChannelHandlerContext flush()>();
+label2:
+return;
+}
+private void invokeFlush0()
+{
+java.lang.Throwable v5;
+io.netty.channel.DefaultChannelPipeline$HeadContext v3;
+io.netty.channel.AbstractChannelHandlerContext v0;
+io.netty.channel.ChannelHandler v1;
+io.netty.channel.DefaultChannelPipeline v2;
+boolean v4;
+v0 := @this: io.netty.channel.AbstractChannelHandlerContext;
+label1:
+v1 = virtualinvoke v0.<io.netty.channel.AbstractChannelHandlerContext: io.netty.channel.ChannelHandler handler()>();
+v2 = v0.<io.netty.channel.AbstractChannelHandlerContext: io.netty.channel.DefaultChannelPipeline pipeline>;
+v3 = v2.<io.netty.channel.DefaultChannelPipeline: io.netty.channel.DefaultChannelPipeline$HeadContext head>;
+if v1 != v3 goto label2;
+virtualinvoke v3.<io.netty.channel.DefaultChannelPipeline$HeadContext: void flush(io.netty.channel.ChannelHandlerContext)>(v0);
+goto label6;
+label2:
+v4 = v1 instanceof io.netty.channel.ChannelDuplexHandler;
+if v4 == 0 goto label3;
+virtualinvoke v1.<io.netty.channel.ChannelDuplexHandler: void flush(io.netty.channel.ChannelHandlerContext)>(v0);
+goto label6;
+label3:
+interfaceinvoke v1.<io.netty.channel.ChannelOutboundHandler: void flush(io.netty.channel.ChannelHandlerContext)>(v0);
+label4:
+goto label6;
+label5:
+v5 := @caughtexception;
+specialinvoke v0.<io.netty.channel.AbstractChannelHandlerContext: void invokeExceptionCaught(java.lang.Throwable)>(v5);
+label6:
+return;
+catch java.lang.Throwable from label1 to label4 with label5;
+}
+public io.netty.channel.ChannelFuture writeAndFlush(java.lang.Object, io.netty.channel.ChannelPromise)
+{
+io.netty.channel.AbstractChannelHandlerContext v0;
+java.lang.Object v1;
+io.netty.channel.ChannelPromise v2;
+v0 := @this: io.netty.channel.AbstractChannelHandlerContext;
+v1 := @parameter0: java.lang.Object;
+v2 := @parameter1: io.netty.channel.ChannelPromise;
+specialinvoke v0.<io.netty.channel.AbstractChannelHandlerContext: void write(java.lang.Object,boolean,io.netty.channel.ChannelPromise)>(v1, 1, v2);
+return v2;
+}
+void invokeWriteAndFlush(java.lang.Object, io.netty.channel.ChannelPromise)
+{
+io.netty.channel.ChannelPromise v2;
+io.netty.channel.AbstractChannelHandlerContext v0;
+java.lang.Object v1;
+boolean v3;
+v0 := @this: io.netty.channel.AbstractChannelHandlerContext;
+v1 := @parameter0: java.lang.Object;
+v2 := @parameter1: io.netty.channel.ChannelPromise;
+v3 = specialinvoke v0.<io.netty.channel.AbstractChannelHandlerContext: boolean invokeHandler()>();
+if v3 == 0 goto label1;
+specialinvoke v0.<io.netty.channel.AbstractChannelHandlerContext: void invokeWrite0(java.lang.Object,io.netty.channel.ChannelPromise)>(v1, v2);
+specialinvoke v0.<io.netty.channel.AbstractChannelHandlerContext: void invokeFlush0()>();
+goto label2;
+label1:
+virtualinvoke v0.<io.netty.channel.AbstractChannelHandlerContext: io.netty.channel.ChannelFuture writeAndFlush(java.lang.Object,io.netty.channel.ChannelPromise)>(v1, v2);
+label2:
+return;
+}
+private void write(java.lang.Object, boolean, io.netty.channel.ChannelPromise)
+{
+io.netty.util.concurrent.EventExecutor v11;
+io.netty.channel.ChannelPromise v3;
+int v6, v7;
+io.netty.channel.AbstractChannelHandlerContext v0, v8;
+boolean v12, v14, v15, v2, v4;
+java.lang.RuntimeException v5;
+io.netty.channel.AbstractChannelHandlerContext$WriteTask v13;
+java.lang.Object v1, v10;
+io.netty.channel.DefaultChannelPipeline v9;
+v0 := @this: io.netty.channel.AbstractChannelHandlerContext;
+v1 := @parameter0: java.lang.Object;
+v2 := @parameter1: boolean;
+v3 := @parameter2: io.netty.channel.ChannelPromise;
+staticinvoke <io.netty.util.internal.ObjectUtil: java.lang.Object checkNotNull(java.lang.Object,java.lang.String)>(v1, "msg");
+label01:
+v4 = specialinvoke v0.<io.netty.channel.AbstractChannelHandlerContext: boolean isNotValidPromise(io.netty.channel.ChannelPromise,boolean)>(v3, 1);
+if v4 == 0 goto label04;
+staticinvoke <io.netty.util.ReferenceCountUtil: boolean release(java.lang.Object)>(v1);
+label02:
+return;
+label03:
+v5 := @caughtexception;
+staticinvoke <io.netty.util.ReferenceCountUtil: boolean release(java.lang.Object)>(v1);
+throw v5;
+label04:
+if v2 == 0 goto label05;
+v6 = 98304;
+goto label06;
+label05:
+v7 = (int) 32768;
+v6 = v7;
+label06:
+v8 = specialinvoke v0.<io.netty.channel.AbstractChannelHandlerContext: io.netty.channel.AbstractChannelHandlerContext findContextOutbound(int)>(v6);
+v9 = v0.<io.netty.channel.AbstractChannelHandlerContext: io.netty.channel.DefaultChannelPipeline pipeline>;
+v10 = virtualinvoke v9.<io.netty.channel.DefaultChannelPipeline: java.lang.Object touch(java.lang.Object,io.netty.channel.AbstractChannelHandlerContext)>(v1, v8);
+v11 = virtualinvoke v8.<io.netty.channel.AbstractChannelHandlerContext: io.netty.util.concurrent.EventExecutor executor()>();
+v12 = interfaceinvoke v11.<io.netty.util.concurrent.EventExecutor: boolean inEventLoop()>();
+if v12 == 0 goto label08;
+if v2 == 0 goto label07;
+virtualinvoke v8.<io.netty.channel.AbstractChannelHandlerContext: void invokeWriteAndFlush(java.lang.Object,io.netty.channel.ChannelPromise)>(v10, v3);
+goto label11;
+label07:
+virtualinvoke v8.<io.netty.channel.AbstractChannelHandlerContext: void invokeWrite(java.lang.Object,io.netty.channel.ChannelPromise)>(v10, v3);
+goto label11;
+label08:
+v13 = staticinvoke <io.netty.channel.AbstractChannelHandlerContext$WriteTask: io.netty.channel.AbstractChannelHandlerContext$WriteTask newInstance(io.netty.channel.AbstractChannelHandlerContext,java.lang.Object,io.netty.channel.ChannelPromise,boolean)>(v8, v10, v3, v2);
+if v2 != 0 goto label09;
+v14 = 1;
+goto label10;
+label09:
+v14 = 0;
+label10:
+v15 = staticinvoke <io.netty.channel.AbstractChannelHandlerContext: boolean safeExecute(io.netty.util.concurrent.EventExecutor,java.lang.Runnable,io.netty.channel.ChannelPromise,java.lang.Object,boolean)>(v11, v13, v3, v10, v14);
+if v15 != 0 goto label11;
+virtualinvoke v13.<io.netty.channel.AbstractChannelHandlerContext$WriteTask: void cancel()>();
+label11:
+return;
+catch java.lang.RuntimeException from label01 to label02 with label03;
+}
+public io.netty.channel.ChannelFuture writeAndFlush(java.lang.Object)
+{
+io.netty.channel.ChannelPromise v2;
+io.netty.channel.AbstractChannelHandlerContext v0;
+java.lang.Object v1;
+io.netty.channel.ChannelFuture v3;
+v0 := @this: io.netty.channel.AbstractChannelHandlerContext;
+v1 := @parameter0: java.lang.Object;
+v2 = virtualinvoke v0.<io.netty.channel.AbstractChannelHandlerContext: io.netty.channel.ChannelPromise newPromise()>();
+v3 = virtualinvoke v0.<io.netty.channel.AbstractChannelHandlerContext: io.netty.channel.ChannelFuture writeAndFlush(java.lang.Object,io.netty.channel.ChannelPromise)>(v1, v2);
+return v3;
+}
+private static void notifyOutboundHandlerException(java.lang.Throwable, io.netty.channel.ChannelPromise)
+{
+java.lang.Throwable v0;
+io.netty.channel.ChannelPromise v1;
+io.netty.util.internal.logging.InternalLogger v3;
+boolean v2;
+v0 := @parameter0: java.lang.Throwable;
+v1 := @parameter1: io.netty.channel.ChannelPromise;
+v2 = v1 instanceof io.netty.channel.VoidChannelPromise;
+if v2 == 0 goto label1;
+v3 = null;
+goto label2;
+label1:
+v3 = <io.netty.channel.AbstractChannelHandlerContext: io.netty.util.internal.logging.InternalLogger logger>;
+label2:
+staticinvoke <io.netty.util.internal.PromiseNotificationUtil: void tryFailure(io.netty.util.concurrent.Promise,java.lang.Throwable,io.netty.util.internal.logging.InternalLogger)>(v1, v0, v3);
+return;
+}
+public io.netty.channel.ChannelPromise newPromise()
+{
+io.netty.channel.Channel v2;
+io.netty.util.concurrent.EventExecutor v3;
+io.netty.channel.AbstractChannelHandlerContext v0;
+io.netty.channel.DefaultChannelPromise v1;
+v0 := @this: io.netty.channel.AbstractChannelHandlerContext;
+v1 = new io.netty.channel.DefaultChannelPromise;
+v2 = virtualinvoke v0.<io.netty.channel.AbstractChannelHandlerContext: io.netty.channel.Channel channel()>();
+v3 = virtualinvoke v0.<io.netty.channel.AbstractChannelHandlerContext: io.netty.util.concurrent.EventExecutor executor()>();
+specialinvoke v1.<io.netty.channel.DefaultChannelPromise: void <init>(io.netty.channel.Channel,io.netty.util.concurrent.EventExecutor)>(v2, v3);
+return v1;
+}
+public io.netty.channel.ChannelProgressivePromise newProgressivePromise()
+{
+io.netty.channel.Channel v2;
+io.netty.channel.DefaultChannelProgressivePromise v1;
+io.netty.util.concurrent.EventExecutor v3;
+io.netty.channel.AbstractChannelHandlerContext v0;
+v0 := @this: io.netty.channel.AbstractChannelHandlerContext;
+v1 = new io.netty.channel.DefaultChannelProgressivePromise;
+v2 = virtualinvoke v0.<io.netty.channel.AbstractChannelHandlerContext: io.netty.channel.Channel channel()>();
+v3 = virtualinvoke v0.<io.netty.channel.AbstractChannelHandlerContext: io.netty.util.concurrent.EventExecutor executor()>();
+specialinvoke v1.<io.netty.channel.DefaultChannelProgressivePromise: void <init>(io.netty.channel.Channel,io.netty.util.concurrent.EventExecutor)>(v2, v3);
+return v1;
+}
+public io.netty.channel.ChannelFuture newSucceededFuture()
+{
+io.netty.channel.Channel v3;
+io.netty.util.concurrent.EventExecutor v4;
+io.netty.channel.SucceededChannelFuture v2;
+io.netty.channel.AbstractChannelHandlerContext v0;
+io.netty.channel.ChannelFuture v1;
+v0 := @this: io.netty.channel.AbstractChannelHandlerContext;
+v1 = v0.<io.netty.channel.AbstractChannelHandlerContext: io.netty.channel.ChannelFuture succeededFuture>;
+if v1 != null goto label1;
+v2 = new io.netty.channel.SucceededChannelFuture;
+v3 = virtualinvoke v0.<io.netty.channel.AbstractChannelHandlerContext: io.netty.channel.Channel channel()>();
+v4 = virtualinvoke v0.<io.netty.channel.AbstractChannelHandlerContext: io.netty.util.concurrent.EventExecutor executor()>();
+specialinvoke v2.<io.netty.channel.SucceededChannelFuture: void <init>(io.netty.channel.Channel,io.netty.util.concurrent.EventExecutor)>(v3, v4);
+v1 = v2;
+v0.<io.netty.channel.AbstractChannelHandlerContext: io.netty.channel.ChannelFuture succeededFuture> = v2;
+label1:
+return v1;
+}
+public io.netty.channel.ChannelFuture newFailedFuture(java.lang.Throwable)
+{
+io.netty.channel.Channel v3;
+io.netty.util.concurrent.EventExecutor v4;
+java.lang.Throwable v1;
+io.netty.channel.FailedChannelFuture v2;
+io.netty.channel.AbstractChannelHandlerContext v0;
+v0 := @this: io.netty.channel.AbstractChannelHandlerContext;
+v1 := @parameter0: java.lang.Throwable;
+v2 = new io.netty.channel.FailedChannelFuture;
+v3 = virtualinvoke v0.<io.netty.channel.AbstractChannelHandlerContext: io.netty.channel.Channel channel()>();
+v4 = virtualinvoke v0.<io.netty.channel.AbstractChannelHandlerContext: io.netty.util.concurrent.EventExecutor executor()>();
+specialinvoke v2.<io.netty.channel.FailedChannelFuture: void <init>(io.netty.channel.Channel,io.netty.util.concurrent.EventExecutor,java.lang.Throwable)>(v3, v4, v1);
+return v2;
+}
+private boolean isNotValidPromise(io.netty.channel.ChannelPromise, boolean)
+{
+java.lang.Object[] v10;
+io.netty.channel.ChannelPromise v1;
+io.netty.channel.AbstractChannelHandlerContext v0;
+java.lang.String v13, v17, v18, v21, v22, v6;
+boolean v15, v19, v2, v3, v4;
+java.lang.IllegalArgumentException v16, v20, v5, v9;
+io.netty.channel.Channel v11, v12, v7, v8;
+java.lang.Class v14;
+v0 := @this: io.netty.channel.AbstractChannelHandlerContext;
+v1 := @parameter0: io.netty.channel.ChannelPromise;
+v2 := @parameter1: boolean;
+staticinvoke <io.netty.util.internal.ObjectUtil: java.lang.Object checkNotNull(java.lang.Object,java.lang.String)>(v1, "promise");
+v3 = interfaceinvoke v1.<io.netty.channel.ChannelPromise: boolean isDone()>();
+if v3 == 0 goto label2;
+v4 = interfaceinvoke v1.<io.netty.channel.ChannelPromise: boolean isCancelled()>();
+if v4 == 0 goto label1;
+return 1;
+label1:
+v5 = new java.lang.IllegalArgumentException;
+v6 = dynamicinvoke "makeConcatWithConstants" <java.lang.String (io.netty.channel.ChannelPromise)>(v1) <java.lang.invoke.StringConcatFactory: java.lang.invoke.CallSite makeConcatWithConstants(java.lang.invoke.MethodHandles$Lookup,java.lang.String,java.lang.invoke.MethodType,java.lang.String,java.lang.Object[])>("promise already done: \u0001");
+specialinvoke v5.<java.lang.IllegalArgumentException: void <init>(java.lang.String)>(v6);
+throw v5;
+label2:
+v7 = interfaceinvoke v1.<io.netty.channel.ChannelPromise: io.netty.channel.Channel channel()>();
+v8 = virtualinvoke v0.<io.netty.channel.AbstractChannelHandlerContext: io.netty.channel.Channel channel()>();
+if v7 == v8 goto label3;
+v9 = new java.lang.IllegalArgumentException;
+v10 = newarray (java.lang.Object)[2];
+v11 = interfaceinvoke v1.<io.netty.channel.ChannelPromise: io.netty.channel.Channel channel()>();
+v10[0] = v11;
+v12 = virtualinvoke v0.<io.netty.channel.AbstractChannelHandlerContext: io.netty.channel.Channel channel()>();
+v10[1] = v12;
+v13 = staticinvoke <java.lang.String: java.lang.String format(java.lang.String,java.lang.Object[])>("promise.channel does not match: %s (expected: %s)", v10);
+specialinvoke v9.<java.lang.IllegalArgumentException: void <init>(java.lang.String)>(v13);
+throw v9;
+label3:
+v14 = virtualinvoke v1.<java.lang.Object: java.lang.Class getClass()>();
+if v14 != class "Lio/netty/channel/DefaultChannelPromise;" goto label4;
+return 0;
+label4:
+if v2 != 0 goto label5;
+v15 = v1 instanceof io.netty.channel.VoidChannelPromise;
+if v15 == 0 goto label5;
+v16 = new java.lang.IllegalArgumentException;
+v17 = staticinvoke <io.netty.util.internal.StringUtil: java.lang.String simpleClassName(java.lang.Class)>(class "Lio/netty/channel/VoidChannelPromise;");
+v18 = dynamicinvoke "makeConcatWithConstants" <java.lang.String (java.lang.String)>(v17) <java.lang.invoke.StringConcatFactory: java.lang.invoke.CallSite makeConcatWithConstants(java.lang.invoke.MethodHandles$Lookup,java.lang.String,java.lang.invoke.MethodType,java.lang.String,java.lang.Object[])>("\u0001 not allowed for this operation");
+specialinvoke v16.<java.lang.IllegalArgumentException: void <init>(java.lang.String)>(v18);
+throw v16;
+label5:
+v19 = v1 instanceof io.netty.channel.AbstractChannel$CloseFuture;
+if v19 == 0 goto label6;
+v20 = new java.lang.IllegalArgumentException;
+v21 = staticinvoke <io.netty.util.internal.StringUtil: java.lang.String simpleClassName(java.lang.Class)>(class "Lio/netty/channel/AbstractChannel$CloseFuture;");
+v22 = dynamicinvoke "makeConcatWithConstants" <java.lang.String (java.lang.String)>(v21) <java.lang.invoke.StringConcatFactory: java.lang.invoke.CallSite makeConcatWithConstants(java.lang.invoke.MethodHandles$Lookup,java.lang.String,java.lang.invoke.MethodType,java.lang.String,java.lang.Object[])>("\u0001 not allowed in a pipeline");
+specialinvoke v20.<java.lang.IllegalArgumentException: void <init>(java.lang.String)>(v22);
+throw v20;
+label6:
+return 0;
+}
+private io.netty.channel.AbstractChannelHandlerContext findContextInbound(int)
+{
+io.netty.util.concurrent.EventExecutor v3;
+int v1;
+io.netty.channel.AbstractChannelHandlerContext v0, v2;
+boolean v4;
+v0 := @this: io.netty.channel.AbstractChannelHandlerContext;
+v1 := @parameter0: int;
+v2 = v0;
+v3 = virtualinvoke v0.<io.netty.channel.AbstractChannelHandlerContext: io.netty.util.concurrent.EventExecutor executor()>();
+label1:
+v2 = v2.<io.netty.channel.AbstractChannelHandlerContext: io.netty.channel.AbstractChannelHandlerContext next>;
+v4 = staticinvoke <io.netty.channel.AbstractChannelHandlerContext: boolean skipContext(io.netty.channel.AbstractChannelHandlerContext,io.netty.util.concurrent.EventExecutor,int,int)>(v2, v3, v1, 510);
+if v4 != 0 goto label1;
+return v2;
+}
+private io.netty.channel.AbstractChannelHandlerContext findContextOutbound(int)
+{
+io.netty.util.concurrent.EventExecutor v3;
+int v1;
+io.netty.channel.AbstractChannelHandlerContext v0, v2;
+boolean v4;
+v0 := @this: io.netty.channel.AbstractChannelHandlerContext;
+v1 := @parameter0: int;
+v2 = v0;
+v3 = virtualinvoke v0.<io.netty.channel.AbstractChannelHandlerContext: io.netty.util.concurrent.EventExecutor executor()>();
+label1:
+v2 = v2.<io.netty.channel.AbstractChannelHandlerContext: io.netty.channel.AbstractChannelHandlerContext prev>;
+v4 = staticinvoke <io.netty.channel.AbstractChannelHandlerContext: boolean skipContext(io.netty.channel.AbstractChannelHandlerContext,io.netty.util.concurrent.EventExecutor,int,int)>(v2, v3, v1, 130560);
+if v4 != 0 goto label1;
+return v2;
+}
+private static boolean skipContext(io.netty.channel.AbstractChannelHandlerContext, io.netty.util.concurrent.EventExecutor, int, int)
+{
+io.netty.util.concurrent.EventExecutor v1, v7;
+int v2, v3, v4, v5, v6, v8, v9;
+io.netty.channel.AbstractChannelHandlerContext v0;
+boolean v10;
+v0 := @parameter0: io.netty.channel.AbstractChannelHandlerContext;
+v1 := @parameter1: io.netty.util.concurrent.EventExecutor;
+v2 := @parameter2: int;
+v3 := @parameter3: int;
+v4 = v0.<io.netty.channel.AbstractChannelHandlerContext: int executionMask>;
+v5 = v3 | v2;
+v6 = v4 & v5;
+if v6 == 0 goto label1;
+v7 = virtualinvoke v0.<io.netty.channel.AbstractChannelHandlerContext: io.netty.util.concurrent.EventExecutor executor()>();
+if v7 != v1 goto label2;
+v8 = v0.<io.netty.channel.AbstractChannelHandlerContext: int executionMask>;
+v9 = v8 & v2;
+if v9 != 0 goto label2;
+label1:
+v10 = 1;
+goto label3;
+label2:
+v10 = 0;
+label3:
+return v10;
+}
+public io.netty.channel.ChannelPromise voidPromise()
+{
+io.netty.channel.Channel v1;
+io.netty.channel.AbstractChannelHandlerContext v0;
+io.netty.channel.ChannelPromise v2;
+v0 := @this: io.netty.channel.AbstractChannelHandlerContext;
+v1 = virtualinvoke v0.<io.netty.channel.AbstractChannelHandlerContext: io.netty.channel.Channel channel()>();
+v2 = interfaceinvoke v1.<io.netty.channel.Channel: io.netty.channel.ChannelPromise voidPromise()>();
+return v2;
+}
+final void setRemoved()
+{
+io.netty.channel.AbstractChannelHandlerContext v0;
+v0 := @this: io.netty.channel.AbstractChannelHandlerContext;
+v0.<io.netty.channel.AbstractChannelHandlerContext: int handlerState> = 3;
+return;
+}
+final boolean setAddComplete()
+{
+java.util.concurrent.atomic.AtomicIntegerFieldUpdater v2;
+int v1;
+io.netty.channel.AbstractChannelHandlerContext v0;
+boolean v3;
+v0 := @this: io.netty.channel.AbstractChannelHandlerContext;
+label1:
+v1 = v0.<io.netty.channel.AbstractChannelHandlerContext: int handlerState>;
+if v1 != 3 goto label2;
+return 0;
+label2:
+v2 = <io.netty.channel.AbstractChannelHandlerContext: java.util.concurrent.atomic.AtomicIntegerFieldUpdater HANDLER_STATE_UPDATER>;
+v3 = virtualinvoke v2.<java.util.concurrent.atomic.AtomicIntegerFieldUpdater: boolean compareAndSet(java.lang.Object,int,int)>(v0, v1, 2);
+if v3 == 0 goto label1;
+return 1;
+}
+final void setAddPending()
+{
+java.util.concurrent.atomic.AtomicIntegerFieldUpdater v1;
+io.netty.channel.AbstractChannelHandlerContext v0;
+java.lang.AssertionError v4;
+boolean v2, v3;
+v0 := @this: io.netty.channel.AbstractChannelHandlerContext;
+v1 = <io.netty.channel.AbstractChannelHandlerContext: java.util.concurrent.atomic.AtomicIntegerFieldUpdater HANDLER_STATE_UPDATER>;
+v2 = virtualinvoke v1.<java.util.concurrent.atomic.AtomicIntegerFieldUpdater: boolean compareAndSet(java.lang.Object,int,int)>(v0, 0, 1);
+v3 = <io.netty.channel.AbstractChannelHandlerContext: boolean $assertionsDisabled>;
+if v3 != 0 goto label1;
+if v2 != 0 goto label1;
+v4 = new java.lang.AssertionError;
+specialinvoke v4.<java.lang.AssertionError: void <init>()>();
+throw v4;
+label1:
+return;
+}
+final void callHandlerAdded() throws java.lang.Exception
+{
+io.netty.channel.AbstractChannelHandlerContext v0;
+io.netty.channel.ChannelHandler v2;
+boolean v1;
+v0 := @this: io.netty.channel.AbstractChannelHandlerContext;
+v1 = virtualinvoke v0.<io.netty.channel.AbstractChannelHandlerContext: boolean setAddComplete()>();
+if v1 == 0 goto label1;
+v2 = virtualinvoke v0.<io.netty.channel.AbstractChannelHandlerContext: io.netty.channel.ChannelHandler handler()>();
+interfaceinvoke v2.<io.netty.channel.ChannelHandler: void handlerAdded(io.netty.channel.ChannelHandlerContext)>(v0);
+label1:
+return;
+}
+final void callHandlerRemoved() throws java.lang.Exception
+{
+java.lang.Throwable v3;
+int v1;
+io.netty.channel.AbstractChannelHandlerContext v0;
+io.netty.channel.ChannelHandler v2;
+v0 := @this: io.netty.channel.AbstractChannelHandlerContext;
+label1:
+v1 = v0.<io.netty.channel.AbstractChannelHandlerContext: int handlerState>;
+if v1 != 2 goto label2;
+v2 = virtualinvoke v0.<io.netty.channel.AbstractChannelHandlerContext: io.netty.channel.ChannelHandler handler()>();
+interfaceinvoke v2.<io.netty.channel.ChannelHandler: void handlerRemoved(io.netty.channel.ChannelHandlerContext)>(v0);
+label2:
+virtualinvoke v0.<io.netty.channel.AbstractChannelHandlerContext: void setRemoved()>();
+goto label4;
+label3:
+v3 := @caughtexception;
+virtualinvoke v0.<io.netty.channel.AbstractChannelHandlerContext: void setRemoved()>();
+throw v3;
+label4:
+return;
+catch java.lang.Throwable from label1 to label2 with label3;
+}
+private boolean invokeHandler()
+{
+int v1;
+io.netty.channel.AbstractChannelHandlerContext v0;
+boolean v2, v3;
+v0 := @this: io.netty.channel.AbstractChannelHandlerContext;
+v1 = v0.<io.netty.channel.AbstractChannelHandlerContext: int handlerState>;
+if v1 == 2 goto label1;
+v2 = v0.<io.netty.channel.AbstractChannelHandlerContext: boolean ordered>;
+if v2 != 0 goto label2;
+if v1 != 1 goto label2;
+label1:
+v3 = 1;
+goto label3;
+label2:
+v3 = 0;
+label3:
+return v3;
+}
+public boolean isRemoved()
+{
+int v1;
+io.netty.channel.AbstractChannelHandlerContext v0;
+boolean v2;
+v0 := @this: io.netty.channel.AbstractChannelHandlerContext;
+v1 = v0.<io.netty.channel.AbstractChannelHandlerContext: int handlerState>;
+if v1 != 3 goto label1;
+v2 = 1;
+goto label2;
+label1:
+v2 = 0;
+label2:
+return v2;
+}
+public io.netty.util.Attribute attr(io.netty.util.AttributeKey)
+{
+io.netty.channel.Channel v2;
+io.netty.util.AttributeKey v1;
+io.netty.util.Attribute v3;
+io.netty.channel.AbstractChannelHandlerContext v0;
+v0 := @this: io.netty.channel.AbstractChannelHandlerContext;
+v1 := @parameter0: io.netty.util.AttributeKey;
+v2 = virtualinvoke v0.<io.netty.channel.AbstractChannelHandlerContext: io.netty.channel.Channel channel()>();
+v3 = interfaceinvoke v2.<io.netty.channel.Channel: io.netty.util.Attribute attr(io.netty.util.AttributeKey)>(v1);
+return v3;
+}
+public boolean hasAttr(io.netty.util.AttributeKey)
+{
+io.netty.channel.Channel v2;
+io.netty.util.AttributeKey v1;
+io.netty.channel.AbstractChannelHandlerContext v0;
+boolean v3;
+v0 := @this: io.netty.channel.AbstractChannelHandlerContext;
+v1 := @parameter0: io.netty.util.AttributeKey;
+v2 = virtualinvoke v0.<io.netty.channel.AbstractChannelHandlerContext: io.netty.channel.Channel channel()>();
+v3 = interfaceinvoke v2.<io.netty.channel.Channel: boolean hasAttr(io.netty.util.AttributeKey)>(v1);
+return v3;
+}
+private static boolean safeExecute(io.netty.util.concurrent.EventExecutor, java.lang.Runnable, io.netty.channel.ChannelPromise, java.lang.Object, boolean)
+{
+io.netty.util.concurrent.EventExecutor v0;
+java.lang.Throwable v6, v7;
+java.lang.Runnable v1;
+io.netty.channel.ChannelPromise v2;
+java.lang.Object v3;
+boolean v4, v5;
+v0 := @parameter0: io.netty.util.concurrent.EventExecutor;
+v1 := @parameter1: java.lang.Runnable;
+v2 := @parameter2: io.netty.channel.ChannelPromise;
+v3 := @parameter3: java.lang.Object;
+v4 := @parameter4: boolean;
+label1:
+if v4 == 0 goto label2;
+v5 = v0 instanceof io.netty.util.concurrent.AbstractEventExecutor;
+if v5 == 0 goto label2;
+virtualinvoke v0.<io.netty.util.concurrent.AbstractEventExecutor: void lazyExecute(java.lang.Runnable)>(v1);
+goto label3;
+label2:
+interfaceinvoke v0.<io.netty.util.concurrent.EventExecutor: void execute(java.lang.Runnable)>(v1);
+label3:
+return 1;
+label4:
+v6 := @caughtexception;
+label5:
+if v3 == null goto label6;
+staticinvoke <io.netty.util.ReferenceCountUtil: boolean release(java.lang.Object)>(v3);
+label6:
+interfaceinvoke v2.<io.netty.channel.ChannelPromise: io.netty.channel.ChannelPromise setFailure(java.lang.Throwable)>(v6);
+goto label8;
+label7:
+v7 := @caughtexception;
+interfaceinvoke v2.<io.netty.channel.ChannelPromise: io.netty.channel.ChannelPromise setFailure(java.lang.Throwable)>(v6);
+throw v7;
+label8:
+return 0;
+catch java.lang.Throwable from label1 to label3 with label4;
+catch java.lang.Throwable from label5 to label6 with label7;
+}
+public java.lang.String toHintString()
+{
+io.netty.channel.AbstractChannelHandlerContext v0;
+java.lang.String v1, v2;
+v0 := @this: io.netty.channel.AbstractChannelHandlerContext;
+v1 = v0.<io.netty.channel.AbstractChannelHandlerContext: java.lang.String name>;
+v2 = dynamicinvoke "makeConcatWithConstants" <java.lang.String (java.lang.String)>(v1) <java.lang.invoke.StringConcatFactory: java.lang.invoke.CallSite makeConcatWithConstants(java.lang.invoke.MethodHandles$Lookup,java.lang.String,java.lang.invoke.MethodType,java.lang.String,java.lang.Object[])>("\'\u0001\' will handle the message from this point.");
+return v2;
+}
+public java.lang.String toString()
+{
+io.netty.channel.Channel v3;
+io.netty.channel.AbstractChannelHandlerContext v0;
+java.lang.String v1, v2, v4;
+v0 := @this: io.netty.channel.AbstractChannelHandlerContext;
+v1 = staticinvoke <io.netty.util.internal.StringUtil: java.lang.String simpleClassName(java.lang.Class)>(class "Lio/netty/channel/ChannelHandlerContext;");
+v2 = v0.<io.netty.channel.AbstractChannelHandlerContext: java.lang.String name>;
+v3 = virtualinvoke v0.<io.netty.channel.AbstractChannelHandlerContext: io.netty.channel.Channel channel()>();
+v4 = dynamicinvoke "makeConcatWithConstants" <java.lang.String (java.lang.String,java.lang.String,io.netty.channel.Channel)>(v1, v2, v3) <java.lang.invoke.StringConcatFactory: java.lang.invoke.CallSite makeConcatWithConstants(java.lang.invoke.MethodHandles$Lookup,java.lang.String,java.lang.invoke.MethodType,java.lang.String,java.lang.Object[])>("\u0001(\u0001, \u0001)");
+return v4;
+}
+static void <clinit>()
+{
+java.util.concurrent.atomic.AtomicIntegerFieldUpdater v4;
+io.netty.util.internal.logging.InternalLogger v3;
+java.lang.Class v0;
+boolean v1, v2;
+v0 = class "Lio/netty/channel/AbstractChannelHandlerContext;";
+v1 = virtualinvoke v0.<java.lang.Class: boolean desiredAssertionStatus()>();
+if v1 != 0 goto label1;
+v2 = 1;
+goto label2;
+label1:
+v2 = 0;
+label2:
+<io.netty.channel.AbstractChannelHandlerContext: boolean $assertionsDisabled> = v2;
+v3 = staticinvoke <io.netty.util.internal.logging.InternalLoggerFactory: io.netty.util.internal.logging.InternalLogger getInstance(java.lang.Class)>(class "Lio/netty/channel/AbstractChannelHandlerContext;");
+<io.netty.channel.AbstractChannelHandlerContext: io.netty.util.internal.logging.InternalLogger logger> = v3;
+v4 = staticinvoke <java.util.concurrent.atomic.AtomicIntegerFieldUpdater: java.util.concurrent.atomic.AtomicIntegerFieldUpdater newUpdater(java.lang.Class,java.lang.String)>(class "Lio/netty/channel/AbstractChannelHandlerContext;", "handlerState");
+<io.netty.channel.AbstractChannelHandlerContext: java.util.concurrent.atomic.AtomicIntegerFieldUpdater HANDLER_STATE_UPDATER> = v4;
+return;
+}
+}

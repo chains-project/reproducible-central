@@ -1,0 +1,796 @@
+public final class io.netty.util.internal.NativeLibraryLoader extends java.lang.Object
+{
+private static final io.netty.util.internal.logging.InternalLogger logger;
+private static final java.lang.String NATIVE_RESOURCE_HOME;
+private static final java.io.File WORKDIR;
+private static final boolean DELETE_NATIVE_LIB_AFTER_LOADING;
+private static final boolean TRY_TO_PATCH_SHADED_ID;
+private static final boolean DETECT_NATIVE_LIBRARY_DUPLICATES;
+private static final byte[] UNIQUE_ID_BYTES;
+static final boolean $assertionsDisabled;
+public static transient void loadFirstAvailable(java.lang.ClassLoader, java.lang.String[])
+{
+java.lang.Throwable v7;
+java.lang.String[] v1;
+java.lang.IllegalArgumentException v8;
+java.util.ArrayList v2;
+io.netty.util.internal.logging.InternalLogger v6;
+int v3, v4;
+java.lang.ClassLoader v0;
+java.lang.String v10, v5, v9;
+v0 := @parameter0: java.lang.ClassLoader;
+v1 := @parameter1: java.lang.String[];
+v2 = new java.util.ArrayList;
+specialinvoke v2.<java.util.ArrayList: void <init>()>();
+v3 = lengthof v1;
+v4 = 0;
+label1:
+if v4 >= v3 goto label5;
+v5 = v1[v4];
+label2:
+staticinvoke <io.netty.util.internal.NativeLibraryLoader: void load(java.lang.String,java.lang.ClassLoader)>(v5, v0);
+v6 = <io.netty.util.internal.NativeLibraryLoader: io.netty.util.internal.logging.InternalLogger logger>;
+interfaceinvoke v6.<io.netty.util.internal.logging.InternalLogger: void debug(java.lang.String,java.lang.Object)>("Loaded library with name \'{}\'", v5);
+label3:
+return;
+label4:
+v7 := @caughtexception;
+interfaceinvoke v2.<java.util.List: boolean add(java.lang.Object)>(v7);
+v4 = v4 + 1;
+goto label1;
+label5:
+v8 = new java.lang.IllegalArgumentException;
+v9 = staticinvoke <java.util.Arrays: java.lang.String toString(java.lang.Object[])>(v1);
+v10 = dynamicinvoke "makeConcatWithConstants" <java.lang.String (java.lang.String)>(v9) <java.lang.invoke.StringConcatFactory: java.lang.invoke.CallSite makeConcatWithConstants(java.lang.invoke.MethodHandles$Lookup,java.lang.String,java.lang.invoke.MethodType,java.lang.String,java.lang.Object[])>("Failed to load any of the given libraries: \u0001");
+specialinvoke v8.<java.lang.IllegalArgumentException: void <init>(java.lang.String)>(v10);
+staticinvoke <io.netty.util.internal.ThrowableUtil: void addSuppressedAndClear(java.lang.Throwable,java.util.List)>(v8, v2);
+throw v8;
+catch java.lang.Throwable from label2 to label3 with label4;
+}
+private static java.lang.String calculateMangledPackagePrefix()
+{
+java.lang.Object[] v6;
+int v10, v8, v9;
+java.lang.Class v0;
+java.lang.String v1, v11, v12, v13, v2, v3, v7;
+java.lang.UnsatisfiedLinkError v5;
+boolean v4;
+v0 = class "Lio/netty/util/internal/NativeLibraryLoader;";
+v1 = virtualinvoke v0.<java.lang.Class: java.lang.String getName()>();
+v2 = "io!netty!util!internal!NativeLibraryLoader";
+v3 = virtualinvoke v2.<java.lang.String: java.lang.String replace(char,char)>(33, 46);
+v4 = virtualinvoke v1.<java.lang.String: boolean endsWith(java.lang.String)>(v3);
+if v4 != 0 goto label1;
+v5 = new java.lang.UnsatisfiedLinkError;
+v6 = newarray (java.lang.Object)[2];
+v6[0] = v3;
+v6[1] = v1;
+v7 = staticinvoke <java.lang.String: java.lang.String format(java.lang.String,java.lang.Object[])>("Could not find prefix added to %s to get %s. When shading, only adding a package prefix is supported", v6);
+specialinvoke v5.<java.lang.UnsatisfiedLinkError: void <init>(java.lang.String)>(v7);
+throw v5;
+label1:
+v8 = virtualinvoke v1.<java.lang.String: int length()>();
+v9 = virtualinvoke v3.<java.lang.String: int length()>();
+v10 = v8 - v9;
+v11 = virtualinvoke v1.<java.lang.String: java.lang.String substring(int,int)>(0, v10);
+v12 = virtualinvoke v11.<java.lang.String: java.lang.String replace(java.lang.CharSequence,java.lang.CharSequence)>("_", "_1");
+v13 = virtualinvoke v12.<java.lang.String: java.lang.String replace(char,char)>(46, 95);
+return v13;
+}
+public static void load(java.lang.String, java.lang.ClassLoader)
+{
+byte[] v22;
+java.net.URL v11;
+boolean v12, v13, v24, v26, v27, v29, v30, v31, v40, v41;
+java.io.FileNotFoundException v15, v16;
+java.lang.Exception v36;
+io.netty.util.internal.logging.InternalLogger v32, v35;
+java.lang.ClassLoader v1;
+java.lang.Throwable v34, v39, v5;
+java.util.ArrayList v4;
+int v17, v23;
+java.lang.String v0, v14, v18, v19, v2, v25, v3, v33, v38, v6, v7;
+java.io.FileOutputStream v21, v9;
+java.io.File v10, v20;
+java.lang.UnsatisfiedLinkError v28, v37;
+java.io.InputStream v8;
+v0 := @parameter0: java.lang.String;
+v1 := @parameter1: java.lang.ClassLoader;
+v2 = staticinvoke <io.netty.util.internal.NativeLibraryLoader: java.lang.String calculateMangledPackagePrefix()>();
+v3 = dynamicinvoke "makeConcatWithConstants" <java.lang.String (java.lang.String,java.lang.String)>(v2, v0) <java.lang.invoke.StringConcatFactory: java.lang.invoke.CallSite makeConcatWithConstants(java.lang.invoke.MethodHandles$Lookup,java.lang.String,java.lang.invoke.MethodType,java.lang.String,java.lang.Object[])>("\u0001\u0001");
+v4 = new java.util.ArrayList;
+specialinvoke v4.<java.util.ArrayList: void <init>()>();
+label01:
+staticinvoke <io.netty.util.internal.NativeLibraryLoader: void loadLibrary(java.lang.ClassLoader,java.lang.String,boolean)>(v1, v3, 0);
+label02:
+return;
+label03:
+v5 := @caughtexception;
+interfaceinvoke v4.<java.util.List: boolean add(java.lang.Object)>(v5);
+v6 = staticinvoke <java.lang.System: java.lang.String mapLibraryName(java.lang.String)>(v3);
+v7 = dynamicinvoke "makeConcatWithConstants" <java.lang.String (java.lang.String)>(v6) <java.lang.invoke.StringConcatFactory: java.lang.invoke.CallSite makeConcatWithConstants(java.lang.invoke.MethodHandles$Lookup,java.lang.String,java.lang.invoke.MethodType,java.lang.String,java.lang.Object[])>("META-INF/native/\u0001");
+v8 = null;
+v9 = null;
+v10 = null;
+v11 = staticinvoke <io.netty.util.internal.NativeLibraryLoader: java.net.URL getResource(java.lang.String,java.lang.ClassLoader)>(v7, v1);
+label04:
+if v11 != null goto label08;
+v12 = staticinvoke <io.netty.util.internal.PlatformDependent: boolean isOsx()>();
+if v12 == 0 goto label07;
+v13 = virtualinvoke v7.<java.lang.String: boolean endsWith(java.lang.String)>(".jnilib");
+if v13 == 0 goto label05;
+v14 = dynamicinvoke "makeConcatWithConstants" <java.lang.String (java.lang.String)>(v3) <java.lang.invoke.StringConcatFactory: java.lang.invoke.CallSite makeConcatWithConstants(java.lang.invoke.MethodHandles$Lookup,java.lang.String,java.lang.invoke.MethodType,java.lang.String,java.lang.Object[])>("META-INF/native/lib\u0001.dynlib");
+goto label06;
+label05:
+v14 = dynamicinvoke "makeConcatWithConstants" <java.lang.String (java.lang.String)>(v3) <java.lang.invoke.StringConcatFactory: java.lang.invoke.CallSite makeConcatWithConstants(java.lang.invoke.MethodHandles$Lookup,java.lang.String,java.lang.invoke.MethodType,java.lang.String,java.lang.Object[])>("META-INF/native/lib\u0001.jnilib");
+label06:
+v11 = staticinvoke <io.netty.util.internal.NativeLibraryLoader: java.net.URL getResource(java.lang.String,java.lang.ClassLoader)>(v14, v1);
+if v11 != null goto label08;
+v15 = new java.io.FileNotFoundException;
+specialinvoke v15.<java.io.FileNotFoundException: void <init>(java.lang.String)>(v14);
+staticinvoke <io.netty.util.internal.ThrowableUtil: void addSuppressedAndClear(java.lang.Throwable,java.util.List)>(v15, v4);
+throw v15;
+label07:
+v16 = new java.io.FileNotFoundException;
+specialinvoke v16.<java.io.FileNotFoundException: void <init>(java.lang.String)>(v7);
+staticinvoke <io.netty.util.internal.ThrowableUtil: void addSuppressedAndClear(java.lang.Throwable,java.util.List)>(v16, v4);
+throw v16;
+label08:
+v17 = virtualinvoke v6.<java.lang.String: int lastIndexOf(int)>(46);
+v18 = virtualinvoke v6.<java.lang.String: java.lang.String substring(int,int)>(0, v17);
+v19 = virtualinvoke v6.<java.lang.String: java.lang.String substring(int)>(v17);
+v20 = <io.netty.util.internal.NativeLibraryLoader: java.io.File WORKDIR>;
+v10 = staticinvoke <io.netty.util.internal.PlatformDependent: java.io.File createTempFile(java.lang.String,java.lang.String,java.io.File)>(v18, v19, v20);
+v8 = virtualinvoke v11.<java.net.URL: java.io.InputStream openStream()>();
+v21 = new java.io.FileOutputStream;
+specialinvoke v21.<java.io.FileOutputStream: void <init>(java.io.File)>(v10);
+v9 = v21;
+v22 = newarray (byte)[8192];
+label09:
+v23 = virtualinvoke v8.<java.io.InputStream: int read(byte[])>(v22);
+if v23 <= 0 goto label10;
+virtualinvoke v21.<java.io.OutputStream: void write(byte[],int,int)>(v22, 0, v23);
+goto label09;
+label10:
+virtualinvoke v21.<java.io.OutputStream: void flush()>();
+v24 = staticinvoke <io.netty.util.internal.NativeLibraryLoader: boolean shouldShadedLibraryIdBePatched(java.lang.String)>(v2);
+if v24 == 0 goto label11;
+staticinvoke <io.netty.util.internal.NativeLibraryLoader: void tryPatchShadedLibraryIdAndSign(java.io.File,java.lang.String)>(v10, v0);
+label11:
+staticinvoke <io.netty.util.internal.NativeLibraryLoader: void closeQuietly(java.io.Closeable)>(v21);
+v9 = null;
+v25 = virtualinvoke v10.<java.io.File: java.lang.String getPath()>();
+staticinvoke <io.netty.util.internal.NativeLibraryLoader: void loadLibrary(java.lang.ClassLoader,java.lang.String,boolean)>(v1, v25, 1);
+label12:
+staticinvoke <io.netty.util.internal.NativeLibraryLoader: void closeQuietly(java.io.Closeable)>(v8);
+staticinvoke <io.netty.util.internal.NativeLibraryLoader: void closeQuietly(java.io.Closeable)>(null);
+v26 = <io.netty.util.internal.NativeLibraryLoader: boolean DELETE_NATIVE_LIB_AFTER_LOADING>;
+if v26 == 0 goto label13;
+v27 = virtualinvoke v10.<java.io.File: boolean delete()>();
+if v27 != 0 goto label23;
+label13:
+virtualinvoke v10.<java.io.File: void deleteOnExit()>();
+goto label23;
+label14:
+v28 := @caughtexception;
+label15:
+if v10 == null goto label18;
+v29 = virtualinvoke v10.<java.io.File: boolean isFile()>();
+if v29 == 0 goto label18;
+v30 = virtualinvoke v10.<java.io.File: boolean canRead()>();
+if v30 == 0 goto label18;
+v31 = staticinvoke <io.netty.util.internal.NativeLibraryLoader$NoexecVolumeDetector: boolean canExecuteExecutable(java.io.File)>(v10);
+if v31 != 0 goto label18;
+v32 = <io.netty.util.internal.NativeLibraryLoader: io.netty.util.internal.logging.InternalLogger logger>;
+v33 = virtualinvoke v10.<java.io.File: java.lang.String getPath()>();
+interfaceinvoke v32.<io.netty.util.internal.logging.InternalLogger: void info(java.lang.String,java.lang.Object,java.lang.Object)>("{} exists but cannot be executed even when execute permissions set; check volume for \"noexec\" flag; use -D{}=[path] to set native working directory separately.", v33, "io.netty.native.workdir");
+label16:
+goto label18;
+label17:
+v34 := @caughtexception;
+interfaceinvoke v4.<java.util.List: boolean add(java.lang.Object)>(v34);
+v35 = <io.netty.util.internal.NativeLibraryLoader: io.netty.util.internal.logging.InternalLogger logger>;
+interfaceinvoke v35.<io.netty.util.internal.logging.InternalLogger: void debug(java.lang.String,java.lang.Object,java.lang.Object)>("Error checking if {} is on a file store mounted with noexec", v10, v34);
+label18:
+staticinvoke <io.netty.util.internal.ThrowableUtil: void addSuppressedAndClear(java.lang.Throwable,java.util.List)>(v28, v4);
+throw v28;
+label19:
+v36 := @caughtexception;
+v37 = new java.lang.UnsatisfiedLinkError;
+v38 = dynamicinvoke "makeConcatWithConstants" <java.lang.String (java.lang.String)>(v3) <java.lang.invoke.StringConcatFactory: java.lang.invoke.CallSite makeConcatWithConstants(java.lang.invoke.MethodHandles$Lookup,java.lang.String,java.lang.invoke.MethodType,java.lang.String,java.lang.Object[])>("could not load a native library: \u0001");
+specialinvoke v37.<java.lang.UnsatisfiedLinkError: void <init>(java.lang.String)>(v38);
+virtualinvoke v37.<java.lang.UnsatisfiedLinkError: java.lang.Throwable initCause(java.lang.Throwable)>(v36);
+staticinvoke <io.netty.util.internal.ThrowableUtil: void addSuppressedAndClear(java.lang.Throwable,java.util.List)>(v37, v4);
+throw v37;
+label20:
+v39 := @caughtexception;
+staticinvoke <io.netty.util.internal.NativeLibraryLoader: void closeQuietly(java.io.Closeable)>(v8);
+staticinvoke <io.netty.util.internal.NativeLibraryLoader: void closeQuietly(java.io.Closeable)>(v9);
+if v10 == null goto label22;
+v40 = <io.netty.util.internal.NativeLibraryLoader: boolean DELETE_NATIVE_LIB_AFTER_LOADING>;
+if v40 == 0 goto label21;
+v41 = virtualinvoke v10.<java.io.File: boolean delete()>();
+if v41 != 0 goto label22;
+label21:
+virtualinvoke v10.<java.io.File: void deleteOnExit()>();
+label22:
+throw v39;
+label23:
+return;
+catch java.lang.Throwable from label01 to label02 with label03;
+catch java.lang.UnsatisfiedLinkError from label04 to label12 with label14;
+catch java.lang.Throwable from label15 to label16 with label17;
+catch java.lang.Exception from label04 to label12 with label19;
+catch java.lang.Throwable from label04 to label12 with label20;
+}
+private static java.net.URL getResource(java.lang.String, java.lang.ClassLoader)
+{
+byte[] v12, v16;
+java.lang.IllegalStateException v20;
+java.util.Enumeration v2;
+java.security.MessageDigest v10;
+java.util.ArrayList v6;
+int v14, v7;
+java.lang.String v0, v21, v23, v5;
+boolean v13, v17, v9;
+java.io.IOException v3;
+java.lang.RuntimeException v4;
+io.netty.util.internal.logging.InternalLogger v19, v22;
+java.security.NoSuchAlgorithmException v18;
+java.lang.Object v11, v15, v24, v8;
+java.lang.ClassLoader v1;
+v0 := @parameter0: java.lang.String;
+v1 := @parameter1: java.lang.ClassLoader;
+label01:
+if v1 != null goto label02;
+v2 = staticinvoke <java.lang.ClassLoader: java.util.Enumeration getSystemResources(java.lang.String)>(v0);
+goto label05;
+label02:
+v2 = virtualinvoke v1.<java.lang.ClassLoader: java.util.Enumeration getResources(java.lang.String)>(v0);
+label03:
+goto label05;
+label04:
+v3 := @caughtexception;
+v4 = new java.lang.RuntimeException;
+v5 = dynamicinvoke "makeConcatWithConstants" <java.lang.String (java.lang.String)>(v0) <java.lang.invoke.StringConcatFactory: java.lang.invoke.CallSite makeConcatWithConstants(java.lang.invoke.MethodHandles$Lookup,java.lang.String,java.lang.invoke.MethodType,java.lang.String,java.lang.Object[])>("An error occurred while getting the resources for \u0001");
+specialinvoke v4.<java.lang.RuntimeException: void <init>(java.lang.String,java.lang.Throwable)>(v5, v3);
+throw v4;
+label05:
+v6 = staticinvoke <java.util.Collections: java.util.ArrayList list(java.util.Enumeration)>(v2);
+v7 = interfaceinvoke v6.<java.util.List: int size()>();
+lookupswitch(v7)
+{
+case 0: goto label06;
+case 1: goto label07;
+default: goto label08;
+};
+label06:
+return null;
+label07:
+v8 = interfaceinvoke v6.<java.util.List: java.lang.Object get(int)>(0);
+return v8;
+label08:
+v9 = <io.netty.util.internal.NativeLibraryLoader: boolean DETECT_NATIVE_LIBRARY_DUPLICATES>;
+if v9 == 0 goto label18;
+label09:
+v10 = staticinvoke <java.security.MessageDigest: java.security.MessageDigest getInstance(java.lang.String)>("SHA-256");
+v11 = interfaceinvoke v6.<java.util.List: java.lang.Object get(int)>(0);
+v12 = staticinvoke <io.netty.util.internal.NativeLibraryLoader: byte[] digest(java.security.MessageDigest,java.net.URL)>(v10, v11);
+v13 = 1;
+if v12 == null goto label13;
+v14 = 1;
+label10:
+if v14 >= v7 goto label14;
+v15 = interfaceinvoke v6.<java.util.List: java.lang.Object get(int)>(v14);
+v16 = staticinvoke <io.netty.util.internal.NativeLibraryLoader: byte[] digest(java.security.MessageDigest,java.net.URL)>(v10, v15);
+if v16 == null goto label11;
+v17 = staticinvoke <java.util.Arrays: boolean equals(byte[],byte[])>(v12, v16);
+if v17 != 0 goto label12;
+label11:
+v13 = 0;
+goto label14;
+label12:
+v14 = v14 + 1;
+goto label10;
+label13:
+v13 = 0;
+label14:
+if v13 == 0 goto label17;
+label15:
+return v11;
+label16:
+v18 := @caughtexception;
+v19 = <io.netty.util.internal.NativeLibraryLoader: io.netty.util.internal.logging.InternalLogger logger>;
+interfaceinvoke v19.<io.netty.util.internal.logging.InternalLogger: void debug(java.lang.String,java.lang.Throwable)>("Don\'t support SHA-256, can\'t check if resources have same content.", v18);
+label17:
+v20 = new java.lang.IllegalStateException;
+v21 = dynamicinvoke "makeConcatWithConstants" <java.lang.String (java.lang.String,java.util.ArrayList)>(v0, v6) <java.lang.invoke.StringConcatFactory: java.lang.invoke.CallSite makeConcatWithConstants(java.lang.invoke.MethodHandles$Lookup,java.lang.String,java.lang.invoke.MethodType,java.lang.String,java.lang.Object[])>("Multiple resources found for \'\u0001\' with different content: \u0001");
+specialinvoke v20.<java.lang.IllegalStateException: void <init>(java.lang.String)>(v21);
+throw v20;
+label18:
+v22 = <io.netty.util.internal.NativeLibraryLoader: io.netty.util.internal.logging.InternalLogger logger>;
+v23 = dynamicinvoke "makeConcatWithConstants" <java.lang.String (java.lang.String,java.util.ArrayList)>(v0, v6) <java.lang.invoke.StringConcatFactory: java.lang.invoke.CallSite makeConcatWithConstants(java.lang.invoke.MethodHandles$Lookup,java.lang.String,java.lang.invoke.MethodType,java.lang.String,java.lang.Object[])>("Multiple resources found for \'\u0001\' with different content: \u0001. Please fix your dependency graph.");
+interfaceinvoke v22.<io.netty.util.internal.logging.InternalLogger: void warn(java.lang.String)>(v23);
+v24 = interfaceinvoke v6.<java.util.List: java.lang.Object get(int)>(0);
+return v24;
+catch java.io.IOException from label01 to label03 with label04;
+catch java.security.NoSuchAlgorithmException from label09 to label15 with label16;
+}
+private static byte[] digest(java.security.MessageDigest, java.net.URL)
+{
+java.lang.Throwable v9;
+byte[] v3, v6;
+java.net.URL v1;
+java.security.MessageDigest v0;
+java.io.IOException v7;
+io.netty.util.internal.logging.InternalLogger v8;
+int v4, v5;
+java.io.InputStream v2;
+v0 := @parameter0: java.security.MessageDigest;
+v1 := @parameter1: java.net.URL;
+v2 = null;
+label1:
+v2 = virtualinvoke v1.<java.net.URL: java.io.InputStream openStream()>();
+v3 = newarray (byte)[8192];
+label2:
+v4 = virtualinvoke v2.<java.io.InputStream: int read(byte[])>(v3);
+v5 = (int) -1;
+if v4 == v5 goto label3;
+virtualinvoke v0.<java.security.MessageDigest: void update(byte[],int,int)>(v3, 0, v4);
+goto label2;
+label3:
+v6 = virtualinvoke v0.<java.security.MessageDigest: byte[] digest()>();
+label4:
+staticinvoke <io.netty.util.internal.NativeLibraryLoader: void closeQuietly(java.io.Closeable)>(v2);
+return v6;
+label5:
+v7 := @caughtexception;
+v8 = <io.netty.util.internal.NativeLibraryLoader: io.netty.util.internal.logging.InternalLogger logger>;
+interfaceinvoke v8.<io.netty.util.internal.logging.InternalLogger: void debug(java.lang.String,java.lang.Throwable)>("Can\'t read resource.", v7);
+label6:
+staticinvoke <io.netty.util.internal.NativeLibraryLoader: void closeQuietly(java.io.Closeable)>(v2);
+return null;
+label7:
+v9 := @caughtexception;
+staticinvoke <io.netty.util.internal.NativeLibraryLoader: void closeQuietly(java.io.Closeable)>(v2);
+throw v9;
+catch java.io.IOException from label1 to label4 with label5;
+catch java.lang.Throwable from label1 to label4 with label7;
+catch java.lang.Throwable from label5 to label6 with label7;
+}
+static void tryPatchShadedLibraryIdAndSign(java.io.File, java.lang.String)
+{
+byte[] v7;
+java.io.File v0, v2;
+java.nio.charset.Charset v8;
+io.netty.util.internal.logging.InternalLogger v4;
+int v6;
+java.lang.String v1, v10, v12, v13, v5, v9;
+boolean v11, v3;
+v0 := @parameter0: java.io.File;
+v1 := @parameter1: java.lang.String;
+v2 = new java.io.File;
+specialinvoke v2.<java.io.File: void <init>(java.lang.String)>("/Library/Developer/CommandLineTools");
+v3 = virtualinvoke v2.<java.io.File: boolean exists()>();
+if v3 != 0 goto label1;
+v4 = <io.netty.util.internal.NativeLibraryLoader: io.netty.util.internal.logging.InternalLogger logger>;
+interfaceinvoke v4.<io.netty.util.internal.logging.InternalLogger: void debug(java.lang.String)>("Can\'t patch shaded library id as CommandLineTools are not installed. Consider installing CommandLineTools with \'xcode-select --install\'");
+return;
+label1:
+v5 = new java.lang.String;
+v6 = virtualinvoke v1.<java.lang.String: int length()>();
+v7 = staticinvoke <io.netty.util.internal.NativeLibraryLoader: byte[] generateUniqueId(int)>(v6);
+v8 = <io.netty.util.CharsetUtil: java.nio.charset.Charset UTF_8>;
+specialinvoke v5.<java.lang.String: void <init>(byte[],java.nio.charset.Charset)>(v7, v8);
+v9 = virtualinvoke v0.<java.io.File: java.lang.String getAbsolutePath()>();
+v10 = dynamicinvoke "makeConcatWithConstants" <java.lang.String (java.lang.String,java.lang.String)>(v5, v9) <java.lang.invoke.StringConcatFactory: java.lang.invoke.CallSite makeConcatWithConstants(java.lang.invoke.MethodHandles$Lookup,java.lang.String,java.lang.invoke.MethodType,java.lang.String,java.lang.Object[])>("install_name_tool -id \u0001 \u0001");
+v11 = staticinvoke <io.netty.util.internal.NativeLibraryLoader: boolean tryExec(java.lang.String)>(v10);
+if v11 != 0 goto label2;
+return;
+label2:
+v12 = virtualinvoke v0.<java.io.File: java.lang.String getAbsolutePath()>();
+v13 = dynamicinvoke "makeConcatWithConstants" <java.lang.String (java.lang.String)>(v12) <java.lang.invoke.StringConcatFactory: java.lang.invoke.CallSite makeConcatWithConstants(java.lang.invoke.MethodHandles$Lookup,java.lang.String,java.lang.invoke.MethodType,java.lang.String,java.lang.Object[])>("codesign -s - \u0001");
+staticinvoke <io.netty.util.internal.NativeLibraryLoader: boolean tryExec(java.lang.String)>(v13);
+return;
+}
+private static boolean tryExec(java.lang.String)
+{
+java.lang.Process v2;
+java.lang.Runtime v1;
+java.io.IOException v10;
+java.lang.Integer v5, v7;
+java.lang.InterruptedException v8;
+io.netty.util.internal.logging.InternalLogger v11, v13, v4, v6;
+java.lang.Thread v9;
+int v3;
+java.lang.SecurityException v12;
+java.lang.String v0;
+v0 := @parameter0: java.lang.String;
+label1:
+v1 = staticinvoke <java.lang.Runtime: java.lang.Runtime getRuntime()>();
+v2 = virtualinvoke v1.<java.lang.Runtime: java.lang.Process exec(java.lang.String)>(v0);
+v3 = virtualinvoke v2.<java.lang.Process: int waitFor()>();
+if v3 == 0 goto label3;
+v4 = <io.netty.util.internal.NativeLibraryLoader: io.netty.util.internal.logging.InternalLogger logger>;
+v5 = staticinvoke <java.lang.Integer: java.lang.Integer valueOf(int)>(v3);
+interfaceinvoke v4.<io.netty.util.internal.logging.InternalLogger: void debug(java.lang.String,java.lang.Object,java.lang.Object)>("Execution of \'{}\' failed: {}", v0, v5);
+label2:
+return 0;
+label3:
+v6 = <io.netty.util.internal.NativeLibraryLoader: io.netty.util.internal.logging.InternalLogger logger>;
+v7 = staticinvoke <java.lang.Integer: java.lang.Integer valueOf(int)>(v3);
+interfaceinvoke v6.<io.netty.util.internal.logging.InternalLogger: void debug(java.lang.String,java.lang.Object,java.lang.Object)>("Execution of \'{}\' succeed: {}", v0, v7);
+label4:
+return 1;
+label5:
+v8 := @caughtexception;
+v9 = staticinvoke <java.lang.Thread: java.lang.Thread currentThread()>();
+virtualinvoke v9.<java.lang.Thread: void interrupt()>();
+goto label8;
+label6:
+v10 := @caughtexception;
+v11 = <io.netty.util.internal.NativeLibraryLoader: io.netty.util.internal.logging.InternalLogger logger>;
+interfaceinvoke v11.<io.netty.util.internal.logging.InternalLogger: void info(java.lang.String,java.lang.Object,java.lang.Object)>("Execution of \'{}\' failed.", v0, v10);
+goto label8;
+label7:
+v12 := @caughtexception;
+v13 = <io.netty.util.internal.NativeLibraryLoader: io.netty.util.internal.logging.InternalLogger logger>;
+interfaceinvoke v13.<io.netty.util.internal.logging.InternalLogger: void error(java.lang.String,java.lang.Object,java.lang.Object)>("Execution of \'{}\' failed.", v0, v12);
+label8:
+return 0;
+catch java.lang.InterruptedException from label1 to label2 with label5;
+catch java.lang.InterruptedException from label3 to label4 with label5;
+catch java.io.IOException from label1 to label2 with label6;
+catch java.io.IOException from label3 to label4 with label6;
+catch java.lang.SecurityException from label1 to label2 with label7;
+catch java.lang.SecurityException from label3 to label4 with label7;
+}
+private static boolean shouldShadedLibraryIdBePatched(java.lang.String)
+{
+java.lang.String v0;
+boolean v1, v2, v3, v4;
+v0 := @parameter0: java.lang.String;
+v1 = <io.netty.util.internal.NativeLibraryLoader: boolean TRY_TO_PATCH_SHADED_ID>;
+if v1 == 0 goto label1;
+v2 = staticinvoke <io.netty.util.internal.PlatformDependent: boolean isOsx()>();
+if v2 == 0 goto label1;
+v3 = virtualinvoke v0.<java.lang.String: boolean isEmpty()>();
+if v3 != 0 goto label1;
+v4 = 1;
+goto label2;
+label1:
+v4 = 0;
+label2:
+return v4;
+}
+private static byte[] generateUniqueId(int)
+{
+byte[] v1, v4, v6;
+java.util.Random v5;
+byte v9;
+int v0, v2, v3, v7, v8;
+v0 := @parameter0: int;
+v1 = newarray (byte)[v0];
+v2 = 0;
+label1:
+v3 = lengthof v1;
+if v2 >= v3 goto label2;
+v4 = <io.netty.util.internal.NativeLibraryLoader: byte[] UNIQUE_ID_BYTES>;
+v5 = staticinvoke <io.netty.util.internal.PlatformDependent: java.util.Random threadLocalRandom()>();
+v6 = <io.netty.util.internal.NativeLibraryLoader: byte[] UNIQUE_ID_BYTES>;
+v7 = lengthof v6;
+v8 = virtualinvoke v5.<java.util.Random: int nextInt(int)>(v7);
+v9 = v4[v8];
+v1[v2] = v9;
+v2 = v2 + 1;
+goto label1;
+label2:
+return v1;
+}
+private static void loadLibrary(java.lang.ClassLoader, java.lang.String, boolean)
+{
+java.lang.Throwable v3;
+java.lang.NoSuchMethodError v9;
+java.lang.Exception v7;
+io.netty.util.internal.logging.InternalLogger v5, v8;
+java.lang.Class v4;
+java.lang.ClassLoader v0;
+java.lang.String v1;
+java.lang.UnsatisfiedLinkError v10, v6;
+boolean v2;
+v0 := @parameter0: java.lang.ClassLoader;
+v1 := @parameter1: java.lang.String;
+v2 := @parameter2: boolean;
+v3 = null;
+label01:
+v4 = staticinvoke <io.netty.util.internal.NativeLibraryLoader: java.lang.Class tryToLoadClass(java.lang.ClassLoader,java.lang.Class)>(v0, class "Lio/netty/util/internal/NativeLibraryUtil;");
+staticinvoke <io.netty.util.internal.NativeLibraryLoader: void loadLibraryByHelper(java.lang.Class,java.lang.String,boolean)>(v4, v1, v2);
+v5 = <io.netty.util.internal.NativeLibraryLoader: io.netty.util.internal.logging.InternalLogger logger>;
+interfaceinvoke v5.<io.netty.util.internal.logging.InternalLogger: void debug(java.lang.String,java.lang.Object)>("Successfully loaded the library {}", v1);
+label02:
+return;
+label03:
+v6 := @caughtexception;
+v3 = v6;
+goto label05;
+label04:
+v7 := @caughtexception;
+v3 = v7;
+label05:
+staticinvoke <io.netty.util.internal.NativeLibraryUtil: void loadLibrary(java.lang.String,boolean)>(v1, v2);
+v8 = <io.netty.util.internal.NativeLibraryLoader: io.netty.util.internal.logging.InternalLogger logger>;
+interfaceinvoke v8.<io.netty.util.internal.logging.InternalLogger: void debug(java.lang.String,java.lang.Object)>("Successfully loaded the library {}", v1);
+label06:
+goto label11;
+label07:
+v9 := @caughtexception;
+if v3 == null goto label08;
+staticinvoke <io.netty.util.internal.ThrowableUtil: void addSuppressed(java.lang.Throwable,java.lang.Throwable)>(v9, v3);
+label08:
+staticinvoke <io.netty.util.internal.NativeLibraryLoader: void rethrowWithMoreDetailsIfPossible(java.lang.String,java.lang.NoSuchMethodError)>(v1, v9);
+goto label11;
+label09:
+v10 := @caughtexception;
+if v3 == null goto label10;
+staticinvoke <io.netty.util.internal.ThrowableUtil: void addSuppressed(java.lang.Throwable,java.lang.Throwable)>(v10, v3);
+label10:
+throw v10;
+label11:
+return;
+catch java.lang.UnsatisfiedLinkError from label01 to label02 with label03;
+catch java.lang.Exception from label01 to label02 with label04;
+catch java.lang.NoSuchMethodError from label01 to label02 with label07;
+catch java.lang.NoSuchMethodError from label03 to label06 with label07;
+catch java.lang.UnsatisfiedLinkError from label01 to label02 with label09;
+catch java.lang.UnsatisfiedLinkError from label03 to label06 with label09;
+}
+private static void rethrowWithMoreDetailsIfPossible(java.lang.String, java.lang.NoSuchMethodError)
+{
+java.lang.LinkageError v3;
+java.lang.NoSuchMethodError v1;
+int v2;
+java.lang.String v0, v4;
+v0 := @parameter0: java.lang.String;
+v1 := @parameter1: java.lang.NoSuchMethodError;
+v2 = staticinvoke <io.netty.util.internal.PlatformDependent: int javaVersion()>();
+if v2 < 7 goto label1;
+v3 = new java.lang.LinkageError;
+v4 = dynamicinvoke "makeConcatWithConstants" <java.lang.String (java.lang.String)>(v0) <java.lang.invoke.StringConcatFactory: java.lang.invoke.CallSite makeConcatWithConstants(java.lang.invoke.MethodHandles$Lookup,java.lang.String,java.lang.invoke.MethodType,java.lang.String,java.lang.Object[])>("Possible multiple incompatible native libraries on the classpath for \'\u0001\'?");
+specialinvoke v3.<java.lang.LinkageError: void <init>(java.lang.String,java.lang.Throwable)>(v4, v1);
+throw v3;
+label1:
+throw v1;
+}
+private static void loadLibraryByHelper(java.lang.Class, java.lang.String, boolean) throws java.lang.UnsatisfiedLinkError
+{
+java.lang.Throwable v10;
+io.netty.util.internal.NativeLibraryLoader$1 v3;
+java.lang.AssertionError v8;
+java.lang.Class v0;
+java.lang.Object v4;
+java.lang.String v1, v13, v9;
+java.lang.UnsatisfiedLinkError v12;
+boolean v11, v2, v5, v6, v7;
+v0 := @parameter0: java.lang.Class;
+v1 := @parameter1: java.lang.String;
+v2 := @parameter2: boolean;
+v3 = new io.netty.util.internal.NativeLibraryLoader$1;
+specialinvoke v3.<io.netty.util.internal.NativeLibraryLoader$1: void <init>(java.lang.Class,java.lang.String,boolean)>(v0, v1, v2);
+v4 = staticinvoke <java.security.AccessController: java.lang.Object doPrivileged(java.security.PrivilegedAction)>(v3);
+v5 = v4 instanceof java.lang.Throwable;
+if v5 == 0 goto label3;
+v6 = <io.netty.util.internal.NativeLibraryLoader: boolean $assertionsDisabled>;
+if v6 != 0 goto label1;
+v7 = v4 instanceof java.lang.UnsatisfiedLinkError;
+if v7 == 0 goto label1;
+v8 = new java.lang.AssertionError;
+v9 = dynamicinvoke "makeConcatWithConstants" <java.lang.String (java.lang.Throwable)>(v4) <java.lang.invoke.StringConcatFactory: java.lang.invoke.CallSite makeConcatWithConstants(java.lang.invoke.MethodHandles$Lookup,java.lang.String,java.lang.invoke.MethodType,java.lang.String,java.lang.Object[])>("\u0001 should be a wrapper throwable");
+specialinvoke v8.<java.lang.AssertionError: void <init>(java.lang.Object)>(v9);
+throw v8;
+label1:
+v10 = virtualinvoke v4.<java.lang.Throwable: java.lang.Throwable getCause()>();
+v11 = v10 instanceof java.lang.UnsatisfiedLinkError;
+if v11 == 0 goto label2;
+throw v10;
+label2:
+v12 = new java.lang.UnsatisfiedLinkError;
+v13 = virtualinvoke v4.<java.lang.Throwable: java.lang.String getMessage()>();
+specialinvoke v12.<java.lang.UnsatisfiedLinkError: void <init>(java.lang.String)>(v13);
+virtualinvoke v12.<java.lang.UnsatisfiedLinkError: java.lang.Throwable initCause(java.lang.Throwable)>(v4);
+throw v12;
+label3:
+return;
+}
+private static java.lang.Class tryToLoadClass(java.lang.ClassLoader, java.lang.Class) throws java.lang.ClassNotFoundException
+{
+byte[] v5;
+io.netty.util.internal.NativeLibraryLoader$2 v6;
+java.lang.Error v10;
+java.lang.RuntimeException v9;
+java.lang.Class v1, v3;
+java.lang.ClassNotFoundException v4, v8;
+java.lang.Object v7;
+java.lang.ClassLoader v0;
+java.lang.String v2;
+v0 := @parameter0: java.lang.ClassLoader;
+v1 := @parameter1: java.lang.Class;
+label1:
+v2 = virtualinvoke v1.<java.lang.Class: java.lang.String getName()>();
+v3 = staticinvoke <java.lang.Class: java.lang.Class forName(java.lang.String,boolean,java.lang.ClassLoader)>(v2, 0, v0);
+label2:
+return v3;
+label3:
+v4 := @caughtexception;
+if v0 != null goto label4;
+throw v4;
+label4:
+v5 = staticinvoke <io.netty.util.internal.NativeLibraryLoader: byte[] classToByteArray(java.lang.Class)>(v1);
+v6 = new io.netty.util.internal.NativeLibraryLoader$2;
+specialinvoke v6.<io.netty.util.internal.NativeLibraryLoader$2: void <init>(java.lang.ClassLoader,java.lang.Class,byte[])>(v0, v1, v5);
+v7 = staticinvoke <java.security.AccessController: java.lang.Object doPrivileged(java.security.PrivilegedAction)>(v6);
+label5:
+return v7;
+label6:
+v8 := @caughtexception;
+staticinvoke <io.netty.util.internal.ThrowableUtil: void addSuppressed(java.lang.Throwable,java.lang.Throwable)>(v8, v4);
+throw v8;
+label7:
+v9 := @caughtexception;
+staticinvoke <io.netty.util.internal.ThrowableUtil: void addSuppressed(java.lang.Throwable,java.lang.Throwable)>(v9, v4);
+throw v9;
+label8:
+v10 := @caughtexception;
+staticinvoke <io.netty.util.internal.ThrowableUtil: void addSuppressed(java.lang.Throwable,java.lang.Throwable)>(v10, v4);
+throw v10;
+catch java.lang.ClassNotFoundException from label1 to label2 with label3;
+catch java.lang.ClassNotFoundException from label4 to label5 with label6;
+catch java.lang.RuntimeException from label4 to label5 with label7;
+catch java.lang.Error from label4 to label5 with label8;
+}
+private static byte[] classToByteArray(java.lang.Class) throws java.lang.ClassNotFoundException
+{
+java.lang.Throwable v17;
+byte[] v13, v8;
+java.io.ByteArrayOutputStream v9;
+java.net.URL v5;
+int v11, v12, v2, v3;
+java.lang.String v1, v16, v4, v7;
+java.io.IOException v14;
+java.lang.Class v0;
+java.lang.ClassNotFoundException v15, v6;
+java.io.InputStream v10;
+v0 := @parameter0: java.lang.Class;
+v1 = virtualinvoke v0.<java.lang.Class: java.lang.String getName()>();
+v2 = virtualinvoke v1.<java.lang.String: int lastIndexOf(int)>(46);
+if v2 <= 0 goto label1;
+v3 = v2 + 1;
+v1 = virtualinvoke v1.<java.lang.String: java.lang.String substring(int)>(v3);
+label1:
+v4 = dynamicinvoke "makeConcatWithConstants" <java.lang.String (java.lang.String)>(v1) <java.lang.invoke.StringConcatFactory: java.lang.invoke.CallSite makeConcatWithConstants(java.lang.invoke.MethodHandles$Lookup,java.lang.String,java.lang.invoke.MethodType,java.lang.String,java.lang.Object[])>("\u0001.class");
+v5 = virtualinvoke v0.<java.lang.Class: java.net.URL getResource(java.lang.String)>(v4);
+if v5 != null goto label2;
+v6 = new java.lang.ClassNotFoundException;
+v7 = virtualinvoke v0.<java.lang.Class: java.lang.String getName()>();
+specialinvoke v6.<java.lang.ClassNotFoundException: void <init>(java.lang.String)>(v7);
+throw v6;
+label2:
+v8 = newarray (byte)[1024];
+v9 = new java.io.ByteArrayOutputStream;
+specialinvoke v9.<java.io.ByteArrayOutputStream: void <init>(int)>(4096);
+v10 = null;
+label3:
+v10 = virtualinvoke v5.<java.net.URL: java.io.InputStream openStream()>();
+label4:
+v11 = virtualinvoke v10.<java.io.InputStream: int read(byte[])>(v8);
+v12 = (int) -1;
+if v11 == v12 goto label5;
+virtualinvoke v9.<java.io.ByteArrayOutputStream: void write(byte[],int,int)>(v8, 0, v11);
+goto label4;
+label5:
+v13 = virtualinvoke v9.<java.io.ByteArrayOutputStream: byte[] toByteArray()>();
+label6:
+staticinvoke <io.netty.util.internal.NativeLibraryLoader: void closeQuietly(java.io.Closeable)>(v10);
+staticinvoke <io.netty.util.internal.NativeLibraryLoader: void closeQuietly(java.io.Closeable)>(v9);
+return v13;
+label7:
+v14 := @caughtexception;
+v15 = new java.lang.ClassNotFoundException;
+v16 = virtualinvoke v0.<java.lang.Class: java.lang.String getName()>();
+specialinvoke v15.<java.lang.ClassNotFoundException: void <init>(java.lang.String,java.lang.Throwable)>(v16, v14);
+throw v15;
+label8:
+v17 := @caughtexception;
+staticinvoke <io.netty.util.internal.NativeLibraryLoader: void closeQuietly(java.io.Closeable)>(v10);
+staticinvoke <io.netty.util.internal.NativeLibraryLoader: void closeQuietly(java.io.Closeable)>(v9);
+throw v17;
+catch java.io.IOException from label3 to label6 with label7;
+catch java.lang.Throwable from label3 to label6 with label8;
+}
+private static void closeQuietly(java.io.Closeable)
+{
+java.io.Closeable v0;
+v0 := @parameter0: java.io.Closeable;
+return;
+}
+private void <init>()
+{
+io.netty.util.internal.NativeLibraryLoader v0;
+v0 := @this: io.netty.util.internal.NativeLibraryLoader;
+specialinvoke v0.<java.lang.Object: void <init>()>();
+return;
+}
+static void <clinit>()
+{
+byte[] v6;
+java.nio.charset.Charset v5;
+java.lang.Boolean v21, v25, v29;
+java.lang.String v13, v17, v4, v7;
+boolean v1, v18, v2, v20, v22, v24, v26, v28;
+java.io.File v12, v14, v16, v8, v9;
+java.lang.Exception v10;
+io.netty.util.internal.logging.InternalLogger v11, v15, v19, v23, v27, v3;
+java.lang.Class v0;
+v0 = class "Lio/netty/util/internal/NativeLibraryLoader;";
+v1 = virtualinvoke v0.<java.lang.Class: boolean desiredAssertionStatus()>();
+if v1 != 0 goto label1;
+v2 = 1;
+goto label2;
+label1:
+v2 = 0;
+label2:
+<io.netty.util.internal.NativeLibraryLoader: boolean $assertionsDisabled> = v2;
+v3 = staticinvoke <io.netty.util.internal.logging.InternalLoggerFactory: io.netty.util.internal.logging.InternalLogger getInstance(java.lang.Class)>(class "Lio/netty/util/internal/NativeLibraryLoader;");
+<io.netty.util.internal.NativeLibraryLoader: io.netty.util.internal.logging.InternalLogger logger> = v3;
+v4 = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
+v5 = <io.netty.util.CharsetUtil: java.nio.charset.Charset US_ASCII>;
+v6 = virtualinvoke v4.<java.lang.String: byte[] getBytes(java.nio.charset.Charset)>(v5);
+<io.netty.util.internal.NativeLibraryLoader: byte[] UNIQUE_ID_BYTES> = v6;
+v7 = staticinvoke <io.netty.util.internal.SystemPropertyUtil: java.lang.String get(java.lang.String)>("io.netty.native.workdir");
+if v7 == null goto label7;
+v8 = new java.io.File;
+specialinvoke v8.<java.io.File: void <init>(java.lang.String)>(v7);
+v9 = v8;
+virtualinvoke v8.<java.io.File: boolean mkdirs()>();
+label3:
+v9 = virtualinvoke v8.<java.io.File: java.io.File getAbsoluteFile()>();
+label4:
+goto label6;
+label5:
+v10 := @caughtexception;
+label6:
+<io.netty.util.internal.NativeLibraryLoader: java.io.File WORKDIR> = v9;
+v11 = <io.netty.util.internal.NativeLibraryLoader: io.netty.util.internal.logging.InternalLogger logger>;
+v12 = <io.netty.util.internal.NativeLibraryLoader: java.io.File WORKDIR>;
+v13 = dynamicinvoke "makeConcatWithConstants" <java.lang.String (java.io.File)>(v12) <java.lang.invoke.StringConcatFactory: java.lang.invoke.CallSite makeConcatWithConstants(java.lang.invoke.MethodHandles$Lookup,java.lang.String,java.lang.invoke.MethodType,java.lang.String,java.lang.Object[])>("-Dio.netty.native.workdir: \u0001");
+interfaceinvoke v11.<io.netty.util.internal.logging.InternalLogger: void debug(java.lang.String)>(v13);
+goto label8;
+label7:
+v14 = staticinvoke <io.netty.util.internal.PlatformDependent: java.io.File tmpdir()>();
+<io.netty.util.internal.NativeLibraryLoader: java.io.File WORKDIR> = v14;
+v15 = <io.netty.util.internal.NativeLibraryLoader: io.netty.util.internal.logging.InternalLogger logger>;
+v16 = <io.netty.util.internal.NativeLibraryLoader: java.io.File WORKDIR>;
+v17 = dynamicinvoke "makeConcatWithConstants" <java.lang.String (java.io.File)>(v16) <java.lang.invoke.StringConcatFactory: java.lang.invoke.CallSite makeConcatWithConstants(java.lang.invoke.MethodHandles$Lookup,java.lang.String,java.lang.invoke.MethodType,java.lang.String,java.lang.Object[])>("-Dio.netty.native.workdir: \u0001 (io.netty.tmpdir)");
+interfaceinvoke v15.<io.netty.util.internal.logging.InternalLogger: void debug(java.lang.String)>(v17);
+label8:
+v18 = staticinvoke <io.netty.util.internal.SystemPropertyUtil: boolean getBoolean(java.lang.String,boolean)>("io.netty.native.deleteLibAfterLoading", 1);
+<io.netty.util.internal.NativeLibraryLoader: boolean DELETE_NATIVE_LIB_AFTER_LOADING> = v18;
+v19 = <io.netty.util.internal.NativeLibraryLoader: io.netty.util.internal.logging.InternalLogger logger>;
+v20 = <io.netty.util.internal.NativeLibraryLoader: boolean DELETE_NATIVE_LIB_AFTER_LOADING>;
+v21 = staticinvoke <java.lang.Boolean: java.lang.Boolean valueOf(boolean)>(v20);
+interfaceinvoke v19.<io.netty.util.internal.logging.InternalLogger: void debug(java.lang.String,java.lang.Object)>("-Dio.netty.native.deleteLibAfterLoading: {}", v21);
+v22 = staticinvoke <io.netty.util.internal.SystemPropertyUtil: boolean getBoolean(java.lang.String,boolean)>("io.netty.native.tryPatchShadedId", 1);
+<io.netty.util.internal.NativeLibraryLoader: boolean TRY_TO_PATCH_SHADED_ID> = v22;
+v23 = <io.netty.util.internal.NativeLibraryLoader: io.netty.util.internal.logging.InternalLogger logger>;
+v24 = <io.netty.util.internal.NativeLibraryLoader: boolean TRY_TO_PATCH_SHADED_ID>;
+v25 = staticinvoke <java.lang.Boolean: java.lang.Boolean valueOf(boolean)>(v24);
+interfaceinvoke v23.<io.netty.util.internal.logging.InternalLogger: void debug(java.lang.String,java.lang.Object)>("-Dio.netty.native.tryPatchShadedId: {}", v25);
+v26 = staticinvoke <io.netty.util.internal.SystemPropertyUtil: boolean getBoolean(java.lang.String,boolean)>("io.netty.native.detectNativeLibraryDuplicates", 1);
+<io.netty.util.internal.NativeLibraryLoader: boolean DETECT_NATIVE_LIBRARY_DUPLICATES> = v26;
+v27 = <io.netty.util.internal.NativeLibraryLoader: io.netty.util.internal.logging.InternalLogger logger>;
+v28 = <io.netty.util.internal.NativeLibraryLoader: boolean DETECT_NATIVE_LIBRARY_DUPLICATES>;
+v29 = staticinvoke <java.lang.Boolean: java.lang.Boolean valueOf(boolean)>(v28);
+interfaceinvoke v27.<io.netty.util.internal.logging.InternalLogger: void debug(java.lang.String,java.lang.Object)>("-Dio.netty.native.detectNativeLibraryDuplicates: {}", v29);
+return;
+catch java.lang.Exception from label3 to label4 with label5;
+}
+}

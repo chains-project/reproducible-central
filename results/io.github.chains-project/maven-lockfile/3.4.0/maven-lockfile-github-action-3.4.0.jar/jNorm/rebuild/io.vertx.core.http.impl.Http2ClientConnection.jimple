@@ -1,0 +1,459 @@
+class io.vertx.core.http.impl.Http2ClientConnection extends io.vertx.core.http.impl.Http2ConnectionBase implements io.vertx.core.http.impl.HttpClientConnection
+{
+private final io.vertx.core.http.impl.HttpClientImpl client;
+private final io.vertx.core.spi.metrics.ClientMetrics metrics;
+private io.vertx.core.Handler evictionHandler;
+private io.vertx.core.Handler concurrencyChangeHandler;
+private long expirationTimestamp;
+private boolean evicted;
+void <init>(io.vertx.core.http.impl.HttpClientImpl, io.vertx.core.impl.EventLoopContext, io.vertx.core.http.impl.VertxHttp2ConnectionHandler, io.vertx.core.spi.metrics.ClientMetrics)
+{
+io.vertx.core.http.impl.VertxHttp2ConnectionHandler v3;
+io.vertx.core.impl.EventLoopContext v2;
+io.vertx.core.http.impl.HttpClientImpl v1;
+io.vertx.core.http.impl.Http2ClientConnection v0;
+io.vertx.core.spi.metrics.ClientMetrics v4;
+io.vertx.core.Handler v5, v6;
+v0 := @this: io.vertx.core.http.impl.Http2ClientConnection;
+v1 := @parameter0: io.vertx.core.http.impl.HttpClientImpl;
+v2 := @parameter1: io.vertx.core.impl.EventLoopContext;
+v3 := @parameter2: io.vertx.core.http.impl.VertxHttp2ConnectionHandler;
+v4 := @parameter3: io.vertx.core.spi.metrics.ClientMetrics;
+specialinvoke v0.<io.vertx.core.http.impl.Http2ConnectionBase: void <init>(io.vertx.core.impl.EventLoopContext,io.vertx.core.http.impl.VertxHttp2ConnectionHandler)>(v2, v3);
+v5 = <io.vertx.core.http.impl.Http2ClientConnection: io.vertx.core.Handler DEFAULT_EVICTION_HANDLER>;
+v0.<io.vertx.core.http.impl.Http2ClientConnection: io.vertx.core.Handler evictionHandler> = v5;
+v6 = <io.vertx.core.http.impl.Http2ClientConnection: io.vertx.core.Handler DEFAULT_CONCURRENCY_CHANGE_HANDLER>;
+v0.<io.vertx.core.http.impl.Http2ClientConnection: io.vertx.core.Handler concurrencyChangeHandler> = v6;
+v0.<io.vertx.core.http.impl.Http2ClientConnection: io.vertx.core.spi.metrics.ClientMetrics metrics> = v4;
+v0.<io.vertx.core.http.impl.Http2ClientConnection: io.vertx.core.http.impl.HttpClientImpl client> = v1;
+return;
+}
+public io.vertx.core.http.impl.Http2ClientConnection evictionHandler(io.vertx.core.Handler)
+{
+io.vertx.core.Handler v1;
+io.vertx.core.http.impl.Http2ClientConnection v0;
+v0 := @this: io.vertx.core.http.impl.Http2ClientConnection;
+v1 := @parameter0: io.vertx.core.Handler;
+v0.<io.vertx.core.http.impl.Http2ClientConnection: io.vertx.core.Handler evictionHandler> = v1;
+return v0;
+}
+public io.vertx.core.http.impl.Http2ClientConnection concurrencyChangeHandler(io.vertx.core.Handler)
+{
+io.vertx.core.Handler v1;
+io.vertx.core.http.impl.Http2ClientConnection v0;
+v0 := @this: io.vertx.core.http.impl.Http2ClientConnection;
+v1 := @parameter0: io.vertx.core.Handler;
+v0.<io.vertx.core.http.impl.Http2ClientConnection: io.vertx.core.Handler concurrencyChangeHandler> = v1;
+return v0;
+}
+public long concurrency()
+{
+io.vertx.core.http.impl.HttpClientImpl v3, v6;
+io.vertx.core.http.impl.Http2ClientConnection v0;
+long v2;
+io.vertx.core.http.Http2Settings v1;
+byte v9;
+int v5, v8;
+io.vertx.core.http.HttpClientOptions v4, v7;
+v0 := @this: io.vertx.core.http.impl.Http2ClientConnection;
+v1 = virtualinvoke v0.<io.vertx.core.http.impl.Http2ClientConnection: io.vertx.core.http.Http2Settings remoteSettings()>();
+v2 = virtualinvoke v1.<io.vertx.core.http.Http2Settings: long getMaxConcurrentStreams()>();
+v3 = v0.<io.vertx.core.http.impl.Http2ClientConnection: io.vertx.core.http.impl.HttpClientImpl client>;
+v4 = virtualinvoke v3.<io.vertx.core.http.impl.HttpClientImpl: io.vertx.core.http.HttpClientOptions options()>();
+v5 = virtualinvoke v4.<io.vertx.core.http.HttpClientOptions: int getHttp2MultiplexingLimit()>();
+if v5 <= 0 goto label1;
+v6 = v0.<io.vertx.core.http.impl.Http2ClientConnection: io.vertx.core.http.impl.HttpClientImpl client>;
+v7 = virtualinvoke v6.<io.vertx.core.http.impl.HttpClientImpl: io.vertx.core.http.HttpClientOptions options()>();
+v8 = virtualinvoke v7.<io.vertx.core.http.HttpClientOptions: int getHttp2MultiplexingLimit()>();
+label1:
+v9 = v8 cmp 0L;
+if v9 <= 0 goto label2;
+v2 = staticinvoke <java.lang.Math: long min(long,long)>(v2, v8);
+label2:
+return v2;
+}
+boolean onGoAwaySent(io.vertx.core.http.GoAway)
+{
+io.vertx.core.http.GoAway v1;
+io.vertx.core.http.impl.Http2ClientConnection v0;
+boolean v2;
+v0 := @this: io.vertx.core.http.impl.Http2ClientConnection;
+v1 := @parameter0: io.vertx.core.http.GoAway;
+v2 = specialinvoke v0.<io.vertx.core.http.impl.Http2ConnectionBase: boolean onGoAwaySent(io.vertx.core.http.GoAway)>(v1);
+if v2 == 0 goto label1;
+specialinvoke v0.<io.vertx.core.http.impl.Http2ClientConnection: void tryEvict()>();
+label1:
+return v2;
+}
+boolean onGoAwayReceived(io.vertx.core.http.GoAway)
+{
+io.vertx.core.http.GoAway v1;
+io.vertx.core.http.impl.Http2ClientConnection v0;
+boolean v2;
+v0 := @this: io.vertx.core.http.impl.Http2ClientConnection;
+v1 := @parameter0: io.vertx.core.http.GoAway;
+v2 = specialinvoke v0.<io.vertx.core.http.impl.Http2ConnectionBase: boolean onGoAwayReceived(io.vertx.core.http.GoAway)>(v1);
+if v2 == 0 goto label1;
+specialinvoke v0.<io.vertx.core.http.impl.Http2ClientConnection: void tryEvict()>();
+label1:
+return v2;
+}
+private void tryEvict()
+{
+io.vertx.core.Handler v2;
+io.vertx.core.http.impl.Http2ClientConnection v0;
+boolean v1;
+v0 := @this: io.vertx.core.http.impl.Http2ClientConnection;
+v1 = v0.<io.vertx.core.http.impl.Http2ClientConnection: boolean evicted>;
+if v1 != 0 goto label1;
+v0.<io.vertx.core.http.impl.Http2ClientConnection: boolean evicted> = 1;
+v2 = v0.<io.vertx.core.http.impl.Http2ClientConnection: io.vertx.core.Handler evictionHandler>;
+interfaceinvoke v2.<io.vertx.core.Handler: void handle(java.lang.Object)>(null);
+label1:
+return;
+}
+protected void concurrencyChanged(long)
+{
+io.vertx.core.http.impl.HttpClientImpl v2;
+java.lang.Long v6;
+io.vertx.core.http.impl.Http2ClientConnection v0;
+int v4;
+long v1;
+io.vertx.core.http.HttpClientOptions v3;
+io.vertx.core.Handler v5;
+v0 := @this: io.vertx.core.http.impl.Http2ClientConnection;
+v1 := @parameter0: long;
+v2 = v0.<io.vertx.core.http.impl.Http2ClientConnection: io.vertx.core.http.impl.HttpClientImpl client>;
+v3 = virtualinvoke v2.<io.vertx.core.http.impl.HttpClientImpl: io.vertx.core.http.HttpClientOptions options()>();
+v4 = virtualinvoke v3.<io.vertx.core.http.HttpClientOptions: int getHttp2MultiplexingLimit()>();
+if v4 <= 0 goto label1;
+v1 = staticinvoke <java.lang.Math: long min(long,long)>(v1, v4);
+label1:
+v5 = v0.<io.vertx.core.http.impl.Http2ClientConnection: io.vertx.core.Handler concurrencyChangeHandler>;
+v6 = staticinvoke <java.lang.Long: java.lang.Long valueOf(long)>(v1);
+interfaceinvoke v5.<io.vertx.core.Handler: void handle(java.lang.Object)>(v6);
+return;
+}
+public io.vertx.core.spi.metrics.HttpClientMetrics metrics()
+{
+io.vertx.core.spi.metrics.HttpClientMetrics v2;
+io.vertx.core.http.impl.HttpClientImpl v1;
+io.vertx.core.http.impl.Http2ClientConnection v0;
+v0 := @this: io.vertx.core.http.impl.Http2ClientConnection;
+v1 = v0.<io.vertx.core.http.impl.Http2ClientConnection: io.vertx.core.http.impl.HttpClientImpl client>;
+v2 = virtualinvoke v1.<io.vertx.core.http.impl.HttpClientImpl: io.vertx.core.spi.metrics.HttpClientMetrics metrics()>();
+return v2;
+}
+void upgradeStream(java.lang.Object, java.lang.Object, io.vertx.core.impl.ContextInternal, io.vertx.core.Handler)
+{
+java.lang.Throwable v11;
+io.vertx.core.http.impl.VertxHttp2ConnectionHandler v6;
+io.vertx.core.http.impl.Http2ClientConnection$StreamImpl v5;
+io.vertx.core.http.impl.Http2ClientConnection v0;
+io.vertx.core.impl.ContextInternal v3;
+io.vertx.core.Future v9;
+java.lang.Exception v10;
+io.netty.handler.codec.http2.Http2Connection v7;
+io.netty.handler.codec.http2.Http2Stream v8;
+java.lang.Object v1, v2;
+io.vertx.core.Handler v4;
+v0 := @this: io.vertx.core.http.impl.Http2ClientConnection;
+v1 := @parameter0: java.lang.Object;
+v2 := @parameter1: java.lang.Object;
+v3 := @parameter2: io.vertx.core.impl.ContextInternal;
+v4 := @parameter3: io.vertx.core.Handler;
+entermonitor v0;
+label1:
+v5 = specialinvoke v0.<io.vertx.core.http.impl.Http2ClientConnection: io.vertx.core.http.impl.Http2ClientConnection$StreamImpl createStream(io.vertx.core.impl.ContextInternal)>(v3);
+v6 = v0.<io.vertx.core.http.impl.Http2ClientConnection: io.vertx.core.http.impl.VertxHttp2ConnectionHandler handler>;
+v7 = virtualinvoke v6.<io.vertx.core.http.impl.VertxHttp2ConnectionHandler: io.netty.handler.codec.http2.Http2Connection connection()>();
+v8 = interfaceinvoke v7.<io.netty.handler.codec.http2.Http2Connection: io.netty.handler.codec.http2.Http2Stream stream(int)>(1);
+virtualinvoke v5.<io.vertx.core.http.impl.Http2ClientConnection$Stream: void init(io.netty.handler.codec.http2.Http2Stream)>(v8);
+v5.<io.vertx.core.http.impl.Http2ClientConnection$Stream: java.lang.Object metric> = v1;
+v5.<io.vertx.core.http.impl.Http2ClientConnection$Stream: java.lang.Object trace> = v2;
+v5.<io.vertx.core.http.impl.Http2ClientConnection$Stream: boolean requestEnded> = 1;
+v9 = staticinvoke <io.vertx.core.Future: io.vertx.core.Future succeededFuture(java.lang.Object)>(v5);
+label2:
+goto label4;
+label3:
+v10 := @caughtexception;
+v9 = staticinvoke <io.vertx.core.Future: io.vertx.core.Future failedFuture(java.lang.Throwable)>(v10);
+label4:
+exitmonitor v0;
+label5:
+goto label7;
+label6:
+v11 := @caughtexception;
+exitmonitor v0;
+throw v11;
+label7:
+interfaceinvoke v4.<io.vertx.core.Handler: void handle(java.lang.Object)>(v9);
+return;
+catch java.lang.Exception from label1 to label2 with label3;
+catch java.lang.Throwable from label1 to label5 with label6;
+}
+public void createStream(io.vertx.core.impl.ContextInternal, io.vertx.core.Handler)
+{
+java.lang.Throwable v6;
+io.vertx.core.http.impl.Http2ClientConnection$StreamImpl v3;
+io.vertx.core.http.impl.Http2ClientConnection v0;
+io.vertx.core.impl.ContextInternal v1;
+io.vertx.core.Handler v2;
+io.vertx.core.Future v4;
+java.lang.Exception v5;
+v0 := @this: io.vertx.core.http.impl.Http2ClientConnection;
+v1 := @parameter0: io.vertx.core.impl.ContextInternal;
+v2 := @parameter1: io.vertx.core.Handler;
+entermonitor v0;
+label1:
+v3 = specialinvoke v0.<io.vertx.core.http.impl.Http2ClientConnection: io.vertx.core.http.impl.Http2ClientConnection$StreamImpl createStream(io.vertx.core.impl.ContextInternal)>(v1);
+v4 = staticinvoke <io.vertx.core.Future: io.vertx.core.Future succeededFuture(java.lang.Object)>(v3);
+label2:
+goto label4;
+label3:
+v5 := @caughtexception;
+v4 = staticinvoke <io.vertx.core.Future: io.vertx.core.Future failedFuture(java.lang.Throwable)>(v5);
+label4:
+exitmonitor v0;
+label5:
+goto label7;
+label6:
+v6 := @caughtexception;
+exitmonitor v0;
+throw v6;
+label7:
+interfaceinvoke v1.<io.vertx.core.impl.ContextInternal: void emit(java.lang.Object,io.vertx.core.Handler)>(v4, v2);
+return;
+catch java.lang.Exception from label1 to label2 with label3;
+catch java.lang.Throwable from label1 to label5 with label6;
+}
+private io.vertx.core.http.impl.Http2ClientConnection$StreamImpl createStream(io.vertx.core.impl.ContextInternal)
+{
+io.vertx.core.impl.ContextInternal v1;
+io.vertx.core.http.impl.Http2ClientConnection$StreamImpl v2;
+io.vertx.core.http.impl.Http2ClientConnection v0;
+v0 := @this: io.vertx.core.http.impl.Http2ClientConnection;
+v1 := @parameter0: io.vertx.core.impl.ContextInternal;
+v2 = new io.vertx.core.http.impl.Http2ClientConnection$StreamImpl;
+specialinvoke v2.<io.vertx.core.http.impl.Http2ClientConnection$StreamImpl: void <init>(io.vertx.core.http.impl.Http2ClientConnection,io.vertx.core.impl.ContextInternal,boolean)>(v0, v1, 0);
+return v2;
+}
+private void recycle()
+{
+io.vertx.core.http.impl.HttpClientImpl v1;
+io.vertx.core.http.impl.Http2ClientConnection v0;
+int v3;
+long v4, v5, v6;
+io.vertx.core.http.HttpClientOptions v2;
+v0 := @this: io.vertx.core.http.impl.Http2ClientConnection;
+v1 = v0.<io.vertx.core.http.impl.Http2ClientConnection: io.vertx.core.http.impl.HttpClientImpl client>;
+v2 = virtualinvoke v1.<io.vertx.core.http.impl.HttpClientImpl: io.vertx.core.http.HttpClientOptions options()>();
+v3 = virtualinvoke v2.<io.vertx.core.http.HttpClientOptions: int getHttp2KeepAliveTimeout()>();
+if v3 <= 0 goto label1;
+v4 = staticinvoke <java.lang.System: long currentTimeMillis()>();
+v5 = v3 * 1000L;
+v6 = v4 + v5;
+goto label2;
+label1:
+v6 = 0L;
+label2:
+v0.<io.vertx.core.http.impl.Http2ClientConnection: long expirationTimestamp> = v6;
+return;
+}
+public boolean isValid()
+{
+byte v2, v5;
+io.vertx.core.http.impl.Http2ClientConnection v0;
+long v1, v3, v4;
+boolean v6;
+v0 := @this: io.vertx.core.http.impl.Http2ClientConnection;
+v1 = v0.<io.vertx.core.http.impl.Http2ClientConnection: long expirationTimestamp>;
+v2 = v1 cmp 0L;
+if v2 == 0 goto label1;
+v3 = staticinvoke <java.lang.System: long currentTimeMillis()>();
+v4 = v0.<io.vertx.core.http.impl.Http2ClientConnection: long expirationTimestamp>;
+v5 = v3 cmp v4;
+if v5 > 0 goto label2;
+label1:
+v6 = 1;
+goto label3;
+label2:
+v6 = 0;
+label3:
+return v6;
+}
+public long lastResponseReceivedTimestamp()
+{
+io.vertx.core.http.impl.Http2ClientConnection v0;
+v0 := @this: io.vertx.core.http.impl.Http2ClientConnection;
+return 0L;
+}
+protected synchronized void onHeadersRead(int, io.netty.handler.codec.http2.Http2Headers, io.vertx.core.http.StreamPriority, boolean)
+{
+io.vertx.core.http.StreamPriority v3;
+io.vertx.core.http.impl.Http2ClientConnection v0;
+io.vertx.core.http.impl.headers.Http2HeadersAdaptor v8;
+io.netty.handler.codec.http2.Http2Headers v2;
+int v1;
+io.netty.handler.codec.http2.Http2Stream v6;
+io.vertx.core.http.impl.VertxHttp2Stream v5;
+boolean v4, v7;
+v0 := @this: io.vertx.core.http.impl.Http2ClientConnection;
+v1 := @parameter0: int;
+v2 := @parameter1: io.netty.handler.codec.http2.Http2Headers;
+v3 := @parameter2: io.vertx.core.http.StreamPriority;
+v4 := @parameter3: boolean;
+v5 = virtualinvoke v0.<io.vertx.core.http.impl.Http2ClientConnection: io.vertx.core.http.impl.VertxHttp2Stream stream(int)>(v1);
+v6 = v5.<io.vertx.core.http.impl.Http2ClientConnection$Stream: io.netty.handler.codec.http2.Http2Stream stream>;
+v7 = interfaceinvoke v6.<io.netty.handler.codec.http2.Http2Stream: boolean isTrailersReceived()>();
+if v7 != 0 goto label1;
+virtualinvoke v5.<io.vertx.core.http.impl.Http2ClientConnection$Stream: void onHeaders(io.netty.handler.codec.http2.Http2Headers,io.vertx.core.http.StreamPriority)>(v2, v3);
+if v4 == 0 goto label2;
+virtualinvoke v5.<io.vertx.core.http.impl.Http2ClientConnection$Stream: void onEnd()>();
+goto label2;
+label1:
+v8 = new io.vertx.core.http.impl.headers.Http2HeadersAdaptor;
+specialinvoke v8.<io.vertx.core.http.impl.headers.Http2HeadersAdaptor: void <init>(io.netty.handler.codec.http2.Http2Headers)>(v2);
+virtualinvoke v5.<io.vertx.core.http.impl.Http2ClientConnection$Stream: void onEnd(io.vertx.core.MultiMap)>(v8);
+label2:
+return;
+}
+private void metricsEnd(io.vertx.core.http.impl.Http2ClientConnection$Stream)
+{
+io.vertx.core.http.impl.Http2ClientConnection$Stream v1;
+io.vertx.core.http.impl.Http2ClientConnection v0;
+io.vertx.core.spi.metrics.ClientMetrics v2, v3;
+java.lang.Object v4;
+long v5;
+v0 := @this: io.vertx.core.http.impl.Http2ClientConnection;
+v1 := @parameter0: io.vertx.core.http.impl.Http2ClientConnection$Stream;
+v2 = v0.<io.vertx.core.http.impl.Http2ClientConnection: io.vertx.core.spi.metrics.ClientMetrics metrics>;
+if v2 == null goto label1;
+v3 = v0.<io.vertx.core.http.impl.Http2ClientConnection: io.vertx.core.spi.metrics.ClientMetrics metrics>;
+v4 = v1.<io.vertx.core.http.impl.Http2ClientConnection$Stream: java.lang.Object metric>;
+v5 = virtualinvoke v1.<io.vertx.core.http.impl.Http2ClientConnection$Stream: long bytesRead()>();
+interfaceinvoke v3.<io.vertx.core.spi.metrics.ClientMetrics: void responseEnd(java.lang.Object,long)>(v4, v5);
+label1:
+return;
+}
+public synchronized void onPushPromiseRead(io.netty.channel.ChannelHandlerContext, int, int, io.netty.handler.codec.http2.Http2Headers, int) throws io.netty.handler.codec.http2.Http2Exception
+{
+io.vertx.core.http.impl.Http2ClientConnection v0;
+io.vertx.core.impl.ContextInternal v12, v20;
+long v23;
+io.netty.channel.ChannelHandlerContext v1;
+int v2, v3, v5;
+io.netty.handler.codec.http2.Http2Stream v10;
+java.lang.String v17;
+io.vertx.core.http.impl.VertxHttp2ConnectionHandler v21, v8;
+io.vertx.core.http.impl.Http2ClientConnection$StreamImpl v11;
+java.lang.CharSequence v16;
+io.netty.handler.codec.http2.Http2Connection v9;
+io.vertx.core.http.impl.HttpClientPush v13;
+io.netty.handler.codec.http2.Http2Headers v4;
+io.netty.handler.codec.http2.Http2Error v22;
+io.vertx.core.spi.metrics.ClientMetrics v14, v15, v19;
+java.lang.Object v18;
+io.vertx.core.Handler v7;
+io.vertx.core.http.impl.VertxHttp2Stream v6;
+v0 := @this: io.vertx.core.http.impl.Http2ClientConnection;
+v1 := @parameter0: io.netty.channel.ChannelHandlerContext;
+v2 := @parameter1: int;
+v3 := @parameter2: int;
+v4 := @parameter3: io.netty.handler.codec.http2.Http2Headers;
+v5 := @parameter4: int;
+v6 = virtualinvoke v0.<io.vertx.core.http.impl.Http2ClientConnection: io.vertx.core.http.impl.VertxHttp2Stream stream(int)>(v2);
+if v6 == null goto label2;
+v7 = v6.<io.vertx.core.http.impl.Http2ClientConnection$StreamImpl: io.vertx.core.Handler pushHandler>;
+if v7 == null goto label2;
+v8 = v0.<io.vertx.core.http.impl.Http2ClientConnection: io.vertx.core.http.impl.VertxHttp2ConnectionHandler handler>;
+v9 = virtualinvoke v8.<io.vertx.core.http.impl.VertxHttp2ConnectionHandler: io.netty.handler.codec.http2.Http2Connection connection()>();
+v10 = interfaceinvoke v9.<io.netty.handler.codec.http2.Http2Connection: io.netty.handler.codec.http2.Http2Stream stream(int)>(v3);
+v11 = new io.vertx.core.http.impl.Http2ClientConnection$StreamImpl;
+v12 = v0.<io.vertx.core.http.impl.Http2ClientConnection: io.vertx.core.impl.ContextInternal context>;
+specialinvoke v11.<io.vertx.core.http.impl.Http2ClientConnection$StreamImpl: void <init>(io.vertx.core.http.impl.Http2ClientConnection,io.vertx.core.impl.ContextInternal,boolean)>(v0, v12, 1);
+virtualinvoke v11.<io.vertx.core.http.impl.Http2ClientConnection$StreamImpl: void init(io.netty.handler.codec.http2.Http2Stream)>(v10);
+v13 = new io.vertx.core.http.impl.HttpClientPush;
+specialinvoke v13.<io.vertx.core.http.impl.HttpClientPush: void <init>(io.netty.handler.codec.http2.Http2Headers,io.vertx.core.http.impl.HttpClientStream)>(v4, v11);
+v14 = v0.<io.vertx.core.http.impl.Http2ClientConnection: io.vertx.core.spi.metrics.ClientMetrics metrics>;
+if v14 == null goto label1;
+v15 = v0.<io.vertx.core.http.impl.Http2ClientConnection: io.vertx.core.spi.metrics.ClientMetrics metrics>;
+v16 = interfaceinvoke v4.<io.netty.handler.codec.http2.Http2Headers: java.lang.CharSequence path()>();
+v17 = virtualinvoke v16.<java.lang.Object: java.lang.String toString()>();
+v18 = interfaceinvoke v15.<io.vertx.core.spi.metrics.ClientMetrics: java.lang.Object requestBegin(java.lang.String,java.lang.Object)>(v17, v13);
+v11.<io.vertx.core.http.impl.Http2ClientConnection$StreamImpl: java.lang.Object metric> = v18;
+v19 = v0.<io.vertx.core.http.impl.Http2ClientConnection: io.vertx.core.spi.metrics.ClientMetrics metrics>;
+interfaceinvoke v19.<io.vertx.core.spi.metrics.ClientMetrics: void requestEnd(java.lang.Object,long)>(v18, 0L);
+label1:
+v20 = v6.<io.vertx.core.http.impl.Http2ClientConnection$StreamImpl: io.vertx.core.impl.ContextInternal context>;
+interfaceinvoke v20.<io.vertx.core.impl.ContextInternal: void dispatch(java.lang.Object,io.vertx.core.Handler)>(v13, v7);
+return;
+label2:
+v21 = v0.<io.vertx.core.http.impl.Http2ClientConnection: io.vertx.core.http.impl.VertxHttp2ConnectionHandler handler>;
+v22 = <io.netty.handler.codec.http2.Http2Error: io.netty.handler.codec.http2.Http2Error CANCEL>;
+v23 = virtualinvoke v22.<io.netty.handler.codec.http2.Http2Error: long code()>();
+virtualinvoke v21.<io.vertx.core.http.impl.VertxHttp2ConnectionHandler: void writeReset(int,long)>(v3, v23);
+return;
+}
+protected void handleIdle(io.netty.handler.timeout.IdleStateEvent)
+{
+io.netty.handler.codec.http2.Http2Connection$Endpoint v4;
+io.vertx.core.http.impl.VertxHttp2ConnectionHandler v2;
+io.netty.handler.codec.http2.Http2Connection v3;
+io.netty.handler.timeout.IdleStateEvent v1;
+io.vertx.core.http.impl.Http2ClientConnection v0;
+int v5;
+v0 := @this: io.vertx.core.http.impl.Http2ClientConnection;
+v1 := @parameter0: io.netty.handler.timeout.IdleStateEvent;
+v2 = v0.<io.vertx.core.http.impl.Http2ClientConnection: io.vertx.core.http.impl.VertxHttp2ConnectionHandler handler>;
+v3 = virtualinvoke v2.<io.vertx.core.http.impl.VertxHttp2ConnectionHandler: io.netty.handler.codec.http2.Http2Connection connection()>();
+v4 = interfaceinvoke v3.<io.netty.handler.codec.http2.Http2Connection: io.netty.handler.codec.http2.Http2Connection$Endpoint local()>();
+v5 = interfaceinvoke v4.<io.netty.handler.codec.http2.Http2Connection$Endpoint: int numActiveStreams()>();
+if v5 <= 0 goto label1;
+specialinvoke v0.<io.vertx.core.http.impl.Http2ConnectionBase: void handleIdle(io.netty.handler.timeout.IdleStateEvent)>(v1);
+label1:
+return;
+}
+public static io.vertx.core.http.impl.VertxHttp2ConnectionHandler createHttp2ConnectionHandler(io.vertx.core.http.impl.HttpClientImpl, io.vertx.core.spi.metrics.ClientMetrics, io.vertx.core.impl.EventLoopContext, boolean, java.lang.Object)
+{
+io.vertx.core.http.impl.VertxHttp2ConnectionHandlerBuilder v11, v12, v15, v17, v19, v7, v8;
+io.vertx.core.http.impl.HttpClientImpl v0;
+io.vertx.core.spi.metrics.HttpClientMetrics v6;
+io.vertx.core.http.Http2Settings v14;
+java.util.function.Function v16;
+io.vertx.core.http.HttpClientOptions v13, v5, v9;
+boolean v10, v18, v3;
+io.vertx.core.http.impl.VertxHttp2ConnectionHandler v20;
+io.vertx.core.impl.EventLoopContext v2;
+io.vertx.core.spi.metrics.ClientMetrics v1;
+java.lang.Object v4;
+io.vertx.core.Handler v21, v22;
+v0 := @parameter0: io.vertx.core.http.impl.HttpClientImpl;
+v1 := @parameter1: io.vertx.core.spi.metrics.ClientMetrics;
+v2 := @parameter2: io.vertx.core.impl.EventLoopContext;
+v3 := @parameter3: boolean;
+v4 := @parameter4: java.lang.Object;
+v5 = virtualinvoke v0.<io.vertx.core.http.impl.HttpClientImpl: io.vertx.core.http.HttpClientOptions options()>();
+v6 = virtualinvoke v0.<io.vertx.core.http.impl.HttpClientImpl: io.vertx.core.spi.metrics.HttpClientMetrics metrics()>();
+v7 = new io.vertx.core.http.impl.VertxHttp2ConnectionHandlerBuilder;
+specialinvoke v7.<io.vertx.core.http.impl.VertxHttp2ConnectionHandlerBuilder: void <init>()>();
+v8 = virtualinvoke v7.<io.vertx.core.http.impl.VertxHttp2ConnectionHandlerBuilder: io.vertx.core.http.impl.VertxHttp2ConnectionHandlerBuilder server(boolean)>(0);
+v9 = virtualinvoke v0.<io.vertx.core.http.impl.HttpClientImpl: io.vertx.core.http.HttpClientOptions options()>();
+v10 = virtualinvoke v9.<io.vertx.core.http.HttpClientOptions: boolean isTryUseCompression()>();
+v11 = virtualinvoke v8.<io.vertx.core.http.impl.VertxHttp2ConnectionHandlerBuilder: io.vertx.core.http.impl.VertxHttp2ConnectionHandlerBuilder useDecompression(boolean)>(v10);
+v12 = virtualinvoke v11.<io.vertx.core.http.impl.VertxHttp2ConnectionHandlerBuilder: io.vertx.core.http.impl.VertxHttp2ConnectionHandlerBuilder gracefulShutdownTimeoutMillis(long)>(0L);
+v13 = virtualinvoke v0.<io.vertx.core.http.impl.HttpClientImpl: io.vertx.core.http.HttpClientOptions options()>();
+v14 = virtualinvoke v13.<io.vertx.core.http.HttpClientOptions: io.vertx.core.http.Http2Settings getInitialSettings()>();
+v15 = virtualinvoke v12.<io.vertx.core.http.impl.VertxHttp2ConnectionHandlerBuilder: io.vertx.core.http.impl.VertxHttp2ConnectionHandlerBuilder initialSettings(io.vertx.core.http.Http2Settings)>(v14);
+v16 = staticinvoke <io.vertx.core.http.impl.Http2ClientConnection$lambda_createHttp2ConnectionHandler_0__963: java.util.function.Function bootstrap$(io.vertx.core.http.impl.HttpClientImpl,io.vertx.core.impl.EventLoopContext,io.vertx.core.spi.metrics.ClientMetrics,java.lang.Object)>(v0, v2, v1, v4);
+v17 = virtualinvoke v15.<io.vertx.core.http.impl.VertxHttp2ConnectionHandlerBuilder: io.vertx.core.http.impl.VertxHttp2ConnectionHandlerBuilder connectionFactory(java.util.function.Function)>(v16);
+v18 = virtualinvoke v5.<io.vertx.core.http.HttpClientOptions: boolean getLogActivity()>();
+v19 = virtualinvoke v17.<io.vertx.core.http.impl.VertxHttp2ConnectionHandlerBuilder: io.vertx.core.http.impl.VertxHttp2ConnectionHandlerBuilder logEnabled(boolean)>(v18);
+v20 = virtualinvoke v19.<io.vertx.core.http.impl.VertxHttp2ConnectionHandlerBuilder: io.vertx.core.http.impl.VertxHttp2ConnectionHandler build()>();
+v21 = staticinvoke <io.vertx.core.http.impl.Http2ClientConnection$lambda_createHttp2ConnectionHandler_1__964: io.vertx.core.Handler bootstrap$(io.vertx.core.http.HttpClientOptions,io.vertx.core.spi.metrics.ClientMetrics,boolean,io.vertx.core.spi.metrics.HttpClientMetrics)>(v5, v1, v3, v6);
+virtualinvoke v20.<io.vertx.core.http.impl.VertxHttp2ConnectionHandler: io.vertx.core.http.impl.VertxHttp2ConnectionHandler addHandler(io.vertx.core.Handler)>(v21);
+v22 = staticinvoke <io.vertx.core.http.impl.Http2ClientConnection$lambda_createHttp2ConnectionHandler_2__965: io.vertx.core.Handler bootstrap$(io.vertx.core.spi.metrics.ClientMetrics,io.vertx.core.spi.metrics.HttpClientMetrics)>(v1, v6);
+virtualinvoke v20.<io.vertx.core.http.impl.VertxHttp2ConnectionHandler: io.vertx.core.http.impl.VertxHttp2ConnectionHandler removeHandler(io.vertx.core.Handler)>(v22);
+return v20;
+}
+}

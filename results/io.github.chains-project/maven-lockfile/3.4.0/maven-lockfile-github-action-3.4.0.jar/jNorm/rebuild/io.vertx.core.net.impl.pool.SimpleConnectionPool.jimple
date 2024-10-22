@@ -1,0 +1,324 @@
+public class io.vertx.core.net.impl.pool.SimpleConnectionPool extends java.lang.Object implements io.vertx.core.net.impl.pool.ConnectionPool
+{
+private static final io.vertx.core.Future POOL_CLOSED;
+private static final java.util.function.BiFunction SAME_EVENT_LOOP_SELECTOR;
+private static final java.util.function.BiFunction FIRST_AVAILABLE_SELECTOR;
+private final io.vertx.core.net.impl.pool.PoolConnector connector;
+private final int maxWaiters;
+private final int maxCapacity;
+private final int[] capacityFactors;
+private final io.vertx.core.net.impl.pool.Executor sync;
+private final io.vertx.core.net.impl.pool.SimpleConnectionPool$ListImpl list;
+private boolean closed;
+private java.util.function.BiFunction selector;
+private java.util.function.Function contextProvider;
+private java.util.function.BiFunction fallbackSelector;
+private final io.vertx.core.net.impl.pool.SimpleConnectionPool$Slot[] slots;
+private int size;
+private int capacity;
+private final io.vertx.core.net.impl.pool.SimpleConnectionPool$Waiters waiters;
+private int requests;
+void <init>(io.vertx.core.net.impl.pool.PoolConnector, int[])
+{
+io.vertx.core.net.impl.pool.PoolConnector v1;
+int[] v2;
+io.vertx.core.net.impl.pool.SimpleConnectionPool v0;
+int v3;
+v0 := @this: io.vertx.core.net.impl.pool.SimpleConnectionPool;
+v1 := @parameter0: io.vertx.core.net.impl.pool.PoolConnector;
+v2 := @parameter1: int[];
+v3 = (int) -1;
+specialinvoke v0.<io.vertx.core.net.impl.pool.SimpleConnectionPool: void <init>(io.vertx.core.net.impl.pool.PoolConnector,int[],int)>(v1, v2, v3);
+return;
+}
+void <init>(io.vertx.core.net.impl.pool.PoolConnector, int[], int)
+{
+io.vertx.core.net.impl.pool.PoolConnector v1;
+java.util.function.BiFunction v19, v20;
+java.util.function.Function v21;
+int[] v2, v6;
+int v10, v11, v13, v14, v15, v16, v3, v5, v7, v8, v9;
+io.vertx.core.net.impl.pool.SimpleConnectionPool v0;
+io.vertx.core.net.impl.pool.SimpleConnectionPool$ListImpl v4;
+io.vertx.core.net.impl.pool.CombinerExecutor v18;
+java.lang.IllegalArgumentException v12;
+io.vertx.core.net.impl.pool.SimpleConnectionPool$Slot[] v17;
+io.vertx.core.net.impl.pool.SimpleConnectionPool$Waiters v22;
+v0 := @this: io.vertx.core.net.impl.pool.SimpleConnectionPool;
+v1 := @parameter0: io.vertx.core.net.impl.pool.PoolConnector;
+v2 := @parameter1: int[];
+v3 := @parameter2: int;
+specialinvoke v0.<java.lang.Object: void <init>()>();
+v4 = new io.vertx.core.net.impl.pool.SimpleConnectionPool$ListImpl;
+specialinvoke v4.<io.vertx.core.net.impl.pool.SimpleConnectionPool$ListImpl: void <init>(io.vertx.core.net.impl.pool.SimpleConnectionPool)>(v0);
+v0.<io.vertx.core.net.impl.pool.SimpleConnectionPool: io.vertx.core.net.impl.pool.SimpleConnectionPool$ListImpl list> = v4;
+v5 = lengthof v2;
+v6 = newarray (int)[v5];
+v7 = 1;
+v8 = 0;
+v9 = 0;
+label1:
+v10 = lengthof v2;
+if v9 >= v10 goto label3;
+v11 = v2[v9];
+if v11 >= 1 goto label2;
+v12 = new java.lang.IllegalArgumentException;
+specialinvoke v12.<java.lang.IllegalArgumentException: void <init>()>();
+throw v12;
+label2:
+v7 = v7 * v11;
+v8 = staticinvoke <java.lang.Math: int max(int,int)>(v8, v11);
+v9 = v9 + 1;
+goto label1;
+label3:
+v13 = 0;
+label4:
+v14 = lengthof v2;
+if v13 >= v14 goto label5;
+v15 = v2[v13];
+v16 = v7 / v15;
+v6[v13] = v16;
+v13 = v13 + 1;
+goto label4;
+label5:
+v0.<io.vertx.core.net.impl.pool.SimpleConnectionPool: int[] capacityFactors> = v6;
+v0.<io.vertx.core.net.impl.pool.SimpleConnectionPool: io.vertx.core.net.impl.pool.PoolConnector connector> = v1;
+v17 = newarray (io.vertx.core.net.impl.pool.SimpleConnectionPool$Slot)[v8];
+v0.<io.vertx.core.net.impl.pool.SimpleConnectionPool: io.vertx.core.net.impl.pool.SimpleConnectionPool$Slot[] slots> = v17;
+v0.<io.vertx.core.net.impl.pool.SimpleConnectionPool: int size> = 0;
+v0.<io.vertx.core.net.impl.pool.SimpleConnectionPool: int maxWaiters> = v3;
+v0.<io.vertx.core.net.impl.pool.SimpleConnectionPool: int capacity> = 0;
+v0.<io.vertx.core.net.impl.pool.SimpleConnectionPool: int maxCapacity> = v7;
+v18 = new io.vertx.core.net.impl.pool.CombinerExecutor;
+specialinvoke v18.<io.vertx.core.net.impl.pool.CombinerExecutor: void <init>(java.lang.Object)>(v0);
+v0.<io.vertx.core.net.impl.pool.SimpleConnectionPool: io.vertx.core.net.impl.pool.Executor sync> = v18;
+v19 = <io.vertx.core.net.impl.pool.SimpleConnectionPool: java.util.function.BiFunction SAME_EVENT_LOOP_SELECTOR>;
+v0.<io.vertx.core.net.impl.pool.SimpleConnectionPool: java.util.function.BiFunction selector> = v19;
+v20 = <io.vertx.core.net.impl.pool.SimpleConnectionPool: java.util.function.BiFunction FIRST_AVAILABLE_SELECTOR>;
+v0.<io.vertx.core.net.impl.pool.SimpleConnectionPool: java.util.function.BiFunction fallbackSelector> = v20;
+v21 = <io.vertx.core.net.impl.pool.SimpleConnectionPool: java.util.function.Function EVENT_LOOP_CONTEXT_PROVIDER>;
+v0.<io.vertx.core.net.impl.pool.SimpleConnectionPool: java.util.function.Function contextProvider> = v21;
+v22 = new io.vertx.core.net.impl.pool.SimpleConnectionPool$Waiters;
+specialinvoke v22.<io.vertx.core.net.impl.pool.SimpleConnectionPool$Waiters: void <init>()>();
+v0.<io.vertx.core.net.impl.pool.SimpleConnectionPool: io.vertx.core.net.impl.pool.SimpleConnectionPool$Waiters waiters> = v22;
+return;
+}
+public io.vertx.core.net.impl.pool.ConnectionPool connectionSelector(java.util.function.BiFunction)
+{
+io.vertx.core.net.impl.pool.SimpleConnectionPool v0;
+java.util.function.BiFunction v1;
+v0 := @this: io.vertx.core.net.impl.pool.SimpleConnectionPool;
+v1 := @parameter0: java.util.function.BiFunction;
+v0.<io.vertx.core.net.impl.pool.SimpleConnectionPool: java.util.function.BiFunction selector> = v1;
+return v0;
+}
+public io.vertx.core.net.impl.pool.ConnectionPool contextProvider(java.util.function.Function)
+{
+java.util.function.Function v1;
+io.vertx.core.net.impl.pool.SimpleConnectionPool v0;
+v0 := @this: io.vertx.core.net.impl.pool.SimpleConnectionPool;
+v1 := @parameter0: java.util.function.Function;
+v0.<io.vertx.core.net.impl.pool.SimpleConnectionPool: java.util.function.Function contextProvider> = v1;
+return v0;
+}
+private void execute(io.vertx.core.net.impl.pool.Executor$Action)
+{
+io.vertx.core.net.impl.pool.Executor v2;
+io.vertx.core.net.impl.pool.Executor$Action v1;
+io.vertx.core.net.impl.pool.SimpleConnectionPool v0;
+v0 := @this: io.vertx.core.net.impl.pool.SimpleConnectionPool;
+v1 := @parameter0: io.vertx.core.net.impl.pool.Executor$Action;
+v2 = v0.<io.vertx.core.net.impl.pool.SimpleConnectionPool: io.vertx.core.net.impl.pool.Executor sync>;
+interfaceinvoke v2.<io.vertx.core.net.impl.pool.Executor: void submit(io.vertx.core.net.impl.pool.Executor$Action)>(v1);
+return;
+}
+public int size()
+{
+int v1;
+io.vertx.core.net.impl.pool.SimpleConnectionPool v0;
+v0 := @this: io.vertx.core.net.impl.pool.SimpleConnectionPool;
+v1 = v0.<io.vertx.core.net.impl.pool.SimpleConnectionPool: int size>;
+return v1;
+}
+public void connect(io.vertx.core.net.impl.pool.SimpleConnectionPool$Slot, io.vertx.core.net.impl.pool.PoolWaiter)
+{
+io.vertx.core.impl.EventLoopContext v4;
+io.vertx.core.net.impl.pool.PoolConnector v3;
+io.vertx.core.net.impl.pool.PoolWaiter v2;
+io.vertx.core.net.impl.pool.SimpleConnectionPool v0;
+io.vertx.core.net.impl.pool.SimpleConnectionPool$Slot v1;
+io.vertx.core.Handler v5;
+v0 := @this: io.vertx.core.net.impl.pool.SimpleConnectionPool;
+v1 := @parameter0: io.vertx.core.net.impl.pool.SimpleConnectionPool$Slot;
+v2 := @parameter1: io.vertx.core.net.impl.pool.PoolWaiter;
+v1.<io.vertx.core.net.impl.pool.SimpleConnectionPool$Slot: io.vertx.core.net.impl.pool.PoolWaiter initiator> = v2;
+v3 = v0.<io.vertx.core.net.impl.pool.SimpleConnectionPool: io.vertx.core.net.impl.pool.PoolConnector connector>;
+v4 = v1.<io.vertx.core.net.impl.pool.SimpleConnectionPool$Slot: io.vertx.core.impl.EventLoopContext context>;
+v5 = staticinvoke <io.vertx.core.net.impl.pool.SimpleConnectionPool$lambda_connect_2__1394: io.vertx.core.Handler bootstrap$(io.vertx.core.net.impl.pool.SimpleConnectionPool,io.vertx.core.net.impl.pool.SimpleConnectionPool$Slot,io.vertx.core.net.impl.pool.PoolWaiter)>(v0, v1, v2);
+interfaceinvoke v3.<io.vertx.core.net.impl.pool.PoolConnector: void connect(io.vertx.core.impl.EventLoopContext,io.vertx.core.net.impl.pool.PoolConnector$Listener,io.vertx.core.Handler)>(v4, v1, v5);
+return;
+}
+private void setConcurrency(io.vertx.core.net.impl.pool.SimpleConnectionPool$Slot, long)
+{
+io.vertx.core.net.impl.pool.SimpleConnectionPool v0;
+io.vertx.core.net.impl.pool.SimpleConnectionPool$SetConcurrency v3;
+io.vertx.core.net.impl.pool.SimpleConnectionPool$Slot v1;
+long v2;
+v0 := @this: io.vertx.core.net.impl.pool.SimpleConnectionPool;
+v1 := @parameter0: io.vertx.core.net.impl.pool.SimpleConnectionPool$Slot;
+v2 := @parameter1: long;
+v3 = new io.vertx.core.net.impl.pool.SimpleConnectionPool$SetConcurrency;
+specialinvoke v3.<io.vertx.core.net.impl.pool.SimpleConnectionPool$SetConcurrency: void <init>(io.vertx.core.net.impl.pool.SimpleConnectionPool$Slot,long)>(v1, v2);
+specialinvoke v0.<io.vertx.core.net.impl.pool.SimpleConnectionPool: void execute(io.vertx.core.net.impl.pool.Executor$Action)>(v3);
+return;
+}
+private void remove(io.vertx.core.net.impl.pool.SimpleConnectionPool$Slot)
+{
+io.vertx.core.net.impl.pool.SimpleConnectionPool$Remove v2;
+io.vertx.core.net.impl.pool.SimpleConnectionPool v0;
+io.vertx.core.net.impl.pool.SimpleConnectionPool$Slot v1;
+v0 := @this: io.vertx.core.net.impl.pool.SimpleConnectionPool;
+v1 := @parameter0: io.vertx.core.net.impl.pool.SimpleConnectionPool$Slot;
+v2 = new io.vertx.core.net.impl.pool.SimpleConnectionPool$Remove;
+specialinvoke v2.<io.vertx.core.net.impl.pool.SimpleConnectionPool$Remove: void <init>(io.vertx.core.net.impl.pool.SimpleConnectionPool$Slot)>(v1);
+specialinvoke v0.<io.vertx.core.net.impl.pool.SimpleConnectionPool: void execute(io.vertx.core.net.impl.pool.Executor$Action)>(v2);
+return;
+}
+public void evict(java.util.function.Predicate, io.vertx.core.Handler)
+{
+io.vertx.core.net.impl.pool.SimpleConnectionPool v0;
+java.util.function.Predicate v1;
+io.vertx.core.net.impl.pool.SimpleConnectionPool$Evict v3;
+io.vertx.core.Handler v2;
+v0 := @this: io.vertx.core.net.impl.pool.SimpleConnectionPool;
+v1 := @parameter0: java.util.function.Predicate;
+v2 := @parameter1: io.vertx.core.Handler;
+v3 = new io.vertx.core.net.impl.pool.SimpleConnectionPool$Evict;
+specialinvoke v3.<io.vertx.core.net.impl.pool.SimpleConnectionPool$Evict: void <init>(java.util.function.Predicate,io.vertx.core.Handler)>(v1, v2);
+specialinvoke v0.<io.vertx.core.net.impl.pool.SimpleConnectionPool: void execute(io.vertx.core.net.impl.pool.Executor$Action)>(v3);
+return;
+}
+public void acquire(io.vertx.core.impl.ContextInternal, io.vertx.core.net.impl.pool.PoolWaiter$Listener, int, io.vertx.core.Handler)
+{
+io.vertx.core.net.impl.pool.SimpleConnectionPool v0;
+io.vertx.core.impl.ContextInternal v1;
+int[] v6;
+io.vertx.core.net.impl.pool.SimpleConnectionPool$Acquire v5;
+int v3, v7;
+io.vertx.core.Handler v4;
+io.vertx.core.net.impl.pool.PoolWaiter$Listener v2;
+v0 := @this: io.vertx.core.net.impl.pool.SimpleConnectionPool;
+v1 := @parameter0: io.vertx.core.impl.ContextInternal;
+v2 := @parameter1: io.vertx.core.net.impl.pool.PoolWaiter$Listener;
+v3 := @parameter2: int;
+v4 := @parameter3: io.vertx.core.Handler;
+v5 = new io.vertx.core.net.impl.pool.SimpleConnectionPool$Acquire;
+v6 = v0.<io.vertx.core.net.impl.pool.SimpleConnectionPool: int[] capacityFactors>;
+v7 = v6[v3];
+specialinvoke v5.<io.vertx.core.net.impl.pool.SimpleConnectionPool$Acquire: void <init>(io.vertx.core.impl.ContextInternal,io.vertx.core.net.impl.pool.PoolWaiter$Listener,int,io.vertx.core.Handler)>(v1, v2, v7, v4);
+specialinvoke v0.<io.vertx.core.net.impl.pool.SimpleConnectionPool: void execute(io.vertx.core.net.impl.pool.Executor$Action)>(v5);
+return;
+}
+public void acquire(io.vertx.core.impl.ContextInternal, int, io.vertx.core.Handler)
+{
+io.vertx.core.net.impl.pool.SimpleConnectionPool v0;
+int v2;
+io.vertx.core.impl.ContextInternal v1;
+io.vertx.core.Handler v3;
+io.vertx.core.net.impl.pool.PoolWaiter$Listener v4;
+v0 := @this: io.vertx.core.net.impl.pool.SimpleConnectionPool;
+v1 := @parameter0: io.vertx.core.impl.ContextInternal;
+v2 := @parameter1: int;
+v3 := @parameter2: io.vertx.core.Handler;
+v4 = <io.vertx.core.net.impl.pool.PoolWaiter: io.vertx.core.net.impl.pool.PoolWaiter$Listener NULL_LISTENER>;
+virtualinvoke v0.<io.vertx.core.net.impl.pool.SimpleConnectionPool: void acquire(io.vertx.core.impl.ContextInternal,io.vertx.core.net.impl.pool.PoolWaiter$Listener,int,io.vertx.core.Handler)>(v1, v4, v2, v3);
+return;
+}
+public void cancel(io.vertx.core.net.impl.pool.PoolWaiter, io.vertx.core.Handler)
+{
+io.vertx.core.net.impl.pool.SimpleConnectionPool$Cancel v3;
+io.vertx.core.net.impl.pool.PoolWaiter v1;
+io.vertx.core.net.impl.pool.SimpleConnectionPool v0;
+io.vertx.core.Handler v2;
+v0 := @this: io.vertx.core.net.impl.pool.SimpleConnectionPool;
+v1 := @parameter0: io.vertx.core.net.impl.pool.PoolWaiter;
+v2 := @parameter1: io.vertx.core.Handler;
+v3 = new io.vertx.core.net.impl.pool.SimpleConnectionPool$Cancel;
+specialinvoke v3.<io.vertx.core.net.impl.pool.SimpleConnectionPool$Cancel: void <init>(io.vertx.core.net.impl.pool.PoolWaiter,io.vertx.core.Handler)>(v1, v2);
+specialinvoke v0.<io.vertx.core.net.impl.pool.SimpleConnectionPool: void execute(io.vertx.core.net.impl.pool.Executor$Action)>(v3);
+return;
+}
+private void recycle(io.vertx.core.net.impl.pool.SimpleConnectionPool$LeaseImpl)
+{
+io.vertx.core.net.impl.pool.SimpleConnectionPool$LeaseImpl v1;
+java.lang.IllegalStateException v3;
+io.vertx.core.net.impl.pool.SimpleConnectionPool v0;
+io.vertx.core.net.impl.pool.SimpleConnectionPool$Recycle v4;
+io.vertx.core.net.impl.pool.SimpleConnectionPool$Slot v5;
+boolean v2;
+v0 := @this: io.vertx.core.net.impl.pool.SimpleConnectionPool;
+v1 := @parameter0: io.vertx.core.net.impl.pool.SimpleConnectionPool$LeaseImpl;
+v2 = v1.<io.vertx.core.net.impl.pool.SimpleConnectionPool$LeaseImpl: boolean recycled>;
+if v2 == 0 goto label1;
+v3 = new java.lang.IllegalStateException;
+specialinvoke v3.<java.lang.IllegalStateException: void <init>(java.lang.String)>("Attempt to recycle more than permitted");
+throw v3;
+label1:
+v1.<io.vertx.core.net.impl.pool.SimpleConnectionPool$LeaseImpl: boolean recycled> = 1;
+v4 = new io.vertx.core.net.impl.pool.SimpleConnectionPool$Recycle;
+v5 = v1.<io.vertx.core.net.impl.pool.SimpleConnectionPool$LeaseImpl: io.vertx.core.net.impl.pool.SimpleConnectionPool$Slot slot>;
+specialinvoke v4.<io.vertx.core.net.impl.pool.SimpleConnectionPool$Recycle: void <init>(io.vertx.core.net.impl.pool.SimpleConnectionPool$Slot)>(v5);
+specialinvoke v0.<io.vertx.core.net.impl.pool.SimpleConnectionPool: void execute(io.vertx.core.net.impl.pool.Executor$Action)>(v4);
+return;
+}
+public int waiters()
+{
+int v2;
+io.vertx.core.net.impl.pool.SimpleConnectionPool$Waiters v1;
+io.vertx.core.net.impl.pool.SimpleConnectionPool v0;
+v0 := @this: io.vertx.core.net.impl.pool.SimpleConnectionPool;
+v1 = v0.<io.vertx.core.net.impl.pool.SimpleConnectionPool: io.vertx.core.net.impl.pool.SimpleConnectionPool$Waiters waiters>;
+v2 = virtualinvoke v1.<io.vertx.core.net.impl.pool.SimpleConnectionPool$Waiters: int size()>();
+return v2;
+}
+public int capacity()
+{
+int v1;
+io.vertx.core.net.impl.pool.SimpleConnectionPool v0;
+v0 := @this: io.vertx.core.net.impl.pool.SimpleConnectionPool;
+v1 = v0.<io.vertx.core.net.impl.pool.SimpleConnectionPool: int capacity>;
+return v1;
+}
+public int requests()
+{
+int v1;
+io.vertx.core.net.impl.pool.SimpleConnectionPool v0;
+v0 := @this: io.vertx.core.net.impl.pool.SimpleConnectionPool;
+v1 = v0.<io.vertx.core.net.impl.pool.SimpleConnectionPool: int requests>;
+return v1;
+}
+public void close(io.vertx.core.Handler)
+{
+io.vertx.core.net.impl.pool.SimpleConnectionPool$Close v2;
+io.vertx.core.Handler v1;
+io.vertx.core.net.impl.pool.SimpleConnectionPool v0;
+v0 := @this: io.vertx.core.net.impl.pool.SimpleConnectionPool;
+v1 := @parameter0: io.vertx.core.Handler;
+v2 = new io.vertx.core.net.impl.pool.SimpleConnectionPool$Close;
+specialinvoke v2.<io.vertx.core.net.impl.pool.SimpleConnectionPool$Close: void <init>(io.vertx.core.Handler)>(v1);
+specialinvoke v0.<io.vertx.core.net.impl.pool.SimpleConnectionPool: void execute(io.vertx.core.net.impl.pool.Executor$Action)>(v2);
+return;
+}
+static void <clinit>()
+{
+io.vertx.core.Future v0;
+java.util.function.BiFunction v1, v2;
+v0 = staticinvoke <io.vertx.core.Future: io.vertx.core.Future failedFuture(java.lang.String)>("Pool closed");
+<io.vertx.core.net.impl.pool.SimpleConnectionPool: io.vertx.core.Future POOL_CLOSED> = v0;
+v1 = staticinvoke <io.vertx.core.net.impl.pool.SimpleConnectionPool$lambda_static_0__1395: java.util.function.BiFunction bootstrap$()>();
+<io.vertx.core.net.impl.pool.SimpleConnectionPool: java.util.function.BiFunction SAME_EVENT_LOOP_SELECTOR> = v1;
+v2 = staticinvoke <io.vertx.core.net.impl.pool.SimpleConnectionPool$lambda_static_1__1396: java.util.function.BiFunction bootstrap$()>();
+<io.vertx.core.net.impl.pool.SimpleConnectionPool: java.util.function.BiFunction FIRST_AVAILABLE_SELECTOR> = v2;
+return;
+}
+}

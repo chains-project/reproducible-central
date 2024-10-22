@@ -1,0 +1,679 @@
+public class io.vertx.core.streams.impl.InboundBuffer extends java.lang.Object
+{
+public static final java.lang.Object END_SENTINEL;
+private final io.vertx.core.impl.ContextInternal context;
+private java.util.ArrayDeque pending;
+private final long highWaterMark;
+private long demand;
+private io.vertx.core.Handler handler;
+private boolean overflow;
+private io.vertx.core.Handler drainHandler;
+private io.vertx.core.Handler emptyHandler;
+private io.vertx.core.Handler exceptionHandler;
+private boolean emitting;
+static final boolean $assertionsDisabled;
+public void <init>(io.vertx.core.Context)
+{
+io.vertx.core.streams.impl.InboundBuffer v0;
+io.vertx.core.Context v1;
+v0 := @this: io.vertx.core.streams.impl.InboundBuffer;
+v1 := @parameter0: io.vertx.core.Context;
+specialinvoke v0.<io.vertx.core.streams.impl.InboundBuffer: void <init>(io.vertx.core.Context,long)>(v1, 16L);
+return;
+}
+public void <init>(io.vertx.core.Context, long)
+{
+io.vertx.core.streams.impl.InboundBuffer v0;
+byte v4;
+long v2;
+java.lang.String v6;
+java.lang.IllegalArgumentException v5;
+io.vertx.core.Context v1;
+java.lang.NullPointerException v3;
+v0 := @this: io.vertx.core.streams.impl.InboundBuffer;
+v1 := @parameter0: io.vertx.core.Context;
+v2 := @parameter1: long;
+specialinvoke v0.<java.lang.Object: void <init>()>();
+if v1 != null goto label1;
+v3 = new java.lang.NullPointerException;
+specialinvoke v3.<java.lang.NullPointerException: void <init>(java.lang.String)>("context must not be null");
+throw v3;
+label1:
+v4 = v2 cmp 0L;
+if v4 >= 0 goto label2;
+v5 = new java.lang.IllegalArgumentException;
+v6 = dynamicinvoke "makeConcatWithConstants" <java.lang.String (long)>(v2) <java.lang.invoke.StringConcatFactory: java.lang.invoke.CallSite makeConcatWithConstants(java.lang.invoke.MethodHandles$Lookup,java.lang.String,java.lang.invoke.MethodType,java.lang.String,java.lang.Object[])>("highWaterMark \u0001 >= 0");
+specialinvoke v5.<java.lang.IllegalArgumentException: void <init>(java.lang.String)>(v6);
+throw v5;
+label2:
+v0.<io.vertx.core.streams.impl.InboundBuffer: io.vertx.core.impl.ContextInternal context> = v1;
+v0.<io.vertx.core.streams.impl.InboundBuffer: long highWaterMark> = v2;
+v0.<io.vertx.core.streams.impl.InboundBuffer: long demand> = 9223372036854775807L;
+v0.<io.vertx.core.streams.impl.InboundBuffer: java.util.ArrayDeque pending> = null;
+return;
+}
+private void checkThread()
+{
+java.lang.IllegalStateException v3;
+io.vertx.core.streams.impl.InboundBuffer v0;
+io.vertx.core.impl.ContextInternal v1;
+boolean v2;
+v0 := @this: io.vertx.core.streams.impl.InboundBuffer;
+v1 = v0.<io.vertx.core.streams.impl.InboundBuffer: io.vertx.core.impl.ContextInternal context>;
+v2 = interfaceinvoke v1.<io.vertx.core.impl.ContextInternal: boolean inThread()>();
+if v2 != 0 goto label1;
+v3 = new java.lang.IllegalStateException;
+specialinvoke v3.<java.lang.IllegalStateException: void <init>(java.lang.String)>("This operation must be called from a Vert.x thread");
+throw v3;
+label1:
+return;
+}
+public boolean write(java.lang.Object)
+{
+java.lang.Throwable v14;
+io.vertx.core.streams.impl.InboundBuffer v0;
+long v11, v12, v2, v9;
+byte v10, v3;
+boolean v15, v4, v8;
+java.lang.Object v1;
+io.vertx.core.Handler v13;
+java.util.ArrayDeque v5, v6, v7;
+v0 := @this: io.vertx.core.streams.impl.InboundBuffer;
+v1 := @parameter0: java.lang.Object;
+specialinvoke v0.<io.vertx.core.streams.impl.InboundBuffer: void checkThread()>();
+entermonitor v0;
+label1:
+v2 = v0.<io.vertx.core.streams.impl.InboundBuffer: long demand>;
+v3 = v2 cmp 0L;
+if v3 == 0 goto label2;
+v4 = v0.<io.vertx.core.streams.impl.InboundBuffer: boolean emitting>;
+if v4 == 0 goto label5;
+label2:
+v5 = v0.<io.vertx.core.streams.impl.InboundBuffer: java.util.ArrayDeque pending>;
+if v5 != null goto label3;
+v6 = new java.util.ArrayDeque;
+specialinvoke v6.<java.util.ArrayDeque: void <init>(int)>(1);
+v0.<io.vertx.core.streams.impl.InboundBuffer: java.util.ArrayDeque pending> = v6;
+label3:
+v7 = v0.<io.vertx.core.streams.impl.InboundBuffer: java.util.ArrayDeque pending>;
+virtualinvoke v7.<java.util.ArrayDeque: boolean add(java.lang.Object)>(v1);
+v8 = specialinvoke v0.<io.vertx.core.streams.impl.InboundBuffer: boolean checkWritable()>();
+exitmonitor v0;
+label4:
+return v8;
+label5:
+v9 = v0.<io.vertx.core.streams.impl.InboundBuffer: long demand>;
+v10 = v9 cmp 9223372036854775807L;
+if v10 == 0 goto label6;
+v11 = v0.<io.vertx.core.streams.impl.InboundBuffer: long demand>;
+v12 = v11 - 1L;
+v0.<io.vertx.core.streams.impl.InboundBuffer: long demand> = v12;
+label6:
+v0.<io.vertx.core.streams.impl.InboundBuffer: boolean emitting> = 1;
+v13 = v0.<io.vertx.core.streams.impl.InboundBuffer: io.vertx.core.Handler handler>;
+exitmonitor v0;
+label7:
+goto label9;
+label8:
+v14 := @caughtexception;
+exitmonitor v0;
+throw v14;
+label9:
+specialinvoke v0.<io.vertx.core.streams.impl.InboundBuffer: void handleEvent(io.vertx.core.Handler,java.lang.Object)>(v13, v1);
+v15 = specialinvoke v0.<io.vertx.core.streams.impl.InboundBuffer: boolean emitPending()>();
+return v15;
+catch java.lang.Throwable from label1 to label4 with label8;
+catch java.lang.Throwable from label5 to label7 with label8;
+}
+private boolean checkWritable()
+{
+io.vertx.core.streams.impl.InboundBuffer v0;
+long v1, v4, v5, v6;
+byte v2, v7;
+int v3;
+boolean v10, v11, v12, v8, v9;
+v0 := @this: io.vertx.core.streams.impl.InboundBuffer;
+v1 = v0.<io.vertx.core.streams.impl.InboundBuffer: long demand>;
+v2 = v1 cmp 9223372036854775807L;
+if v2 != 0 goto label1;
+return 1;
+label1:
+v3 = virtualinvoke v0.<io.vertx.core.streams.impl.InboundBuffer: int size()>();
+v4 = v0.<io.vertx.core.streams.impl.InboundBuffer: long demand>;
+v5 = v3 - v4;
+v6 = v0.<io.vertx.core.streams.impl.InboundBuffer: long highWaterMark>;
+v7 = v5 cmp v6;
+if v7 >= 0 goto label2;
+v8 = 1;
+goto label3;
+label2:
+v8 = 0;
+label3:
+v9 = v8;
+v10 = v0.<io.vertx.core.streams.impl.InboundBuffer: boolean overflow>;
+if v8 != 0 goto label4;
+v11 = 1;
+goto label5;
+label4:
+v11 = 0;
+label5:
+v12 = v10 | v11;
+v0.<io.vertx.core.streams.impl.InboundBuffer: boolean overflow> = v12;
+return v9;
+}
+public boolean write(java.lang.Iterable)
+{
+java.lang.Throwable v14;
+io.vertx.core.streams.impl.InboundBuffer v0;
+long v10;
+java.lang.Iterable v1;
+byte v11;
+int v4;
+boolean v12, v13, v15, v3, v7;
+java.util.Iterator v6;
+java.lang.Object v8;
+java.util.ArrayDeque v2, v5, v9;
+v0 := @this: io.vertx.core.streams.impl.InboundBuffer;
+v1 := @parameter0: java.lang.Iterable;
+specialinvoke v0.<io.vertx.core.streams.impl.InboundBuffer: void checkThread()>();
+entermonitor v0;
+label01:
+v2 = v0.<io.vertx.core.streams.impl.InboundBuffer: java.util.ArrayDeque pending>;
+if v2 != null goto label04;
+v3 = v1 instanceof java.util.Collection;
+if v3 == 0 goto label02;
+v4 = interfaceinvoke v1.<java.util.Collection: int size()>();
+goto label03;
+label02:
+v4 = 1;
+label03:
+v5 = new java.util.ArrayDeque;
+specialinvoke v5.<java.util.ArrayDeque: void <init>(int)>(v4);
+v0.<io.vertx.core.streams.impl.InboundBuffer: java.util.ArrayDeque pending> = v5;
+label04:
+v6 = interfaceinvoke v1.<java.lang.Iterable: java.util.Iterator iterator()>();
+label05:
+v7 = interfaceinvoke v6.<java.util.Iterator: boolean hasNext()>();
+if v7 == 0 goto label06;
+v8 = interfaceinvoke v6.<java.util.Iterator: java.lang.Object next()>();
+v9 = v0.<io.vertx.core.streams.impl.InboundBuffer: java.util.ArrayDeque pending>;
+virtualinvoke v9.<java.util.ArrayDeque: boolean add(java.lang.Object)>(v8);
+goto label05;
+label06:
+v10 = v0.<io.vertx.core.streams.impl.InboundBuffer: long demand>;
+v11 = v10 cmp 0L;
+if v11 == 0 goto label07;
+v12 = v0.<io.vertx.core.streams.impl.InboundBuffer: boolean emitting>;
+if v12 == 0 goto label09;
+label07:
+v13 = specialinvoke v0.<io.vertx.core.streams.impl.InboundBuffer: boolean checkWritable()>();
+exitmonitor v0;
+label08:
+return v13;
+label09:
+v0.<io.vertx.core.streams.impl.InboundBuffer: boolean emitting> = 1;
+exitmonitor v0;
+label10:
+goto label12;
+label11:
+v14 := @caughtexception;
+exitmonitor v0;
+throw v14;
+label12:
+v15 = specialinvoke v0.<io.vertx.core.streams.impl.InboundBuffer: boolean emitPending()>();
+return v15;
+catch java.lang.Throwable from label01 to label08 with label11;
+catch java.lang.Throwable from label09 to label10 with label11;
+}
+private boolean emitPending()
+{
+java.lang.Throwable v21;
+io.vertx.core.streams.impl.InboundBuffer v0;
+long v11, v13, v14, v2, v4;
+java.lang.AssertionError v17;
+byte v12, v3, v5;
+int v1;
+boolean v10, v15, v6, v7, v8, v9;
+java.lang.Object v19;
+io.vertx.core.Handler v20;
+java.util.ArrayDeque v16, v18;
+v0 := @this: io.vertx.core.streams.impl.InboundBuffer;
+label01:
+entermonitor v0;
+label02:
+v1 = virtualinvoke v0.<io.vertx.core.streams.impl.InboundBuffer: int size()>();
+v2 = v0.<io.vertx.core.streams.impl.InboundBuffer: long demand>;
+v3 = v2 cmp 0L;
+if v3 != 0 goto label08;
+v0.<io.vertx.core.streams.impl.InboundBuffer: boolean emitting> = 0;
+v4 = v0.<io.vertx.core.streams.impl.InboundBuffer: long highWaterMark>;
+v5 = v1 cmp v4;
+if v5 >= 0 goto label03;
+v6 = 1;
+goto label04;
+label03:
+v6 = 0;
+label04:
+v7 = v6;
+v8 = v0.<io.vertx.core.streams.impl.InboundBuffer: boolean overflow>;
+if v6 != 0 goto label05;
+v9 = 1;
+goto label06;
+label05:
+v9 = 0;
+label06:
+v10 = v8 | v9;
+v0.<io.vertx.core.streams.impl.InboundBuffer: boolean overflow> = v10;
+exitmonitor v0;
+label07:
+return v7;
+label08:
+if v1 != 0 goto label10;
+v0.<io.vertx.core.streams.impl.InboundBuffer: boolean emitting> = 0;
+exitmonitor v0;
+label09:
+return 1;
+label10:
+v11 = v0.<io.vertx.core.streams.impl.InboundBuffer: long demand>;
+v12 = v11 cmp 9223372036854775807L;
+if v12 == 0 goto label11;
+v13 = v0.<io.vertx.core.streams.impl.InboundBuffer: long demand>;
+v14 = v13 - 1L;
+v0.<io.vertx.core.streams.impl.InboundBuffer: long demand> = v14;
+label11:
+v15 = <io.vertx.core.streams.impl.InboundBuffer: boolean $assertionsDisabled>;
+if v15 != 0 goto label12;
+v16 = v0.<io.vertx.core.streams.impl.InboundBuffer: java.util.ArrayDeque pending>;
+if v16 != null goto label12;
+v17 = new java.lang.AssertionError;
+specialinvoke v17.<java.lang.AssertionError: void <init>()>();
+throw v17;
+label12:
+v18 = v0.<io.vertx.core.streams.impl.InboundBuffer: java.util.ArrayDeque pending>;
+v19 = virtualinvoke v18.<java.util.ArrayDeque: java.lang.Object poll()>();
+v20 = v0.<io.vertx.core.streams.impl.InboundBuffer: io.vertx.core.Handler handler>;
+exitmonitor v0;
+label13:
+goto label15;
+label14:
+v21 := @caughtexception;
+exitmonitor v0;
+throw v21;
+label15:
+specialinvoke v0.<io.vertx.core.streams.impl.InboundBuffer: void handleEvent(io.vertx.core.Handler,java.lang.Object)>(v20, v19);
+goto label01;
+catch java.lang.Throwable from label02 to label07 with label14;
+catch java.lang.Throwable from label08 to label09 with label14;
+catch java.lang.Throwable from label10 to label13 with label14;
+}
+private void drain()
+{
+java.lang.Throwable v19;
+io.vertx.core.streams.impl.InboundBuffer v0;
+long v11, v12, v7, v9;
+java.lang.AssertionError v15;
+byte v10, v8;
+int v1, v2;
+boolean v13, v3;
+java.lang.Object v17;
+io.vertx.core.Handler v18, v4, v5, v6;
+java.util.ArrayDeque v14, v16;
+v0 := @this: io.vertx.core.streams.impl.InboundBuffer;
+v1 = 0;
+label01:
+entermonitor v0;
+label02:
+v2 = virtualinvoke v0.<io.vertx.core.streams.impl.InboundBuffer: int size()>();
+if v2 != 0 goto label08;
+v0.<io.vertx.core.streams.impl.InboundBuffer: boolean emitting> = 0;
+v3 = v0.<io.vertx.core.streams.impl.InboundBuffer: boolean overflow>;
+if v3 == 0 goto label03;
+v0.<io.vertx.core.streams.impl.InboundBuffer: boolean overflow> = 0;
+v4 = v0.<io.vertx.core.streams.impl.InboundBuffer: io.vertx.core.Handler drainHandler>;
+goto label04;
+label03:
+v4 = null;
+label04:
+if v1 <= 0 goto label05;
+v5 = v0.<io.vertx.core.streams.impl.InboundBuffer: io.vertx.core.Handler emptyHandler>;
+goto label06;
+label05:
+v5 = null;
+label06:
+v6 = v5;
+exitmonitor v0;
+label07:
+goto label16;
+label08:
+v7 = v0.<io.vertx.core.streams.impl.InboundBuffer: long demand>;
+v8 = v7 cmp 0L;
+if v8 != 0 goto label10;
+v0.<io.vertx.core.streams.impl.InboundBuffer: boolean emitting> = 0;
+exitmonitor v0;
+label09:
+return;
+label10:
+v1 = v1 + 1;
+v9 = v0.<io.vertx.core.streams.impl.InboundBuffer: long demand>;
+v10 = v9 cmp 9223372036854775807L;
+if v10 == 0 goto label11;
+v11 = v0.<io.vertx.core.streams.impl.InboundBuffer: long demand>;
+v12 = v11 - 1L;
+v0.<io.vertx.core.streams.impl.InboundBuffer: long demand> = v12;
+label11:
+v13 = <io.vertx.core.streams.impl.InboundBuffer: boolean $assertionsDisabled>;
+if v13 != 0 goto label12;
+v14 = v0.<io.vertx.core.streams.impl.InboundBuffer: java.util.ArrayDeque pending>;
+if v14 != null goto label12;
+v15 = new java.lang.AssertionError;
+specialinvoke v15.<java.lang.AssertionError: void <init>()>();
+throw v15;
+label12:
+v16 = v0.<io.vertx.core.streams.impl.InboundBuffer: java.util.ArrayDeque pending>;
+v17 = virtualinvoke v16.<java.util.ArrayDeque: java.lang.Object poll()>();
+v18 = v0.<io.vertx.core.streams.impl.InboundBuffer: io.vertx.core.Handler handler>;
+exitmonitor v0;
+label13:
+goto label15;
+label14:
+v19 := @caughtexception;
+exitmonitor v0;
+throw v19;
+label15:
+specialinvoke v0.<io.vertx.core.streams.impl.InboundBuffer: void handleEvent(io.vertx.core.Handler,java.lang.Object)>(v18, v17);
+goto label01;
+label16:
+if v4 == null goto label17;
+specialinvoke v0.<io.vertx.core.streams.impl.InboundBuffer: void handleEvent(io.vertx.core.Handler,java.lang.Object)>(v4, null);
+label17:
+if v6 == null goto label18;
+specialinvoke v0.<io.vertx.core.streams.impl.InboundBuffer: void handleEvent(io.vertx.core.Handler,java.lang.Object)>(v6, null);
+label18:
+return;
+catch java.lang.Throwable from label02 to label07 with label14;
+catch java.lang.Throwable from label08 to label09 with label14;
+catch java.lang.Throwable from label10 to label13 with label14;
+}
+private void handleEvent(io.vertx.core.Handler, java.lang.Object)
+{
+java.lang.Throwable v3;
+io.vertx.core.streams.impl.InboundBuffer v0;
+java.lang.Object v2;
+io.vertx.core.Handler v1;
+v0 := @this: io.vertx.core.streams.impl.InboundBuffer;
+v1 := @parameter0: io.vertx.core.Handler;
+v2 := @parameter1: java.lang.Object;
+if v1 == null goto label4;
+label1:
+interfaceinvoke v1.<io.vertx.core.Handler: void handle(java.lang.Object)>(v2);
+label2:
+goto label4;
+label3:
+v3 := @caughtexception;
+specialinvoke v0.<io.vertx.core.streams.impl.InboundBuffer: void handleException(java.lang.Throwable)>(v3);
+label4:
+return;
+catch java.lang.Throwable from label1 to label2 with label3;
+}
+private void handleException(java.lang.Throwable)
+{
+java.lang.Throwable v1, v3;
+io.vertx.core.streams.impl.InboundBuffer v0;
+io.vertx.core.Handler v2;
+v0 := @this: io.vertx.core.streams.impl.InboundBuffer;
+v1 := @parameter0: java.lang.Throwable;
+entermonitor v0;
+label1:
+v2 = v0.<io.vertx.core.streams.impl.InboundBuffer: io.vertx.core.Handler exceptionHandler>;
+if v2 != null goto label3;
+exitmonitor v0;
+label2:
+return;
+label3:
+exitmonitor v0;
+label4:
+goto label6;
+label5:
+v3 := @caughtexception;
+exitmonitor v0;
+throw v3;
+label6:
+interfaceinvoke v2.<io.vertx.core.Handler: void handle(java.lang.Object)>(v1);
+return;
+catch java.lang.Throwable from label1 to label2 with label5;
+catch java.lang.Throwable from label3 to label4 with label5;
+}
+public boolean fetch(long)
+{
+java.lang.Throwable v11;
+io.vertx.core.streams.impl.InboundBuffer v0;
+io.vertx.core.impl.ContextInternal v12;
+long v1, v4, v5, v6;
+java.lang.IllegalArgumentException v3;
+byte v2, v7;
+io.vertx.core.Handler v13;
+boolean v10, v8, v9;
+v0 := @this: io.vertx.core.streams.impl.InboundBuffer;
+v1 := @parameter0: long;
+v2 = v1 cmp 0L;
+if v2 >= 0 goto label1;
+v3 = new java.lang.IllegalArgumentException;
+specialinvoke v3.<java.lang.IllegalArgumentException: void <init>()>();
+throw v3;
+label1:
+entermonitor v0;
+label2:
+v4 = v0.<io.vertx.core.streams.impl.InboundBuffer: long demand>;
+v5 = v4 + v1;
+v0.<io.vertx.core.streams.impl.InboundBuffer: long demand> = v5;
+v6 = v0.<io.vertx.core.streams.impl.InboundBuffer: long demand>;
+v7 = v6 cmp 0L;
+if v7 >= 0 goto label3;
+v0.<io.vertx.core.streams.impl.InboundBuffer: long demand> = 9223372036854775807L;
+label3:
+v8 = v0.<io.vertx.core.streams.impl.InboundBuffer: boolean emitting>;
+if v8 != 0 goto label4;
+v9 = virtualinvoke v0.<io.vertx.core.streams.impl.InboundBuffer: boolean isEmpty()>();
+if v9 == 0 goto label6;
+v10 = v0.<io.vertx.core.streams.impl.InboundBuffer: boolean overflow>;
+if v10 != 0 goto label6;
+label4:
+exitmonitor v0;
+label5:
+return 0;
+label6:
+v0.<io.vertx.core.streams.impl.InboundBuffer: boolean emitting> = 1;
+exitmonitor v0;
+label7:
+goto label9;
+label8:
+v11 := @caughtexception;
+exitmonitor v0;
+throw v11;
+label9:
+v12 = v0.<io.vertx.core.streams.impl.InboundBuffer: io.vertx.core.impl.ContextInternal context>;
+v13 = staticinvoke <io.vertx.core.streams.impl.InboundBuffer$lambda_fetch_0__1253: io.vertx.core.Handler bootstrap$(io.vertx.core.streams.impl.InboundBuffer)>(v0);
+interfaceinvoke v12.<io.vertx.core.impl.ContextInternal: void runOnContext(io.vertx.core.Handler)>(v13);
+return 1;
+catch java.lang.Throwable from label2 to label5 with label8;
+catch java.lang.Throwable from label6 to label7 with label8;
+}
+public java.lang.Object read()
+{
+java.lang.Throwable v4;
+io.vertx.core.streams.impl.InboundBuffer v0;
+java.lang.Object v3;
+java.util.ArrayDeque v2;
+boolean v1;
+v0 := @this: io.vertx.core.streams.impl.InboundBuffer;
+entermonitor v0;
+label1:
+v1 = virtualinvoke v0.<io.vertx.core.streams.impl.InboundBuffer: boolean isEmpty()>();
+if v1 == 0 goto label3;
+exitmonitor v0;
+label2:
+return null;
+label3:
+v2 = v0.<io.vertx.core.streams.impl.InboundBuffer: java.util.ArrayDeque pending>;
+v3 = virtualinvoke v2.<java.util.ArrayDeque: java.lang.Object poll()>();
+exitmonitor v0;
+label4:
+return v3;
+label5:
+v4 := @caughtexception;
+exitmonitor v0;
+throw v4;
+catch java.lang.Throwable from label1 to label2 with label5;
+catch java.lang.Throwable from label3 to label4 with label5;
+}
+public synchronized io.vertx.core.streams.impl.InboundBuffer clear()
+{
+io.vertx.core.streams.impl.InboundBuffer v0;
+java.util.ArrayDeque v2;
+boolean v1;
+v0 := @this: io.vertx.core.streams.impl.InboundBuffer;
+v1 = virtualinvoke v0.<io.vertx.core.streams.impl.InboundBuffer: boolean isEmpty()>();
+if v1 == 0 goto label1;
+return v0;
+label1:
+v2 = v0.<io.vertx.core.streams.impl.InboundBuffer: java.util.ArrayDeque pending>;
+virtualinvoke v2.<java.util.ArrayDeque: void clear()>();
+return v0;
+}
+public synchronized io.vertx.core.streams.impl.InboundBuffer pause()
+{
+io.vertx.core.streams.impl.InboundBuffer v0;
+v0 := @this: io.vertx.core.streams.impl.InboundBuffer;
+v0.<io.vertx.core.streams.impl.InboundBuffer: long demand> = 0L;
+return v0;
+}
+public boolean resume()
+{
+io.vertx.core.streams.impl.InboundBuffer v0;
+boolean v1;
+v0 := @this: io.vertx.core.streams.impl.InboundBuffer;
+v1 = virtualinvoke v0.<io.vertx.core.streams.impl.InboundBuffer: boolean fetch(long)>(9223372036854775807L);
+return v1;
+}
+public synchronized io.vertx.core.streams.impl.InboundBuffer handler(io.vertx.core.Handler)
+{
+io.vertx.core.streams.impl.InboundBuffer v0;
+io.vertx.core.Handler v1;
+v0 := @this: io.vertx.core.streams.impl.InboundBuffer;
+v1 := @parameter0: io.vertx.core.Handler;
+v0.<io.vertx.core.streams.impl.InboundBuffer: io.vertx.core.Handler handler> = v1;
+return v0;
+}
+public synchronized io.vertx.core.streams.impl.InboundBuffer drainHandler(io.vertx.core.Handler)
+{
+io.vertx.core.streams.impl.InboundBuffer v0;
+io.vertx.core.Handler v1;
+v0 := @this: io.vertx.core.streams.impl.InboundBuffer;
+v1 := @parameter0: io.vertx.core.Handler;
+v0.<io.vertx.core.streams.impl.InboundBuffer: io.vertx.core.Handler drainHandler> = v1;
+return v0;
+}
+public synchronized io.vertx.core.streams.impl.InboundBuffer emptyHandler(io.vertx.core.Handler)
+{
+io.vertx.core.streams.impl.InboundBuffer v0;
+io.vertx.core.Handler v1;
+v0 := @this: io.vertx.core.streams.impl.InboundBuffer;
+v1 := @parameter0: io.vertx.core.Handler;
+v0.<io.vertx.core.streams.impl.InboundBuffer: io.vertx.core.Handler emptyHandler> = v1;
+return v0;
+}
+public synchronized io.vertx.core.streams.impl.InboundBuffer exceptionHandler(io.vertx.core.Handler)
+{
+io.vertx.core.streams.impl.InboundBuffer v0;
+io.vertx.core.Handler v1;
+v0 := @this: io.vertx.core.streams.impl.InboundBuffer;
+v1 := @parameter0: io.vertx.core.Handler;
+v0.<io.vertx.core.streams.impl.InboundBuffer: io.vertx.core.Handler exceptionHandler> = v1;
+return v0;
+}
+public synchronized boolean isEmpty()
+{
+io.vertx.core.streams.impl.InboundBuffer v0;
+java.util.ArrayDeque v1, v2;
+boolean v3;
+v0 := @this: io.vertx.core.streams.impl.InboundBuffer;
+v1 = v0.<io.vertx.core.streams.impl.InboundBuffer: java.util.ArrayDeque pending>;
+if v1 != null goto label1;
+return 1;
+label1:
+v2 = v0.<io.vertx.core.streams.impl.InboundBuffer: java.util.ArrayDeque pending>;
+v3 = virtualinvoke v2.<java.util.ArrayDeque: boolean isEmpty()>();
+return v3;
+}
+public synchronized boolean isWritable()
+{
+io.vertx.core.streams.impl.InboundBuffer v0;
+byte v3;
+int v1;
+long v2;
+boolean v4;
+v0 := @this: io.vertx.core.streams.impl.InboundBuffer;
+v1 = virtualinvoke v0.<io.vertx.core.streams.impl.InboundBuffer: int size()>();
+v2 = v0.<io.vertx.core.streams.impl.InboundBuffer: long highWaterMark>;
+v3 = v1 cmp v2;
+if v3 >= 0 goto label1;
+v4 = 1;
+goto label2;
+label1:
+v4 = 0;
+label2:
+return v4;
+}
+public synchronized boolean isPaused()
+{
+io.vertx.core.streams.impl.InboundBuffer v0;
+byte v2;
+long v1;
+boolean v3;
+v0 := @this: io.vertx.core.streams.impl.InboundBuffer;
+v1 = v0.<io.vertx.core.streams.impl.InboundBuffer: long demand>;
+v2 = v1 cmp 0L;
+if v2 != 0 goto label1;
+v3 = 1;
+goto label2;
+label1:
+v3 = 0;
+label2:
+return v3;
+}
+public synchronized int size()
+{
+io.vertx.core.streams.impl.InboundBuffer v0;
+int v2;
+java.util.ArrayDeque v1, v3;
+v0 := @this: io.vertx.core.streams.impl.InboundBuffer;
+v1 = v0.<io.vertx.core.streams.impl.InboundBuffer: java.util.ArrayDeque pending>;
+if v1 != null goto label1;
+v2 = 0;
+goto label2;
+label1:
+v3 = v0.<io.vertx.core.streams.impl.InboundBuffer: java.util.ArrayDeque pending>;
+v2 = virtualinvoke v3.<java.util.ArrayDeque: int size()>();
+label2:
+return v2;
+}
+static void <clinit>()
+{
+java.lang.Class v0;
+java.lang.Object v3;
+boolean v1, v2;
+v0 = class "Lio/vertx/core/streams/impl/InboundBuffer;";
+v1 = virtualinvoke v0.<java.lang.Class: boolean desiredAssertionStatus()>();
+if v1 != 0 goto label1;
+v2 = 1;
+goto label2;
+label1:
+v2 = 0;
+label2:
+<io.vertx.core.streams.impl.InboundBuffer: boolean $assertionsDisabled> = v2;
+v3 = new java.lang.Object;
+specialinvoke v3.<java.lang.Object: void <init>()>();
+<io.vertx.core.streams.impl.InboundBuffer: java.lang.Object END_SENTINEL> = v3;
+return;
+}
+}

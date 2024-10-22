@@ -1,0 +1,137 @@
+public class io.vertx.core.net.impl.pool.CombinerExecutor extends java.lang.Object implements io.vertx.core.net.impl.pool.Executor
+{
+private final java.util.Queue q;
+private final java.util.concurrent.atomic.AtomicInteger s;
+private final java.lang.Object state;
+private final java.lang.ThreadLocal current;
+public void <init>(java.lang.Object)
+{
+java.lang.ThreadLocal v4;
+java.util.concurrent.atomic.AtomicInteger v3;
+java.lang.Object v1;
+io.vertx.core.net.impl.pool.CombinerExecutor v0;
+java.util.Queue v2;
+v0 := @this: io.vertx.core.net.impl.pool.CombinerExecutor;
+v1 := @parameter0: java.lang.Object;
+specialinvoke v0.<java.lang.Object: void <init>()>();
+v2 = staticinvoke <io.netty.util.internal.PlatformDependent: java.util.Queue newMpscQueue()>();
+v0.<io.vertx.core.net.impl.pool.CombinerExecutor: java.util.Queue q> = v2;
+v3 = new java.util.concurrent.atomic.AtomicInteger;
+specialinvoke v3.<java.util.concurrent.atomic.AtomicInteger: void <init>()>();
+v0.<io.vertx.core.net.impl.pool.CombinerExecutor: java.util.concurrent.atomic.AtomicInteger s> = v3;
+v4 = new java.lang.ThreadLocal;
+specialinvoke v4.<java.lang.ThreadLocal: void <init>()>();
+v0.<io.vertx.core.net.impl.pool.CombinerExecutor: java.lang.ThreadLocal current> = v4;
+v0.<io.vertx.core.net.impl.pool.CombinerExecutor: java.lang.Object state> = v1;
+return;
+}
+public void submit(io.vertx.core.net.impl.pool.Executor$Action)
+{
+java.lang.Throwable v19, v9;
+io.vertx.core.net.impl.pool.Executor$Action v1;
+java.util.concurrent.atomic.AtomicInteger v10, v13, v3, v5, v8;
+int v4;
+boolean v12, v14, v6;
+java.lang.ThreadLocal v15, v17, v18, v20;
+io.vertx.core.net.impl.pool.CombinerExecutor v0;
+io.vertx.core.net.impl.pool.Task v7;
+java.lang.Object v16;
+java.util.Queue v11, v2;
+v0 := @this: io.vertx.core.net.impl.pool.CombinerExecutor;
+v1 := @parameter0: io.vertx.core.net.impl.pool.Executor$Action;
+v2 = v0.<io.vertx.core.net.impl.pool.CombinerExecutor: java.util.Queue q>;
+interfaceinvoke v2.<java.util.Queue: boolean add(java.lang.Object)>(v1);
+v3 = v0.<io.vertx.core.net.impl.pool.CombinerExecutor: java.util.concurrent.atomic.AtomicInteger s>;
+v4 = virtualinvoke v3.<java.util.concurrent.atomic.AtomicInteger: int get()>();
+if v4 != 0 goto label01;
+v5 = v0.<io.vertx.core.net.impl.pool.CombinerExecutor: java.util.concurrent.atomic.AtomicInteger s>;
+v6 = virtualinvoke v5.<java.util.concurrent.atomic.AtomicInteger: boolean compareAndSet(int,int)>(0, 1);
+if v6 != 0 goto label02;
+label01:
+return;
+label02:
+v7 = null;
+label03:
+v7 = specialinvoke v0.<io.vertx.core.net.impl.pool.CombinerExecutor: io.vertx.core.net.impl.pool.Task pollAndExecute(io.vertx.core.net.impl.pool.Task)>(v7);
+label04:
+v8 = v0.<io.vertx.core.net.impl.pool.CombinerExecutor: java.util.concurrent.atomic.AtomicInteger s>;
+virtualinvoke v8.<java.util.concurrent.atomic.AtomicInteger: void set(int)>(0);
+goto label06;
+label05:
+v9 := @caughtexception;
+v10 = v0.<io.vertx.core.net.impl.pool.CombinerExecutor: java.util.concurrent.atomic.AtomicInteger s>;
+virtualinvoke v10.<java.util.concurrent.atomic.AtomicInteger: void set(int)>(0);
+throw v9;
+label06:
+v11 = v0.<io.vertx.core.net.impl.pool.CombinerExecutor: java.util.Queue q>;
+v12 = interfaceinvoke v11.<java.util.Queue: boolean isEmpty()>();
+if v12 != 0 goto label07;
+v13 = v0.<io.vertx.core.net.impl.pool.CombinerExecutor: java.util.concurrent.atomic.AtomicInteger s>;
+v14 = virtualinvoke v13.<java.util.concurrent.atomic.AtomicInteger: boolean compareAndSet(int,int)>(0, 1);
+if v14 != 0 goto label03;
+label07:
+if v7 == null goto label12;
+v15 = v0.<io.vertx.core.net.impl.pool.CombinerExecutor: java.lang.ThreadLocal current>;
+v16 = virtualinvoke v15.<java.lang.ThreadLocal: java.lang.Object get()>();
+if v16 != null goto label11;
+v17 = v0.<io.vertx.core.net.impl.pool.CombinerExecutor: java.lang.ThreadLocal current>;
+virtualinvoke v17.<java.lang.ThreadLocal: void set(java.lang.Object)>(v7);
+label08:
+if v7 == null goto label09;
+virtualinvoke v7.<io.vertx.core.net.impl.pool.Task: void run()>();
+v7 = v7.<io.vertx.core.net.impl.pool.Task: io.vertx.core.net.impl.pool.Task next>;
+goto label08;
+label09:
+v18 = v0.<io.vertx.core.net.impl.pool.CombinerExecutor: java.lang.ThreadLocal current>;
+virtualinvoke v18.<java.lang.ThreadLocal: void remove()>();
+goto label12;
+label10:
+v19 := @caughtexception;
+v20 = v0.<io.vertx.core.net.impl.pool.CombinerExecutor: java.lang.ThreadLocal current>;
+virtualinvoke v20.<java.lang.ThreadLocal: void remove()>();
+throw v19;
+label11:
+staticinvoke <io.vertx.core.net.impl.pool.CombinerExecutor: void merge(io.vertx.core.net.impl.pool.Task,io.vertx.core.net.impl.pool.Task)>(v16, v7);
+label12:
+return;
+catch java.lang.Throwable from label03 to label04 with label05;
+catch java.lang.Throwable from label08 to label09 with label10;
+}
+private io.vertx.core.net.impl.pool.Task pollAndExecute(io.vertx.core.net.impl.pool.Task)
+{
+io.vertx.core.net.impl.pool.Task v1, v5;
+java.lang.Object v3, v4;
+io.vertx.core.net.impl.pool.CombinerExecutor v0;
+java.util.Queue v2;
+v0 := @this: io.vertx.core.net.impl.pool.CombinerExecutor;
+v1 := @parameter0: io.vertx.core.net.impl.pool.Task;
+label1:
+v2 = v0.<io.vertx.core.net.impl.pool.CombinerExecutor: java.util.Queue q>;
+v3 = interfaceinvoke v2.<java.util.Queue: java.lang.Object poll()>();
+if v3 == null goto label3;
+v4 = v0.<io.vertx.core.net.impl.pool.CombinerExecutor: java.lang.Object state>;
+v5 = interfaceinvoke v3.<io.vertx.core.net.impl.pool.Executor$Action: io.vertx.core.net.impl.pool.Task execute(java.lang.Object)>(v4);
+if v5 == null goto label1;
+if v1 != null goto label2;
+v1 = v5;
+goto label1;
+label2:
+staticinvoke <io.vertx.core.net.impl.pool.CombinerExecutor: void merge(io.vertx.core.net.impl.pool.Task,io.vertx.core.net.impl.pool.Task)>(v1, v5);
+goto label1;
+label3:
+return v1;
+}
+private static void merge(io.vertx.core.net.impl.pool.Task, io.vertx.core.net.impl.pool.Task)
+{
+io.vertx.core.net.impl.pool.Task v0, v1, v2, v3, v4;
+v0 := @parameter0: io.vertx.core.net.impl.pool.Task;
+v1 := @parameter1: io.vertx.core.net.impl.pool.Task;
+v2 = v1.<io.vertx.core.net.impl.pool.Task: io.vertx.core.net.impl.pool.Task prev>;
+v3 = v0.<io.vertx.core.net.impl.pool.Task: io.vertx.core.net.impl.pool.Task prev>;
+v1.<io.vertx.core.net.impl.pool.Task: io.vertx.core.net.impl.pool.Task prev> = v3;
+v4 = v0.<io.vertx.core.net.impl.pool.Task: io.vertx.core.net.impl.pool.Task prev>;
+v4.<io.vertx.core.net.impl.pool.Task: io.vertx.core.net.impl.pool.Task next> = v1;
+v0.<io.vertx.core.net.impl.pool.Task: io.vertx.core.net.impl.pool.Task prev> = v2;
+return;
+}
+}

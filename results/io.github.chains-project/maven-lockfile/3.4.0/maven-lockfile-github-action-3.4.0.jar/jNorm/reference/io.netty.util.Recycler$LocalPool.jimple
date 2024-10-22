@@ -1,0 +1,176 @@
+final class io.netty.util.Recycler$LocalPool extends java.lang.Object implements io.netty.util.internal.shaded.org.jctools.queues.MessagePassingQueue$Consumer
+{
+private final int ratioInterval;
+private final int chunkSize;
+private final java.util.ArrayDeque batch;
+private volatile java.lang.Thread owner;
+private volatile io.netty.util.internal.shaded.org.jctools.queues.MessagePassingQueue pooledHandles;
+private int ratioCounter;
+void <init>(int, int, int)
+{
+java.lang.Thread v5, v8;
+int v1, v2, v3;
+io.netty.util.Recycler$BlockingMessageQueue v10;
+java.util.Queue v11;
+io.netty.util.Recycler$LocalPool v0;
+java.util.ArrayDeque v4;
+boolean v6, v7, v9;
+v0 := @this: io.netty.util.Recycler$LocalPool;
+v1 := @parameter0: int;
+v2 := @parameter1: int;
+v3 := @parameter2: int;
+specialinvoke v0.<java.lang.Object: void <init>()>();
+v0.<io.netty.util.Recycler$LocalPool: int ratioInterval> = v2;
+v0.<io.netty.util.Recycler$LocalPool: int chunkSize> = v3;
+v4 = new java.util.ArrayDeque;
+specialinvoke v4.<java.util.ArrayDeque: void <init>(int)>(v3);
+v0.<io.netty.util.Recycler$LocalPool: java.util.ArrayDeque batch> = v4;
+v5 = staticinvoke <java.lang.Thread: java.lang.Thread currentThread()>();
+v6 = <io.netty.util.Recycler: boolean BATCH_FAST_TL_ONLY>;
+if v6 == 0 goto label1;
+v7 = v5 instanceof io.netty.util.concurrent.FastThreadLocalThread;
+if v7 == 0 goto label2;
+label1:
+v8 = v5;
+goto label3;
+label2:
+v8 = null;
+label3:
+v0.<io.netty.util.Recycler$LocalPool: java.lang.Thread owner> = v8;
+v9 = <io.netty.util.Recycler: boolean BLOCKING_POOL>;
+if v9 == 0 goto label4;
+v10 = new io.netty.util.Recycler$BlockingMessageQueue;
+specialinvoke v10.<io.netty.util.Recycler$BlockingMessageQueue: void <init>(int)>(v1);
+v0.<io.netty.util.Recycler$LocalPool: io.netty.util.internal.shaded.org.jctools.queues.MessagePassingQueue pooledHandles> = v10;
+goto label5;
+label4:
+v11 = staticinvoke <io.netty.util.internal.PlatformDependent: java.util.Queue newMpscQueue(int,int)>(v3, v1);
+v0.<io.netty.util.Recycler$LocalPool: io.netty.util.internal.shaded.org.jctools.queues.MessagePassingQueue pooledHandles> = v11;
+label5:
+v0.<io.netty.util.Recycler$LocalPool: int ratioCounter> = v2;
+return;
+}
+io.netty.util.Recycler$DefaultHandle claim()
+{
+io.netty.util.internal.shaded.org.jctools.queues.MessagePassingQueue v1;
+int v4;
+java.lang.Object v6;
+io.netty.util.Recycler$LocalPool v0;
+java.util.ArrayDeque v2, v5;
+boolean v3;
+v0 := @this: io.netty.util.Recycler$LocalPool;
+v1 = v0.<io.netty.util.Recycler$LocalPool: io.netty.util.internal.shaded.org.jctools.queues.MessagePassingQueue pooledHandles>;
+if v1 != null goto label1;
+return null;
+label1:
+v2 = v0.<io.netty.util.Recycler$LocalPool: java.util.ArrayDeque batch>;
+v3 = virtualinvoke v2.<java.util.ArrayDeque: boolean isEmpty()>();
+if v3 == 0 goto label2;
+v4 = v0.<io.netty.util.Recycler$LocalPool: int chunkSize>;
+interfaceinvoke v1.<io.netty.util.internal.shaded.org.jctools.queues.MessagePassingQueue: int drain(io.netty.util.internal.shaded.org.jctools.queues.MessagePassingQueue$Consumer,int)>(v0, v4);
+label2:
+v5 = v0.<io.netty.util.Recycler$LocalPool: java.util.ArrayDeque batch>;
+v6 = virtualinvoke v5.<java.util.ArrayDeque: java.lang.Object pollFirst()>();
+if null == v6 goto label3;
+virtualinvoke v6.<io.netty.util.Recycler$DefaultHandle: void toClaimed()>();
+label3:
+return v6;
+}
+void release(io.netty.util.Recycler$DefaultHandle, boolean)
+{
+io.netty.util.internal.shaded.org.jctools.queues.MessagePassingQueue v9;
+io.netty.util.Recycler$DefaultHandle v1;
+java.lang.Thread v3, v4;
+int v6, v7;
+io.netty.util.Recycler$LocalPool v0;
+java.util.ArrayDeque v5;
+boolean v2, v8;
+v0 := @this: io.netty.util.Recycler$LocalPool;
+v1 := @parameter0: io.netty.util.Recycler$DefaultHandle;
+v2 := @parameter1: boolean;
+if v2 == 0 goto label1;
+virtualinvoke v1.<io.netty.util.Recycler$DefaultHandle: void toAvailable()>();
+goto label2;
+label1:
+virtualinvoke v1.<io.netty.util.Recycler$DefaultHandle: void unguardedToAvailable()>();
+label2:
+v3 = v0.<io.netty.util.Recycler$LocalPool: java.lang.Thread owner>;
+if v3 == null goto label4;
+v4 = staticinvoke <java.lang.Thread: java.lang.Thread currentThread()>();
+if v4 != v3 goto label3;
+v5 = v0.<io.netty.util.Recycler$LocalPool: java.util.ArrayDeque batch>;
+v6 = virtualinvoke v5.<java.util.ArrayDeque: int size()>();
+v7 = v0.<io.netty.util.Recycler$LocalPool: int chunkSize>;
+if v6 >= v7 goto label3;
+virtualinvoke v0.<io.netty.util.Recycler$LocalPool: void accept(io.netty.util.Recycler$DefaultHandle)>(v1);
+goto label5;
+label3:
+if v3 == null goto label4;
+v8 = staticinvoke <io.netty.util.Recycler$LocalPool: boolean isTerminated(java.lang.Thread)>(v3);
+if v8 == 0 goto label4;
+v0.<io.netty.util.Recycler$LocalPool: java.lang.Thread owner> = null;
+v0.<io.netty.util.Recycler$LocalPool: io.netty.util.internal.shaded.org.jctools.queues.MessagePassingQueue pooledHandles> = null;
+goto label5;
+label4:
+v9 = v0.<io.netty.util.Recycler$LocalPool: io.netty.util.internal.shaded.org.jctools.queues.MessagePassingQueue pooledHandles>;
+if v9 == null goto label5;
+interfaceinvoke v9.<io.netty.util.internal.shaded.org.jctools.queues.MessagePassingQueue: boolean relaxedOffer(java.lang.Object)>(v1);
+label5:
+return;
+}
+private static boolean isTerminated(java.lang.Thread)
+{
+java.lang.Thread$State v4, v5;
+java.lang.Thread v0;
+boolean v1, v2, v3;
+v0 := @parameter0: java.lang.Thread;
+v1 = staticinvoke <io.netty.util.internal.PlatformDependent: boolean isJ9Jvm()>();
+if v1 == 0 goto label2;
+v2 = virtualinvoke v0.<java.lang.Thread: boolean isAlive()>();
+if v2 != 0 goto label1;
+v3 = 1;
+goto label4;
+label1:
+v3 = 0;
+goto label4;
+label2:
+v4 = virtualinvoke v0.<java.lang.Thread: java.lang.Thread$State getState()>();
+v5 = <java.lang.Thread$State: java.lang.Thread$State TERMINATED>;
+if v4 != v5 goto label3;
+v3 = 1;
+goto label4;
+label3:
+v3 = 0;
+label4:
+return v3;
+}
+io.netty.util.Recycler$DefaultHandle newHandle()
+{
+int v1, v2, v3;
+io.netty.util.Recycler$DefaultHandle v4;
+io.netty.util.Recycler$LocalPool v0;
+v0 := @this: io.netty.util.Recycler$LocalPool;
+v1 = v0.<io.netty.util.Recycler$LocalPool: int ratioCounter>;
+v2 = v1 + 1;
+v0.<io.netty.util.Recycler$LocalPool: int ratioCounter> = v2;
+v3 = v0.<io.netty.util.Recycler$LocalPool: int ratioInterval>;
+if v2 < v3 goto label1;
+v0.<io.netty.util.Recycler$LocalPool: int ratioCounter> = 0;
+v4 = new io.netty.util.Recycler$DefaultHandle;
+specialinvoke v4.<io.netty.util.Recycler$DefaultHandle: void <init>(io.netty.util.Recycler$LocalPool)>(v0);
+return v4;
+label1:
+return null;
+}
+public void accept(io.netty.util.Recycler$DefaultHandle)
+{
+io.netty.util.Recycler$DefaultHandle v1;
+io.netty.util.Recycler$LocalPool v0;
+java.util.ArrayDeque v2;
+v0 := @this: io.netty.util.Recycler$LocalPool;
+v1 := @parameter0: io.netty.util.Recycler$DefaultHandle;
+v2 = v0.<io.netty.util.Recycler$LocalPool: java.util.ArrayDeque batch>;
+virtualinvoke v2.<java.util.ArrayDeque: void addLast(java.lang.Object)>(v1);
+return;
+}
+}

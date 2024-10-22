@@ -1,0 +1,268 @@
+class io.vertx.core.eventbus.impl.clustered.ConnectionHolder extends java.lang.Object
+{
+private static final io.vertx.core.impl.logging.Logger log;
+private static final java.lang.String PING_ADDRESS;
+private final io.vertx.core.eventbus.impl.clustered.ClusteredEventBus eventBus;
+private final java.lang.String remoteNodeId;
+private final io.vertx.core.impl.VertxInternal vertx;
+private final io.vertx.core.spi.metrics.EventBusMetrics metrics;
+private java.util.Queue pending;
+private io.vertx.core.net.NetSocket socket;
+private boolean connected;
+private long timeoutID;
+private long pingTimeoutID;
+void <init>(io.vertx.core.eventbus.impl.clustered.ClusteredEventBus, java.lang.String)
+{
+io.vertx.core.impl.VertxInternal v3;
+io.vertx.core.spi.metrics.EventBusMetrics v4;
+io.vertx.core.eventbus.impl.clustered.ClusteredEventBus v1;
+io.vertx.core.eventbus.impl.clustered.ConnectionHolder v0;
+java.lang.String v2;
+v0 := @this: io.vertx.core.eventbus.impl.clustered.ConnectionHolder;
+v1 := @parameter0: io.vertx.core.eventbus.impl.clustered.ClusteredEventBus;
+v2 := @parameter1: java.lang.String;
+specialinvoke v0.<java.lang.Object: void <init>()>();
+v0.<io.vertx.core.eventbus.impl.clustered.ConnectionHolder: long timeoutID> = -1L;
+v0.<io.vertx.core.eventbus.impl.clustered.ConnectionHolder: long pingTimeoutID> = -1L;
+v0.<io.vertx.core.eventbus.impl.clustered.ConnectionHolder: io.vertx.core.eventbus.impl.clustered.ClusteredEventBus eventBus> = v1;
+v0.<io.vertx.core.eventbus.impl.clustered.ConnectionHolder: java.lang.String remoteNodeId> = v2;
+v3 = virtualinvoke v1.<io.vertx.core.eventbus.impl.clustered.ClusteredEventBus: io.vertx.core.impl.VertxInternal vertx()>();
+v0.<io.vertx.core.eventbus.impl.clustered.ConnectionHolder: io.vertx.core.impl.VertxInternal vertx> = v3;
+v4 = virtualinvoke v1.<io.vertx.core.eventbus.impl.clustered.ClusteredEventBus: io.vertx.core.spi.metrics.EventBusMetrics getMetrics()>();
+v0.<io.vertx.core.eventbus.impl.clustered.ConnectionHolder: io.vertx.core.spi.metrics.EventBusMetrics metrics> = v4;
+return;
+}
+void connect()
+{
+io.vertx.core.impl.VertxInternal v3;
+io.vertx.core.spi.cluster.ClusterManager v4;
+io.vertx.core.Promise v1;
+io.vertx.core.Future v6, v8;
+java.util.function.Function v7;
+io.vertx.core.eventbus.impl.clustered.ClusteredEventBus v2;
+io.vertx.core.eventbus.impl.clustered.ConnectionHolder v0;
+java.lang.String v5;
+io.vertx.core.Handler v9;
+v0 := @this: io.vertx.core.eventbus.impl.clustered.ConnectionHolder;
+v1 = staticinvoke <io.vertx.core.Promise: io.vertx.core.Promise promise()>();
+v2 = v0.<io.vertx.core.eventbus.impl.clustered.ConnectionHolder: io.vertx.core.eventbus.impl.clustered.ClusteredEventBus eventBus>;
+v3 = virtualinvoke v2.<io.vertx.core.eventbus.impl.clustered.ClusteredEventBus: io.vertx.core.impl.VertxInternal vertx()>();
+v4 = interfaceinvoke v3.<io.vertx.core.impl.VertxInternal: io.vertx.core.spi.cluster.ClusterManager getClusterManager()>();
+v5 = v0.<io.vertx.core.eventbus.impl.clustered.ConnectionHolder: java.lang.String remoteNodeId>;
+interfaceinvoke v4.<io.vertx.core.spi.cluster.ClusterManager: void getNodeInfo(java.lang.String,io.vertx.core.Promise)>(v5, v1);
+v6 = interfaceinvoke v1.<io.vertx.core.Promise: io.vertx.core.Future future()>();
+v7 = staticinvoke <io.vertx.core.eventbus.impl.clustered.ConnectionHolder$lambda_connect_0__1436: java.util.function.Function bootstrap$(io.vertx.core.eventbus.impl.clustered.ConnectionHolder)>(v0);
+v8 = interfaceinvoke v6.<io.vertx.core.Future: io.vertx.core.Future flatMap(java.util.function.Function)>(v7);
+v9 = staticinvoke <io.vertx.core.eventbus.impl.clustered.ConnectionHolder$lambda_connect_1__1437: io.vertx.core.Handler bootstrap$(io.vertx.core.eventbus.impl.clustered.ConnectionHolder)>(v0);
+interfaceinvoke v8.<io.vertx.core.Future: io.vertx.core.Future onComplete(io.vertx.core.Handler)>(v9);
+return;
+}
+synchronized void writeMessage(io.vertx.core.eventbus.impl.OutboundDeliveryContext)
+{
+io.vertx.core.spi.metrics.EventBusMetrics v5, v6;
+int v9;
+java.lang.String v15, v16, v8;
+boolean v13, v2;
+io.vertx.core.impl.logging.Logger v12, v14;
+io.vertx.core.eventbus.impl.OutboundDeliveryContext v1;
+io.vertx.core.buffer.Buffer v4;
+io.vertx.core.eventbus.impl.MessageImpl v3, v7;
+io.vertx.core.eventbus.impl.clustered.ConnectionHolder v0;
+java.util.Queue v11, v18;
+java.util.ArrayDeque v17;
+io.vertx.core.net.NetSocket v10;
+v0 := @this: io.vertx.core.eventbus.impl.clustered.ConnectionHolder;
+v1 := @parameter0: io.vertx.core.eventbus.impl.OutboundDeliveryContext;
+v2 = v0.<io.vertx.core.eventbus.impl.clustered.ConnectionHolder: boolean connected>;
+if v2 == 0 goto label2;
+v3 = v1.<io.vertx.core.eventbus.impl.OutboundDeliveryContext: io.vertx.core.eventbus.impl.MessageImpl message>;
+v4 = virtualinvoke v3.<io.vertx.core.eventbus.impl.clustered.ClusteredMessage: io.vertx.core.buffer.Buffer encodeToWire()>();
+v5 = v0.<io.vertx.core.eventbus.impl.clustered.ConnectionHolder: io.vertx.core.spi.metrics.EventBusMetrics metrics>;
+if v5 == null goto label1;
+v6 = v0.<io.vertx.core.eventbus.impl.clustered.ConnectionHolder: io.vertx.core.spi.metrics.EventBusMetrics metrics>;
+v7 = v1.<io.vertx.core.eventbus.impl.OutboundDeliveryContext: io.vertx.core.eventbus.impl.MessageImpl message>;
+v8 = virtualinvoke v7.<io.vertx.core.eventbus.impl.MessageImpl: java.lang.String address()>();
+v9 = interfaceinvoke v4.<io.vertx.core.buffer.Buffer: int length()>();
+interfaceinvoke v6.<io.vertx.core.spi.metrics.EventBusMetrics: void messageWritten(java.lang.String,int)>(v8, v9);
+label1:
+v10 = v0.<io.vertx.core.eventbus.impl.clustered.ConnectionHolder: io.vertx.core.net.NetSocket socket>;
+interfaceinvoke v10.<io.vertx.core.net.NetSocket: void write(io.vertx.core.buffer.Buffer,io.vertx.core.Handler)>(v4, v1);
+goto label5;
+label2:
+v11 = v0.<io.vertx.core.eventbus.impl.clustered.ConnectionHolder: java.util.Queue pending>;
+if v11 != null goto label4;
+v12 = <io.vertx.core.eventbus.impl.clustered.ConnectionHolder: io.vertx.core.impl.logging.Logger log>;
+v13 = interfaceinvoke v12.<io.vertx.core.impl.logging.Logger: boolean isDebugEnabled()>();
+if v13 == 0 goto label3;
+v14 = <io.vertx.core.eventbus.impl.clustered.ConnectionHolder: io.vertx.core.impl.logging.Logger log>;
+v15 = v0.<io.vertx.core.eventbus.impl.clustered.ConnectionHolder: java.lang.String remoteNodeId>;
+v16 = dynamicinvoke "makeConcatWithConstants" <java.lang.String (java.lang.String)>(v15) <java.lang.invoke.StringConcatFactory: java.lang.invoke.CallSite makeConcatWithConstants(java.lang.invoke.MethodHandles$Lookup,java.lang.String,java.lang.invoke.MethodType,java.lang.String,java.lang.Object[])>("Not connected to server \u0001 - starting queuing");
+interfaceinvoke v14.<io.vertx.core.impl.logging.Logger: void debug(java.lang.Object)>(v16);
+label3:
+v17 = new java.util.ArrayDeque;
+specialinvoke v17.<java.util.ArrayDeque: void <init>()>();
+v0.<io.vertx.core.eventbus.impl.clustered.ConnectionHolder: java.util.Queue pending> = v17;
+label4:
+v18 = v0.<io.vertx.core.eventbus.impl.clustered.ConnectionHolder: java.util.Queue pending>;
+interfaceinvoke v18.<java.util.Queue: boolean add(java.lang.Object)>(v1);
+label5:
+return;
+}
+void close()
+{
+io.vertx.core.VertxException v1;
+io.vertx.core.eventbus.impl.clustered.ConnectionHolder v0;
+v0 := @this: io.vertx.core.eventbus.impl.clustered.ConnectionHolder;
+v1 = <io.vertx.core.net.impl.ConnectionBase: io.vertx.core.VertxException CLOSED_EXCEPTION>;
+specialinvoke v0.<io.vertx.core.eventbus.impl.clustered.ConnectionHolder: void close(java.lang.Throwable)>(v1);
+return;
+}
+private void close(java.lang.Throwable)
+{
+java.lang.Throwable v1, v13;
+long v2, v5, v6, v9;
+java.util.concurrent.ConcurrentMap v15;
+byte v3, v7;
+java.lang.String v16, v21, v22;
+boolean v17, v19;
+io.vertx.core.impl.logging.Logger v18, v20;
+io.vertx.core.impl.VertxInternal v4, v8;
+java.lang.Object v12;
+io.vertx.core.eventbus.impl.clustered.ClusteredEventBus v14;
+io.vertx.core.eventbus.impl.clustered.ConnectionHolder v0;
+java.util.Queue v10, v11;
+v0 := @this: io.vertx.core.eventbus.impl.clustered.ConnectionHolder;
+v1 := @parameter0: java.lang.Throwable;
+v2 = v0.<io.vertx.core.eventbus.impl.clustered.ConnectionHolder: long timeoutID>;
+v3 = v2 cmp -1L;
+if v3 == 0 goto label1;
+v4 = v0.<io.vertx.core.eventbus.impl.clustered.ConnectionHolder: io.vertx.core.impl.VertxInternal vertx>;
+v5 = v0.<io.vertx.core.eventbus.impl.clustered.ConnectionHolder: long timeoutID>;
+interfaceinvoke v4.<io.vertx.core.impl.VertxInternal: boolean cancelTimer(long)>(v5);
+label1:
+v6 = v0.<io.vertx.core.eventbus.impl.clustered.ConnectionHolder: long pingTimeoutID>;
+v7 = v6 cmp -1L;
+if v7 == 0 goto label2;
+v8 = v0.<io.vertx.core.eventbus.impl.clustered.ConnectionHolder: io.vertx.core.impl.VertxInternal vertx>;
+v9 = v0.<io.vertx.core.eventbus.impl.clustered.ConnectionHolder: long pingTimeoutID>;
+interfaceinvoke v8.<io.vertx.core.impl.VertxInternal: boolean cancelTimer(long)>(v9);
+label2:
+entermonitor v0;
+label3:
+v10 = v0.<io.vertx.core.eventbus.impl.clustered.ConnectionHolder: java.util.Queue pending>;
+if v10 == null goto label5;
+label4:
+v11 = v0.<io.vertx.core.eventbus.impl.clustered.ConnectionHolder: java.util.Queue pending>;
+v12 = interfaceinvoke v11.<java.util.Queue: java.lang.Object poll()>();
+if v12 == null goto label5;
+virtualinvoke v12.<io.vertx.core.eventbus.impl.OutboundDeliveryContext: void written(java.lang.Throwable)>(v1);
+goto label4;
+label5:
+exitmonitor v0;
+label6:
+goto label8;
+label7:
+v13 := @caughtexception;
+exitmonitor v0;
+throw v13;
+label8:
+v14 = v0.<io.vertx.core.eventbus.impl.clustered.ConnectionHolder: io.vertx.core.eventbus.impl.clustered.ClusteredEventBus eventBus>;
+v15 = virtualinvoke v14.<io.vertx.core.eventbus.impl.clustered.ClusteredEventBus: java.util.concurrent.ConcurrentMap connections()>();
+v16 = v0.<io.vertx.core.eventbus.impl.clustered.ConnectionHolder: java.lang.String remoteNodeId>;
+v17 = interfaceinvoke v15.<java.util.concurrent.ConcurrentMap: boolean remove(java.lang.Object,java.lang.Object)>(v16, v0);
+if v17 == 0 goto label9;
+v18 = <io.vertx.core.eventbus.impl.clustered.ConnectionHolder: io.vertx.core.impl.logging.Logger log>;
+v19 = interfaceinvoke v18.<io.vertx.core.impl.logging.Logger: boolean isDebugEnabled()>();
+if v19 == 0 goto label9;
+v20 = <io.vertx.core.eventbus.impl.clustered.ConnectionHolder: io.vertx.core.impl.logging.Logger log>;
+v21 = v0.<io.vertx.core.eventbus.impl.clustered.ConnectionHolder: java.lang.String remoteNodeId>;
+v22 = dynamicinvoke "makeConcatWithConstants" <java.lang.String (java.lang.String)>(v21) <java.lang.invoke.StringConcatFactory: java.lang.invoke.CallSite makeConcatWithConstants(java.lang.invoke.MethodHandles$Lookup,java.lang.String,java.lang.invoke.MethodType,java.lang.String,java.lang.Object[])>("Cluster connection closed for server \u0001");
+interfaceinvoke v20.<io.vertx.core.impl.logging.Logger: void debug(java.lang.Object)>(v22);
+label9:
+return;
+catch java.lang.Throwable from label3 to label6 with label7;
+}
+private void schedulePing()
+{
+io.vertx.core.impl.VertxInternal v3;
+long v4, v6;
+io.vertx.core.eventbus.EventBusOptions v2;
+io.vertx.core.eventbus.impl.clustered.ClusteredEventBus v1;
+io.vertx.core.eventbus.impl.clustered.ConnectionHolder v0;
+io.vertx.core.Handler v5;
+v0 := @this: io.vertx.core.eventbus.impl.clustered.ConnectionHolder;
+v1 = v0.<io.vertx.core.eventbus.impl.clustered.ConnectionHolder: io.vertx.core.eventbus.impl.clustered.ClusteredEventBus eventBus>;
+v2 = virtualinvoke v1.<io.vertx.core.eventbus.impl.clustered.ClusteredEventBus: io.vertx.core.eventbus.EventBusOptions options()>();
+v3 = v0.<io.vertx.core.eventbus.impl.clustered.ConnectionHolder: io.vertx.core.impl.VertxInternal vertx>;
+v4 = virtualinvoke v2.<io.vertx.core.eventbus.EventBusOptions: long getClusterPingInterval()>();
+v5 = staticinvoke <io.vertx.core.eventbus.impl.clustered.ConnectionHolder$lambda_schedulePing_3__1438: io.vertx.core.Handler bootstrap$(io.vertx.core.eventbus.impl.clustered.ConnectionHolder,io.vertx.core.eventbus.EventBusOptions)>(v0, v2);
+v6 = interfaceinvoke v3.<io.vertx.core.impl.VertxInternal: long setTimer(long,io.vertx.core.Handler)>(v4, v5);
+v0.<io.vertx.core.eventbus.impl.clustered.ConnectionHolder: long pingTimeoutID> = v6;
+return;
+}
+private synchronized void connected(io.vertx.core.net.NetSocket)
+{
+io.vertx.core.spi.metrics.EventBusMetrics v17, v18;
+int v21;
+java.lang.String v10, v20, v9;
+boolean v13, v7;
+io.vertx.core.impl.logging.Logger v6, v8;
+java.util.Iterator v12;
+io.vertx.core.buffer.Buffer v16;
+io.vertx.core.eventbus.impl.MessageImpl v15, v19;
+java.lang.Object v14;
+io.vertx.core.eventbus.impl.clustered.ConnectionHolder v0;
+java.util.Queue v11, v5;
+io.vertx.core.Handler v2, v3, v4;
+io.vertx.core.net.NetSocket v1;
+v0 := @this: io.vertx.core.eventbus.impl.clustered.ConnectionHolder;
+v1 := @parameter0: io.vertx.core.net.NetSocket;
+v0.<io.vertx.core.eventbus.impl.clustered.ConnectionHolder: io.vertx.core.net.NetSocket socket> = v1;
+v0.<io.vertx.core.eventbus.impl.clustered.ConnectionHolder: boolean connected> = 1;
+v2 = staticinvoke <io.vertx.core.eventbus.impl.clustered.ConnectionHolder$lambda_connected_4__1439: io.vertx.core.Handler bootstrap$(io.vertx.core.eventbus.impl.clustered.ConnectionHolder)>(v0);
+interfaceinvoke v1.<io.vertx.core.net.NetSocket: io.vertx.core.net.NetSocket exceptionHandler(io.vertx.core.Handler)>(v2);
+v3 = staticinvoke <io.vertx.core.eventbus.impl.clustered.ConnectionHolder$lambda_connected_5__1440: io.vertx.core.Handler bootstrap$(io.vertx.core.eventbus.impl.clustered.ConnectionHolder)>(v0);
+interfaceinvoke v1.<io.vertx.core.net.NetSocket: io.vertx.core.net.NetSocket closeHandler(io.vertx.core.Handler)>(v3);
+v4 = staticinvoke <io.vertx.core.eventbus.impl.clustered.ConnectionHolder$lambda_connected_6__1441: io.vertx.core.Handler bootstrap$(io.vertx.core.eventbus.impl.clustered.ConnectionHolder)>(v0);
+interfaceinvoke v1.<io.vertx.core.net.NetSocket: io.vertx.core.net.NetSocket handler(io.vertx.core.Handler)>(v4);
+specialinvoke v0.<io.vertx.core.eventbus.impl.clustered.ConnectionHolder: void schedulePing()>();
+v5 = v0.<io.vertx.core.eventbus.impl.clustered.ConnectionHolder: java.util.Queue pending>;
+if v5 == null goto label4;
+v6 = <io.vertx.core.eventbus.impl.clustered.ConnectionHolder: io.vertx.core.impl.logging.Logger log>;
+v7 = interfaceinvoke v6.<io.vertx.core.impl.logging.Logger: boolean isDebugEnabled()>();
+if v7 == 0 goto label1;
+v8 = <io.vertx.core.eventbus.impl.clustered.ConnectionHolder: io.vertx.core.impl.logging.Logger log>;
+v9 = v0.<io.vertx.core.eventbus.impl.clustered.ConnectionHolder: java.lang.String remoteNodeId>;
+v10 = dynamicinvoke "makeConcatWithConstants" <java.lang.String (java.lang.String)>(v9) <java.lang.invoke.StringConcatFactory: java.lang.invoke.CallSite makeConcatWithConstants(java.lang.invoke.MethodHandles$Lookup,java.lang.String,java.lang.invoke.MethodType,java.lang.String,java.lang.Object[])>("Draining the queue for server \u0001");
+interfaceinvoke v8.<io.vertx.core.impl.logging.Logger: void debug(java.lang.Object)>(v10);
+label1:
+v11 = v0.<io.vertx.core.eventbus.impl.clustered.ConnectionHolder: java.util.Queue pending>;
+v12 = interfaceinvoke v11.<java.util.Queue: java.util.Iterator iterator()>();
+label2:
+v13 = interfaceinvoke v12.<java.util.Iterator: boolean hasNext()>();
+if v13 == 0 goto label4;
+v14 = interfaceinvoke v12.<java.util.Iterator: java.lang.Object next()>();
+v15 = v14.<io.vertx.core.eventbus.impl.OutboundDeliveryContext: io.vertx.core.eventbus.impl.MessageImpl message>;
+v16 = virtualinvoke v15.<io.vertx.core.eventbus.impl.clustered.ClusteredMessage: io.vertx.core.buffer.Buffer encodeToWire()>();
+v17 = v0.<io.vertx.core.eventbus.impl.clustered.ConnectionHolder: io.vertx.core.spi.metrics.EventBusMetrics metrics>;
+if v17 == null goto label3;
+v18 = v0.<io.vertx.core.eventbus.impl.clustered.ConnectionHolder: io.vertx.core.spi.metrics.EventBusMetrics metrics>;
+v19 = v14.<io.vertx.core.eventbus.impl.OutboundDeliveryContext: io.vertx.core.eventbus.impl.MessageImpl message>;
+v20 = virtualinvoke v19.<io.vertx.core.eventbus.impl.MessageImpl: java.lang.String address()>();
+v21 = interfaceinvoke v16.<io.vertx.core.buffer.Buffer: int length()>();
+interfaceinvoke v18.<io.vertx.core.spi.metrics.EventBusMetrics: void messageWritten(java.lang.String,int)>(v20, v21);
+label3:
+interfaceinvoke v1.<io.vertx.core.net.NetSocket: void write(io.vertx.core.buffer.Buffer,io.vertx.core.Handler)>(v16, v14);
+goto label2;
+label4:
+v0.<io.vertx.core.eventbus.impl.clustered.ConnectionHolder: java.util.Queue pending> = null;
+return;
+}
+static void <clinit>()
+{
+io.vertx.core.impl.logging.Logger v0;
+v0 = staticinvoke <io.vertx.core.impl.logging.LoggerFactory: io.vertx.core.impl.logging.Logger getLogger(java.lang.Class)>(class "Lio/vertx/core/eventbus/impl/clustered/ConnectionHolder;");
+<io.vertx.core.eventbus.impl.clustered.ConnectionHolder: io.vertx.core.impl.logging.Logger log> = v0;
+return;
+}
+}

@@ -1,0 +1,429 @@
+public abstract class io.vertx.core.net.impl.TCPServerBase extends java.lang.Object implements io.vertx.core.Closeable, io.vertx.core.spi.metrics.MetricsProvider
+{
+private static final io.vertx.core.impl.logging.Logger log;
+protected final io.vertx.core.Context creatingContext;
+protected final io.vertx.core.impl.VertxInternal vertx;
+protected final io.vertx.core.net.NetServerOptions options;
+private io.netty.channel.EventLoop eventLoop;
+private java.util.function.BiConsumer childHandler;
+private io.vertx.core.Handler worker;
+private volatile boolean listening;
+private io.vertx.core.impl.ContextInternal listenContext;
+private io.vertx.core.net.impl.TCPServerBase actualServer;
+private io.vertx.core.net.impl.SSLHelper sslHelper;
+private java.util.concurrent.atomic.AtomicReference sslChannelProvider;
+private io.vertx.core.net.impl.ServerChannelLoadBalancer channelBalancer;
+private io.vertx.core.Future bindFuture;
+private java.util.Set servers;
+private io.vertx.core.spi.metrics.TCPMetrics metrics;
+private volatile int actualPort;
+public void <init>(io.vertx.core.impl.VertxInternal, io.vertx.core.net.NetServerOptions)
+{
+io.vertx.core.net.NetServerOptions v2, v3;
+io.vertx.core.impl.VertxInternal v1;
+io.vertx.core.net.impl.TCPServerBase v0;
+io.vertx.core.impl.ContextInternal v4;
+java.util.concurrent.atomic.AtomicReference v5;
+v0 := @this: io.vertx.core.net.impl.TCPServerBase;
+v1 := @parameter0: io.vertx.core.impl.VertxInternal;
+v2 := @parameter1: io.vertx.core.net.NetServerOptions;
+specialinvoke v0.<java.lang.Object: void <init>()>();
+v0.<io.vertx.core.net.impl.TCPServerBase: io.vertx.core.impl.VertxInternal vertx> = v1;
+v3 = new io.vertx.core.net.NetServerOptions;
+specialinvoke v3.<io.vertx.core.net.NetServerOptions: void <init>(io.vertx.core.net.NetServerOptions)>(v2);
+v0.<io.vertx.core.net.impl.TCPServerBase: io.vertx.core.net.NetServerOptions options> = v3;
+v4 = interfaceinvoke v1.<io.vertx.core.impl.VertxInternal: io.vertx.core.impl.ContextInternal getContext()>();
+v0.<io.vertx.core.net.impl.TCPServerBase: io.vertx.core.Context creatingContext> = v4;
+v5 = new java.util.concurrent.atomic.AtomicReference;
+specialinvoke v5.<java.util.concurrent.atomic.AtomicReference: void <init>()>();
+v0.<io.vertx.core.net.impl.TCPServerBase: java.util.concurrent.atomic.AtomicReference sslChannelProvider> = v5;
+return;
+}
+public io.vertx.core.net.impl.SslContextProvider sslContextProvider()
+{
+io.vertx.core.net.impl.TCPServerBase v0;
+java.lang.Object v2;
+java.util.concurrent.atomic.AtomicReference v1;
+io.vertx.core.net.impl.SslContextProvider v3;
+v0 := @this: io.vertx.core.net.impl.TCPServerBase;
+v1 = v0.<io.vertx.core.net.impl.TCPServerBase: java.util.concurrent.atomic.AtomicReference sslChannelProvider>;
+v2 = virtualinvoke v1.<java.util.concurrent.atomic.AtomicReference: java.lang.Object get()>();
+if v2 == null goto label1;
+v3 = virtualinvoke v2.<io.vertx.core.net.impl.SslChannelProvider: io.vertx.core.net.impl.SslContextProvider sslContextProvider()>();
+goto label2;
+label1:
+v3 = null;
+label2:
+return v3;
+}
+public int actualPort()
+{
+int v2;
+io.vertx.core.net.impl.TCPServerBase v0, v1;
+v0 := @this: io.vertx.core.net.impl.TCPServerBase;
+v1 = v0.<io.vertx.core.net.impl.TCPServerBase: io.vertx.core.net.impl.TCPServerBase actualServer>;
+if v1 == null goto label1;
+v2 = v1.<io.vertx.core.net.impl.TCPServerBase: int actualPort>;
+goto label2;
+label1:
+v2 = v0.<io.vertx.core.net.impl.TCPServerBase: int actualPort>;
+label2:
+return v2;
+}
+protected abstract java.util.function.BiConsumer childHandler(io.vertx.core.impl.ContextInternal, io.vertx.core.net.SocketAddress);
+protected io.vertx.core.net.impl.SSLHelper createSSLHelper()
+{
+io.vertx.core.net.NetServerOptions v2;
+io.vertx.core.net.impl.SSLHelper v1;
+io.vertx.core.net.impl.TCPServerBase v0;
+v0 := @this: io.vertx.core.net.impl.TCPServerBase;
+v1 = new io.vertx.core.net.impl.SSLHelper;
+v2 = v0.<io.vertx.core.net.impl.TCPServerBase: io.vertx.core.net.NetServerOptions options>;
+specialinvoke v1.<io.vertx.core.net.impl.SSLHelper: void <init>(io.vertx.core.net.TCPSSLOptions,java.util.List)>(v2, null);
+return v1;
+}
+public io.vertx.core.Future updateSSLOptions(io.vertx.core.net.SSLOptions)
+{
+io.vertx.core.impl.ContextInternal v4;
+io.vertx.core.Future v5, v7, v8;
+io.vertx.core.net.impl.SSLHelper v2;
+io.vertx.core.net.SSLOptions v1, v3;
+io.vertx.core.net.impl.TCPServerBase v0;
+io.vertx.core.Handler v6;
+v0 := @this: io.vertx.core.net.impl.TCPServerBase;
+v1 := @parameter0: io.vertx.core.net.SSLOptions;
+v2 = v0.<io.vertx.core.net.impl.TCPServerBase: io.vertx.core.net.impl.SSLHelper sslHelper>;
+v3 = new io.vertx.core.net.SSLOptions;
+specialinvoke v3.<io.vertx.core.net.SSLOptions: void <init>(io.vertx.core.net.SSLOptions)>(v1);
+v4 = v0.<io.vertx.core.net.impl.TCPServerBase: io.vertx.core.impl.ContextInternal listenContext>;
+v5 = virtualinvoke v2.<io.vertx.core.net.impl.SSLHelper: io.vertx.core.Future buildChannelProvider(io.vertx.core.net.SSLOptions,io.vertx.core.impl.ContextInternal)>(v3, v4);
+v6 = staticinvoke <io.vertx.core.net.impl.TCPServerBase$lambda_updateSSLOptions_0__1351: io.vertx.core.Handler bootstrap$(io.vertx.core.net.impl.TCPServerBase)>(v0);
+v7 = interfaceinvoke v5.<io.vertx.core.Future: io.vertx.core.Future andThen(io.vertx.core.Handler)>(v6);
+v8 = interfaceinvoke v7.<io.vertx.core.Future: io.vertx.core.Future mapEmpty()>();
+return v8;
+}
+public io.vertx.core.Future bind(io.vertx.core.net.SocketAddress)
+{
+io.vertx.core.impl.VertxInternal v2;
+io.vertx.core.net.impl.TCPServerBase v0;
+io.vertx.core.impl.ContextInternal v3;
+io.vertx.core.Future v4, v5;
+io.vertx.core.net.SocketAddress v1;
+v0 := @this: io.vertx.core.net.impl.TCPServerBase;
+v1 := @parameter0: io.vertx.core.net.SocketAddress;
+v2 = v0.<io.vertx.core.net.impl.TCPServerBase: io.vertx.core.impl.VertxInternal vertx>;
+v3 = interfaceinvoke v2.<io.vertx.core.impl.VertxInternal: io.vertx.core.impl.ContextInternal getOrCreateContext()>();
+v4 = specialinvoke v0.<io.vertx.core.net.impl.TCPServerBase: io.vertx.core.Future listen(io.vertx.core.net.SocketAddress,io.vertx.core.impl.ContextInternal)>(v1, v3);
+v5 = interfaceinvoke v4.<io.vertx.core.Future: io.vertx.core.Future map(java.lang.Object)>(v0);
+return v5;
+}
+private synchronized io.vertx.core.Future listen(io.vertx.core.net.SocketAddress, io.vertx.core.impl.ContextInternal)
+{
+io.vertx.core.spi.metrics.TCPMetrics v52;
+java.util.Map v8;
+java.util.Set v37, v58;
+io.vertx.core.net.NetServerOptions v44;
+java.lang.Throwable v66;
+io.vertx.core.net.SSLOptions v45;
+java.util.function.BiConsumer v34, v55;
+java.lang.String v11, v12, v26, v27;
+java.lang.IllegalStateException v4;
+boolean v10, v14, v19, v3;
+io.netty.channel.EventLoop v41, v5, v61;
+io.vertx.core.Future v47, v49, v51, v64, v65;
+io.vertx.core.net.impl.ServerID v15, v17, v22, v28;
+io.vertx.core.impl.ContextInternal v2, v30, v33, v42, v46, v54, v63;
+java.util.concurrent.atomic.AtomicReference v53;
+java.util.HashSet v36;
+int v13, v16, v21, v23, v24, v25, v29, v9;
+io.vertx.core.net.SocketAddress v1, v20;
+io.netty.channel.EventLoopGroup v40;
+io.vertx.core.impl.VertxInternal v39, v6;
+io.vertx.core.impl.future.PromiseInternal v31;
+io.vertx.core.net.impl.SSLHelper v32, v43;
+io.vertx.core.net.impl.TCPServerBase v0, v57, v59;
+io.vertx.core.net.impl.ServerChannelLoadBalancer v38, v60;
+java.lang.Class v7;
+java.lang.Object v18;
+io.vertx.core.Handler v35, v48, v50, v56, v62;
+v0 := @this: io.vertx.core.net.impl.TCPServerBase;
+v1 := @parameter0: io.vertx.core.net.SocketAddress;
+v2 := @parameter1: io.vertx.core.impl.ContextInternal;
+v3 = v0.<io.vertx.core.net.impl.TCPServerBase: boolean listening>;
+if v3 == 0 goto label01;
+v4 = new java.lang.IllegalStateException;
+specialinvoke v4.<java.lang.IllegalStateException: void <init>(java.lang.String)>("Listen already called");
+throw v4;
+label01:
+v0.<io.vertx.core.net.impl.TCPServerBase: io.vertx.core.impl.ContextInternal listenContext> = v2;
+v0.<io.vertx.core.net.impl.TCPServerBase: boolean listening> = 1;
+v5 = interfaceinvoke v2.<io.vertx.core.impl.ContextInternal: io.netty.channel.EventLoop nettyEventLoop()>();
+v0.<io.vertx.core.net.impl.TCPServerBase: io.netty.channel.EventLoop eventLoop> = v5;
+v6 = v0.<io.vertx.core.net.impl.TCPServerBase: io.vertx.core.impl.VertxInternal vertx>;
+v7 = virtualinvoke v0.<java.lang.Object: java.lang.Class getClass()>();
+v8 = interfaceinvoke v6.<io.vertx.core.impl.VertxInternal: java.util.Map sharedTCPServers(java.lang.Class)>(v7);
+entermonitor v8;
+label02:
+v9 = interfaceinvoke v1.<io.vertx.core.net.SocketAddress: int port()>();
+v0.<io.vertx.core.net.impl.TCPServerBase: int actualPort> = v9;
+v10 = interfaceinvoke v1.<io.vertx.core.net.SocketAddress: boolean isInetSocket()>();
+if v10 == 0 goto label03;
+v11 = interfaceinvoke v1.<io.vertx.core.net.SocketAddress: java.lang.String host()>();
+goto label04;
+label03:
+v11 = interfaceinvoke v1.<io.vertx.core.net.SocketAddress: java.lang.String path()>();
+label04:
+v12 = v11;
+v13 = v0.<io.vertx.core.net.impl.TCPServerBase: int actualPort>;
+if v13 > 0 goto label05;
+v14 = interfaceinvoke v1.<io.vertx.core.net.SocketAddress: boolean isDomainSocket()>();
+if v14 == 0 goto label06;
+label05:
+v15 = new io.vertx.core.net.impl.ServerID;
+v16 = v0.<io.vertx.core.net.impl.TCPServerBase: int actualPort>;
+specialinvoke v15.<io.vertx.core.net.impl.ServerID: void <init>(int,java.lang.String)>(v16, v12);
+v17 = v15;
+v18 = interfaceinvoke v8.<java.util.Map: java.lang.Object get(java.lang.Object)>(v15);
+v19 = 1;
+v20 = v1;
+goto label08;
+label06:
+v21 = v0.<io.vertx.core.net.impl.TCPServerBase: int actualPort>;
+if v21 >= 0 goto label07;
+v22 = new io.vertx.core.net.impl.ServerID;
+v23 = v0.<io.vertx.core.net.impl.TCPServerBase: int actualPort>;
+v24 = v0.<io.vertx.core.net.impl.TCPServerBase: int actualPort>;
+v25 = neg v24;
+v26 = dynamicinvoke "makeConcatWithConstants" <java.lang.String (java.lang.String,int)>(v11, v25) <java.lang.invoke.StringConcatFactory: java.lang.invoke.CallSite makeConcatWithConstants(java.lang.invoke.MethodHandles$Lookup,java.lang.String,java.lang.invoke.MethodType,java.lang.String,java.lang.Object[])>("\u0001/\u0001");
+specialinvoke v22.<io.vertx.core.net.impl.ServerID: void <init>(int,java.lang.String)>(v23, v26);
+v17 = v22;
+interfaceinvoke v8.<java.util.Map: java.lang.Object get(java.lang.Object)>(v22);
+v19 = 1;
+v27 = interfaceinvoke v1.<io.vertx.core.net.SocketAddress: java.lang.String host()>();
+v20 = staticinvoke <io.vertx.core.net.SocketAddress: io.vertx.core.net.SocketAddress inetSocketAddress(int,java.lang.String)>(0, v27);
+goto label08;
+label07:
+v28 = new io.vertx.core.net.impl.ServerID;
+v29 = v0.<io.vertx.core.net.impl.TCPServerBase: int actualPort>;
+specialinvoke v28.<io.vertx.core.net.impl.ServerID: void <init>(int,java.lang.String)>(v29, v11);
+v17 = v28;
+v18 = null;
+v19 = 0;
+v20 = v1;
+label08:
+v30 = v0.<io.vertx.core.net.impl.TCPServerBase: io.vertx.core.impl.ContextInternal listenContext>;
+v31 = interfaceinvoke v30.<io.vertx.core.impl.ContextInternal: io.vertx.core.impl.future.PromiseInternal promise()>();
+if v18 != null goto label11;
+v0.<io.vertx.core.net.impl.TCPServerBase: io.vertx.core.net.impl.TCPServerBase actualServer> = v0;
+v0.<io.vertx.core.net.impl.TCPServerBase: io.vertx.core.Future bindFuture> = v31;
+v32 = virtualinvoke v0.<io.vertx.core.net.impl.TCPServerBase: io.vertx.core.net.impl.SSLHelper createSSLHelper()>();
+v0.<io.vertx.core.net.impl.TCPServerBase: io.vertx.core.net.impl.SSLHelper sslHelper> = v32;
+v33 = v0.<io.vertx.core.net.impl.TCPServerBase: io.vertx.core.impl.ContextInternal listenContext>;
+v34 = virtualinvoke v0.<io.vertx.core.net.impl.TCPServerBase: java.util.function.BiConsumer childHandler(io.vertx.core.impl.ContextInternal,io.vertx.core.net.SocketAddress)>(v33, v1);
+v0.<io.vertx.core.net.impl.TCPServerBase: java.util.function.BiConsumer childHandler> = v34;
+v35 = staticinvoke <io.vertx.core.net.impl.TCPServerBase$lambda_listen_1__1353: io.vertx.core.Handler bootstrap$(io.vertx.core.net.impl.TCPServerBase)>(v0);
+v0.<io.vertx.core.net.impl.TCPServerBase: io.vertx.core.Handler worker> = v35;
+v36 = new java.util.HashSet;
+specialinvoke v36.<java.util.HashSet: void <init>()>();
+v0.<io.vertx.core.net.impl.TCPServerBase: java.util.Set servers> = v36;
+v37 = v0.<io.vertx.core.net.impl.TCPServerBase: java.util.Set servers>;
+interfaceinvoke v37.<java.util.Set: boolean add(java.lang.Object)>(v0);
+v38 = new io.vertx.core.net.impl.ServerChannelLoadBalancer;
+v39 = v0.<io.vertx.core.net.impl.TCPServerBase: io.vertx.core.impl.VertxInternal vertx>;
+v40 = interfaceinvoke v39.<io.vertx.core.impl.VertxInternal: io.netty.channel.EventLoopGroup getAcceptorEventLoopGroup()>();
+v41 = interfaceinvoke v40.<io.netty.channel.EventLoopGroup: io.netty.channel.EventLoop next()>();
+specialinvoke v38.<io.vertx.core.net.impl.ServerChannelLoadBalancer: void <init>(io.netty.util.concurrent.EventExecutor)>(v41);
+v0.<io.vertx.core.net.impl.TCPServerBase: io.vertx.core.net.impl.ServerChannelLoadBalancer channelBalancer> = v38;
+if v19 == 0 goto label09;
+interfaceinvoke v8.<java.util.Map: java.lang.Object put(java.lang.Object,java.lang.Object)>(v17, v0);
+label09:
+v42 = v0.<io.vertx.core.net.impl.TCPServerBase: io.vertx.core.impl.ContextInternal listenContext>;
+interfaceinvoke v42.<io.vertx.core.impl.ContextInternal: void addCloseHook(io.vertx.core.Closeable)>(v0);
+v43 = v0.<io.vertx.core.net.impl.TCPServerBase: io.vertx.core.net.impl.SSLHelper sslHelper>;
+v44 = v0.<io.vertx.core.net.impl.TCPServerBase: io.vertx.core.net.NetServerOptions options>;
+v45 = virtualinvoke v44.<io.vertx.core.net.NetServerOptions: io.vertx.core.net.SSLOptions getSslOptions()>();
+v46 = v0.<io.vertx.core.net.impl.TCPServerBase: io.vertx.core.impl.ContextInternal listenContext>;
+v47 = virtualinvoke v43.<io.vertx.core.net.impl.SSLHelper: io.vertx.core.Future buildChannelProvider(io.vertx.core.net.SSLOptions,io.vertx.core.impl.ContextInternal)>(v45, v46);
+v48 = staticinvoke <io.vertx.core.net.impl.TCPServerBase$lambda_listen_4__1354: io.vertx.core.Handler bootstrap$(io.vertx.core.net.impl.TCPServerBase,io.vertx.core.net.SocketAddress,io.vertx.core.net.SocketAddress,java.lang.String,boolean,java.util.Map,io.vertx.core.net.impl.ServerID,io.vertx.core.impl.future.PromiseInternal)>(v0, v1, v20, v12, v19, v8, v17, v31);
+interfaceinvoke v47.<io.vertx.core.Future: io.vertx.core.Future onComplete(io.vertx.core.Handler)>(v48);
+v49 = v0.<io.vertx.core.net.impl.TCPServerBase: io.vertx.core.Future bindFuture>;
+v50 = staticinvoke <io.vertx.core.net.impl.TCPServerBase$lambda_listen_5__1355: io.vertx.core.Handler bootstrap$(io.vertx.core.net.impl.TCPServerBase,boolean,java.util.Map,io.vertx.core.net.impl.ServerID)>(v0, v19, v8, v17);
+interfaceinvoke v49.<io.vertx.core.Future: io.vertx.core.Future onFailure(io.vertx.core.Handler)>(v50);
+v51 = v0.<io.vertx.core.net.impl.TCPServerBase: io.vertx.core.Future bindFuture>;
+exitmonitor v8;
+label10:
+return v51;
+label11:
+v0.<io.vertx.core.net.impl.TCPServerBase: io.vertx.core.net.impl.TCPServerBase actualServer> = v18;
+v52 = v18.<io.vertx.core.net.impl.TCPServerBase: io.vertx.core.spi.metrics.TCPMetrics metrics>;
+v0.<io.vertx.core.net.impl.TCPServerBase: io.vertx.core.spi.metrics.TCPMetrics metrics> = v52;
+v53 = v18.<io.vertx.core.net.impl.TCPServerBase: java.util.concurrent.atomic.AtomicReference sslChannelProvider>;
+v0.<io.vertx.core.net.impl.TCPServerBase: java.util.concurrent.atomic.AtomicReference sslChannelProvider> = v53;
+v54 = v0.<io.vertx.core.net.impl.TCPServerBase: io.vertx.core.impl.ContextInternal listenContext>;
+v55 = virtualinvoke v0.<io.vertx.core.net.impl.TCPServerBase: java.util.function.BiConsumer childHandler(io.vertx.core.impl.ContextInternal,io.vertx.core.net.SocketAddress)>(v54, v1);
+v0.<io.vertx.core.net.impl.TCPServerBase: java.util.function.BiConsumer childHandler> = v55;
+v56 = staticinvoke <io.vertx.core.net.impl.TCPServerBase$lambda_listen_6__1352: io.vertx.core.Handler bootstrap$(io.vertx.core.net.impl.TCPServerBase)>(v0);
+v0.<io.vertx.core.net.impl.TCPServerBase: io.vertx.core.Handler worker> = v56;
+v57 = v0.<io.vertx.core.net.impl.TCPServerBase: io.vertx.core.net.impl.TCPServerBase actualServer>;
+v58 = v57.<io.vertx.core.net.impl.TCPServerBase: java.util.Set servers>;
+interfaceinvoke v58.<java.util.Set: boolean add(java.lang.Object)>(v0);
+v59 = v0.<io.vertx.core.net.impl.TCPServerBase: io.vertx.core.net.impl.TCPServerBase actualServer>;
+v60 = v59.<io.vertx.core.net.impl.TCPServerBase: io.vertx.core.net.impl.ServerChannelLoadBalancer channelBalancer>;
+v61 = v0.<io.vertx.core.net.impl.TCPServerBase: io.netty.channel.EventLoop eventLoop>;
+v62 = v0.<io.vertx.core.net.impl.TCPServerBase: io.vertx.core.Handler worker>;
+virtualinvoke v60.<io.vertx.core.net.impl.ServerChannelLoadBalancer: void addWorker(io.netty.channel.EventLoop,io.vertx.core.Handler)>(v61, v62);
+v63 = v0.<io.vertx.core.net.impl.TCPServerBase: io.vertx.core.impl.ContextInternal listenContext>;
+interfaceinvoke v63.<io.vertx.core.impl.ContextInternal: void addCloseHook(io.vertx.core.Closeable)>(v0);
+v64 = v18.<io.vertx.core.net.impl.TCPServerBase: io.vertx.core.Future bindFuture>;
+interfaceinvoke v64.<io.vertx.core.Future: io.vertx.core.Future onComplete(io.vertx.core.Handler)>(v31);
+v65 = interfaceinvoke v31.<io.vertx.core.impl.future.PromiseInternal: io.vertx.core.Future future()>();
+exitmonitor v8;
+label12:
+return v65;
+label13:
+v66 := @caughtexception;
+exitmonitor v8;
+throw v66;
+catch java.lang.Throwable from label02 to label10 with label13;
+catch java.lang.Throwable from label11 to label12 with label13;
+}
+public boolean isListening()
+{
+boolean v1;
+io.vertx.core.net.impl.TCPServerBase v0;
+v0 := @this: io.vertx.core.net.impl.TCPServerBase;
+v1 = v0.<io.vertx.core.net.impl.TCPServerBase: boolean listening>;
+return v1;
+}
+protected io.vertx.core.spi.metrics.TCPMetrics createMetrics(io.vertx.core.net.SocketAddress)
+{
+io.vertx.core.net.SocketAddress v1;
+io.vertx.core.net.impl.TCPServerBase v0;
+v0 := @this: io.vertx.core.net.impl.TCPServerBase;
+v1 := @parameter0: io.vertx.core.net.SocketAddress;
+return null;
+}
+private void applyConnectionOptions(boolean, io.netty.bootstrap.ServerBootstrap)
+{
+io.vertx.core.net.NetServerOptions v5;
+io.vertx.core.impl.VertxInternal v3;
+io.vertx.core.net.impl.TCPServerBase v0;
+io.netty.bootstrap.ServerBootstrap v2;
+io.vertx.core.spi.transport.Transport v4;
+boolean v1;
+v0 := @this: io.vertx.core.net.impl.TCPServerBase;
+v1 := @parameter0: boolean;
+v2 := @parameter1: io.netty.bootstrap.ServerBootstrap;
+v3 = v0.<io.vertx.core.net.impl.TCPServerBase: io.vertx.core.impl.VertxInternal vertx>;
+v4 = interfaceinvoke v3.<io.vertx.core.impl.VertxInternal: io.vertx.core.spi.transport.Transport transport()>();
+v5 = v0.<io.vertx.core.net.impl.TCPServerBase: io.vertx.core.net.NetServerOptions options>;
+interfaceinvoke v4.<io.vertx.core.spi.transport.Transport: void configure(io.vertx.core.net.NetServerOptions,boolean,io.netty.bootstrap.ServerBootstrap)>(v5, v1, v2);
+return;
+}
+public boolean isMetricsEnabled()
+{
+io.vertx.core.spi.metrics.TCPMetrics v1;
+boolean v2;
+io.vertx.core.net.impl.TCPServerBase v0;
+v0 := @this: io.vertx.core.net.impl.TCPServerBase;
+v1 = v0.<io.vertx.core.net.impl.TCPServerBase: io.vertx.core.spi.metrics.TCPMetrics metrics>;
+if v1 == null goto label1;
+v2 = 1;
+goto label2;
+label1:
+v2 = 0;
+label2:
+return v2;
+}
+public synchronized io.vertx.core.spi.metrics.TCPMetrics getMetrics()
+{
+io.vertx.core.net.impl.TCPServerBase v0, v1, v2;
+io.vertx.core.spi.metrics.TCPMetrics v3;
+v0 := @this: io.vertx.core.net.impl.TCPServerBase;
+v1 = v0.<io.vertx.core.net.impl.TCPServerBase: io.vertx.core.net.impl.TCPServerBase actualServer>;
+if v1 == null goto label1;
+v2 = v0.<io.vertx.core.net.impl.TCPServerBase: io.vertx.core.net.impl.TCPServerBase actualServer>;
+v3 = v2.<io.vertx.core.net.impl.TCPServerBase: io.vertx.core.spi.metrics.TCPMetrics metrics>;
+goto label2;
+label1:
+v3 = null;
+label2:
+return v3;
+}
+public synchronized void close(io.vertx.core.Promise)
+{
+java.lang.Throwable v13;
+io.vertx.core.impl.VertxInternal v4;
+io.vertx.core.Promise v1;
+io.vertx.core.impl.ContextInternal v3;
+io.netty.channel.EventLoop v9;
+io.vertx.core.net.impl.TCPServerBase v0, v12, v7;
+java.util.Map v6;
+io.vertx.core.net.impl.ServerChannelLoadBalancer v8;
+java.lang.Class v5;
+io.vertx.core.Handler v10;
+boolean v11, v2;
+v0 := @this: io.vertx.core.net.impl.TCPServerBase;
+v1 := @parameter0: io.vertx.core.Promise;
+v2 = v0.<io.vertx.core.net.impl.TCPServerBase: boolean listening>;
+if v2 != 0 goto label1;
+interfaceinvoke v1.<io.vertx.core.Promise: void complete()>();
+return;
+label1:
+v0.<io.vertx.core.net.impl.TCPServerBase: boolean listening> = 0;
+v3 = v0.<io.vertx.core.net.impl.TCPServerBase: io.vertx.core.impl.ContextInternal listenContext>;
+interfaceinvoke v3.<io.vertx.core.impl.ContextInternal: void removeCloseHook(io.vertx.core.Closeable)>(v0);
+v4 = v0.<io.vertx.core.net.impl.TCPServerBase: io.vertx.core.impl.VertxInternal vertx>;
+v5 = virtualinvoke v0.<java.lang.Object: java.lang.Class getClass()>();
+v6 = interfaceinvoke v4.<io.vertx.core.impl.VertxInternal: java.util.Map sharedTCPServers(java.lang.Class)>(v5);
+entermonitor v6;
+label2:
+v7 = v0.<io.vertx.core.net.impl.TCPServerBase: io.vertx.core.net.impl.TCPServerBase actualServer>;
+v8 = v7.<io.vertx.core.net.impl.TCPServerBase: io.vertx.core.net.impl.ServerChannelLoadBalancer channelBalancer>;
+v9 = v0.<io.vertx.core.net.impl.TCPServerBase: io.netty.channel.EventLoop eventLoop>;
+v10 = v0.<io.vertx.core.net.impl.TCPServerBase: io.vertx.core.Handler worker>;
+virtualinvoke v8.<io.vertx.core.net.impl.ServerChannelLoadBalancer: boolean removeWorker(io.netty.channel.EventLoop,io.vertx.core.Handler)>(v9, v10);
+v11 = virtualinvoke v8.<io.vertx.core.net.impl.ServerChannelLoadBalancer: boolean hasHandlers()>();
+if v11 == 0 goto label3;
+interfaceinvoke v1.<io.vertx.core.Promise: void complete()>();
+goto label4;
+label3:
+v12 = v0.<io.vertx.core.net.impl.TCPServerBase: io.vertx.core.net.impl.TCPServerBase actualServer>;
+specialinvoke v12.<io.vertx.core.net.impl.TCPServerBase: void actualClose(io.vertx.core.Promise)>(v1);
+label4:
+exitmonitor v6;
+label5:
+goto label7;
+label6:
+v13 := @caughtexception;
+exitmonitor v6;
+throw v13;
+label7:
+return;
+catch java.lang.Throwable from label2 to label5 with label6;
+}
+private void actualClose(io.vertx.core.Promise)
+{
+io.vertx.core.Promise v1;
+io.vertx.core.net.impl.TCPServerBase v0;
+io.vertx.core.net.impl.ServerChannelLoadBalancer v2;
+io.vertx.core.Handler v4;
+io.vertx.core.Future v3;
+v0 := @this: io.vertx.core.net.impl.TCPServerBase;
+v1 := @parameter0: io.vertx.core.Promise;
+v2 = v0.<io.vertx.core.net.impl.TCPServerBase: io.vertx.core.net.impl.ServerChannelLoadBalancer channelBalancer>;
+virtualinvoke v2.<io.vertx.core.net.impl.ServerChannelLoadBalancer: void close()>();
+v3 = v0.<io.vertx.core.net.impl.TCPServerBase: io.vertx.core.Future bindFuture>;
+v4 = staticinvoke <io.vertx.core.net.impl.TCPServerBase$lambda_actualClose_8__1356: io.vertx.core.Handler bootstrap$(io.vertx.core.net.impl.TCPServerBase,io.vertx.core.Promise)>(v0, v1);
+interfaceinvoke v3.<io.vertx.core.Future: io.vertx.core.Future onComplete(io.vertx.core.Handler)>(v4);
+return;
+}
+public abstract io.vertx.core.Future close();
+static void <clinit>()
+{
+io.vertx.core.impl.logging.Logger v0;
+v0 = staticinvoke <io.vertx.core.impl.logging.LoggerFactory: io.vertx.core.impl.logging.Logger getLogger(java.lang.Class)>(class "Lio/vertx/core/net/impl/NetServerImpl;");
+<io.vertx.core.net.impl.TCPServerBase: io.vertx.core.impl.logging.Logger log> = v0;
+return;
+}
+}

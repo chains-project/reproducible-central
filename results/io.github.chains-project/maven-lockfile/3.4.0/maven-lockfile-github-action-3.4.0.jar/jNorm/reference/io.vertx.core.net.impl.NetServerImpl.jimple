@@ -1,0 +1,336 @@
+public class io.vertx.core.net.impl.NetServerImpl extends io.vertx.core.net.impl.TCPServerBase implements io.vertx.core.Closeable, io.vertx.core.spi.metrics.MetricsProvider, io.vertx.core.net.NetServer
+{
+private static final io.vertx.core.impl.logging.Logger log;
+private final io.vertx.core.net.impl.NetServerImpl$NetSocketStream connectStream;
+private long demand;
+private io.vertx.core.Handler handler;
+private io.vertx.core.Handler endHandler;
+private io.vertx.core.Handler exceptionHandler;
+public void <init>(io.vertx.core.impl.VertxInternal, io.vertx.core.net.NetServerOptions)
+{
+io.vertx.core.net.NetServerOptions v2;
+io.vertx.core.net.impl.NetServerImpl v0;
+io.vertx.core.impl.VertxInternal v1;
+io.vertx.core.net.impl.NetServerImpl$NetSocketStream v3;
+v0 := @this: io.vertx.core.net.impl.NetServerImpl;
+v1 := @parameter0: io.vertx.core.impl.VertxInternal;
+v2 := @parameter1: io.vertx.core.net.NetServerOptions;
+specialinvoke v0.<io.vertx.core.net.impl.TCPServerBase: void <init>(io.vertx.core.impl.VertxInternal,io.vertx.core.net.NetServerOptions)>(v1, v2);
+v3 = new io.vertx.core.net.impl.NetServerImpl$NetSocketStream;
+specialinvoke v3.<io.vertx.core.net.impl.NetServerImpl$NetSocketStream: void <init>(io.vertx.core.net.impl.NetServerImpl)>(v0);
+v0.<io.vertx.core.net.impl.NetServerImpl: io.vertx.core.net.impl.NetServerImpl$NetSocketStream connectStream> = v3;
+v0.<io.vertx.core.net.impl.NetServerImpl: long demand> = 9223372036854775807L;
+return;
+}
+private synchronized void pauseAccepting()
+{
+io.vertx.core.net.impl.NetServerImpl v0;
+v0 := @this: io.vertx.core.net.impl.NetServerImpl;
+v0.<io.vertx.core.net.impl.NetServerImpl: long demand> = 0L;
+return;
+}
+private synchronized void resumeAccepting()
+{
+io.vertx.core.net.impl.NetServerImpl v0;
+v0 := @this: io.vertx.core.net.impl.NetServerImpl;
+v0.<io.vertx.core.net.impl.NetServerImpl: long demand> = 9223372036854775807L;
+return;
+}
+private synchronized void fetchAccepting(long)
+{
+io.vertx.core.net.impl.NetServerImpl v0;
+byte v2, v6;
+long v1, v3, v4, v5;
+v0 := @this: io.vertx.core.net.impl.NetServerImpl;
+v1 := @parameter0: long;
+v2 = v1 cmp 0L;
+if v2 <= 0 goto label1;
+v3 = v0.<io.vertx.core.net.impl.NetServerImpl: long demand>;
+v4 = v3 + v1;
+v0.<io.vertx.core.net.impl.NetServerImpl: long demand> = v4;
+v5 = v0.<io.vertx.core.net.impl.NetServerImpl: long demand>;
+v6 = v5 cmp 0L;
+if v6 >= 0 goto label1;
+v0.<io.vertx.core.net.impl.NetServerImpl: long demand> = 9223372036854775807L;
+label1:
+return;
+}
+protected synchronized boolean accept()
+{
+io.vertx.core.net.impl.NetServerImpl v0;
+long v1, v5, v7, v8;
+byte v2, v6;
+boolean v3, v4;
+v0 := @this: io.vertx.core.net.impl.NetServerImpl;
+v1 = v0.<io.vertx.core.net.impl.NetServerImpl: long demand>;
+v2 = v1 cmp 0L;
+if v2 <= 0 goto label1;
+v3 = 1;
+goto label2;
+label1:
+v3 = 0;
+label2:
+v4 = v3;
+if v3 == 0 goto label3;
+v5 = v0.<io.vertx.core.net.impl.NetServerImpl: long demand>;
+v6 = v5 cmp 9223372036854775807L;
+if v6 == 0 goto label3;
+v7 = v0.<io.vertx.core.net.impl.NetServerImpl: long demand>;
+v8 = v7 - 1L;
+v0.<io.vertx.core.net.impl.NetServerImpl: long demand> = v8;
+label3:
+return v4;
+}
+public synchronized io.vertx.core.Handler connectHandler()
+{
+io.vertx.core.net.impl.NetServerImpl v0;
+io.vertx.core.Handler v1;
+v0 := @this: io.vertx.core.net.impl.NetServerImpl;
+v1 = v0.<io.vertx.core.net.impl.NetServerImpl: io.vertx.core.Handler handler>;
+return v1;
+}
+public synchronized io.vertx.core.net.NetServer connectHandler(io.vertx.core.Handler)
+{
+java.lang.IllegalStateException v3;
+io.vertx.core.net.impl.NetServerImpl v0;
+io.vertx.core.Handler v1;
+boolean v2;
+v0 := @this: io.vertx.core.net.impl.NetServerImpl;
+v1 := @parameter0: io.vertx.core.Handler;
+v2 = virtualinvoke v0.<io.vertx.core.net.impl.NetServerImpl: boolean isListening()>();
+if v2 == 0 goto label1;
+v3 = new java.lang.IllegalStateException;
+specialinvoke v3.<java.lang.IllegalStateException: void <init>(java.lang.String)>("Cannot set connectHandler when server is listening");
+throw v3;
+label1:
+v0.<io.vertx.core.net.impl.NetServerImpl: io.vertx.core.Handler handler> = v1;
+return v0;
+}
+public synchronized io.vertx.core.net.NetServer exceptionHandler(io.vertx.core.Handler)
+{
+java.lang.IllegalStateException v3;
+io.vertx.core.net.impl.NetServerImpl v0;
+io.vertx.core.Handler v1;
+boolean v2;
+v0 := @this: io.vertx.core.net.impl.NetServerImpl;
+v1 := @parameter0: io.vertx.core.Handler;
+v2 = virtualinvoke v0.<io.vertx.core.net.impl.NetServerImpl: boolean isListening()>();
+if v2 == 0 goto label1;
+v3 = new java.lang.IllegalStateException;
+specialinvoke v3.<java.lang.IllegalStateException: void <init>(java.lang.String)>("Cannot set exceptionHandler when server is listening");
+throw v3;
+label1:
+v0.<io.vertx.core.net.impl.NetServerImpl: io.vertx.core.Handler exceptionHandler> = v1;
+return v0;
+}
+protected io.vertx.core.spi.metrics.TCPMetrics createMetrics(io.vertx.core.net.SocketAddress)
+{
+io.vertx.core.net.NetServerOptions v4;
+io.vertx.core.net.impl.NetServerImpl v0;
+io.vertx.core.impl.VertxInternal v2;
+io.vertx.core.spi.metrics.TCPMetrics v5;
+io.vertx.core.spi.metrics.VertxMetrics v3;
+io.vertx.core.net.SocketAddress v1;
+v0 := @this: io.vertx.core.net.impl.NetServerImpl;
+v1 := @parameter0: io.vertx.core.net.SocketAddress;
+v2 = v0.<io.vertx.core.net.impl.NetServerImpl: io.vertx.core.impl.VertxInternal vertx>;
+v3 = interfaceinvoke v2.<io.vertx.core.impl.VertxInternal: io.vertx.core.spi.metrics.VertxMetrics metricsSPI()>();
+if v3 == null goto label1;
+v4 = v0.<io.vertx.core.net.impl.NetServerImpl: io.vertx.core.net.NetServerOptions options>;
+v5 = interfaceinvoke v3.<io.vertx.core.spi.metrics.VertxMetrics: io.vertx.core.spi.metrics.TCPMetrics createNetServerMetrics(io.vertx.core.net.NetServerOptions,io.vertx.core.net.SocketAddress)>(v4, v1);
+return v5;
+label1:
+return null;
+}
+public io.vertx.core.Future close()
+{
+io.vertx.core.net.impl.NetServerImpl v0;
+io.vertx.core.impl.VertxInternal v1;
+io.vertx.core.impl.future.PromiseInternal v3;
+io.vertx.core.impl.ContextInternal v2;
+io.vertx.core.Future v4;
+v0 := @this: io.vertx.core.net.impl.NetServerImpl;
+v1 = v0.<io.vertx.core.net.impl.NetServerImpl: io.vertx.core.impl.VertxInternal vertx>;
+v2 = interfaceinvoke v1.<io.vertx.core.impl.VertxInternal: io.vertx.core.impl.ContextInternal getOrCreateContext()>();
+v3 = interfaceinvoke v2.<io.vertx.core.impl.ContextInternal: io.vertx.core.impl.future.PromiseInternal promise()>();
+virtualinvoke v0.<io.vertx.core.net.impl.NetServerImpl: void close(io.vertx.core.Promise)>(v3);
+v4 = interfaceinvoke v3.<io.vertx.core.Promise: io.vertx.core.Future future()>();
+return v4;
+}
+protected java.util.function.BiConsumer childHandler(io.vertx.core.impl.ContextInternal, io.vertx.core.net.SocketAddress)
+{
+io.vertx.core.net.impl.NetServerImpl v0;
+io.vertx.core.impl.ContextInternal v1;
+io.vertx.core.Handler v4, v5;
+io.vertx.core.net.SocketAddress v2;
+io.vertx.core.net.impl.NetServerImpl$NetServerWorker v3;
+v0 := @this: io.vertx.core.net.impl.NetServerImpl;
+v1 := @parameter0: io.vertx.core.impl.ContextInternal;
+v2 := @parameter1: io.vertx.core.net.SocketAddress;
+v3 = new io.vertx.core.net.impl.NetServerImpl$NetServerWorker;
+v4 = v0.<io.vertx.core.net.impl.NetServerImpl: io.vertx.core.Handler handler>;
+v5 = v0.<io.vertx.core.net.impl.NetServerImpl: io.vertx.core.Handler exceptionHandler>;
+specialinvoke v3.<io.vertx.core.net.impl.NetServerImpl$NetServerWorker: void <init>(io.vertx.core.net.impl.NetServerImpl,io.vertx.core.impl.ContextInternal,io.vertx.core.Handler,io.vertx.core.Handler)>(v0, v1, v4, v5);
+return v3;
+}
+public synchronized io.vertx.core.Future listen(io.vertx.core.net.SocketAddress)
+{
+java.lang.IllegalStateException v4;
+io.vertx.core.net.impl.NetServerImpl v0;
+io.vertx.core.Handler v3;
+io.vertx.core.Future v5, v6;
+java.lang.NullPointerException v2;
+io.vertx.core.net.SocketAddress v1;
+v0 := @this: io.vertx.core.net.impl.NetServerImpl;
+v1 := @parameter0: io.vertx.core.net.SocketAddress;
+if v1 != null goto label1;
+v2 = new java.lang.NullPointerException;
+specialinvoke v2.<java.lang.NullPointerException: void <init>(java.lang.String)>("No null bind local address");
+throw v2;
+label1:
+v3 = v0.<io.vertx.core.net.impl.NetServerImpl: io.vertx.core.Handler handler>;
+if v3 != null goto label2;
+v4 = new java.lang.IllegalStateException;
+specialinvoke v4.<java.lang.IllegalStateException: void <init>(java.lang.String)>("Set connect handler first");
+throw v4;
+label2:
+v5 = virtualinvoke v0.<io.vertx.core.net.impl.NetServerImpl: io.vertx.core.Future bind(io.vertx.core.net.SocketAddress)>(v1);
+v6 = interfaceinvoke v5.<io.vertx.core.Future: io.vertx.core.Future map(java.lang.Object)>(v0);
+return v6;
+}
+public io.vertx.core.Future listen()
+{
+io.vertx.core.net.NetServerOptions v1, v3;
+io.vertx.core.net.impl.NetServerImpl v0;
+int v2;
+java.lang.String v4;
+io.vertx.core.Future v5;
+v0 := @this: io.vertx.core.net.impl.NetServerImpl;
+v1 = v0.<io.vertx.core.net.impl.NetServerImpl: io.vertx.core.net.NetServerOptions options>;
+v2 = virtualinvoke v1.<io.vertx.core.net.NetServerOptions: int getPort()>();
+v3 = v0.<io.vertx.core.net.impl.NetServerImpl: io.vertx.core.net.NetServerOptions options>;
+v4 = virtualinvoke v3.<io.vertx.core.net.NetServerOptions: java.lang.String getHost()>();
+v5 = virtualinvoke v0.<io.vertx.core.net.impl.NetServerImpl: io.vertx.core.Future listen(int,java.lang.String)>(v2, v4);
+return v5;
+}
+public io.vertx.core.streams.ReadStream connectStream()
+{
+io.vertx.core.net.impl.NetServerImpl v0;
+io.vertx.core.net.impl.NetServerImpl$NetSocketStream v1;
+v0 := @this: io.vertx.core.net.impl.NetServerImpl;
+v1 = v0.<io.vertx.core.net.impl.NetServerImpl: io.vertx.core.net.impl.NetServerImpl$NetSocketStream connectStream>;
+return v1;
+}
+public void close(io.vertx.core.Handler)
+{
+io.vertx.core.net.impl.NetServerImpl v0;
+io.vertx.core.impl.VertxInternal v2;
+io.vertx.core.impl.future.PromiseInternal v4;
+io.vertx.core.impl.ContextInternal v3;
+io.vertx.core.Handler v1;
+io.vertx.core.Future v5;
+v0 := @this: io.vertx.core.net.impl.NetServerImpl;
+v1 := @parameter0: io.vertx.core.Handler;
+v2 = v0.<io.vertx.core.net.impl.NetServerImpl: io.vertx.core.impl.VertxInternal vertx>;
+v3 = interfaceinvoke v2.<io.vertx.core.impl.VertxInternal: io.vertx.core.impl.ContextInternal getOrCreateContext()>();
+v4 = interfaceinvoke v3.<io.vertx.core.impl.ContextInternal: io.vertx.core.impl.future.PromiseInternal promise()>();
+virtualinvoke v0.<io.vertx.core.net.impl.NetServerImpl: void close(io.vertx.core.Promise)>(v4);
+v5 = interfaceinvoke v4.<io.vertx.core.Promise: io.vertx.core.Future future()>();
+interfaceinvoke v5.<io.vertx.core.Future: io.vertx.core.Future onComplete(io.vertx.core.Handler)>(v1);
+return;
+}
+public synchronized void close(io.vertx.core.Promise)
+{
+io.vertx.core.net.impl.NetServerImpl v0;
+io.vertx.core.Promise v1;
+io.vertx.core.Handler v2, v3, v5;
+io.vertx.core.Future v4;
+v0 := @this: io.vertx.core.net.impl.NetServerImpl;
+v1 := @parameter0: io.vertx.core.Promise;
+specialinvoke v0.<io.vertx.core.net.impl.TCPServerBase: void close(io.vertx.core.Promise)>(v1);
+v2 = v0.<io.vertx.core.net.impl.NetServerImpl: io.vertx.core.Handler endHandler>;
+v3 = v0.<io.vertx.core.net.impl.NetServerImpl: io.vertx.core.Handler endHandler>;
+if v3 == null goto label1;
+v0.<io.vertx.core.net.impl.NetServerImpl: io.vertx.core.Handler endHandler> = null;
+v4 = interfaceinvoke v1.<io.vertx.core.Promise: io.vertx.core.Future future()>();
+v5 = staticinvoke <io.vertx.core.net.impl.NetServerImpl$lambda_close_0__1344: io.vertx.core.Handler bootstrap$(io.vertx.core.Handler)>(v2);
+interfaceinvoke v4.<io.vertx.core.Future: io.vertx.core.Future onComplete(io.vertx.core.Handler)>(v5);
+label1:
+return;
+}
+public boolean isClosed()
+{
+io.vertx.core.net.impl.NetServerImpl v0;
+boolean v1, v2;
+v0 := @this: io.vertx.core.net.impl.NetServerImpl;
+v1 = virtualinvoke v0.<io.vertx.core.net.impl.NetServerImpl: boolean isListening()>();
+if v1 != 0 goto label1;
+v2 = 1;
+goto label2;
+label1:
+v2 = 0;
+label2:
+return v2;
+}
+protected void initChannel(io.netty.channel.ChannelPipeline, boolean)
+{
+io.vertx.core.net.impl.NetServerImpl v0;
+io.netty.handler.logging.LoggingHandler v5;
+io.netty.handler.stream.ChunkedWriteHandler v11;
+io.vertx.core.spi.transport.Transport v9;
+io.netty.handler.logging.ByteBufFormat v7;
+int v13, v15, v17;
+boolean v10, v2, v4;
+io.vertx.core.impl.VertxInternal v8;
+io.netty.channel.ChannelPipeline v1;
+java.util.concurrent.TimeUnit v20;
+io.netty.handler.timeout.IdleStateHandler v18;
+io.vertx.core.net.NetServerOptions v12, v14, v16, v19, v3, v6;
+v0 := @this: io.vertx.core.net.impl.NetServerImpl;
+v1 := @parameter0: io.netty.channel.ChannelPipeline;
+v2 := @parameter1: boolean;
+v3 = v0.<io.vertx.core.net.impl.NetServerImpl: io.vertx.core.net.NetServerOptions options>;
+v4 = virtualinvoke v3.<io.vertx.core.net.NetServerOptions: boolean getLogActivity()>();
+if v4 == 0 goto label1;
+v5 = new io.netty.handler.logging.LoggingHandler;
+v6 = v0.<io.vertx.core.net.impl.NetServerImpl: io.vertx.core.net.NetServerOptions options>;
+v7 = virtualinvoke v6.<io.vertx.core.net.NetServerOptions: io.netty.handler.logging.ByteBufFormat getActivityLogDataFormat()>();
+specialinvoke v5.<io.netty.handler.logging.LoggingHandler: void <init>(io.netty.handler.logging.ByteBufFormat)>(v7);
+interfaceinvoke v1.<io.netty.channel.ChannelPipeline: io.netty.channel.ChannelPipeline addLast(java.lang.String,io.netty.channel.ChannelHandler)>("logging", v5);
+label1:
+if v2 != 0 goto label2;
+v8 = v0.<io.vertx.core.net.impl.NetServerImpl: io.vertx.core.impl.VertxInternal vertx>;
+v9 = interfaceinvoke v8.<io.vertx.core.impl.VertxInternal: io.vertx.core.spi.transport.Transport transport()>();
+v10 = interfaceinvoke v9.<io.vertx.core.spi.transport.Transport: boolean supportFileRegion()>();
+if v10 != 0 goto label3;
+label2:
+v11 = new io.netty.handler.stream.ChunkedWriteHandler;
+specialinvoke v11.<io.netty.handler.stream.ChunkedWriteHandler: void <init>()>();
+interfaceinvoke v1.<io.netty.channel.ChannelPipeline: io.netty.channel.ChannelPipeline addLast(java.lang.String,io.netty.channel.ChannelHandler)>("chunkedWriter", v11);
+label3:
+v12 = v0.<io.vertx.core.net.impl.NetServerImpl: io.vertx.core.net.NetServerOptions options>;
+v13 = virtualinvoke v12.<io.vertx.core.net.NetServerOptions: int getIdleTimeout()>();
+v14 = v0.<io.vertx.core.net.impl.NetServerImpl: io.vertx.core.net.NetServerOptions options>;
+v15 = virtualinvoke v14.<io.vertx.core.net.NetServerOptions: int getReadIdleTimeout()>();
+v16 = v0.<io.vertx.core.net.impl.NetServerImpl: io.vertx.core.net.NetServerOptions options>;
+v17 = virtualinvoke v16.<io.vertx.core.net.NetServerOptions: int getWriteIdleTimeout()>();
+if v13 > 0 goto label4;
+if v15 > 0 goto label4;
+if v17 <= 0 goto label5;
+label4:
+v18 = new io.netty.handler.timeout.IdleStateHandler;
+v19 = v0.<io.vertx.core.net.impl.NetServerImpl: io.vertx.core.net.NetServerOptions options>;
+v20 = virtualinvoke v19.<io.vertx.core.net.NetServerOptions: java.util.concurrent.TimeUnit getIdleTimeoutUnit()>();
+specialinvoke v18.<io.netty.handler.timeout.IdleStateHandler: void <init>(long,long,long,java.util.concurrent.TimeUnit)>(v15, v17, v13, v20);
+interfaceinvoke v1.<io.netty.channel.ChannelPipeline: io.netty.channel.ChannelPipeline addLast(java.lang.String,io.netty.channel.ChannelHandler)>("idle", v18);
+label5:
+return;
+}
+static void <clinit>()
+{
+io.vertx.core.impl.logging.Logger v0;
+v0 = staticinvoke <io.vertx.core.impl.logging.LoggerFactory: io.vertx.core.impl.logging.Logger getLogger(java.lang.Class)>(class "Lio/vertx/core/net/impl/NetServerImpl;");
+<io.vertx.core.net.impl.NetServerImpl: io.vertx.core.impl.logging.Logger log> = v0;
+return;
+}
+}

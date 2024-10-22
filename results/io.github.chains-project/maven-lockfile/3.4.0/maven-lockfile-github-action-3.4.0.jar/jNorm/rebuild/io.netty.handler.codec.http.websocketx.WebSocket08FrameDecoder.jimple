@@ -1,0 +1,661 @@
+public class io.netty.handler.codec.http.websocketx.WebSocket08FrameDecoder extends io.netty.handler.codec.ByteToMessageDecoder implements io.netty.handler.codec.http.websocketx.WebSocketFrameDecoder
+{
+private static final io.netty.util.internal.logging.InternalLogger logger;
+private static final byte OPCODE_CONT;
+private static final byte OPCODE_TEXT;
+private static final byte OPCODE_BINARY;
+private static final byte OPCODE_CLOSE;
+private static final byte OPCODE_PING;
+private static final byte OPCODE_PONG;
+private final io.netty.handler.codec.http.websocketx.WebSocketDecoderConfig config;
+private int fragmentedFramesCount;
+private boolean frameFinalFlag;
+private boolean frameMasked;
+private int frameRsv;
+private int frameOpcode;
+private long framePayloadLength;
+private int mask;
+private int framePayloadLen1;
+private boolean receivedClosingHandshake;
+private io.netty.handler.codec.http.websocketx.WebSocket08FrameDecoder$State state;
+public void <init>(boolean, boolean, int)
+{
+int v3;
+io.netty.handler.codec.http.websocketx.WebSocket08FrameDecoder v0;
+boolean v1, v2;
+v0 := @this: io.netty.handler.codec.http.websocketx.WebSocket08FrameDecoder;
+v1 := @parameter0: boolean;
+v2 := @parameter1: boolean;
+v3 := @parameter2: int;
+specialinvoke v0.<io.netty.handler.codec.http.websocketx.WebSocket08FrameDecoder: void <init>(boolean,boolean,int,boolean)>(v1, v2, v3, 0);
+return;
+}
+public void <init>(boolean, boolean, int, boolean)
+{
+io.netty.handler.codec.http.websocketx.WebSocketDecoderConfig v10;
+io.netty.handler.codec.http.websocketx.WebSocket08FrameDecoder v0;
+io.netty.handler.codec.http.websocketx.WebSocketDecoderConfig$Builder v5, v6, v7, v8, v9;
+int v3;
+boolean v1, v2, v4;
+v0 := @this: io.netty.handler.codec.http.websocketx.WebSocket08FrameDecoder;
+v1 := @parameter0: boolean;
+v2 := @parameter1: boolean;
+v3 := @parameter2: int;
+v4 := @parameter3: boolean;
+v5 = staticinvoke <io.netty.handler.codec.http.websocketx.WebSocketDecoderConfig: io.netty.handler.codec.http.websocketx.WebSocketDecoderConfig$Builder newBuilder()>();
+v6 = virtualinvoke v5.<io.netty.handler.codec.http.websocketx.WebSocketDecoderConfig$Builder: io.netty.handler.codec.http.websocketx.WebSocketDecoderConfig$Builder expectMaskedFrames(boolean)>(v1);
+v7 = virtualinvoke v6.<io.netty.handler.codec.http.websocketx.WebSocketDecoderConfig$Builder: io.netty.handler.codec.http.websocketx.WebSocketDecoderConfig$Builder allowExtensions(boolean)>(v2);
+v8 = virtualinvoke v7.<io.netty.handler.codec.http.websocketx.WebSocketDecoderConfig$Builder: io.netty.handler.codec.http.websocketx.WebSocketDecoderConfig$Builder maxFramePayloadLength(int)>(v3);
+v9 = virtualinvoke v8.<io.netty.handler.codec.http.websocketx.WebSocketDecoderConfig$Builder: io.netty.handler.codec.http.websocketx.WebSocketDecoderConfig$Builder allowMaskMismatch(boolean)>(v4);
+v10 = virtualinvoke v9.<io.netty.handler.codec.http.websocketx.WebSocketDecoderConfig$Builder: io.netty.handler.codec.http.websocketx.WebSocketDecoderConfig build()>();
+specialinvoke v0.<io.netty.handler.codec.http.websocketx.WebSocket08FrameDecoder: void <init>(io.netty.handler.codec.http.websocketx.WebSocketDecoderConfig)>(v10);
+return;
+}
+public void <init>(io.netty.handler.codec.http.websocketx.WebSocketDecoderConfig)
+{
+io.netty.handler.codec.http.websocketx.WebSocketDecoderConfig v1;
+java.lang.Object v3;
+io.netty.handler.codec.http.websocketx.WebSocket08FrameDecoder$State v2;
+io.netty.handler.codec.http.websocketx.WebSocket08FrameDecoder v0;
+v0 := @this: io.netty.handler.codec.http.websocketx.WebSocket08FrameDecoder;
+v1 := @parameter0: io.netty.handler.codec.http.websocketx.WebSocketDecoderConfig;
+specialinvoke v0.<io.netty.handler.codec.ByteToMessageDecoder: void <init>()>();
+v2 = <io.netty.handler.codec.http.websocketx.WebSocket08FrameDecoder$State: io.netty.handler.codec.http.websocketx.WebSocket08FrameDecoder$State READING_FIRST>;
+v0.<io.netty.handler.codec.http.websocketx.WebSocket08FrameDecoder: io.netty.handler.codec.http.websocketx.WebSocket08FrameDecoder$State state> = v2;
+v3 = staticinvoke <io.netty.util.internal.ObjectUtil: java.lang.Object checkNotNull(java.lang.Object,java.lang.String)>(v1, "decoderConfig");
+v0.<io.netty.handler.codec.http.websocketx.WebSocket08FrameDecoder: io.netty.handler.codec.http.websocketx.WebSocketDecoderConfig config> = v3;
+return;
+}
+protected void decode(io.netty.channel.ChannelHandlerContext, io.netty.buffer.ByteBuf, java.util.List) throws java.lang.Exception
+{
+io.netty.handler.codec.http.websocketx.WebSocket08FrameDecoder v0;
+java.lang.Integer v21;
+byte v101, v11, v14, v16, v24, v27, v62, v67, v69, v74, v91, v94;
+java.lang.Long v83;
+io.netty.handler.codec.http.websocketx.WebSocket08FrameDecoder$State v22, v57, v7, v84, v88, v98;
+io.netty.util.internal.logging.InternalLogger v17, v19, v79, v81;
+long v100, v61, v65, v66, v68, v71, v82, v90, v93, v96;
+short v12, v25;
+io.netty.handler.codec.http.websocketx.CloseWebSocketFrame v113;
+io.netty.handler.codec.http.websocketx.WebSocketDecoderConfig v29, v33, v35, v72, v76;
+io.netty.handler.codec.http.websocketx.BinaryWebSocketFrame v124;
+io.netty.handler.codec.http.websocketx.TextWebSocketFrame v120;
+io.netty.buffer.ByteBufAllocator v95;
+int[] v6;
+io.netty.handler.codec.http.websocketx.ContinuationWebSocketFrame v128;
+io.netty.handler.codec.http.websocketx.WebSocketCloseStatus v75;
+io.netty.channel.ChannelHandlerContext v1;
+int v104, v107, v108, v111, v112, v115, v117, v118, v119, v122, v123, v126, v127, v130, v132, v15, v20, v28, v31, v38, v40, v41, v42, v43, v44, v46, v47, v48, v49, v5, v50, v51, v53, v54, v55, v56, v58, v59, v60, v63, v64, v70, v73, v77, v8, v86, v87, v89, v9, v97;
+java.lang.Throwable v134;
+java.lang.Error v136;
+io.netty.handler.codec.http.websocketx.PongWebSocketFrame v109;
+java.lang.String v133, v32, v45, v52, v78;
+java.lang.UnsupportedOperationException v131;
+io.netty.handler.codec.http.websocketx.PingWebSocketFrame v105;
+boolean v10, v102, v103, v106, v110, v114, v116, v121, v125, v129, v13, v135, v18, v23, v26, v30, v34, v36, v37, v39, v4, v80, v85, v99;
+java.util.List v3;
+io.netty.buffer.ByteBuf v2, v92;
+v0 := @this: io.netty.handler.codec.http.websocketx.WebSocket08FrameDecoder;
+v1 := @parameter0: io.netty.channel.ChannelHandlerContext;
+v2 := @parameter1: io.netty.buffer.ByteBuf;
+v3 := @parameter2: java.util.List;
+v4 = v0.<io.netty.handler.codec.http.websocketx.WebSocket08FrameDecoder: boolean receivedClosingHandshake>;
+if v4 == 0 goto label01;
+v5 = virtualinvoke v0.<io.netty.handler.codec.http.websocketx.WebSocket08FrameDecoder: int actualReadableBytes()>();
+virtualinvoke v2.<io.netty.buffer.ByteBuf: io.netty.buffer.ByteBuf skipBytes(int)>(v5);
+return;
+label01:
+v6 = <io.netty.handler.codec.http.websocketx.WebSocket08FrameDecoder$1: int[] $SwitchMap$io$netty$handler$codec$http$websocketx$WebSocket08FrameDecoder$State>;
+v7 = v0.<io.netty.handler.codec.http.websocketx.WebSocket08FrameDecoder: io.netty.handler.codec.http.websocketx.WebSocket08FrameDecoder$State state>;
+v8 = virtualinvoke v7.<io.netty.handler.codec.http.websocketx.WebSocket08FrameDecoder$State: int ordinal()>();
+v9 = v6[v8];
+tableswitch(v9)
+{
+case 1: goto label02;
+case 2: goto label07;
+case 3: goto label20;
+case 4: goto label29;
+case 5: goto label32;
+case 6: goto label55;
+default: goto label57;
+};
+label02:
+v10 = virtualinvoke v2.<io.netty.buffer.ByteBuf: boolean isReadable()>();
+if v10 != 0 goto label03;
+return;
+label03:
+v0.<io.netty.handler.codec.http.websocketx.WebSocket08FrameDecoder: long framePayloadLength> = 0L;
+v11 = virtualinvoke v2.<io.netty.buffer.ByteBuf: byte readByte()>();
+v12 = v11 & 128;
+if v12 == 0 goto label04;
+v13 = 1;
+goto label05;
+label04:
+v13 = 0;
+label05:
+v0.<io.netty.handler.codec.http.websocketx.WebSocket08FrameDecoder: boolean frameFinalFlag> = v13;
+v14 = v11 & 112;
+v15 = v14 >> 4;
+v0.<io.netty.handler.codec.http.websocketx.WebSocket08FrameDecoder: int frameRsv> = v15;
+v16 = v11 & 15;
+v0.<io.netty.handler.codec.http.websocketx.WebSocket08FrameDecoder: int frameOpcode> = v16;
+v17 = <io.netty.handler.codec.http.websocketx.WebSocket08FrameDecoder: io.netty.util.internal.logging.InternalLogger logger>;
+v18 = interfaceinvoke v17.<io.netty.util.internal.logging.InternalLogger: boolean isTraceEnabled()>();
+if v18 == 0 goto label06;
+v19 = <io.netty.handler.codec.http.websocketx.WebSocket08FrameDecoder: io.netty.util.internal.logging.InternalLogger logger>;
+v20 = v0.<io.netty.handler.codec.http.websocketx.WebSocket08FrameDecoder: int frameOpcode>;
+v21 = staticinvoke <java.lang.Integer: java.lang.Integer valueOf(int)>(v20);
+interfaceinvoke v19.<io.netty.util.internal.logging.InternalLogger: void trace(java.lang.String,java.lang.Object)>("Decoding WebSocket Frame opCode={}", v21);
+label06:
+v22 = <io.netty.handler.codec.http.websocketx.WebSocket08FrameDecoder$State: io.netty.handler.codec.http.websocketx.WebSocket08FrameDecoder$State READING_SECOND>;
+v0.<io.netty.handler.codec.http.websocketx.WebSocket08FrameDecoder: io.netty.handler.codec.http.websocketx.WebSocket08FrameDecoder$State state> = v22;
+label07:
+v23 = virtualinvoke v2.<io.netty.buffer.ByteBuf: boolean isReadable()>();
+if v23 != 0 goto label08;
+return;
+label08:
+v24 = virtualinvoke v2.<io.netty.buffer.ByteBuf: byte readByte()>();
+v25 = v24 & 128;
+if v25 == 0 goto label09;
+v26 = 1;
+goto label10;
+label09:
+v26 = 0;
+label10:
+v0.<io.netty.handler.codec.http.websocketx.WebSocket08FrameDecoder: boolean frameMasked> = v26;
+v27 = v24 & 127;
+v0.<io.netty.handler.codec.http.websocketx.WebSocket08FrameDecoder: int framePayloadLen1> = v27;
+v28 = v0.<io.netty.handler.codec.http.websocketx.WebSocket08FrameDecoder: int frameRsv>;
+if v28 == 0 goto label11;
+v29 = v0.<io.netty.handler.codec.http.websocketx.WebSocket08FrameDecoder: io.netty.handler.codec.http.websocketx.WebSocketDecoderConfig config>;
+v30 = virtualinvoke v29.<io.netty.handler.codec.http.websocketx.WebSocketDecoderConfig: boolean allowExtensions()>();
+if v30 != 0 goto label11;
+v31 = v0.<io.netty.handler.codec.http.websocketx.WebSocket08FrameDecoder: int frameRsv>;
+v32 = dynamicinvoke "makeConcatWithConstants" <java.lang.String (int)>(v31) <java.lang.invoke.StringConcatFactory: java.lang.invoke.CallSite makeConcatWithConstants(java.lang.invoke.MethodHandles$Lookup,java.lang.String,java.lang.invoke.MethodType,java.lang.String,java.lang.Object[])>("RSV != 0 and no extension negotiated, RSV:\u0001");
+specialinvoke v0.<io.netty.handler.codec.http.websocketx.WebSocket08FrameDecoder: void protocolViolation(io.netty.channel.ChannelHandlerContext,io.netty.buffer.ByteBuf,java.lang.String)>(v1, v2, v32);
+return;
+label11:
+v33 = v0.<io.netty.handler.codec.http.websocketx.WebSocket08FrameDecoder: io.netty.handler.codec.http.websocketx.WebSocketDecoderConfig config>;
+v34 = virtualinvoke v33.<io.netty.handler.codec.http.websocketx.WebSocketDecoderConfig: boolean allowMaskMismatch()>();
+if v34 != 0 goto label12;
+v35 = v0.<io.netty.handler.codec.http.websocketx.WebSocket08FrameDecoder: io.netty.handler.codec.http.websocketx.WebSocketDecoderConfig config>;
+v36 = virtualinvoke v35.<io.netty.handler.codec.http.websocketx.WebSocketDecoderConfig: boolean expectMaskedFrames()>();
+v37 = v0.<io.netty.handler.codec.http.websocketx.WebSocket08FrameDecoder: boolean frameMasked>;
+if v36 == v37 goto label12;
+specialinvoke v0.<io.netty.handler.codec.http.websocketx.WebSocket08FrameDecoder: void protocolViolation(io.netty.channel.ChannelHandlerContext,io.netty.buffer.ByteBuf,java.lang.String)>(v1, v2, "received a frame that is not masked as expected");
+return;
+label12:
+v38 = v0.<io.netty.handler.codec.http.websocketx.WebSocket08FrameDecoder: int frameOpcode>;
+if v38 <= 7 goto label16;
+v39 = v0.<io.netty.handler.codec.http.websocketx.WebSocket08FrameDecoder: boolean frameFinalFlag>;
+if v39 != 0 goto label13;
+specialinvoke v0.<io.netty.handler.codec.http.websocketx.WebSocket08FrameDecoder: void protocolViolation(io.netty.channel.ChannelHandlerContext,io.netty.buffer.ByteBuf,java.lang.String)>(v1, v2, "fragmented control frame");
+return;
+label13:
+v40 = v0.<io.netty.handler.codec.http.websocketx.WebSocket08FrameDecoder: int framePayloadLen1>;
+if v40 <= 125 goto label14;
+specialinvoke v0.<io.netty.handler.codec.http.websocketx.WebSocket08FrameDecoder: void protocolViolation(io.netty.channel.ChannelHandlerContext,io.netty.buffer.ByteBuf,java.lang.String)>(v1, v2, "control frame with payload length > 125 octets");
+return;
+label14:
+v41 = v0.<io.netty.handler.codec.http.websocketx.WebSocket08FrameDecoder: int frameOpcode>;
+if v41 == 8 goto label15;
+v42 = v0.<io.netty.handler.codec.http.websocketx.WebSocket08FrameDecoder: int frameOpcode>;
+if v42 == 9 goto label15;
+v43 = v0.<io.netty.handler.codec.http.websocketx.WebSocket08FrameDecoder: int frameOpcode>;
+if v43 == 10 goto label15;
+v44 = v0.<io.netty.handler.codec.http.websocketx.WebSocket08FrameDecoder: int frameOpcode>;
+v45 = dynamicinvoke "makeConcatWithConstants" <java.lang.String (int)>(v44) <java.lang.invoke.StringConcatFactory: java.lang.invoke.CallSite makeConcatWithConstants(java.lang.invoke.MethodHandles$Lookup,java.lang.String,java.lang.invoke.MethodType,java.lang.String,java.lang.Object[])>("control frame using reserved opcode \u0001");
+specialinvoke v0.<io.netty.handler.codec.http.websocketx.WebSocket08FrameDecoder: void protocolViolation(io.netty.channel.ChannelHandlerContext,io.netty.buffer.ByteBuf,java.lang.String)>(v1, v2, v45);
+return;
+label15:
+v46 = v0.<io.netty.handler.codec.http.websocketx.WebSocket08FrameDecoder: int frameOpcode>;
+if v46 != 8 goto label19;
+v47 = v0.<io.netty.handler.codec.http.websocketx.WebSocket08FrameDecoder: int framePayloadLen1>;
+if v47 != 1 goto label19;
+specialinvoke v0.<io.netty.handler.codec.http.websocketx.WebSocket08FrameDecoder: void protocolViolation(io.netty.channel.ChannelHandlerContext,io.netty.buffer.ByteBuf,java.lang.String)>(v1, v2, "received close control frame with payload len 1");
+return;
+label16:
+v48 = v0.<io.netty.handler.codec.http.websocketx.WebSocket08FrameDecoder: int frameOpcode>;
+if v48 == 0 goto label17;
+v49 = v0.<io.netty.handler.codec.http.websocketx.WebSocket08FrameDecoder: int frameOpcode>;
+if v49 == 1 goto label17;
+v50 = v0.<io.netty.handler.codec.http.websocketx.WebSocket08FrameDecoder: int frameOpcode>;
+if v50 == 2 goto label17;
+v51 = v0.<io.netty.handler.codec.http.websocketx.WebSocket08FrameDecoder: int frameOpcode>;
+v52 = dynamicinvoke "makeConcatWithConstants" <java.lang.String (int)>(v51) <java.lang.invoke.StringConcatFactory: java.lang.invoke.CallSite makeConcatWithConstants(java.lang.invoke.MethodHandles$Lookup,java.lang.String,java.lang.invoke.MethodType,java.lang.String,java.lang.Object[])>("data frame using reserved opcode \u0001");
+specialinvoke v0.<io.netty.handler.codec.http.websocketx.WebSocket08FrameDecoder: void protocolViolation(io.netty.channel.ChannelHandlerContext,io.netty.buffer.ByteBuf,java.lang.String)>(v1, v2, v52);
+return;
+label17:
+v53 = v0.<io.netty.handler.codec.http.websocketx.WebSocket08FrameDecoder: int fragmentedFramesCount>;
+if v53 != 0 goto label18;
+v54 = v0.<io.netty.handler.codec.http.websocketx.WebSocket08FrameDecoder: int frameOpcode>;
+if v54 != 0 goto label18;
+specialinvoke v0.<io.netty.handler.codec.http.websocketx.WebSocket08FrameDecoder: void protocolViolation(io.netty.channel.ChannelHandlerContext,io.netty.buffer.ByteBuf,java.lang.String)>(v1, v2, "received continuation data frame outside fragmented message");
+return;
+label18:
+v55 = v0.<io.netty.handler.codec.http.websocketx.WebSocket08FrameDecoder: int fragmentedFramesCount>;
+if v55 == 0 goto label19;
+v56 = v0.<io.netty.handler.codec.http.websocketx.WebSocket08FrameDecoder: int frameOpcode>;
+if v56 == 0 goto label19;
+specialinvoke v0.<io.netty.handler.codec.http.websocketx.WebSocket08FrameDecoder: void protocolViolation(io.netty.channel.ChannelHandlerContext,io.netty.buffer.ByteBuf,java.lang.String)>(v1, v2, "received non-continuation data frame while inside fragmented message");
+return;
+label19:
+v57 = <io.netty.handler.codec.http.websocketx.WebSocket08FrameDecoder$State: io.netty.handler.codec.http.websocketx.WebSocket08FrameDecoder$State READING_SIZE>;
+v0.<io.netty.handler.codec.http.websocketx.WebSocket08FrameDecoder: io.netty.handler.codec.http.websocketx.WebSocket08FrameDecoder$State state> = v57;
+label20:
+v58 = v0.<io.netty.handler.codec.http.websocketx.WebSocket08FrameDecoder: int framePayloadLen1>;
+if v58 != 126 goto label22;
+v59 = virtualinvoke v2.<io.netty.buffer.ByteBuf: int readableBytes()>();
+if v59 >= 2 goto label21;
+return;
+label21:
+v60 = virtualinvoke v2.<io.netty.buffer.ByteBuf: int readUnsignedShort()>();
+v0.<io.netty.handler.codec.http.websocketx.WebSocket08FrameDecoder: long framePayloadLength> = v60;
+v61 = v0.<io.netty.handler.codec.http.websocketx.WebSocket08FrameDecoder: long framePayloadLength>;
+v62 = v61 cmp 126L;
+if v62 >= 0 goto label26;
+specialinvoke v0.<io.netty.handler.codec.http.websocketx.WebSocket08FrameDecoder: void protocolViolation(io.netty.channel.ChannelHandlerContext,io.netty.buffer.ByteBuf,java.lang.String)>(v1, v2, "invalid data frame length (not using minimal length encoding)");
+return;
+label22:
+v63 = v0.<io.netty.handler.codec.http.websocketx.WebSocket08FrameDecoder: int framePayloadLen1>;
+if v63 != 127 goto label25;
+v64 = virtualinvoke v2.<io.netty.buffer.ByteBuf: int readableBytes()>();
+if v64 >= 8 goto label23;
+return;
+label23:
+v65 = virtualinvoke v2.<io.netty.buffer.ByteBuf: long readLong()>();
+v0.<io.netty.handler.codec.http.websocketx.WebSocket08FrameDecoder: long framePayloadLength> = v65;
+v66 = v0.<io.netty.handler.codec.http.websocketx.WebSocket08FrameDecoder: long framePayloadLength>;
+v67 = v66 cmp 0L;
+if v67 >= 0 goto label24;
+specialinvoke v0.<io.netty.handler.codec.http.websocketx.WebSocket08FrameDecoder: void protocolViolation(io.netty.channel.ChannelHandlerContext,io.netty.buffer.ByteBuf,java.lang.String)>(v1, v2, "invalid data frame length (negative length)");
+return;
+label24:
+v68 = v0.<io.netty.handler.codec.http.websocketx.WebSocket08FrameDecoder: long framePayloadLength>;
+v69 = v68 cmp 65536L;
+if v69 >= 0 goto label26;
+specialinvoke v0.<io.netty.handler.codec.http.websocketx.WebSocket08FrameDecoder: void protocolViolation(io.netty.channel.ChannelHandlerContext,io.netty.buffer.ByteBuf,java.lang.String)>(v1, v2, "invalid data frame length (not using minimal length encoding)");
+return;
+label25:
+v70 = v0.<io.netty.handler.codec.http.websocketx.WebSocket08FrameDecoder: int framePayloadLen1>;
+v0.<io.netty.handler.codec.http.websocketx.WebSocket08FrameDecoder: long framePayloadLength> = v70;
+label26:
+v71 = v0.<io.netty.handler.codec.http.websocketx.WebSocket08FrameDecoder: long framePayloadLength>;
+v72 = v0.<io.netty.handler.codec.http.websocketx.WebSocket08FrameDecoder: io.netty.handler.codec.http.websocketx.WebSocketDecoderConfig config>;
+v73 = virtualinvoke v72.<io.netty.handler.codec.http.websocketx.WebSocketDecoderConfig: int maxFramePayloadLength()>();
+v74 = v71 cmp v73;
+if v74 <= 0 goto label27;
+v75 = <io.netty.handler.codec.http.websocketx.WebSocketCloseStatus: io.netty.handler.codec.http.websocketx.WebSocketCloseStatus MESSAGE_TOO_BIG>;
+v76 = v0.<io.netty.handler.codec.http.websocketx.WebSocket08FrameDecoder: io.netty.handler.codec.http.websocketx.WebSocketDecoderConfig config>;
+v77 = virtualinvoke v76.<io.netty.handler.codec.http.websocketx.WebSocketDecoderConfig: int maxFramePayloadLength()>();
+v78 = dynamicinvoke "makeConcatWithConstants" <java.lang.String (int)>(v77) <java.lang.invoke.StringConcatFactory: java.lang.invoke.CallSite makeConcatWithConstants(java.lang.invoke.MethodHandles$Lookup,java.lang.String,java.lang.invoke.MethodType,java.lang.String,java.lang.Object[])>("Max frame length of \u0001 has been exceeded.");
+specialinvoke v0.<io.netty.handler.codec.http.websocketx.WebSocket08FrameDecoder: void protocolViolation(io.netty.channel.ChannelHandlerContext,io.netty.buffer.ByteBuf,io.netty.handler.codec.http.websocketx.WebSocketCloseStatus,java.lang.String)>(v1, v2, v75, v78);
+return;
+label27:
+v79 = <io.netty.handler.codec.http.websocketx.WebSocket08FrameDecoder: io.netty.util.internal.logging.InternalLogger logger>;
+v80 = interfaceinvoke v79.<io.netty.util.internal.logging.InternalLogger: boolean isTraceEnabled()>();
+if v80 == 0 goto label28;
+v81 = <io.netty.handler.codec.http.websocketx.WebSocket08FrameDecoder: io.netty.util.internal.logging.InternalLogger logger>;
+v82 = v0.<io.netty.handler.codec.http.websocketx.WebSocket08FrameDecoder: long framePayloadLength>;
+v83 = staticinvoke <java.lang.Long: java.lang.Long valueOf(long)>(v82);
+interfaceinvoke v81.<io.netty.util.internal.logging.InternalLogger: void trace(java.lang.String,java.lang.Object)>("Decoding WebSocket Frame length={}", v83);
+label28:
+v84 = <io.netty.handler.codec.http.websocketx.WebSocket08FrameDecoder$State: io.netty.handler.codec.http.websocketx.WebSocket08FrameDecoder$State MASKING_KEY>;
+v0.<io.netty.handler.codec.http.websocketx.WebSocket08FrameDecoder: io.netty.handler.codec.http.websocketx.WebSocket08FrameDecoder$State state> = v84;
+label29:
+v85 = v0.<io.netty.handler.codec.http.websocketx.WebSocket08FrameDecoder: boolean frameMasked>;
+if v85 == 0 goto label31;
+v86 = virtualinvoke v2.<io.netty.buffer.ByteBuf: int readableBytes()>();
+if v86 >= 4 goto label30;
+return;
+label30:
+v87 = virtualinvoke v2.<io.netty.buffer.ByteBuf: int readInt()>();
+v0.<io.netty.handler.codec.http.websocketx.WebSocket08FrameDecoder: int mask> = v87;
+label31:
+v88 = <io.netty.handler.codec.http.websocketx.WebSocket08FrameDecoder$State: io.netty.handler.codec.http.websocketx.WebSocket08FrameDecoder$State PAYLOAD>;
+v0.<io.netty.handler.codec.http.websocketx.WebSocket08FrameDecoder: io.netty.handler.codec.http.websocketx.WebSocket08FrameDecoder$State state> = v88;
+label32:
+v89 = virtualinvoke v2.<io.netty.buffer.ByteBuf: int readableBytes()>();
+v90 = v0.<io.netty.handler.codec.http.websocketx.WebSocket08FrameDecoder: long framePayloadLength>;
+v91 = v89 cmp v90;
+if v91 >= 0 goto label33;
+return;
+label33:
+v92 = <io.netty.buffer.Unpooled: io.netty.buffer.ByteBuf EMPTY_BUFFER>;
+label34:
+v93 = v0.<io.netty.handler.codec.http.websocketx.WebSocket08FrameDecoder: long framePayloadLength>;
+v94 = v93 cmp 0L;
+if v94 <= 0 goto label35;
+v95 = interfaceinvoke v1.<io.netty.channel.ChannelHandlerContext: io.netty.buffer.ByteBufAllocator alloc()>();
+v96 = v0.<io.netty.handler.codec.http.websocketx.WebSocket08FrameDecoder: long framePayloadLength>;
+v97 = staticinvoke <io.netty.handler.codec.http.websocketx.WebSocket08FrameDecoder: int toFrameLength(long)>(v96);
+v92 = staticinvoke <io.netty.buffer.ByteBufUtil: io.netty.buffer.ByteBuf readBytes(io.netty.buffer.ByteBufAllocator,io.netty.buffer.ByteBuf,int)>(v95, v2, v97);
+label35:
+v98 = <io.netty.handler.codec.http.websocketx.WebSocket08FrameDecoder$State: io.netty.handler.codec.http.websocketx.WebSocket08FrameDecoder$State READING_FIRST>;
+v0.<io.netty.handler.codec.http.websocketx.WebSocket08FrameDecoder: io.netty.handler.codec.http.websocketx.WebSocket08FrameDecoder$State state> = v98;
+v99 = v0.<io.netty.handler.codec.http.websocketx.WebSocket08FrameDecoder: boolean frameMasked>;
+v100 = v0.<io.netty.handler.codec.http.websocketx.WebSocket08FrameDecoder: long framePayloadLength>;
+v101 = v100 cmp 0L;
+if v101 <= 0 goto label36;
+v102 = 1;
+goto label37;
+label36:
+v102 = 0;
+label37:
+v103 = v99 & v102;
+if v103 == 0 goto label38;
+specialinvoke v0.<io.netty.handler.codec.http.websocketx.WebSocket08FrameDecoder: void unmask(io.netty.buffer.ByteBuf)>(v92);
+label38:
+v104 = v0.<io.netty.handler.codec.http.websocketx.WebSocket08FrameDecoder: int frameOpcode>;
+if v104 != 9 goto label40;
+v105 = new io.netty.handler.codec.http.websocketx.PingWebSocketFrame;
+v106 = v0.<io.netty.handler.codec.http.websocketx.WebSocket08FrameDecoder: boolean frameFinalFlag>;
+v107 = v0.<io.netty.handler.codec.http.websocketx.WebSocket08FrameDecoder: int frameRsv>;
+specialinvoke v105.<io.netty.handler.codec.http.websocketx.PingWebSocketFrame: void <init>(boolean,int,io.netty.buffer.ByteBuf)>(v106, v107, v92);
+interfaceinvoke v3.<java.util.List: boolean add(java.lang.Object)>(v105);
+label39:
+return;
+label40:
+v108 = v0.<io.netty.handler.codec.http.websocketx.WebSocket08FrameDecoder: int frameOpcode>;
+if v108 != 10 goto label42;
+v109 = new io.netty.handler.codec.http.websocketx.PongWebSocketFrame;
+v110 = v0.<io.netty.handler.codec.http.websocketx.WebSocket08FrameDecoder: boolean frameFinalFlag>;
+v111 = v0.<io.netty.handler.codec.http.websocketx.WebSocket08FrameDecoder: int frameRsv>;
+specialinvoke v109.<io.netty.handler.codec.http.websocketx.PongWebSocketFrame: void <init>(boolean,int,io.netty.buffer.ByteBuf)>(v110, v111, v92);
+interfaceinvoke v3.<java.util.List: boolean add(java.lang.Object)>(v109);
+label41:
+return;
+label42:
+v112 = v0.<io.netty.handler.codec.http.websocketx.WebSocket08FrameDecoder: int frameOpcode>;
+if v112 != 8 goto label44;
+v0.<io.netty.handler.codec.http.websocketx.WebSocket08FrameDecoder: boolean receivedClosingHandshake> = 1;
+virtualinvoke v0.<io.netty.handler.codec.http.websocketx.WebSocket08FrameDecoder: void checkCloseFrameBody(io.netty.channel.ChannelHandlerContext,io.netty.buffer.ByteBuf)>(v1, v92);
+v113 = new io.netty.handler.codec.http.websocketx.CloseWebSocketFrame;
+v114 = v0.<io.netty.handler.codec.http.websocketx.WebSocket08FrameDecoder: boolean frameFinalFlag>;
+v115 = v0.<io.netty.handler.codec.http.websocketx.WebSocket08FrameDecoder: int frameRsv>;
+specialinvoke v113.<io.netty.handler.codec.http.websocketx.CloseWebSocketFrame: void <init>(boolean,int,io.netty.buffer.ByteBuf)>(v114, v115, v92);
+interfaceinvoke v3.<java.util.List: boolean add(java.lang.Object)>(v113);
+label43:
+return;
+label44:
+v116 = v0.<io.netty.handler.codec.http.websocketx.WebSocket08FrameDecoder: boolean frameFinalFlag>;
+if v116 == 0 goto label45;
+v0.<io.netty.handler.codec.http.websocketx.WebSocket08FrameDecoder: int fragmentedFramesCount> = 0;
+goto label46;
+label45:
+v117 = v0.<io.netty.handler.codec.http.websocketx.WebSocket08FrameDecoder: int fragmentedFramesCount>;
+v118 = v117 + 1;
+v0.<io.netty.handler.codec.http.websocketx.WebSocket08FrameDecoder: int fragmentedFramesCount> = v118;
+label46:
+v119 = v0.<io.netty.handler.codec.http.websocketx.WebSocket08FrameDecoder: int frameOpcode>;
+if v119 != 1 goto label48;
+v120 = new io.netty.handler.codec.http.websocketx.TextWebSocketFrame;
+v121 = v0.<io.netty.handler.codec.http.websocketx.WebSocket08FrameDecoder: boolean frameFinalFlag>;
+v122 = v0.<io.netty.handler.codec.http.websocketx.WebSocket08FrameDecoder: int frameRsv>;
+specialinvoke v120.<io.netty.handler.codec.http.websocketx.TextWebSocketFrame: void <init>(boolean,int,io.netty.buffer.ByteBuf)>(v121, v122, v92);
+interfaceinvoke v3.<java.util.List: boolean add(java.lang.Object)>(v120);
+label47:
+return;
+label48:
+v123 = v0.<io.netty.handler.codec.http.websocketx.WebSocket08FrameDecoder: int frameOpcode>;
+if v123 != 2 goto label50;
+v124 = new io.netty.handler.codec.http.websocketx.BinaryWebSocketFrame;
+v125 = v0.<io.netty.handler.codec.http.websocketx.WebSocket08FrameDecoder: boolean frameFinalFlag>;
+v126 = v0.<io.netty.handler.codec.http.websocketx.WebSocket08FrameDecoder: int frameRsv>;
+specialinvoke v124.<io.netty.handler.codec.http.websocketx.BinaryWebSocketFrame: void <init>(boolean,int,io.netty.buffer.ByteBuf)>(v125, v126, v92);
+interfaceinvoke v3.<java.util.List: boolean add(java.lang.Object)>(v124);
+label49:
+return;
+label50:
+v127 = v0.<io.netty.handler.codec.http.websocketx.WebSocket08FrameDecoder: int frameOpcode>;
+if v127 != 0 goto label52;
+v128 = new io.netty.handler.codec.http.websocketx.ContinuationWebSocketFrame;
+v129 = v0.<io.netty.handler.codec.http.websocketx.WebSocket08FrameDecoder: boolean frameFinalFlag>;
+v130 = v0.<io.netty.handler.codec.http.websocketx.WebSocket08FrameDecoder: int frameRsv>;
+specialinvoke v128.<io.netty.handler.codec.http.websocketx.ContinuationWebSocketFrame: void <init>(boolean,int,io.netty.buffer.ByteBuf)>(v129, v130, v92);
+interfaceinvoke v3.<java.util.List: boolean add(java.lang.Object)>(v128);
+label51:
+return;
+label52:
+v131 = new java.lang.UnsupportedOperationException;
+v132 = v0.<io.netty.handler.codec.http.websocketx.WebSocket08FrameDecoder: int frameOpcode>;
+v133 = dynamicinvoke "makeConcatWithConstants" <java.lang.String (int)>(v132) <java.lang.invoke.StringConcatFactory: java.lang.invoke.CallSite makeConcatWithConstants(java.lang.invoke.MethodHandles$Lookup,java.lang.String,java.lang.invoke.MethodType,java.lang.String,java.lang.Object[])>("Cannot decode web socket frame with opcode: \u0001");
+specialinvoke v131.<java.lang.UnsupportedOperationException: void <init>(java.lang.String)>(v133);
+throw v131;
+label53:
+v134 := @caughtexception;
+if v92 == null goto label54;
+virtualinvoke v92.<io.netty.buffer.ByteBuf: boolean release()>();
+label54:
+throw v134;
+label55:
+v135 = virtualinvoke v2.<io.netty.buffer.ByteBuf: boolean isReadable()>();
+if v135 == 0 goto label56;
+virtualinvoke v2.<io.netty.buffer.ByteBuf: byte readByte()>();
+label56:
+return;
+label57:
+v136 = new java.lang.Error;
+specialinvoke v136.<java.lang.Error: void <init>(java.lang.String)>("Shouldn\'t reach here.");
+throw v136;
+catch java.lang.Throwable from label34 to label39 with label53;
+catch java.lang.Throwable from label40 to label41 with label53;
+catch java.lang.Throwable from label42 to label43 with label53;
+catch java.lang.Throwable from label44 to label47 with label53;
+catch java.lang.Throwable from label48 to label49 with label53;
+catch java.lang.Throwable from label50 to label51 with label53;
+}
+private void unmask(io.netty.buffer.ByteBuf)
+{
+long v10, v11, v6, v7, v8;
+io.netty.handler.codec.http.websocketx.WebSocket08FrameDecoder v0;
+byte v17;
+io.netty.buffer.ByteBuf v1;
+int v12, v13, v14, v16, v18, v19, v2, v20, v21, v3, v5, v9;
+java.nio.ByteOrder v15, v4;
+v0 := @this: io.netty.handler.codec.http.websocketx.WebSocket08FrameDecoder;
+v1 := @parameter0: io.netty.buffer.ByteBuf;
+v2 = virtualinvoke v1.<io.netty.buffer.ByteBuf: int readerIndex()>();
+v3 = virtualinvoke v1.<io.netty.buffer.ByteBuf: int writerIndex()>();
+v4 = virtualinvoke v1.<io.netty.buffer.ByteBuf: java.nio.ByteOrder order()>();
+v5 = v0.<io.netty.handler.codec.http.websocketx.WebSocket08FrameDecoder: int mask>;
+v6 = v5 & 4294967295L;
+v7 = v6 << 32;
+v8 = v6 | v7;
+v9 = v3 - 7;
+label1:
+if v2 >= v9 goto label2;
+v10 = virtualinvoke v1.<io.netty.buffer.ByteBuf: long getLong(int)>(v2);
+v11 = v10 ^ v8;
+virtualinvoke v1.<io.netty.buffer.ByteBuf: io.netty.buffer.ByteBuf setLong(int,long)>(v2, v11);
+v2 = v2 + 8;
+goto label1;
+label2:
+v12 = v3 - 3;
+if v2 >= v12 goto label3;
+v13 = virtualinvoke v1.<io.netty.buffer.ByteBuf: int getInt(int)>(v2);
+v14 = v13 ^ v8;
+virtualinvoke v1.<io.netty.buffer.ByteBuf: io.netty.buffer.ByteBuf setInt(int,int)>(v2, v14);
+v2 = v2 + 4;
+label3:
+v15 = <java.nio.ByteOrder: java.nio.ByteOrder LITTLE_ENDIAN>;
+if v4 != v15 goto label4;
+v5 = staticinvoke <java.lang.Integer: int reverseBytes(int)>(v5);
+label4:
+v16 = 0;
+label5:
+if v2 >= v3 goto label6;
+v17 = virtualinvoke v1.<io.netty.buffer.ByteBuf: byte getByte(int)>(v2);
+v18 = v16;
+v16 = v16 + 1;
+v19 = v18 & 3;
+v20 = staticinvoke <io.netty.handler.codec.http.websocketx.WebSocketUtil: int byteAtIndex(int,int)>(v5, v19);
+v21 = v17 ^ v20;
+virtualinvoke v1.<io.netty.buffer.ByteBuf: io.netty.buffer.ByteBuf setByte(int,int)>(v2, v21);
+v2 = v2 + 1;
+goto label5;
+label6:
+return;
+}
+private void protocolViolation(io.netty.channel.ChannelHandlerContext, io.netty.buffer.ByteBuf, java.lang.String)
+{
+io.netty.channel.ChannelHandlerContext v1;
+io.netty.buffer.ByteBuf v2;
+io.netty.handler.codec.http.websocketx.WebSocketCloseStatus v4;
+java.lang.String v3;
+io.netty.handler.codec.http.websocketx.WebSocket08FrameDecoder v0;
+v0 := @this: io.netty.handler.codec.http.websocketx.WebSocket08FrameDecoder;
+v1 := @parameter0: io.netty.channel.ChannelHandlerContext;
+v2 := @parameter1: io.netty.buffer.ByteBuf;
+v3 := @parameter2: java.lang.String;
+v4 = <io.netty.handler.codec.http.websocketx.WebSocketCloseStatus: io.netty.handler.codec.http.websocketx.WebSocketCloseStatus PROTOCOL_ERROR>;
+specialinvoke v0.<io.netty.handler.codec.http.websocketx.WebSocket08FrameDecoder: void protocolViolation(io.netty.channel.ChannelHandlerContext,io.netty.buffer.ByteBuf,io.netty.handler.codec.http.websocketx.WebSocketCloseStatus,java.lang.String)>(v1, v2, v4, v3);
+return;
+}
+private void protocolViolation(io.netty.channel.ChannelHandlerContext, io.netty.buffer.ByteBuf, io.netty.handler.codec.http.websocketx.WebSocketCloseStatus, java.lang.String)
+{
+io.netty.channel.ChannelHandlerContext v1;
+io.netty.buffer.ByteBuf v2;
+io.netty.handler.codec.http.websocketx.CorruptedWebSocketFrameException v5;
+io.netty.handler.codec.http.websocketx.WebSocketCloseStatus v3;
+java.lang.String v4;
+io.netty.handler.codec.http.websocketx.WebSocket08FrameDecoder v0;
+v0 := @this: io.netty.handler.codec.http.websocketx.WebSocket08FrameDecoder;
+v1 := @parameter0: io.netty.channel.ChannelHandlerContext;
+v2 := @parameter1: io.netty.buffer.ByteBuf;
+v3 := @parameter2: io.netty.handler.codec.http.websocketx.WebSocketCloseStatus;
+v4 := @parameter3: java.lang.String;
+v5 = new io.netty.handler.codec.http.websocketx.CorruptedWebSocketFrameException;
+specialinvoke v5.<io.netty.handler.codec.http.websocketx.CorruptedWebSocketFrameException: void <init>(io.netty.handler.codec.http.websocketx.WebSocketCloseStatus,java.lang.String)>(v3, v4);
+specialinvoke v0.<io.netty.handler.codec.http.websocketx.WebSocket08FrameDecoder: void protocolViolation(io.netty.channel.ChannelHandlerContext,io.netty.buffer.ByteBuf,io.netty.handler.codec.http.websocketx.CorruptedWebSocketFrameException)>(v1, v2, v5);
+return;
+}
+private void protocolViolation(io.netty.channel.ChannelHandlerContext, io.netty.buffer.ByteBuf, io.netty.handler.codec.http.websocketx.CorruptedWebSocketFrameException)
+{
+io.netty.handler.codec.http.websocketx.WebSocketCloseStatus v12;
+io.netty.handler.codec.http.websocketx.WebSocket08FrameDecoder v0;
+io.netty.channel.ChannelHandlerContext v1;
+io.netty.buffer.ByteBuf v2;
+io.netty.channel.ChannelFutureListener v16;
+int v5;
+io.netty.handler.codec.http.websocketx.CorruptedWebSocketFrameException v3;
+io.netty.handler.codec.http.websocketx.CloseWebSocketFrame v14;
+io.netty.handler.codec.http.websocketx.WebSocket08FrameDecoder$State v4;
+java.lang.String v13;
+boolean v10, v7, v9;
+io.netty.handler.codec.http.websocketx.WebSocketDecoderConfig v8;
+io.netty.util.ReferenceCounted v11;
+io.netty.channel.ChannelFuture v15;
+io.netty.channel.Channel v6;
+v0 := @this: io.netty.handler.codec.http.websocketx.WebSocket08FrameDecoder;
+v1 := @parameter0: io.netty.channel.ChannelHandlerContext;
+v2 := @parameter1: io.netty.buffer.ByteBuf;
+v3 := @parameter2: io.netty.handler.codec.http.websocketx.CorruptedWebSocketFrameException;
+v4 = <io.netty.handler.codec.http.websocketx.WebSocket08FrameDecoder$State: io.netty.handler.codec.http.websocketx.WebSocket08FrameDecoder$State CORRUPT>;
+v0.<io.netty.handler.codec.http.websocketx.WebSocket08FrameDecoder: io.netty.handler.codec.http.websocketx.WebSocket08FrameDecoder$State state> = v4;
+v5 = virtualinvoke v2.<io.netty.buffer.ByteBuf: int readableBytes()>();
+if v5 <= 0 goto label1;
+virtualinvoke v2.<io.netty.buffer.ByteBuf: io.netty.buffer.ByteBuf skipBytes(int)>(v5);
+label1:
+v6 = interfaceinvoke v1.<io.netty.channel.ChannelHandlerContext: io.netty.channel.Channel channel()>();
+v7 = interfaceinvoke v6.<io.netty.channel.Channel: boolean isActive()>();
+if v7 == 0 goto label5;
+v8 = v0.<io.netty.handler.codec.http.websocketx.WebSocket08FrameDecoder: io.netty.handler.codec.http.websocketx.WebSocketDecoderConfig config>;
+v9 = virtualinvoke v8.<io.netty.handler.codec.http.websocketx.WebSocketDecoderConfig: boolean closeOnProtocolViolation()>();
+if v9 == 0 goto label5;
+v10 = v0.<io.netty.handler.codec.http.websocketx.WebSocket08FrameDecoder: boolean receivedClosingHandshake>;
+if v10 == 0 goto label2;
+v11 = <io.netty.buffer.Unpooled: io.netty.buffer.ByteBuf EMPTY_BUFFER>;
+goto label4;
+label2:
+v12 = virtualinvoke v3.<io.netty.handler.codec.http.websocketx.CorruptedWebSocketFrameException: io.netty.handler.codec.http.websocketx.WebSocketCloseStatus closeStatus()>();
+v13 = virtualinvoke v3.<io.netty.handler.codec.http.websocketx.CorruptedWebSocketFrameException: java.lang.String getMessage()>();
+if v13 != null goto label3;
+v13 = virtualinvoke v12.<io.netty.handler.codec.http.websocketx.WebSocketCloseStatus: java.lang.String reasonText()>();
+label3:
+v14 = new io.netty.handler.codec.http.websocketx.CloseWebSocketFrame;
+specialinvoke v14.<io.netty.handler.codec.http.websocketx.CloseWebSocketFrame: void <init>(io.netty.handler.codec.http.websocketx.WebSocketCloseStatus,java.lang.String)>(v12, v13);
+v11 = v14;
+label4:
+v15 = interfaceinvoke v1.<io.netty.channel.ChannelHandlerContext: io.netty.channel.ChannelFuture writeAndFlush(java.lang.Object)>(v11);
+v16 = <io.netty.channel.ChannelFutureListener: io.netty.channel.ChannelFutureListener CLOSE>;
+interfaceinvoke v15.<io.netty.channel.ChannelFuture: io.netty.channel.ChannelFuture addListener(io.netty.util.concurrent.GenericFutureListener)>(v16);
+label5:
+throw v3;
+}
+private static int toFrameLength(long)
+{
+byte v1;
+io.netty.handler.codec.TooLongFrameException v2;
+long v0;
+java.lang.String v3;
+v0 := @parameter0: long;
+v1 = v0 cmp 2147483647L;
+if v1 <= 0 goto label1;
+v2 = new io.netty.handler.codec.TooLongFrameException;
+v3 = dynamicinvoke "makeConcatWithConstants" <java.lang.String (long)>(v0) <java.lang.invoke.StringConcatFactory: java.lang.invoke.CallSite makeConcatWithConstants(java.lang.invoke.MethodHandles$Lookup,java.lang.String,java.lang.invoke.MethodType,java.lang.String,java.lang.Object[])>("Length:\u0001");
+specialinvoke v2.<io.netty.handler.codec.TooLongFrameException: void <init>(java.lang.String)>(v3);
+throw v2;
+label1:
+return v0;
+}
+protected void checkCloseFrameBody(io.netty.channel.ChannelHandlerContext, io.netty.buffer.ByteBuf)
+{
+io.netty.handler.codec.http.websocketx.WebSocketCloseStatus v5;
+io.netty.handler.codec.http.websocketx.WebSocket08FrameDecoder v0;
+io.netty.channel.ChannelHandlerContext v1;
+short v7;
+io.netty.buffer.ByteBuf v2;
+int v10, v12, v13, v14, v15, v4, v6;
+io.netty.handler.codec.http.websocketx.CorruptedWebSocketFrameException v16;
+java.lang.String v9;
+io.netty.handler.codec.http.websocketx.Utf8Validator v11;
+boolean v3, v8;
+v0 := @this: io.netty.handler.codec.http.websocketx.WebSocket08FrameDecoder;
+v1 := @parameter0: io.netty.channel.ChannelHandlerContext;
+v2 := @parameter1: io.netty.buffer.ByteBuf;
+if v2 == null goto label1;
+v3 = virtualinvoke v2.<io.netty.buffer.ByteBuf: boolean isReadable()>();
+if v3 != 0 goto label2;
+label1:
+return;
+label2:
+v4 = virtualinvoke v2.<io.netty.buffer.ByteBuf: int readableBytes()>();
+if v4 >= 2 goto label3;
+v5 = <io.netty.handler.codec.http.websocketx.WebSocketCloseStatus: io.netty.handler.codec.http.websocketx.WebSocketCloseStatus INVALID_PAYLOAD_DATA>;
+specialinvoke v0.<io.netty.handler.codec.http.websocketx.WebSocket08FrameDecoder: void protocolViolation(io.netty.channel.ChannelHandlerContext,io.netty.buffer.ByteBuf,io.netty.handler.codec.http.websocketx.WebSocketCloseStatus,java.lang.String)>(v1, v2, v5, "Invalid close frame body");
+label3:
+v6 = virtualinvoke v2.<io.netty.buffer.ByteBuf: int readerIndex()>();
+v7 = virtualinvoke v2.<io.netty.buffer.ByteBuf: short getShort(int)>(v6);
+v8 = staticinvoke <io.netty.handler.codec.http.websocketx.WebSocketCloseStatus: boolean isValidStatusCode(int)>(v7);
+if v8 != 0 goto label4;
+v9 = dynamicinvoke "makeConcatWithConstants" <java.lang.String (short)>(v7) <java.lang.invoke.StringConcatFactory: java.lang.invoke.CallSite makeConcatWithConstants(java.lang.invoke.MethodHandles$Lookup,java.lang.String,java.lang.invoke.MethodType,java.lang.String,java.lang.Object[])>("Invalid close frame getStatus code: \u0001");
+specialinvoke v0.<io.netty.handler.codec.http.websocketx.WebSocket08FrameDecoder: void protocolViolation(io.netty.channel.ChannelHandlerContext,io.netty.buffer.ByteBuf,java.lang.String)>(v1, v2, v9);
+label4:
+v10 = virtualinvoke v2.<io.netty.buffer.ByteBuf: int readableBytes()>();
+if v10 <= 2 goto label8;
+label5:
+v11 = new io.netty.handler.codec.http.websocketx.Utf8Validator;
+specialinvoke v11.<io.netty.handler.codec.http.websocketx.Utf8Validator: void <init>()>();
+v12 = virtualinvoke v2.<io.netty.buffer.ByteBuf: int readerIndex()>();
+v13 = v12 + 2;
+v14 = virtualinvoke v2.<io.netty.buffer.ByteBuf: int readableBytes()>();
+v15 = v14 - 2;
+virtualinvoke v11.<io.netty.handler.codec.http.websocketx.Utf8Validator: void check(io.netty.buffer.ByteBuf,int,int)>(v2, v13, v15);
+label6:
+goto label8;
+label7:
+v16 := @caughtexception;
+specialinvoke v0.<io.netty.handler.codec.http.websocketx.WebSocket08FrameDecoder: void protocolViolation(io.netty.channel.ChannelHandlerContext,io.netty.buffer.ByteBuf,io.netty.handler.codec.http.websocketx.CorruptedWebSocketFrameException)>(v1, v2, v16);
+label8:
+return;
+catch io.netty.handler.codec.http.websocketx.CorruptedWebSocketFrameException from label5 to label6 with label7;
+}
+static void <clinit>()
+{
+io.netty.util.internal.logging.InternalLogger v0;
+v0 = staticinvoke <io.netty.util.internal.logging.InternalLoggerFactory: io.netty.util.internal.logging.InternalLogger getInstance(java.lang.Class)>(class "Lio/netty/handler/codec/http/websocketx/WebSocket08FrameDecoder;");
+<io.netty.handler.codec.http.websocketx.WebSocket08FrameDecoder: io.netty.util.internal.logging.InternalLogger logger> = v0;
+return;
+}
+}

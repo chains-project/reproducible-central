@@ -1,0 +1,495 @@
+public class io.netty.handler.codec.http2.Http2StreamFrameToHttpObjectCodec extends io.netty.handler.codec.MessageToMessageCodec
+{
+private static final io.netty.util.AttributeKey SCHEME_ATTR_KEY;
+private final boolean isServer;
+private final boolean validateHeaders;
+public void <init>(boolean, boolean)
+{
+io.netty.handler.codec.http2.Http2StreamFrameToHttpObjectCodec v0;
+boolean v1, v2;
+v0 := @this: io.netty.handler.codec.http2.Http2StreamFrameToHttpObjectCodec;
+v1 := @parameter0: boolean;
+v2 := @parameter1: boolean;
+specialinvoke v0.<io.netty.handler.codec.MessageToMessageCodec: void <init>()>();
+v0.<io.netty.handler.codec.http2.Http2StreamFrameToHttpObjectCodec: boolean isServer> = v1;
+v0.<io.netty.handler.codec.http2.Http2StreamFrameToHttpObjectCodec: boolean validateHeaders> = v2;
+return;
+}
+public void <init>(boolean)
+{
+io.netty.handler.codec.http2.Http2StreamFrameToHttpObjectCodec v0;
+boolean v1;
+v0 := @this: io.netty.handler.codec.http2.Http2StreamFrameToHttpObjectCodec;
+v1 := @parameter0: boolean;
+specialinvoke v0.<io.netty.handler.codec.http2.Http2StreamFrameToHttpObjectCodec: void <init>(boolean,boolean)>(v1, 1);
+return;
+}
+public boolean acceptInboundMessage(java.lang.Object) throws java.lang.Exception
+{
+io.netty.handler.codec.http2.Http2StreamFrameToHttpObjectCodec v0;
+java.lang.Object v1;
+boolean v2, v3, v4;
+v0 := @this: io.netty.handler.codec.http2.Http2StreamFrameToHttpObjectCodec;
+v1 := @parameter0: java.lang.Object;
+v2 = v1 instanceof io.netty.handler.codec.http2.Http2HeadersFrame;
+if v2 != 0 goto label1;
+v3 = v1 instanceof io.netty.handler.codec.http2.Http2DataFrame;
+if v3 == 0 goto label2;
+label1:
+v4 = 1;
+goto label3;
+label2:
+v4 = 0;
+label3:
+return v4;
+}
+protected void decode(io.netty.channel.ChannelHandlerContext, io.netty.handler.codec.http2.Http2StreamFrame, java.util.List) throws java.lang.Exception
+{
+io.netty.handler.codec.http.HttpHeaders v18, v25;
+io.netty.buffer.ByteBufAllocator v11, v20;
+io.netty.handler.codec.http.HttpMessage v22;
+io.netty.util.AsciiString v26, v27;
+io.netty.handler.codec.http2.Http2StreamFrameToHttpObjectCodec v0;
+boolean v10, v13, v17, v23, v24, v28, v29, v33, v4;
+java.lang.CharSequence v14, v9;
+io.netty.handler.codec.http.FullHttpMessage v12, v21;
+java.util.List v3;
+io.netty.handler.codec.http2.Http2Headers v5;
+io.netty.handler.codec.http2.Http2FrameStream v6;
+io.netty.handler.codec.http.HttpVersion v19;
+io.netty.handler.codec.http2.Http2StreamFrame v2;
+io.netty.channel.ChannelHandlerContext v1;
+io.netty.buffer.ByteBuf v16, v31, v32, v35, v36;
+int v7, v8;
+io.netty.handler.codec.http.DefaultHttpContent v34;
+io.netty.handler.codec.http.DefaultLastHttpContent v15, v30;
+v0 := @this: io.netty.handler.codec.http2.Http2StreamFrameToHttpObjectCodec;
+v1 := @parameter0: io.netty.channel.ChannelHandlerContext;
+v2 := @parameter1: io.netty.handler.codec.http2.Http2StreamFrame;
+v3 := @parameter2: java.util.List;
+v4 = v2 instanceof io.netty.handler.codec.http2.Http2HeadersFrame;
+if v4 == 0 goto label08;
+v5 = interfaceinvoke v2.<io.netty.handler.codec.http2.Http2HeadersFrame: io.netty.handler.codec.http2.Http2Headers headers()>();
+v6 = interfaceinvoke v2.<io.netty.handler.codec.http2.Http2HeadersFrame: io.netty.handler.codec.http2.Http2FrameStream stream()>();
+if v6 != null goto label01;
+v7 = 0;
+goto label02;
+label01:
+v7 = interfaceinvoke v6.<io.netty.handler.codec.http2.Http2FrameStream: int id()>();
+label02:
+v8 = v7;
+v9 = interfaceinvoke v5.<io.netty.handler.codec.http2.Http2Headers: java.lang.CharSequence status()>();
+if null == v9 goto label03;
+v10 = staticinvoke <io.netty.handler.codec.http2.Http2StreamFrameToHttpObjectCodec: boolean isInformationalResponseHeaderFrame(java.lang.CharSequence)>(v9);
+if v10 == 0 goto label03;
+v11 = interfaceinvoke v1.<io.netty.channel.ChannelHandlerContext: io.netty.buffer.ByteBufAllocator alloc()>();
+v12 = specialinvoke v0.<io.netty.handler.codec.http2.Http2StreamFrameToHttpObjectCodec: io.netty.handler.codec.http.FullHttpMessage newFullMessage(int,io.netty.handler.codec.http2.Http2Headers,io.netty.buffer.ByteBufAllocator)>(v7, v5, v11);
+interfaceinvoke v3.<java.util.List: boolean add(java.lang.Object)>(v12);
+return;
+label03:
+v13 = interfaceinvoke v2.<io.netty.handler.codec.http2.Http2HeadersFrame: boolean isEndStream()>();
+if v13 == 0 goto label05;
+v14 = interfaceinvoke v5.<io.netty.handler.codec.http2.Http2Headers: java.lang.CharSequence method()>();
+if v14 != null goto label04;
+if v9 != null goto label04;
+v15 = new io.netty.handler.codec.http.DefaultLastHttpContent;
+v16 = <io.netty.buffer.Unpooled: io.netty.buffer.ByteBuf EMPTY_BUFFER>;
+v17 = v0.<io.netty.handler.codec.http2.Http2StreamFrameToHttpObjectCodec: boolean validateHeaders>;
+specialinvoke v15.<io.netty.handler.codec.http.DefaultLastHttpContent: void <init>(io.netty.buffer.ByteBuf,boolean)>(v16, v17);
+v18 = interfaceinvoke v15.<io.netty.handler.codec.http.LastHttpContent: io.netty.handler.codec.http.HttpHeaders trailingHeaders()>();
+v19 = <io.netty.handler.codec.http.HttpVersion: io.netty.handler.codec.http.HttpVersion HTTP_1_1>;
+staticinvoke <io.netty.handler.codec.http2.HttpConversionUtil: void addHttp2ToHttpHeaders(int,io.netty.handler.codec.http2.Http2Headers,io.netty.handler.codec.http.HttpHeaders,io.netty.handler.codec.http.HttpVersion,boolean,boolean)>(v8, v5, v18, v19, 1, 1);
+interfaceinvoke v3.<java.util.List: boolean add(java.lang.Object)>(v15);
+goto label10;
+label04:
+v20 = interfaceinvoke v1.<io.netty.channel.ChannelHandlerContext: io.netty.buffer.ByteBufAllocator alloc()>();
+v21 = specialinvoke v0.<io.netty.handler.codec.http2.Http2StreamFrameToHttpObjectCodec: io.netty.handler.codec.http.FullHttpMessage newFullMessage(int,io.netty.handler.codec.http2.Http2Headers,io.netty.buffer.ByteBufAllocator)>(v8, v5, v20);
+interfaceinvoke v3.<java.util.List: boolean add(java.lang.Object)>(v21);
+goto label10;
+label05:
+v22 = specialinvoke v0.<io.netty.handler.codec.http2.Http2StreamFrameToHttpObjectCodec: io.netty.handler.codec.http.HttpMessage newMessage(int,io.netty.handler.codec.http2.Http2Headers)>(v8, v5);
+if v9 == null goto label06;
+v23 = staticinvoke <io.netty.handler.codec.http2.Http2StreamFrameToHttpObjectCodec: boolean isContentAlwaysEmpty(java.lang.CharSequence)>(v9);
+if v23 != 0 goto label07;
+label06:
+v24 = staticinvoke <io.netty.handler.codec.http.HttpUtil: boolean isContentLengthSet(io.netty.handler.codec.http.HttpMessage)>(v22);
+if v24 != 0 goto label07;
+v25 = interfaceinvoke v22.<io.netty.handler.codec.http.HttpMessage: io.netty.handler.codec.http.HttpHeaders headers()>();
+v26 = <io.netty.handler.codec.http.HttpHeaderNames: io.netty.util.AsciiString TRANSFER_ENCODING>;
+v27 = <io.netty.handler.codec.http.HttpHeaderValues: io.netty.util.AsciiString CHUNKED>;
+virtualinvoke v25.<io.netty.handler.codec.http.HttpHeaders: io.netty.handler.codec.http.HttpHeaders add(java.lang.CharSequence,java.lang.Object)>(v26, v27);
+label07:
+interfaceinvoke v3.<java.util.List: boolean add(java.lang.Object)>(v22);
+goto label10;
+label08:
+v28 = v2 instanceof io.netty.handler.codec.http2.Http2DataFrame;
+if v28 == 0 goto label10;
+v29 = interfaceinvoke v2.<io.netty.handler.codec.http2.Http2DataFrame: boolean isEndStream()>();
+if v29 == 0 goto label09;
+v30 = new io.netty.handler.codec.http.DefaultLastHttpContent;
+v31 = interfaceinvoke v2.<io.netty.handler.codec.http2.Http2DataFrame: io.netty.buffer.ByteBuf content()>();
+v32 = virtualinvoke v31.<io.netty.buffer.ByteBuf: io.netty.buffer.ByteBuf retain()>();
+v33 = v0.<io.netty.handler.codec.http2.Http2StreamFrameToHttpObjectCodec: boolean validateHeaders>;
+specialinvoke v30.<io.netty.handler.codec.http.DefaultLastHttpContent: void <init>(io.netty.buffer.ByteBuf,boolean)>(v32, v33);
+interfaceinvoke v3.<java.util.List: boolean add(java.lang.Object)>(v30);
+goto label10;
+label09:
+v34 = new io.netty.handler.codec.http.DefaultHttpContent;
+v35 = interfaceinvoke v2.<io.netty.handler.codec.http2.Http2DataFrame: io.netty.buffer.ByteBuf content()>();
+v36 = virtualinvoke v35.<io.netty.buffer.ByteBuf: io.netty.buffer.ByteBuf retain()>();
+specialinvoke v34.<io.netty.handler.codec.http.DefaultHttpContent: void <init>(io.netty.buffer.ByteBuf)>(v36);
+interfaceinvoke v3.<java.util.List: boolean add(java.lang.Object)>(v34);
+label10:
+return;
+}
+private void encodeLastContent(io.netty.handler.codec.http.LastHttpContent, java.util.List)
+{
+io.netty.handler.codec.http.HttpHeaders v12, v14, v16, v4;
+io.netty.handler.codec.http2.DefaultHttp2DataFrame v9;
+io.netty.handler.codec.http.LastHttpContent v1;
+io.netty.buffer.ByteBuf v10, v11, v7;
+io.netty.handler.codec.http2.Http2StreamFrameToHttpObjectCodec v0;
+boolean v13, v15, v17, v3, v5, v6, v8;
+io.netty.handler.codec.http2.DefaultHttp2HeadersFrame v19;
+java.util.List v2;
+io.netty.handler.codec.http2.Http2Headers v18;
+v0 := @this: io.netty.handler.codec.http2.Http2StreamFrameToHttpObjectCodec;
+v1 := @parameter0: io.netty.handler.codec.http.LastHttpContent;
+v2 := @parameter1: java.util.List;
+v3 = v1 instanceof io.netty.handler.codec.http.FullHttpMessage;
+if v3 != 0 goto label1;
+v4 = interfaceinvoke v1.<io.netty.handler.codec.http.LastHttpContent: io.netty.handler.codec.http.HttpHeaders trailingHeaders()>();
+v5 = virtualinvoke v4.<io.netty.handler.codec.http.HttpHeaders: boolean isEmpty()>();
+if v5 == 0 goto label1;
+v6 = 1;
+goto label2;
+label1:
+v6 = 0;
+label2:
+v7 = interfaceinvoke v1.<io.netty.handler.codec.http.LastHttpContent: io.netty.buffer.ByteBuf content()>();
+v8 = virtualinvoke v7.<io.netty.buffer.ByteBuf: boolean isReadable()>();
+if v8 != 0 goto label3;
+if v6 == 0 goto label4;
+label3:
+v9 = new io.netty.handler.codec.http2.DefaultHttp2DataFrame;
+v10 = interfaceinvoke v1.<io.netty.handler.codec.http.LastHttpContent: io.netty.buffer.ByteBuf content()>();
+v11 = virtualinvoke v10.<io.netty.buffer.ByteBuf: io.netty.buffer.ByteBuf retain()>();
+v12 = interfaceinvoke v1.<io.netty.handler.codec.http.LastHttpContent: io.netty.handler.codec.http.HttpHeaders trailingHeaders()>();
+v13 = virtualinvoke v12.<io.netty.handler.codec.http.HttpHeaders: boolean isEmpty()>();
+specialinvoke v9.<io.netty.handler.codec.http2.DefaultHttp2DataFrame: void <init>(io.netty.buffer.ByteBuf,boolean)>(v11, v13);
+interfaceinvoke v2.<java.util.List: boolean add(java.lang.Object)>(v9);
+label4:
+v14 = interfaceinvoke v1.<io.netty.handler.codec.http.LastHttpContent: io.netty.handler.codec.http.HttpHeaders trailingHeaders()>();
+v15 = virtualinvoke v14.<io.netty.handler.codec.http.HttpHeaders: boolean isEmpty()>();
+if v15 != 0 goto label5;
+v16 = interfaceinvoke v1.<io.netty.handler.codec.http.LastHttpContent: io.netty.handler.codec.http.HttpHeaders trailingHeaders()>();
+v17 = v0.<io.netty.handler.codec.http2.Http2StreamFrameToHttpObjectCodec: boolean validateHeaders>;
+v18 = staticinvoke <io.netty.handler.codec.http2.HttpConversionUtil: io.netty.handler.codec.http2.Http2Headers toHttp2Headers(io.netty.handler.codec.http.HttpHeaders,boolean)>(v16, v17);
+v19 = new io.netty.handler.codec.http2.DefaultHttp2HeadersFrame;
+specialinvoke v19.<io.netty.handler.codec.http2.DefaultHttp2HeadersFrame: void <init>(io.netty.handler.codec.http2.Http2Headers,boolean)>(v18, 1);
+interfaceinvoke v2.<java.util.List: boolean add(java.lang.Object)>(v19);
+label5:
+return;
+}
+protected void encode(io.netty.channel.ChannelHandlerContext, io.netty.handler.codec.http.HttpObject, java.util.List) throws java.lang.Exception
+{
+io.netty.handler.codec.EncoderException v12;
+io.netty.handler.codec.http.HttpHeaders v20;
+io.netty.handler.codec.http2.DefaultHttp2DataFrame v26;
+io.netty.handler.codec.http.HttpObject v2;
+io.netty.channel.ChannelHandlerContext v1;
+io.netty.buffer.ByteBuf v18, v27, v28;
+io.netty.handler.codec.http.HttpStatusClass v7, v8;
+io.netty.handler.codec.http2.Http2StreamFrameToHttpObjectCodec v0;
+int v6;
+java.lang.String v13;
+boolean v14, v16, v17, v19, v21, v22, v24, v25, v4, v9;
+io.netty.handler.codec.http2.DefaultHttp2HeadersFrame v11, v23;
+io.netty.handler.codec.http.HttpResponseStatus v5;
+java.util.List v3;
+io.netty.handler.codec.http2.Http2Headers v10, v15;
+v0 := @this: io.netty.handler.codec.http2.Http2StreamFrameToHttpObjectCodec;
+v1 := @parameter0: io.netty.channel.ChannelHandlerContext;
+v2 := @parameter1: io.netty.handler.codec.http.HttpObject;
+v3 := @parameter2: java.util.List;
+v4 = v2 instanceof io.netty.handler.codec.http.HttpResponse;
+if v4 == 0 goto label2;
+v5 = interfaceinvoke v2.<io.netty.handler.codec.http.HttpResponse: io.netty.handler.codec.http.HttpResponseStatus status()>();
+v6 = virtualinvoke v5.<io.netty.handler.codec.http.HttpResponseStatus: int code()>();
+v7 = virtualinvoke v5.<io.netty.handler.codec.http.HttpResponseStatus: io.netty.handler.codec.http.HttpStatusClass codeClass()>();
+v8 = <io.netty.handler.codec.http.HttpStatusClass: io.netty.handler.codec.http.HttpStatusClass INFORMATIONAL>;
+if v7 != v8 goto label2;
+if v6 == 101 goto label2;
+v9 = v2 instanceof io.netty.handler.codec.http.FullHttpResponse;
+if v9 == 0 goto label1;
+v10 = specialinvoke v0.<io.netty.handler.codec.http2.Http2StreamFrameToHttpObjectCodec: io.netty.handler.codec.http2.Http2Headers toHttp2Headers(io.netty.channel.ChannelHandlerContext,io.netty.handler.codec.http.HttpMessage)>(v1, v2);
+v11 = new io.netty.handler.codec.http2.DefaultHttp2HeadersFrame;
+specialinvoke v11.<io.netty.handler.codec.http2.DefaultHttp2HeadersFrame: void <init>(io.netty.handler.codec.http2.Http2Headers,boolean)>(v10, 0);
+interfaceinvoke v3.<java.util.List: boolean add(java.lang.Object)>(v11);
+return;
+label1:
+v12 = new io.netty.handler.codec.EncoderException;
+v13 = dynamicinvoke "makeConcatWithConstants" <java.lang.String (io.netty.handler.codec.http.HttpResponseStatus)>(v5) <java.lang.invoke.StringConcatFactory: java.lang.invoke.CallSite makeConcatWithConstants(java.lang.invoke.MethodHandles$Lookup,java.lang.String,java.lang.invoke.MethodType,java.lang.String,java.lang.Object[])>("\u0001 must be a FullHttpResponse");
+specialinvoke v12.<io.netty.handler.codec.EncoderException: void <init>(java.lang.String)>(v13);
+throw v12;
+label2:
+v14 = v2 instanceof io.netty.handler.codec.http.HttpMessage;
+if v14 == 0 goto label6;
+v15 = specialinvoke v0.<io.netty.handler.codec.http2.Http2StreamFrameToHttpObjectCodec: io.netty.handler.codec.http2.Http2Headers toHttp2Headers(io.netty.channel.ChannelHandlerContext,io.netty.handler.codec.http.HttpMessage)>(v1, v2);
+v16 = 0;
+v17 = v2 instanceof io.netty.handler.codec.http.FullHttpMessage;
+if v17 == 0 goto label5;
+v18 = interfaceinvoke v2.<io.netty.handler.codec.http.FullHttpMessage: io.netty.buffer.ByteBuf content()>();
+v19 = virtualinvoke v18.<io.netty.buffer.ByteBuf: boolean isReadable()>();
+if v19 != 0 goto label3;
+v20 = interfaceinvoke v2.<io.netty.handler.codec.http.FullHttpMessage: io.netty.handler.codec.http.HttpHeaders trailingHeaders()>();
+v21 = virtualinvoke v20.<io.netty.handler.codec.http.HttpHeaders: boolean isEmpty()>();
+if v21 == 0 goto label3;
+v22 = 1;
+goto label4;
+label3:
+v22 = 0;
+label4:
+v16 = v22;
+label5:
+v23 = new io.netty.handler.codec.http2.DefaultHttp2HeadersFrame;
+specialinvoke v23.<io.netty.handler.codec.http2.DefaultHttp2HeadersFrame: void <init>(io.netty.handler.codec.http2.Http2Headers,boolean)>(v15, v16);
+interfaceinvoke v3.<java.util.List: boolean add(java.lang.Object)>(v23);
+label6:
+v24 = v2 instanceof io.netty.handler.codec.http.LastHttpContent;
+if v24 == 0 goto label7;
+specialinvoke v0.<io.netty.handler.codec.http2.Http2StreamFrameToHttpObjectCodec: void encodeLastContent(io.netty.handler.codec.http.LastHttpContent,java.util.List)>(v2, v3);
+goto label8;
+label7:
+v25 = v2 instanceof io.netty.handler.codec.http.HttpContent;
+if v25 == 0 goto label8;
+v26 = new io.netty.handler.codec.http2.DefaultHttp2DataFrame;
+v27 = interfaceinvoke v2.<io.netty.handler.codec.http.HttpContent: io.netty.buffer.ByteBuf content()>();
+v28 = virtualinvoke v27.<io.netty.buffer.ByteBuf: io.netty.buffer.ByteBuf retain()>();
+specialinvoke v26.<io.netty.handler.codec.http2.DefaultHttp2DataFrame: void <init>(io.netty.buffer.ByteBuf,boolean)>(v28, 0);
+interfaceinvoke v3.<java.util.List: boolean add(java.lang.Object)>(v26);
+label8:
+return;
+}
+private io.netty.handler.codec.http2.Http2Headers toHttp2Headers(io.netty.channel.ChannelHandlerContext, io.netty.handler.codec.http.HttpMessage)
+{
+io.netty.handler.codec.http.HttpHeaders v4;
+io.netty.handler.codec.http.HttpMessage v2;
+io.netty.util.AsciiString v6;
+io.netty.channel.ChannelHandlerContext v1;
+io.netty.handler.codec.http.HttpScheme v7;
+io.netty.handler.codec.http2.Http2Headers v9;
+io.netty.handler.codec.http2.Http2StreamFrameToHttpObjectCodec v0;
+io.netty.handler.codec.http2.HttpConversionUtil$ExtensionHeaderNames v5;
+boolean v3, v8;
+v0 := @this: io.netty.handler.codec.http2.Http2StreamFrameToHttpObjectCodec;
+v1 := @parameter0: io.netty.channel.ChannelHandlerContext;
+v2 := @parameter1: io.netty.handler.codec.http.HttpMessage;
+v3 = v2 instanceof io.netty.handler.codec.http.HttpRequest;
+if v3 == 0 goto label1;
+v4 = interfaceinvoke v2.<io.netty.handler.codec.http.HttpMessage: io.netty.handler.codec.http.HttpHeaders headers()>();
+v5 = <io.netty.handler.codec.http2.HttpConversionUtil$ExtensionHeaderNames: io.netty.handler.codec.http2.HttpConversionUtil$ExtensionHeaderNames SCHEME>;
+v6 = virtualinvoke v5.<io.netty.handler.codec.http2.HttpConversionUtil$ExtensionHeaderNames: io.netty.util.AsciiString text()>();
+v7 = staticinvoke <io.netty.handler.codec.http2.Http2StreamFrameToHttpObjectCodec: io.netty.handler.codec.http.HttpScheme connectionScheme(io.netty.channel.ChannelHandlerContext)>(v1);
+virtualinvoke v4.<io.netty.handler.codec.http.HttpHeaders: io.netty.handler.codec.http.HttpHeaders set(java.lang.CharSequence,java.lang.Object)>(v6, v7);
+label1:
+v8 = v0.<io.netty.handler.codec.http2.Http2StreamFrameToHttpObjectCodec: boolean validateHeaders>;
+v9 = staticinvoke <io.netty.handler.codec.http2.HttpConversionUtil: io.netty.handler.codec.http2.Http2Headers toHttp2Headers(io.netty.handler.codec.http.HttpMessage,boolean)>(v2, v8);
+return v9;
+}
+private io.netty.handler.codec.http.HttpMessage newMessage(int, io.netty.handler.codec.http2.Http2Headers) throws io.netty.handler.codec.http2.Http2Exception
+{
+io.netty.handler.codec.http2.Http2Headers v2;
+io.netty.handler.codec.http2.Http2StreamFrameToHttpObjectCodec v0;
+io.netty.handler.codec.http.HttpMessage v5;
+int v1;
+boolean v3, v4, v6;
+v0 := @this: io.netty.handler.codec.http2.Http2StreamFrameToHttpObjectCodec;
+v1 := @parameter0: int;
+v2 := @parameter1: io.netty.handler.codec.http2.Http2Headers;
+v3 = v0.<io.netty.handler.codec.http2.Http2StreamFrameToHttpObjectCodec: boolean isServer>;
+if v3 == 0 goto label1;
+v4 = v0.<io.netty.handler.codec.http2.Http2StreamFrameToHttpObjectCodec: boolean validateHeaders>;
+v5 = staticinvoke <io.netty.handler.codec.http2.HttpConversionUtil: io.netty.handler.codec.http.HttpRequest toHttpRequest(int,io.netty.handler.codec.http2.Http2Headers,boolean)>(v1, v2, v4);
+goto label2;
+label1:
+v6 = v0.<io.netty.handler.codec.http2.Http2StreamFrameToHttpObjectCodec: boolean validateHeaders>;
+v5 = staticinvoke <io.netty.handler.codec.http2.HttpConversionUtil: io.netty.handler.codec.http.HttpResponse toHttpResponse(int,io.netty.handler.codec.http2.Http2Headers,boolean)>(v1, v2, v6);
+label2:
+return v5;
+}
+private io.netty.handler.codec.http.FullHttpMessage newFullMessage(int, io.netty.handler.codec.http2.Http2Headers, io.netty.buffer.ByteBufAllocator) throws io.netty.handler.codec.http2.Http2Exception
+{
+io.netty.buffer.ByteBufAllocator v3;
+io.netty.handler.codec.http.FullHttpMessage v6;
+io.netty.handler.codec.http2.Http2Headers v2;
+io.netty.handler.codec.http2.Http2StreamFrameToHttpObjectCodec v0;
+int v1;
+boolean v4, v5, v7;
+v0 := @this: io.netty.handler.codec.http2.Http2StreamFrameToHttpObjectCodec;
+v1 := @parameter0: int;
+v2 := @parameter1: io.netty.handler.codec.http2.Http2Headers;
+v3 := @parameter2: io.netty.buffer.ByteBufAllocator;
+v4 = v0.<io.netty.handler.codec.http2.Http2StreamFrameToHttpObjectCodec: boolean isServer>;
+if v4 == 0 goto label1;
+v5 = v0.<io.netty.handler.codec.http2.Http2StreamFrameToHttpObjectCodec: boolean validateHeaders>;
+v6 = staticinvoke <io.netty.handler.codec.http2.HttpConversionUtil: io.netty.handler.codec.http.FullHttpRequest toFullHttpRequest(int,io.netty.handler.codec.http2.Http2Headers,io.netty.buffer.ByteBufAllocator,boolean)>(v1, v2, v3, v5);
+goto label2;
+label1:
+v7 = v0.<io.netty.handler.codec.http2.Http2StreamFrameToHttpObjectCodec: boolean validateHeaders>;
+v6 = staticinvoke <io.netty.handler.codec.http2.HttpConversionUtil: io.netty.handler.codec.http.FullHttpResponse toFullHttpResponse(int,io.netty.handler.codec.http2.Http2Headers,io.netty.buffer.ByteBufAllocator,boolean)>(v1, v2, v3, v7);
+label2:
+return v6;
+}
+public void handlerAdded(io.netty.channel.ChannelHandlerContext) throws java.lang.Exception
+{
+io.netty.channel.ChannelHandlerContext v1;
+io.netty.util.Attribute v2;
+io.netty.handler.codec.http.HttpScheme v5;
+io.netty.handler.codec.http2.Http2StreamFrameToHttpObjectCodec v0;
+java.lang.Object v3;
+boolean v4;
+v0 := @this: io.netty.handler.codec.http2.Http2StreamFrameToHttpObjectCodec;
+v1 := @parameter0: io.netty.channel.ChannelHandlerContext;
+specialinvoke v0.<io.netty.handler.codec.MessageToMessageCodec: void handlerAdded(io.netty.channel.ChannelHandlerContext)>(v1);
+v2 = staticinvoke <io.netty.handler.codec.http2.Http2StreamFrameToHttpObjectCodec: io.netty.util.Attribute connectionSchemeAttribute(io.netty.channel.ChannelHandlerContext)>(v1);
+v3 = interfaceinvoke v2.<io.netty.util.Attribute: java.lang.Object get()>();
+if v3 != null goto label3;
+v4 = virtualinvoke v0.<io.netty.handler.codec.http2.Http2StreamFrameToHttpObjectCodec: boolean isSsl(io.netty.channel.ChannelHandlerContext)>(v1);
+if v4 == 0 goto label1;
+v5 = <io.netty.handler.codec.http.HttpScheme: io.netty.handler.codec.http.HttpScheme HTTPS>;
+goto label2;
+label1:
+v5 = <io.netty.handler.codec.http.HttpScheme: io.netty.handler.codec.http.HttpScheme HTTP>;
+label2:
+interfaceinvoke v2.<io.netty.util.Attribute: void set(java.lang.Object)>(v5);
+label3:
+return;
+}
+protected boolean isSsl(io.netty.channel.ChannelHandlerContext)
+{
+io.netty.channel.Channel v2;
+io.netty.channel.ChannelHandlerContext v1;
+io.netty.handler.codec.http2.Http2StreamFrameToHttpObjectCodec v0;
+io.netty.channel.ChannelHandler v4;
+io.netty.channel.ChannelPipeline v3;
+boolean v5;
+v0 := @this: io.netty.handler.codec.http2.Http2StreamFrameToHttpObjectCodec;
+v1 := @parameter0: io.netty.channel.ChannelHandlerContext;
+v2 = staticinvoke <io.netty.handler.codec.http2.Http2StreamFrameToHttpObjectCodec: io.netty.channel.Channel connectionChannel(io.netty.channel.ChannelHandlerContext)>(v1);
+v3 = interfaceinvoke v2.<io.netty.channel.Channel: io.netty.channel.ChannelPipeline pipeline()>();
+v4 = interfaceinvoke v3.<io.netty.channel.ChannelPipeline: io.netty.channel.ChannelHandler get(java.lang.Class)>(class "Lio/netty/handler/ssl/SslHandler;");
+if null == v4 goto label1;
+v5 = 1;
+goto label2;
+label1:
+v5 = 0;
+label2:
+return v5;
+}
+private static io.netty.handler.codec.http.HttpScheme connectionScheme(io.netty.channel.ChannelHandlerContext)
+{
+io.netty.channel.ChannelHandlerContext v0;
+io.netty.util.Attribute v1;
+io.netty.handler.codec.http.HttpScheme v3;
+java.lang.Object v2;
+v0 := @parameter0: io.netty.channel.ChannelHandlerContext;
+v1 = staticinvoke <io.netty.handler.codec.http2.Http2StreamFrameToHttpObjectCodec: io.netty.util.Attribute connectionSchemeAttribute(io.netty.channel.ChannelHandlerContext)>(v0);
+v2 = interfaceinvoke v1.<io.netty.util.Attribute: java.lang.Object get()>();
+if v2 != null goto label1;
+v3 = <io.netty.handler.codec.http.HttpScheme: io.netty.handler.codec.http.HttpScheme HTTP>;
+goto label2;
+label1:
+v3 = v2;
+label2:
+return v3;
+}
+private static io.netty.util.Attribute connectionSchemeAttribute(io.netty.channel.ChannelHandlerContext)
+{
+io.netty.channel.Channel v1;
+io.netty.util.AttributeKey v2;
+io.netty.channel.ChannelHandlerContext v0;
+io.netty.util.Attribute v3;
+v0 := @parameter0: io.netty.channel.ChannelHandlerContext;
+v1 = staticinvoke <io.netty.handler.codec.http2.Http2StreamFrameToHttpObjectCodec: io.netty.channel.Channel connectionChannel(io.netty.channel.ChannelHandlerContext)>(v0);
+v2 = <io.netty.handler.codec.http2.Http2StreamFrameToHttpObjectCodec: io.netty.util.AttributeKey SCHEME_ATTR_KEY>;
+v3 = interfaceinvoke v1.<io.netty.channel.Channel: io.netty.util.Attribute attr(io.netty.util.AttributeKey)>(v2);
+return v3;
+}
+private static io.netty.channel.Channel connectionChannel(io.netty.channel.ChannelHandlerContext)
+{
+io.netty.channel.Channel v1, v3;
+io.netty.channel.ChannelHandlerContext v0;
+boolean v2;
+v0 := @parameter0: io.netty.channel.ChannelHandlerContext;
+v1 = interfaceinvoke v0.<io.netty.channel.ChannelHandlerContext: io.netty.channel.Channel channel()>();
+v2 = v1 instanceof io.netty.handler.codec.http2.Http2StreamChannel;
+if v2 == 0 goto label1;
+v3 = interfaceinvoke v1.<io.netty.channel.Channel: io.netty.channel.Channel parent()>();
+goto label2;
+label1:
+v3 = v1;
+label2:
+return v3;
+}
+private static boolean isInformationalResponseHeaderFrame(java.lang.CharSequence)
+{
+java.lang.CharSequence v0;
+int v1;
+char v2, v3, v4;
+boolean v5;
+v0 := @parameter0: java.lang.CharSequence;
+v1 = interfaceinvoke v0.<java.lang.CharSequence: int length()>();
+if v1 != 3 goto label3;
+v2 = interfaceinvoke v0.<java.lang.CharSequence: char charAt(int)>(0);
+v3 = interfaceinvoke v0.<java.lang.CharSequence: char charAt(int)>(1);
+v4 = interfaceinvoke v0.<java.lang.CharSequence: char charAt(int)>(2);
+if v2 != 49 goto label1;
+if v3 < 48 goto label1;
+if v3 > 57 goto label1;
+if v4 < 48 goto label1;
+if v4 > 57 goto label1;
+if v4 == 49 goto label1;
+v5 = 1;
+goto label2;
+label1:
+v5 = 0;
+label2:
+return v5;
+label3:
+return 0;
+}
+private static boolean isContentAlwaysEmpty(java.lang.CharSequence)
+{
+java.lang.CharSequence v0;
+int v1;
+char v2, v3, v4;
+boolean v5;
+v0 := @parameter0: java.lang.CharSequence;
+v1 = interfaceinvoke v0.<java.lang.CharSequence: int length()>();
+if v1 != 3 goto label4;
+v2 = interfaceinvoke v0.<java.lang.CharSequence: char charAt(int)>(0);
+v3 = interfaceinvoke v0.<java.lang.CharSequence: char charAt(int)>(1);
+v4 = interfaceinvoke v0.<java.lang.CharSequence: char charAt(int)>(2);
+if v2 == 50 goto label1;
+if v2 != 51 goto label2;
+label1:
+if v3 != 48 goto label2;
+if v4 != 52 goto label2;
+v5 = 1;
+goto label3;
+label2:
+v5 = 0;
+label3:
+return v5;
+label4:
+return 0;
+}
+static void <clinit>()
+{
+io.netty.util.AttributeKey v0;
+v0 = staticinvoke <io.netty.util.AttributeKey: io.netty.util.AttributeKey valueOf(java.lang.Class,java.lang.String)>(class "Lio/netty/handler/codec/http/HttpScheme;", "STREAMFRAMECODEC_SCHEME");
+<io.netty.handler.codec.http2.Http2StreamFrameToHttpObjectCodec: io.netty.util.AttributeKey SCHEME_ATTR_KEY> = v0;
+return;
+}
+}

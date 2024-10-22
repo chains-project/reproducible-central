@@ -1,0 +1,169 @@
+public class org.wildfly.common.cpu.ProcessorInfo extends java.lang.Object
+{
+private static final java.lang.String CPUS_ALLOWED;
+private static final byte[] BITS;
+private static final java.nio.charset.Charset ASCII;
+private void <init>()
+{
+org.wildfly.common.cpu.ProcessorInfo v0;
+v0 := @this: org.wildfly.common.cpu.ProcessorInfo;
+specialinvoke v0.<java.lang.Object: void <init>()>();
+return;
+}
+public static int availableProcessors()
+{
+int v3, v4;
+java.lang.Object v2;
+java.security.PrivilegedAction v1;
+java.lang.SecurityManager v0;
+v0 = staticinvoke <java.lang.System: java.lang.SecurityManager getSecurityManager()>();
+if v0 == null goto label1;
+v1 = staticinvoke <org.wildfly.common.cpu.ProcessorInfo$lambda_availableProcessors_0__3245: java.security.PrivilegedAction bootstrap$()>();
+v2 = staticinvoke <java.security.AccessController: java.lang.Object doPrivileged(java.security.PrivilegedAction)>(v1);
+v3 = virtualinvoke v2.<java.lang.Integer: int intValue()>();
+return v3;
+label1:
+v4 = staticinvoke <org.wildfly.common.cpu.ProcessorInfo: int determineProcessors()>();
+return v4;
+}
+private static int determineProcessors()
+{
+java.lang.Runtime v0;
+int v1, v3, v5;
+java.lang.Exception v4;
+boolean v2;
+v0 = staticinvoke <java.lang.Runtime: java.lang.Runtime getRuntime()>();
+v1 = virtualinvoke v0.<java.lang.Runtime: int availableProcessors()>();
+v2 = staticinvoke <org.wildfly.common.cpu.ProcessorInfo: boolean isLinux()>();
+if v2 != 0 goto label1;
+return v1;
+label1:
+v3 = 0;
+label2:
+v3 = staticinvoke <org.wildfly.common.cpu.ProcessorInfo: int readCPUMask()>();
+label3:
+goto label5;
+label4:
+v4 := @caughtexception;
+label5:
+if v3 <= 0 goto label6;
+v5 = staticinvoke <java.lang.Math: int min(int,int)>(v1, v3);
+goto label7;
+label6:
+v5 = v1;
+label7:
+return v5;
+catch java.lang.Exception from label2 to label3 with label4;
+}
+private static int readCPUMask() throws java.io.IOException
+{
+java.lang.Throwable v23;
+byte[] v12, v15, v19;
+byte v14, v18, v22;
+java.nio.charset.Charset v2;
+int v10, v13, v16, v17, v20, v21, v24, v6, v8, v9;
+java.lang.String v4, v7;
+boolean v5;
+char v11;
+java.io.FileInputStream v0;
+java.io.InputStreamReader v1;
+java.io.BufferedReader v3;
+v0 = new java.io.FileInputStream;
+specialinvoke v0.<java.io.FileInputStream: void <init>(java.lang.String)>("/proc/self/status");
+v1 = new java.io.InputStreamReader;
+v2 = <org.wildfly.common.cpu.ProcessorInfo: java.nio.charset.Charset ASCII>;
+specialinvoke v1.<java.io.InputStreamReader: void <init>(java.io.InputStream,java.nio.charset.Charset)>(v0, v2);
+v3 = new java.io.BufferedReader;
+specialinvoke v3.<java.io.BufferedReader: void <init>(java.io.Reader)>(v1);
+label1:
+v4 = virtualinvoke v3.<java.io.BufferedReader: java.lang.String readLine()>();
+if v4 == null goto label7;
+v5 = virtualinvoke v4.<java.lang.String: boolean startsWith(java.lang.String)>("Cpus_allowed:");
+if v5 == 0 goto label1;
+v6 = 0;
+v7 = "Cpus_allowed:";
+v8 = virtualinvoke v7.<java.lang.String: int length()>();
+v9 = v8;
+label2:
+v10 = virtualinvoke v4.<java.lang.String: int length()>();
+if v9 >= v10 goto label6;
+v11 = virtualinvoke v4.<java.lang.String: char charAt(int)>(v9);
+if v11 < 48 goto label3;
+if v11 > 57 goto label3;
+v12 = <org.wildfly.common.cpu.ProcessorInfo: byte[] BITS>;
+v13 = v11 - 48;
+v14 = v12[v13];
+v6 = v6 + v14;
+goto label5;
+label3:
+if v11 < 97 goto label4;
+if v11 > 102 goto label4;
+v15 = <org.wildfly.common.cpu.ProcessorInfo: byte[] BITS>;
+v16 = v11 - 97;
+v17 = v16 + 10;
+v18 = v15[v17];
+v6 = v6 + v18;
+goto label5;
+label4:
+if v11 < 65 goto label5;
+if v11 > 70 goto label5;
+v19 = <org.wildfly.common.cpu.ProcessorInfo: byte[] BITS>;
+v20 = v11 - 65;
+v21 = v20 + 10;
+v22 = v19[v21];
+v6 = v6 + v22;
+label5:
+v9 = v9 + 1;
+goto label2;
+label6:
+virtualinvoke v3.<java.io.BufferedReader: void close()>();
+return v6;
+label7:
+virtualinvoke v3.<java.io.BufferedReader: void close()>();
+goto label9;
+label8:
+v23 := @caughtexception;
+throw v23;
+label9:
+v24 = (int) -1;
+return v24;
+catch java.lang.Throwable from label1 to label6 with label8;
+}
+private static boolean isLinux()
+{
+java.util.Locale v1;
+java.lang.String v0, v2;
+boolean v3;
+v0 = staticinvoke <java.lang.System: java.lang.String getProperty(java.lang.String,java.lang.String)>("os.name", "unknown");
+v1 = <java.util.Locale: java.util.Locale US>;
+v2 = virtualinvoke v0.<java.lang.String: java.lang.String toLowerCase(java.util.Locale)>(v1);
+v3 = virtualinvoke v2.<java.lang.String: boolean contains(java.lang.CharSequence)>("linux");
+return v3;
+}
+static void <clinit>()
+{
+byte[] v0;
+java.nio.charset.Charset v1;
+v0 = newarray (byte)[16];
+v0[0] = 0;
+v0[1] = 1;
+v0[2] = 1;
+v0[3] = 2;
+v0[4] = 1;
+v0[5] = 2;
+v0[6] = 2;
+v0[7] = 3;
+v0[8] = 1;
+v0[9] = 2;
+v0[10] = 2;
+v0[11] = 3;
+v0[12] = 2;
+v0[13] = 3;
+v0[14] = 3;
+v0[15] = 4;
+<org.wildfly.common.cpu.ProcessorInfo: byte[] BITS> = v0;
+v1 = staticinvoke <java.nio.charset.Charset: java.nio.charset.Charset forName(java.lang.String)>("US-ASCII");
+<org.wildfly.common.cpu.ProcessorInfo: java.nio.charset.Charset ASCII> = v1;
+return;
+}
+}

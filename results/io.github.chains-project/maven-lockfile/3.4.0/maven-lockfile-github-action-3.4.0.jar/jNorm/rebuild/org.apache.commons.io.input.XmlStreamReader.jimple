@@ -1,0 +1,901 @@
+public class org.apache.commons.io.input.XmlStreamReader extends java.io.Reader
+{
+private static final java.lang.String UTF_8;
+private static final java.lang.String US_ASCII;
+private static final java.lang.String UTF_16BE;
+private static final java.lang.String UTF_16LE;
+private static final java.lang.String UTF_32BE;
+private static final java.lang.String UTF_32LE;
+private static final java.lang.String UTF_16;
+private static final java.lang.String UTF_32;
+private static final java.lang.String EBCDIC;
+private static final org.apache.commons.io.ByteOrderMark[] BOMS;
+private static final org.apache.commons.io.ByteOrderMark[] XML_GUESS_BYTES;
+private static final java.util.regex.Pattern CHARSET_PATTERN;
+public static final java.util.regex.Pattern ENCODING_PATTERN;
+private static final java.lang.String RAW_EX_1;
+private static final java.lang.String RAW_EX_2;
+private static final java.lang.String HTTP_EX_1;
+private static final java.lang.String HTTP_EX_2;
+private static final java.lang.String HTTP_EX_3;
+private final java.io.Reader reader;
+private final java.lang.String encoding;
+private final java.lang.String defaultEncoding;
+static java.lang.String getContentTypeEncoding(java.lang.String)
+{
+java.util.regex.Matcher v7;
+java.util.Locale v10;
+int v2, v3, v4;
+java.lang.String v0, v1, v11, v5, v9;
+java.util.regex.Pattern v6;
+boolean v8;
+v0 := @parameter0: java.lang.String;
+v1 = null;
+if v0 == null goto label5;
+v2 = virtualinvoke v0.<java.lang.String: int indexOf(java.lang.String)>(";");
+v3 = (int) -1;
+if v2 <= v3 goto label5;
+v4 = v2 + 1;
+v5 = virtualinvoke v0.<java.lang.String: java.lang.String substring(int)>(v4);
+v6 = <org.apache.commons.io.input.XmlStreamReader: java.util.regex.Pattern CHARSET_PATTERN>;
+v7 = virtualinvoke v6.<java.util.regex.Pattern: java.util.regex.Matcher matcher(java.lang.CharSequence)>(v5);
+v8 = virtualinvoke v7.<java.util.regex.Matcher: boolean find()>();
+if v8 == 0 goto label1;
+v9 = virtualinvoke v7.<java.util.regex.Matcher: java.lang.String group(int)>(1);
+goto label2;
+label1:
+v9 = null;
+label2:
+if v9 == null goto label3;
+v10 = <java.util.Locale: java.util.Locale ROOT>;
+v11 = virtualinvoke v9.<java.lang.String: java.lang.String toUpperCase(java.util.Locale)>(v10);
+goto label4;
+label3:
+v11 = null;
+label4:
+v1 = v11;
+label5:
+return v1;
+}
+static java.lang.String getContentTypeMime(java.lang.String)
+{
+int v2;
+java.lang.String v0, v1, v3;
+v0 := @parameter0: java.lang.String;
+v1 = null;
+if v0 == null goto label3;
+v2 = virtualinvoke v0.<java.lang.String: int indexOf(java.lang.String)>(";");
+if v2 < 0 goto label1;
+v3 = virtualinvoke v0.<java.lang.String: java.lang.String substring(int,int)>(0, v2);
+goto label2;
+label1:
+v3 = v0;
+label2:
+v1 = virtualinvoke v3.<java.lang.String: java.lang.String trim()>();
+label3:
+return v1;
+}
+private static java.lang.String getXmlProlog(java.io.InputStream, java.lang.String) throws java.io.IOException
+{
+byte[] v3;
+java.util.regex.Matcher v25;
+java.util.Locale v28;
+boolean v26;
+java.util.regex.Pattern v24;
+java.lang.StringBuffer v22;
+int v10, v11, v13, v14, v20, v30, v31, v4, v5, v6, v7, v8;
+java.lang.String v1, v12, v17, v2, v21, v23, v27, v29, v9;
+java.io.IOException v15, v16;
+java.io.StringReader v19;
+java.io.BufferedReader v18;
+java.io.InputStream v0;
+v0 := @parameter0: java.io.InputStream;
+v1 := @parameter1: java.lang.String;
+v2 = null;
+if v1 == null goto label7;
+v3 = staticinvoke <org.apache.commons.io.IOUtils: byte[] byteArray()>();
+virtualinvoke v0.<java.io.InputStream: void mark(int)>(8192);
+v4 = 0;
+v5 = 8192;
+v6 = virtualinvoke v0.<java.io.InputStream: int read(byte[],int,int)>(v3, 0, 8192);
+v7 = (int) -1;
+v8 = v7;
+v9 = "";
+label1:
+v10 = (int) -1;
+if v6 == v10 goto label2;
+v11 = (int) -1;
+if v8 != v11 goto label2;
+if v4 >= 8192 goto label2;
+v4 = v4 + v6;
+v5 = v5 - v6;
+v6 = virtualinvoke v0.<java.io.InputStream: int read(byte[],int,int)>(v3, v4, v5);
+v12 = new java.lang.String;
+specialinvoke v12.<java.lang.String: void <init>(byte[],int,int,java.lang.String)>(v3, 0, v4, v1);
+v9 = v12;
+v8 = virtualinvoke v12.<java.lang.String: int indexOf(int)>(62);
+goto label1;
+label2:
+v13 = (int) -1;
+if v8 != v13 goto label4;
+v14 = (int) -1;
+if v6 != v14 goto label3;
+v15 = new java.io.IOException;
+specialinvoke v15.<java.io.IOException: void <init>(java.lang.String)>("Unexpected end of XML stream");
+throw v15;
+label3:
+v16 = new java.io.IOException;
+v17 = dynamicinvoke "makeConcatWithConstants" <java.lang.String (int)>(v4) <java.lang.invoke.StringConcatFactory: java.lang.invoke.CallSite makeConcatWithConstants(java.lang.invoke.MethodHandles$Lookup,java.lang.String,java.lang.invoke.MethodType,java.lang.String,java.lang.Object[])>("XML prolog or ROOT element not found on first \u0001 bytes");
+specialinvoke v16.<java.io.IOException: void <init>(java.lang.String)>(v17);
+throw v16;
+label4:
+if v4 <= 0 goto label7;
+virtualinvoke v0.<java.io.InputStream: void reset()>();
+v18 = new java.io.BufferedReader;
+v19 = new java.io.StringReader;
+v20 = v8 + 1;
+v21 = virtualinvoke v9.<java.lang.String: java.lang.String substring(int,int)>(0, v20);
+specialinvoke v19.<java.io.StringReader: void <init>(java.lang.String)>(v21);
+specialinvoke v18.<java.io.BufferedReader: void <init>(java.io.Reader)>(v19);
+v22 = new java.lang.StringBuffer;
+specialinvoke v22.<java.lang.StringBuffer: void <init>()>();
+label5:
+v23 = virtualinvoke v18.<java.io.BufferedReader: java.lang.String readLine()>();
+if v23 == null goto label6;
+virtualinvoke v22.<java.lang.StringBuffer: java.lang.StringBuffer append(java.lang.String)>(v23);
+goto label5;
+label6:
+v24 = <org.apache.commons.io.input.XmlStreamReader: java.util.regex.Pattern ENCODING_PATTERN>;
+v25 = virtualinvoke v24.<java.util.regex.Pattern: java.util.regex.Matcher matcher(java.lang.CharSequence)>(v22);
+v26 = virtualinvoke v25.<java.util.regex.Matcher: boolean find()>();
+if v26 == 0 goto label7;
+v27 = virtualinvoke v25.<java.util.regex.Matcher: java.lang.String group(int)>(1);
+v28 = <java.util.Locale: java.util.Locale ROOT>;
+v29 = virtualinvoke v27.<java.lang.String: java.lang.String toUpperCase(java.util.Locale)>(v28);
+v30 = virtualinvoke v29.<java.lang.String: int length()>();
+v31 = v30 - 1;
+v2 = virtualinvoke v29.<java.lang.String: java.lang.String substring(int,int)>(1, v31);
+label7:
+return v2;
+}
+static boolean isAppXml(java.lang.String)
+{
+java.lang.String v0;
+boolean v1, v2, v3, v4, v5, v6;
+v0 := @parameter0: java.lang.String;
+if v0 == null goto label2;
+v1 = virtualinvoke v0.<java.lang.String: boolean equals(java.lang.Object)>("application/xml");
+if v1 != 0 goto label1;
+v2 = virtualinvoke v0.<java.lang.String: boolean equals(java.lang.Object)>("application/xml-dtd");
+if v2 != 0 goto label1;
+v3 = virtualinvoke v0.<java.lang.String: boolean equals(java.lang.Object)>("application/xml-external-parsed-entity");
+if v3 != 0 goto label1;
+v4 = virtualinvoke v0.<java.lang.String: boolean startsWith(java.lang.String)>("application/");
+if v4 == 0 goto label2;
+v5 = virtualinvoke v0.<java.lang.String: boolean endsWith(java.lang.String)>("+xml");
+if v5 == 0 goto label2;
+label1:
+v6 = 1;
+goto label3;
+label2:
+v6 = 0;
+label3:
+return v6;
+}
+static boolean isTextXml(java.lang.String)
+{
+java.lang.String v0;
+boolean v1, v2, v3, v4, v5;
+v0 := @parameter0: java.lang.String;
+if v0 == null goto label2;
+v1 = virtualinvoke v0.<java.lang.String: boolean equals(java.lang.Object)>("text/xml");
+if v1 != 0 goto label1;
+v2 = virtualinvoke v0.<java.lang.String: boolean equals(java.lang.Object)>("text/xml-external-parsed-entity");
+if v2 != 0 goto label1;
+v3 = virtualinvoke v0.<java.lang.String: boolean startsWith(java.lang.String)>("text/");
+if v3 == 0 goto label2;
+v4 = virtualinvoke v0.<java.lang.String: boolean endsWith(java.lang.String)>("+xml");
+if v4 == 0 goto label2;
+label1:
+v5 = 1;
+goto label3;
+label2:
+v5 = 0;
+label3:
+return v5;
+}
+public void <init>(java.io.File) throws java.io.IOException
+{
+org.apache.commons.io.input.XmlStreamReader v0;
+java.lang.Object v2;
+java.nio.file.Path v3;
+java.io.File v1;
+v0 := @this: org.apache.commons.io.input.XmlStreamReader;
+v1 := @parameter0: java.io.File;
+v2 = staticinvoke <java.util.Objects: java.lang.Object requireNonNull(java.lang.Object,java.lang.String)>(v1, "file");
+v3 = virtualinvoke v2.<java.io.File: java.nio.file.Path toPath()>();
+specialinvoke v0.<org.apache.commons.io.input.XmlStreamReader: void <init>(java.nio.file.Path)>(v3);
+return;
+}
+public void <init>(java.io.InputStream) throws java.io.IOException
+{
+org.apache.commons.io.input.XmlStreamReader v0;
+java.io.InputStream v1;
+v0 := @this: org.apache.commons.io.input.XmlStreamReader;
+v1 := @parameter0: java.io.InputStream;
+specialinvoke v0.<org.apache.commons.io.input.XmlStreamReader: void <init>(java.io.InputStream,boolean)>(v1, 1);
+return;
+}
+public void <init>(java.io.InputStream, boolean) throws java.io.IOException
+{
+org.apache.commons.io.input.XmlStreamReader v0;
+boolean v2;
+java.io.InputStream v1;
+v0 := @this: org.apache.commons.io.input.XmlStreamReader;
+v1 := @parameter0: java.io.InputStream;
+v2 := @parameter1: boolean;
+specialinvoke v0.<org.apache.commons.io.input.XmlStreamReader: void <init>(java.io.InputStream,boolean,java.lang.String)>(v1, v2, null);
+return;
+}
+public void <init>(java.io.InputStream, boolean, java.lang.String) throws java.io.IOException
+{
+java.io.BufferedInputStream v5;
+java.io.InputStreamReader v10;
+org.apache.commons.io.ByteOrderMark[] v6, v8;
+org.apache.commons.io.input.XmlStreamReader v0;
+org.apache.commons.io.input.BOMInputStream v4, v7;
+java.lang.String v11, v3, v9;
+boolean v2;
+java.io.InputStream v1;
+v0 := @this: org.apache.commons.io.input.XmlStreamReader;
+v1 := @parameter0: java.io.InputStream;
+v2 := @parameter1: boolean;
+v3 := @parameter2: java.lang.String;
+specialinvoke v0.<java.io.Reader: void <init>()>();
+staticinvoke <java.util.Objects: java.lang.Object requireNonNull(java.lang.Object,java.lang.String)>(v1, "inputStream");
+v0.<org.apache.commons.io.input.XmlStreamReader: java.lang.String defaultEncoding> = v3;
+v4 = new org.apache.commons.io.input.BOMInputStream;
+v5 = new java.io.BufferedInputStream;
+specialinvoke v5.<java.io.BufferedInputStream: void <init>(java.io.InputStream,int)>(v1, 8192);
+v6 = <org.apache.commons.io.input.XmlStreamReader: org.apache.commons.io.ByteOrderMark[] BOMS>;
+specialinvoke v4.<org.apache.commons.io.input.BOMInputStream: void <init>(java.io.InputStream,boolean,org.apache.commons.io.ByteOrderMark[])>(v5, 0, v6);
+v7 = new org.apache.commons.io.input.BOMInputStream;
+v8 = <org.apache.commons.io.input.XmlStreamReader: org.apache.commons.io.ByteOrderMark[] XML_GUESS_BYTES>;
+specialinvoke v7.<org.apache.commons.io.input.BOMInputStream: void <init>(java.io.InputStream,boolean,org.apache.commons.io.ByteOrderMark[])>(v4, 1, v8);
+v9 = specialinvoke v0.<org.apache.commons.io.input.XmlStreamReader: java.lang.String doRawStream(org.apache.commons.io.input.BOMInputStream,org.apache.commons.io.input.BOMInputStream,boolean)>(v4, v7, v2);
+v0.<org.apache.commons.io.input.XmlStreamReader: java.lang.String encoding> = v9;
+v10 = new java.io.InputStreamReader;
+v11 = v0.<org.apache.commons.io.input.XmlStreamReader: java.lang.String encoding>;
+specialinvoke v10.<java.io.InputStreamReader: void <init>(java.io.InputStream,java.lang.String)>(v7, v11);
+v0.<org.apache.commons.io.input.XmlStreamReader: java.io.Reader reader> = v10;
+return;
+}
+public void <init>(java.io.InputStream, java.lang.String) throws java.io.IOException
+{
+java.lang.String v2;
+org.apache.commons.io.input.XmlStreamReader v0;
+java.io.InputStream v1;
+v0 := @this: org.apache.commons.io.input.XmlStreamReader;
+v1 := @parameter0: java.io.InputStream;
+v2 := @parameter1: java.lang.String;
+specialinvoke v0.<org.apache.commons.io.input.XmlStreamReader: void <init>(java.io.InputStream,java.lang.String,boolean)>(v1, v2, 1);
+return;
+}
+public void <init>(java.io.InputStream, java.lang.String, boolean) throws java.io.IOException
+{
+org.apache.commons.io.input.XmlStreamReader v0;
+java.lang.String v2;
+boolean v3;
+java.io.InputStream v1;
+v0 := @this: org.apache.commons.io.input.XmlStreamReader;
+v1 := @parameter0: java.io.InputStream;
+v2 := @parameter1: java.lang.String;
+v3 := @parameter2: boolean;
+specialinvoke v0.<org.apache.commons.io.input.XmlStreamReader: void <init>(java.io.InputStream,java.lang.String,boolean,java.lang.String)>(v1, v2, v3, null);
+return;
+}
+public void <init>(java.io.InputStream, java.lang.String, boolean, java.lang.String) throws java.io.IOException
+{
+java.io.BufferedInputStream v6;
+java.io.InputStreamReader v11;
+org.apache.commons.io.ByteOrderMark[] v7, v9;
+org.apache.commons.io.input.XmlStreamReader v0;
+org.apache.commons.io.input.BOMInputStream v5, v8;
+java.lang.String v10, v12, v2, v4;
+boolean v3;
+java.io.InputStream v1;
+v0 := @this: org.apache.commons.io.input.XmlStreamReader;
+v1 := @parameter0: java.io.InputStream;
+v2 := @parameter1: java.lang.String;
+v3 := @parameter2: boolean;
+v4 := @parameter3: java.lang.String;
+specialinvoke v0.<java.io.Reader: void <init>()>();
+staticinvoke <java.util.Objects: java.lang.Object requireNonNull(java.lang.Object,java.lang.String)>(v1, "inputStream");
+v0.<org.apache.commons.io.input.XmlStreamReader: java.lang.String defaultEncoding> = v4;
+v5 = new org.apache.commons.io.input.BOMInputStream;
+v6 = new java.io.BufferedInputStream;
+specialinvoke v6.<java.io.BufferedInputStream: void <init>(java.io.InputStream,int)>(v1, 8192);
+v7 = <org.apache.commons.io.input.XmlStreamReader: org.apache.commons.io.ByteOrderMark[] BOMS>;
+specialinvoke v5.<org.apache.commons.io.input.BOMInputStream: void <init>(java.io.InputStream,boolean,org.apache.commons.io.ByteOrderMark[])>(v6, 0, v7);
+v8 = new org.apache.commons.io.input.BOMInputStream;
+v9 = <org.apache.commons.io.input.XmlStreamReader: org.apache.commons.io.ByteOrderMark[] XML_GUESS_BYTES>;
+specialinvoke v8.<org.apache.commons.io.input.BOMInputStream: void <init>(java.io.InputStream,boolean,org.apache.commons.io.ByteOrderMark[])>(v5, 1, v9);
+v10 = specialinvoke v0.<org.apache.commons.io.input.XmlStreamReader: java.lang.String processHttpStream(org.apache.commons.io.input.BOMInputStream,org.apache.commons.io.input.BOMInputStream,java.lang.String,boolean)>(v5, v8, v2, v3);
+v0.<org.apache.commons.io.input.XmlStreamReader: java.lang.String encoding> = v10;
+v11 = new java.io.InputStreamReader;
+v12 = v0.<org.apache.commons.io.input.XmlStreamReader: java.lang.String encoding>;
+specialinvoke v11.<java.io.InputStreamReader: void <init>(java.io.InputStream,java.lang.String)>(v8, v12);
+v0.<org.apache.commons.io.input.XmlStreamReader: java.io.Reader reader> = v11;
+return;
+}
+public void <init>(java.nio.file.Path) throws java.io.IOException
+{
+org.apache.commons.io.input.XmlStreamReader v0;
+java.nio.file.OpenOption[] v3;
+java.lang.Object v2;
+java.nio.file.Path v1;
+java.io.InputStream v4;
+v0 := @this: org.apache.commons.io.input.XmlStreamReader;
+v1 := @parameter0: java.nio.file.Path;
+v2 = staticinvoke <java.util.Objects: java.lang.Object requireNonNull(java.lang.Object,java.lang.String)>(v1, "file");
+v3 = newarray (java.nio.file.OpenOption)[0];
+v4 = staticinvoke <java.nio.file.Files: java.io.InputStream newInputStream(java.nio.file.Path,java.nio.file.OpenOption[])>(v2, v3);
+specialinvoke v0.<org.apache.commons.io.input.XmlStreamReader: void <init>(java.io.InputStream)>(v4);
+return;
+}
+public void <init>(java.net.URL) throws java.io.IOException
+{
+java.net.URL v1;
+java.net.URLConnection v3;
+org.apache.commons.io.input.XmlStreamReader v0;
+java.lang.Object v2;
+v0 := @this: org.apache.commons.io.input.XmlStreamReader;
+v1 := @parameter0: java.net.URL;
+v2 = staticinvoke <java.util.Objects: java.lang.Object requireNonNull(java.lang.Object,java.lang.String)>(v1, "url");
+v3 = virtualinvoke v2.<java.net.URL: java.net.URLConnection openConnection()>();
+specialinvoke v0.<org.apache.commons.io.input.XmlStreamReader: void <init>(java.net.URLConnection,java.lang.String)>(v3, null);
+return;
+}
+public void <init>(java.net.URLConnection, java.lang.String) throws java.io.IOException
+{
+java.io.BufferedInputStream v6;
+java.io.InputStreamReader v13;
+org.apache.commons.io.ByteOrderMark[] v7, v9;
+java.net.URLConnection v1;
+org.apache.commons.io.input.XmlStreamReader v0;
+org.apache.commons.io.input.BOMInputStream v5, v8;
+java.lang.String v11, v12, v14, v2, v3;
+boolean v10;
+java.io.InputStream v4;
+v0 := @this: org.apache.commons.io.input.XmlStreamReader;
+v1 := @parameter0: java.net.URLConnection;
+v2 := @parameter1: java.lang.String;
+specialinvoke v0.<java.io.Reader: void <init>()>();
+staticinvoke <java.util.Objects: java.lang.Object requireNonNull(java.lang.Object,java.lang.String)>(v1, "conn");
+v0.<org.apache.commons.io.input.XmlStreamReader: java.lang.String defaultEncoding> = v2;
+v3 = virtualinvoke v1.<java.net.URLConnection: java.lang.String getContentType()>();
+v4 = virtualinvoke v1.<java.net.URLConnection: java.io.InputStream getInputStream()>();
+v5 = new org.apache.commons.io.input.BOMInputStream;
+v6 = new java.io.BufferedInputStream;
+specialinvoke v6.<java.io.BufferedInputStream: void <init>(java.io.InputStream,int)>(v4, 8192);
+v7 = <org.apache.commons.io.input.XmlStreamReader: org.apache.commons.io.ByteOrderMark[] BOMS>;
+specialinvoke v5.<org.apache.commons.io.input.BOMInputStream: void <init>(java.io.InputStream,boolean,org.apache.commons.io.ByteOrderMark[])>(v6, 0, v7);
+v8 = new org.apache.commons.io.input.BOMInputStream;
+v9 = <org.apache.commons.io.input.XmlStreamReader: org.apache.commons.io.ByteOrderMark[] XML_GUESS_BYTES>;
+specialinvoke v8.<org.apache.commons.io.input.BOMInputStream: void <init>(java.io.InputStream,boolean,org.apache.commons.io.ByteOrderMark[])>(v5, 1, v9);
+v10 = v1 instanceof java.net.HttpURLConnection;
+if v10 != 0 goto label1;
+if v3 == null goto label2;
+label1:
+v11 = specialinvoke v0.<org.apache.commons.io.input.XmlStreamReader: java.lang.String processHttpStream(org.apache.commons.io.input.BOMInputStream,org.apache.commons.io.input.BOMInputStream,java.lang.String,boolean)>(v5, v8, v3, 1);
+v0.<org.apache.commons.io.input.XmlStreamReader: java.lang.String encoding> = v11;
+goto label3;
+label2:
+v12 = specialinvoke v0.<org.apache.commons.io.input.XmlStreamReader: java.lang.String doRawStream(org.apache.commons.io.input.BOMInputStream,org.apache.commons.io.input.BOMInputStream,boolean)>(v5, v8, 1);
+v0.<org.apache.commons.io.input.XmlStreamReader: java.lang.String encoding> = v12;
+label3:
+v13 = new java.io.InputStreamReader;
+v14 = v0.<org.apache.commons.io.input.XmlStreamReader: java.lang.String encoding>;
+specialinvoke v13.<java.io.InputStreamReader: void <init>(java.io.InputStream,java.lang.String)>(v8, v14);
+v0.<org.apache.commons.io.input.XmlStreamReader: java.io.Reader reader> = v13;
+return;
+}
+java.lang.String calculateHttpEncoding(java.lang.String, java.lang.String, java.lang.String, java.lang.String, boolean) throws java.io.IOException
+{
+org.apache.commons.io.input.XmlStreamReaderException v12, v20, v25, v30, v35;
+org.apache.commons.io.input.XmlStreamReader v0;
+boolean v16, v17, v21, v22, v26, v27, v31, v32, v5, v8, v9;
+java.lang.Object[] v10, v18, v23, v28, v33;
+java.lang.String v1, v11, v13, v14, v15, v19, v2, v24, v29, v3, v34, v4, v6, v7;
+v0 := @this: org.apache.commons.io.input.XmlStreamReader;
+v1 := @parameter0: java.lang.String;
+v2 := @parameter1: java.lang.String;
+v3 := @parameter2: java.lang.String;
+v4 := @parameter3: java.lang.String;
+v5 := @parameter4: boolean;
+if v5 == 0 goto label01;
+if v4 == null goto label01;
+return v4;
+label01:
+v6 = staticinvoke <org.apache.commons.io.input.XmlStreamReader: java.lang.String getContentTypeMime(java.lang.String)>(v1);
+v7 = staticinvoke <org.apache.commons.io.input.XmlStreamReader: java.lang.String getContentTypeEncoding(java.lang.String)>(v1);
+v8 = staticinvoke <org.apache.commons.io.input.XmlStreamReader: boolean isAppXml(java.lang.String)>(v6);
+v9 = staticinvoke <org.apache.commons.io.input.XmlStreamReader: boolean isTextXml(java.lang.String)>(v6);
+if v8 != 0 goto label02;
+if v9 != 0 goto label02;
+v10 = newarray (java.lang.Object)[5];
+v10[0] = v6;
+v10[1] = v7;
+v10[2] = v2;
+v10[3] = v3;
+v10[4] = v4;
+v11 = staticinvoke <java.text.MessageFormat: java.lang.String format(java.lang.String,java.lang.Object[])>("Invalid encoding, CT-MIME [{0}] CT-Enc [{1}] BOM [{2}] XML guess [{3}] XML prolog [{4}], Invalid MIME", v10);
+v12 = new org.apache.commons.io.input.XmlStreamReaderException;
+specialinvoke v12.<org.apache.commons.io.input.XmlStreamReaderException: void <init>(java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String)>(v11, v6, v7, v2, v3, v4);
+throw v12;
+label02:
+if v7 != null goto label06;
+if v8 == 0 goto label03;
+v13 = virtualinvoke v0.<org.apache.commons.io.input.XmlStreamReader: java.lang.String calculateRawEncoding(java.lang.String,java.lang.String,java.lang.String)>(v2, v3, v4);
+return v13;
+label03:
+v14 = v0.<org.apache.commons.io.input.XmlStreamReader: java.lang.String defaultEncoding>;
+if v14 != null goto label04;
+v15 = "US-ASCII";
+goto label05;
+label04:
+v15 = v0.<org.apache.commons.io.input.XmlStreamReader: java.lang.String defaultEncoding>;
+label05:
+return v15;
+label06:
+v16 = virtualinvoke v7.<java.lang.String: boolean equals(java.lang.Object)>("UTF-16BE");
+if v16 != 0 goto label07;
+v17 = virtualinvoke v7.<java.lang.String: boolean equals(java.lang.Object)>("UTF-16LE");
+if v17 == 0 goto label09;
+label07:
+if v2 == null goto label08;
+v18 = newarray (java.lang.Object)[5];
+v18[0] = v6;
+v18[1] = v7;
+v18[2] = v2;
+v18[3] = v3;
+v18[4] = v4;
+v19 = staticinvoke <java.text.MessageFormat: java.lang.String format(java.lang.String,java.lang.Object[])>("Invalid encoding, CT-MIME [{0}] CT-Enc [{1}] BOM [{2}] XML guess [{3}] XML prolog [{4}], BOM must be NULL", v18);
+v20 = new org.apache.commons.io.input.XmlStreamReaderException;
+specialinvoke v20.<org.apache.commons.io.input.XmlStreamReaderException: void <init>(java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String)>(v19, v6, v7, v2, v3, v4);
+throw v20;
+label08:
+return v7;
+label09:
+v21 = virtualinvoke v7.<java.lang.String: boolean equals(java.lang.Object)>("UTF-16");
+if v21 == 0 goto label11;
+if v2 == null goto label10;
+v22 = virtualinvoke v2.<java.lang.String: boolean startsWith(java.lang.String)>("UTF-16");
+if v22 == 0 goto label10;
+return v2;
+label10:
+v23 = newarray (java.lang.Object)[5];
+v23[0] = v6;
+v23[1] = v7;
+v23[2] = v2;
+v23[3] = v3;
+v23[4] = v4;
+v24 = staticinvoke <java.text.MessageFormat: java.lang.String format(java.lang.String,java.lang.Object[])>("Invalid encoding, CT-MIME [{0}] CT-Enc [{1}] BOM [{2}] XML guess [{3}] XML prolog [{4}], encoding mismatch", v23);
+v25 = new org.apache.commons.io.input.XmlStreamReaderException;
+specialinvoke v25.<org.apache.commons.io.input.XmlStreamReaderException: void <init>(java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String)>(v24, v6, v7, v2, v3, v4);
+throw v25;
+label11:
+v26 = virtualinvoke v7.<java.lang.String: boolean equals(java.lang.Object)>("UTF-32BE");
+if v26 != 0 goto label12;
+v27 = virtualinvoke v7.<java.lang.String: boolean equals(java.lang.Object)>("UTF-32LE");
+if v27 == 0 goto label14;
+label12:
+if v2 == null goto label13;
+v28 = newarray (java.lang.Object)[5];
+v28[0] = v6;
+v28[1] = v7;
+v28[2] = v2;
+v28[3] = v3;
+v28[4] = v4;
+v29 = staticinvoke <java.text.MessageFormat: java.lang.String format(java.lang.String,java.lang.Object[])>("Invalid encoding, CT-MIME [{0}] CT-Enc [{1}] BOM [{2}] XML guess [{3}] XML prolog [{4}], BOM must be NULL", v28);
+v30 = new org.apache.commons.io.input.XmlStreamReaderException;
+specialinvoke v30.<org.apache.commons.io.input.XmlStreamReaderException: void <init>(java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String)>(v29, v6, v7, v2, v3, v4);
+throw v30;
+label13:
+return v7;
+label14:
+v31 = virtualinvoke v7.<java.lang.String: boolean equals(java.lang.Object)>("UTF-32");
+if v31 == 0 goto label16;
+if v2 == null goto label15;
+v32 = virtualinvoke v2.<java.lang.String: boolean startsWith(java.lang.String)>("UTF-32");
+if v32 == 0 goto label15;
+return v2;
+label15:
+v33 = newarray (java.lang.Object)[5];
+v33[0] = v6;
+v33[1] = v7;
+v33[2] = v2;
+v33[3] = v3;
+v33[4] = v4;
+v34 = staticinvoke <java.text.MessageFormat: java.lang.String format(java.lang.String,java.lang.Object[])>("Invalid encoding, CT-MIME [{0}] CT-Enc [{1}] BOM [{2}] XML guess [{3}] XML prolog [{4}], encoding mismatch", v33);
+v35 = new org.apache.commons.io.input.XmlStreamReaderException;
+specialinvoke v35.<org.apache.commons.io.input.XmlStreamReaderException: void <init>(java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String)>(v34, v6, v7, v2, v3, v4);
+throw v35;
+label16:
+return v7;
+}
+java.lang.String calculateRawEncoding(java.lang.String, java.lang.String, java.lang.String) throws java.io.IOException
+{
+org.apache.commons.io.input.XmlStreamReaderException v13, v17, v23, v28, v34, v39, v42;
+org.apache.commons.io.input.XmlStreamReader v0;
+boolean v10, v14, v18, v19, v20, v24, v25, v29, v30, v31, v35, v36, v6, v7, v8, v9;
+java.lang.Object[] v11, v15, v21, v26, v32, v37, v40;
+java.lang.String v1, v12, v16, v2, v22, v27, v3, v33, v38, v4, v41, v5;
+v0 := @this: org.apache.commons.io.input.XmlStreamReader;
+v1 := @parameter0: java.lang.String;
+v2 := @parameter1: java.lang.String;
+v3 := @parameter2: java.lang.String;
+if v1 != null goto label07;
+if v2 == null goto label01;
+if v3 != null goto label04;
+label01:
+v4 = v0.<org.apache.commons.io.input.XmlStreamReader: java.lang.String defaultEncoding>;
+if v4 != null goto label02;
+v5 = "UTF-8";
+goto label03;
+label02:
+v5 = v0.<org.apache.commons.io.input.XmlStreamReader: java.lang.String defaultEncoding>;
+label03:
+return v5;
+label04:
+v6 = virtualinvoke v3.<java.lang.String: boolean equals(java.lang.Object)>("UTF-16");
+if v6 == 0 goto label06;
+v7 = virtualinvoke v2.<java.lang.String: boolean equals(java.lang.Object)>("UTF-16BE");
+if v7 != 0 goto label05;
+v8 = virtualinvoke v2.<java.lang.String: boolean equals(java.lang.Object)>("UTF-16LE");
+if v8 == 0 goto label06;
+label05:
+return v2;
+label06:
+return v3;
+label07:
+v9 = virtualinvoke v1.<java.lang.String: boolean equals(java.lang.Object)>("UTF-8");
+if v9 == 0 goto label10;
+if v2 == null goto label08;
+v10 = virtualinvoke v2.<java.lang.String: boolean equals(java.lang.Object)>("UTF-8");
+if v10 != 0 goto label08;
+v11 = newarray (java.lang.Object)[3];
+v11[0] = v1;
+v11[1] = v2;
+v11[2] = v3;
+v12 = staticinvoke <java.text.MessageFormat: java.lang.String format(java.lang.String,java.lang.Object[])>("Invalid encoding, BOM [{0}] XML guess [{1}] XML prolog [{2}] encoding mismatch", v11);
+v13 = new org.apache.commons.io.input.XmlStreamReaderException;
+specialinvoke v13.<org.apache.commons.io.input.XmlStreamReaderException: void <init>(java.lang.String,java.lang.String,java.lang.String,java.lang.String)>(v12, v1, v2, v3);
+throw v13;
+label08:
+if v3 == null goto label09;
+v14 = virtualinvoke v3.<java.lang.String: boolean equals(java.lang.Object)>("UTF-8");
+if v14 != 0 goto label09;
+v15 = newarray (java.lang.Object)[3];
+v15[0] = v1;
+v15[1] = v2;
+v15[2] = v3;
+v16 = staticinvoke <java.text.MessageFormat: java.lang.String format(java.lang.String,java.lang.Object[])>("Invalid encoding, BOM [{0}] XML guess [{1}] XML prolog [{2}] encoding mismatch", v15);
+v17 = new org.apache.commons.io.input.XmlStreamReaderException;
+specialinvoke v17.<org.apache.commons.io.input.XmlStreamReaderException: void <init>(java.lang.String,java.lang.String,java.lang.String,java.lang.String)>(v16, v1, v2, v3);
+throw v17;
+label09:
+return v1;
+label10:
+v18 = virtualinvoke v1.<java.lang.String: boolean equals(java.lang.Object)>("UTF-16BE");
+if v18 != 0 goto label11;
+v19 = virtualinvoke v1.<java.lang.String: boolean equals(java.lang.Object)>("UTF-16LE");
+if v19 == 0 goto label14;
+label11:
+if v2 == null goto label12;
+v20 = virtualinvoke v2.<java.lang.String: boolean equals(java.lang.Object)>(v1);
+if v20 != 0 goto label12;
+v21 = newarray (java.lang.Object)[3];
+v21[0] = v1;
+v21[1] = v2;
+v21[2] = v3;
+v22 = staticinvoke <java.text.MessageFormat: java.lang.String format(java.lang.String,java.lang.Object[])>("Invalid encoding, BOM [{0}] XML guess [{1}] XML prolog [{2}] encoding mismatch", v21);
+v23 = new org.apache.commons.io.input.XmlStreamReaderException;
+specialinvoke v23.<org.apache.commons.io.input.XmlStreamReaderException: void <init>(java.lang.String,java.lang.String,java.lang.String,java.lang.String)>(v22, v1, v2, v3);
+throw v23;
+label12:
+if v3 == null goto label13;
+v24 = virtualinvoke v3.<java.lang.String: boolean equals(java.lang.Object)>("UTF-16");
+if v24 != 0 goto label13;
+v25 = virtualinvoke v3.<java.lang.String: boolean equals(java.lang.Object)>(v1);
+if v25 != 0 goto label13;
+v26 = newarray (java.lang.Object)[3];
+v26[0] = v1;
+v26[1] = v2;
+v26[2] = v3;
+v27 = staticinvoke <java.text.MessageFormat: java.lang.String format(java.lang.String,java.lang.Object[])>("Invalid encoding, BOM [{0}] XML guess [{1}] XML prolog [{2}] encoding mismatch", v26);
+v28 = new org.apache.commons.io.input.XmlStreamReaderException;
+specialinvoke v28.<org.apache.commons.io.input.XmlStreamReaderException: void <init>(java.lang.String,java.lang.String,java.lang.String,java.lang.String)>(v27, v1, v2, v3);
+throw v28;
+label13:
+return v1;
+label14:
+v29 = virtualinvoke v1.<java.lang.String: boolean equals(java.lang.Object)>("UTF-32BE");
+if v29 != 0 goto label15;
+v30 = virtualinvoke v1.<java.lang.String: boolean equals(java.lang.Object)>("UTF-32LE");
+if v30 == 0 goto label18;
+label15:
+if v2 == null goto label16;
+v31 = virtualinvoke v2.<java.lang.String: boolean equals(java.lang.Object)>(v1);
+if v31 != 0 goto label16;
+v32 = newarray (java.lang.Object)[3];
+v32[0] = v1;
+v32[1] = v2;
+v32[2] = v3;
+v33 = staticinvoke <java.text.MessageFormat: java.lang.String format(java.lang.String,java.lang.Object[])>("Invalid encoding, BOM [{0}] XML guess [{1}] XML prolog [{2}] encoding mismatch", v32);
+v34 = new org.apache.commons.io.input.XmlStreamReaderException;
+specialinvoke v34.<org.apache.commons.io.input.XmlStreamReaderException: void <init>(java.lang.String,java.lang.String,java.lang.String,java.lang.String)>(v33, v1, v2, v3);
+throw v34;
+label16:
+if v3 == null goto label17;
+v35 = virtualinvoke v3.<java.lang.String: boolean equals(java.lang.Object)>("UTF-32");
+if v35 != 0 goto label17;
+v36 = virtualinvoke v3.<java.lang.String: boolean equals(java.lang.Object)>(v1);
+if v36 != 0 goto label17;
+v37 = newarray (java.lang.Object)[3];
+v37[0] = v1;
+v37[1] = v2;
+v37[2] = v3;
+v38 = staticinvoke <java.text.MessageFormat: java.lang.String format(java.lang.String,java.lang.Object[])>("Invalid encoding, BOM [{0}] XML guess [{1}] XML prolog [{2}] encoding mismatch", v37);
+v39 = new org.apache.commons.io.input.XmlStreamReaderException;
+specialinvoke v39.<org.apache.commons.io.input.XmlStreamReaderException: void <init>(java.lang.String,java.lang.String,java.lang.String,java.lang.String)>(v38, v1, v2, v3);
+throw v39;
+label17:
+return v1;
+label18:
+v40 = newarray (java.lang.Object)[3];
+v40[0] = v1;
+v40[1] = v2;
+v40[2] = v3;
+v41 = staticinvoke <java.text.MessageFormat: java.lang.String format(java.lang.String,java.lang.Object[])>("Invalid encoding, BOM [{0}] XML guess [{1}] XML prolog [{2}] unknown BOM", v40);
+v42 = new org.apache.commons.io.input.XmlStreamReaderException;
+specialinvoke v42.<org.apache.commons.io.input.XmlStreamReaderException: void <init>(java.lang.String,java.lang.String,java.lang.String,java.lang.String)>(v41, v1, v2, v3);
+throw v42;
+}
+public void close() throws java.io.IOException
+{
+java.io.Reader v1;
+org.apache.commons.io.input.XmlStreamReader v0;
+v0 := @this: org.apache.commons.io.input.XmlStreamReader;
+v1 = v0.<org.apache.commons.io.input.XmlStreamReader: java.io.Reader reader>;
+virtualinvoke v1.<java.io.Reader: void close()>();
+return;
+}
+private java.lang.String doLenientDetection(java.lang.String, org.apache.commons.io.input.XmlStreamReaderException) throws java.io.IOException
+{
+org.apache.commons.io.input.XmlStreamReaderException v12, v2;
+org.apache.commons.io.input.XmlStreamReader v0;
+int v5;
+java.lang.String v1, v10, v11, v13, v14, v15, v4, v6, v7, v8, v9;
+boolean v3;
+v0 := @this: org.apache.commons.io.input.XmlStreamReader;
+v1 := @parameter0: java.lang.String;
+v2 := @parameter1: org.apache.commons.io.input.XmlStreamReaderException;
+if v1 == null goto label4;
+v3 = virtualinvoke v1.<java.lang.String: boolean startsWith(java.lang.String)>("text/html");
+if v3 == 0 goto label4;
+v4 = "text/html";
+v5 = virtualinvoke v4.<java.lang.String: int length()>();
+v6 = virtualinvoke v1.<java.lang.String: java.lang.String substring(int)>(v5);
+v7 = dynamicinvoke "makeConcatWithConstants" <java.lang.String (java.lang.String)>(v6) <java.lang.invoke.StringConcatFactory: java.lang.invoke.CallSite makeConcatWithConstants(java.lang.invoke.MethodHandles$Lookup,java.lang.String,java.lang.invoke.MethodType,java.lang.String,java.lang.Object[])>("text/xml\u0001");
+label1:
+v8 = virtualinvoke v2.<org.apache.commons.io.input.XmlStreamReaderException: java.lang.String getBomEncoding()>();
+v9 = virtualinvoke v2.<org.apache.commons.io.input.XmlStreamReaderException: java.lang.String getXmlGuessEncoding()>();
+v10 = virtualinvoke v2.<org.apache.commons.io.input.XmlStreamReaderException: java.lang.String getXmlEncoding()>();
+v11 = virtualinvoke v0.<org.apache.commons.io.input.XmlStreamReader: java.lang.String calculateHttpEncoding(java.lang.String,java.lang.String,java.lang.String,java.lang.String,boolean)>(v7, v8, v9, v10, 1);
+label2:
+return v11;
+label3:
+v12 := @caughtexception;
+v2 = v12;
+label4:
+v13 = virtualinvoke v2.<org.apache.commons.io.input.XmlStreamReaderException: java.lang.String getXmlEncoding()>();
+if v13 != null goto label7;
+v13 = virtualinvoke v2.<org.apache.commons.io.input.XmlStreamReaderException: java.lang.String getContentTypeEncoding()>();
+if v13 != null goto label7;
+v14 = v0.<org.apache.commons.io.input.XmlStreamReader: java.lang.String defaultEncoding>;
+if v14 != null goto label5;
+v15 = "UTF-8";
+goto label6;
+label5:
+v15 = v0.<org.apache.commons.io.input.XmlStreamReader: java.lang.String defaultEncoding>;
+label6:
+v13 = v15;
+label7:
+return v13;
+catch org.apache.commons.io.input.XmlStreamReaderException from label1 to label2 with label3;
+}
+private java.lang.String doRawStream(org.apache.commons.io.input.BOMInputStream, org.apache.commons.io.input.BOMInputStream, boolean) throws java.io.IOException
+{
+org.apache.commons.io.input.XmlStreamReaderException v8;
+org.apache.commons.io.input.XmlStreamReader v0;
+org.apache.commons.io.input.BOMInputStream v1, v2;
+java.lang.String v4, v5, v6, v7, v9;
+boolean v3;
+v0 := @this: org.apache.commons.io.input.XmlStreamReader;
+v1 := @parameter0: org.apache.commons.io.input.BOMInputStream;
+v2 := @parameter1: org.apache.commons.io.input.BOMInputStream;
+v3 := @parameter2: boolean;
+v4 = virtualinvoke v1.<org.apache.commons.io.input.BOMInputStream: java.lang.String getBOMCharsetName()>();
+v5 = virtualinvoke v2.<org.apache.commons.io.input.BOMInputStream: java.lang.String getBOMCharsetName()>();
+v6 = staticinvoke <org.apache.commons.io.input.XmlStreamReader: java.lang.String getXmlProlog(java.io.InputStream,java.lang.String)>(v2, v5);
+label1:
+v7 = virtualinvoke v0.<org.apache.commons.io.input.XmlStreamReader: java.lang.String calculateRawEncoding(java.lang.String,java.lang.String,java.lang.String)>(v4, v5, v6);
+label2:
+return v7;
+label3:
+v8 := @caughtexception;
+if v3 == 0 goto label4;
+v9 = specialinvoke v0.<org.apache.commons.io.input.XmlStreamReader: java.lang.String doLenientDetection(java.lang.String,org.apache.commons.io.input.XmlStreamReaderException)>(null, v8);
+return v9;
+label4:
+throw v8;
+catch org.apache.commons.io.input.XmlStreamReaderException from label1 to label2 with label3;
+}
+public java.lang.String getDefaultEncoding()
+{
+java.lang.String v1;
+org.apache.commons.io.input.XmlStreamReader v0;
+v0 := @this: org.apache.commons.io.input.XmlStreamReader;
+v1 = v0.<org.apache.commons.io.input.XmlStreamReader: java.lang.String defaultEncoding>;
+return v1;
+}
+public java.lang.String getEncoding()
+{
+java.lang.String v1;
+org.apache.commons.io.input.XmlStreamReader v0;
+v0 := @this: org.apache.commons.io.input.XmlStreamReader;
+v1 = v0.<org.apache.commons.io.input.XmlStreamReader: java.lang.String encoding>;
+return v1;
+}
+private java.lang.String processHttpStream(org.apache.commons.io.input.BOMInputStream, org.apache.commons.io.input.BOMInputStream, java.lang.String, boolean) throws java.io.IOException
+{
+org.apache.commons.io.input.XmlStreamReaderException v9;
+org.apache.commons.io.input.XmlStreamReader v0;
+org.apache.commons.io.input.BOMInputStream v1, v2;
+java.lang.String v10, v3, v5, v6, v7, v8;
+boolean v4;
+v0 := @this: org.apache.commons.io.input.XmlStreamReader;
+v1 := @parameter0: org.apache.commons.io.input.BOMInputStream;
+v2 := @parameter1: org.apache.commons.io.input.BOMInputStream;
+v3 := @parameter2: java.lang.String;
+v4 := @parameter3: boolean;
+v5 = virtualinvoke v1.<org.apache.commons.io.input.BOMInputStream: java.lang.String getBOMCharsetName()>();
+v6 = virtualinvoke v2.<org.apache.commons.io.input.BOMInputStream: java.lang.String getBOMCharsetName()>();
+v7 = staticinvoke <org.apache.commons.io.input.XmlStreamReader: java.lang.String getXmlProlog(java.io.InputStream,java.lang.String)>(v2, v6);
+label1:
+v8 = virtualinvoke v0.<org.apache.commons.io.input.XmlStreamReader: java.lang.String calculateHttpEncoding(java.lang.String,java.lang.String,java.lang.String,java.lang.String,boolean)>(v3, v5, v6, v7, v4);
+label2:
+return v8;
+label3:
+v9 := @caughtexception;
+if v4 == 0 goto label4;
+v10 = specialinvoke v0.<org.apache.commons.io.input.XmlStreamReader: java.lang.String doLenientDetection(java.lang.String,org.apache.commons.io.input.XmlStreamReaderException)>(v3, v9);
+return v10;
+label4:
+throw v9;
+catch org.apache.commons.io.input.XmlStreamReaderException from label1 to label2 with label3;
+}
+public int read(char[], int, int) throws java.io.IOException
+{
+org.apache.commons.io.input.XmlStreamReader v0;
+int v2, v3, v5;
+char[] v1;
+java.io.Reader v4;
+v0 := @this: org.apache.commons.io.input.XmlStreamReader;
+v1 := @parameter0: char[];
+v2 := @parameter1: int;
+v3 := @parameter2: int;
+v4 = v0.<org.apache.commons.io.input.XmlStreamReader: java.io.Reader reader>;
+v5 = virtualinvoke v4.<java.io.Reader: int read(char[],int,int)>(v1, v2, v3);
+return v5;
+}
+static void <clinit>()
+{
+org.apache.commons.io.ByteOrderMark[] v0, v6;
+int[] v10, v12, v14, v16, v18, v8;
+org.apache.commons.io.ByteOrderMark v1, v11, v13, v15, v17, v2, v3, v4, v5, v7, v9;
+java.util.regex.Pattern v19, v20;
+v0 = newarray (org.apache.commons.io.ByteOrderMark)[5];
+v1 = <org.apache.commons.io.ByteOrderMark: org.apache.commons.io.ByteOrderMark UTF_8>;
+v0[0] = v1;
+v2 = <org.apache.commons.io.ByteOrderMark: org.apache.commons.io.ByteOrderMark UTF_16BE>;
+v0[1] = v2;
+v3 = <org.apache.commons.io.ByteOrderMark: org.apache.commons.io.ByteOrderMark UTF_16LE>;
+v0[2] = v3;
+v4 = <org.apache.commons.io.ByteOrderMark: org.apache.commons.io.ByteOrderMark UTF_32BE>;
+v0[3] = v4;
+v5 = <org.apache.commons.io.ByteOrderMark: org.apache.commons.io.ByteOrderMark UTF_32LE>;
+v0[4] = v5;
+<org.apache.commons.io.input.XmlStreamReader: org.apache.commons.io.ByteOrderMark[] BOMS> = v0;
+v6 = newarray (org.apache.commons.io.ByteOrderMark)[6];
+v7 = new org.apache.commons.io.ByteOrderMark;
+v8 = newarray (int)[4];
+v8[0] = 60;
+v8[1] = 63;
+v8[2] = 120;
+v8[3] = 109;
+specialinvoke v7.<org.apache.commons.io.ByteOrderMark: void <init>(java.lang.String,int[])>("UTF-8", v8);
+v6[0] = v7;
+v9 = new org.apache.commons.io.ByteOrderMark;
+v10 = newarray (int)[4];
+v10[0] = 0;
+v10[1] = 60;
+v10[2] = 0;
+v10[3] = 63;
+specialinvoke v9.<org.apache.commons.io.ByteOrderMark: void <init>(java.lang.String,int[])>("UTF-16BE", v10);
+v6[1] = v9;
+v11 = new org.apache.commons.io.ByteOrderMark;
+v12 = newarray (int)[4];
+v12[0] = 60;
+v12[1] = 0;
+v12[2] = 63;
+v12[3] = 0;
+specialinvoke v11.<org.apache.commons.io.ByteOrderMark: void <init>(java.lang.String,int[])>("UTF-16LE", v12);
+v6[2] = v11;
+v13 = new org.apache.commons.io.ByteOrderMark;
+v14 = newarray (int)[16];
+v14[0] = 0;
+v14[1] = 0;
+v14[2] = 0;
+v14[3] = 60;
+v14[4] = 0;
+v14[5] = 0;
+v14[6] = 0;
+v14[7] = 63;
+v14[8] = 0;
+v14[9] = 0;
+v14[10] = 0;
+v14[11] = 120;
+v14[12] = 0;
+v14[13] = 0;
+v14[14] = 0;
+v14[15] = 109;
+specialinvoke v13.<org.apache.commons.io.ByteOrderMark: void <init>(java.lang.String,int[])>("UTF-32BE", v14);
+v6[3] = v13;
+v15 = new org.apache.commons.io.ByteOrderMark;
+v16 = newarray (int)[16];
+v16[0] = 60;
+v16[1] = 0;
+v16[2] = 0;
+v16[3] = 0;
+v16[4] = 63;
+v16[5] = 0;
+v16[6] = 0;
+v16[7] = 0;
+v16[8] = 120;
+v16[9] = 0;
+v16[10] = 0;
+v16[11] = 0;
+v16[12] = 109;
+v16[13] = 0;
+v16[14] = 0;
+v16[15] = 0;
+specialinvoke v15.<org.apache.commons.io.ByteOrderMark: void <init>(java.lang.String,int[])>("UTF-32LE", v16);
+v6[4] = v15;
+v17 = new org.apache.commons.io.ByteOrderMark;
+v18 = newarray (int)[4];
+v18[0] = 76;
+v18[1] = 111;
+v18[2] = 167;
+v18[3] = 148;
+specialinvoke v17.<org.apache.commons.io.ByteOrderMark: void <init>(java.lang.String,int[])>("CP1047", v18);
+v6[5] = v17;
+<org.apache.commons.io.input.XmlStreamReader: org.apache.commons.io.ByteOrderMark[] XML_GUESS_BYTES> = v6;
+v19 = staticinvoke <java.util.regex.Pattern: java.util.regex.Pattern compile(java.lang.String)>("charset=[\"\']?([.[^; \"\']]*)[\"\']?");
+<org.apache.commons.io.input.XmlStreamReader: java.util.regex.Pattern CHARSET_PATTERN> = v19;
+v20 = staticinvoke <java.util.regex.Pattern: java.util.regex.Pattern compile(java.lang.String,int)>("<\\?xml.*encoding[\\s]*=[\\s]*((?:\".[^\"]*\")|(?:\'.[^\']*\'))", 8);
+<org.apache.commons.io.input.XmlStreamReader: java.util.regex.Pattern ENCODING_PATTERN> = v20;
+return;
+}
+}

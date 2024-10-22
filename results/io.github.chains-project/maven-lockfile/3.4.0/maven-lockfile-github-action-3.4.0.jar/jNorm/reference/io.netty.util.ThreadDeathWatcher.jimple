@@ -1,0 +1,134 @@
+public final class io.netty.util.ThreadDeathWatcher extends java.lang.Object
+{
+private static final io.netty.util.internal.logging.InternalLogger logger;
+static final java.util.concurrent.ThreadFactory threadFactory;
+private static final java.util.Queue pendingEntries;
+private static final io.netty.util.ThreadDeathWatcher$Watcher watcher;
+private static final java.util.concurrent.atomic.AtomicBoolean started;
+private static volatile java.lang.Thread watcherThread;
+public static void watch(java.lang.Thread, java.lang.Runnable)
+{
+java.lang.Thread v0;
+java.lang.IllegalArgumentException v3;
+java.lang.Runnable v1;
+boolean v2;
+v0 := @parameter0: java.lang.Thread;
+v1 := @parameter1: java.lang.Runnable;
+staticinvoke <io.netty.util.internal.ObjectUtil: java.lang.Object checkNotNull(java.lang.Object,java.lang.String)>(v0, "thread");
+staticinvoke <io.netty.util.internal.ObjectUtil: java.lang.Object checkNotNull(java.lang.Object,java.lang.String)>(v1, "task");
+v2 = virtualinvoke v0.<java.lang.Thread: boolean isAlive()>();
+if v2 != 0 goto label1;
+v3 = new java.lang.IllegalArgumentException;
+specialinvoke v3.<java.lang.IllegalArgumentException: void <init>(java.lang.String)>("thread must be alive.");
+throw v3;
+label1:
+staticinvoke <io.netty.util.ThreadDeathWatcher: void schedule(java.lang.Thread,java.lang.Runnable,boolean)>(v0, v1, 1);
+return;
+}
+public static void unwatch(java.lang.Thread, java.lang.Runnable)
+{
+java.lang.Thread v0;
+java.lang.Object v2, v3;
+java.lang.Runnable v1;
+v0 := @parameter0: java.lang.Thread;
+v1 := @parameter1: java.lang.Runnable;
+v2 = staticinvoke <io.netty.util.internal.ObjectUtil: java.lang.Object checkNotNull(java.lang.Object,java.lang.String)>(v0, "thread");
+v3 = staticinvoke <io.netty.util.internal.ObjectUtil: java.lang.Object checkNotNull(java.lang.Object,java.lang.String)>(v1, "task");
+staticinvoke <io.netty.util.ThreadDeathWatcher: void schedule(java.lang.Thread,java.lang.Runnable,boolean)>(v2, v3, 0);
+return;
+}
+private static void schedule(java.lang.Thread, java.lang.Runnable, boolean)
+{
+java.util.concurrent.atomic.AtomicBoolean v5;
+io.netty.util.ThreadDeathWatcher$1 v10;
+java.lang.Runnable v1;
+java.lang.Thread v0, v9;
+io.netty.util.ThreadDeathWatcher$Watcher v8;
+java.util.Queue v3;
+java.util.concurrent.ThreadFactory v7;
+boolean v2, v6;
+io.netty.util.ThreadDeathWatcher$Entry v4;
+v0 := @parameter0: java.lang.Thread;
+v1 := @parameter1: java.lang.Runnable;
+v2 := @parameter2: boolean;
+v3 = <io.netty.util.ThreadDeathWatcher: java.util.Queue pendingEntries>;
+v4 = new io.netty.util.ThreadDeathWatcher$Entry;
+specialinvoke v4.<io.netty.util.ThreadDeathWatcher$Entry: void <init>(java.lang.Thread,java.lang.Runnable,boolean)>(v0, v1, v2);
+interfaceinvoke v3.<java.util.Queue: boolean add(java.lang.Object)>(v4);
+v5 = <io.netty.util.ThreadDeathWatcher: java.util.concurrent.atomic.AtomicBoolean started>;
+v6 = virtualinvoke v5.<java.util.concurrent.atomic.AtomicBoolean: boolean compareAndSet(boolean,boolean)>(0, 1);
+if v6 == 0 goto label1;
+v7 = <io.netty.util.ThreadDeathWatcher: java.util.concurrent.ThreadFactory threadFactory>;
+v8 = <io.netty.util.ThreadDeathWatcher: io.netty.util.ThreadDeathWatcher$Watcher watcher>;
+v9 = interfaceinvoke v7.<java.util.concurrent.ThreadFactory: java.lang.Thread newThread(java.lang.Runnable)>(v8);
+v10 = new io.netty.util.ThreadDeathWatcher$1;
+specialinvoke v10.<io.netty.util.ThreadDeathWatcher$1: void <init>(java.lang.Thread)>(v9);
+staticinvoke <java.security.AccessController: java.lang.Object doPrivileged(java.security.PrivilegedAction)>(v10);
+virtualinvoke v9.<java.lang.Thread: void start()>();
+<io.netty.util.ThreadDeathWatcher: java.lang.Thread watcherThread> = v9;
+label1:
+return;
+}
+public static boolean awaitInactivity(long, java.util.concurrent.TimeUnit) throws java.lang.InterruptedException
+{
+java.util.concurrent.TimeUnit v1;
+java.lang.Thread v2;
+long v0, v3;
+boolean v4, v5;
+v0 := @parameter0: long;
+v1 := @parameter1: java.util.concurrent.TimeUnit;
+staticinvoke <io.netty.util.internal.ObjectUtil: java.lang.Object checkNotNull(java.lang.Object,java.lang.String)>(v1, "unit");
+v2 = <io.netty.util.ThreadDeathWatcher: java.lang.Thread watcherThread>;
+if v2 == null goto label3;
+v3 = virtualinvoke v1.<java.util.concurrent.TimeUnit: long toMillis(long)>(v0);
+virtualinvoke v2.<java.lang.Thread: void join(long)>(v3);
+v4 = virtualinvoke v2.<java.lang.Thread: boolean isAlive()>();
+if v4 != 0 goto label1;
+v5 = 1;
+goto label2;
+label1:
+v5 = 0;
+label2:
+return v5;
+label3:
+return 1;
+}
+private void <init>()
+{
+io.netty.util.ThreadDeathWatcher v0;
+v0 := @this: io.netty.util.ThreadDeathWatcher;
+specialinvoke v0.<java.lang.Object: void <init>()>();
+return;
+}
+static void <clinit>()
+{
+io.netty.util.concurrent.DefaultThreadFactory v7;
+java.util.concurrent.atomic.AtomicBoolean v3;
+io.netty.util.internal.logging.InternalLogger v0;
+io.netty.util.ThreadDeathWatcher$Watcher v2;
+java.lang.String v4, v5;
+boolean v6;
+java.util.concurrent.ConcurrentLinkedQueue v1;
+v0 = staticinvoke <io.netty.util.internal.logging.InternalLoggerFactory: io.netty.util.internal.logging.InternalLogger getInstance(java.lang.Class)>(class "Lio/netty/util/ThreadDeathWatcher;");
+<io.netty.util.ThreadDeathWatcher: io.netty.util.internal.logging.InternalLogger logger> = v0;
+v1 = new java.util.concurrent.ConcurrentLinkedQueue;
+specialinvoke v1.<java.util.concurrent.ConcurrentLinkedQueue: void <init>()>();
+<io.netty.util.ThreadDeathWatcher: java.util.Queue pendingEntries> = v1;
+v2 = new io.netty.util.ThreadDeathWatcher$Watcher;
+specialinvoke v2.<io.netty.util.ThreadDeathWatcher$Watcher: void <init>()>();
+<io.netty.util.ThreadDeathWatcher: io.netty.util.ThreadDeathWatcher$Watcher watcher> = v2;
+v3 = new java.util.concurrent.atomic.AtomicBoolean;
+specialinvoke v3.<java.util.concurrent.atomic.AtomicBoolean: void <init>()>();
+<io.netty.util.ThreadDeathWatcher: java.util.concurrent.atomic.AtomicBoolean started> = v3;
+v4 = "threadDeathWatcher";
+v5 = staticinvoke <io.netty.util.internal.SystemPropertyUtil: java.lang.String get(java.lang.String)>("io.netty.serviceThreadPrefix");
+v6 = staticinvoke <io.netty.util.internal.StringUtil: boolean isNullOrEmpty(java.lang.String)>(v5);
+if v6 != 0 goto label1;
+v4 = dynamicinvoke "makeConcatWithConstants" <java.lang.String (java.lang.String,java.lang.String)>(v5, "threadDeathWatcher") <java.lang.invoke.StringConcatFactory: java.lang.invoke.CallSite makeConcatWithConstants(java.lang.invoke.MethodHandles$Lookup,java.lang.String,java.lang.invoke.MethodType,java.lang.String,java.lang.Object[])>("\u0001\u0001");
+label1:
+v7 = new io.netty.util.concurrent.DefaultThreadFactory;
+specialinvoke v7.<io.netty.util.concurrent.DefaultThreadFactory: void <init>(java.lang.String,boolean,int,java.lang.ThreadGroup)>(v4, 1, 1, null);
+<io.netty.util.ThreadDeathWatcher: java.util.concurrent.ThreadFactory threadFactory> = v7;
+return;
+}
+}

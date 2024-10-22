@@ -1,0 +1,301 @@
+public class io.netty.handler.codec.compression.SnappyFrameDecoder extends io.netty.handler.codec.ByteToMessageDecoder
+{
+private static final int SNAPPY_IDENTIFIER_LEN;
+private static final int MAX_UNCOMPRESSED_DATA_SIZE;
+private static final int MAX_DECOMPRESSED_DATA_SIZE;
+private static final int MAX_COMPRESSED_CHUNK_SIZE;
+private final io.netty.handler.codec.compression.Snappy snappy;
+private final boolean validateChecksums;
+private boolean started;
+private boolean corrupted;
+private int numBytesToSkip;
+public void <init>()
+{
+io.netty.handler.codec.compression.SnappyFrameDecoder v0;
+v0 := @this: io.netty.handler.codec.compression.SnappyFrameDecoder;
+specialinvoke v0.<io.netty.handler.codec.compression.SnappyFrameDecoder: void <init>(boolean)>(0);
+return;
+}
+public void <init>(boolean)
+{
+io.netty.handler.codec.compression.Snappy v2;
+io.netty.handler.codec.compression.SnappyFrameDecoder v0;
+boolean v1;
+v0 := @this: io.netty.handler.codec.compression.SnappyFrameDecoder;
+v1 := @parameter0: boolean;
+specialinvoke v0.<io.netty.handler.codec.ByteToMessageDecoder: void <init>()>();
+v2 = new io.netty.handler.codec.compression.Snappy;
+specialinvoke v2.<io.netty.handler.codec.compression.Snappy: void <init>()>();
+v0.<io.netty.handler.codec.compression.SnappyFrameDecoder: io.netty.handler.codec.compression.Snappy snappy> = v2;
+v0.<io.netty.handler.codec.compression.SnappyFrameDecoder: boolean validateChecksums> = v1;
+return;
+}
+protected void decode(io.netty.channel.ChannelHandlerContext, io.netty.buffer.ByteBuf, java.util.List) throws java.lang.Exception
+{
+byte v25, v27, v29, v31, v33, v34;
+io.netty.handler.codec.compression.SnappyFrameDecoder$ChunkType v15;
+java.lang.Exception v76;
+java.lang.Throwable v69, v74;
+short v14;
+java.lang.String v22, v41, v42;
+io.netty.buffer.ByteBufAllocator v61;
+int[] v18;
+boolean v35, v4, v43, v47, v53, v63;
+io.netty.handler.codec.compression.Snappy v58, v68, v71, v75;
+java.util.List v3;
+io.netty.handler.codec.compression.DecompressionException v21, v36, v40, v44, v45, v54, v55, v60;
+io.netty.channel.ChannelHandlerContext v1;
+io.netty.buffer.ByteBuf v2, v52, v62, v73;
+int v10, v11, v12, v13, v16, v17, v19, v20, v23, v24, v26, v28, v30, v32, v37, v38, v39, v46, v48, v49, v5, v50, v51, v56, v57, v59, v6, v64, v65, v66, v67, v7, v70, v72, v8, v9;
+io.netty.handler.codec.compression.SnappyFrameDecoder v0;
+v0 := @this: io.netty.handler.codec.compression.SnappyFrameDecoder;
+v1 := @parameter0: io.netty.channel.ChannelHandlerContext;
+v2 := @parameter1: io.netty.buffer.ByteBuf;
+v3 := @parameter2: java.util.List;
+v4 = v0.<io.netty.handler.codec.compression.SnappyFrameDecoder: boolean corrupted>;
+if v4 == 0 goto label01;
+v5 = virtualinvoke v2.<io.netty.buffer.ByteBuf: int readableBytes()>();
+virtualinvoke v2.<io.netty.buffer.ByteBuf: io.netty.buffer.ByteBuf skipBytes(int)>(v5);
+return;
+label01:
+v6 = v0.<io.netty.handler.codec.compression.SnappyFrameDecoder: int numBytesToSkip>;
+if v6 == 0 goto label02;
+v7 = v0.<io.netty.handler.codec.compression.SnappyFrameDecoder: int numBytesToSkip>;
+v8 = virtualinvoke v2.<io.netty.buffer.ByteBuf: int readableBytes()>();
+v9 = staticinvoke <java.lang.Math: int min(int,int)>(v7, v8);
+virtualinvoke v2.<io.netty.buffer.ByteBuf: io.netty.buffer.ByteBuf skipBytes(int)>(v9);
+v10 = v0.<io.netty.handler.codec.compression.SnappyFrameDecoder: int numBytesToSkip>;
+v11 = v10 - v9;
+v0.<io.netty.handler.codec.compression.SnappyFrameDecoder: int numBytesToSkip> = v11;
+return;
+label02:
+v12 = virtualinvoke v2.<io.netty.buffer.ByteBuf: int readerIndex()>();
+v13 = virtualinvoke v2.<io.netty.buffer.ByteBuf: int readableBytes()>();
+if v13 >= 4 goto label04;
+label03:
+return;
+label04:
+v14 = virtualinvoke v2.<io.netty.buffer.ByteBuf: short getUnsignedByte(int)>(v12);
+v15 = staticinvoke <io.netty.handler.codec.compression.SnappyFrameDecoder: io.netty.handler.codec.compression.SnappyFrameDecoder$ChunkType mapChunkType(byte)>(v14);
+v16 = v12 + 1;
+v17 = virtualinvoke v2.<io.netty.buffer.ByteBuf: int getUnsignedMediumLE(int)>(v16);
+v18 = <io.netty.handler.codec.compression.SnappyFrameDecoder$1: int[] $SwitchMap$io$netty$handler$codec$compression$SnappyFrameDecoder$ChunkType>;
+v19 = virtualinvoke v15.<io.netty.handler.codec.compression.SnappyFrameDecoder$ChunkType: int ordinal()>();
+v20 = v18[v19];
+tableswitch(v20)
+{
+case 1: goto label05;
+case 2: goto label07;
+case 3: goto label09;
+case 4: goto label10;
+case 5: goto label17;
+default: goto label36;
+};
+label05:
+if v17 == 6 goto label06;
+v21 = new io.netty.handler.codec.compression.DecompressionException;
+v22 = dynamicinvoke "makeConcatWithConstants" <java.lang.String (int)>(v17) <java.lang.invoke.StringConcatFactory: java.lang.invoke.CallSite makeConcatWithConstants(java.lang.invoke.MethodHandles$Lookup,java.lang.String,java.lang.invoke.MethodType,java.lang.String,java.lang.Object[])>("Unexpected length of stream identifier: \u0001");
+specialinvoke v21.<io.netty.handler.codec.compression.DecompressionException: void <init>(java.lang.String)>(v22);
+throw v21;
+label06:
+if v13 < 10 goto label36;
+virtualinvoke v2.<io.netty.buffer.ByteBuf: io.netty.buffer.ByteBuf skipBytes(int)>(4);
+v23 = virtualinvoke v2.<io.netty.buffer.ByteBuf: int readerIndex()>();
+virtualinvoke v2.<io.netty.buffer.ByteBuf: io.netty.buffer.ByteBuf skipBytes(int)>(6);
+v24 = v23 + 1;
+v25 = virtualinvoke v2.<io.netty.buffer.ByteBuf: byte getByte(int)>(v23);
+staticinvoke <io.netty.handler.codec.compression.SnappyFrameDecoder: void checkByte(byte,byte)>(v25, 115);
+v26 = v24 + 1;
+v27 = virtualinvoke v2.<io.netty.buffer.ByteBuf: byte getByte(int)>(v24);
+staticinvoke <io.netty.handler.codec.compression.SnappyFrameDecoder: void checkByte(byte,byte)>(v27, 78);
+v28 = v26 + 1;
+v29 = virtualinvoke v2.<io.netty.buffer.ByteBuf: byte getByte(int)>(v26);
+staticinvoke <io.netty.handler.codec.compression.SnappyFrameDecoder: void checkByte(byte,byte)>(v29, 97);
+v30 = v28 + 1;
+v31 = virtualinvoke v2.<io.netty.buffer.ByteBuf: byte getByte(int)>(v28);
+staticinvoke <io.netty.handler.codec.compression.SnappyFrameDecoder: void checkByte(byte,byte)>(v31, 80);
+v32 = v30 + 1;
+v33 = virtualinvoke v2.<io.netty.buffer.ByteBuf: byte getByte(int)>(v30);
+staticinvoke <io.netty.handler.codec.compression.SnappyFrameDecoder: void checkByte(byte,byte)>(v33, 112);
+v34 = virtualinvoke v2.<io.netty.buffer.ByteBuf: byte getByte(int)>(v32);
+staticinvoke <io.netty.handler.codec.compression.SnappyFrameDecoder: void checkByte(byte,byte)>(v34, 89);
+v0.<io.netty.handler.codec.compression.SnappyFrameDecoder: boolean started> = 1;
+goto label36;
+label07:
+v35 = v0.<io.netty.handler.codec.compression.SnappyFrameDecoder: boolean started>;
+if v35 != 0 goto label08;
+v36 = new io.netty.handler.codec.compression.DecompressionException;
+specialinvoke v36.<io.netty.handler.codec.compression.DecompressionException: void <init>(java.lang.String)>("Received RESERVED_SKIPPABLE tag before STREAM_IDENTIFIER");
+throw v36;
+label08:
+virtualinvoke v2.<io.netty.buffer.ByteBuf: io.netty.buffer.ByteBuf skipBytes(int)>(4);
+v37 = virtualinvoke v2.<io.netty.buffer.ByteBuf: int readableBytes()>();
+v38 = staticinvoke <java.lang.Math: int min(int,int)>(v17, v37);
+virtualinvoke v2.<io.netty.buffer.ByteBuf: io.netty.buffer.ByteBuf skipBytes(int)>(v38);
+if v38 == v17 goto label36;
+v39 = v17 - v38;
+v0.<io.netty.handler.codec.compression.SnappyFrameDecoder: int numBytesToSkip> = v39;
+goto label36;
+label09:
+v40 = new io.netty.handler.codec.compression.DecompressionException;
+v41 = staticinvoke <java.lang.Integer: java.lang.String toHexString(int)>(v14);
+v42 = dynamicinvoke "makeConcatWithConstants" <java.lang.String (java.lang.String)>(v41) <java.lang.invoke.StringConcatFactory: java.lang.invoke.CallSite makeConcatWithConstants(java.lang.invoke.MethodHandles$Lookup,java.lang.String,java.lang.invoke.MethodType,java.lang.String,java.lang.Object[])>("Found reserved unskippable chunk type: 0x\u0001");
+specialinvoke v40.<io.netty.handler.codec.compression.DecompressionException: void <init>(java.lang.String)>(v42);
+throw v40;
+label10:
+v43 = v0.<io.netty.handler.codec.compression.SnappyFrameDecoder: boolean started>;
+if v43 != 0 goto label11;
+v44 = new io.netty.handler.codec.compression.DecompressionException;
+specialinvoke v44.<io.netty.handler.codec.compression.DecompressionException: void <init>(java.lang.String)>("Received UNCOMPRESSED_DATA tag before STREAM_IDENTIFIER");
+throw v44;
+label11:
+if v17 <= 65540 goto label12;
+v45 = new io.netty.handler.codec.compression.DecompressionException;
+specialinvoke v45.<io.netty.handler.codec.compression.DecompressionException: void <init>(java.lang.String)>("Received UNCOMPRESSED_DATA larger than 65540 bytes");
+throw v45;
+label12:
+v46 = 4 + v17;
+if v13 >= v46 goto label14;
+label13:
+return;
+label14:
+virtualinvoke v2.<io.netty.buffer.ByteBuf: io.netty.buffer.ByteBuf skipBytes(int)>(4);
+v47 = v0.<io.netty.handler.codec.compression.SnappyFrameDecoder: boolean validateChecksums>;
+if v47 == 0 goto label15;
+v48 = virtualinvoke v2.<io.netty.buffer.ByteBuf: int readIntLE()>();
+v49 = virtualinvoke v2.<io.netty.buffer.ByteBuf: int readerIndex()>();
+v50 = v17 - 4;
+staticinvoke <io.netty.handler.codec.compression.Snappy: void validateChecksum(int,io.netty.buffer.ByteBuf,int,int)>(v48, v2, v49, v50);
+goto label16;
+label15:
+virtualinvoke v2.<io.netty.buffer.ByteBuf: io.netty.buffer.ByteBuf skipBytes(int)>(4);
+label16:
+v51 = v17 - 4;
+v52 = virtualinvoke v2.<io.netty.buffer.ByteBuf: io.netty.buffer.ByteBuf readRetainedSlice(int)>(v51);
+interfaceinvoke v3.<java.util.List: boolean add(java.lang.Object)>(v52);
+goto label36;
+label17:
+v53 = v0.<io.netty.handler.codec.compression.SnappyFrameDecoder: boolean started>;
+if v53 != 0 goto label18;
+v54 = new io.netty.handler.codec.compression.DecompressionException;
+specialinvoke v54.<io.netty.handler.codec.compression.DecompressionException: void <init>(java.lang.String)>("Received COMPRESSED_DATA tag before STREAM_IDENTIFIER");
+throw v54;
+label18:
+if v17 <= 16777215 goto label19;
+v55 = new io.netty.handler.codec.compression.DecompressionException;
+specialinvoke v55.<io.netty.handler.codec.compression.DecompressionException: void <init>(java.lang.String)>("Received COMPRESSED_DATA that contains chunk that exceeds 16777215 bytes");
+throw v55;
+label19:
+v56 = 4 + v17;
+if v13 >= v56 goto label21;
+label20:
+return;
+label21:
+virtualinvoke v2.<io.netty.buffer.ByteBuf: io.netty.buffer.ByteBuf skipBytes(int)>(4);
+v57 = virtualinvoke v2.<io.netty.buffer.ByteBuf: int readIntLE()>();
+v58 = v0.<io.netty.handler.codec.compression.SnappyFrameDecoder: io.netty.handler.codec.compression.Snappy snappy>;
+v59 = virtualinvoke v58.<io.netty.handler.codec.compression.Snappy: int getPreamble(io.netty.buffer.ByteBuf)>(v2);
+if v59 <= 65536 goto label22;
+v60 = new io.netty.handler.codec.compression.DecompressionException;
+specialinvoke v60.<io.netty.handler.codec.compression.DecompressionException: void <init>(java.lang.String)>("Received COMPRESSED_DATA that contains uncompressed data that exceeds 65536 bytes");
+throw v60;
+label22:
+v61 = interfaceinvoke v1.<io.netty.channel.ChannelHandlerContext: io.netty.buffer.ByteBufAllocator alloc()>();
+v62 = interfaceinvoke v61.<io.netty.buffer.ByteBufAllocator: io.netty.buffer.ByteBuf buffer(int,int)>(v59, 65536);
+label23:
+v63 = v0.<io.netty.handler.codec.compression.SnappyFrameDecoder: boolean validateChecksums>;
+if v63 == 0 goto label28;
+v64 = virtualinvoke v2.<io.netty.buffer.ByteBuf: int writerIndex()>();
+label24:
+v65 = virtualinvoke v2.<io.netty.buffer.ByteBuf: int readerIndex()>();
+v66 = v65 + v17;
+v67 = v66 - 4;
+virtualinvoke v2.<io.netty.buffer.ByteBuf: io.netty.buffer.ByteBuf writerIndex(int)>(v67);
+v68 = v0.<io.netty.handler.codec.compression.SnappyFrameDecoder: io.netty.handler.codec.compression.Snappy snappy>;
+virtualinvoke v68.<io.netty.handler.codec.compression.Snappy: void decode(io.netty.buffer.ByteBuf,io.netty.buffer.ByteBuf)>(v2, v62);
+label25:
+virtualinvoke v2.<io.netty.buffer.ByteBuf: io.netty.buffer.ByteBuf writerIndex(int)>(v64);
+goto label27;
+label26:
+v69 := @caughtexception;
+virtualinvoke v2.<io.netty.buffer.ByteBuf: io.netty.buffer.ByteBuf writerIndex(int)>(v64);
+throw v69;
+label27:
+v70 = virtualinvoke v62.<io.netty.buffer.ByteBuf: int writerIndex()>();
+staticinvoke <io.netty.handler.codec.compression.Snappy: void validateChecksum(int,io.netty.buffer.ByteBuf,int,int)>(v57, v62, 0, v70);
+goto label29;
+label28:
+v71 = v0.<io.netty.handler.codec.compression.SnappyFrameDecoder: io.netty.handler.codec.compression.Snappy snappy>;
+v72 = v17 - 4;
+v73 = virtualinvoke v2.<io.netty.buffer.ByteBuf: io.netty.buffer.ByteBuf readSlice(int)>(v72);
+virtualinvoke v71.<io.netty.handler.codec.compression.Snappy: void decode(io.netty.buffer.ByteBuf,io.netty.buffer.ByteBuf)>(v73, v62);
+label29:
+interfaceinvoke v3.<java.util.List: boolean add(java.lang.Object)>(v62);
+label30:
+goto label33;
+label31:
+v74 := @caughtexception;
+if v62 == null goto label32;
+virtualinvoke v62.<io.netty.buffer.ByteBuf: boolean release()>();
+label32:
+throw v74;
+label33:
+v75 = v0.<io.netty.handler.codec.compression.SnappyFrameDecoder: io.netty.handler.codec.compression.Snappy snappy>;
+virtualinvoke v75.<io.netty.handler.codec.compression.Snappy: void reset()>();
+label34:
+goto label36;
+label35:
+v76 := @caughtexception;
+v0.<io.netty.handler.codec.compression.SnappyFrameDecoder: boolean corrupted> = 1;
+throw v76;
+label36:
+return;
+catch java.lang.Throwable from label24 to label25 with label26;
+catch java.lang.Throwable from label23 to label30 with label31;
+catch java.lang.Exception from label02 to label03 with label35;
+catch java.lang.Exception from label04 to label13 with label35;
+catch java.lang.Exception from label14 to label20 with label35;
+catch java.lang.Exception from label21 to label34 with label35;
+}
+private static void checkByte(byte, byte)
+{
+io.netty.handler.codec.compression.DecompressionException v2;
+byte v0, v1;
+v0 := @parameter0: byte;
+v1 := @parameter1: byte;
+if v0 == v1 goto label1;
+v2 = new io.netty.handler.codec.compression.DecompressionException;
+specialinvoke v2.<io.netty.handler.codec.compression.DecompressionException: void <init>(java.lang.String)>("Unexpected stream identifier contents. Mismatched snappy protocol version?");
+throw v2;
+label1:
+return;
+}
+private static io.netty.handler.codec.compression.SnappyFrameDecoder$ChunkType mapChunkType(byte)
+{
+io.netty.handler.codec.compression.SnappyFrameDecoder$ChunkType v1, v2, v4, v6, v7;
+short v5;
+byte v0;
+int v3;
+v0 := @parameter0: byte;
+if v0 != 0 goto label1;
+v1 = <io.netty.handler.codec.compression.SnappyFrameDecoder$ChunkType: io.netty.handler.codec.compression.SnappyFrameDecoder$ChunkType COMPRESSED_DATA>;
+return v1;
+label1:
+if v0 != 1 goto label2;
+v2 = <io.netty.handler.codec.compression.SnappyFrameDecoder$ChunkType: io.netty.handler.codec.compression.SnappyFrameDecoder$ChunkType UNCOMPRESSED_DATA>;
+return v2;
+label2:
+v3 = (int) -1;
+if v0 != v3 goto label3;
+v4 = <io.netty.handler.codec.compression.SnappyFrameDecoder$ChunkType: io.netty.handler.codec.compression.SnappyFrameDecoder$ChunkType STREAM_IDENTIFIER>;
+return v4;
+label3:
+v5 = v0 & 128;
+if v5 != 128 goto label4;
+v6 = <io.netty.handler.codec.compression.SnappyFrameDecoder$ChunkType: io.netty.handler.codec.compression.SnappyFrameDecoder$ChunkType RESERVED_SKIPPABLE>;
+return v6;
+label4:
+v7 = <io.netty.handler.codec.compression.SnappyFrameDecoder$ChunkType: io.netty.handler.codec.compression.SnappyFrameDecoder$ChunkType RESERVED_UNSKIPPABLE>;
+return v7;
+}
+}

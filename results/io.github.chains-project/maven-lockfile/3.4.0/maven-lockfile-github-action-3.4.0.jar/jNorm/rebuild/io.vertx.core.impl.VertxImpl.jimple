@@ -1,0 +1,2014 @@
+public class io.vertx.core.impl.VertxImpl extends java.lang.Object implements io.vertx.core.impl.VertxInternal, io.vertx.core.spi.metrics.MetricsProvider
+{
+static final java.lang.ThreadLocal nonVertxContextDispatch;
+private static final io.vertx.core.impl.logging.Logger log;
+private static final java.lang.String CLUSTER_MAP_NAME;
+private static final java.lang.String NETTY_IO_RATIO_PROPERTY_NAME;
+private static final int NETTY_IO_RATIO;
+private final io.vertx.core.file.FileSystem fileSystem;
+private final io.vertx.core.shareddata.SharedData sharedData;
+private final io.vertx.core.spi.metrics.VertxMetrics metrics;
+private final java.util.concurrent.ConcurrentMap timeouts;
+private final java.util.concurrent.atomic.AtomicLong timeoutCounter;
+private final io.vertx.core.spi.cluster.ClusterManager clusterManager;
+private final io.vertx.core.spi.cluster.NodeSelector nodeSelector;
+private final io.vertx.core.impl.DeploymentManager deploymentManager;
+private final io.vertx.core.impl.VerticleManager verticleManager;
+private final io.vertx.core.spi.file.FileResolver fileResolver;
+private final java.util.Map sharedHttpServers;
+private final java.util.Map sharedNetServers;
+final io.vertx.core.impl.WorkerPool workerPool;
+final io.vertx.core.impl.WorkerPool internalWorkerPool;
+private final io.vertx.core.spi.VertxThreadFactory threadFactory;
+private final io.vertx.core.spi.ExecutorServiceFactory executorServiceFactory;
+private final java.util.concurrent.ThreadFactory eventLoopThreadFactory;
+private final io.netty.channel.EventLoopGroup eventLoopGroup;
+private final io.netty.channel.EventLoopGroup acceptorEventLoopGroup;
+private final io.vertx.core.impl.btc.BlockedThreadChecker checker;
+private final io.vertx.core.impl.AddressResolver addressResolver;
+private final io.vertx.core.dns.AddressResolverOptions addressResolverOptions;
+private final io.vertx.core.eventbus.impl.EventBusInternal eventBus;
+private volatile io.vertx.core.impl.HAManager haManager;
+private boolean closed;
+private volatile io.vertx.core.Handler exceptionHandler;
+private final java.util.Map namedWorkerPools;
+private final int defaultWorkerPoolSize;
+private final long maxWorkerExecTime;
+private final java.util.concurrent.TimeUnit maxWorkerExecTimeUnit;
+private final long maxEventLoopExecTime;
+private final java.util.concurrent.TimeUnit maxEventLoopExecTimeUnit;
+private final io.vertx.core.impl.CloseFuture closeFuture;
+private final io.vertx.core.spi.transport.Transport transport;
+private final io.vertx.core.spi.tracing.VertxTracer tracer;
+private final java.lang.ThreadLocal stickyContext;
+private final boolean disableTCCL;
+private final java.lang.Boolean useDaemonThread;
+void <init>(io.vertx.core.VertxOptions, io.vertx.core.spi.cluster.ClusterManager, io.vertx.core.spi.cluster.NodeSelector, io.vertx.core.spi.metrics.VertxMetrics, io.vertx.core.spi.tracing.VertxTracer, io.vertx.core.spi.transport.Transport, io.vertx.core.spi.file.FileResolver, io.vertx.core.spi.VertxThreadFactory, io.vertx.core.spi.ExecutorServiceFactory)
+{
+java.lang.Integer v32, v33, v39, v40;
+io.vertx.core.impl.logging.Logger v17, v44;
+io.vertx.core.impl.VertxImpl v0;
+io.vertx.core.spi.metrics.PoolMetrics v36, v37, v42;
+io.vertx.core.impl.btc.BlockedThreadChecker v21;
+long v22, v24, v26, v30, v45;
+io.vertx.core.spi.metrics.VertxMetrics v4;
+io.vertx.core.spi.transport.Transport v6;
+io.vertx.core.impl.DeploymentManager v67, v69;
+io.vertx.core.spi.cluster.NodeSelector v3;
+io.vertx.core.spi.ExecutorServiceFactory v9;
+java.util.concurrent.atomic.AtomicLong v12;
+io.vertx.core.spi.VertxThreadFactory v8;
+io.vertx.core.dns.AddressResolverOptions v58, v60;
+io.vertx.core.Context v16;
+java.util.concurrent.ThreadFactory v28, v31, v38, v47, v49;
+boolean v57;
+java.lang.ThreadLocal v15;
+io.vertx.core.spi.cluster.ClusterManager v2;
+java.util.concurrent.ConcurrentHashMap v11;
+io.vertx.core.VertxOptions v1;
+io.vertx.core.impl.CloseFuture v43;
+io.vertx.core.file.FileSystem v10;
+java.util.HashMap v13, v14, v54;
+io.vertx.core.shareddata.impl.SharedDataImpl v66;
+int v19, v20, v35, v48, v50, v56;
+io.vertx.core.spi.file.FileResolver v7;
+java.lang.Boolean v18;
+java.util.concurrent.ExecutorService v34, v41;
+io.vertx.core.eventbus.impl.EventBusImpl v64, v65;
+io.netty.channel.EventLoopGroup v51, v52;
+io.vertx.core.impl.AddressResolver v59;
+io.vertx.core.spi.tracing.VertxTracer v5, v61, v62;
+io.vertx.core.impl.WorkerPool v53, v55;
+java.util.concurrent.TimeUnit v23, v25, v27, v29, v46;
+io.vertx.core.impl.VerticleManager v68;
+io.vertx.core.eventbus.impl.clustered.ClusteredEventBus v63;
+v0 := @this: io.vertx.core.impl.VertxImpl;
+v1 := @parameter0: io.vertx.core.VertxOptions;
+v2 := @parameter1: io.vertx.core.spi.cluster.ClusterManager;
+v3 := @parameter2: io.vertx.core.spi.cluster.NodeSelector;
+v4 := @parameter3: io.vertx.core.spi.metrics.VertxMetrics;
+v5 := @parameter4: io.vertx.core.spi.tracing.VertxTracer;
+v6 := @parameter5: io.vertx.core.spi.transport.Transport;
+v7 := @parameter6: io.vertx.core.spi.file.FileResolver;
+v8 := @parameter7: io.vertx.core.spi.VertxThreadFactory;
+v9 := @parameter8: io.vertx.core.spi.ExecutorServiceFactory;
+specialinvoke v0.<java.lang.Object: void <init>()>();
+v10 = virtualinvoke v0.<io.vertx.core.impl.VertxImpl: io.vertx.core.file.FileSystem getFileSystem()>();
+v0.<io.vertx.core.impl.VertxImpl: io.vertx.core.file.FileSystem fileSystem> = v10;
+v11 = new java.util.concurrent.ConcurrentHashMap;
+specialinvoke v11.<java.util.concurrent.ConcurrentHashMap: void <init>()>();
+v0.<io.vertx.core.impl.VertxImpl: java.util.concurrent.ConcurrentMap timeouts> = v11;
+v12 = new java.util.concurrent.atomic.AtomicLong;
+specialinvoke v12.<java.util.concurrent.atomic.AtomicLong: void <init>(long)>(0L);
+v0.<io.vertx.core.impl.VertxImpl: java.util.concurrent.atomic.AtomicLong timeoutCounter> = v12;
+v13 = new java.util.HashMap;
+specialinvoke v13.<java.util.HashMap: void <init>()>();
+v0.<io.vertx.core.impl.VertxImpl: java.util.Map sharedHttpServers> = v13;
+v14 = new java.util.HashMap;
+specialinvoke v14.<java.util.HashMap: void <init>()>();
+v0.<io.vertx.core.impl.VertxImpl: java.util.Map sharedNetServers> = v14;
+v15 = new java.lang.ThreadLocal;
+specialinvoke v15.<java.lang.ThreadLocal: void <init>()>();
+v0.<io.vertx.core.impl.VertxImpl: java.lang.ThreadLocal stickyContext> = v15;
+v16 = staticinvoke <io.vertx.core.Vertx: io.vertx.core.Context currentContext()>();
+if v16 == null goto label1;
+v17 = <io.vertx.core.impl.VertxImpl: io.vertx.core.impl.logging.Logger log>;
+interfaceinvoke v17.<io.vertx.core.impl.logging.Logger: void warn(java.lang.Object)>("You\'re already on a Vert.x context, are you sure you want to create a new Vertx instance?");
+label1:
+v18 = virtualinvoke v1.<io.vertx.core.VertxOptions: java.lang.Boolean getUseDaemonThread()>();
+v19 = virtualinvoke v1.<io.vertx.core.VertxOptions: int getWorkerPoolSize()>();
+v20 = virtualinvoke v1.<io.vertx.core.VertxOptions: int getInternalBlockingPoolSize()>();
+v21 = new io.vertx.core.impl.btc.BlockedThreadChecker;
+v22 = virtualinvoke v1.<io.vertx.core.VertxOptions: long getBlockedThreadCheckInterval()>();
+v23 = virtualinvoke v1.<io.vertx.core.VertxOptions: java.util.concurrent.TimeUnit getBlockedThreadCheckIntervalUnit()>();
+v24 = virtualinvoke v1.<io.vertx.core.VertxOptions: long getWarningExceptionTime()>();
+v25 = virtualinvoke v1.<io.vertx.core.VertxOptions: java.util.concurrent.TimeUnit getWarningExceptionTimeUnit()>();
+specialinvoke v21.<io.vertx.core.impl.btc.BlockedThreadChecker: void <init>(long,java.util.concurrent.TimeUnit,long,java.util.concurrent.TimeUnit)>(v22, v23, v24, v25);
+v26 = virtualinvoke v1.<io.vertx.core.VertxOptions: long getMaxEventLoopExecuteTime()>();
+v27 = virtualinvoke v1.<io.vertx.core.VertxOptions: java.util.concurrent.TimeUnit getMaxEventLoopExecuteTimeUnit()>();
+v28 = staticinvoke <io.vertx.core.impl.VertxImpl: java.util.concurrent.ThreadFactory createThreadFactory(io.vertx.core.spi.VertxThreadFactory,io.vertx.core.impl.btc.BlockedThreadChecker,java.lang.Boolean,long,java.util.concurrent.TimeUnit,java.lang.String,boolean)>(v8, v21, v18, v26, v27, "vert.x-acceptor-thread-", 0);
+v29 = virtualinvoke v1.<io.vertx.core.VertxOptions: java.util.concurrent.TimeUnit getMaxWorkerExecuteTimeUnit()>();
+v30 = virtualinvoke v1.<io.vertx.core.VertxOptions: long getMaxWorkerExecuteTime()>();
+v31 = staticinvoke <io.vertx.core.impl.VertxImpl: java.util.concurrent.ThreadFactory createThreadFactory(io.vertx.core.spi.VertxThreadFactory,io.vertx.core.impl.btc.BlockedThreadChecker,java.lang.Boolean,long,java.util.concurrent.TimeUnit,java.lang.String,boolean)>(v8, v21, v18, v30, v29, "vert.x-worker-thread-", 1);
+v32 = staticinvoke <java.lang.Integer: java.lang.Integer valueOf(int)>(v19);
+v33 = staticinvoke <java.lang.Integer: java.lang.Integer valueOf(int)>(v19);
+v34 = interfaceinvoke v9.<io.vertx.core.spi.ExecutorServiceFactory: java.util.concurrent.ExecutorService createExecutor(java.util.concurrent.ThreadFactory,java.lang.Integer,java.lang.Integer)>(v31, v32, v33);
+if v4 == null goto label2;
+v35 = virtualinvoke v1.<io.vertx.core.VertxOptions: int getWorkerPoolSize()>();
+v36 = interfaceinvoke v4.<io.vertx.core.spi.metrics.VertxMetrics: io.vertx.core.spi.metrics.PoolMetrics createPoolMetrics(java.lang.String,java.lang.String,int)>("worker", "vert.x-worker-thread", v35);
+goto label3;
+label2:
+v36 = null;
+label3:
+v37 = v36;
+v38 = staticinvoke <io.vertx.core.impl.VertxImpl: java.util.concurrent.ThreadFactory createThreadFactory(io.vertx.core.spi.VertxThreadFactory,io.vertx.core.impl.btc.BlockedThreadChecker,java.lang.Boolean,long,java.util.concurrent.TimeUnit,java.lang.String,boolean)>(v8, v21, v18, v30, v29, "vert.x-internal-blocking-", 1);
+v39 = staticinvoke <java.lang.Integer: java.lang.Integer valueOf(int)>(v20);
+v40 = staticinvoke <java.lang.Integer: java.lang.Integer valueOf(int)>(v20);
+v41 = interfaceinvoke v9.<io.vertx.core.spi.ExecutorServiceFactory: java.util.concurrent.ExecutorService createExecutor(java.util.concurrent.ThreadFactory,java.lang.Integer,java.lang.Integer)>(v38, v39, v40);
+if v4 == null goto label4;
+v42 = interfaceinvoke v4.<io.vertx.core.spi.metrics.VertxMetrics: io.vertx.core.spi.metrics.PoolMetrics createPoolMetrics(java.lang.String,java.lang.String,int)>("worker", "vert.x-internal-blocking", v20);
+goto label5;
+label4:
+v42 = null;
+label5:
+v43 = new io.vertx.core.impl.CloseFuture;
+v44 = <io.vertx.core.impl.VertxImpl: io.vertx.core.impl.logging.Logger log>;
+specialinvoke v43.<io.vertx.core.impl.CloseFuture: void <init>(io.vertx.core.impl.logging.Logger)>(v44);
+v0.<io.vertx.core.impl.VertxImpl: io.vertx.core.impl.CloseFuture closeFuture> = v43;
+v0.<io.vertx.core.impl.VertxImpl: long maxEventLoopExecTime> = v26;
+v0.<io.vertx.core.impl.VertxImpl: java.util.concurrent.TimeUnit maxEventLoopExecTimeUnit> = v27;
+v45 = v0.<io.vertx.core.impl.VertxImpl: long maxEventLoopExecTime>;
+v46 = v0.<io.vertx.core.impl.VertxImpl: java.util.concurrent.TimeUnit maxEventLoopExecTimeUnit>;
+v47 = staticinvoke <io.vertx.core.impl.VertxImpl: java.util.concurrent.ThreadFactory createThreadFactory(io.vertx.core.spi.VertxThreadFactory,io.vertx.core.impl.btc.BlockedThreadChecker,java.lang.Boolean,long,java.util.concurrent.TimeUnit,java.lang.String,boolean)>(v8, v21, v18, v45, v46, "vert.x-eventloop-thread-", 0);
+v0.<io.vertx.core.impl.VertxImpl: java.util.concurrent.ThreadFactory eventLoopThreadFactory> = v47;
+v48 = virtualinvoke v1.<io.vertx.core.VertxOptions: int getEventLoopPoolSize()>();
+v49 = v0.<io.vertx.core.impl.VertxImpl: java.util.concurrent.ThreadFactory eventLoopThreadFactory>;
+v50 = <io.vertx.core.impl.VertxImpl: int NETTY_IO_RATIO>;
+v51 = interfaceinvoke v6.<io.vertx.core.spi.transport.Transport: io.netty.channel.EventLoopGroup eventLoopGroup(int,int,java.util.concurrent.ThreadFactory,int)>(1, v48, v49, v50);
+v0.<io.vertx.core.impl.VertxImpl: io.netty.channel.EventLoopGroup eventLoopGroup> = v51;
+v52 = interfaceinvoke v6.<io.vertx.core.spi.transport.Transport: io.netty.channel.EventLoopGroup eventLoopGroup(int,int,java.util.concurrent.ThreadFactory,int)>(0, 1, v28, 100);
+v0.<io.vertx.core.impl.VertxImpl: io.netty.channel.EventLoopGroup acceptorEventLoopGroup> = v52;
+v53 = new io.vertx.core.impl.WorkerPool;
+specialinvoke v53.<io.vertx.core.impl.WorkerPool: void <init>(java.util.concurrent.ExecutorService,io.vertx.core.spi.metrics.PoolMetrics)>(v41, v42);
+v0.<io.vertx.core.impl.VertxImpl: io.vertx.core.impl.WorkerPool internalWorkerPool> = v53;
+v54 = new java.util.HashMap;
+specialinvoke v54.<java.util.HashMap: void <init>()>();
+v0.<io.vertx.core.impl.VertxImpl: java.util.Map namedWorkerPools> = v54;
+v55 = new io.vertx.core.impl.WorkerPool;
+specialinvoke v55.<io.vertx.core.impl.WorkerPool: void <init>(java.util.concurrent.ExecutorService,io.vertx.core.spi.metrics.PoolMetrics)>(v34, v37);
+v0.<io.vertx.core.impl.VertxImpl: io.vertx.core.impl.WorkerPool workerPool> = v55;
+v56 = virtualinvoke v1.<io.vertx.core.VertxOptions: int getWorkerPoolSize()>();
+v0.<io.vertx.core.impl.VertxImpl: int defaultWorkerPoolSize> = v56;
+v0.<io.vertx.core.impl.VertxImpl: long maxWorkerExecTime> = v30;
+v0.<io.vertx.core.impl.VertxImpl: java.util.concurrent.TimeUnit maxWorkerExecTimeUnit> = v29;
+v57 = virtualinvoke v1.<io.vertx.core.VertxOptions: boolean getDisableTCCL()>();
+v0.<io.vertx.core.impl.VertxImpl: boolean disableTCCL> = v57;
+v0.<io.vertx.core.impl.VertxImpl: io.vertx.core.impl.btc.BlockedThreadChecker checker> = v21;
+v0.<io.vertx.core.impl.VertxImpl: java.lang.Boolean useDaemonThread> = v18;
+v0.<io.vertx.core.impl.VertxImpl: io.vertx.core.spi.ExecutorServiceFactory executorServiceFactory> = v9;
+v0.<io.vertx.core.impl.VertxImpl: io.vertx.core.spi.VertxThreadFactory threadFactory> = v8;
+v0.<io.vertx.core.impl.VertxImpl: io.vertx.core.spi.metrics.VertxMetrics metrics> = v4;
+v0.<io.vertx.core.impl.VertxImpl: io.vertx.core.spi.transport.Transport transport> = v6;
+v0.<io.vertx.core.impl.VertxImpl: io.vertx.core.spi.file.FileResolver fileResolver> = v7;
+v58 = virtualinvoke v1.<io.vertx.core.VertxOptions: io.vertx.core.dns.AddressResolverOptions getAddressResolverOptions()>();
+v0.<io.vertx.core.impl.VertxImpl: io.vertx.core.dns.AddressResolverOptions addressResolverOptions> = v58;
+v59 = new io.vertx.core.impl.AddressResolver;
+v60 = virtualinvoke v1.<io.vertx.core.VertxOptions: io.vertx.core.dns.AddressResolverOptions getAddressResolverOptions()>();
+specialinvoke v59.<io.vertx.core.impl.AddressResolver: void <init>(io.vertx.core.Vertx,io.vertx.core.dns.AddressResolverOptions)>(v0, v60);
+v0.<io.vertx.core.impl.VertxImpl: io.vertx.core.impl.AddressResolver addressResolver> = v59;
+v61 = <io.vertx.core.spi.tracing.VertxTracer: io.vertx.core.spi.tracing.VertxTracer NOOP>;
+if v5 != v61 goto label6;
+v62 = null;
+goto label7;
+label6:
+v62 = v5;
+label7:
+v0.<io.vertx.core.impl.VertxImpl: io.vertx.core.spi.tracing.VertxTracer tracer> = v62;
+v0.<io.vertx.core.impl.VertxImpl: io.vertx.core.spi.cluster.ClusterManager clusterManager> = v2;
+v0.<io.vertx.core.impl.VertxImpl: io.vertx.core.spi.cluster.NodeSelector nodeSelector> = v3;
+if v2 == null goto label8;
+v63 = new io.vertx.core.eventbus.impl.clustered.ClusteredEventBus;
+v64 = v63;
+specialinvoke v63.<io.vertx.core.eventbus.impl.clustered.ClusteredEventBus: void <init>(io.vertx.core.impl.VertxInternal,io.vertx.core.VertxOptions,io.vertx.core.spi.cluster.ClusterManager,io.vertx.core.spi.cluster.NodeSelector)>(v0, v1, v2, v3);
+goto label9;
+label8:
+v65 = new io.vertx.core.eventbus.impl.EventBusImpl;
+v64 = v65;
+specialinvoke v65.<io.vertx.core.eventbus.impl.EventBusImpl: void <init>(io.vertx.core.impl.VertxInternal)>(v0);
+label9:
+v0.<io.vertx.core.impl.VertxImpl: io.vertx.core.eventbus.impl.EventBusInternal eventBus> = v64;
+v66 = new io.vertx.core.shareddata.impl.SharedDataImpl;
+specialinvoke v66.<io.vertx.core.shareddata.impl.SharedDataImpl: void <init>(io.vertx.core.impl.VertxInternal,io.vertx.core.spi.cluster.ClusterManager)>(v0, v2);
+v0.<io.vertx.core.impl.VertxImpl: io.vertx.core.shareddata.SharedData sharedData> = v66;
+v67 = new io.vertx.core.impl.DeploymentManager;
+specialinvoke v67.<io.vertx.core.impl.DeploymentManager: void <init>(io.vertx.core.impl.VertxInternal)>(v0);
+v0.<io.vertx.core.impl.VertxImpl: io.vertx.core.impl.DeploymentManager deploymentManager> = v67;
+v68 = new io.vertx.core.impl.VerticleManager;
+v69 = v0.<io.vertx.core.impl.VertxImpl: io.vertx.core.impl.DeploymentManager deploymentManager>;
+specialinvoke v68.<io.vertx.core.impl.VerticleManager: void <init>(io.vertx.core.impl.VertxInternal,io.vertx.core.impl.DeploymentManager)>(v0, v69);
+v0.<io.vertx.core.impl.VertxImpl: io.vertx.core.impl.VerticleManager verticleManager> = v68;
+return;
+}
+void init()
+{
+io.vertx.core.impl.VertxImpl v0;
+io.vertx.core.Promise v2;
+io.vertx.core.eventbus.impl.EventBusInternal v1;
+io.vertx.core.spi.metrics.VertxMetrics v3, v4;
+v0 := @this: io.vertx.core.impl.VertxImpl;
+v1 = v0.<io.vertx.core.impl.VertxImpl: io.vertx.core.eventbus.impl.EventBusInternal eventBus>;
+v2 = staticinvoke <io.vertx.core.Promise: io.vertx.core.Promise promise()>();
+interfaceinvoke v1.<io.vertx.core.eventbus.impl.EventBusInternal: void start(io.vertx.core.Promise)>(v2);
+v3 = v0.<io.vertx.core.impl.VertxImpl: io.vertx.core.spi.metrics.VertxMetrics metrics>;
+if v3 == null goto label1;
+v4 = v0.<io.vertx.core.impl.VertxImpl: io.vertx.core.spi.metrics.VertxMetrics metrics>;
+interfaceinvoke v4.<io.vertx.core.spi.metrics.VertxMetrics: void vertxCreated(io.vertx.core.Vertx)>(v0);
+label1:
+return;
+}
+void initClustered(io.vertx.core.VertxOptions, io.vertx.core.Handler)
+{
+io.vertx.core.impl.VertxImpl v0;
+io.vertx.core.impl.future.PromiseInternal v8;
+io.vertx.core.spi.cluster.NodeSelector v3, v6;
+io.vertx.core.spi.cluster.ClusterManager v14, v4, v5;
+io.vertx.core.Promise v11;
+io.vertx.core.VertxOptions v1;
+io.vertx.core.impl.ContextInternal v7;
+io.vertx.core.Future v12, v9;
+io.vertx.core.Handler v10, v13, v2;
+v0 := @this: io.vertx.core.impl.VertxImpl;
+v1 := @parameter0: io.vertx.core.VertxOptions;
+v2 := @parameter1: io.vertx.core.Handler;
+v3 = v0.<io.vertx.core.impl.VertxImpl: io.vertx.core.spi.cluster.NodeSelector nodeSelector>;
+v4 = v0.<io.vertx.core.impl.VertxImpl: io.vertx.core.spi.cluster.ClusterManager clusterManager>;
+interfaceinvoke v3.<io.vertx.core.spi.cluster.NodeSelector: void init(io.vertx.core.Vertx,io.vertx.core.spi.cluster.ClusterManager)>(v0, v4);
+v5 = v0.<io.vertx.core.impl.VertxImpl: io.vertx.core.spi.cluster.ClusterManager clusterManager>;
+v6 = v0.<io.vertx.core.impl.VertxImpl: io.vertx.core.spi.cluster.NodeSelector nodeSelector>;
+interfaceinvoke v5.<io.vertx.core.spi.cluster.ClusterManager: void init(io.vertx.core.Vertx,io.vertx.core.spi.cluster.NodeSelector)>(v0, v6);
+v7 = virtualinvoke v0.<io.vertx.core.impl.VertxImpl: io.vertx.core.impl.ContextInternal getOrCreateContext()>();
+v8 = interfaceinvoke v7.<io.vertx.core.impl.ContextInternal: io.vertx.core.impl.future.PromiseInternal promise()>();
+v9 = interfaceinvoke v8.<io.vertx.core.Promise: io.vertx.core.Future future()>();
+v10 = staticinvoke <io.vertx.core.impl.VertxImpl$lambda_initClustered_1__1474: io.vertx.core.Handler bootstrap$(io.vertx.core.impl.VertxImpl,io.vertx.core.Handler)>(v0, v2);
+interfaceinvoke v9.<io.vertx.core.Future: io.vertx.core.Future onComplete(io.vertx.core.Handler)>(v10);
+v11 = staticinvoke <io.vertx.core.Promise: io.vertx.core.Promise promise()>();
+v12 = interfaceinvoke v11.<io.vertx.core.Promise: io.vertx.core.Future future()>();
+v13 = staticinvoke <io.vertx.core.impl.VertxImpl$lambda_initClustered_2__1475: io.vertx.core.Handler bootstrap$(io.vertx.core.impl.VertxImpl,io.vertx.core.VertxOptions,io.vertx.core.Promise)>(v0, v1, v8);
+interfaceinvoke v12.<io.vertx.core.Future: io.vertx.core.Future onComplete(io.vertx.core.Handler)>(v13);
+v14 = v0.<io.vertx.core.impl.VertxImpl: io.vertx.core.spi.cluster.ClusterManager clusterManager>;
+interfaceinvoke v14.<io.vertx.core.spi.cluster.ClusterManager: void join(io.vertx.core.Promise)>(v11);
+return;
+}
+private void createHaManager(io.vertx.core.VertxOptions, io.vertx.core.Promise)
+{
+io.vertx.core.impl.VertxImpl v0;
+io.vertx.core.Promise v2;
+io.vertx.core.VertxOptions v1;
+io.vertx.core.Handler v4, v5;
+boolean v3;
+v0 := @this: io.vertx.core.impl.VertxImpl;
+v1 := @parameter0: io.vertx.core.VertxOptions;
+v2 := @parameter1: io.vertx.core.Promise;
+v3 = virtualinvoke v1.<io.vertx.core.VertxOptions: boolean isHAEnabled()>();
+if v3 == 0 goto label1;
+v4 = staticinvoke <io.vertx.core.impl.VertxImpl$lambda_createHaManager_3__1476: io.vertx.core.Handler bootstrap$(io.vertx.core.impl.VertxImpl,io.vertx.core.VertxOptions)>(v0, v1);
+v5 = staticinvoke <io.vertx.core.impl.VertxImpl$lambda_createHaManager_4__1477: io.vertx.core.Handler bootstrap$(io.vertx.core.impl.VertxImpl,io.vertx.core.Promise)>(v0, v2);
+virtualinvoke v0.<io.vertx.core.impl.VertxImpl: void executeBlocking(io.vertx.core.Handler,boolean,io.vertx.core.Handler)>(v4, 0, v5);
+goto label2;
+label1:
+specialinvoke v0.<io.vertx.core.impl.VertxImpl: void startEventBus(boolean,io.vertx.core.Promise)>(0, v2);
+label2:
+return;
+}
+private void startEventBus(boolean, io.vertx.core.Promise)
+{
+io.vertx.core.impl.VertxImpl v0;
+io.vertx.core.Promise v2, v3;
+io.vertx.core.eventbus.impl.EventBusInternal v4;
+io.vertx.core.Handler v6;
+io.vertx.core.Future v5;
+boolean v1;
+v0 := @this: io.vertx.core.impl.VertxImpl;
+v1 := @parameter0: boolean;
+v2 := @parameter1: io.vertx.core.Promise;
+v3 = staticinvoke <io.vertx.core.Promise: io.vertx.core.Promise promise()>();
+v4 = v0.<io.vertx.core.impl.VertxImpl: io.vertx.core.eventbus.impl.EventBusInternal eventBus>;
+interfaceinvoke v4.<io.vertx.core.eventbus.impl.EventBusInternal: void start(io.vertx.core.Promise)>(v3);
+v5 = interfaceinvoke v3.<io.vertx.core.Promise: io.vertx.core.Future future()>();
+v6 = staticinvoke <io.vertx.core.impl.VertxImpl$lambda_startEventBus_5__1478: io.vertx.core.Handler bootstrap$(io.vertx.core.impl.VertxImpl,boolean,io.vertx.core.Promise)>(v0, v1, v2);
+interfaceinvoke v5.<io.vertx.core.Future: io.vertx.core.Future onComplete(io.vertx.core.Handler)>(v6);
+return;
+}
+private void initializeHaManager(io.vertx.core.Promise)
+{
+io.vertx.core.impl.VertxImpl v0;
+io.vertx.core.Handler v2;
+io.vertx.core.Promise v1;
+v0 := @this: io.vertx.core.impl.VertxImpl;
+v1 := @parameter0: io.vertx.core.Promise;
+v2 = staticinvoke <io.vertx.core.impl.VertxImpl$lambda_initializeHaManager_6__1479: io.vertx.core.Handler bootstrap$(io.vertx.core.impl.VertxImpl)>(v0);
+virtualinvoke v0.<io.vertx.core.impl.VertxImpl: void executeBlocking(io.vertx.core.Handler,boolean,io.vertx.core.Handler)>(v2, 0, v1);
+return;
+}
+protected io.vertx.core.file.FileSystem getFileSystem()
+{
+io.vertx.core.file.impl.FileSystemImpl v3, v4;
+io.vertx.core.impl.VertxImpl v0;
+io.vertx.core.file.impl.WindowsFileSystem v2;
+boolean v1;
+v0 := @this: io.vertx.core.impl.VertxImpl;
+v1 = staticinvoke <io.vertx.core.impl.Utils: boolean isWindows()>();
+if v1 == 0 goto label1;
+v2 = new io.vertx.core.file.impl.WindowsFileSystem;
+v3 = v2;
+specialinvoke v2.<io.vertx.core.file.impl.WindowsFileSystem: void <init>(io.vertx.core.impl.VertxInternal)>(v0);
+goto label2;
+label1:
+v4 = new io.vertx.core.file.impl.FileSystemImpl;
+v3 = v4;
+specialinvoke v4.<io.vertx.core.file.impl.FileSystemImpl: void <init>(io.vertx.core.impl.VertxInternal)>(v0);
+label2:
+return v3;
+}
+public long maxEventLoopExecTime()
+{
+io.vertx.core.impl.VertxImpl v0;
+long v1;
+v0 := @this: io.vertx.core.impl.VertxImpl;
+v1 = v0.<io.vertx.core.impl.VertxImpl: long maxEventLoopExecTime>;
+return v1;
+}
+public java.util.concurrent.TimeUnit maxEventLoopExecTimeUnit()
+{
+java.util.concurrent.TimeUnit v1;
+io.vertx.core.impl.VertxImpl v0;
+v0 := @this: io.vertx.core.impl.VertxImpl;
+v1 = v0.<io.vertx.core.impl.VertxImpl: java.util.concurrent.TimeUnit maxEventLoopExecTimeUnit>;
+return v1;
+}
+public io.vertx.core.datagram.DatagramSocket createDatagramSocket(io.vertx.core.datagram.DatagramSocketOptions)
+{
+io.vertx.core.datagram.impl.DatagramSocketImpl v4;
+io.vertx.core.impl.logging.Logger v3;
+io.vertx.core.impl.VertxImpl v0;
+io.vertx.core.impl.CloseFuture v2, v5;
+io.vertx.core.datagram.DatagramSocketOptions v1;
+v0 := @this: io.vertx.core.impl.VertxImpl;
+v1 := @parameter0: io.vertx.core.datagram.DatagramSocketOptions;
+v2 = new io.vertx.core.impl.CloseFuture;
+v3 = <io.vertx.core.impl.VertxImpl: io.vertx.core.impl.logging.Logger log>;
+specialinvoke v2.<io.vertx.core.impl.CloseFuture: void <init>(io.vertx.core.impl.logging.Logger)>(v3);
+v4 = staticinvoke <io.vertx.core.datagram.impl.DatagramSocketImpl: io.vertx.core.datagram.impl.DatagramSocketImpl create(io.vertx.core.impl.VertxInternal,io.vertx.core.impl.CloseFuture,io.vertx.core.datagram.DatagramSocketOptions)>(v0, v2, v1);
+virtualinvoke v2.<io.vertx.core.impl.CloseFuture: void add(io.vertx.core.Closeable)>(v4);
+v5 = specialinvoke v0.<io.vertx.core.impl.VertxImpl: io.vertx.core.impl.CloseFuture resolveCloseFuture()>();
+virtualinvoke v5.<io.vertx.core.impl.CloseFuture: void add(io.vertx.core.Closeable)>(v2);
+return v4;
+}
+public io.vertx.core.net.NetServer createNetServer(io.vertx.core.net.NetServerOptions)
+{
+io.vertx.core.impl.VertxImpl v0;
+io.vertx.core.net.NetServerOptions v1;
+io.vertx.core.net.impl.NetServerImpl v2;
+v0 := @this: io.vertx.core.impl.VertxImpl;
+v1 := @parameter0: io.vertx.core.net.NetServerOptions;
+v2 = new io.vertx.core.net.impl.NetServerImpl;
+specialinvoke v2.<io.vertx.core.net.impl.NetServerImpl: void <init>(io.vertx.core.impl.VertxInternal,io.vertx.core.net.NetServerOptions)>(v0, v1);
+return v2;
+}
+public io.vertx.core.net.NetClient createNetClient(io.vertx.core.net.NetClientOptions)
+{
+io.vertx.core.impl.logging.Logger v3;
+io.vertx.core.impl.VertxImpl v0;
+io.vertx.core.net.impl.NetClientBuilder v5;
+io.vertx.core.spi.metrics.TCPMetrics v8;
+io.vertx.core.spi.metrics.VertxMetrics v6, v7;
+io.vertx.core.net.NetClientOptions v1;
+io.vertx.core.impl.CloseFuture v2, v4;
+io.vertx.core.net.NetClient v9;
+v0 := @this: io.vertx.core.impl.VertxImpl;
+v1 := @parameter0: io.vertx.core.net.NetClientOptions;
+v2 = new io.vertx.core.impl.CloseFuture;
+v3 = <io.vertx.core.impl.VertxImpl: io.vertx.core.impl.logging.Logger log>;
+specialinvoke v2.<io.vertx.core.impl.CloseFuture: void <init>(io.vertx.core.impl.logging.Logger)>(v3);
+v4 = specialinvoke v0.<io.vertx.core.impl.VertxImpl: io.vertx.core.impl.CloseFuture resolveCloseFuture()>();
+virtualinvoke v4.<io.vertx.core.impl.CloseFuture: void add(io.vertx.core.Closeable)>(v2);
+v5 = new io.vertx.core.net.impl.NetClientBuilder;
+specialinvoke v5.<io.vertx.core.net.impl.NetClientBuilder: void <init>(io.vertx.core.impl.VertxInternal,io.vertx.core.net.NetClientOptions)>(v0, v1);
+v6 = virtualinvoke v0.<io.vertx.core.impl.VertxImpl: io.vertx.core.spi.metrics.VertxMetrics metricsSPI()>();
+if v6 == null goto label1;
+v7 = virtualinvoke v0.<io.vertx.core.impl.VertxImpl: io.vertx.core.spi.metrics.VertxMetrics metricsSPI()>();
+v8 = interfaceinvoke v7.<io.vertx.core.spi.metrics.VertxMetrics: io.vertx.core.spi.metrics.TCPMetrics createNetClientMetrics(io.vertx.core.net.NetClientOptions)>(v1);
+goto label2;
+label1:
+v8 = null;
+label2:
+virtualinvoke v5.<io.vertx.core.net.impl.NetClientBuilder: io.vertx.core.net.impl.NetClientBuilder metrics(io.vertx.core.spi.metrics.TCPMetrics)>(v8);
+virtualinvoke v5.<io.vertx.core.net.impl.NetClientBuilder: io.vertx.core.net.impl.NetClientBuilder closeFuture(io.vertx.core.impl.CloseFuture)>(v2);
+v9 = virtualinvoke v5.<io.vertx.core.net.impl.NetClientBuilder: io.vertx.core.net.NetClient build()>();
+return v9;
+}
+public io.vertx.core.spi.transport.Transport transport()
+{
+io.vertx.core.impl.VertxImpl v0;
+io.vertx.core.spi.transport.Transport v1;
+v0 := @this: io.vertx.core.impl.VertxImpl;
+v1 = v0.<io.vertx.core.impl.VertxImpl: io.vertx.core.spi.transport.Transport transport>;
+return v1;
+}
+public boolean isNativeTransportEnabled()
+{
+io.vertx.core.impl.VertxImpl v0;
+io.vertx.core.spi.transport.Transport v1;
+boolean v2, v3;
+v0 := @this: io.vertx.core.impl.VertxImpl;
+v1 = v0.<io.vertx.core.impl.VertxImpl: io.vertx.core.spi.transport.Transport transport>;
+v2 = v1 instanceof io.vertx.core.impl.transports.JDKTransport;
+if v2 != 0 goto label1;
+v3 = 1;
+goto label2;
+label1:
+v3 = 0;
+label2:
+return v3;
+}
+public java.lang.Throwable unavailableNativeTransportCause()
+{
+java.lang.Throwable v3;
+io.vertx.core.impl.VertxImpl v0;
+io.vertx.core.spi.transport.Transport v2;
+boolean v1;
+v0 := @this: io.vertx.core.impl.VertxImpl;
+v1 = virtualinvoke v0.<io.vertx.core.impl.VertxImpl: boolean isNativeTransportEnabled()>();
+if v1 == 0 goto label1;
+return null;
+label1:
+v2 = v0.<io.vertx.core.impl.VertxImpl: io.vertx.core.spi.transport.Transport transport>;
+v3 = interfaceinvoke v2.<io.vertx.core.spi.transport.Transport: java.lang.Throwable unavailabilityCause()>();
+return v3;
+}
+public io.vertx.core.file.FileSystem fileSystem()
+{
+io.vertx.core.file.FileSystem v1;
+io.vertx.core.impl.VertxImpl v0;
+v0 := @this: io.vertx.core.impl.VertxImpl;
+v1 = v0.<io.vertx.core.impl.VertxImpl: io.vertx.core.file.FileSystem fileSystem>;
+return v1;
+}
+public io.vertx.core.shareddata.SharedData sharedData()
+{
+io.vertx.core.impl.VertxImpl v0;
+io.vertx.core.shareddata.SharedData v1;
+v0 := @this: io.vertx.core.impl.VertxImpl;
+v1 = v0.<io.vertx.core.impl.VertxImpl: io.vertx.core.shareddata.SharedData sharedData>;
+return v1;
+}
+public io.vertx.core.http.HttpServer createHttpServer(io.vertx.core.http.HttpServerOptions)
+{
+io.vertx.core.http.impl.HttpServerImpl v2;
+io.vertx.core.http.HttpServerOptions v1;
+io.vertx.core.impl.VertxImpl v0;
+v0 := @this: io.vertx.core.impl.VertxImpl;
+v1 := @parameter0: io.vertx.core.http.HttpServerOptions;
+v2 = new io.vertx.core.http.impl.HttpServerImpl;
+specialinvoke v2.<io.vertx.core.http.impl.HttpServerImpl: void <init>(io.vertx.core.impl.VertxInternal,io.vertx.core.http.HttpServerOptions)>(v0, v1);
+return v2;
+}
+public io.vertx.core.http.HttpClient createHttpClient(io.vertx.core.http.HttpClientOptions, io.vertx.core.impl.CloseFuture)
+{
+io.vertx.core.impl.VertxImpl v0;
+io.vertx.core.http.impl.HttpClientImpl v3;
+io.vertx.core.impl.CloseFuture v2;
+io.vertx.core.http.HttpClientOptions v1;
+v0 := @this: io.vertx.core.impl.VertxImpl;
+v1 := @parameter0: io.vertx.core.http.HttpClientOptions;
+v2 := @parameter1: io.vertx.core.impl.CloseFuture;
+v3 = new io.vertx.core.http.impl.HttpClientImpl;
+specialinvoke v3.<io.vertx.core.http.impl.HttpClientImpl: void <init>(io.vertx.core.impl.VertxInternal,io.vertx.core.http.HttpClientOptions,io.vertx.core.impl.CloseFuture)>(v0, v1, v2);
+virtualinvoke v2.<io.vertx.core.impl.CloseFuture: void add(io.vertx.core.Closeable)>(v3);
+return v3;
+}
+public io.vertx.core.http.HttpClient createHttpClient(io.vertx.core.http.HttpClientOptions)
+{
+io.vertx.core.impl.VertxImpl v0;
+io.vertx.core.http.impl.SharedHttpClient v7;
+java.util.function.Function v5;
+io.vertx.core.impl.CloseFuture v2, v9;
+java.lang.Object v6;
+io.vertx.core.http.HttpClientOptions v1;
+java.lang.String v4;
+boolean v3;
+io.vertx.core.http.HttpClient v8;
+v0 := @this: io.vertx.core.impl.VertxImpl;
+v1 := @parameter0: io.vertx.core.http.HttpClientOptions;
+v2 = new io.vertx.core.impl.CloseFuture;
+specialinvoke v2.<io.vertx.core.impl.CloseFuture: void <init>()>();
+v3 = virtualinvoke v1.<io.vertx.core.http.HttpClientOptions: boolean isShared()>();
+if v3 == 0 goto label1;
+v4 = virtualinvoke v1.<io.vertx.core.http.HttpClientOptions: java.lang.String getName()>();
+v5 = staticinvoke <io.vertx.core.impl.VertxImpl$lambda_createHttpClient_7__1480: java.util.function.Function bootstrap$(io.vertx.core.impl.VertxImpl,io.vertx.core.http.HttpClientOptions)>(v0, v1);
+v6 = virtualinvoke v0.<io.vertx.core.impl.VertxImpl: java.lang.Object createSharedClient(java.lang.String,java.lang.String,io.vertx.core.impl.CloseFuture,java.util.function.Function)>("__vertx.shared.httpClients", v4, v2, v5);
+v7 = new io.vertx.core.http.impl.SharedHttpClient;
+specialinvoke v7.<io.vertx.core.http.impl.SharedHttpClient: void <init>(io.vertx.core.impl.VertxInternal,io.vertx.core.impl.CloseFuture,io.vertx.core.http.HttpClient)>(v0, v2, v6);
+v8 = v7;
+goto label2;
+label1:
+v8 = virtualinvoke v0.<io.vertx.core.impl.VertxImpl: io.vertx.core.http.HttpClient createHttpClient(io.vertx.core.http.HttpClientOptions,io.vertx.core.impl.CloseFuture)>(v1, v2);
+label2:
+v9 = specialinvoke v0.<io.vertx.core.impl.VertxImpl: io.vertx.core.impl.CloseFuture resolveCloseFuture()>();
+virtualinvoke v9.<io.vertx.core.impl.CloseFuture: void add(io.vertx.core.Closeable)>(v2);
+return v8;
+}
+public io.vertx.core.eventbus.EventBus eventBus()
+{
+io.vertx.core.eventbus.impl.EventBusInternal v1;
+io.vertx.core.impl.VertxImpl v0;
+v0 := @this: io.vertx.core.impl.VertxImpl;
+v1 = v0.<io.vertx.core.impl.VertxImpl: io.vertx.core.eventbus.impl.EventBusInternal eventBus>;
+return v1;
+}
+public long setPeriodic(long, long, io.vertx.core.Handler)
+{
+io.vertx.core.impl.VertxImpl v0;
+io.vertx.core.impl.ContextInternal v4;
+long v1, v2, v7;
+java.util.concurrent.TimeUnit v5;
+io.vertx.core.Handler v3;
+boolean v6;
+v0 := @this: io.vertx.core.impl.VertxImpl;
+v1 := @parameter0: long;
+v2 := @parameter1: long;
+v3 := @parameter2: io.vertx.core.Handler;
+v4 = virtualinvoke v0.<io.vertx.core.impl.VertxImpl: io.vertx.core.impl.ContextInternal getOrCreateContext()>();
+v5 = <java.util.concurrent.TimeUnit: java.util.concurrent.TimeUnit MILLISECONDS>;
+v6 = interfaceinvoke v4.<io.vertx.core.impl.ContextInternal: boolean isDeployment()>();
+v7 = specialinvoke v0.<io.vertx.core.impl.VertxImpl: long scheduleTimeout(io.vertx.core.impl.ContextInternal,boolean,long,long,java.util.concurrent.TimeUnit,boolean,io.vertx.core.Handler)>(v4, 1, v1, v2, v5, v6, v3);
+return v7;
+}
+public io.vertx.core.TimeoutStream periodicStream(long, long)
+{
+io.vertx.core.impl.VertxImpl v0;
+io.vertx.core.impl.VertxImpl$TimeoutStreamImpl v3;
+long v1, v2;
+v0 := @this: io.vertx.core.impl.VertxImpl;
+v1 := @parameter0: long;
+v2 := @parameter1: long;
+v3 = new io.vertx.core.impl.VertxImpl$TimeoutStreamImpl;
+specialinvoke v3.<io.vertx.core.impl.VertxImpl$TimeoutStreamImpl: void <init>(io.vertx.core.impl.VertxImpl,long,long,boolean)>(v0, v1, v2, 1);
+return v3;
+}
+public long setTimer(long, io.vertx.core.Handler)
+{
+java.util.concurrent.TimeUnit v4;
+io.vertx.core.impl.VertxImpl v0;
+io.vertx.core.impl.ContextInternal v3;
+long v1, v6;
+io.vertx.core.Handler v2;
+boolean v5;
+v0 := @this: io.vertx.core.impl.VertxImpl;
+v1 := @parameter0: long;
+v2 := @parameter1: io.vertx.core.Handler;
+v3 = virtualinvoke v0.<io.vertx.core.impl.VertxImpl: io.vertx.core.impl.ContextInternal getOrCreateContext()>();
+v4 = <java.util.concurrent.TimeUnit: java.util.concurrent.TimeUnit MILLISECONDS>;
+v5 = interfaceinvoke v3.<io.vertx.core.impl.ContextInternal: boolean isDeployment()>();
+v6 = virtualinvoke v0.<io.vertx.core.impl.VertxImpl: long scheduleTimeout(io.vertx.core.impl.ContextInternal,boolean,long,java.util.concurrent.TimeUnit,boolean,io.vertx.core.Handler)>(v3, 0, v1, v4, v5, v2);
+return v6;
+}
+public io.vertx.core.TimeoutStream timerStream(long)
+{
+io.vertx.core.impl.VertxImpl v0;
+long v1;
+io.vertx.core.impl.VertxImpl$TimeoutStreamImpl v2;
+v0 := @this: io.vertx.core.impl.VertxImpl;
+v1 := @parameter0: long;
+v2 = new io.vertx.core.impl.VertxImpl$TimeoutStreamImpl;
+specialinvoke v2.<io.vertx.core.impl.VertxImpl$TimeoutStreamImpl: void <init>(io.vertx.core.impl.VertxImpl,long,boolean)>(v0, v1, 0);
+return v2;
+}
+public io.vertx.core.impl.future.PromiseInternal promise()
+{
+io.vertx.core.impl.ContextInternal v1;
+io.vertx.core.impl.VertxImpl v0;
+io.vertx.core.impl.future.PromiseInternal v2;
+v0 := @this: io.vertx.core.impl.VertxImpl;
+v1 = virtualinvoke v0.<io.vertx.core.impl.VertxImpl: io.vertx.core.impl.ContextInternal getOrCreateContext()>();
+v2 = interfaceinvoke v1.<io.vertx.core.impl.ContextInternal: io.vertx.core.impl.future.PromiseInternal promise()>();
+return v2;
+}
+public io.vertx.core.impl.future.PromiseInternal promise(io.vertx.core.Handler)
+{
+io.vertx.core.impl.VertxImpl v0;
+io.vertx.core.impl.future.PromiseInternal v4;
+io.vertx.core.impl.ContextInternal v3;
+io.vertx.core.Handler v1;
+io.vertx.core.Future v5;
+boolean v2;
+v0 := @this: io.vertx.core.impl.VertxImpl;
+v1 := @parameter0: io.vertx.core.Handler;
+v2 = v1 instanceof io.vertx.core.impl.future.PromiseInternal;
+if v2 == 0 goto label1;
+v3 = interfaceinvoke v1.<io.vertx.core.impl.future.PromiseInternal: io.vertx.core.impl.ContextInternal context()>();
+if v3 == null goto label1;
+return v1;
+label1:
+v4 = virtualinvoke v0.<io.vertx.core.impl.VertxImpl: io.vertx.core.impl.future.PromiseInternal promise()>();
+v5 = interfaceinvoke v4.<io.vertx.core.impl.future.PromiseInternal: io.vertx.core.Future future()>();
+interfaceinvoke v5.<io.vertx.core.Future: io.vertx.core.Future onComplete(io.vertx.core.Handler)>(v1);
+return v4;
+}
+public void runOnContext(io.vertx.core.Handler)
+{
+io.vertx.core.impl.ContextInternal v2;
+io.vertx.core.impl.VertxImpl v0;
+io.vertx.core.Handler v1;
+v0 := @this: io.vertx.core.impl.VertxImpl;
+v1 := @parameter0: io.vertx.core.Handler;
+v2 = virtualinvoke v0.<io.vertx.core.impl.VertxImpl: io.vertx.core.impl.ContextInternal getOrCreateContext()>();
+interfaceinvoke v2.<io.vertx.core.impl.ContextInternal: void runOnContext(io.vertx.core.Handler)>(v1);
+return;
+}
+public io.vertx.core.impl.WorkerPool getWorkerPool()
+{
+io.vertx.core.impl.VertxImpl v0;
+io.vertx.core.impl.WorkerPool v1;
+v0 := @this: io.vertx.core.impl.VertxImpl;
+v1 = v0.<io.vertx.core.impl.VertxImpl: io.vertx.core.impl.WorkerPool workerPool>;
+return v1;
+}
+public io.vertx.core.impl.WorkerPool getInternalWorkerPool()
+{
+io.vertx.core.impl.VertxImpl v0;
+io.vertx.core.impl.WorkerPool v1;
+v0 := @this: io.vertx.core.impl.VertxImpl;
+v1 = v0.<io.vertx.core.impl.VertxImpl: io.vertx.core.impl.WorkerPool internalWorkerPool>;
+return v1;
+}
+public io.netty.channel.EventLoopGroup getEventLoopGroup()
+{
+io.vertx.core.impl.VertxImpl v0;
+io.netty.channel.EventLoopGroup v1;
+v0 := @this: io.vertx.core.impl.VertxImpl;
+v1 = v0.<io.vertx.core.impl.VertxImpl: io.netty.channel.EventLoopGroup eventLoopGroup>;
+return v1;
+}
+public io.netty.channel.EventLoopGroup getAcceptorEventLoopGroup()
+{
+io.vertx.core.impl.VertxImpl v0;
+io.netty.channel.EventLoopGroup v1;
+v0 := @this: io.vertx.core.impl.VertxImpl;
+v1 = v0.<io.vertx.core.impl.VertxImpl: io.netty.channel.EventLoopGroup acceptorEventLoopGroup>;
+return v1;
+}
+public io.vertx.core.impl.ContextInternal getOrCreateContext()
+{
+io.vertx.core.impl.VertxImpl v0;
+java.lang.ThreadLocal v2;
+io.vertx.core.impl.ContextInternal v1;
+java.lang.ref.WeakReference v3;
+v0 := @this: io.vertx.core.impl.VertxImpl;
+v1 = virtualinvoke v0.<io.vertx.core.impl.VertxImpl: io.vertx.core.impl.ContextInternal getContext()>();
+if v1 != null goto label1;
+v1 = virtualinvoke v0.<io.vertx.core.impl.VertxImpl: io.vertx.core.impl.EventLoopContext createEventLoopContext()>();
+v2 = v0.<io.vertx.core.impl.VertxImpl: java.lang.ThreadLocal stickyContext>;
+v3 = new java.lang.ref.WeakReference;
+specialinvoke v3.<java.lang.ref.WeakReference: void <init>(java.lang.Object)>(v1);
+virtualinvoke v2.<java.lang.ThreadLocal: void set(java.lang.Object)>(v3);
+label1:
+return v1;
+}
+public java.util.Map sharedHttpServers()
+{
+io.vertx.core.impl.VertxImpl v0;
+java.util.Map v1;
+v0 := @this: io.vertx.core.impl.VertxImpl;
+v1 = v0.<io.vertx.core.impl.VertxImpl: java.util.Map sharedHttpServers>;
+return v1;
+}
+public java.util.Map sharedNetServers()
+{
+io.vertx.core.impl.VertxImpl v0;
+java.util.Map v1;
+v0 := @this: io.vertx.core.impl.VertxImpl;
+v1 = v0.<io.vertx.core.impl.VertxImpl: java.util.Map sharedNetServers>;
+return v1;
+}
+public java.util.Map sharedTCPServers(java.lang.Class)
+{
+java.lang.IllegalStateException v8;
+io.vertx.core.impl.VertxImpl v0;
+java.util.Map v4, v7;
+java.lang.Class v1, v2, v5;
+boolean v3, v6;
+v0 := @this: io.vertx.core.impl.VertxImpl;
+v1 := @parameter0: java.lang.Class;
+v2 = class "Lio/vertx/core/net/impl/NetServerImpl;";
+v3 = virtualinvoke v2.<java.lang.Class: boolean isAssignableFrom(java.lang.Class)>(v1);
+if v3 == 0 goto label1;
+v4 = v0.<io.vertx.core.impl.VertxImpl: java.util.Map sharedNetServers>;
+return v4;
+label1:
+v5 = class "Lio/vertx/core/http/impl/HttpServerImpl;";
+v6 = virtualinvoke v5.<java.lang.Class: boolean isAssignableFrom(java.lang.Class)>(v1);
+if v6 == 0 goto label2;
+v7 = v0.<io.vertx.core.impl.VertxImpl: java.util.Map sharedHttpServers>;
+return v7;
+label2:
+v8 = new java.lang.IllegalStateException;
+specialinvoke v8.<java.lang.IllegalStateException: void <init>()>();
+throw v8;
+}
+public boolean isMetricsEnabled()
+{
+io.vertx.core.impl.VertxImpl v0;
+io.vertx.core.spi.metrics.VertxMetrics v1;
+boolean v2;
+v0 := @this: io.vertx.core.impl.VertxImpl;
+v1 = v0.<io.vertx.core.impl.VertxImpl: io.vertx.core.spi.metrics.VertxMetrics metrics>;
+if v1 == null goto label1;
+v2 = 1;
+goto label2;
+label1:
+v2 = 0;
+label2:
+return v2;
+}
+public io.vertx.core.spi.metrics.Metrics getMetrics()
+{
+io.vertx.core.impl.VertxImpl v0;
+io.vertx.core.spi.metrics.VertxMetrics v1;
+v0 := @this: io.vertx.core.impl.VertxImpl;
+v1 = v0.<io.vertx.core.impl.VertxImpl: io.vertx.core.spi.metrics.VertxMetrics metrics>;
+return v1;
+}
+public boolean cancelTimer(long)
+{
+io.vertx.core.impl.VertxImpl v0;
+java.lang.Long v3;
+java.lang.Object v4;
+long v1;
+boolean v5;
+java.util.concurrent.ConcurrentMap v2;
+v0 := @this: io.vertx.core.impl.VertxImpl;
+v1 := @parameter0: long;
+v2 = v0.<io.vertx.core.impl.VertxImpl: java.util.concurrent.ConcurrentMap timeouts>;
+v3 = staticinvoke <java.lang.Long: java.lang.Long valueOf(long)>(v1);
+v4 = interfaceinvoke v2.<java.util.concurrent.ConcurrentMap: java.lang.Object get(java.lang.Object)>(v3);
+if v4 == null goto label1;
+v5 = specialinvoke v4.<io.vertx.core.impl.VertxImpl$InternalTimerHandler: boolean cancel()>();
+return v5;
+label1:
+return 0;
+}
+public io.vertx.core.impl.EventLoopContext createEventLoopContext(io.vertx.core.impl.Deployment, io.vertx.core.impl.CloseFuture, io.vertx.core.impl.WorkerPool, java.lang.ClassLoader)
+{
+io.vertx.core.impl.VertxImpl v0;
+io.netty.channel.EventLoopGroup v6;
+io.vertx.core.impl.WorkerPool v3, v8, v9;
+io.netty.channel.EventLoop v7;
+io.vertx.core.impl.EventLoopContext v5;
+io.vertx.core.impl.Deployment v1;
+io.vertx.core.impl.CloseFuture v2;
+java.lang.ClassLoader v11, v4;
+boolean v10;
+v0 := @this: io.vertx.core.impl.VertxImpl;
+v1 := @parameter0: io.vertx.core.impl.Deployment;
+v2 := @parameter1: io.vertx.core.impl.CloseFuture;
+v3 := @parameter2: io.vertx.core.impl.WorkerPool;
+v4 := @parameter3: java.lang.ClassLoader;
+v5 = new io.vertx.core.impl.EventLoopContext;
+v6 = v0.<io.vertx.core.impl.VertxImpl: io.netty.channel.EventLoopGroup eventLoopGroup>;
+v7 = interfaceinvoke v6.<io.netty.channel.EventLoopGroup: io.netty.channel.EventLoop next()>();
+v8 = v0.<io.vertx.core.impl.VertxImpl: io.vertx.core.impl.WorkerPool internalWorkerPool>;
+if v3 == null goto label1;
+v9 = v3;
+goto label2;
+label1:
+v9 = v0.<io.vertx.core.impl.VertxImpl: io.vertx.core.impl.WorkerPool workerPool>;
+label2:
+v10 = v0.<io.vertx.core.impl.VertxImpl: boolean disableTCCL>;
+if v10 == 0 goto label3;
+v11 = null;
+goto label4;
+label3:
+v11 = v4;
+label4:
+specialinvoke v5.<io.vertx.core.impl.EventLoopContext: void <init>(io.vertx.core.impl.VertxInternal,io.netty.channel.EventLoop,io.vertx.core.impl.WorkerPool,io.vertx.core.impl.WorkerPool,io.vertx.core.impl.Deployment,io.vertx.core.impl.CloseFuture,java.lang.ClassLoader)>(v0, v7, v8, v9, v1, v2, v11);
+return v5;
+}
+public io.vertx.core.impl.EventLoopContext createEventLoopContext(io.netty.channel.EventLoop, io.vertx.core.impl.WorkerPool, java.lang.ClassLoader)
+{
+io.vertx.core.impl.VertxImpl v0;
+io.vertx.core.impl.WorkerPool v2, v5, v6;
+io.netty.channel.EventLoop v1;
+io.vertx.core.impl.EventLoopContext v4;
+io.vertx.core.impl.CloseFuture v7;
+java.lang.ClassLoader v3, v9;
+boolean v8;
+v0 := @this: io.vertx.core.impl.VertxImpl;
+v1 := @parameter0: io.netty.channel.EventLoop;
+v2 := @parameter1: io.vertx.core.impl.WorkerPool;
+v3 := @parameter2: java.lang.ClassLoader;
+v4 = new io.vertx.core.impl.EventLoopContext;
+v5 = v0.<io.vertx.core.impl.VertxImpl: io.vertx.core.impl.WorkerPool internalWorkerPool>;
+if v2 == null goto label1;
+v6 = v2;
+goto label2;
+label1:
+v6 = v0.<io.vertx.core.impl.VertxImpl: io.vertx.core.impl.WorkerPool workerPool>;
+label2:
+v7 = v0.<io.vertx.core.impl.VertxImpl: io.vertx.core.impl.CloseFuture closeFuture>;
+v8 = v0.<io.vertx.core.impl.VertxImpl: boolean disableTCCL>;
+if v8 == 0 goto label3;
+v9 = v3;
+goto label4;
+label3:
+v9 = null;
+label4:
+specialinvoke v4.<io.vertx.core.impl.EventLoopContext: void <init>(io.vertx.core.impl.VertxInternal,io.netty.channel.EventLoop,io.vertx.core.impl.WorkerPool,io.vertx.core.impl.WorkerPool,io.vertx.core.impl.Deployment,io.vertx.core.impl.CloseFuture,java.lang.ClassLoader)>(v0, v1, v5, v6, null, v7, v9);
+return v4;
+}
+public io.vertx.core.impl.EventLoopContext createEventLoopContext()
+{
+io.vertx.core.impl.EventLoopContext v4;
+io.vertx.core.impl.VertxImpl v0;
+io.vertx.core.impl.CloseFuture v1;
+java.lang.Thread v2;
+java.lang.ClassLoader v3;
+v0 := @this: io.vertx.core.impl.VertxImpl;
+v1 = v0.<io.vertx.core.impl.VertxImpl: io.vertx.core.impl.CloseFuture closeFuture>;
+v2 = staticinvoke <java.lang.Thread: java.lang.Thread currentThread()>();
+v3 = virtualinvoke v2.<java.lang.Thread: java.lang.ClassLoader getContextClassLoader()>();
+v4 = virtualinvoke v0.<io.vertx.core.impl.VertxImpl: io.vertx.core.impl.EventLoopContext createEventLoopContext(io.vertx.core.impl.Deployment,io.vertx.core.impl.CloseFuture,io.vertx.core.impl.WorkerPool,java.lang.ClassLoader)>(null, v1, null, v3);
+return v4;
+}
+public io.vertx.core.impl.WorkerContext createWorkerContext(io.vertx.core.impl.Deployment, io.vertx.core.impl.CloseFuture, io.vertx.core.impl.WorkerPool, java.lang.ClassLoader)
+{
+io.vertx.core.impl.VertxImpl v0;
+io.vertx.core.impl.WorkerPool v3, v6, v7;
+io.vertx.core.impl.Deployment v1;
+io.vertx.core.impl.CloseFuture v2;
+io.vertx.core.impl.WorkerContext v5;
+java.lang.ClassLoader v4, v9;
+boolean v8;
+v0 := @this: io.vertx.core.impl.VertxImpl;
+v1 := @parameter0: io.vertx.core.impl.Deployment;
+v2 := @parameter1: io.vertx.core.impl.CloseFuture;
+v3 := @parameter2: io.vertx.core.impl.WorkerPool;
+v4 := @parameter3: java.lang.ClassLoader;
+v5 = new io.vertx.core.impl.WorkerContext;
+v6 = v0.<io.vertx.core.impl.VertxImpl: io.vertx.core.impl.WorkerPool internalWorkerPool>;
+if v3 == null goto label1;
+v7 = v3;
+goto label2;
+label1:
+v7 = v0.<io.vertx.core.impl.VertxImpl: io.vertx.core.impl.WorkerPool workerPool>;
+label2:
+v8 = v0.<io.vertx.core.impl.VertxImpl: boolean disableTCCL>;
+if v8 == 0 goto label3;
+v9 = null;
+goto label4;
+label3:
+v9 = v4;
+label4:
+specialinvoke v5.<io.vertx.core.impl.WorkerContext: void <init>(io.vertx.core.impl.VertxInternal,io.vertx.core.impl.WorkerPool,io.vertx.core.impl.WorkerPool,io.vertx.core.impl.Deployment,io.vertx.core.impl.CloseFuture,java.lang.ClassLoader)>(v0, v6, v7, v1, v2, v9);
+return v5;
+}
+public io.vertx.core.impl.WorkerContext createWorkerContext()
+{
+io.vertx.core.impl.VertxImpl v0;
+io.vertx.core.impl.CloseFuture v1;
+java.lang.Thread v2;
+io.vertx.core.impl.WorkerContext v4;
+java.lang.ClassLoader v3;
+v0 := @this: io.vertx.core.impl.VertxImpl;
+v1 = v0.<io.vertx.core.impl.VertxImpl: io.vertx.core.impl.CloseFuture closeFuture>;
+v2 = staticinvoke <java.lang.Thread: java.lang.Thread currentThread()>();
+v3 = virtualinvoke v2.<java.lang.Thread: java.lang.ClassLoader getContextClassLoader()>();
+v4 = virtualinvoke v0.<io.vertx.core.impl.VertxImpl: io.vertx.core.impl.WorkerContext createWorkerContext(io.vertx.core.impl.Deployment,io.vertx.core.impl.CloseFuture,io.vertx.core.impl.WorkerPool,java.lang.ClassLoader)>(null, v1, null, v3);
+return v4;
+}
+public io.vertx.core.dns.DnsClient createDnsClient(int, java.lang.String)
+{
+io.vertx.core.dns.DnsClient v6;
+io.vertx.core.impl.VertxImpl v0;
+int v1;
+io.vertx.core.dns.DnsClientOptions v3, v4, v5;
+java.lang.String v2;
+v0 := @this: io.vertx.core.impl.VertxImpl;
+v1 := @parameter0: int;
+v2 := @parameter1: java.lang.String;
+v3 = new io.vertx.core.dns.DnsClientOptions;
+specialinvoke v3.<io.vertx.core.dns.DnsClientOptions: void <init>()>();
+v4 = virtualinvoke v3.<io.vertx.core.dns.DnsClientOptions: io.vertx.core.dns.DnsClientOptions setHost(java.lang.String)>(v2);
+v5 = virtualinvoke v4.<io.vertx.core.dns.DnsClientOptions: io.vertx.core.dns.DnsClientOptions setPort(int)>(v1);
+v6 = virtualinvoke v0.<io.vertx.core.impl.VertxImpl: io.vertx.core.dns.DnsClient createDnsClient(io.vertx.core.dns.DnsClientOptions)>(v5);
+return v6;
+}
+public io.vertx.core.dns.DnsClient createDnsClient()
+{
+io.vertx.core.dns.DnsClient v2;
+io.vertx.core.dns.DnsClientOptions v1;
+io.vertx.core.impl.VertxImpl v0;
+v0 := @this: io.vertx.core.impl.VertxImpl;
+v1 = new io.vertx.core.dns.DnsClientOptions;
+specialinvoke v1.<io.vertx.core.dns.DnsClientOptions: void <init>()>();
+v2 = virtualinvoke v0.<io.vertx.core.impl.VertxImpl: io.vertx.core.dns.DnsClient createDnsClient(io.vertx.core.dns.DnsClientOptions)>(v1);
+return v2;
+}
+public io.vertx.core.dns.DnsClient createDnsClient(io.vertx.core.dns.DnsClientOptions)
+{
+io.vertx.core.impl.VertxImpl v0;
+io.vertx.core.impl.resolver.DnsResolverProvider v4;
+io.vertx.core.dns.impl.DnsClientImpl v13;
+io.vertx.core.dns.DnsClientOptions v1, v11, v8;
+io.vertx.core.dns.AddressResolverOptions v5;
+java.net.InetAddress v9;
+java.util.List v6;
+int v12, v3;
+java.lang.Object v7;
+java.lang.String v10, v2;
+v0 := @this: io.vertx.core.impl.VertxImpl;
+v1 := @parameter0: io.vertx.core.dns.DnsClientOptions;
+v2 = virtualinvoke v1.<io.vertx.core.dns.DnsClientOptions: java.lang.String getHost()>();
+v3 = virtualinvoke v1.<io.vertx.core.dns.DnsClientOptions: int getPort()>();
+if v2 == null goto label1;
+if v3 >= 0 goto label2;
+label1:
+v4 = new io.vertx.core.impl.resolver.DnsResolverProvider;
+v5 = v0.<io.vertx.core.impl.VertxImpl: io.vertx.core.dns.AddressResolverOptions addressResolverOptions>;
+specialinvoke v4.<io.vertx.core.impl.resolver.DnsResolverProvider: void <init>(io.vertx.core.impl.VertxImpl,io.vertx.core.dns.AddressResolverOptions)>(v0, v5);
+v6 = virtualinvoke v4.<io.vertx.core.impl.resolver.DnsResolverProvider: java.util.List nameServerAddresses()>();
+v7 = interfaceinvoke v6.<java.util.List: java.lang.Object get(int)>(0);
+v8 = new io.vertx.core.dns.DnsClientOptions;
+specialinvoke v8.<io.vertx.core.dns.DnsClientOptions: void <init>(io.vertx.core.dns.DnsClientOptions)>(v1);
+v9 = virtualinvoke v7.<java.net.InetSocketAddress: java.net.InetAddress getAddress()>();
+v10 = virtualinvoke v9.<java.net.InetAddress: java.lang.String getHostAddress()>();
+v11 = virtualinvoke v8.<io.vertx.core.dns.DnsClientOptions: io.vertx.core.dns.DnsClientOptions setHost(java.lang.String)>(v10);
+v12 = virtualinvoke v7.<java.net.InetSocketAddress: int getPort()>();
+v1 = virtualinvoke v11.<io.vertx.core.dns.DnsClientOptions: io.vertx.core.dns.DnsClientOptions setPort(int)>(v12);
+label2:
+v13 = new io.vertx.core.dns.impl.DnsClientImpl;
+specialinvoke v13.<io.vertx.core.dns.impl.DnsClientImpl: void <init>(io.vertx.core.impl.VertxInternal,io.vertx.core.dns.DnsClientOptions)>(v0, v1);
+return v13;
+}
+private long scheduleTimeout(io.vertx.core.impl.ContextInternal, boolean, long, long, java.util.concurrent.TimeUnit, boolean, io.vertx.core.Handler)
+{
+io.netty.util.concurrent.ScheduledFuture v18, v19;
+io.vertx.core.impl.ContextInternal v1;
+long v13, v20, v3, v4;
+java.util.concurrent.ConcurrentMap v15;
+byte v10, v8;
+java.lang.Long v16;
+io.vertx.core.impl.VertxImpl$InternalTimerHandler v14;
+boolean v2, v6;
+io.vertx.core.impl.VertxImpl v0;
+io.netty.channel.EventLoop v17;
+java.lang.IllegalArgumentException v11, v9;
+java.util.concurrent.TimeUnit v5;
+java.util.concurrent.atomic.AtomicLong v12;
+io.vertx.core.Handler v7;
+v0 := @this: io.vertx.core.impl.VertxImpl;
+v1 := @parameter0: io.vertx.core.impl.ContextInternal;
+v2 := @parameter1: boolean;
+v3 := @parameter2: long;
+v4 := @parameter3: long;
+v5 := @parameter4: java.util.concurrent.TimeUnit;
+v6 := @parameter5: boolean;
+v7 := @parameter6: io.vertx.core.Handler;
+v8 = v4 cmp 1L;
+if v8 >= 0 goto label1;
+v9 = new java.lang.IllegalArgumentException;
+specialinvoke v9.<java.lang.IllegalArgumentException: void <init>(java.lang.String)>("Cannot schedule a timer with delay < 1 ms");
+throw v9;
+label1:
+v10 = v3 cmp 0L;
+if v10 >= 0 goto label2;
+v11 = new java.lang.IllegalArgumentException;
+specialinvoke v11.<java.lang.IllegalArgumentException: void <init>(java.lang.String)>("Cannot schedule a timer with initialDelay < 0");
+throw v11;
+label2:
+v12 = v0.<io.vertx.core.impl.VertxImpl: java.util.concurrent.atomic.AtomicLong timeoutCounter>;
+v13 = virtualinvoke v12.<java.util.concurrent.atomic.AtomicLong: long getAndIncrement()>();
+v14 = new io.vertx.core.impl.VertxImpl$InternalTimerHandler;
+specialinvoke v14.<io.vertx.core.impl.VertxImpl$InternalTimerHandler: void <init>(io.vertx.core.impl.VertxImpl,long,io.vertx.core.Handler,boolean,io.vertx.core.impl.ContextInternal)>(v0, v13, v7, v2, v1);
+v15 = v0.<io.vertx.core.impl.VertxImpl: java.util.concurrent.ConcurrentMap timeouts>;
+v16 = staticinvoke <java.lang.Long: java.lang.Long valueOf(long)>(v13);
+interfaceinvoke v15.<java.util.concurrent.ConcurrentMap: java.lang.Object put(java.lang.Object,java.lang.Object)>(v16, v14);
+if v6 == 0 goto label3;
+interfaceinvoke v1.<io.vertx.core.impl.ContextInternal: void addCloseHook(io.vertx.core.Closeable)>(v14);
+label3:
+v17 = interfaceinvoke v1.<io.vertx.core.impl.ContextInternal: io.netty.channel.EventLoop nettyEventLoop()>();
+if v2 == 0 goto label4;
+v18 = interfaceinvoke v17.<io.netty.channel.EventLoop: io.netty.util.concurrent.ScheduledFuture scheduleAtFixedRate(java.lang.Runnable,long,long,java.util.concurrent.TimeUnit)>(v14, v3, v4, v5);
+v14.<io.vertx.core.impl.VertxImpl$InternalTimerHandler: java.util.concurrent.Future future> = v18;
+goto label5;
+label4:
+v19 = interfaceinvoke v17.<io.netty.channel.EventLoop: io.netty.util.concurrent.ScheduledFuture schedule(java.lang.Runnable,long,java.util.concurrent.TimeUnit)>(v14, v4, v5);
+v14.<io.vertx.core.impl.VertxImpl$InternalTimerHandler: java.util.concurrent.Future future> = v19;
+label5:
+v20 = v14.<io.vertx.core.impl.VertxImpl$InternalTimerHandler: long id>;
+return v20;
+}
+public long scheduleTimeout(io.vertx.core.impl.ContextInternal, boolean, long, java.util.concurrent.TimeUnit, boolean, io.vertx.core.Handler)
+{
+io.vertx.core.impl.VertxImpl v0;
+io.vertx.core.impl.ContextInternal v1;
+long v3, v7;
+java.util.concurrent.TimeUnit v4;
+io.vertx.core.Handler v6;
+boolean v2, v5;
+v0 := @this: io.vertx.core.impl.VertxImpl;
+v1 := @parameter0: io.vertx.core.impl.ContextInternal;
+v2 := @parameter1: boolean;
+v3 := @parameter2: long;
+v4 := @parameter3: java.util.concurrent.TimeUnit;
+v5 := @parameter4: boolean;
+v6 := @parameter5: io.vertx.core.Handler;
+v7 = specialinvoke v0.<io.vertx.core.impl.VertxImpl: long scheduleTimeout(io.vertx.core.impl.ContextInternal,boolean,long,long,java.util.concurrent.TimeUnit,boolean,io.vertx.core.Handler)>(v1, v2, v3, v3, v4, v5, v6);
+return v7;
+}
+public io.vertx.core.impl.ContextInternal getContext()
+{
+io.vertx.core.impl.VertxImpl v0;
+java.lang.ThreadLocal v3;
+io.vertx.core.impl.VertxInternal v2;
+io.vertx.core.impl.ContextInternal v1;
+java.lang.Object v4, v5;
+v0 := @this: io.vertx.core.impl.VertxImpl;
+v1 = staticinvoke <io.vertx.core.impl.ContextInternal: io.vertx.core.impl.ContextInternal current()>();
+if v1 == null goto label1;
+v2 = interfaceinvoke v1.<io.vertx.core.impl.ContextInternal: io.vertx.core.impl.VertxInternal owner()>();
+if v2 != v0 goto label1;
+return v1;
+label1:
+v3 = v0.<io.vertx.core.impl.VertxImpl: java.lang.ThreadLocal stickyContext>;
+v4 = virtualinvoke v3.<java.lang.ThreadLocal: java.lang.Object get()>();
+if v4 == null goto label2;
+v5 = virtualinvoke v4.<java.lang.ref.WeakReference: java.lang.Object get()>();
+goto label3;
+label2:
+v5 = null;
+label3:
+return v5;
+}
+public io.vertx.core.spi.cluster.ClusterManager getClusterManager()
+{
+io.vertx.core.impl.VertxImpl v0;
+io.vertx.core.spi.cluster.ClusterManager v1;
+v0 := @this: io.vertx.core.impl.VertxImpl;
+v1 = v0.<io.vertx.core.impl.VertxImpl: io.vertx.core.spi.cluster.ClusterManager clusterManager>;
+return v1;
+}
+public io.vertx.core.Future close()
+{
+io.vertx.core.impl.VertxImpl v0;
+io.vertx.core.Future v2;
+io.vertx.core.Promise v1;
+v0 := @this: io.vertx.core.impl.VertxImpl;
+v1 = staticinvoke <io.vertx.core.Promise: io.vertx.core.Promise promise()>();
+virtualinvoke v0.<io.vertx.core.impl.VertxImpl: void close(io.vertx.core.Handler)>(v1);
+v2 = interfaceinvoke v1.<io.vertx.core.Promise: io.vertx.core.Future future()>();
+return v2;
+}
+private void closeClusterManager(io.vertx.core.Handler)
+{
+io.vertx.core.impl.VertxImpl v0;
+io.vertx.core.impl.future.PromiseInternal v3;
+io.vertx.core.spi.cluster.ClusterManager v4, v5;
+io.vertx.core.impl.ContextInternal v2;
+io.vertx.core.Future v6;
+io.vertx.core.Handler v1, v7;
+v0 := @this: io.vertx.core.impl.VertxImpl;
+v1 := @parameter0: io.vertx.core.Handler;
+v2 = virtualinvoke v0.<io.vertx.core.impl.VertxImpl: io.vertx.core.impl.ContextInternal getOrCreateContext()>();
+v3 = interfaceinvoke v2.<io.vertx.core.impl.ContextInternal: io.vertx.core.impl.future.PromiseInternal promise()>();
+v4 = v0.<io.vertx.core.impl.VertxImpl: io.vertx.core.spi.cluster.ClusterManager clusterManager>;
+if v4 == null goto label1;
+v5 = v0.<io.vertx.core.impl.VertxImpl: io.vertx.core.spi.cluster.ClusterManager clusterManager>;
+interfaceinvoke v5.<io.vertx.core.spi.cluster.ClusterManager: void leave(io.vertx.core.Promise)>(v3);
+goto label2;
+label1:
+interfaceinvoke v3.<io.vertx.core.Promise: void complete()>();
+label2:
+v6 = interfaceinvoke v3.<io.vertx.core.Promise: io.vertx.core.Future future()>();
+v7 = staticinvoke <io.vertx.core.impl.VertxImpl$lambda_closeClusterManager_8__1481: io.vertx.core.Handler bootstrap$(io.vertx.core.Handler)>(v1);
+interfaceinvoke v6.<io.vertx.core.Future: io.vertx.core.Future onComplete(io.vertx.core.Handler)>(v7);
+return;
+}
+public synchronized void close(io.vertx.core.Handler)
+{
+io.vertx.core.impl.VertxImpl v0;
+io.vertx.core.Future v4, v6;
+io.vertx.core.impl.CloseFuture v5;
+io.vertx.core.eventbus.impl.EventBusInternal v3;
+io.vertx.core.Handler v1, v7;
+boolean v2;
+v0 := @this: io.vertx.core.impl.VertxImpl;
+v1 := @parameter0: io.vertx.core.Handler;
+v2 = v0.<io.vertx.core.impl.VertxImpl: boolean closed>;
+if v2 != 0 goto label1;
+v3 = v0.<io.vertx.core.impl.VertxImpl: io.vertx.core.eventbus.impl.EventBusInternal eventBus>;
+if v3 != null goto label3;
+label1:
+if v1 == null goto label2;
+v4 = staticinvoke <io.vertx.core.Future: io.vertx.core.Future succeededFuture()>();
+interfaceinvoke v1.<io.vertx.core.Handler: void handle(java.lang.Object)>(v4);
+label2:
+return;
+label3:
+v0.<io.vertx.core.impl.VertxImpl: boolean closed> = 1;
+v5 = v0.<io.vertx.core.impl.VertxImpl: io.vertx.core.impl.CloseFuture closeFuture>;
+v6 = virtualinvoke v5.<io.vertx.core.impl.CloseFuture: io.vertx.core.Future close()>();
+v7 = staticinvoke <io.vertx.core.impl.VertxImpl$lambda_close_15__1482: io.vertx.core.Handler bootstrap$(io.vertx.core.impl.VertxImpl,io.vertx.core.Handler)>(v0, v1);
+interfaceinvoke v6.<io.vertx.core.Future: io.vertx.core.Future onComplete(io.vertx.core.Handler)>(v7);
+return;
+}
+public io.vertx.core.Future deployVerticle(java.lang.String, io.vertx.core.DeploymentOptions)
+{
+io.vertx.core.impl.VertxImpl v0;
+io.vertx.core.impl.future.PromiseInternal v6;
+io.vertx.core.impl.ContextInternal v5;
+io.vertx.core.Future v10, v12, v8;
+java.util.function.Function v11;
+io.vertx.core.impl.VerticleManager v9;
+io.vertx.core.DeploymentOptions v2;
+io.vertx.core.impl.HAManager v4, v7;
+java.lang.String v1;
+boolean v3;
+v0 := @this: io.vertx.core.impl.VertxImpl;
+v1 := @parameter0: java.lang.String;
+v2 := @parameter1: io.vertx.core.DeploymentOptions;
+v3 = virtualinvoke v2.<io.vertx.core.DeploymentOptions: boolean isHa()>();
+if v3 == 0 goto label1;
+v4 = virtualinvoke v0.<io.vertx.core.impl.VertxImpl: io.vertx.core.impl.HAManager haManager()>();
+if v4 == null goto label1;
+v5 = virtualinvoke v0.<io.vertx.core.impl.VertxImpl: io.vertx.core.impl.ContextInternal getOrCreateContext()>();
+v6 = interfaceinvoke v5.<io.vertx.core.impl.ContextInternal: io.vertx.core.impl.future.PromiseInternal promise()>();
+v7 = virtualinvoke v0.<io.vertx.core.impl.VertxImpl: io.vertx.core.impl.HAManager haManager()>();
+virtualinvoke v7.<io.vertx.core.impl.HAManager: void deployVerticle(java.lang.String,io.vertx.core.DeploymentOptions,io.vertx.core.Handler)>(v1, v2, v6);
+v8 = interfaceinvoke v6.<io.vertx.core.Promise: io.vertx.core.Future future()>();
+return v8;
+label1:
+v9 = v0.<io.vertx.core.impl.VertxImpl: io.vertx.core.impl.VerticleManager verticleManager>;
+v10 = virtualinvoke v9.<io.vertx.core.impl.VerticleManager: io.vertx.core.Future deployVerticle(java.lang.String,io.vertx.core.DeploymentOptions)>(v1, v2);
+v11 = staticinvoke <io.vertx.core.impl.VertxImpl$deploymentID__1483: java.util.function.Function bootstrap$()>();
+v12 = interfaceinvoke v10.<io.vertx.core.Future: io.vertx.core.Future map(java.util.function.Function)>(v11);
+return v12;
+}
+public void deployVerticle(java.lang.String, io.vertx.core.DeploymentOptions, io.vertx.core.Handler)
+{
+io.vertx.core.impl.VertxImpl v0;
+io.vertx.core.DeploymentOptions v2;
+java.lang.String v1;
+io.vertx.core.Handler v3;
+io.vertx.core.Future v4;
+v0 := @this: io.vertx.core.impl.VertxImpl;
+v1 := @parameter0: java.lang.String;
+v2 := @parameter1: io.vertx.core.DeploymentOptions;
+v3 := @parameter2: io.vertx.core.Handler;
+v4 = virtualinvoke v0.<io.vertx.core.impl.VertxImpl: io.vertx.core.Future deployVerticle(java.lang.String,io.vertx.core.DeploymentOptions)>(v1, v2);
+if v3 == null goto label1;
+interfaceinvoke v4.<io.vertx.core.Future: io.vertx.core.Future onComplete(io.vertx.core.Handler)>(v3);
+label1:
+return;
+}
+public void deployVerticle(io.vertx.core.Verticle, io.vertx.core.Handler)
+{
+io.vertx.core.impl.VertxImpl v0;
+io.vertx.core.Verticle v1;
+io.vertx.core.Handler v2;
+io.vertx.core.Future v3;
+v0 := @this: io.vertx.core.impl.VertxImpl;
+v1 := @parameter0: io.vertx.core.Verticle;
+v2 := @parameter1: io.vertx.core.Handler;
+v3 = virtualinvoke v0.<io.vertx.core.impl.VertxImpl: io.vertx.core.Future deployVerticle(io.vertx.core.Verticle)>(v1);
+if v2 == null goto label1;
+interfaceinvoke v3.<io.vertx.core.Future: io.vertx.core.Future onComplete(io.vertx.core.Handler)>(v2);
+label1:
+return;
+}
+public io.vertx.core.Future deployVerticle(io.vertx.core.Verticle, io.vertx.core.DeploymentOptions)
+{
+io.vertx.core.impl.VertxImpl v0;
+io.vertx.core.DeploymentOptions v2;
+int v3;
+java.util.concurrent.Callable v5;
+io.vertx.core.Verticle v1;
+java.lang.IllegalArgumentException v4;
+io.vertx.core.Future v6;
+v0 := @this: io.vertx.core.impl.VertxImpl;
+v1 := @parameter0: io.vertx.core.Verticle;
+v2 := @parameter1: io.vertx.core.DeploymentOptions;
+v3 = virtualinvoke v2.<io.vertx.core.DeploymentOptions: int getInstances()>();
+if v3 == 1 goto label1;
+v4 = new java.lang.IllegalArgumentException;
+specialinvoke v4.<java.lang.IllegalArgumentException: void <init>(java.lang.String)>("Can\'t specify > 1 instances for already created verticle");
+throw v4;
+label1:
+v5 = staticinvoke <io.vertx.core.impl.VertxImpl$lambda_deployVerticle_16__1484: java.util.concurrent.Callable bootstrap$(io.vertx.core.Verticle)>(v1);
+v6 = specialinvoke v0.<io.vertx.core.impl.VertxImpl: io.vertx.core.Future deployVerticle(java.util.concurrent.Callable,io.vertx.core.DeploymentOptions)>(v5, v2);
+return v6;
+}
+public void deployVerticle(io.vertx.core.Verticle, io.vertx.core.DeploymentOptions, io.vertx.core.Handler)
+{
+io.vertx.core.impl.VertxImpl v0;
+io.vertx.core.DeploymentOptions v2;
+io.vertx.core.Verticle v1;
+io.vertx.core.Handler v3;
+io.vertx.core.Future v4;
+v0 := @this: io.vertx.core.impl.VertxImpl;
+v1 := @parameter0: io.vertx.core.Verticle;
+v2 := @parameter1: io.vertx.core.DeploymentOptions;
+v3 := @parameter2: io.vertx.core.Handler;
+v4 = virtualinvoke v0.<io.vertx.core.impl.VertxImpl: io.vertx.core.Future deployVerticle(io.vertx.core.Verticle,io.vertx.core.DeploymentOptions)>(v1, v2);
+if v3 == null goto label1;
+interfaceinvoke v4.<io.vertx.core.Future: io.vertx.core.Future onComplete(io.vertx.core.Handler)>(v3);
+label1:
+return;
+}
+public io.vertx.core.Future deployVerticle(java.lang.Class, io.vertx.core.DeploymentOptions)
+{
+io.vertx.core.impl.VertxImpl v0;
+io.vertx.core.DeploymentOptions v2;
+java.lang.Class v1;
+java.util.concurrent.Callable v3;
+io.vertx.core.Future v4;
+v0 := @this: io.vertx.core.impl.VertxImpl;
+v1 := @parameter0: java.lang.Class;
+v2 := @parameter1: io.vertx.core.DeploymentOptions;
+virtualinvoke v1.<java.lang.Object: java.lang.Class getClass()>();
+v3 = staticinvoke <io.vertx.core.impl.VertxImpl$newInstance__1485: java.util.concurrent.Callable bootstrap$(java.lang.Class)>(v1);
+v4 = specialinvoke v0.<io.vertx.core.impl.VertxImpl: io.vertx.core.Future deployVerticle(java.util.concurrent.Callable,io.vertx.core.DeploymentOptions)>(v3, v2);
+return v4;
+}
+public void deployVerticle(java.lang.Class, io.vertx.core.DeploymentOptions, io.vertx.core.Handler)
+{
+io.vertx.core.impl.VertxImpl v0;
+io.vertx.core.DeploymentOptions v2;
+java.lang.Class v1;
+io.vertx.core.Handler v3;
+io.vertx.core.Future v4;
+v0 := @this: io.vertx.core.impl.VertxImpl;
+v1 := @parameter0: java.lang.Class;
+v2 := @parameter1: io.vertx.core.DeploymentOptions;
+v3 := @parameter2: io.vertx.core.Handler;
+v4 = virtualinvoke v0.<io.vertx.core.impl.VertxImpl: io.vertx.core.Future deployVerticle(java.lang.Class,io.vertx.core.DeploymentOptions)>(v1, v2);
+if v3 == null goto label1;
+interfaceinvoke v4.<io.vertx.core.Future: io.vertx.core.Future onComplete(io.vertx.core.Handler)>(v3);
+label1:
+return;
+}
+public io.vertx.core.Future deployVerticle(java.util.function.Supplier, io.vertx.core.DeploymentOptions)
+{
+io.vertx.core.impl.VertxImpl v0;
+io.vertx.core.DeploymentOptions v2;
+java.util.concurrent.Callable v3;
+io.vertx.core.Future v4;
+java.util.function.Supplier v1;
+v0 := @this: io.vertx.core.impl.VertxImpl;
+v1 := @parameter0: java.util.function.Supplier;
+v2 := @parameter1: io.vertx.core.DeploymentOptions;
+virtualinvoke v1.<java.lang.Object: java.lang.Class getClass()>();
+v3 = staticinvoke <io.vertx.core.impl.VertxImpl$get__1486: java.util.concurrent.Callable bootstrap$(java.util.function.Supplier)>(v1);
+v4 = specialinvoke v0.<io.vertx.core.impl.VertxImpl: io.vertx.core.Future deployVerticle(java.util.concurrent.Callable,io.vertx.core.DeploymentOptions)>(v3, v2);
+return v4;
+}
+public void deployVerticle(java.util.function.Supplier, io.vertx.core.DeploymentOptions, io.vertx.core.Handler)
+{
+io.vertx.core.impl.VertxImpl v0;
+io.vertx.core.DeploymentOptions v2;
+io.vertx.core.Handler v3;
+io.vertx.core.Future v4;
+java.util.function.Supplier v1;
+v0 := @this: io.vertx.core.impl.VertxImpl;
+v1 := @parameter0: java.util.function.Supplier;
+v2 := @parameter1: io.vertx.core.DeploymentOptions;
+v3 := @parameter2: io.vertx.core.Handler;
+v4 = virtualinvoke v0.<io.vertx.core.impl.VertxImpl: io.vertx.core.Future deployVerticle(java.util.function.Supplier,io.vertx.core.DeploymentOptions)>(v1, v2);
+if v3 == null goto label1;
+interfaceinvoke v4.<io.vertx.core.Future: io.vertx.core.Future onComplete(io.vertx.core.Handler)>(v3);
+label1:
+return;
+}
+private io.vertx.core.Future deployVerticle(java.util.concurrent.Callable, io.vertx.core.DeploymentOptions)
+{
+java.lang.Throwable v4;
+io.vertx.core.impl.VertxImpl v0;
+java.util.concurrent.Callable v1;
+io.vertx.core.Future v5, v7;
+io.vertx.core.DeploymentOptions v2;
+io.vertx.core.impl.DeploymentManager v6;
+boolean v3;
+v0 := @this: io.vertx.core.impl.VertxImpl;
+v1 := @parameter0: java.util.concurrent.Callable;
+v2 := @parameter1: io.vertx.core.DeploymentOptions;
+entermonitor v0;
+label1:
+v3 = v0.<io.vertx.core.impl.VertxImpl: boolean closed>;
+exitmonitor v0;
+label2:
+goto label4;
+label3:
+v4 := @caughtexception;
+exitmonitor v0;
+throw v4;
+label4:
+if v3 == 0 goto label5;
+v5 = staticinvoke <io.vertx.core.Future: io.vertx.core.Future failedFuture(java.lang.String)>("Vert.x closed");
+return v5;
+label5:
+v6 = v0.<io.vertx.core.impl.VertxImpl: io.vertx.core.impl.DeploymentManager deploymentManager>;
+v7 = virtualinvoke v6.<io.vertx.core.impl.DeploymentManager: io.vertx.core.Future deployVerticle(java.util.concurrent.Callable,io.vertx.core.DeploymentOptions)>(v1, v2);
+return v7;
+catch java.lang.Throwable from label1 to label2 with label3;
+}
+public io.vertx.core.Future undeploy(java.lang.String)
+{
+io.vertx.core.impl.VertxImpl v0;
+io.vertx.core.impl.ContextInternal v5;
+io.vertx.core.Future v4, v7;
+java.util.function.Function v6;
+io.vertx.core.impl.HAManager v2;
+java.lang.String v1;
+io.vertx.core.Handler v3;
+v0 := @this: io.vertx.core.impl.VertxImpl;
+v1 := @parameter0: java.lang.String;
+v2 = virtualinvoke v0.<io.vertx.core.impl.VertxImpl: io.vertx.core.impl.HAManager haManager()>();
+if v2 == null goto label1;
+v3 = staticinvoke <io.vertx.core.impl.VertxImpl$lambda_undeploy_17__1488: io.vertx.core.Handler bootstrap$(io.vertx.core.impl.HAManager,java.lang.String)>(v2, v1);
+v4 = virtualinvoke v0.<io.vertx.core.impl.VertxImpl: io.vertx.core.Future executeBlocking(io.vertx.core.Handler,boolean)>(v3, 0);
+goto label2;
+label1:
+v5 = virtualinvoke v0.<io.vertx.core.impl.VertxImpl: io.vertx.core.impl.ContextInternal getOrCreateContext()>();
+v4 = interfaceinvoke v5.<io.vertx.core.impl.ContextInternal: io.vertx.core.Future succeededFuture()>();
+label2:
+v6 = staticinvoke <io.vertx.core.impl.VertxImpl$lambda_undeploy_18__1487: java.util.function.Function bootstrap$(io.vertx.core.impl.VertxImpl,java.lang.String)>(v0, v1);
+v7 = interfaceinvoke v4.<io.vertx.core.Future: io.vertx.core.Future compose(java.util.function.Function)>(v6);
+return v7;
+}
+public void undeploy(java.lang.String, io.vertx.core.Handler)
+{
+io.vertx.core.impl.VertxImpl v0;
+java.lang.String v1;
+io.vertx.core.Handler v2;
+io.vertx.core.Future v3;
+v0 := @this: io.vertx.core.impl.VertxImpl;
+v1 := @parameter0: java.lang.String;
+v2 := @parameter1: io.vertx.core.Handler;
+v3 = virtualinvoke v0.<io.vertx.core.impl.VertxImpl: io.vertx.core.Future undeploy(java.lang.String)>(v1);
+if v2 == null goto label1;
+interfaceinvoke v3.<io.vertx.core.Future: io.vertx.core.Future onComplete(io.vertx.core.Handler)>(v2);
+label1:
+return;
+}
+public java.util.Set deploymentIDs()
+{
+java.util.Set v2;
+io.vertx.core.impl.VertxImpl v0;
+io.vertx.core.impl.DeploymentManager v1;
+v0 := @this: io.vertx.core.impl.VertxImpl;
+v1 = v0.<io.vertx.core.impl.VertxImpl: io.vertx.core.impl.DeploymentManager deploymentManager>;
+v2 = virtualinvoke v1.<io.vertx.core.impl.DeploymentManager: java.util.Set deployments()>();
+return v2;
+}
+public void registerVerticleFactory(io.vertx.core.spi.VerticleFactory)
+{
+io.vertx.core.impl.VerticleManager v2;
+io.vertx.core.impl.VertxImpl v0;
+io.vertx.core.spi.VerticleFactory v1;
+v0 := @this: io.vertx.core.impl.VertxImpl;
+v1 := @parameter0: io.vertx.core.spi.VerticleFactory;
+v2 = v0.<io.vertx.core.impl.VertxImpl: io.vertx.core.impl.VerticleManager verticleManager>;
+virtualinvoke v2.<io.vertx.core.impl.VerticleManager: void registerVerticleFactory(io.vertx.core.spi.VerticleFactory)>(v1);
+return;
+}
+public void unregisterVerticleFactory(io.vertx.core.spi.VerticleFactory)
+{
+io.vertx.core.impl.VerticleManager v2;
+io.vertx.core.impl.VertxImpl v0;
+io.vertx.core.spi.VerticleFactory v1;
+v0 := @this: io.vertx.core.impl.VertxImpl;
+v1 := @parameter0: io.vertx.core.spi.VerticleFactory;
+v2 = v0.<io.vertx.core.impl.VertxImpl: io.vertx.core.impl.VerticleManager verticleManager>;
+virtualinvoke v2.<io.vertx.core.impl.VerticleManager: void unregisterVerticleFactory(io.vertx.core.spi.VerticleFactory)>(v1);
+return;
+}
+public java.util.Set verticleFactories()
+{
+java.util.Set v2;
+io.vertx.core.impl.VerticleManager v1;
+io.vertx.core.impl.VertxImpl v0;
+v0 := @this: io.vertx.core.impl.VertxImpl;
+v1 = v0.<io.vertx.core.impl.VertxImpl: io.vertx.core.impl.VerticleManager verticleManager>;
+v2 = virtualinvoke v1.<io.vertx.core.impl.VerticleManager: java.util.Set verticleFactories()>();
+return v2;
+}
+public boolean isClustered()
+{
+io.vertx.core.impl.VertxImpl v0;
+io.vertx.core.spi.cluster.ClusterManager v1;
+boolean v2;
+v0 := @this: io.vertx.core.impl.VertxImpl;
+v1 = v0.<io.vertx.core.impl.VertxImpl: io.vertx.core.spi.cluster.ClusterManager clusterManager>;
+if v1 == null goto label1;
+v2 = 1;
+goto label2;
+label1:
+v2 = 0;
+label2:
+return v2;
+}
+public io.netty.channel.EventLoopGroup nettyEventLoopGroup()
+{
+io.vertx.core.impl.VertxImpl v0;
+io.netty.channel.EventLoopGroup v1;
+v0 := @this: io.vertx.core.impl.VertxImpl;
+v1 = v0.<io.vertx.core.impl.VertxImpl: io.netty.channel.EventLoopGroup eventLoopGroup>;
+return v1;
+}
+public void simulateKill()
+{
+io.vertx.core.impl.HAManager v1, v2;
+io.vertx.core.impl.VertxImpl v0;
+v0 := @this: io.vertx.core.impl.VertxImpl;
+v1 = virtualinvoke v0.<io.vertx.core.impl.VertxImpl: io.vertx.core.impl.HAManager haManager()>();
+if v1 == null goto label1;
+v2 = virtualinvoke v0.<io.vertx.core.impl.VertxImpl: io.vertx.core.impl.HAManager haManager()>();
+virtualinvoke v2.<io.vertx.core.impl.HAManager: void simulateKill()>();
+label1:
+return;
+}
+public io.vertx.core.impl.Deployment getDeployment(java.lang.String)
+{
+io.vertx.core.impl.VertxImpl v0;
+io.vertx.core.impl.Deployment v3;
+io.vertx.core.impl.DeploymentManager v2;
+java.lang.String v1;
+v0 := @this: io.vertx.core.impl.VertxImpl;
+v1 := @parameter0: java.lang.String;
+v2 = v0.<io.vertx.core.impl.VertxImpl: io.vertx.core.impl.DeploymentManager deploymentManager>;
+v3 = virtualinvoke v2.<io.vertx.core.impl.DeploymentManager: io.vertx.core.impl.Deployment getDeployment(java.lang.String)>(v1);
+return v3;
+}
+public synchronized void failoverCompleteHandler(io.vertx.core.impl.FailoverCompleteHandler)
+{
+io.vertx.core.impl.VertxImpl v0;
+io.vertx.core.impl.HAManager v2, v3;
+io.vertx.core.impl.FailoverCompleteHandler v1;
+v0 := @this: io.vertx.core.impl.VertxImpl;
+v1 := @parameter0: io.vertx.core.impl.FailoverCompleteHandler;
+v2 = virtualinvoke v0.<io.vertx.core.impl.VertxImpl: io.vertx.core.impl.HAManager haManager()>();
+if v2 == null goto label1;
+v3 = virtualinvoke v0.<io.vertx.core.impl.VertxImpl: io.vertx.core.impl.HAManager haManager()>();
+virtualinvoke v3.<io.vertx.core.impl.HAManager: void setFailoverCompleteHandler(io.vertx.core.impl.FailoverCompleteHandler)>(v1);
+label1:
+return;
+}
+public boolean isKilled()
+{
+io.vertx.core.impl.HAManager v1;
+io.vertx.core.impl.VertxImpl v0;
+boolean v2;
+v0 := @this: io.vertx.core.impl.VertxImpl;
+v1 = virtualinvoke v0.<io.vertx.core.impl.VertxImpl: io.vertx.core.impl.HAManager haManager()>();
+v2 = virtualinvoke v1.<io.vertx.core.impl.HAManager: boolean isKilled()>();
+return v2;
+}
+public void failDuringFailover(boolean)
+{
+io.vertx.core.impl.VertxImpl v0;
+io.vertx.core.impl.HAManager v2, v3;
+boolean v1;
+v0 := @this: io.vertx.core.impl.VertxImpl;
+v1 := @parameter0: boolean;
+v2 = virtualinvoke v0.<io.vertx.core.impl.VertxImpl: io.vertx.core.impl.HAManager haManager()>();
+if v2 == null goto label1;
+v3 = virtualinvoke v0.<io.vertx.core.impl.VertxImpl: io.vertx.core.impl.HAManager haManager()>();
+virtualinvoke v3.<io.vertx.core.impl.HAManager: void failDuringFailover(boolean)>(v1);
+label1:
+return;
+}
+public io.vertx.core.spi.metrics.VertxMetrics metricsSPI()
+{
+io.vertx.core.impl.VertxImpl v0;
+io.vertx.core.spi.metrics.VertxMetrics v1;
+v0 := @this: io.vertx.core.impl.VertxImpl;
+v1 = v0.<io.vertx.core.impl.VertxImpl: io.vertx.core.spi.metrics.VertxMetrics metrics>;
+return v1;
+}
+public java.io.File resolveFile(java.lang.String)
+{
+io.vertx.core.impl.VertxImpl v0;
+io.vertx.core.spi.file.FileResolver v2;
+java.lang.String v1;
+java.io.File v3;
+v0 := @this: io.vertx.core.impl.VertxImpl;
+v1 := @parameter0: java.lang.String;
+v2 = v0.<io.vertx.core.impl.VertxImpl: io.vertx.core.spi.file.FileResolver fileResolver>;
+v3 = interfaceinvoke v2.<io.vertx.core.spi.file.FileResolver: java.io.File resolveFile(java.lang.String)>(v1);
+return v3;
+}
+public void resolveAddress(java.lang.String, io.vertx.core.Handler)
+{
+io.vertx.core.impl.VertxImpl v0;
+io.vertx.core.impl.AddressResolver v3;
+java.lang.String v1;
+io.vertx.core.Handler v2;
+v0 := @this: io.vertx.core.impl.VertxImpl;
+v1 := @parameter0: java.lang.String;
+v2 := @parameter1: io.vertx.core.Handler;
+v3 = v0.<io.vertx.core.impl.VertxImpl: io.vertx.core.impl.AddressResolver addressResolver>;
+virtualinvoke v3.<io.vertx.core.impl.AddressResolver: void resolveHostname(java.lang.String,io.vertx.core.Handler)>(v1, v2);
+return;
+}
+public io.vertx.core.impl.AddressResolver addressResolver()
+{
+io.vertx.core.impl.VertxImpl v0;
+io.vertx.core.impl.AddressResolver v1;
+v0 := @this: io.vertx.core.impl.VertxImpl;
+v1 = v0.<io.vertx.core.impl.VertxImpl: io.vertx.core.impl.AddressResolver addressResolver>;
+return v1;
+}
+public io.netty.resolver.AddressResolverGroup nettyAddressResolverGroup()
+{
+io.netty.resolver.AddressResolverGroup v2;
+io.vertx.core.impl.VertxImpl v0;
+io.vertx.core.impl.AddressResolver v1;
+v0 := @this: io.vertx.core.impl.VertxImpl;
+v1 = v0.<io.vertx.core.impl.VertxImpl: io.vertx.core.impl.AddressResolver addressResolver>;
+v2 = virtualinvoke v1.<io.vertx.core.impl.AddressResolver: io.netty.resolver.AddressResolverGroup nettyAddressResolverGroup()>();
+return v2;
+}
+public io.vertx.core.spi.file.FileResolver fileResolver()
+{
+io.vertx.core.spi.file.FileResolver v1;
+io.vertx.core.impl.VertxImpl v0;
+v0 := @this: io.vertx.core.impl.VertxImpl;
+v1 = v0.<io.vertx.core.impl.VertxImpl: io.vertx.core.spi.file.FileResolver fileResolver>;
+return v1;
+}
+public io.vertx.core.impl.btc.BlockedThreadChecker blockedThreadChecker()
+{
+io.vertx.core.impl.btc.BlockedThreadChecker v1;
+io.vertx.core.impl.VertxImpl v0;
+v0 := @this: io.vertx.core.impl.VertxImpl;
+v1 = v0.<io.vertx.core.impl.VertxImpl: io.vertx.core.impl.btc.BlockedThreadChecker checker>;
+return v1;
+}
+private void deleteCacheDirAndShutdown(io.vertx.core.Handler)
+{
+io.vertx.core.impl.VertxImpl v0;
+io.vertx.core.Handler v1, v2, v3;
+v0 := @this: io.vertx.core.impl.VertxImpl;
+v1 := @parameter0: io.vertx.core.Handler;
+v2 = staticinvoke <io.vertx.core.impl.VertxImpl$lambda_deleteCacheDirAndShutdown_19__1489: io.vertx.core.Handler bootstrap$(io.vertx.core.impl.VertxImpl)>(v0);
+v3 = staticinvoke <io.vertx.core.impl.VertxImpl$lambda_deleteCacheDirAndShutdown_20__1490: io.vertx.core.Handler bootstrap$(io.vertx.core.impl.VertxImpl,io.vertx.core.Handler)>(v0, v1);
+virtualinvoke v0.<io.vertx.core.impl.VertxImpl: void executeBlockingInternal(io.vertx.core.Handler,io.vertx.core.Handler)>(v2, v3);
+return;
+}
+public io.vertx.core.impl.HAManager haManager()
+{
+io.vertx.core.impl.HAManager v1;
+io.vertx.core.impl.VertxImpl v0;
+v0 := @this: io.vertx.core.impl.VertxImpl;
+v1 = v0.<io.vertx.core.impl.VertxImpl: io.vertx.core.impl.HAManager haManager>;
+return v1;
+}
+public io.vertx.core.impl.WorkerExecutorImpl createSharedWorkerExecutor(java.lang.String)
+{
+io.vertx.core.impl.VertxImpl v0;
+io.vertx.core.impl.WorkerExecutorImpl v3;
+int v2;
+java.lang.String v1;
+v0 := @this: io.vertx.core.impl.VertxImpl;
+v1 := @parameter0: java.lang.String;
+v2 = v0.<io.vertx.core.impl.VertxImpl: int defaultWorkerPoolSize>;
+v3 = virtualinvoke v0.<io.vertx.core.impl.VertxImpl: io.vertx.core.impl.WorkerExecutorImpl createSharedWorkerExecutor(java.lang.String,int)>(v1, v2);
+return v3;
+}
+public io.vertx.core.impl.WorkerExecutorImpl createSharedWorkerExecutor(java.lang.String, int)
+{
+io.vertx.core.impl.VertxImpl v0;
+io.vertx.core.impl.WorkerExecutorImpl v4;
+int v2;
+long v3;
+java.lang.String v1;
+v0 := @this: io.vertx.core.impl.VertxImpl;
+v1 := @parameter0: java.lang.String;
+v2 := @parameter1: int;
+v3 = v0.<io.vertx.core.impl.VertxImpl: long maxWorkerExecTime>;
+v4 = virtualinvoke v0.<io.vertx.core.impl.VertxImpl: io.vertx.core.impl.WorkerExecutorImpl createSharedWorkerExecutor(java.lang.String,int,long)>(v1, v2, v3);
+return v4;
+}
+public synchronized io.vertx.core.impl.WorkerExecutorImpl createSharedWorkerExecutor(java.lang.String, int, long)
+{
+java.util.concurrent.TimeUnit v4;
+io.vertx.core.impl.VertxImpl v0;
+io.vertx.core.impl.WorkerExecutorImpl v5;
+int v2;
+long v3;
+java.lang.String v1;
+v0 := @this: io.vertx.core.impl.VertxImpl;
+v1 := @parameter0: java.lang.String;
+v2 := @parameter1: int;
+v3 := @parameter2: long;
+v4 = v0.<io.vertx.core.impl.VertxImpl: java.util.concurrent.TimeUnit maxWorkerExecTimeUnit>;
+v5 = virtualinvoke v0.<io.vertx.core.impl.VertxImpl: io.vertx.core.impl.WorkerExecutorImpl createSharedWorkerExecutor(java.lang.String,int,long,java.util.concurrent.TimeUnit)>(v1, v2, v3, v4);
+return v5;
+}
+public synchronized io.vertx.core.impl.WorkerExecutorImpl createSharedWorkerExecutor(java.lang.String, int, long, java.util.concurrent.TimeUnit)
+{
+io.vertx.core.impl.VertxImpl v0;
+io.vertx.core.impl.WorkerExecutorImpl v8;
+long v3;
+java.util.concurrent.TimeUnit v4;
+io.vertx.core.impl.CloseFuture v6, v7;
+int v2;
+io.vertx.core.impl.VertxImpl$SharedWorkerPool v5;
+java.lang.String v1;
+v0 := @this: io.vertx.core.impl.VertxImpl;
+v1 := @parameter0: java.lang.String;
+v2 := @parameter1: int;
+v3 := @parameter2: long;
+v4 := @parameter3: java.util.concurrent.TimeUnit;
+v5 = virtualinvoke v0.<io.vertx.core.impl.VertxImpl: io.vertx.core.impl.VertxImpl$SharedWorkerPool createSharedWorkerPool(java.lang.String,int,long,java.util.concurrent.TimeUnit)>(v1, v2, v3, v4);
+v6 = specialinvoke v0.<io.vertx.core.impl.VertxImpl: io.vertx.core.impl.CloseFuture resolveCloseFuture()>();
+v7 = new io.vertx.core.impl.CloseFuture;
+specialinvoke v7.<io.vertx.core.impl.CloseFuture: void <init>()>();
+virtualinvoke v6.<io.vertx.core.impl.CloseFuture: void add(io.vertx.core.Closeable)>(v7);
+v8 = new io.vertx.core.impl.WorkerExecutorImpl;
+specialinvoke v8.<io.vertx.core.impl.WorkerExecutorImpl: void <init>(io.vertx.core.impl.VertxInternal,io.vertx.core.impl.CloseFuture,io.vertx.core.impl.VertxImpl$SharedWorkerPool)>(v0, v7, v5);
+virtualinvoke v7.<io.vertx.core.impl.CloseFuture: void add(io.vertx.core.Closeable)>(v8);
+return v8;
+}
+public synchronized io.vertx.core.impl.VertxImpl$SharedWorkerPool createSharedWorkerPool(java.lang.String, int, long, java.util.concurrent.TimeUnit)
+{
+io.vertx.core.spi.VertxThreadFactory v10;
+long v3;
+java.lang.Integer v16, v17;
+io.vertx.core.spi.metrics.VertxMetrics v19, v20;
+byte v6;
+java.util.Map v22, v8;
+int v2;
+java.lang.Boolean v12;
+io.vertx.core.impl.VertxImpl$SharedWorkerPool v23;
+java.lang.String v1, v13;
+java.util.concurrent.ThreadFactory v14;
+java.util.concurrent.ExecutorService v18;
+io.vertx.core.impl.VertxImpl v0;
+io.vertx.core.spi.ExecutorServiceFactory v15;
+java.lang.IllegalArgumentException v5, v7;
+java.util.concurrent.TimeUnit v4;
+io.vertx.core.spi.metrics.PoolMetrics v21;
+io.vertx.core.impl.btc.BlockedThreadChecker v11;
+java.lang.Object v9;
+v0 := @this: io.vertx.core.impl.VertxImpl;
+v1 := @parameter0: java.lang.String;
+v2 := @parameter1: int;
+v3 := @parameter2: long;
+v4 := @parameter3: java.util.concurrent.TimeUnit;
+if v2 >= 1 goto label1;
+v5 = new java.lang.IllegalArgumentException;
+specialinvoke v5.<java.lang.IllegalArgumentException: void <init>(java.lang.String)>("poolSize must be > 0");
+throw v5;
+label1:
+v6 = v3 cmp 1L;
+if v6 >= 0 goto label2;
+v7 = new java.lang.IllegalArgumentException;
+specialinvoke v7.<java.lang.IllegalArgumentException: void <init>(java.lang.String)>("maxExecuteTime must be > 0");
+throw v7;
+label2:
+v8 = v0.<io.vertx.core.impl.VertxImpl: java.util.Map namedWorkerPools>;
+v9 = interfaceinvoke v8.<java.util.Map: java.lang.Object get(java.lang.Object)>(v1);
+if v9 != null goto label5;
+v10 = v0.<io.vertx.core.impl.VertxImpl: io.vertx.core.spi.VertxThreadFactory threadFactory>;
+v11 = v0.<io.vertx.core.impl.VertxImpl: io.vertx.core.impl.btc.BlockedThreadChecker checker>;
+v12 = v0.<io.vertx.core.impl.VertxImpl: java.lang.Boolean useDaemonThread>;
+v13 = dynamicinvoke "makeConcatWithConstants" <java.lang.String (java.lang.String)>(v1) <java.lang.invoke.StringConcatFactory: java.lang.invoke.CallSite makeConcatWithConstants(java.lang.invoke.MethodHandles$Lookup,java.lang.String,java.lang.invoke.MethodType,java.lang.String,java.lang.Object[])>("\u0001-");
+v14 = staticinvoke <io.vertx.core.impl.VertxImpl: java.util.concurrent.ThreadFactory createThreadFactory(io.vertx.core.spi.VertxThreadFactory,io.vertx.core.impl.btc.BlockedThreadChecker,java.lang.Boolean,long,java.util.concurrent.TimeUnit,java.lang.String,boolean)>(v10, v11, v12, v3, v4, v13, 1);
+v15 = v0.<io.vertx.core.impl.VertxImpl: io.vertx.core.spi.ExecutorServiceFactory executorServiceFactory>;
+v16 = staticinvoke <java.lang.Integer: java.lang.Integer valueOf(int)>(v2);
+v17 = staticinvoke <java.lang.Integer: java.lang.Integer valueOf(int)>(v2);
+v18 = interfaceinvoke v15.<io.vertx.core.spi.ExecutorServiceFactory: java.util.concurrent.ExecutorService createExecutor(java.util.concurrent.ThreadFactory,java.lang.Integer,java.lang.Integer)>(v14, v16, v17);
+v19 = v0.<io.vertx.core.impl.VertxImpl: io.vertx.core.spi.metrics.VertxMetrics metrics>;
+if v19 == null goto label3;
+v20 = v0.<io.vertx.core.impl.VertxImpl: io.vertx.core.spi.metrics.VertxMetrics metrics>;
+v21 = interfaceinvoke v20.<io.vertx.core.spi.metrics.VertxMetrics: io.vertx.core.spi.metrics.PoolMetrics createPoolMetrics(java.lang.String,java.lang.String,int)>("worker", v1, v2);
+goto label4;
+label3:
+v21 = null;
+label4:
+v22 = v0.<io.vertx.core.impl.VertxImpl: java.util.Map namedWorkerPools>;
+v23 = new io.vertx.core.impl.VertxImpl$SharedWorkerPool;
+specialinvoke v23.<io.vertx.core.impl.VertxImpl$SharedWorkerPool: void <init>(io.vertx.core.impl.VertxImpl,java.lang.String,java.util.concurrent.ExecutorService,io.vertx.core.spi.metrics.PoolMetrics)>(v0, v1, v18, v21);
+v9 = v23;
+interfaceinvoke v22.<java.util.Map: java.lang.Object put(java.lang.Object,java.lang.Object)>(v1, v23);
+goto label6;
+label5:
+staticinvoke <io.vertx.core.impl.VertxImpl$SharedWorkerPool: int access$608(io.vertx.core.impl.VertxImpl$SharedWorkerPool)>(v9);
+label6:
+return v9;
+}
+private static java.util.concurrent.ThreadFactory createThreadFactory(io.vertx.core.spi.VertxThreadFactory, io.vertx.core.impl.btc.BlockedThreadChecker, java.lang.Boolean, long, java.util.concurrent.TimeUnit, java.lang.String, boolean)
+{
+io.vertx.core.spi.VertxThreadFactory v0;
+long v3;
+java.util.concurrent.TimeUnit v4;
+java.util.concurrent.atomic.AtomicInteger v7;
+io.vertx.core.impl.btc.BlockedThreadChecker v1;
+java.lang.Boolean v2;
+java.lang.String v5;
+java.util.concurrent.ThreadFactory v8;
+boolean v6;
+v0 := @parameter0: io.vertx.core.spi.VertxThreadFactory;
+v1 := @parameter1: io.vertx.core.impl.btc.BlockedThreadChecker;
+v2 := @parameter2: java.lang.Boolean;
+v3 := @parameter3: long;
+v4 := @parameter4: java.util.concurrent.TimeUnit;
+v5 := @parameter5: java.lang.String;
+v6 := @parameter6: boolean;
+v7 = new java.util.concurrent.atomic.AtomicInteger;
+specialinvoke v7.<java.util.concurrent.atomic.AtomicInteger: void <init>(int)>(0);
+v8 = staticinvoke <io.vertx.core.impl.VertxImpl$lambda_createThreadFactory_21__1491: java.util.concurrent.ThreadFactory bootstrap$(io.vertx.core.spi.VertxThreadFactory,java.lang.String,java.util.concurrent.atomic.AtomicInteger,boolean,long,java.util.concurrent.TimeUnit,io.vertx.core.impl.btc.BlockedThreadChecker,java.lang.Boolean)>(v0, v5, v7, v6, v3, v4, v1, v2);
+return v8;
+}
+public io.vertx.core.Vertx exceptionHandler(io.vertx.core.Handler)
+{
+io.vertx.core.impl.VertxImpl v0;
+io.vertx.core.Handler v1;
+v0 := @this: io.vertx.core.impl.VertxImpl;
+v1 := @parameter0: io.vertx.core.Handler;
+v0.<io.vertx.core.impl.VertxImpl: io.vertx.core.Handler exceptionHandler> = v1;
+return v0;
+}
+public io.vertx.core.Handler exceptionHandler()
+{
+io.vertx.core.impl.VertxImpl v0;
+io.vertx.core.Handler v1;
+v0 := @this: io.vertx.core.impl.VertxImpl;
+v1 = v0.<io.vertx.core.impl.VertxImpl: io.vertx.core.Handler exceptionHandler>;
+return v1;
+}
+public io.vertx.core.impl.CloseFuture closeFuture()
+{
+io.vertx.core.impl.VertxImpl v0;
+io.vertx.core.impl.CloseFuture v1;
+v0 := @this: io.vertx.core.impl.VertxImpl;
+v1 = v0.<io.vertx.core.impl.VertxImpl: io.vertx.core.impl.CloseFuture closeFuture>;
+return v1;
+}
+public io.vertx.core.spi.tracing.VertxTracer tracer()
+{
+io.vertx.core.spi.tracing.VertxTracer v1;
+io.vertx.core.impl.VertxImpl v0;
+v0 := @this: io.vertx.core.impl.VertxImpl;
+v1 = v0.<io.vertx.core.impl.VertxImpl: io.vertx.core.spi.tracing.VertxTracer tracer>;
+return v1;
+}
+public void addCloseHook(io.vertx.core.Closeable)
+{
+io.vertx.core.Closeable v1;
+io.vertx.core.impl.VertxImpl v0;
+io.vertx.core.impl.CloseFuture v2;
+v0 := @this: io.vertx.core.impl.VertxImpl;
+v1 := @parameter0: io.vertx.core.Closeable;
+v2 = v0.<io.vertx.core.impl.VertxImpl: io.vertx.core.impl.CloseFuture closeFuture>;
+virtualinvoke v2.<io.vertx.core.impl.CloseFuture: void add(io.vertx.core.Closeable)>(v1);
+return;
+}
+public void removeCloseHook(io.vertx.core.Closeable)
+{
+io.vertx.core.Closeable v1;
+io.vertx.core.impl.VertxImpl v0;
+io.vertx.core.impl.CloseFuture v2;
+v0 := @this: io.vertx.core.impl.VertxImpl;
+v1 := @parameter0: io.vertx.core.Closeable;
+v2 = v0.<io.vertx.core.impl.VertxImpl: io.vertx.core.impl.CloseFuture closeFuture>;
+virtualinvoke v2.<io.vertx.core.impl.CloseFuture: boolean remove(io.vertx.core.Closeable)>(v1);
+return;
+}
+private io.vertx.core.impl.CloseFuture resolveCloseFuture()
+{
+io.vertx.core.impl.ContextInternal v1;
+io.vertx.core.impl.VertxImpl v0;
+io.vertx.core.impl.CloseFuture v2;
+v0 := @this: io.vertx.core.impl.VertxImpl;
+v1 = virtualinvoke v0.<io.vertx.core.impl.VertxImpl: io.vertx.core.impl.ContextInternal getContext()>();
+if v1 == null goto label1;
+v2 = interfaceinvoke v1.<io.vertx.core.impl.ContextInternal: io.vertx.core.impl.CloseFuture closeFuture()>();
+goto label2;
+label1:
+v2 = v0.<io.vertx.core.impl.VertxImpl: io.vertx.core.impl.CloseFuture closeFuture>;
+label2:
+return v2;
+}
+void executeIsolated(io.vertx.core.Handler)
+{
+java.lang.Throwable v5;
+io.vertx.core.impl.VertxImpl v0;
+java.lang.Thread v2;
+io.vertx.core.impl.ContextInternal v4;
+io.vertx.core.Handler v1;
+boolean v3;
+v0 := @this: io.vertx.core.impl.VertxImpl;
+v1 := @parameter0: io.vertx.core.Handler;
+v2 = staticinvoke <java.lang.Thread: java.lang.Thread currentThread()>();
+v3 = v2 instanceof io.vertx.core.impl.VertxThread;
+if v3 == 0 goto label4;
+v4 = virtualinvoke v0.<io.vertx.core.impl.VertxImpl: io.vertx.core.impl.ContextInternal beginDispatch(io.vertx.core.impl.ContextInternal)>(null);
+label1:
+interfaceinvoke v1.<io.vertx.core.Handler: void handle(java.lang.Object)>(null);
+label2:
+virtualinvoke v0.<io.vertx.core.impl.VertxImpl: void endDispatch(io.vertx.core.impl.ContextInternal)>(v4);
+goto label5;
+label3:
+v5 := @caughtexception;
+virtualinvoke v0.<io.vertx.core.impl.VertxImpl: void endDispatch(io.vertx.core.impl.ContextInternal)>(v4);
+throw v5;
+label4:
+interfaceinvoke v1.<io.vertx.core.Handler: void handle(java.lang.Object)>(null);
+label5:
+return;
+catch java.lang.Throwable from label1 to label2 with label3;
+}
+io.vertx.core.impl.ContextInternal beginDispatch(io.vertx.core.impl.ContextInternal)
+{
+io.vertx.core.impl.VertxImpl v0;
+io.vertx.core.impl.ContextInternal v1, v4;
+java.lang.Thread v2, v7;
+java.lang.ClassLoader v8, v9;
+boolean v3, v5, v6;
+v0 := @this: io.vertx.core.impl.VertxImpl;
+v1 := @parameter0: io.vertx.core.impl.ContextInternal;
+v2 = staticinvoke <java.lang.Thread: java.lang.Thread currentThread()>();
+v3 = v2 instanceof io.vertx.core.impl.VertxThread;
+if v3 == 0 goto label3;
+v4 = v2.<io.vertx.core.impl.VertxThread: io.vertx.core.impl.ContextInternal context>;
+v5 = <io.vertx.core.impl.ContextBase: boolean DISABLE_TIMINGS>;
+if v5 != 0 goto label1;
+virtualinvoke v2.<io.vertx.core.impl.VertxThread: void executeStart()>();
+label1:
+v2.<io.vertx.core.impl.VertxThread: io.vertx.core.impl.ContextInternal context> = v1;
+v6 = v0.<io.vertx.core.impl.VertxImpl: boolean disableTCCL>;
+if v6 != 0 goto label4;
+if v4 != null goto label2;
+v7 = staticinvoke <java.lang.Thread: java.lang.Thread currentThread()>();
+v8 = virtualinvoke v7.<java.lang.Thread: java.lang.ClassLoader getContextClassLoader()>();
+v2.<io.vertx.core.impl.VertxThread: java.lang.ClassLoader topLevelTCCL> = v8;
+label2:
+if v1 == null goto label4;
+v9 = interfaceinvoke v1.<io.vertx.core.impl.ContextInternal: java.lang.ClassLoader classLoader()>();
+virtualinvoke v2.<java.lang.Thread: void setContextClassLoader(java.lang.ClassLoader)>(v9);
+goto label4;
+label3:
+v4 = specialinvoke v0.<io.vertx.core.impl.VertxImpl: io.vertx.core.impl.ContextInternal beginDispatch2(java.lang.Thread,io.vertx.core.impl.ContextInternal)>(v2, v1);
+label4:
+return v4;
+}
+private io.vertx.core.impl.ContextInternal beginDispatch2(java.lang.Thread, io.vertx.core.impl.ContextInternal)
+{
+io.vertx.core.impl.VertxImpl v0;
+java.lang.ThreadLocal v3, v7;
+io.vertx.core.impl.ContextInternal v2, v5;
+io.vertx.core.impl.VertxImpl$ContextDispatch v6;
+java.lang.Thread v1, v9;
+java.lang.Object v4;
+java.lang.ClassLoader v10, v11;
+boolean v8;
+v0 := @this: io.vertx.core.impl.VertxImpl;
+v1 := @parameter0: java.lang.Thread;
+v2 := @parameter1: io.vertx.core.impl.ContextInternal;
+v3 = <io.vertx.core.impl.VertxImpl: java.lang.ThreadLocal nonVertxContextDispatch>;
+v4 = virtualinvoke v3.<java.lang.ThreadLocal: java.lang.Object get()>();
+if v4 == null goto label1;
+v5 = v4.<io.vertx.core.impl.VertxImpl$ContextDispatch: io.vertx.core.impl.ContextInternal context>;
+goto label2;
+label1:
+v6 = new io.vertx.core.impl.VertxImpl$ContextDispatch;
+specialinvoke v6.<io.vertx.core.impl.VertxImpl$ContextDispatch: void <init>()>();
+v4 = v6;
+v7 = <io.vertx.core.impl.VertxImpl: java.lang.ThreadLocal nonVertxContextDispatch>;
+virtualinvoke v7.<java.lang.ThreadLocal: void set(java.lang.Object)>(v6);
+v5 = null;
+label2:
+v4.<io.vertx.core.impl.VertxImpl$ContextDispatch: io.vertx.core.impl.ContextInternal context> = v2;
+v8 = v0.<io.vertx.core.impl.VertxImpl: boolean disableTCCL>;
+if v8 != 0 goto label4;
+if v5 != null goto label3;
+v9 = staticinvoke <java.lang.Thread: java.lang.Thread currentThread()>();
+v10 = virtualinvoke v9.<java.lang.Thread: java.lang.ClassLoader getContextClassLoader()>();
+v4.<io.vertx.core.impl.VertxImpl$ContextDispatch: java.lang.ClassLoader topLevelTCCL> = v10;
+label3:
+v11 = interfaceinvoke v2.<io.vertx.core.impl.ContextInternal: java.lang.ClassLoader classLoader()>();
+virtualinvoke v1.<java.lang.Thread: void setContextClassLoader(java.lang.ClassLoader)>(v11);
+label4:
+return v5;
+}
+void endDispatch(io.vertx.core.impl.ContextInternal)
+{
+io.vertx.core.impl.VertxImpl v0;
+io.vertx.core.impl.ContextInternal v1;
+java.lang.Thread v2, v6;
+java.lang.ClassLoader v5;
+boolean v3, v4, v7;
+v0 := @this: io.vertx.core.impl.VertxImpl;
+v1 := @parameter0: io.vertx.core.impl.ContextInternal;
+v2 = staticinvoke <java.lang.Thread: java.lang.Thread currentThread()>();
+v3 = v2 instanceof io.vertx.core.impl.VertxThread;
+if v3 == 0 goto label4;
+v2.<io.vertx.core.impl.VertxThread: io.vertx.core.impl.ContextInternal context> = v1;
+v4 = v0.<io.vertx.core.impl.VertxImpl: boolean disableTCCL>;
+if v4 != 0 goto label3;
+if v1 != null goto label1;
+v5 = v2.<io.vertx.core.impl.VertxThread: java.lang.ClassLoader topLevelTCCL>;
+v2.<io.vertx.core.impl.VertxThread: java.lang.ClassLoader topLevelTCCL> = null;
+goto label2;
+label1:
+v5 = interfaceinvoke v1.<io.vertx.core.impl.ContextInternal: java.lang.ClassLoader classLoader()>();
+label2:
+v6 = staticinvoke <java.lang.Thread: java.lang.Thread currentThread()>();
+virtualinvoke v6.<java.lang.Thread: void setContextClassLoader(java.lang.ClassLoader)>(v5);
+label3:
+v7 = <io.vertx.core.impl.ContextBase: boolean DISABLE_TIMINGS>;
+if v7 != 0 goto label5;
+virtualinvoke v2.<io.vertx.core.impl.VertxThread: void executeEnd()>();
+goto label5;
+label4:
+specialinvoke v0.<io.vertx.core.impl.VertxImpl: void endDispatch2(io.vertx.core.impl.ContextInternal)>(v1);
+label5:
+return;
+}
+private void endDispatch2(io.vertx.core.impl.ContextInternal)
+{
+io.vertx.core.impl.VertxImpl v0;
+java.lang.ThreadLocal v2, v5;
+io.vertx.core.impl.ContextInternal v1;
+java.lang.Thread v7;
+java.lang.Object v3;
+java.lang.ClassLoader v4;
+boolean v6;
+v0 := @this: io.vertx.core.impl.VertxImpl;
+v1 := @parameter0: io.vertx.core.impl.ContextInternal;
+v2 = <io.vertx.core.impl.VertxImpl: java.lang.ThreadLocal nonVertxContextDispatch>;
+v3 = virtualinvoke v2.<java.lang.ThreadLocal: java.lang.Object get()>();
+if v1 == null goto label1;
+v3.<io.vertx.core.impl.VertxImpl$ContextDispatch: io.vertx.core.impl.ContextInternal context> = v1;
+v4 = interfaceinvoke v1.<io.vertx.core.impl.ContextInternal: java.lang.ClassLoader classLoader()>();
+goto label2;
+label1:
+v5 = <io.vertx.core.impl.VertxImpl: java.lang.ThreadLocal nonVertxContextDispatch>;
+virtualinvoke v5.<java.lang.ThreadLocal: void remove()>();
+v4 = v3.<io.vertx.core.impl.VertxImpl$ContextDispatch: java.lang.ClassLoader topLevelTCCL>;
+label2:
+v6 = v0.<io.vertx.core.impl.VertxImpl: boolean disableTCCL>;
+if v6 != 0 goto label3;
+v7 = staticinvoke <java.lang.Thread: java.lang.Thread currentThread()>();
+virtualinvoke v7.<java.lang.Thread: void setContextClassLoader(java.lang.ClassLoader)>(v4);
+label3:
+return;
+}
+static void <clinit>()
+{
+io.vertx.core.impl.logging.Logger v1;
+java.lang.ThreadLocal v0;
+io.netty.util.ResourceLeakDetector$Level v6;
+int v3;
+java.lang.String v4, v5;
+java.lang.Integer v2;
+v0 = new java.lang.ThreadLocal;
+specialinvoke v0.<java.lang.ThreadLocal: void <init>()>();
+<io.vertx.core.impl.VertxImpl: java.lang.ThreadLocal nonVertxContextDispatch> = v0;
+v1 = staticinvoke <io.vertx.core.impl.logging.LoggerFactory: io.vertx.core.impl.logging.Logger getLogger(java.lang.Class)>(class "Lio/vertx/core/impl/VertxImpl;");
+<io.vertx.core.impl.VertxImpl: io.vertx.core.impl.logging.Logger log> = v1;
+v2 = staticinvoke <java.lang.Integer: java.lang.Integer getInteger(java.lang.String,int)>("vertx.nettyIORatio", 50);
+v3 = virtualinvoke v2.<java.lang.Integer: int intValue()>();
+<io.vertx.core.impl.VertxImpl: int NETTY_IO_RATIO> = v3;
+v4 = staticinvoke <java.lang.System: java.lang.String getProperty(java.lang.String)>("io.netty.leakDetection.level");
+if v4 != null goto label1;
+v5 = staticinvoke <java.lang.System: java.lang.String getProperty(java.lang.String)>("io.netty.leakDetectionLevel");
+if v5 != null goto label1;
+v6 = <io.netty.util.ResourceLeakDetector$Level: io.netty.util.ResourceLeakDetector$Level DISABLED>;
+staticinvoke <io.netty.util.ResourceLeakDetector: void setLevel(io.netty.util.ResourceLeakDetector$Level)>(v6);
+label1:
+return;
+}
+}

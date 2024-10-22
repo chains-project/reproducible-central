@@ -1,0 +1,219 @@
+public class io.netty.handler.codec.compression.LzfEncoder extends io.netty.handler.codec.MessageToByteEncoder
+{
+private static final int MIN_BLOCK_TO_COMPRESS;
+private final int compressThreshold;
+private final com.ning.compress.lzf.ChunkEncoder encoder;
+private final com.ning.compress.BufferRecycler recycler;
+public void <init>()
+{
+io.netty.handler.codec.compression.LzfEncoder v0;
+v0 := @this: io.netty.handler.codec.compression.LzfEncoder;
+specialinvoke v0.<io.netty.handler.codec.compression.LzfEncoder: void <init>(boolean)>(0);
+return;
+}
+public void <init>(boolean)
+{
+int v2;
+io.netty.handler.codec.compression.LzfEncoder v0;
+boolean v1;
+v0 := @this: io.netty.handler.codec.compression.LzfEncoder;
+v1 := @parameter0: boolean;
+v2 = (int) 65535;
+specialinvoke v0.<io.netty.handler.codec.compression.LzfEncoder: void <init>(boolean,int)>(v1, v2);
+return;
+}
+public void <init>(boolean, int)
+{
+int v2;
+io.netty.handler.codec.compression.LzfEncoder v0;
+boolean v1;
+v0 := @this: io.netty.handler.codec.compression.LzfEncoder;
+v1 := @parameter0: boolean;
+v2 := @parameter1: int;
+specialinvoke v0.<io.netty.handler.codec.compression.LzfEncoder: void <init>(boolean,int,int)>(v1, v2, 16);
+return;
+}
+public void <init>(int)
+{
+int v1;
+io.netty.handler.codec.compression.LzfEncoder v0;
+v0 := @this: io.netty.handler.codec.compression.LzfEncoder;
+v1 := @parameter0: int;
+specialinvoke v0.<io.netty.handler.codec.compression.LzfEncoder: void <init>(boolean,int)>(0, v1);
+return;
+}
+public void <init>(boolean, int, int)
+{
+java.lang.IllegalArgumentException v5, v7;
+com.ning.compress.BufferRecycler v10;
+int v2, v3, v4;
+io.netty.handler.codec.compression.LzfEncoder v0;
+java.lang.String v6, v8;
+com.ning.compress.lzf.ChunkEncoder v9;
+boolean v1;
+v0 := @this: io.netty.handler.codec.compression.LzfEncoder;
+v1 := @parameter0: boolean;
+v2 := @parameter1: int;
+v3 := @parameter2: int;
+specialinvoke v0.<io.netty.handler.codec.MessageToByteEncoder: void <init>(boolean)>(0);
+if v2 < 16 goto label1;
+v4 = (int) 65535;
+if v2 <= v4 goto label2;
+label1:
+v5 = new java.lang.IllegalArgumentException;
+v6 = dynamicinvoke "makeConcatWithConstants" <java.lang.String (int,int)>(v2, 65535) <java.lang.invoke.StringConcatFactory: java.lang.invoke.CallSite makeConcatWithConstants(java.lang.invoke.MethodHandles$Lookup,java.lang.String,java.lang.invoke.MethodType,java.lang.String,java.lang.Object[])>("totalLength: \u0001 (expected: 16-\u0001)");
+specialinvoke v5.<java.lang.IllegalArgumentException: void <init>(java.lang.String)>(v6);
+throw v5;
+label2:
+if v3 >= 16 goto label3;
+v7 = new java.lang.IllegalArgumentException;
+v8 = dynamicinvoke "makeConcatWithConstants" <java.lang.String (int)>(v3) <java.lang.invoke.StringConcatFactory: java.lang.invoke.CallSite makeConcatWithConstants(java.lang.invoke.MethodHandles$Lookup,java.lang.String,java.lang.invoke.MethodType,java.lang.String,java.lang.Object[])>("compressThreshold:\u0001 expected >=16");
+specialinvoke v7.<java.lang.IllegalArgumentException: void <init>(java.lang.String)>(v8);
+throw v7;
+label3:
+v0.<io.netty.handler.codec.compression.LzfEncoder: int compressThreshold> = v3;
+if v1 == 0 goto label4;
+v9 = staticinvoke <com.ning.compress.lzf.util.ChunkEncoderFactory: com.ning.compress.lzf.ChunkEncoder safeNonAllocatingInstance(int)>(v2);
+goto label5;
+label4:
+v9 = staticinvoke <com.ning.compress.lzf.util.ChunkEncoderFactory: com.ning.compress.lzf.ChunkEncoder optimalNonAllocatingInstance(int)>(v2);
+label5:
+v0.<io.netty.handler.codec.compression.LzfEncoder: com.ning.compress.lzf.ChunkEncoder encoder> = v9;
+v10 = staticinvoke <com.ning.compress.BufferRecycler: com.ning.compress.BufferRecycler instance()>();
+v0.<io.netty.handler.codec.compression.LzfEncoder: com.ning.compress.BufferRecycler recycler> = v10;
+return;
+}
+protected void encode(io.netty.channel.ChannelHandlerContext, io.netty.buffer.ByteBuf, io.netty.buffer.ByteBuf) throws java.lang.Exception
+{
+byte[] v14, v7;
+com.ning.compress.BufferRecycler v10, v24;
+io.netty.channel.ChannelHandlerContext v1;
+io.netty.buffer.ByteBuf v2, v3;
+int v11, v12, v15, v16, v17, v18, v19, v21, v22, v4, v5, v8, v9;
+io.netty.handler.codec.compression.LzfEncoder v0;
+boolean v13, v20, v23, v6;
+v0 := @this: io.netty.handler.codec.compression.LzfEncoder;
+v1 := @parameter0: io.netty.channel.ChannelHandlerContext;
+v2 := @parameter1: io.netty.buffer.ByteBuf;
+v3 := @parameter2: io.netty.buffer.ByteBuf;
+v4 = virtualinvoke v2.<io.netty.buffer.ByteBuf: int readableBytes()>();
+v5 = virtualinvoke v2.<io.netty.buffer.ByteBuf: int readerIndex()>();
+v6 = virtualinvoke v2.<io.netty.buffer.ByteBuf: boolean hasArray()>();
+if v6 == 0 goto label1;
+v7 = virtualinvoke v2.<io.netty.buffer.ByteBuf: byte[] array()>();
+v8 = virtualinvoke v2.<io.netty.buffer.ByteBuf: int arrayOffset()>();
+v9 = v8 + v5;
+goto label2;
+label1:
+v10 = v0.<io.netty.handler.codec.compression.LzfEncoder: com.ning.compress.BufferRecycler recycler>;
+v7 = virtualinvoke v10.<com.ning.compress.BufferRecycler: byte[] allocInputBuffer(int)>(v4);
+virtualinvoke v2.<io.netty.buffer.ByteBuf: io.netty.buffer.ByteBuf getBytes(int,byte[],int,int)>(v5, v7, 0, v4);
+v9 = 0;
+label2:
+v11 = staticinvoke <com.ning.compress.lzf.LZFEncoder: int estimateMaxWorkspaceSize(int)>(v4);
+v12 = v11 + 1;
+virtualinvoke v3.<io.netty.buffer.ByteBuf: io.netty.buffer.ByteBuf ensureWritable(int)>(v12);
+v13 = virtualinvoke v3.<io.netty.buffer.ByteBuf: boolean hasArray()>();
+if v13 == 0 goto label3;
+v14 = virtualinvoke v3.<io.netty.buffer.ByteBuf: byte[] array()>();
+v15 = virtualinvoke v3.<io.netty.buffer.ByteBuf: int arrayOffset()>();
+v16 = virtualinvoke v3.<io.netty.buffer.ByteBuf: int writerIndex()>();
+v17 = v15 + v16;
+goto label4;
+label3:
+v14 = newarray (byte)[v12];
+v17 = 0;
+label4:
+v18 = v0.<io.netty.handler.codec.compression.LzfEncoder: int compressThreshold>;
+if v4 < v18 goto label5;
+v19 = specialinvoke v0.<io.netty.handler.codec.compression.LzfEncoder: int encodeCompress(byte[],int,int,byte[],int)>(v7, v9, v4, v14, v17);
+goto label6;
+label5:
+v19 = staticinvoke <io.netty.handler.codec.compression.LzfEncoder: int encodeNonCompress(byte[],int,int,byte[],int)>(v7, v9, v4, v14, v17);
+label6:
+v20 = virtualinvoke v3.<io.netty.buffer.ByteBuf: boolean hasArray()>();
+if v20 == 0 goto label7;
+v21 = virtualinvoke v3.<io.netty.buffer.ByteBuf: int writerIndex()>();
+v22 = v21 + v19;
+virtualinvoke v3.<io.netty.buffer.ByteBuf: io.netty.buffer.ByteBuf writerIndex(int)>(v22);
+goto label8;
+label7:
+virtualinvoke v3.<io.netty.buffer.ByteBuf: io.netty.buffer.ByteBuf writeBytes(byte[],int,int)>(v14, 0, v19);
+label8:
+virtualinvoke v2.<io.netty.buffer.ByteBuf: io.netty.buffer.ByteBuf skipBytes(int)>(v4);
+v23 = virtualinvoke v2.<io.netty.buffer.ByteBuf: boolean hasArray()>();
+if v23 != 0 goto label9;
+v24 = v0.<io.netty.handler.codec.compression.LzfEncoder: com.ning.compress.BufferRecycler recycler>;
+virtualinvoke v24.<com.ning.compress.BufferRecycler: void releaseInputBuffer(byte[])>(v7);
+label9:
+return;
+}
+private int encodeCompress(byte[], int, int, byte[], int)
+{
+byte[] v1, v4;
+int v2, v3, v5, v7, v8;
+io.netty.handler.codec.compression.LzfEncoder v0;
+com.ning.compress.lzf.ChunkEncoder v6;
+v0 := @this: io.netty.handler.codec.compression.LzfEncoder;
+v1 := @parameter0: byte[];
+v2 := @parameter1: int;
+v3 := @parameter2: int;
+v4 := @parameter3: byte[];
+v5 := @parameter4: int;
+v6 = v0.<io.netty.handler.codec.compression.LzfEncoder: com.ning.compress.lzf.ChunkEncoder encoder>;
+v7 = staticinvoke <com.ning.compress.lzf.LZFEncoder: int appendEncoded(com.ning.compress.lzf.ChunkEncoder,byte[],int,int,byte[],int)>(v6, v1, v2, v3, v4, v5);
+v8 = v7 - v5;
+return v8;
+}
+private static int lzfEncodeNonCompress(byte[], int, int, byte[], int)
+{
+byte[] v0, v3;
+int v1, v10, v11, v2, v4, v5, v6, v7, v8, v9;
+v0 := @parameter0: byte[];
+v1 := @parameter1: int;
+v2 := @parameter2: int;
+v3 := @parameter3: byte[];
+v4 := @parameter4: int;
+v5 = (int) 65535;
+v6 = staticinvoke <java.lang.Math: int min(int,int)>(v5, v2);
+v7 = staticinvoke <com.ning.compress.lzf.LZFChunk: int appendNonCompressed(byte[],int,int,byte[],int)>(v0, v1, v6, v3, v4);
+v8 = v2 - v6;
+if v8 >= 1 goto label1;
+return v7;
+label1:
+v9 = v1 + v6;
+label2:
+v10 = (int) 65535;
+v11 = staticinvoke <java.lang.Math: int min(int,int)>(v8, v10);
+v7 = staticinvoke <com.ning.compress.lzf.LZFChunk: int appendNonCompressed(byte[],int,int,byte[],int)>(v0, v9, v11, v3, v7);
+v9 = v9 + v11;
+v8 = v8 - v11;
+if v8 > 0 goto label2;
+return v7;
+}
+private static int encodeNonCompress(byte[], int, int, byte[], int)
+{
+byte[] v0, v3;
+int v1, v2, v4, v5, v6;
+v0 := @parameter0: byte[];
+v1 := @parameter1: int;
+v2 := @parameter2: int;
+v3 := @parameter3: byte[];
+v4 := @parameter4: int;
+v5 = staticinvoke <io.netty.handler.codec.compression.LzfEncoder: int lzfEncodeNonCompress(byte[],int,int,byte[],int)>(v0, v1, v2, v3, v4);
+v6 = v5 - v4;
+return v6;
+}
+public void handlerRemoved(io.netty.channel.ChannelHandlerContext) throws java.lang.Exception
+{
+io.netty.channel.ChannelHandlerContext v1;
+io.netty.handler.codec.compression.LzfEncoder v0;
+com.ning.compress.lzf.ChunkEncoder v2;
+v0 := @this: io.netty.handler.codec.compression.LzfEncoder;
+v1 := @parameter0: io.netty.channel.ChannelHandlerContext;
+v2 = v0.<io.netty.handler.codec.compression.LzfEncoder: com.ning.compress.lzf.ChunkEncoder encoder>;
+virtualinvoke v2.<com.ning.compress.lzf.ChunkEncoder: void close()>();
+specialinvoke v0.<io.netty.handler.codec.MessageToByteEncoder: void handlerRemoved(io.netty.channel.ChannelHandlerContext)>(v1);
+return;
+}
+}

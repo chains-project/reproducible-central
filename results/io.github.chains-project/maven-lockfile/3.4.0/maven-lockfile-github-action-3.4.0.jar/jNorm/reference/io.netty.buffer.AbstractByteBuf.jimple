@@ -1,0 +1,2718 @@
+public abstract class io.netty.buffer.AbstractByteBuf extends io.netty.buffer.ByteBuf
+{
+private static final io.netty.util.internal.logging.InternalLogger logger;
+private static final java.lang.String LEGACY_PROP_CHECK_ACCESSIBLE;
+private static final java.lang.String PROP_CHECK_ACCESSIBLE;
+static final boolean checkAccessible;
+private static final java.lang.String PROP_CHECK_BOUNDS;
+private static final boolean checkBounds;
+static final io.netty.util.ResourceLeakDetector leakDetector;
+int readerIndex;
+int writerIndex;
+private int markedReaderIndex;
+private int markedWriterIndex;
+private int maxCapacity;
+protected void <init>(int)
+{
+int v1;
+io.netty.buffer.AbstractByteBuf v0;
+v0 := @this: io.netty.buffer.AbstractByteBuf;
+v1 := @parameter0: int;
+specialinvoke v0.<io.netty.buffer.ByteBuf: void <init>()>();
+staticinvoke <io.netty.util.internal.ObjectUtil: int checkPositiveOrZero(int,java.lang.String)>(v1, "maxCapacity");
+v0.<io.netty.buffer.AbstractByteBuf: int maxCapacity> = v1;
+return;
+}
+public boolean isReadOnly()
+{
+io.netty.buffer.AbstractByteBuf v0;
+v0 := @this: io.netty.buffer.AbstractByteBuf;
+return 0;
+}
+public io.netty.buffer.ByteBuf asReadOnly()
+{
+io.netty.buffer.AbstractByteBuf v0;
+io.netty.buffer.ByteBuf v2;
+boolean v1;
+v0 := @this: io.netty.buffer.AbstractByteBuf;
+v1 = virtualinvoke v0.<io.netty.buffer.AbstractByteBuf: boolean isReadOnly()>();
+if v1 == 0 goto label1;
+return v0;
+label1:
+v2 = staticinvoke <io.netty.buffer.Unpooled: io.netty.buffer.ByteBuf unmodifiableBuffer(io.netty.buffer.ByteBuf)>(v0);
+return v2;
+}
+public int maxCapacity()
+{
+int v1;
+io.netty.buffer.AbstractByteBuf v0;
+v0 := @this: io.netty.buffer.AbstractByteBuf;
+v1 = v0.<io.netty.buffer.AbstractByteBuf: int maxCapacity>;
+return v1;
+}
+protected final void maxCapacity(int)
+{
+int v1;
+io.netty.buffer.AbstractByteBuf v0;
+v0 := @this: io.netty.buffer.AbstractByteBuf;
+v1 := @parameter0: int;
+v0.<io.netty.buffer.AbstractByteBuf: int maxCapacity> = v1;
+return;
+}
+public int readerIndex()
+{
+int v1;
+io.netty.buffer.AbstractByteBuf v0;
+v0 := @this: io.netty.buffer.AbstractByteBuf;
+v1 = v0.<io.netty.buffer.AbstractByteBuf: int readerIndex>;
+return v1;
+}
+private static void checkIndexBounds(int, int, int)
+{
+java.lang.IndexOutOfBoundsException v3;
+java.lang.Object[] v4;
+java.lang.Integer v5, v6, v7;
+int v0, v1, v2;
+java.lang.String v8;
+v0 := @parameter0: int;
+v1 := @parameter1: int;
+v2 := @parameter2: int;
+if v0 < 0 goto label1;
+if v0 > v1 goto label1;
+if v1 <= v2 goto label2;
+label1:
+v3 = new java.lang.IndexOutOfBoundsException;
+v4 = newarray (java.lang.Object)[3];
+v5 = staticinvoke <java.lang.Integer: java.lang.Integer valueOf(int)>(v0);
+v4[0] = v5;
+v6 = staticinvoke <java.lang.Integer: java.lang.Integer valueOf(int)>(v1);
+v4[1] = v6;
+v7 = staticinvoke <java.lang.Integer: java.lang.Integer valueOf(int)>(v2);
+v4[2] = v7;
+v8 = staticinvoke <java.lang.String: java.lang.String format(java.lang.String,java.lang.Object[])>("readerIndex: %d, writerIndex: %d (expected: 0 <= readerIndex <= writerIndex <= capacity(%d))", v4);
+specialinvoke v3.<java.lang.IndexOutOfBoundsException: void <init>(java.lang.String)>(v8);
+throw v3;
+label2:
+return;
+}
+public io.netty.buffer.ByteBuf readerIndex(int)
+{
+io.netty.buffer.AbstractByteBuf v0;
+int v1, v3, v4;
+boolean v2;
+v0 := @this: io.netty.buffer.AbstractByteBuf;
+v1 := @parameter0: int;
+v2 = <io.netty.buffer.AbstractByteBuf: boolean checkBounds>;
+if v2 == 0 goto label1;
+v3 = v0.<io.netty.buffer.AbstractByteBuf: int writerIndex>;
+v4 = virtualinvoke v0.<io.netty.buffer.AbstractByteBuf: int capacity()>();
+staticinvoke <io.netty.buffer.AbstractByteBuf: void checkIndexBounds(int,int,int)>(v1, v3, v4);
+label1:
+v0.<io.netty.buffer.AbstractByteBuf: int readerIndex> = v1;
+return v0;
+}
+public int writerIndex()
+{
+int v1;
+io.netty.buffer.AbstractByteBuf v0;
+v0 := @this: io.netty.buffer.AbstractByteBuf;
+v1 = v0.<io.netty.buffer.AbstractByteBuf: int writerIndex>;
+return v1;
+}
+public io.netty.buffer.ByteBuf writerIndex(int)
+{
+io.netty.buffer.AbstractByteBuf v0;
+int v1, v3, v4;
+boolean v2;
+v0 := @this: io.netty.buffer.AbstractByteBuf;
+v1 := @parameter0: int;
+v2 = <io.netty.buffer.AbstractByteBuf: boolean checkBounds>;
+if v2 == 0 goto label1;
+v3 = v0.<io.netty.buffer.AbstractByteBuf: int readerIndex>;
+v4 = virtualinvoke v0.<io.netty.buffer.AbstractByteBuf: int capacity()>();
+staticinvoke <io.netty.buffer.AbstractByteBuf: void checkIndexBounds(int,int,int)>(v3, v1, v4);
+label1:
+v0.<io.netty.buffer.AbstractByteBuf: int writerIndex> = v1;
+return v0;
+}
+public io.netty.buffer.ByteBuf setIndex(int, int)
+{
+io.netty.buffer.AbstractByteBuf v0;
+int v1, v2, v4;
+boolean v3;
+v0 := @this: io.netty.buffer.AbstractByteBuf;
+v1 := @parameter0: int;
+v2 := @parameter1: int;
+v3 = <io.netty.buffer.AbstractByteBuf: boolean checkBounds>;
+if v3 == 0 goto label1;
+v4 = virtualinvoke v0.<io.netty.buffer.AbstractByteBuf: int capacity()>();
+staticinvoke <io.netty.buffer.AbstractByteBuf: void checkIndexBounds(int,int,int)>(v1, v2, v4);
+label1:
+virtualinvoke v0.<io.netty.buffer.AbstractByteBuf: void setIndex0(int,int)>(v1, v2);
+return v0;
+}
+public io.netty.buffer.ByteBuf clear()
+{
+io.netty.buffer.AbstractByteBuf v0;
+v0 := @this: io.netty.buffer.AbstractByteBuf;
+v0.<io.netty.buffer.AbstractByteBuf: int writerIndex> = 0;
+v0.<io.netty.buffer.AbstractByteBuf: int readerIndex> = 0;
+return v0;
+}
+public boolean isReadable()
+{
+io.netty.buffer.AbstractByteBuf v0;
+int v1, v2;
+boolean v3;
+v0 := @this: io.netty.buffer.AbstractByteBuf;
+v1 = v0.<io.netty.buffer.AbstractByteBuf: int writerIndex>;
+v2 = v0.<io.netty.buffer.AbstractByteBuf: int readerIndex>;
+if v1 <= v2 goto label1;
+v3 = 1;
+goto label2;
+label1:
+v3 = 0;
+label2:
+return v3;
+}
+public boolean isReadable(int)
+{
+io.netty.buffer.AbstractByteBuf v0;
+int v1, v2, v3, v4;
+boolean v5;
+v0 := @this: io.netty.buffer.AbstractByteBuf;
+v1 := @parameter0: int;
+v2 = v0.<io.netty.buffer.AbstractByteBuf: int writerIndex>;
+v3 = v0.<io.netty.buffer.AbstractByteBuf: int readerIndex>;
+v4 = v2 - v3;
+if v4 < v1 goto label1;
+v5 = 1;
+goto label2;
+label1:
+v5 = 0;
+label2:
+return v5;
+}
+public boolean isWritable()
+{
+io.netty.buffer.AbstractByteBuf v0;
+int v1, v2;
+boolean v3;
+v0 := @this: io.netty.buffer.AbstractByteBuf;
+v1 = virtualinvoke v0.<io.netty.buffer.AbstractByteBuf: int capacity()>();
+v2 = v0.<io.netty.buffer.AbstractByteBuf: int writerIndex>;
+if v1 <= v2 goto label1;
+v3 = 1;
+goto label2;
+label1:
+v3 = 0;
+label2:
+return v3;
+}
+public boolean isWritable(int)
+{
+io.netty.buffer.AbstractByteBuf v0;
+int v1, v2, v3, v4;
+boolean v5;
+v0 := @this: io.netty.buffer.AbstractByteBuf;
+v1 := @parameter0: int;
+v2 = virtualinvoke v0.<io.netty.buffer.AbstractByteBuf: int capacity()>();
+v3 = v0.<io.netty.buffer.AbstractByteBuf: int writerIndex>;
+v4 = v2 - v3;
+if v4 < v1 goto label1;
+v5 = 1;
+goto label2;
+label1:
+v5 = 0;
+label2:
+return v5;
+}
+public int readableBytes()
+{
+io.netty.buffer.AbstractByteBuf v0;
+int v1, v2, v3;
+v0 := @this: io.netty.buffer.AbstractByteBuf;
+v1 = v0.<io.netty.buffer.AbstractByteBuf: int writerIndex>;
+v2 = v0.<io.netty.buffer.AbstractByteBuf: int readerIndex>;
+v3 = v1 - v2;
+return v3;
+}
+public int writableBytes()
+{
+io.netty.buffer.AbstractByteBuf v0;
+int v1, v2, v3;
+v0 := @this: io.netty.buffer.AbstractByteBuf;
+v1 = virtualinvoke v0.<io.netty.buffer.AbstractByteBuf: int capacity()>();
+v2 = v0.<io.netty.buffer.AbstractByteBuf: int writerIndex>;
+v3 = v1 - v2;
+return v3;
+}
+public int maxWritableBytes()
+{
+io.netty.buffer.AbstractByteBuf v0;
+int v1, v2, v3;
+v0 := @this: io.netty.buffer.AbstractByteBuf;
+v1 = virtualinvoke v0.<io.netty.buffer.AbstractByteBuf: int maxCapacity()>();
+v2 = v0.<io.netty.buffer.AbstractByteBuf: int writerIndex>;
+v3 = v1 - v2;
+return v3;
+}
+public io.netty.buffer.ByteBuf markReaderIndex()
+{
+int v1;
+io.netty.buffer.AbstractByteBuf v0;
+v0 := @this: io.netty.buffer.AbstractByteBuf;
+v1 = v0.<io.netty.buffer.AbstractByteBuf: int readerIndex>;
+v0.<io.netty.buffer.AbstractByteBuf: int markedReaderIndex> = v1;
+return v0;
+}
+public io.netty.buffer.ByteBuf resetReaderIndex()
+{
+int v1;
+io.netty.buffer.AbstractByteBuf v0;
+v0 := @this: io.netty.buffer.AbstractByteBuf;
+v1 = v0.<io.netty.buffer.AbstractByteBuf: int markedReaderIndex>;
+virtualinvoke v0.<io.netty.buffer.AbstractByteBuf: io.netty.buffer.ByteBuf readerIndex(int)>(v1);
+return v0;
+}
+public io.netty.buffer.ByteBuf markWriterIndex()
+{
+int v1;
+io.netty.buffer.AbstractByteBuf v0;
+v0 := @this: io.netty.buffer.AbstractByteBuf;
+v1 = v0.<io.netty.buffer.AbstractByteBuf: int writerIndex>;
+v0.<io.netty.buffer.AbstractByteBuf: int markedWriterIndex> = v1;
+return v0;
+}
+public io.netty.buffer.ByteBuf resetWriterIndex()
+{
+int v1;
+io.netty.buffer.AbstractByteBuf v0;
+v0 := @this: io.netty.buffer.AbstractByteBuf;
+v1 = v0.<io.netty.buffer.AbstractByteBuf: int markedWriterIndex>;
+virtualinvoke v0.<io.netty.buffer.AbstractByteBuf: io.netty.buffer.ByteBuf writerIndex(int)>(v1);
+return v0;
+}
+public io.netty.buffer.ByteBuf discardReadBytes()
+{
+io.netty.buffer.AbstractByteBuf v0;
+int v1, v10, v11, v12, v2, v3, v4, v5, v6, v7, v8, v9;
+v0 := @this: io.netty.buffer.AbstractByteBuf;
+v1 = v0.<io.netty.buffer.AbstractByteBuf: int readerIndex>;
+if v1 != 0 goto label1;
+virtualinvoke v0.<io.netty.buffer.AbstractByteBuf: void ensureAccessible()>();
+return v0;
+label1:
+v2 = v0.<io.netty.buffer.AbstractByteBuf: int readerIndex>;
+v3 = v0.<io.netty.buffer.AbstractByteBuf: int writerIndex>;
+if v2 == v3 goto label2;
+v4 = v0.<io.netty.buffer.AbstractByteBuf: int readerIndex>;
+v5 = v0.<io.netty.buffer.AbstractByteBuf: int writerIndex>;
+v6 = v0.<io.netty.buffer.AbstractByteBuf: int readerIndex>;
+v7 = v5 - v6;
+virtualinvoke v0.<io.netty.buffer.AbstractByteBuf: io.netty.buffer.ByteBuf setBytes(int,io.netty.buffer.ByteBuf,int,int)>(0, v0, v4, v7);
+v8 = v0.<io.netty.buffer.AbstractByteBuf: int writerIndex>;
+v9 = v0.<io.netty.buffer.AbstractByteBuf: int readerIndex>;
+v10 = v8 - v9;
+v0.<io.netty.buffer.AbstractByteBuf: int writerIndex> = v10;
+v11 = v0.<io.netty.buffer.AbstractByteBuf: int readerIndex>;
+virtualinvoke v0.<io.netty.buffer.AbstractByteBuf: void adjustMarkers(int)>(v11);
+v0.<io.netty.buffer.AbstractByteBuf: int readerIndex> = 0;
+goto label3;
+label2:
+virtualinvoke v0.<io.netty.buffer.AbstractByteBuf: void ensureAccessible()>();
+v12 = v0.<io.netty.buffer.AbstractByteBuf: int readerIndex>;
+virtualinvoke v0.<io.netty.buffer.AbstractByteBuf: void adjustMarkers(int)>(v12);
+v0.<io.netty.buffer.AbstractByteBuf: int readerIndex> = 0;
+v0.<io.netty.buffer.AbstractByteBuf: int writerIndex> = 0;
+label3:
+return v0;
+}
+public io.netty.buffer.ByteBuf discardSomeReadBytes()
+{
+int v1, v10, v11, v12, v13, v14, v15, v2, v3, v4, v5, v6, v7, v8, v9;
+io.netty.buffer.AbstractByteBuf v0;
+v0 := @this: io.netty.buffer.AbstractByteBuf;
+v1 = v0.<io.netty.buffer.AbstractByteBuf: int readerIndex>;
+if v1 <= 0 goto label2;
+v2 = v0.<io.netty.buffer.AbstractByteBuf: int readerIndex>;
+v3 = v0.<io.netty.buffer.AbstractByteBuf: int writerIndex>;
+if v2 != v3 goto label1;
+virtualinvoke v0.<io.netty.buffer.AbstractByteBuf: void ensureAccessible()>();
+v4 = v0.<io.netty.buffer.AbstractByteBuf: int readerIndex>;
+virtualinvoke v0.<io.netty.buffer.AbstractByteBuf: void adjustMarkers(int)>(v4);
+v0.<io.netty.buffer.AbstractByteBuf: int readerIndex> = 0;
+v0.<io.netty.buffer.AbstractByteBuf: int writerIndex> = 0;
+return v0;
+label1:
+v5 = v0.<io.netty.buffer.AbstractByteBuf: int readerIndex>;
+v6 = virtualinvoke v0.<io.netty.buffer.AbstractByteBuf: int capacity()>();
+v7 = v6 >>> 1;
+if v5 < v7 goto label2;
+v8 = v0.<io.netty.buffer.AbstractByteBuf: int readerIndex>;
+v9 = v0.<io.netty.buffer.AbstractByteBuf: int writerIndex>;
+v10 = v0.<io.netty.buffer.AbstractByteBuf: int readerIndex>;
+v11 = v9 - v10;
+virtualinvoke v0.<io.netty.buffer.AbstractByteBuf: io.netty.buffer.ByteBuf setBytes(int,io.netty.buffer.ByteBuf,int,int)>(0, v0, v8, v11);
+v12 = v0.<io.netty.buffer.AbstractByteBuf: int writerIndex>;
+v13 = v0.<io.netty.buffer.AbstractByteBuf: int readerIndex>;
+v14 = v12 - v13;
+v0.<io.netty.buffer.AbstractByteBuf: int writerIndex> = v14;
+v15 = v0.<io.netty.buffer.AbstractByteBuf: int readerIndex>;
+virtualinvoke v0.<io.netty.buffer.AbstractByteBuf: void adjustMarkers(int)>(v15);
+v0.<io.netty.buffer.AbstractByteBuf: int readerIndex> = 0;
+return v0;
+label2:
+virtualinvoke v0.<io.netty.buffer.AbstractByteBuf: void ensureAccessible()>();
+return v0;
+}
+protected final void adjustMarkers(int)
+{
+io.netty.buffer.AbstractByteBuf v0;
+int v1, v2, v3, v4, v5, v6, v7, v8, v9;
+v0 := @this: io.netty.buffer.AbstractByteBuf;
+v1 := @parameter0: int;
+v2 = v0.<io.netty.buffer.AbstractByteBuf: int markedReaderIndex>;
+if v2 > v1 goto label2;
+v0.<io.netty.buffer.AbstractByteBuf: int markedReaderIndex> = 0;
+v3 = v0.<io.netty.buffer.AbstractByteBuf: int markedWriterIndex>;
+if v3 > v1 goto label1;
+v0.<io.netty.buffer.AbstractByteBuf: int markedWriterIndex> = 0;
+goto label3;
+label1:
+v4 = v0.<io.netty.buffer.AbstractByteBuf: int markedWriterIndex>;
+v5 = v4 - v1;
+v0.<io.netty.buffer.AbstractByteBuf: int markedWriterIndex> = v5;
+goto label3;
+label2:
+v6 = v0.<io.netty.buffer.AbstractByteBuf: int markedReaderIndex>;
+v7 = v6 - v1;
+v0.<io.netty.buffer.AbstractByteBuf: int markedReaderIndex> = v7;
+v8 = v0.<io.netty.buffer.AbstractByteBuf: int markedWriterIndex>;
+v9 = v8 - v1;
+v0.<io.netty.buffer.AbstractByteBuf: int markedWriterIndex> = v9;
+label3:
+return;
+}
+protected final void trimIndicesToCapacity(int)
+{
+io.netty.buffer.AbstractByteBuf v0;
+int v1, v2, v3, v4;
+v0 := @this: io.netty.buffer.AbstractByteBuf;
+v1 := @parameter0: int;
+v2 = virtualinvoke v0.<io.netty.buffer.AbstractByteBuf: int writerIndex()>();
+if v2 <= v1 goto label1;
+v3 = virtualinvoke v0.<io.netty.buffer.AbstractByteBuf: int readerIndex()>();
+v4 = staticinvoke <java.lang.Math: int min(int,int)>(v3, v1);
+virtualinvoke v0.<io.netty.buffer.AbstractByteBuf: void setIndex0(int,int)>(v4, v1);
+label1:
+return;
+}
+public io.netty.buffer.ByteBuf ensureWritable(int)
+{
+int v1, v2;
+io.netty.buffer.AbstractByteBuf v0;
+v0 := @this: io.netty.buffer.AbstractByteBuf;
+v1 := @parameter0: int;
+v2 = staticinvoke <io.netty.util.internal.ObjectUtil: int checkPositiveOrZero(int,java.lang.String)>(v1, "minWritableBytes");
+virtualinvoke v0.<io.netty.buffer.AbstractByteBuf: void ensureWritable0(int)>(v2);
+return v0;
+}
+final void ensureWritable0(int)
+{
+java.lang.IndexOutOfBoundsException v10;
+java.lang.Object[] v11;
+io.netty.buffer.ByteBufAllocator v19;
+java.lang.Integer v12, v13, v15;
+int v1, v14, v17, v18, v2, v20, v3, v5, v9;
+java.lang.String v16;
+boolean v4, v6, v7, v8;
+io.netty.buffer.AbstractByteBuf v0;
+v0 := @this: io.netty.buffer.AbstractByteBuf;
+v1 := @parameter0: int;
+v2 = virtualinvoke v0.<io.netty.buffer.AbstractByteBuf: int writerIndex()>();
+v3 = v2 + v1;
+if v3 < 0 goto label1;
+v4 = 1;
+goto label2;
+label1:
+v4 = 0;
+label2:
+v5 = virtualinvoke v0.<io.netty.buffer.AbstractByteBuf: int capacity()>();
+if v3 > v5 goto label3;
+v6 = 1;
+goto label4;
+label3:
+v6 = 0;
+label4:
+v7 = v4 & v6;
+if v7 == 0 goto label5;
+virtualinvoke v0.<io.netty.buffer.AbstractByteBuf: void ensureAccessible()>();
+return;
+label5:
+v8 = <io.netty.buffer.AbstractByteBuf: boolean checkBounds>;
+if v8 == 0 goto label7;
+if v3 < 0 goto label6;
+v9 = v0.<io.netty.buffer.AbstractByteBuf: int maxCapacity>;
+if v3 <= v9 goto label7;
+label6:
+virtualinvoke v0.<io.netty.buffer.AbstractByteBuf: void ensureAccessible()>();
+v10 = new java.lang.IndexOutOfBoundsException;
+v11 = newarray (java.lang.Object)[4];
+v12 = staticinvoke <java.lang.Integer: java.lang.Integer valueOf(int)>(v2);
+v11[0] = v12;
+v13 = staticinvoke <java.lang.Integer: java.lang.Integer valueOf(int)>(v1);
+v11[1] = v13;
+v14 = v0.<io.netty.buffer.AbstractByteBuf: int maxCapacity>;
+v15 = staticinvoke <java.lang.Integer: java.lang.Integer valueOf(int)>(v14);
+v11[2] = v15;
+v11[3] = v0;
+v16 = staticinvoke <java.lang.String: java.lang.String format(java.lang.String,java.lang.Object[])>("writerIndex(%d) + minWritableBytes(%d) exceeds maxCapacity(%d): %s", v11);
+specialinvoke v10.<java.lang.IndexOutOfBoundsException: void <init>(java.lang.String)>(v16);
+throw v10;
+label7:
+v17 = virtualinvoke v0.<io.netty.buffer.AbstractByteBuf: int maxFastWritableBytes()>();
+if v17 < v1 goto label8;
+v18 = v2 + v17;
+goto label9;
+label8:
+v19 = virtualinvoke v0.<io.netty.buffer.AbstractByteBuf: io.netty.buffer.ByteBufAllocator alloc()>();
+v20 = v0.<io.netty.buffer.AbstractByteBuf: int maxCapacity>;
+v18 = interfaceinvoke v19.<io.netty.buffer.ByteBufAllocator: int calculateNewCapacity(int,int)>(v3, v20);
+label9:
+virtualinvoke v0.<io.netty.buffer.AbstractByteBuf: io.netty.buffer.ByteBuf capacity(int)>(v18);
+return;
+}
+public int ensureWritable(int, boolean)
+{
+io.netty.buffer.AbstractByteBuf v0;
+io.netty.buffer.ByteBufAllocator v10;
+int v1, v11, v3, v4, v5, v6, v7, v8, v9;
+boolean v2;
+v0 := @this: io.netty.buffer.AbstractByteBuf;
+v1 := @parameter0: int;
+v2 := @parameter1: boolean;
+virtualinvoke v0.<io.netty.buffer.AbstractByteBuf: void ensureAccessible()>();
+staticinvoke <io.netty.util.internal.ObjectUtil: int checkPositiveOrZero(int,java.lang.String)>(v1, "minWritableBytes");
+v3 = virtualinvoke v0.<io.netty.buffer.AbstractByteBuf: int writableBytes()>();
+if v1 > v3 goto label1;
+return 0;
+label1:
+v4 = virtualinvoke v0.<io.netty.buffer.AbstractByteBuf: int maxCapacity()>();
+v5 = virtualinvoke v0.<io.netty.buffer.AbstractByteBuf: int writerIndex()>();
+v6 = v4 - v5;
+if v1 <= v6 goto label4;
+if v2 == 0 goto label2;
+v7 = virtualinvoke v0.<io.netty.buffer.AbstractByteBuf: int capacity()>();
+if v7 != v4 goto label3;
+label2:
+return 1;
+label3:
+virtualinvoke v0.<io.netty.buffer.AbstractByteBuf: io.netty.buffer.ByteBuf capacity(int)>(v4);
+return 3;
+label4:
+v8 = virtualinvoke v0.<io.netty.buffer.AbstractByteBuf: int maxFastWritableBytes()>();
+if v8 < v1 goto label5;
+v9 = v5 + v8;
+goto label6;
+label5:
+v10 = virtualinvoke v0.<io.netty.buffer.AbstractByteBuf: io.netty.buffer.ByteBufAllocator alloc()>();
+v11 = v5 + v1;
+v9 = interfaceinvoke v10.<io.netty.buffer.ByteBufAllocator: int calculateNewCapacity(int,int)>(v11, v4);
+label6:
+virtualinvoke v0.<io.netty.buffer.AbstractByteBuf: io.netty.buffer.ByteBuf capacity(int)>(v9);
+return 2;
+}
+public io.netty.buffer.ByteBuf order(java.nio.ByteOrder)
+{
+java.nio.ByteOrder v1, v2;
+io.netty.buffer.AbstractByteBuf v0;
+io.netty.buffer.SwappedByteBuf v3;
+v0 := @this: io.netty.buffer.AbstractByteBuf;
+v1 := @parameter0: java.nio.ByteOrder;
+v2 = virtualinvoke v0.<io.netty.buffer.AbstractByteBuf: java.nio.ByteOrder order()>();
+if v1 != v2 goto label1;
+return v0;
+label1:
+staticinvoke <io.netty.util.internal.ObjectUtil: java.lang.Object checkNotNull(java.lang.Object,java.lang.String)>(v1, "endianness");
+v3 = virtualinvoke v0.<io.netty.buffer.AbstractByteBuf: io.netty.buffer.SwappedByteBuf newSwappedByteBuf()>();
+return v3;
+}
+protected io.netty.buffer.SwappedByteBuf newSwappedByteBuf()
+{
+io.netty.buffer.AbstractByteBuf v0;
+io.netty.buffer.SwappedByteBuf v1;
+v0 := @this: io.netty.buffer.AbstractByteBuf;
+v1 = new io.netty.buffer.SwappedByteBuf;
+specialinvoke v1.<io.netty.buffer.SwappedByteBuf: void <init>(io.netty.buffer.ByteBuf)>(v0);
+return v1;
+}
+public byte getByte(int)
+{
+int v1;
+io.netty.buffer.AbstractByteBuf v0;
+byte v2;
+v0 := @this: io.netty.buffer.AbstractByteBuf;
+v1 := @parameter0: int;
+virtualinvoke v0.<io.netty.buffer.AbstractByteBuf: void checkIndex(int)>(v1);
+v2 = virtualinvoke v0.<io.netty.buffer.AbstractByteBuf: byte _getByte(int)>(v1);
+return v2;
+}
+protected abstract byte _getByte(int);
+public boolean getBoolean(int)
+{
+io.netty.buffer.AbstractByteBuf v0;
+byte v2;
+int v1;
+boolean v3;
+v0 := @this: io.netty.buffer.AbstractByteBuf;
+v1 := @parameter0: int;
+v2 = virtualinvoke v0.<io.netty.buffer.AbstractByteBuf: byte getByte(int)>(v1);
+if v2 == 0 goto label1;
+v3 = 1;
+goto label2;
+label1:
+v3 = 0;
+label2:
+return v3;
+}
+public short getUnsignedByte(int)
+{
+io.netty.buffer.AbstractByteBuf v0;
+short v3;
+byte v2;
+int v1;
+v0 := @this: io.netty.buffer.AbstractByteBuf;
+v1 := @parameter0: int;
+v2 = virtualinvoke v0.<io.netty.buffer.AbstractByteBuf: byte getByte(int)>(v1);
+v3 = v2 & 255;
+return v3;
+}
+public short getShort(int)
+{
+int v1;
+io.netty.buffer.AbstractByteBuf v0;
+short v2;
+v0 := @this: io.netty.buffer.AbstractByteBuf;
+v1 := @parameter0: int;
+virtualinvoke v0.<io.netty.buffer.AbstractByteBuf: void checkIndex(int,int)>(v1, 2);
+v2 = virtualinvoke v0.<io.netty.buffer.AbstractByteBuf: short _getShort(int)>(v1);
+return v2;
+}
+protected abstract short _getShort(int);
+public short getShortLE(int)
+{
+int v1;
+io.netty.buffer.AbstractByteBuf v0;
+short v2;
+v0 := @this: io.netty.buffer.AbstractByteBuf;
+v1 := @parameter0: int;
+virtualinvoke v0.<io.netty.buffer.AbstractByteBuf: void checkIndex(int,int)>(v1, 2);
+v2 = virtualinvoke v0.<io.netty.buffer.AbstractByteBuf: short _getShortLE(int)>(v1);
+return v2;
+}
+protected abstract short _getShortLE(int);
+public int getUnsignedShort(int)
+{
+io.netty.buffer.AbstractByteBuf v0;
+short v2;
+int v1, v3, v4;
+v0 := @this: io.netty.buffer.AbstractByteBuf;
+v1 := @parameter0: int;
+v2 = virtualinvoke v0.<io.netty.buffer.AbstractByteBuf: short getShort(int)>(v1);
+v3 = (int) 65535;
+v4 = v2 & v3;
+return v4;
+}
+public int getUnsignedShortLE(int)
+{
+io.netty.buffer.AbstractByteBuf v0;
+short v2;
+int v1, v3, v4;
+v0 := @this: io.netty.buffer.AbstractByteBuf;
+v1 := @parameter0: int;
+v2 = virtualinvoke v0.<io.netty.buffer.AbstractByteBuf: short getShortLE(int)>(v1);
+v3 = (int) 65535;
+v4 = v2 & v3;
+return v4;
+}
+public int getUnsignedMedium(int)
+{
+int v1, v2;
+io.netty.buffer.AbstractByteBuf v0;
+v0 := @this: io.netty.buffer.AbstractByteBuf;
+v1 := @parameter0: int;
+virtualinvoke v0.<io.netty.buffer.AbstractByteBuf: void checkIndex(int,int)>(v1, 3);
+v2 = virtualinvoke v0.<io.netty.buffer.AbstractByteBuf: int _getUnsignedMedium(int)>(v1);
+return v2;
+}
+protected abstract int _getUnsignedMedium(int);
+public int getUnsignedMediumLE(int)
+{
+int v1, v2;
+io.netty.buffer.AbstractByteBuf v0;
+v0 := @this: io.netty.buffer.AbstractByteBuf;
+v1 := @parameter0: int;
+virtualinvoke v0.<io.netty.buffer.AbstractByteBuf: void checkIndex(int,int)>(v1, 3);
+v2 = virtualinvoke v0.<io.netty.buffer.AbstractByteBuf: int _getUnsignedMediumLE(int)>(v1);
+return v2;
+}
+protected abstract int _getUnsignedMediumLE(int);
+public int getMedium(int)
+{
+io.netty.buffer.AbstractByteBuf v0;
+int v1, v2, v3;
+v0 := @this: io.netty.buffer.AbstractByteBuf;
+v1 := @parameter0: int;
+v2 = virtualinvoke v0.<io.netty.buffer.AbstractByteBuf: int getUnsignedMedium(int)>(v1);
+v3 = v2 & 8388608;
+if v3 == 0 goto label1;
+v2 = v2 | -16777216;
+label1:
+return v2;
+}
+public int getMediumLE(int)
+{
+io.netty.buffer.AbstractByteBuf v0;
+int v1, v2, v3;
+v0 := @this: io.netty.buffer.AbstractByteBuf;
+v1 := @parameter0: int;
+v2 = virtualinvoke v0.<io.netty.buffer.AbstractByteBuf: int getUnsignedMediumLE(int)>(v1);
+v3 = v2 & 8388608;
+if v3 == 0 goto label1;
+v2 = v2 | -16777216;
+label1:
+return v2;
+}
+public int getInt(int)
+{
+int v1, v2;
+io.netty.buffer.AbstractByteBuf v0;
+v0 := @this: io.netty.buffer.AbstractByteBuf;
+v1 := @parameter0: int;
+virtualinvoke v0.<io.netty.buffer.AbstractByteBuf: void checkIndex(int,int)>(v1, 4);
+v2 = virtualinvoke v0.<io.netty.buffer.AbstractByteBuf: int _getInt(int)>(v1);
+return v2;
+}
+protected abstract int _getInt(int);
+public int getIntLE(int)
+{
+int v1, v2;
+io.netty.buffer.AbstractByteBuf v0;
+v0 := @this: io.netty.buffer.AbstractByteBuf;
+v1 := @parameter0: int;
+virtualinvoke v0.<io.netty.buffer.AbstractByteBuf: void checkIndex(int,int)>(v1, 4);
+v2 = virtualinvoke v0.<io.netty.buffer.AbstractByteBuf: int _getIntLE(int)>(v1);
+return v2;
+}
+protected abstract int _getIntLE(int);
+public long getUnsignedInt(int)
+{
+io.netty.buffer.AbstractByteBuf v0;
+int v1, v2;
+long v3;
+v0 := @this: io.netty.buffer.AbstractByteBuf;
+v1 := @parameter0: int;
+v2 = virtualinvoke v0.<io.netty.buffer.AbstractByteBuf: int getInt(int)>(v1);
+v3 = v2 & 4294967295L;
+return v3;
+}
+public long getUnsignedIntLE(int)
+{
+io.netty.buffer.AbstractByteBuf v0;
+int v1, v2;
+long v3;
+v0 := @this: io.netty.buffer.AbstractByteBuf;
+v1 := @parameter0: int;
+v2 = virtualinvoke v0.<io.netty.buffer.AbstractByteBuf: int getIntLE(int)>(v1);
+v3 = v2 & 4294967295L;
+return v3;
+}
+public long getLong(int)
+{
+int v1;
+io.netty.buffer.AbstractByteBuf v0;
+long v2;
+v0 := @this: io.netty.buffer.AbstractByteBuf;
+v1 := @parameter0: int;
+virtualinvoke v0.<io.netty.buffer.AbstractByteBuf: void checkIndex(int,int)>(v1, 8);
+v2 = virtualinvoke v0.<io.netty.buffer.AbstractByteBuf: long _getLong(int)>(v1);
+return v2;
+}
+protected abstract long _getLong(int);
+public long getLongLE(int)
+{
+int v1;
+io.netty.buffer.AbstractByteBuf v0;
+long v2;
+v0 := @this: io.netty.buffer.AbstractByteBuf;
+v1 := @parameter0: int;
+virtualinvoke v0.<io.netty.buffer.AbstractByteBuf: void checkIndex(int,int)>(v1, 8);
+v2 = virtualinvoke v0.<io.netty.buffer.AbstractByteBuf: long _getLongLE(int)>(v1);
+return v2;
+}
+protected abstract long _getLongLE(int);
+public char getChar(int)
+{
+int v1;
+io.netty.buffer.AbstractByteBuf v0;
+short v2;
+v0 := @this: io.netty.buffer.AbstractByteBuf;
+v1 := @parameter0: int;
+v2 = virtualinvoke v0.<io.netty.buffer.AbstractByteBuf: short getShort(int)>(v1);
+return v2;
+}
+public float getFloat(int)
+{
+io.netty.buffer.AbstractByteBuf v0;
+int v1, v2;
+float v3;
+v0 := @this: io.netty.buffer.AbstractByteBuf;
+v1 := @parameter0: int;
+v2 = virtualinvoke v0.<io.netty.buffer.AbstractByteBuf: int getInt(int)>(v1);
+v3 = staticinvoke <java.lang.Float: float intBitsToFloat(int)>(v2);
+return v3;
+}
+public double getDouble(int)
+{
+io.netty.buffer.AbstractByteBuf v0;
+int v1;
+long v2;
+double v3;
+v0 := @this: io.netty.buffer.AbstractByteBuf;
+v1 := @parameter0: int;
+v2 = virtualinvoke v0.<io.netty.buffer.AbstractByteBuf: long getLong(int)>(v1);
+v3 = staticinvoke <java.lang.Double: double longBitsToDouble(long)>(v2);
+return v3;
+}
+public io.netty.buffer.ByteBuf getBytes(int, byte[])
+{
+byte[] v2;
+io.netty.buffer.AbstractByteBuf v0;
+int v1, v3;
+v0 := @this: io.netty.buffer.AbstractByteBuf;
+v1 := @parameter0: int;
+v2 := @parameter1: byte[];
+v3 = lengthof v2;
+virtualinvoke v0.<io.netty.buffer.AbstractByteBuf: io.netty.buffer.ByteBuf getBytes(int,byte[],int,int)>(v1, v2, 0, v3);
+return v0;
+}
+public io.netty.buffer.ByteBuf getBytes(int, io.netty.buffer.ByteBuf)
+{
+io.netty.buffer.AbstractByteBuf v0;
+io.netty.buffer.ByteBuf v2;
+int v1, v3;
+v0 := @this: io.netty.buffer.AbstractByteBuf;
+v1 := @parameter0: int;
+v2 := @parameter1: io.netty.buffer.ByteBuf;
+v3 = virtualinvoke v2.<io.netty.buffer.ByteBuf: int writableBytes()>();
+virtualinvoke v0.<io.netty.buffer.AbstractByteBuf: io.netty.buffer.ByteBuf getBytes(int,io.netty.buffer.ByteBuf,int)>(v1, v2, v3);
+return v0;
+}
+public io.netty.buffer.ByteBuf getBytes(int, io.netty.buffer.ByteBuf, int)
+{
+io.netty.buffer.AbstractByteBuf v0;
+io.netty.buffer.ByteBuf v2;
+int v1, v3, v4, v5, v6;
+v0 := @this: io.netty.buffer.AbstractByteBuf;
+v1 := @parameter0: int;
+v2 := @parameter1: io.netty.buffer.ByteBuf;
+v3 := @parameter2: int;
+v4 = virtualinvoke v2.<io.netty.buffer.ByteBuf: int writerIndex()>();
+virtualinvoke v0.<io.netty.buffer.AbstractByteBuf: io.netty.buffer.ByteBuf getBytes(int,io.netty.buffer.ByteBuf,int,int)>(v1, v2, v4, v3);
+v5 = virtualinvoke v2.<io.netty.buffer.ByteBuf: int writerIndex()>();
+v6 = v5 + v3;
+virtualinvoke v2.<io.netty.buffer.ByteBuf: io.netty.buffer.ByteBuf writerIndex(int)>(v6);
+return v0;
+}
+public java.lang.CharSequence getCharSequence(int, int, java.nio.charset.Charset)
+{
+byte[] v9;
+io.netty.buffer.AbstractByteBuf v0;
+io.netty.util.AsciiString v8;
+java.nio.charset.Charset v3, v4, v6;
+int v1, v2;
+java.lang.String v10;
+boolean v5, v7;
+v0 := @this: io.netty.buffer.AbstractByteBuf;
+v1 := @parameter0: int;
+v2 := @parameter1: int;
+v3 := @parameter2: java.nio.charset.Charset;
+v4 = <io.netty.util.CharsetUtil: java.nio.charset.Charset US_ASCII>;
+v5 = virtualinvoke v4.<java.nio.charset.Charset: boolean equals(java.lang.Object)>(v3);
+if v5 != 0 goto label1;
+v6 = <io.netty.util.CharsetUtil: java.nio.charset.Charset ISO_8859_1>;
+v7 = virtualinvoke v6.<java.nio.charset.Charset: boolean equals(java.lang.Object)>(v3);
+if v7 == 0 goto label2;
+label1:
+v8 = new io.netty.util.AsciiString;
+v9 = staticinvoke <io.netty.buffer.ByteBufUtil: byte[] getBytes(io.netty.buffer.ByteBuf,int,int,boolean)>(v0, v1, v2, 1);
+specialinvoke v8.<io.netty.util.AsciiString: void <init>(byte[],boolean)>(v9, 0);
+return v8;
+label2:
+v10 = virtualinvoke v0.<io.netty.buffer.AbstractByteBuf: java.lang.String toString(int,int,java.nio.charset.Charset)>(v1, v2, v3);
+return v10;
+}
+public java.lang.CharSequence readCharSequence(int, java.nio.charset.Charset)
+{
+io.netty.buffer.AbstractByteBuf v0;
+java.lang.CharSequence v4;
+java.nio.charset.Charset v2;
+int v1, v3, v5, v6;
+v0 := @this: io.netty.buffer.AbstractByteBuf;
+v1 := @parameter0: int;
+v2 := @parameter1: java.nio.charset.Charset;
+v3 = v0.<io.netty.buffer.AbstractByteBuf: int readerIndex>;
+v4 = virtualinvoke v0.<io.netty.buffer.AbstractByteBuf: java.lang.CharSequence getCharSequence(int,int,java.nio.charset.Charset)>(v3, v1, v2);
+v5 = v0.<io.netty.buffer.AbstractByteBuf: int readerIndex>;
+v6 = v5 + v1;
+v0.<io.netty.buffer.AbstractByteBuf: int readerIndex> = v6;
+return v4;
+}
+public io.netty.buffer.ByteBuf setByte(int, int)
+{
+int v1, v2;
+io.netty.buffer.AbstractByteBuf v0;
+v0 := @this: io.netty.buffer.AbstractByteBuf;
+v1 := @parameter0: int;
+v2 := @parameter1: int;
+virtualinvoke v0.<io.netty.buffer.AbstractByteBuf: void checkIndex(int)>(v1);
+virtualinvoke v0.<io.netty.buffer.AbstractByteBuf: void _setByte(int,int)>(v1, v2);
+return v0;
+}
+protected abstract void _setByte(int, int);
+public io.netty.buffer.ByteBuf setBoolean(int, boolean)
+{
+io.netty.buffer.AbstractByteBuf v0;
+byte v3;
+int v1;
+boolean v2;
+v0 := @this: io.netty.buffer.AbstractByteBuf;
+v1 := @parameter0: int;
+v2 := @parameter1: boolean;
+if v2 == 0 goto label1;
+v3 = 1;
+goto label2;
+label1:
+v3 = 0;
+label2:
+virtualinvoke v0.<io.netty.buffer.AbstractByteBuf: io.netty.buffer.ByteBuf setByte(int,int)>(v1, v3);
+return v0;
+}
+public io.netty.buffer.ByteBuf setShort(int, int)
+{
+int v1, v2;
+io.netty.buffer.AbstractByteBuf v0;
+v0 := @this: io.netty.buffer.AbstractByteBuf;
+v1 := @parameter0: int;
+v2 := @parameter1: int;
+virtualinvoke v0.<io.netty.buffer.AbstractByteBuf: void checkIndex(int,int)>(v1, 2);
+virtualinvoke v0.<io.netty.buffer.AbstractByteBuf: void _setShort(int,int)>(v1, v2);
+return v0;
+}
+protected abstract void _setShort(int, int);
+public io.netty.buffer.ByteBuf setShortLE(int, int)
+{
+int v1, v2;
+io.netty.buffer.AbstractByteBuf v0;
+v0 := @this: io.netty.buffer.AbstractByteBuf;
+v1 := @parameter0: int;
+v2 := @parameter1: int;
+virtualinvoke v0.<io.netty.buffer.AbstractByteBuf: void checkIndex(int,int)>(v1, 2);
+virtualinvoke v0.<io.netty.buffer.AbstractByteBuf: void _setShortLE(int,int)>(v1, v2);
+return v0;
+}
+protected abstract void _setShortLE(int, int);
+public io.netty.buffer.ByteBuf setChar(int, int)
+{
+int v1, v2;
+io.netty.buffer.AbstractByteBuf v0;
+v0 := @this: io.netty.buffer.AbstractByteBuf;
+v1 := @parameter0: int;
+v2 := @parameter1: int;
+virtualinvoke v0.<io.netty.buffer.AbstractByteBuf: io.netty.buffer.ByteBuf setShort(int,int)>(v1, v2);
+return v0;
+}
+public io.netty.buffer.ByteBuf setMedium(int, int)
+{
+int v1, v2;
+io.netty.buffer.AbstractByteBuf v0;
+v0 := @this: io.netty.buffer.AbstractByteBuf;
+v1 := @parameter0: int;
+v2 := @parameter1: int;
+virtualinvoke v0.<io.netty.buffer.AbstractByteBuf: void checkIndex(int,int)>(v1, 3);
+virtualinvoke v0.<io.netty.buffer.AbstractByteBuf: void _setMedium(int,int)>(v1, v2);
+return v0;
+}
+protected abstract void _setMedium(int, int);
+public io.netty.buffer.ByteBuf setMediumLE(int, int)
+{
+int v1, v2;
+io.netty.buffer.AbstractByteBuf v0;
+v0 := @this: io.netty.buffer.AbstractByteBuf;
+v1 := @parameter0: int;
+v2 := @parameter1: int;
+virtualinvoke v0.<io.netty.buffer.AbstractByteBuf: void checkIndex(int,int)>(v1, 3);
+virtualinvoke v0.<io.netty.buffer.AbstractByteBuf: void _setMediumLE(int,int)>(v1, v2);
+return v0;
+}
+protected abstract void _setMediumLE(int, int);
+public io.netty.buffer.ByteBuf setInt(int, int)
+{
+int v1, v2;
+io.netty.buffer.AbstractByteBuf v0;
+v0 := @this: io.netty.buffer.AbstractByteBuf;
+v1 := @parameter0: int;
+v2 := @parameter1: int;
+virtualinvoke v0.<io.netty.buffer.AbstractByteBuf: void checkIndex(int,int)>(v1, 4);
+virtualinvoke v0.<io.netty.buffer.AbstractByteBuf: void _setInt(int,int)>(v1, v2);
+return v0;
+}
+protected abstract void _setInt(int, int);
+public io.netty.buffer.ByteBuf setIntLE(int, int)
+{
+int v1, v2;
+io.netty.buffer.AbstractByteBuf v0;
+v0 := @this: io.netty.buffer.AbstractByteBuf;
+v1 := @parameter0: int;
+v2 := @parameter1: int;
+virtualinvoke v0.<io.netty.buffer.AbstractByteBuf: void checkIndex(int,int)>(v1, 4);
+virtualinvoke v0.<io.netty.buffer.AbstractByteBuf: void _setIntLE(int,int)>(v1, v2);
+return v0;
+}
+protected abstract void _setIntLE(int, int);
+public io.netty.buffer.ByteBuf setFloat(int, float)
+{
+io.netty.buffer.AbstractByteBuf v0;
+int v1, v3;
+float v2;
+v0 := @this: io.netty.buffer.AbstractByteBuf;
+v1 := @parameter0: int;
+v2 := @parameter1: float;
+v3 = staticinvoke <java.lang.Float: int floatToRawIntBits(float)>(v2);
+virtualinvoke v0.<io.netty.buffer.AbstractByteBuf: io.netty.buffer.ByteBuf setInt(int,int)>(v1, v3);
+return v0;
+}
+public io.netty.buffer.ByteBuf setLong(int, long)
+{
+int v1;
+io.netty.buffer.AbstractByteBuf v0;
+long v2;
+v0 := @this: io.netty.buffer.AbstractByteBuf;
+v1 := @parameter0: int;
+v2 := @parameter1: long;
+virtualinvoke v0.<io.netty.buffer.AbstractByteBuf: void checkIndex(int,int)>(v1, 8);
+virtualinvoke v0.<io.netty.buffer.AbstractByteBuf: void _setLong(int,long)>(v1, v2);
+return v0;
+}
+protected abstract void _setLong(int, long);
+public io.netty.buffer.ByteBuf setLongLE(int, long)
+{
+int v1;
+io.netty.buffer.AbstractByteBuf v0;
+long v2;
+v0 := @this: io.netty.buffer.AbstractByteBuf;
+v1 := @parameter0: int;
+v2 := @parameter1: long;
+virtualinvoke v0.<io.netty.buffer.AbstractByteBuf: void checkIndex(int,int)>(v1, 8);
+virtualinvoke v0.<io.netty.buffer.AbstractByteBuf: void _setLongLE(int,long)>(v1, v2);
+return v0;
+}
+protected abstract void _setLongLE(int, long);
+public io.netty.buffer.ByteBuf setDouble(int, double)
+{
+io.netty.buffer.AbstractByteBuf v0;
+int v1;
+long v3;
+double v2;
+v0 := @this: io.netty.buffer.AbstractByteBuf;
+v1 := @parameter0: int;
+v2 := @parameter1: double;
+v3 = staticinvoke <java.lang.Double: long doubleToRawLongBits(double)>(v2);
+virtualinvoke v0.<io.netty.buffer.AbstractByteBuf: io.netty.buffer.ByteBuf setLong(int,long)>(v1, v3);
+return v0;
+}
+public io.netty.buffer.ByteBuf setBytes(int, byte[])
+{
+byte[] v2;
+io.netty.buffer.AbstractByteBuf v0;
+int v1, v3;
+v0 := @this: io.netty.buffer.AbstractByteBuf;
+v1 := @parameter0: int;
+v2 := @parameter1: byte[];
+v3 = lengthof v2;
+virtualinvoke v0.<io.netty.buffer.AbstractByteBuf: io.netty.buffer.ByteBuf setBytes(int,byte[],int,int)>(v1, v2, 0, v3);
+return v0;
+}
+public io.netty.buffer.ByteBuf setBytes(int, io.netty.buffer.ByteBuf)
+{
+io.netty.buffer.AbstractByteBuf v0;
+io.netty.buffer.ByteBuf v2;
+int v1, v3;
+v0 := @this: io.netty.buffer.AbstractByteBuf;
+v1 := @parameter0: int;
+v2 := @parameter1: io.netty.buffer.ByteBuf;
+v3 = virtualinvoke v2.<io.netty.buffer.ByteBuf: int readableBytes()>();
+virtualinvoke v0.<io.netty.buffer.AbstractByteBuf: io.netty.buffer.ByteBuf setBytes(int,io.netty.buffer.ByteBuf,int)>(v1, v2, v3);
+return v0;
+}
+private static void checkReadableBounds(io.netty.buffer.ByteBuf, int)
+{
+java.lang.IndexOutOfBoundsException v3;
+java.lang.Object[] v4;
+java.lang.Integer v5, v7;
+io.netty.buffer.ByteBuf v0;
+int v1, v2, v6;
+java.lang.String v8;
+v0 := @parameter0: io.netty.buffer.ByteBuf;
+v1 := @parameter1: int;
+v2 = virtualinvoke v0.<io.netty.buffer.ByteBuf: int readableBytes()>();
+if v1 <= v2 goto label1;
+v3 = new java.lang.IndexOutOfBoundsException;
+v4 = newarray (java.lang.Object)[3];
+v5 = staticinvoke <java.lang.Integer: java.lang.Integer valueOf(int)>(v1);
+v4[0] = v5;
+v6 = virtualinvoke v0.<io.netty.buffer.ByteBuf: int readableBytes()>();
+v7 = staticinvoke <java.lang.Integer: java.lang.Integer valueOf(int)>(v6);
+v4[1] = v7;
+v4[2] = v0;
+v8 = staticinvoke <java.lang.String: java.lang.String format(java.lang.String,java.lang.Object[])>("length(%d) exceeds src.readableBytes(%d) where src is: %s", v4);
+specialinvoke v3.<java.lang.IndexOutOfBoundsException: void <init>(java.lang.String)>(v8);
+throw v3;
+label1:
+return;
+}
+public io.netty.buffer.ByteBuf setBytes(int, io.netty.buffer.ByteBuf, int)
+{
+io.netty.buffer.AbstractByteBuf v0;
+io.netty.buffer.ByteBuf v2;
+int v1, v3, v5, v6, v7;
+boolean v4;
+v0 := @this: io.netty.buffer.AbstractByteBuf;
+v1 := @parameter0: int;
+v2 := @parameter1: io.netty.buffer.ByteBuf;
+v3 := @parameter2: int;
+virtualinvoke v0.<io.netty.buffer.AbstractByteBuf: void checkIndex(int,int)>(v1, v3);
+staticinvoke <io.netty.util.internal.ObjectUtil: java.lang.Object checkNotNull(java.lang.Object,java.lang.String)>(v2, "src");
+v4 = <io.netty.buffer.AbstractByteBuf: boolean checkBounds>;
+if v4 == 0 goto label1;
+staticinvoke <io.netty.buffer.AbstractByteBuf: void checkReadableBounds(io.netty.buffer.ByteBuf,int)>(v2, v3);
+label1:
+v5 = virtualinvoke v2.<io.netty.buffer.ByteBuf: int readerIndex()>();
+virtualinvoke v0.<io.netty.buffer.AbstractByteBuf: io.netty.buffer.ByteBuf setBytes(int,io.netty.buffer.ByteBuf,int,int)>(v1, v2, v5, v3);
+v6 = virtualinvoke v2.<io.netty.buffer.ByteBuf: int readerIndex()>();
+v7 = v6 + v3;
+virtualinvoke v2.<io.netty.buffer.ByteBuf: io.netty.buffer.ByteBuf readerIndex(int)>(v7);
+return v0;
+}
+public io.netty.buffer.ByteBuf setZero(int, int)
+{
+io.netty.buffer.AbstractByteBuf v0;
+int v1, v2, v3, v4, v5, v6, v7, v8;
+v0 := @this: io.netty.buffer.AbstractByteBuf;
+v1 := @parameter0: int;
+v2 := @parameter1: int;
+if v2 != 0 goto label1;
+return v0;
+label1:
+virtualinvoke v0.<io.netty.buffer.AbstractByteBuf: void checkIndex(int,int)>(v1, v2);
+v3 = v2 >>> 3;
+v4 = v2 & 7;
+v5 = v3;
+label2:
+if v5 <= 0 goto label3;
+virtualinvoke v0.<io.netty.buffer.AbstractByteBuf: void _setLong(int,long)>(v1, 0L);
+v1 = v1 + 8;
+v5 = v5 - 1;
+goto label2;
+label3:
+if v4 != 4 goto label4;
+virtualinvoke v0.<io.netty.buffer.AbstractByteBuf: void _setInt(int,int)>(v1, 0);
+goto label8;
+label4:
+if v4 >= 4 goto label6;
+v6 = v4;
+label5:
+if v6 <= 0 goto label8;
+virtualinvoke v0.<io.netty.buffer.AbstractByteBuf: void _setByte(int,int)>(v1, 0);
+v1 = v1 + 1;
+v6 = v6 - 1;
+goto label5;
+label6:
+virtualinvoke v0.<io.netty.buffer.AbstractByteBuf: void _setInt(int,int)>(v1, 0);
+v7 = v1 + 4;
+v8 = v4 - 4;
+label7:
+if v8 <= 0 goto label8;
+virtualinvoke v0.<io.netty.buffer.AbstractByteBuf: void _setByte(int,int)>(v7, 0);
+v7 = v7 + 1;
+v8 = v8 - 1;
+goto label7;
+label8:
+return v0;
+}
+public int setCharSequence(int, java.lang.CharSequence, java.nio.charset.Charset)
+{
+io.netty.buffer.AbstractByteBuf v0;
+java.lang.CharSequence v2;
+java.nio.charset.Charset v3;
+int v1, v4;
+v0 := @this: io.netty.buffer.AbstractByteBuf;
+v1 := @parameter0: int;
+v2 := @parameter1: java.lang.CharSequence;
+v3 := @parameter2: java.nio.charset.Charset;
+v4 = specialinvoke v0.<io.netty.buffer.AbstractByteBuf: int setCharSequence0(int,java.lang.CharSequence,java.nio.charset.Charset,boolean)>(v1, v2, v3, 0);
+return v4;
+}
+private int setCharSequence0(int, java.lang.CharSequence, java.nio.charset.Charset, boolean)
+{
+byte[] v17;
+java.nio.charset.Charset v10, v12, v3, v5;
+int v1, v14, v15, v18, v19, v7, v8, v9;
+java.lang.String v16;
+boolean v11, v13, v4, v6;
+io.netty.buffer.AbstractByteBuf v0;
+java.lang.CharSequence v2;
+v0 := @this: io.netty.buffer.AbstractByteBuf;
+v1 := @parameter0: int;
+v2 := @parameter1: java.lang.CharSequence;
+v3 := @parameter2: java.nio.charset.Charset;
+v4 := @parameter3: boolean;
+v5 = <io.netty.util.CharsetUtil: java.nio.charset.Charset UTF_8>;
+v6 = virtualinvoke v3.<java.nio.charset.Charset: boolean equals(java.lang.Object)>(v5);
+if v6 == 0 goto label3;
+v7 = staticinvoke <io.netty.buffer.ByteBufUtil: int utf8MaxBytes(java.lang.CharSequence)>(v2);
+if v4 == 0 goto label1;
+virtualinvoke v0.<io.netty.buffer.AbstractByteBuf: void ensureWritable0(int)>(v7);
+virtualinvoke v0.<io.netty.buffer.AbstractByteBuf: void checkIndex0(int,int)>(v1, v7);
+goto label2;
+label1:
+virtualinvoke v0.<io.netty.buffer.AbstractByteBuf: void checkIndex(int,int)>(v1, v7);
+label2:
+v8 = interfaceinvoke v2.<java.lang.CharSequence: int length()>();
+v9 = staticinvoke <io.netty.buffer.ByteBufUtil: int writeUtf8(io.netty.buffer.AbstractByteBuf,int,int,java.lang.CharSequence,int)>(v0, v1, v7, v2, v8);
+return v9;
+label3:
+v10 = <io.netty.util.CharsetUtil: java.nio.charset.Charset US_ASCII>;
+v11 = virtualinvoke v3.<java.nio.charset.Charset: boolean equals(java.lang.Object)>(v10);
+if v11 != 0 goto label4;
+v12 = <io.netty.util.CharsetUtil: java.nio.charset.Charset ISO_8859_1>;
+v13 = virtualinvoke v3.<java.nio.charset.Charset: boolean equals(java.lang.Object)>(v12);
+if v13 == 0 goto label7;
+label4:
+v14 = interfaceinvoke v2.<java.lang.CharSequence: int length()>();
+if v4 == 0 goto label5;
+virtualinvoke v0.<io.netty.buffer.AbstractByteBuf: void ensureWritable0(int)>(v14);
+virtualinvoke v0.<io.netty.buffer.AbstractByteBuf: void checkIndex0(int,int)>(v1, v14);
+goto label6;
+label5:
+virtualinvoke v0.<io.netty.buffer.AbstractByteBuf: void checkIndex(int,int)>(v1, v14);
+label6:
+v15 = staticinvoke <io.netty.buffer.ByteBufUtil: int writeAscii(io.netty.buffer.AbstractByteBuf,int,java.lang.CharSequence,int)>(v0, v1, v2, v14);
+return v15;
+label7:
+v16 = virtualinvoke v2.<java.lang.Object: java.lang.String toString()>();
+v17 = virtualinvoke v16.<java.lang.String: byte[] getBytes(java.nio.charset.Charset)>(v3);
+if v4 == 0 goto label8;
+v18 = lengthof v17;
+virtualinvoke v0.<io.netty.buffer.AbstractByteBuf: void ensureWritable0(int)>(v18);
+label8:
+virtualinvoke v0.<io.netty.buffer.AbstractByteBuf: io.netty.buffer.ByteBuf setBytes(int,byte[])>(v1, v17);
+v19 = lengthof v17;
+return v19;
+}
+public byte readByte()
+{
+io.netty.buffer.AbstractByteBuf v0;
+byte v2;
+int v1, v3;
+v0 := @this: io.netty.buffer.AbstractByteBuf;
+specialinvoke v0.<io.netty.buffer.AbstractByteBuf: void checkReadableBytes0(int)>(1);
+v1 = v0.<io.netty.buffer.AbstractByteBuf: int readerIndex>;
+v2 = virtualinvoke v0.<io.netty.buffer.AbstractByteBuf: byte _getByte(int)>(v1);
+v3 = v1 + 1;
+v0.<io.netty.buffer.AbstractByteBuf: int readerIndex> = v3;
+return v2;
+}
+public boolean readBoolean()
+{
+io.netty.buffer.AbstractByteBuf v0;
+byte v1;
+boolean v2;
+v0 := @this: io.netty.buffer.AbstractByteBuf;
+v1 = virtualinvoke v0.<io.netty.buffer.AbstractByteBuf: byte readByte()>();
+if v1 == 0 goto label1;
+v2 = 1;
+goto label2;
+label1:
+v2 = 0;
+label2:
+return v2;
+}
+public short readUnsignedByte()
+{
+io.netty.buffer.AbstractByteBuf v0;
+short v2;
+byte v1;
+v0 := @this: io.netty.buffer.AbstractByteBuf;
+v1 = virtualinvoke v0.<io.netty.buffer.AbstractByteBuf: byte readByte()>();
+v2 = v1 & 255;
+return v2;
+}
+public short readShort()
+{
+io.netty.buffer.AbstractByteBuf v0;
+short v2;
+int v1, v3, v4;
+v0 := @this: io.netty.buffer.AbstractByteBuf;
+specialinvoke v0.<io.netty.buffer.AbstractByteBuf: void checkReadableBytes0(int)>(2);
+v1 = v0.<io.netty.buffer.AbstractByteBuf: int readerIndex>;
+v2 = virtualinvoke v0.<io.netty.buffer.AbstractByteBuf: short _getShort(int)>(v1);
+v3 = v0.<io.netty.buffer.AbstractByteBuf: int readerIndex>;
+v4 = v3 + 2;
+v0.<io.netty.buffer.AbstractByteBuf: int readerIndex> = v4;
+return v2;
+}
+public short readShortLE()
+{
+io.netty.buffer.AbstractByteBuf v0;
+short v2;
+int v1, v3, v4;
+v0 := @this: io.netty.buffer.AbstractByteBuf;
+specialinvoke v0.<io.netty.buffer.AbstractByteBuf: void checkReadableBytes0(int)>(2);
+v1 = v0.<io.netty.buffer.AbstractByteBuf: int readerIndex>;
+v2 = virtualinvoke v0.<io.netty.buffer.AbstractByteBuf: short _getShortLE(int)>(v1);
+v3 = v0.<io.netty.buffer.AbstractByteBuf: int readerIndex>;
+v4 = v3 + 2;
+v0.<io.netty.buffer.AbstractByteBuf: int readerIndex> = v4;
+return v2;
+}
+public int readUnsignedShort()
+{
+io.netty.buffer.AbstractByteBuf v0;
+short v1;
+int v2, v3;
+v0 := @this: io.netty.buffer.AbstractByteBuf;
+v1 = virtualinvoke v0.<io.netty.buffer.AbstractByteBuf: short readShort()>();
+v2 = (int) 65535;
+v3 = v1 & v2;
+return v3;
+}
+public int readUnsignedShortLE()
+{
+io.netty.buffer.AbstractByteBuf v0;
+short v1;
+int v2, v3;
+v0 := @this: io.netty.buffer.AbstractByteBuf;
+v1 = virtualinvoke v0.<io.netty.buffer.AbstractByteBuf: short readShortLE()>();
+v2 = (int) 65535;
+v3 = v1 & v2;
+return v3;
+}
+public int readMedium()
+{
+int v1, v2;
+io.netty.buffer.AbstractByteBuf v0;
+v0 := @this: io.netty.buffer.AbstractByteBuf;
+v1 = virtualinvoke v0.<io.netty.buffer.AbstractByteBuf: int readUnsignedMedium()>();
+v2 = v1 & 8388608;
+if v2 == 0 goto label1;
+v1 = v1 | -16777216;
+label1:
+return v1;
+}
+public int readMediumLE()
+{
+int v1, v2;
+io.netty.buffer.AbstractByteBuf v0;
+v0 := @this: io.netty.buffer.AbstractByteBuf;
+v1 = virtualinvoke v0.<io.netty.buffer.AbstractByteBuf: int readUnsignedMediumLE()>();
+v2 = v1 & 8388608;
+if v2 == 0 goto label1;
+v1 = v1 | -16777216;
+label1:
+return v1;
+}
+public int readUnsignedMedium()
+{
+io.netty.buffer.AbstractByteBuf v0;
+int v1, v2, v3, v4;
+v0 := @this: io.netty.buffer.AbstractByteBuf;
+specialinvoke v0.<io.netty.buffer.AbstractByteBuf: void checkReadableBytes0(int)>(3);
+v1 = v0.<io.netty.buffer.AbstractByteBuf: int readerIndex>;
+v2 = virtualinvoke v0.<io.netty.buffer.AbstractByteBuf: int _getUnsignedMedium(int)>(v1);
+v3 = v0.<io.netty.buffer.AbstractByteBuf: int readerIndex>;
+v4 = v3 + 3;
+v0.<io.netty.buffer.AbstractByteBuf: int readerIndex> = v4;
+return v2;
+}
+public int readUnsignedMediumLE()
+{
+io.netty.buffer.AbstractByteBuf v0;
+int v1, v2, v3, v4;
+v0 := @this: io.netty.buffer.AbstractByteBuf;
+specialinvoke v0.<io.netty.buffer.AbstractByteBuf: void checkReadableBytes0(int)>(3);
+v1 = v0.<io.netty.buffer.AbstractByteBuf: int readerIndex>;
+v2 = virtualinvoke v0.<io.netty.buffer.AbstractByteBuf: int _getUnsignedMediumLE(int)>(v1);
+v3 = v0.<io.netty.buffer.AbstractByteBuf: int readerIndex>;
+v4 = v3 + 3;
+v0.<io.netty.buffer.AbstractByteBuf: int readerIndex> = v4;
+return v2;
+}
+public int readInt()
+{
+io.netty.buffer.AbstractByteBuf v0;
+int v1, v2, v3, v4;
+v0 := @this: io.netty.buffer.AbstractByteBuf;
+specialinvoke v0.<io.netty.buffer.AbstractByteBuf: void checkReadableBytes0(int)>(4);
+v1 = v0.<io.netty.buffer.AbstractByteBuf: int readerIndex>;
+v2 = virtualinvoke v0.<io.netty.buffer.AbstractByteBuf: int _getInt(int)>(v1);
+v3 = v0.<io.netty.buffer.AbstractByteBuf: int readerIndex>;
+v4 = v3 + 4;
+v0.<io.netty.buffer.AbstractByteBuf: int readerIndex> = v4;
+return v2;
+}
+public int readIntLE()
+{
+io.netty.buffer.AbstractByteBuf v0;
+int v1, v2, v3, v4;
+v0 := @this: io.netty.buffer.AbstractByteBuf;
+specialinvoke v0.<io.netty.buffer.AbstractByteBuf: void checkReadableBytes0(int)>(4);
+v1 = v0.<io.netty.buffer.AbstractByteBuf: int readerIndex>;
+v2 = virtualinvoke v0.<io.netty.buffer.AbstractByteBuf: int _getIntLE(int)>(v1);
+v3 = v0.<io.netty.buffer.AbstractByteBuf: int readerIndex>;
+v4 = v3 + 4;
+v0.<io.netty.buffer.AbstractByteBuf: int readerIndex> = v4;
+return v2;
+}
+public long readUnsignedInt()
+{
+int v1;
+io.netty.buffer.AbstractByteBuf v0;
+long v2;
+v0 := @this: io.netty.buffer.AbstractByteBuf;
+v1 = virtualinvoke v0.<io.netty.buffer.AbstractByteBuf: int readInt()>();
+v2 = v1 & 4294967295L;
+return v2;
+}
+public long readUnsignedIntLE()
+{
+int v1;
+io.netty.buffer.AbstractByteBuf v0;
+long v2;
+v0 := @this: io.netty.buffer.AbstractByteBuf;
+v1 = virtualinvoke v0.<io.netty.buffer.AbstractByteBuf: int readIntLE()>();
+v2 = v1 & 4294967295L;
+return v2;
+}
+public long readLong()
+{
+io.netty.buffer.AbstractByteBuf v0;
+int v1, v3, v4;
+long v2;
+v0 := @this: io.netty.buffer.AbstractByteBuf;
+specialinvoke v0.<io.netty.buffer.AbstractByteBuf: void checkReadableBytes0(int)>(8);
+v1 = v0.<io.netty.buffer.AbstractByteBuf: int readerIndex>;
+v2 = virtualinvoke v0.<io.netty.buffer.AbstractByteBuf: long _getLong(int)>(v1);
+v3 = v0.<io.netty.buffer.AbstractByteBuf: int readerIndex>;
+v4 = v3 + 8;
+v0.<io.netty.buffer.AbstractByteBuf: int readerIndex> = v4;
+return v2;
+}
+public long readLongLE()
+{
+io.netty.buffer.AbstractByteBuf v0;
+int v1, v3, v4;
+long v2;
+v0 := @this: io.netty.buffer.AbstractByteBuf;
+specialinvoke v0.<io.netty.buffer.AbstractByteBuf: void checkReadableBytes0(int)>(8);
+v1 = v0.<io.netty.buffer.AbstractByteBuf: int readerIndex>;
+v2 = virtualinvoke v0.<io.netty.buffer.AbstractByteBuf: long _getLongLE(int)>(v1);
+v3 = v0.<io.netty.buffer.AbstractByteBuf: int readerIndex>;
+v4 = v3 + 8;
+v0.<io.netty.buffer.AbstractByteBuf: int readerIndex> = v4;
+return v2;
+}
+public char readChar()
+{
+io.netty.buffer.AbstractByteBuf v0;
+short v1;
+v0 := @this: io.netty.buffer.AbstractByteBuf;
+v1 = virtualinvoke v0.<io.netty.buffer.AbstractByteBuf: short readShort()>();
+return v1;
+}
+public float readFloat()
+{
+int v1;
+float v2;
+io.netty.buffer.AbstractByteBuf v0;
+v0 := @this: io.netty.buffer.AbstractByteBuf;
+v1 = virtualinvoke v0.<io.netty.buffer.AbstractByteBuf: int readInt()>();
+v2 = staticinvoke <java.lang.Float: float intBitsToFloat(int)>(v1);
+return v2;
+}
+public double readDouble()
+{
+io.netty.buffer.AbstractByteBuf v0;
+long v1;
+double v2;
+v0 := @this: io.netty.buffer.AbstractByteBuf;
+v1 = virtualinvoke v0.<io.netty.buffer.AbstractByteBuf: long readLong()>();
+v2 = staticinvoke <java.lang.Double: double longBitsToDouble(long)>(v1);
+return v2;
+}
+public io.netty.buffer.ByteBuf readBytes(int)
+{
+io.netty.buffer.AbstractByteBuf v0;
+io.netty.buffer.ByteBufAllocator v3;
+io.netty.buffer.ByteBuf v2, v5;
+int v1, v4, v6, v7, v8;
+v0 := @this: io.netty.buffer.AbstractByteBuf;
+v1 := @parameter0: int;
+virtualinvoke v0.<io.netty.buffer.AbstractByteBuf: void checkReadableBytes(int)>(v1);
+if v1 != 0 goto label1;
+v2 = <io.netty.buffer.Unpooled: io.netty.buffer.ByteBuf EMPTY_BUFFER>;
+return v2;
+label1:
+v3 = virtualinvoke v0.<io.netty.buffer.AbstractByteBuf: io.netty.buffer.ByteBufAllocator alloc()>();
+v4 = v0.<io.netty.buffer.AbstractByteBuf: int maxCapacity>;
+v5 = interfaceinvoke v3.<io.netty.buffer.ByteBufAllocator: io.netty.buffer.ByteBuf buffer(int,int)>(v1, v4);
+v6 = v0.<io.netty.buffer.AbstractByteBuf: int readerIndex>;
+virtualinvoke v5.<io.netty.buffer.ByteBuf: io.netty.buffer.ByteBuf writeBytes(io.netty.buffer.ByteBuf,int,int)>(v0, v6, v1);
+v7 = v0.<io.netty.buffer.AbstractByteBuf: int readerIndex>;
+v8 = v7 + v1;
+v0.<io.netty.buffer.AbstractByteBuf: int readerIndex> = v8;
+return v5;
+}
+public io.netty.buffer.ByteBuf readSlice(int)
+{
+io.netty.buffer.AbstractByteBuf v0;
+io.netty.buffer.ByteBuf v3;
+int v1, v2, v4, v5;
+v0 := @this: io.netty.buffer.AbstractByteBuf;
+v1 := @parameter0: int;
+virtualinvoke v0.<io.netty.buffer.AbstractByteBuf: void checkReadableBytes(int)>(v1);
+v2 = v0.<io.netty.buffer.AbstractByteBuf: int readerIndex>;
+v3 = virtualinvoke v0.<io.netty.buffer.AbstractByteBuf: io.netty.buffer.ByteBuf slice(int,int)>(v2, v1);
+v4 = v0.<io.netty.buffer.AbstractByteBuf: int readerIndex>;
+v5 = v4 + v1;
+v0.<io.netty.buffer.AbstractByteBuf: int readerIndex> = v5;
+return v3;
+}
+public io.netty.buffer.ByteBuf readRetainedSlice(int)
+{
+io.netty.buffer.AbstractByteBuf v0;
+io.netty.buffer.ByteBuf v3;
+int v1, v2, v4, v5;
+v0 := @this: io.netty.buffer.AbstractByteBuf;
+v1 := @parameter0: int;
+virtualinvoke v0.<io.netty.buffer.AbstractByteBuf: void checkReadableBytes(int)>(v1);
+v2 = v0.<io.netty.buffer.AbstractByteBuf: int readerIndex>;
+v3 = virtualinvoke v0.<io.netty.buffer.AbstractByteBuf: io.netty.buffer.ByteBuf retainedSlice(int,int)>(v2, v1);
+v4 = v0.<io.netty.buffer.AbstractByteBuf: int readerIndex>;
+v5 = v4 + v1;
+v0.<io.netty.buffer.AbstractByteBuf: int readerIndex> = v5;
+return v3;
+}
+public io.netty.buffer.ByteBuf readBytes(byte[], int, int)
+{
+byte[] v1;
+io.netty.buffer.AbstractByteBuf v0;
+int v2, v3, v4, v5, v6;
+v0 := @this: io.netty.buffer.AbstractByteBuf;
+v1 := @parameter0: byte[];
+v2 := @parameter1: int;
+v3 := @parameter2: int;
+virtualinvoke v0.<io.netty.buffer.AbstractByteBuf: void checkReadableBytes(int)>(v3);
+v4 = v0.<io.netty.buffer.AbstractByteBuf: int readerIndex>;
+virtualinvoke v0.<io.netty.buffer.AbstractByteBuf: io.netty.buffer.ByteBuf getBytes(int,byte[],int,int)>(v4, v1, v2, v3);
+v5 = v0.<io.netty.buffer.AbstractByteBuf: int readerIndex>;
+v6 = v5 + v3;
+v0.<io.netty.buffer.AbstractByteBuf: int readerIndex> = v6;
+return v0;
+}
+public io.netty.buffer.ByteBuf readBytes(byte[])
+{
+int v2;
+byte[] v1;
+io.netty.buffer.AbstractByteBuf v0;
+v0 := @this: io.netty.buffer.AbstractByteBuf;
+v1 := @parameter0: byte[];
+v2 = lengthof v1;
+virtualinvoke v0.<io.netty.buffer.AbstractByteBuf: io.netty.buffer.ByteBuf readBytes(byte[],int,int)>(v1, 0, v2);
+return v0;
+}
+public io.netty.buffer.ByteBuf readBytes(io.netty.buffer.ByteBuf)
+{
+int v2;
+io.netty.buffer.AbstractByteBuf v0;
+io.netty.buffer.ByteBuf v1;
+v0 := @this: io.netty.buffer.AbstractByteBuf;
+v1 := @parameter0: io.netty.buffer.ByteBuf;
+v2 = virtualinvoke v1.<io.netty.buffer.ByteBuf: int writableBytes()>();
+virtualinvoke v0.<io.netty.buffer.AbstractByteBuf: io.netty.buffer.ByteBuf readBytes(io.netty.buffer.ByteBuf,int)>(v1, v2);
+return v0;
+}
+public io.netty.buffer.ByteBuf readBytes(io.netty.buffer.ByteBuf, int)
+{
+java.lang.IndexOutOfBoundsException v5;
+io.netty.buffer.AbstractByteBuf v0;
+java.lang.Object[] v6;
+java.lang.Integer v7, v9;
+io.netty.buffer.ByteBuf v1;
+int v11, v12, v13, v2, v4, v8;
+java.lang.String v10;
+boolean v3;
+v0 := @this: io.netty.buffer.AbstractByteBuf;
+v1 := @parameter0: io.netty.buffer.ByteBuf;
+v2 := @parameter1: int;
+v3 = <io.netty.buffer.AbstractByteBuf: boolean checkBounds>;
+if v3 == 0 goto label1;
+v4 = virtualinvoke v1.<io.netty.buffer.ByteBuf: int writableBytes()>();
+if v2 <= v4 goto label1;
+v5 = new java.lang.IndexOutOfBoundsException;
+v6 = newarray (java.lang.Object)[3];
+v7 = staticinvoke <java.lang.Integer: java.lang.Integer valueOf(int)>(v2);
+v6[0] = v7;
+v8 = virtualinvoke v1.<io.netty.buffer.ByteBuf: int writableBytes()>();
+v9 = staticinvoke <java.lang.Integer: java.lang.Integer valueOf(int)>(v8);
+v6[1] = v9;
+v6[2] = v1;
+v10 = staticinvoke <java.lang.String: java.lang.String format(java.lang.String,java.lang.Object[])>("length(%d) exceeds dst.writableBytes(%d) where dst is: %s", v6);
+specialinvoke v5.<java.lang.IndexOutOfBoundsException: void <init>(java.lang.String)>(v10);
+throw v5;
+label1:
+v11 = virtualinvoke v1.<io.netty.buffer.ByteBuf: int writerIndex()>();
+virtualinvoke v0.<io.netty.buffer.AbstractByteBuf: io.netty.buffer.ByteBuf readBytes(io.netty.buffer.ByteBuf,int,int)>(v1, v11, v2);
+v12 = virtualinvoke v1.<io.netty.buffer.ByteBuf: int writerIndex()>();
+v13 = v12 + v2;
+virtualinvoke v1.<io.netty.buffer.ByteBuf: io.netty.buffer.ByteBuf writerIndex(int)>(v13);
+return v0;
+}
+public io.netty.buffer.ByteBuf readBytes(io.netty.buffer.ByteBuf, int, int)
+{
+io.netty.buffer.AbstractByteBuf v0;
+io.netty.buffer.ByteBuf v1;
+int v2, v3, v4, v5, v6;
+v0 := @this: io.netty.buffer.AbstractByteBuf;
+v1 := @parameter0: io.netty.buffer.ByteBuf;
+v2 := @parameter1: int;
+v3 := @parameter2: int;
+virtualinvoke v0.<io.netty.buffer.AbstractByteBuf: void checkReadableBytes(int)>(v3);
+v4 = v0.<io.netty.buffer.AbstractByteBuf: int readerIndex>;
+virtualinvoke v0.<io.netty.buffer.AbstractByteBuf: io.netty.buffer.ByteBuf getBytes(int,io.netty.buffer.ByteBuf,int,int)>(v4, v1, v2, v3);
+v5 = v0.<io.netty.buffer.AbstractByteBuf: int readerIndex>;
+v6 = v5 + v3;
+v0.<io.netty.buffer.AbstractByteBuf: int readerIndex> = v6;
+return v0;
+}
+public io.netty.buffer.ByteBuf readBytes(java.nio.ByteBuffer)
+{
+io.netty.buffer.AbstractByteBuf v0;
+int v2, v3, v4, v5;
+java.nio.ByteBuffer v1;
+v0 := @this: io.netty.buffer.AbstractByteBuf;
+v1 := @parameter0: java.nio.ByteBuffer;
+v2 = virtualinvoke v1.<java.nio.ByteBuffer: int remaining()>();
+virtualinvoke v0.<io.netty.buffer.AbstractByteBuf: void checkReadableBytes(int)>(v2);
+v3 = v0.<io.netty.buffer.AbstractByteBuf: int readerIndex>;
+virtualinvoke v0.<io.netty.buffer.AbstractByteBuf: io.netty.buffer.ByteBuf getBytes(int,java.nio.ByteBuffer)>(v3, v1);
+v4 = v0.<io.netty.buffer.AbstractByteBuf: int readerIndex>;
+v5 = v4 + v2;
+v0.<io.netty.buffer.AbstractByteBuf: int readerIndex> = v5;
+return v0;
+}
+public int readBytes(java.nio.channels.GatheringByteChannel, int) throws java.io.IOException
+{
+io.netty.buffer.AbstractByteBuf v0;
+int v2, v3, v4, v5, v6;
+java.nio.channels.GatheringByteChannel v1;
+v0 := @this: io.netty.buffer.AbstractByteBuf;
+v1 := @parameter0: java.nio.channels.GatheringByteChannel;
+v2 := @parameter1: int;
+virtualinvoke v0.<io.netty.buffer.AbstractByteBuf: void checkReadableBytes(int)>(v2);
+v3 = v0.<io.netty.buffer.AbstractByteBuf: int readerIndex>;
+v4 = virtualinvoke v0.<io.netty.buffer.AbstractByteBuf: int getBytes(int,java.nio.channels.GatheringByteChannel,int)>(v3, v1, v2);
+v5 = v0.<io.netty.buffer.AbstractByteBuf: int readerIndex>;
+v6 = v5 + v4;
+v0.<io.netty.buffer.AbstractByteBuf: int readerIndex> = v6;
+return v4;
+}
+public int readBytes(java.nio.channels.FileChannel, long, int) throws java.io.IOException
+{
+io.netty.buffer.AbstractByteBuf v0;
+long v2;
+int v3, v4, v5, v6, v7;
+java.nio.channels.FileChannel v1;
+v0 := @this: io.netty.buffer.AbstractByteBuf;
+v1 := @parameter0: java.nio.channels.FileChannel;
+v2 := @parameter1: long;
+v3 := @parameter2: int;
+virtualinvoke v0.<io.netty.buffer.AbstractByteBuf: void checkReadableBytes(int)>(v3);
+v4 = v0.<io.netty.buffer.AbstractByteBuf: int readerIndex>;
+v5 = virtualinvoke v0.<io.netty.buffer.AbstractByteBuf: int getBytes(int,java.nio.channels.FileChannel,long,int)>(v4, v1, v2, v3);
+v6 = v0.<io.netty.buffer.AbstractByteBuf: int readerIndex>;
+v7 = v6 + v5;
+v0.<io.netty.buffer.AbstractByteBuf: int readerIndex> = v7;
+return v5;
+}
+public io.netty.buffer.ByteBuf readBytes(java.io.OutputStream, int) throws java.io.IOException
+{
+java.io.OutputStream v1;
+io.netty.buffer.AbstractByteBuf v0;
+int v2, v3, v4, v5;
+v0 := @this: io.netty.buffer.AbstractByteBuf;
+v1 := @parameter0: java.io.OutputStream;
+v2 := @parameter1: int;
+virtualinvoke v0.<io.netty.buffer.AbstractByteBuf: void checkReadableBytes(int)>(v2);
+v3 = v0.<io.netty.buffer.AbstractByteBuf: int readerIndex>;
+virtualinvoke v0.<io.netty.buffer.AbstractByteBuf: io.netty.buffer.ByteBuf getBytes(int,java.io.OutputStream,int)>(v3, v1, v2);
+v4 = v0.<io.netty.buffer.AbstractByteBuf: int readerIndex>;
+v5 = v4 + v2;
+v0.<io.netty.buffer.AbstractByteBuf: int readerIndex> = v5;
+return v0;
+}
+public io.netty.buffer.ByteBuf skipBytes(int)
+{
+io.netty.buffer.AbstractByteBuf v0;
+int v1, v2, v3;
+v0 := @this: io.netty.buffer.AbstractByteBuf;
+v1 := @parameter0: int;
+virtualinvoke v0.<io.netty.buffer.AbstractByteBuf: void checkReadableBytes(int)>(v1);
+v2 = v0.<io.netty.buffer.AbstractByteBuf: int readerIndex>;
+v3 = v2 + v1;
+v0.<io.netty.buffer.AbstractByteBuf: int readerIndex> = v3;
+return v0;
+}
+public io.netty.buffer.ByteBuf writeBoolean(boolean)
+{
+io.netty.buffer.AbstractByteBuf v0;
+byte v2;
+boolean v1;
+v0 := @this: io.netty.buffer.AbstractByteBuf;
+v1 := @parameter0: boolean;
+if v1 == 0 goto label1;
+v2 = 1;
+goto label2;
+label1:
+v2 = 0;
+label2:
+virtualinvoke v0.<io.netty.buffer.AbstractByteBuf: io.netty.buffer.ByteBuf writeByte(int)>(v2);
+return v0;
+}
+public io.netty.buffer.ByteBuf writeByte(int)
+{
+io.netty.buffer.AbstractByteBuf v0;
+int v1, v2, v3;
+v0 := @this: io.netty.buffer.AbstractByteBuf;
+v1 := @parameter0: int;
+virtualinvoke v0.<io.netty.buffer.AbstractByteBuf: void ensureWritable0(int)>(1);
+v2 = v0.<io.netty.buffer.AbstractByteBuf: int writerIndex>;
+v3 = v2 + 1;
+v0.<io.netty.buffer.AbstractByteBuf: int writerIndex> = v3;
+virtualinvoke v0.<io.netty.buffer.AbstractByteBuf: void _setByte(int,int)>(v2, v1);
+return v0;
+}
+public io.netty.buffer.ByteBuf writeShort(int)
+{
+io.netty.buffer.AbstractByteBuf v0;
+int v1, v2, v3, v4;
+v0 := @this: io.netty.buffer.AbstractByteBuf;
+v1 := @parameter0: int;
+virtualinvoke v0.<io.netty.buffer.AbstractByteBuf: void ensureWritable0(int)>(2);
+v2 = v0.<io.netty.buffer.AbstractByteBuf: int writerIndex>;
+virtualinvoke v0.<io.netty.buffer.AbstractByteBuf: void _setShort(int,int)>(v2, v1);
+v3 = v0.<io.netty.buffer.AbstractByteBuf: int writerIndex>;
+v4 = v3 + 2;
+v0.<io.netty.buffer.AbstractByteBuf: int writerIndex> = v4;
+return v0;
+}
+public io.netty.buffer.ByteBuf writeShortLE(int)
+{
+io.netty.buffer.AbstractByteBuf v0;
+int v1, v2, v3, v4;
+v0 := @this: io.netty.buffer.AbstractByteBuf;
+v1 := @parameter0: int;
+virtualinvoke v0.<io.netty.buffer.AbstractByteBuf: void ensureWritable0(int)>(2);
+v2 = v0.<io.netty.buffer.AbstractByteBuf: int writerIndex>;
+virtualinvoke v0.<io.netty.buffer.AbstractByteBuf: void _setShortLE(int,int)>(v2, v1);
+v3 = v0.<io.netty.buffer.AbstractByteBuf: int writerIndex>;
+v4 = v3 + 2;
+v0.<io.netty.buffer.AbstractByteBuf: int writerIndex> = v4;
+return v0;
+}
+public io.netty.buffer.ByteBuf writeMedium(int)
+{
+io.netty.buffer.AbstractByteBuf v0;
+int v1, v2, v3, v4;
+v0 := @this: io.netty.buffer.AbstractByteBuf;
+v1 := @parameter0: int;
+virtualinvoke v0.<io.netty.buffer.AbstractByteBuf: void ensureWritable0(int)>(3);
+v2 = v0.<io.netty.buffer.AbstractByteBuf: int writerIndex>;
+virtualinvoke v0.<io.netty.buffer.AbstractByteBuf: void _setMedium(int,int)>(v2, v1);
+v3 = v0.<io.netty.buffer.AbstractByteBuf: int writerIndex>;
+v4 = v3 + 3;
+v0.<io.netty.buffer.AbstractByteBuf: int writerIndex> = v4;
+return v0;
+}
+public io.netty.buffer.ByteBuf writeMediumLE(int)
+{
+io.netty.buffer.AbstractByteBuf v0;
+int v1, v2, v3, v4;
+v0 := @this: io.netty.buffer.AbstractByteBuf;
+v1 := @parameter0: int;
+virtualinvoke v0.<io.netty.buffer.AbstractByteBuf: void ensureWritable0(int)>(3);
+v2 = v0.<io.netty.buffer.AbstractByteBuf: int writerIndex>;
+virtualinvoke v0.<io.netty.buffer.AbstractByteBuf: void _setMediumLE(int,int)>(v2, v1);
+v3 = v0.<io.netty.buffer.AbstractByteBuf: int writerIndex>;
+v4 = v3 + 3;
+v0.<io.netty.buffer.AbstractByteBuf: int writerIndex> = v4;
+return v0;
+}
+public io.netty.buffer.ByteBuf writeInt(int)
+{
+io.netty.buffer.AbstractByteBuf v0;
+int v1, v2, v3, v4;
+v0 := @this: io.netty.buffer.AbstractByteBuf;
+v1 := @parameter0: int;
+virtualinvoke v0.<io.netty.buffer.AbstractByteBuf: void ensureWritable0(int)>(4);
+v2 = v0.<io.netty.buffer.AbstractByteBuf: int writerIndex>;
+virtualinvoke v0.<io.netty.buffer.AbstractByteBuf: void _setInt(int,int)>(v2, v1);
+v3 = v0.<io.netty.buffer.AbstractByteBuf: int writerIndex>;
+v4 = v3 + 4;
+v0.<io.netty.buffer.AbstractByteBuf: int writerIndex> = v4;
+return v0;
+}
+public io.netty.buffer.ByteBuf writeIntLE(int)
+{
+io.netty.buffer.AbstractByteBuf v0;
+int v1, v2, v3, v4;
+v0 := @this: io.netty.buffer.AbstractByteBuf;
+v1 := @parameter0: int;
+virtualinvoke v0.<io.netty.buffer.AbstractByteBuf: void ensureWritable0(int)>(4);
+v2 = v0.<io.netty.buffer.AbstractByteBuf: int writerIndex>;
+virtualinvoke v0.<io.netty.buffer.AbstractByteBuf: void _setIntLE(int,int)>(v2, v1);
+v3 = v0.<io.netty.buffer.AbstractByteBuf: int writerIndex>;
+v4 = v3 + 4;
+v0.<io.netty.buffer.AbstractByteBuf: int writerIndex> = v4;
+return v0;
+}
+public io.netty.buffer.ByteBuf writeLong(long)
+{
+io.netty.buffer.AbstractByteBuf v0;
+int v2, v3, v4;
+long v1;
+v0 := @this: io.netty.buffer.AbstractByteBuf;
+v1 := @parameter0: long;
+virtualinvoke v0.<io.netty.buffer.AbstractByteBuf: void ensureWritable0(int)>(8);
+v2 = v0.<io.netty.buffer.AbstractByteBuf: int writerIndex>;
+virtualinvoke v0.<io.netty.buffer.AbstractByteBuf: void _setLong(int,long)>(v2, v1);
+v3 = v0.<io.netty.buffer.AbstractByteBuf: int writerIndex>;
+v4 = v3 + 8;
+v0.<io.netty.buffer.AbstractByteBuf: int writerIndex> = v4;
+return v0;
+}
+public io.netty.buffer.ByteBuf writeLongLE(long)
+{
+io.netty.buffer.AbstractByteBuf v0;
+int v2, v3, v4;
+long v1;
+v0 := @this: io.netty.buffer.AbstractByteBuf;
+v1 := @parameter0: long;
+virtualinvoke v0.<io.netty.buffer.AbstractByteBuf: void ensureWritable0(int)>(8);
+v2 = v0.<io.netty.buffer.AbstractByteBuf: int writerIndex>;
+virtualinvoke v0.<io.netty.buffer.AbstractByteBuf: void _setLongLE(int,long)>(v2, v1);
+v3 = v0.<io.netty.buffer.AbstractByteBuf: int writerIndex>;
+v4 = v3 + 8;
+v0.<io.netty.buffer.AbstractByteBuf: int writerIndex> = v4;
+return v0;
+}
+public io.netty.buffer.ByteBuf writeChar(int)
+{
+int v1;
+io.netty.buffer.AbstractByteBuf v0;
+v0 := @this: io.netty.buffer.AbstractByteBuf;
+v1 := @parameter0: int;
+virtualinvoke v0.<io.netty.buffer.AbstractByteBuf: io.netty.buffer.ByteBuf writeShort(int)>(v1);
+return v0;
+}
+public io.netty.buffer.ByteBuf writeFloat(float)
+{
+int v2;
+float v1;
+io.netty.buffer.AbstractByteBuf v0;
+v0 := @this: io.netty.buffer.AbstractByteBuf;
+v1 := @parameter0: float;
+v2 = staticinvoke <java.lang.Float: int floatToRawIntBits(float)>(v1);
+virtualinvoke v0.<io.netty.buffer.AbstractByteBuf: io.netty.buffer.ByteBuf writeInt(int)>(v2);
+return v0;
+}
+public io.netty.buffer.ByteBuf writeDouble(double)
+{
+io.netty.buffer.AbstractByteBuf v0;
+long v2;
+double v1;
+v0 := @this: io.netty.buffer.AbstractByteBuf;
+v1 := @parameter0: double;
+v2 = staticinvoke <java.lang.Double: long doubleToRawLongBits(double)>(v1);
+virtualinvoke v0.<io.netty.buffer.AbstractByteBuf: io.netty.buffer.ByteBuf writeLong(long)>(v2);
+return v0;
+}
+public io.netty.buffer.ByteBuf writeBytes(byte[], int, int)
+{
+byte[] v1;
+io.netty.buffer.AbstractByteBuf v0;
+int v2, v3, v4, v5, v6;
+v0 := @this: io.netty.buffer.AbstractByteBuf;
+v1 := @parameter0: byte[];
+v2 := @parameter1: int;
+v3 := @parameter2: int;
+virtualinvoke v0.<io.netty.buffer.AbstractByteBuf: io.netty.buffer.ByteBuf ensureWritable(int)>(v3);
+v4 = v0.<io.netty.buffer.AbstractByteBuf: int writerIndex>;
+virtualinvoke v0.<io.netty.buffer.AbstractByteBuf: io.netty.buffer.ByteBuf setBytes(int,byte[],int,int)>(v4, v1, v2, v3);
+v5 = v0.<io.netty.buffer.AbstractByteBuf: int writerIndex>;
+v6 = v5 + v3;
+v0.<io.netty.buffer.AbstractByteBuf: int writerIndex> = v6;
+return v0;
+}
+public io.netty.buffer.ByteBuf writeBytes(byte[])
+{
+int v2;
+byte[] v1;
+io.netty.buffer.AbstractByteBuf v0;
+v0 := @this: io.netty.buffer.AbstractByteBuf;
+v1 := @parameter0: byte[];
+v2 = lengthof v1;
+virtualinvoke v0.<io.netty.buffer.AbstractByteBuf: io.netty.buffer.ByteBuf writeBytes(byte[],int,int)>(v1, 0, v2);
+return v0;
+}
+public io.netty.buffer.ByteBuf writeBytes(io.netty.buffer.ByteBuf)
+{
+int v2;
+io.netty.buffer.AbstractByteBuf v0;
+io.netty.buffer.ByteBuf v1;
+v0 := @this: io.netty.buffer.AbstractByteBuf;
+v1 := @parameter0: io.netty.buffer.ByteBuf;
+v2 = virtualinvoke v1.<io.netty.buffer.ByteBuf: int readableBytes()>();
+virtualinvoke v0.<io.netty.buffer.AbstractByteBuf: io.netty.buffer.ByteBuf writeBytes(io.netty.buffer.ByteBuf,int)>(v1, v2);
+return v0;
+}
+public io.netty.buffer.ByteBuf writeBytes(io.netty.buffer.ByteBuf, int)
+{
+io.netty.buffer.AbstractByteBuf v0;
+io.netty.buffer.ByteBuf v1;
+int v2, v4, v5, v6;
+boolean v3;
+v0 := @this: io.netty.buffer.AbstractByteBuf;
+v1 := @parameter0: io.netty.buffer.ByteBuf;
+v2 := @parameter1: int;
+v3 = <io.netty.buffer.AbstractByteBuf: boolean checkBounds>;
+if v3 == 0 goto label1;
+staticinvoke <io.netty.buffer.AbstractByteBuf: void checkReadableBounds(io.netty.buffer.ByteBuf,int)>(v1, v2);
+label1:
+v4 = virtualinvoke v1.<io.netty.buffer.ByteBuf: int readerIndex()>();
+virtualinvoke v0.<io.netty.buffer.AbstractByteBuf: io.netty.buffer.ByteBuf writeBytes(io.netty.buffer.ByteBuf,int,int)>(v1, v4, v2);
+v5 = virtualinvoke v1.<io.netty.buffer.ByteBuf: int readerIndex()>();
+v6 = v5 + v2;
+virtualinvoke v1.<io.netty.buffer.ByteBuf: io.netty.buffer.ByteBuf readerIndex(int)>(v6);
+return v0;
+}
+public io.netty.buffer.ByteBuf writeBytes(io.netty.buffer.ByteBuf, int, int)
+{
+io.netty.buffer.AbstractByteBuf v0;
+io.netty.buffer.ByteBuf v1;
+int v2, v3, v4, v5, v6;
+v0 := @this: io.netty.buffer.AbstractByteBuf;
+v1 := @parameter0: io.netty.buffer.ByteBuf;
+v2 := @parameter1: int;
+v3 := @parameter2: int;
+virtualinvoke v0.<io.netty.buffer.AbstractByteBuf: io.netty.buffer.ByteBuf ensureWritable(int)>(v3);
+v4 = v0.<io.netty.buffer.AbstractByteBuf: int writerIndex>;
+virtualinvoke v0.<io.netty.buffer.AbstractByteBuf: io.netty.buffer.ByteBuf setBytes(int,io.netty.buffer.ByteBuf,int,int)>(v4, v1, v2, v3);
+v5 = v0.<io.netty.buffer.AbstractByteBuf: int writerIndex>;
+v6 = v5 + v3;
+v0.<io.netty.buffer.AbstractByteBuf: int writerIndex> = v6;
+return v0;
+}
+public io.netty.buffer.ByteBuf writeBytes(java.nio.ByteBuffer)
+{
+io.netty.buffer.AbstractByteBuf v0;
+int v2, v3, v4, v5;
+java.nio.ByteBuffer v1;
+v0 := @this: io.netty.buffer.AbstractByteBuf;
+v1 := @parameter0: java.nio.ByteBuffer;
+v2 = virtualinvoke v1.<java.nio.ByteBuffer: int remaining()>();
+virtualinvoke v0.<io.netty.buffer.AbstractByteBuf: void ensureWritable0(int)>(v2);
+v3 = v0.<io.netty.buffer.AbstractByteBuf: int writerIndex>;
+virtualinvoke v0.<io.netty.buffer.AbstractByteBuf: io.netty.buffer.ByteBuf setBytes(int,java.nio.ByteBuffer)>(v3, v1);
+v4 = v0.<io.netty.buffer.AbstractByteBuf: int writerIndex>;
+v5 = v4 + v2;
+v0.<io.netty.buffer.AbstractByteBuf: int writerIndex> = v5;
+return v0;
+}
+public int writeBytes(java.io.InputStream, int) throws java.io.IOException
+{
+io.netty.buffer.AbstractByteBuf v0;
+int v2, v3, v4, v5, v6;
+java.io.InputStream v1;
+v0 := @this: io.netty.buffer.AbstractByteBuf;
+v1 := @parameter0: java.io.InputStream;
+v2 := @parameter1: int;
+virtualinvoke v0.<io.netty.buffer.AbstractByteBuf: io.netty.buffer.ByteBuf ensureWritable(int)>(v2);
+v3 = v0.<io.netty.buffer.AbstractByteBuf: int writerIndex>;
+v4 = virtualinvoke v0.<io.netty.buffer.AbstractByteBuf: int setBytes(int,java.io.InputStream,int)>(v3, v1, v2);
+if v4 <= 0 goto label1;
+v5 = v0.<io.netty.buffer.AbstractByteBuf: int writerIndex>;
+v6 = v5 + v4;
+v0.<io.netty.buffer.AbstractByteBuf: int writerIndex> = v6;
+label1:
+return v4;
+}
+public int writeBytes(java.nio.channels.ScatteringByteChannel, int) throws java.io.IOException
+{
+io.netty.buffer.AbstractByteBuf v0;
+java.nio.channels.ScatteringByteChannel v1;
+int v2, v3, v4, v5, v6;
+v0 := @this: io.netty.buffer.AbstractByteBuf;
+v1 := @parameter0: java.nio.channels.ScatteringByteChannel;
+v2 := @parameter1: int;
+virtualinvoke v0.<io.netty.buffer.AbstractByteBuf: io.netty.buffer.ByteBuf ensureWritable(int)>(v2);
+v3 = v0.<io.netty.buffer.AbstractByteBuf: int writerIndex>;
+v4 = virtualinvoke v0.<io.netty.buffer.AbstractByteBuf: int setBytes(int,java.nio.channels.ScatteringByteChannel,int)>(v3, v1, v2);
+if v4 <= 0 goto label1;
+v5 = v0.<io.netty.buffer.AbstractByteBuf: int writerIndex>;
+v6 = v5 + v4;
+v0.<io.netty.buffer.AbstractByteBuf: int writerIndex> = v6;
+label1:
+return v4;
+}
+public int writeBytes(java.nio.channels.FileChannel, long, int) throws java.io.IOException
+{
+io.netty.buffer.AbstractByteBuf v0;
+long v2;
+int v3, v4, v5, v6, v7;
+java.nio.channels.FileChannel v1;
+v0 := @this: io.netty.buffer.AbstractByteBuf;
+v1 := @parameter0: java.nio.channels.FileChannel;
+v2 := @parameter1: long;
+v3 := @parameter2: int;
+virtualinvoke v0.<io.netty.buffer.AbstractByteBuf: io.netty.buffer.ByteBuf ensureWritable(int)>(v3);
+v4 = v0.<io.netty.buffer.AbstractByteBuf: int writerIndex>;
+v5 = virtualinvoke v0.<io.netty.buffer.AbstractByteBuf: int setBytes(int,java.nio.channels.FileChannel,long,int)>(v4, v1, v2, v3);
+if v5 <= 0 goto label1;
+v6 = v0.<io.netty.buffer.AbstractByteBuf: int writerIndex>;
+v7 = v6 + v5;
+v0.<io.netty.buffer.AbstractByteBuf: int writerIndex> = v7;
+label1:
+return v5;
+}
+public io.netty.buffer.ByteBuf writeZero(int)
+{
+io.netty.buffer.AbstractByteBuf v0;
+int v1, v2, v3, v4, v5, v6, v7;
+v0 := @this: io.netty.buffer.AbstractByteBuf;
+v1 := @parameter0: int;
+if v1 != 0 goto label1;
+return v0;
+label1:
+virtualinvoke v0.<io.netty.buffer.AbstractByteBuf: io.netty.buffer.ByteBuf ensureWritable(int)>(v1);
+v2 = v0.<io.netty.buffer.AbstractByteBuf: int writerIndex>;
+virtualinvoke v0.<io.netty.buffer.AbstractByteBuf: void checkIndex0(int,int)>(v2, v1);
+v3 = v1 >>> 3;
+v4 = v1 & 7;
+v5 = v3;
+label2:
+if v5 <= 0 goto label3;
+virtualinvoke v0.<io.netty.buffer.AbstractByteBuf: void _setLong(int,long)>(v2, 0L);
+v2 = v2 + 8;
+v5 = v5 - 1;
+goto label2;
+label3:
+if v4 != 4 goto label4;
+virtualinvoke v0.<io.netty.buffer.AbstractByteBuf: void _setInt(int,int)>(v2, 0);
+v2 = v2 + 4;
+goto label8;
+label4:
+if v4 >= 4 goto label6;
+v6 = v4;
+label5:
+if v6 <= 0 goto label8;
+virtualinvoke v0.<io.netty.buffer.AbstractByteBuf: void _setByte(int,int)>(v2, 0);
+v2 = v2 + 1;
+v6 = v6 - 1;
+goto label5;
+label6:
+virtualinvoke v0.<io.netty.buffer.AbstractByteBuf: void _setInt(int,int)>(v2, 0);
+v2 = v2 + 4;
+v7 = v4 - 4;
+label7:
+if v7 <= 0 goto label8;
+virtualinvoke v0.<io.netty.buffer.AbstractByteBuf: void _setByte(int,int)>(v2, 0);
+v2 = v2 + 1;
+v7 = v7 - 1;
+goto label7;
+label8:
+v0.<io.netty.buffer.AbstractByteBuf: int writerIndex> = v2;
+return v0;
+}
+public int writeCharSequence(java.lang.CharSequence, java.nio.charset.Charset)
+{
+io.netty.buffer.AbstractByteBuf v0;
+java.lang.CharSequence v1;
+java.nio.charset.Charset v2;
+int v3, v4, v5, v6;
+v0 := @this: io.netty.buffer.AbstractByteBuf;
+v1 := @parameter0: java.lang.CharSequence;
+v2 := @parameter1: java.nio.charset.Charset;
+v3 = v0.<io.netty.buffer.AbstractByteBuf: int writerIndex>;
+v4 = specialinvoke v0.<io.netty.buffer.AbstractByteBuf: int setCharSequence0(int,java.lang.CharSequence,java.nio.charset.Charset,boolean)>(v3, v1, v2, 1);
+v5 = v0.<io.netty.buffer.AbstractByteBuf: int writerIndex>;
+v6 = v5 + v4;
+v0.<io.netty.buffer.AbstractByteBuf: int writerIndex> = v6;
+return v4;
+}
+public io.netty.buffer.ByteBuf copy()
+{
+io.netty.buffer.AbstractByteBuf v0;
+io.netty.buffer.ByteBuf v3;
+int v1, v2;
+v0 := @this: io.netty.buffer.AbstractByteBuf;
+v1 = v0.<io.netty.buffer.AbstractByteBuf: int readerIndex>;
+v2 = virtualinvoke v0.<io.netty.buffer.AbstractByteBuf: int readableBytes()>();
+v3 = virtualinvoke v0.<io.netty.buffer.AbstractByteBuf: io.netty.buffer.ByteBuf copy(int,int)>(v1, v2);
+return v3;
+}
+public io.netty.buffer.ByteBuf duplicate()
+{
+io.netty.buffer.UnpooledDuplicatedByteBuf v1;
+io.netty.buffer.AbstractByteBuf v0;
+v0 := @this: io.netty.buffer.AbstractByteBuf;
+virtualinvoke v0.<io.netty.buffer.AbstractByteBuf: void ensureAccessible()>();
+v1 = new io.netty.buffer.UnpooledDuplicatedByteBuf;
+specialinvoke v1.<io.netty.buffer.UnpooledDuplicatedByteBuf: void <init>(io.netty.buffer.AbstractByteBuf)>(v0);
+return v1;
+}
+public io.netty.buffer.ByteBuf retainedDuplicate()
+{
+io.netty.buffer.AbstractByteBuf v0;
+io.netty.buffer.ByteBuf v1, v2;
+v0 := @this: io.netty.buffer.AbstractByteBuf;
+v1 = virtualinvoke v0.<io.netty.buffer.AbstractByteBuf: io.netty.buffer.ByteBuf duplicate()>();
+v2 = virtualinvoke v1.<io.netty.buffer.ByteBuf: io.netty.buffer.ByteBuf retain()>();
+return v2;
+}
+public io.netty.buffer.ByteBuf slice()
+{
+io.netty.buffer.AbstractByteBuf v0;
+io.netty.buffer.ByteBuf v3;
+int v1, v2;
+v0 := @this: io.netty.buffer.AbstractByteBuf;
+v1 = v0.<io.netty.buffer.AbstractByteBuf: int readerIndex>;
+v2 = virtualinvoke v0.<io.netty.buffer.AbstractByteBuf: int readableBytes()>();
+v3 = virtualinvoke v0.<io.netty.buffer.AbstractByteBuf: io.netty.buffer.ByteBuf slice(int,int)>(v1, v2);
+return v3;
+}
+public io.netty.buffer.ByteBuf retainedSlice()
+{
+io.netty.buffer.AbstractByteBuf v0;
+io.netty.buffer.ByteBuf v1, v2;
+v0 := @this: io.netty.buffer.AbstractByteBuf;
+v1 = virtualinvoke v0.<io.netty.buffer.AbstractByteBuf: io.netty.buffer.ByteBuf slice()>();
+v2 = virtualinvoke v1.<io.netty.buffer.ByteBuf: io.netty.buffer.ByteBuf retain()>();
+return v2;
+}
+public io.netty.buffer.ByteBuf slice(int, int)
+{
+io.netty.buffer.AbstractByteBuf v0;
+io.netty.buffer.UnpooledSlicedByteBuf v3;
+int v1, v2;
+v0 := @this: io.netty.buffer.AbstractByteBuf;
+v1 := @parameter0: int;
+v2 := @parameter1: int;
+virtualinvoke v0.<io.netty.buffer.AbstractByteBuf: void ensureAccessible()>();
+v3 = new io.netty.buffer.UnpooledSlicedByteBuf;
+specialinvoke v3.<io.netty.buffer.UnpooledSlicedByteBuf: void <init>(io.netty.buffer.AbstractByteBuf,int,int)>(v0, v1, v2);
+return v3;
+}
+public io.netty.buffer.ByteBuf retainedSlice(int, int)
+{
+io.netty.buffer.AbstractByteBuf v0;
+io.netty.buffer.ByteBuf v3, v4;
+int v1, v2;
+v0 := @this: io.netty.buffer.AbstractByteBuf;
+v1 := @parameter0: int;
+v2 := @parameter1: int;
+v3 = virtualinvoke v0.<io.netty.buffer.AbstractByteBuf: io.netty.buffer.ByteBuf slice(int,int)>(v1, v2);
+v4 = virtualinvoke v3.<io.netty.buffer.ByteBuf: io.netty.buffer.ByteBuf retain()>();
+return v4;
+}
+public java.nio.ByteBuffer nioBuffer()
+{
+io.netty.buffer.AbstractByteBuf v0;
+int v1, v2;
+java.nio.ByteBuffer v3;
+v0 := @this: io.netty.buffer.AbstractByteBuf;
+v1 = v0.<io.netty.buffer.AbstractByteBuf: int readerIndex>;
+v2 = virtualinvoke v0.<io.netty.buffer.AbstractByteBuf: int readableBytes()>();
+v3 = virtualinvoke v0.<io.netty.buffer.AbstractByteBuf: java.nio.ByteBuffer nioBuffer(int,int)>(v1, v2);
+return v3;
+}
+public java.nio.ByteBuffer[] nioBuffers()
+{
+java.nio.ByteBuffer[] v3;
+io.netty.buffer.AbstractByteBuf v0;
+int v1, v2;
+v0 := @this: io.netty.buffer.AbstractByteBuf;
+v1 = v0.<io.netty.buffer.AbstractByteBuf: int readerIndex>;
+v2 = virtualinvoke v0.<io.netty.buffer.AbstractByteBuf: int readableBytes()>();
+v3 = virtualinvoke v0.<io.netty.buffer.AbstractByteBuf: java.nio.ByteBuffer[] nioBuffers(int,int)>(v1, v2);
+return v3;
+}
+public java.lang.String toString(java.nio.charset.Charset)
+{
+io.netty.buffer.AbstractByteBuf v0;
+java.nio.charset.Charset v1;
+int v2, v3;
+java.lang.String v4;
+v0 := @this: io.netty.buffer.AbstractByteBuf;
+v1 := @parameter0: java.nio.charset.Charset;
+v2 = v0.<io.netty.buffer.AbstractByteBuf: int readerIndex>;
+v3 = virtualinvoke v0.<io.netty.buffer.AbstractByteBuf: int readableBytes()>();
+v4 = virtualinvoke v0.<io.netty.buffer.AbstractByteBuf: java.lang.String toString(int,int,java.nio.charset.Charset)>(v2, v3, v1);
+return v4;
+}
+public java.lang.String toString(int, int, java.nio.charset.Charset)
+{
+io.netty.buffer.AbstractByteBuf v0;
+java.nio.charset.Charset v3;
+int v1, v2;
+java.lang.String v4;
+v0 := @this: io.netty.buffer.AbstractByteBuf;
+v1 := @parameter0: int;
+v2 := @parameter1: int;
+v3 := @parameter2: java.nio.charset.Charset;
+v4 = staticinvoke <io.netty.buffer.ByteBufUtil: java.lang.String decodeString(io.netty.buffer.ByteBuf,int,int,java.nio.charset.Charset)>(v0, v1, v2, v3);
+return v4;
+}
+public int indexOf(int, int, byte)
+{
+io.netty.buffer.AbstractByteBuf v0;
+byte v3;
+int v1, v2, v4, v5;
+v0 := @this: io.netty.buffer.AbstractByteBuf;
+v1 := @parameter0: int;
+v2 := @parameter1: int;
+v3 := @parameter2: byte;
+if v1 > v2 goto label1;
+v4 = staticinvoke <io.netty.buffer.ByteBufUtil: int firstIndexOf(io.netty.buffer.AbstractByteBuf,int,int,byte)>(v0, v1, v2, v3);
+return v4;
+label1:
+v5 = staticinvoke <io.netty.buffer.ByteBufUtil: int lastIndexOf(io.netty.buffer.AbstractByteBuf,int,int,byte)>(v0, v1, v2, v3);
+return v5;
+}
+public int bytesBefore(byte)
+{
+io.netty.buffer.AbstractByteBuf v0;
+byte v1;
+int v2, v3, v4;
+v0 := @this: io.netty.buffer.AbstractByteBuf;
+v1 := @parameter0: byte;
+v2 = virtualinvoke v0.<io.netty.buffer.AbstractByteBuf: int readerIndex()>();
+v3 = virtualinvoke v0.<io.netty.buffer.AbstractByteBuf: int readableBytes()>();
+v4 = virtualinvoke v0.<io.netty.buffer.AbstractByteBuf: int bytesBefore(int,int,byte)>(v2, v3, v1);
+return v4;
+}
+public int bytesBefore(int, byte)
+{
+io.netty.buffer.AbstractByteBuf v0;
+byte v2;
+int v1, v3, v4;
+v0 := @this: io.netty.buffer.AbstractByteBuf;
+v1 := @parameter0: int;
+v2 := @parameter1: byte;
+virtualinvoke v0.<io.netty.buffer.AbstractByteBuf: void checkReadableBytes(int)>(v1);
+v3 = virtualinvoke v0.<io.netty.buffer.AbstractByteBuf: int readerIndex()>();
+v4 = virtualinvoke v0.<io.netty.buffer.AbstractByteBuf: int bytesBefore(int,int,byte)>(v3, v1, v2);
+return v4;
+}
+public int bytesBefore(int, int, byte)
+{
+io.netty.buffer.AbstractByteBuf v0;
+byte v3;
+int v1, v2, v4, v5, v6, v7;
+v0 := @this: io.netty.buffer.AbstractByteBuf;
+v1 := @parameter0: int;
+v2 := @parameter1: int;
+v3 := @parameter2: byte;
+v4 = v1 + v2;
+v5 = virtualinvoke v0.<io.netty.buffer.AbstractByteBuf: int indexOf(int,int,byte)>(v1, v4, v3);
+if v5 >= 0 goto label1;
+v6 = (int) -1;
+return v6;
+label1:
+v7 = v5 - v1;
+return v7;
+}
+public int forEachByte(io.netty.util.ByteProcessor)
+{
+io.netty.buffer.AbstractByteBuf v0;
+int v2, v3, v4, v6;
+io.netty.util.ByteProcessor v1;
+java.lang.Exception v5;
+v0 := @this: io.netty.buffer.AbstractByteBuf;
+v1 := @parameter0: io.netty.util.ByteProcessor;
+virtualinvoke v0.<io.netty.buffer.AbstractByteBuf: void ensureAccessible()>();
+label1:
+v2 = v0.<io.netty.buffer.AbstractByteBuf: int readerIndex>;
+v3 = v0.<io.netty.buffer.AbstractByteBuf: int writerIndex>;
+v4 = virtualinvoke v0.<io.netty.buffer.AbstractByteBuf: int forEachByteAsc0(int,int,io.netty.util.ByteProcessor)>(v2, v3, v1);
+label2:
+return v4;
+label3:
+v5 := @caughtexception;
+staticinvoke <io.netty.util.internal.PlatformDependent: void throwException(java.lang.Throwable)>(v5);
+v6 = (int) -1;
+return v6;
+catch java.lang.Exception from label1 to label2 with label3;
+}
+public int forEachByte(int, int, io.netty.util.ByteProcessor)
+{
+io.netty.buffer.AbstractByteBuf v0;
+io.netty.util.ByteProcessor v3;
+java.lang.Exception v6;
+int v1, v2, v4, v5, v7;
+v0 := @this: io.netty.buffer.AbstractByteBuf;
+v1 := @parameter0: int;
+v2 := @parameter1: int;
+v3 := @parameter2: io.netty.util.ByteProcessor;
+virtualinvoke v0.<io.netty.buffer.AbstractByteBuf: void checkIndex(int,int)>(v1, v2);
+label1:
+v4 = v1 + v2;
+v5 = virtualinvoke v0.<io.netty.buffer.AbstractByteBuf: int forEachByteAsc0(int,int,io.netty.util.ByteProcessor)>(v1, v4, v3);
+label2:
+return v5;
+label3:
+v6 := @caughtexception;
+staticinvoke <io.netty.util.internal.PlatformDependent: void throwException(java.lang.Throwable)>(v6);
+v7 = (int) -1;
+return v7;
+catch java.lang.Exception from label1 to label2 with label3;
+}
+int forEachByteAsc0(int, int, io.netty.util.ByteProcessor) throws java.lang.Exception
+{
+io.netty.buffer.AbstractByteBuf v0;
+byte v4;
+int v1, v2, v6;
+io.netty.util.ByteProcessor v3;
+boolean v5;
+v0 := @this: io.netty.buffer.AbstractByteBuf;
+v1 := @parameter0: int;
+v2 := @parameter1: int;
+v3 := @parameter2: io.netty.util.ByteProcessor;
+label1:
+if v1 >= v2 goto label3;
+v4 = virtualinvoke v0.<io.netty.buffer.AbstractByteBuf: byte _getByte(int)>(v1);
+v5 = interfaceinvoke v3.<io.netty.util.ByteProcessor: boolean process(byte)>(v4);
+if v5 != 0 goto label2;
+return v1;
+label2:
+v1 = v1 + 1;
+goto label1;
+label3:
+v6 = (int) -1;
+return v6;
+}
+public int forEachByteDesc(io.netty.util.ByteProcessor)
+{
+io.netty.buffer.AbstractByteBuf v0;
+io.netty.util.ByteProcessor v1;
+java.lang.Exception v6;
+int v2, v3, v4, v5, v7;
+v0 := @this: io.netty.buffer.AbstractByteBuf;
+v1 := @parameter0: io.netty.util.ByteProcessor;
+virtualinvoke v0.<io.netty.buffer.AbstractByteBuf: void ensureAccessible()>();
+label1:
+v2 = v0.<io.netty.buffer.AbstractByteBuf: int writerIndex>;
+v3 = v2 - 1;
+v4 = v0.<io.netty.buffer.AbstractByteBuf: int readerIndex>;
+v5 = virtualinvoke v0.<io.netty.buffer.AbstractByteBuf: int forEachByteDesc0(int,int,io.netty.util.ByteProcessor)>(v3, v4, v1);
+label2:
+return v5;
+label3:
+v6 := @caughtexception;
+staticinvoke <io.netty.util.internal.PlatformDependent: void throwException(java.lang.Throwable)>(v6);
+v7 = (int) -1;
+return v7;
+catch java.lang.Exception from label1 to label2 with label3;
+}
+public int forEachByteDesc(int, int, io.netty.util.ByteProcessor)
+{
+io.netty.buffer.AbstractByteBuf v0;
+io.netty.util.ByteProcessor v3;
+java.lang.Exception v7;
+int v1, v2, v4, v5, v6, v8;
+v0 := @this: io.netty.buffer.AbstractByteBuf;
+v1 := @parameter0: int;
+v2 := @parameter1: int;
+v3 := @parameter2: io.netty.util.ByteProcessor;
+virtualinvoke v0.<io.netty.buffer.AbstractByteBuf: void checkIndex(int,int)>(v1, v2);
+label1:
+v4 = v1 + v2;
+v5 = v4 - 1;
+v6 = virtualinvoke v0.<io.netty.buffer.AbstractByteBuf: int forEachByteDesc0(int,int,io.netty.util.ByteProcessor)>(v5, v1, v3);
+label2:
+return v6;
+label3:
+v7 := @caughtexception;
+staticinvoke <io.netty.util.internal.PlatformDependent: void throwException(java.lang.Throwable)>(v7);
+v8 = (int) -1;
+return v8;
+catch java.lang.Exception from label1 to label2 with label3;
+}
+int forEachByteDesc0(int, int, io.netty.util.ByteProcessor) throws java.lang.Exception
+{
+io.netty.buffer.AbstractByteBuf v0;
+byte v4;
+int v1, v2, v6;
+io.netty.util.ByteProcessor v3;
+boolean v5;
+v0 := @this: io.netty.buffer.AbstractByteBuf;
+v1 := @parameter0: int;
+v2 := @parameter1: int;
+v3 := @parameter2: io.netty.util.ByteProcessor;
+label1:
+if v1 < v2 goto label3;
+v4 = virtualinvoke v0.<io.netty.buffer.AbstractByteBuf: byte _getByte(int)>(v1);
+v5 = interfaceinvoke v3.<io.netty.util.ByteProcessor: boolean process(byte)>(v4);
+if v5 != 0 goto label2;
+return v1;
+label2:
+v1 = v1 - 1;
+goto label1;
+label3:
+v6 = (int) -1;
+return v6;
+}
+public int hashCode()
+{
+int v1;
+io.netty.buffer.AbstractByteBuf v0;
+v0 := @this: io.netty.buffer.AbstractByteBuf;
+v1 = staticinvoke <io.netty.buffer.ByteBufUtil: int hashCode(io.netty.buffer.ByteBuf)>(v0);
+return v1;
+}
+public boolean equals(java.lang.Object)
+{
+io.netty.buffer.AbstractByteBuf v0;
+java.lang.Object v1;
+boolean v2, v3, v4;
+v0 := @this: io.netty.buffer.AbstractByteBuf;
+v1 := @parameter0: java.lang.Object;
+v2 = v1 instanceof io.netty.buffer.ByteBuf;
+if v2 == 0 goto label1;
+v3 = staticinvoke <io.netty.buffer.ByteBufUtil: boolean equals(io.netty.buffer.ByteBuf,io.netty.buffer.ByteBuf)>(v0, v1);
+if v3 == 0 goto label1;
+v4 = 1;
+goto label2;
+label1:
+v4 = 0;
+label2:
+return v4;
+}
+public int compareTo(io.netty.buffer.ByteBuf)
+{
+int v2;
+io.netty.buffer.AbstractByteBuf v0;
+io.netty.buffer.ByteBuf v1;
+v0 := @this: io.netty.buffer.AbstractByteBuf;
+v1 := @parameter0: io.netty.buffer.ByteBuf;
+v2 = staticinvoke <io.netty.buffer.ByteBufUtil: int compare(io.netty.buffer.ByteBuf,io.netty.buffer.ByteBuf)>(v0, v1);
+return v2;
+}
+public java.lang.String toString()
+{
+io.netty.buffer.AbstractByteBuf v0;
+io.netty.buffer.ByteBuf v10;
+int v1, v5, v6, v7, v8, v9;
+java.lang.StringBuilder v12, v13, v14;
+java.lang.String v11, v2, v3, v4;
+v0 := @this: io.netty.buffer.AbstractByteBuf;
+v1 = virtualinvoke v0.<io.netty.buffer.AbstractByteBuf: int refCnt()>();
+if v1 != 0 goto label1;
+v2 = staticinvoke <io.netty.util.internal.StringUtil: java.lang.String simpleClassName(java.lang.Object)>(v0);
+v3 = dynamicinvoke "makeConcatWithConstants" <java.lang.String (java.lang.String)>(v2) <java.lang.invoke.StringConcatFactory: java.lang.invoke.CallSite makeConcatWithConstants(java.lang.invoke.MethodHandles$Lookup,java.lang.String,java.lang.invoke.MethodType,java.lang.String,java.lang.Object[])>("\u0001(freed)");
+return v3;
+label1:
+v4 = staticinvoke <io.netty.util.internal.StringUtil: java.lang.String simpleClassName(java.lang.Object)>(v0);
+v5 = v0.<io.netty.buffer.AbstractByteBuf: int readerIndex>;
+v6 = v0.<io.netty.buffer.AbstractByteBuf: int writerIndex>;
+v7 = virtualinvoke v0.<io.netty.buffer.AbstractByteBuf: int capacity()>();
+v8 = v0.<io.netty.buffer.AbstractByteBuf: int maxCapacity>;
+if v8 == 2147483647 goto label2;
+v9 = v0.<io.netty.buffer.AbstractByteBuf: int maxCapacity>;
+virtualinvoke v14.<java.lang.StringBuilder: java.lang.StringBuilder append(int)>(v9);
+label2:
+v10 = virtualinvoke v0.<io.netty.buffer.AbstractByteBuf: io.netty.buffer.ByteBuf unwrap()>();
+if v10 == null goto label3;
+virtualinvoke v13.<java.lang.StringBuilder: java.lang.StringBuilder append(java.lang.Object)>(v10);
+label3:
+virtualinvoke v12.<java.lang.StringBuilder: java.lang.StringBuilder append(char)>(41);
+v11 = dynamicinvoke "makeConcatWithConstants" <java.lang.String (java.lang.String,int,int,int)>(v4, v5, v6, v7) <java.lang.invoke.StringConcatFactory: java.lang.invoke.CallSite makeConcatWithConstants(java.lang.invoke.MethodHandles$Lookup,java.lang.String,java.lang.invoke.MethodType,java.lang.String,java.lang.Object[])>("\u0001(ridx: \u0001, widx: \u0001, cap: \u0001/, unwrapped: ");
+return v11;
+}
+protected final void checkIndex(int)
+{
+int v1;
+io.netty.buffer.AbstractByteBuf v0;
+v0 := @this: io.netty.buffer.AbstractByteBuf;
+v1 := @parameter0: int;
+virtualinvoke v0.<io.netty.buffer.AbstractByteBuf: void checkIndex(int,int)>(v1, 1);
+return;
+}
+protected final void checkIndex(int, int)
+{
+int v1, v2;
+io.netty.buffer.AbstractByteBuf v0;
+v0 := @this: io.netty.buffer.AbstractByteBuf;
+v1 := @parameter0: int;
+v2 := @parameter1: int;
+virtualinvoke v0.<io.netty.buffer.AbstractByteBuf: void ensureAccessible()>();
+virtualinvoke v0.<io.netty.buffer.AbstractByteBuf: void checkIndex0(int,int)>(v1, v2);
+return;
+}
+private static void checkRangeBounds(java.lang.String, int, int, int)
+{
+java.lang.IndexOutOfBoundsException v5;
+java.lang.Object[] v6;
+java.lang.Integer v7, v8, v9;
+int v1, v2, v3;
+java.lang.String v0, v10;
+boolean v4;
+v0 := @parameter0: java.lang.String;
+v1 := @parameter1: int;
+v2 := @parameter2: int;
+v3 := @parameter3: int;
+v4 = staticinvoke <io.netty.util.internal.MathUtil: boolean isOutOfBounds(int,int,int)>(v1, v2, v3);
+if v4 == 0 goto label1;
+v5 = new java.lang.IndexOutOfBoundsException;
+v6 = newarray (java.lang.Object)[4];
+v6[0] = v0;
+v7 = staticinvoke <java.lang.Integer: java.lang.Integer valueOf(int)>(v1);
+v6[1] = v7;
+v8 = staticinvoke <java.lang.Integer: java.lang.Integer valueOf(int)>(v2);
+v6[2] = v8;
+v9 = staticinvoke <java.lang.Integer: java.lang.Integer valueOf(int)>(v3);
+v6[3] = v9;
+v10 = staticinvoke <java.lang.String: java.lang.String format(java.lang.String,java.lang.Object[])>("%s: %d, length: %d (expected: range(0, %d))", v6);
+specialinvoke v5.<java.lang.IndexOutOfBoundsException: void <init>(java.lang.String)>(v10);
+throw v5;
+label1:
+return;
+}
+final void checkIndex0(int, int)
+{
+io.netty.buffer.AbstractByteBuf v0;
+int v1, v2, v4;
+boolean v3;
+v0 := @this: io.netty.buffer.AbstractByteBuf;
+v1 := @parameter0: int;
+v2 := @parameter1: int;
+v3 = <io.netty.buffer.AbstractByteBuf: boolean checkBounds>;
+if v3 == 0 goto label1;
+v4 = virtualinvoke v0.<io.netty.buffer.AbstractByteBuf: int capacity()>();
+staticinvoke <io.netty.buffer.AbstractByteBuf: void checkRangeBounds(java.lang.String,int,int,int)>("index", v1, v2, v4);
+label1:
+return;
+}
+protected final void checkSrcIndex(int, int, int, int)
+{
+io.netty.buffer.AbstractByteBuf v0;
+int v1, v2, v3, v4;
+boolean v5;
+v0 := @this: io.netty.buffer.AbstractByteBuf;
+v1 := @parameter0: int;
+v2 := @parameter1: int;
+v3 := @parameter2: int;
+v4 := @parameter3: int;
+virtualinvoke v0.<io.netty.buffer.AbstractByteBuf: void checkIndex(int,int)>(v1, v2);
+v5 = <io.netty.buffer.AbstractByteBuf: boolean checkBounds>;
+if v5 == 0 goto label1;
+staticinvoke <io.netty.buffer.AbstractByteBuf: void checkRangeBounds(java.lang.String,int,int,int)>("srcIndex", v3, v2, v4);
+label1:
+return;
+}
+protected final void checkDstIndex(int, int, int, int)
+{
+io.netty.buffer.AbstractByteBuf v0;
+int v1, v2, v3, v4;
+boolean v5;
+v0 := @this: io.netty.buffer.AbstractByteBuf;
+v1 := @parameter0: int;
+v2 := @parameter1: int;
+v3 := @parameter2: int;
+v4 := @parameter3: int;
+virtualinvoke v0.<io.netty.buffer.AbstractByteBuf: void checkIndex(int,int)>(v1, v2);
+v5 = <io.netty.buffer.AbstractByteBuf: boolean checkBounds>;
+if v5 == 0 goto label1;
+staticinvoke <io.netty.buffer.AbstractByteBuf: void checkRangeBounds(java.lang.String,int,int,int)>("dstIndex", v3, v2, v4);
+label1:
+return;
+}
+protected final void checkDstIndex(int, int, int)
+{
+io.netty.buffer.AbstractByteBuf v0;
+int v1, v2, v3;
+boolean v4;
+v0 := @this: io.netty.buffer.AbstractByteBuf;
+v1 := @parameter0: int;
+v2 := @parameter1: int;
+v3 := @parameter2: int;
+virtualinvoke v0.<io.netty.buffer.AbstractByteBuf: void checkReadableBytes(int)>(v1);
+v4 = <io.netty.buffer.AbstractByteBuf: boolean checkBounds>;
+if v4 == 0 goto label1;
+staticinvoke <io.netty.buffer.AbstractByteBuf: void checkRangeBounds(java.lang.String,int,int,int)>("dstIndex", v2, v1, v3);
+label1:
+return;
+}
+protected final void checkReadableBytes(int)
+{
+int v1, v2;
+io.netty.buffer.AbstractByteBuf v0;
+v0 := @this: io.netty.buffer.AbstractByteBuf;
+v1 := @parameter0: int;
+v2 = staticinvoke <io.netty.util.internal.ObjectUtil: int checkPositiveOrZero(int,java.lang.String)>(v1, "minimumReadableBytes");
+specialinvoke v0.<io.netty.buffer.AbstractByteBuf: void checkReadableBytes0(int)>(v2);
+return;
+}
+protected final void checkNewCapacity(int)
+{
+io.netty.buffer.AbstractByteBuf v0;
+int v1, v3, v5;
+java.lang.String v6;
+java.lang.IllegalArgumentException v4;
+boolean v2;
+v0 := @this: io.netty.buffer.AbstractByteBuf;
+v1 := @parameter0: int;
+virtualinvoke v0.<io.netty.buffer.AbstractByteBuf: void ensureAccessible()>();
+v2 = <io.netty.buffer.AbstractByteBuf: boolean checkBounds>;
+if v2 == 0 goto label2;
+if v1 < 0 goto label1;
+v3 = virtualinvoke v0.<io.netty.buffer.AbstractByteBuf: int maxCapacity()>();
+if v1 <= v3 goto label2;
+label1:
+v4 = new java.lang.IllegalArgumentException;
+v5 = virtualinvoke v0.<io.netty.buffer.AbstractByteBuf: int maxCapacity()>();
+v6 = dynamicinvoke "makeConcatWithConstants" <java.lang.String (int,int)>(v1, v5) <java.lang.invoke.StringConcatFactory: java.lang.invoke.CallSite makeConcatWithConstants(java.lang.invoke.MethodHandles$Lookup,java.lang.String,java.lang.invoke.MethodType,java.lang.String,java.lang.Object[])>("newCapacity: \u0001 (expected: 0-\u0001)");
+specialinvoke v4.<java.lang.IllegalArgumentException: void <init>(java.lang.String)>(v6);
+throw v4;
+label2:
+return;
+}
+private void checkReadableBytes0(int)
+{
+java.lang.IndexOutOfBoundsException v6;
+io.netty.buffer.AbstractByteBuf v0;
+java.lang.Object[] v7;
+java.lang.Integer v10, v12, v9;
+int v1, v11, v3, v4, v5, v8;
+java.lang.String v13;
+boolean v2;
+v0 := @this: io.netty.buffer.AbstractByteBuf;
+v1 := @parameter0: int;
+virtualinvoke v0.<io.netty.buffer.AbstractByteBuf: void ensureAccessible()>();
+v2 = <io.netty.buffer.AbstractByteBuf: boolean checkBounds>;
+if v2 == 0 goto label1;
+v3 = v0.<io.netty.buffer.AbstractByteBuf: int readerIndex>;
+v4 = v0.<io.netty.buffer.AbstractByteBuf: int writerIndex>;
+v5 = v4 - v1;
+if v3 <= v5 goto label1;
+v6 = new java.lang.IndexOutOfBoundsException;
+v7 = newarray (java.lang.Object)[4];
+v8 = v0.<io.netty.buffer.AbstractByteBuf: int readerIndex>;
+v9 = staticinvoke <java.lang.Integer: java.lang.Integer valueOf(int)>(v8);
+v7[0] = v9;
+v10 = staticinvoke <java.lang.Integer: java.lang.Integer valueOf(int)>(v1);
+v7[1] = v10;
+v11 = v0.<io.netty.buffer.AbstractByteBuf: int writerIndex>;
+v12 = staticinvoke <java.lang.Integer: java.lang.Integer valueOf(int)>(v11);
+v7[2] = v12;
+v7[3] = v0;
+v13 = staticinvoke <java.lang.String: java.lang.String format(java.lang.String,java.lang.Object[])>("readerIndex(%d) + length(%d) exceeds writerIndex(%d): %s", v7);
+specialinvoke v6.<java.lang.IndexOutOfBoundsException: void <init>(java.lang.String)>(v13);
+throw v6;
+label1:
+return;
+}
+protected final void ensureAccessible()
+{
+io.netty.buffer.AbstractByteBuf v0;
+io.netty.util.IllegalReferenceCountException v3;
+boolean v1, v2;
+v0 := @this: io.netty.buffer.AbstractByteBuf;
+v1 = <io.netty.buffer.AbstractByteBuf: boolean checkAccessible>;
+if v1 == 0 goto label1;
+v2 = virtualinvoke v0.<io.netty.buffer.AbstractByteBuf: boolean isAccessible()>();
+if v2 != 0 goto label1;
+v3 = new io.netty.util.IllegalReferenceCountException;
+specialinvoke v3.<io.netty.util.IllegalReferenceCountException: void <init>(int)>(0);
+throw v3;
+label1:
+return;
+}
+final void setIndex0(int, int)
+{
+int v1, v2;
+io.netty.buffer.AbstractByteBuf v0;
+v0 := @this: io.netty.buffer.AbstractByteBuf;
+v1 := @parameter0: int;
+v2 := @parameter1: int;
+v0.<io.netty.buffer.AbstractByteBuf: int readerIndex> = v1;
+v0.<io.netty.buffer.AbstractByteBuf: int writerIndex> = v2;
+return;
+}
+final void discardMarks()
+{
+io.netty.buffer.AbstractByteBuf v0;
+v0 := @this: io.netty.buffer.AbstractByteBuf;
+v0.<io.netty.buffer.AbstractByteBuf: int markedWriterIndex> = 0;
+v0.<io.netty.buffer.AbstractByteBuf: int markedReaderIndex> = 0;
+return;
+}
+static void <clinit>()
+{
+io.netty.util.ResourceLeakDetector v14;
+io.netty.util.internal.logging.InternalLogger v0, v10, v5, v7;
+io.netty.util.ResourceLeakDetectorFactory v13;
+java.lang.Boolean v12, v9;
+boolean v1, v11, v2, v3, v4, v6, v8;
+v0 = staticinvoke <io.netty.util.internal.logging.InternalLoggerFactory: io.netty.util.internal.logging.InternalLogger getInstance(java.lang.Class)>(class "Lio/netty/buffer/AbstractByteBuf;");
+<io.netty.buffer.AbstractByteBuf: io.netty.util.internal.logging.InternalLogger logger> = v0;
+v1 = staticinvoke <io.netty.util.internal.SystemPropertyUtil: boolean contains(java.lang.String)>("io.netty.buffer.checkAccessible");
+if v1 == 0 goto label1;
+v2 = staticinvoke <io.netty.util.internal.SystemPropertyUtil: boolean getBoolean(java.lang.String,boolean)>("io.netty.buffer.checkAccessible", 1);
+<io.netty.buffer.AbstractByteBuf: boolean checkAccessible> = v2;
+goto label2;
+label1:
+v3 = staticinvoke <io.netty.util.internal.SystemPropertyUtil: boolean getBoolean(java.lang.String,boolean)>("io.netty.buffer.bytebuf.checkAccessible", 1);
+<io.netty.buffer.AbstractByteBuf: boolean checkAccessible> = v3;
+label2:
+v4 = staticinvoke <io.netty.util.internal.SystemPropertyUtil: boolean getBoolean(java.lang.String,boolean)>("io.netty.buffer.checkBounds", 1);
+<io.netty.buffer.AbstractByteBuf: boolean checkBounds> = v4;
+v5 = <io.netty.buffer.AbstractByteBuf: io.netty.util.internal.logging.InternalLogger logger>;
+v6 = interfaceinvoke v5.<io.netty.util.internal.logging.InternalLogger: boolean isDebugEnabled()>();
+if v6 == 0 goto label3;
+v7 = <io.netty.buffer.AbstractByteBuf: io.netty.util.internal.logging.InternalLogger logger>;
+v8 = <io.netty.buffer.AbstractByteBuf: boolean checkAccessible>;
+v9 = staticinvoke <java.lang.Boolean: java.lang.Boolean valueOf(boolean)>(v8);
+interfaceinvoke v7.<io.netty.util.internal.logging.InternalLogger: void debug(java.lang.String,java.lang.Object,java.lang.Object)>("-D{}: {}", "io.netty.buffer.checkAccessible", v9);
+v10 = <io.netty.buffer.AbstractByteBuf: io.netty.util.internal.logging.InternalLogger logger>;
+v11 = <io.netty.buffer.AbstractByteBuf: boolean checkBounds>;
+v12 = staticinvoke <java.lang.Boolean: java.lang.Boolean valueOf(boolean)>(v11);
+interfaceinvoke v10.<io.netty.util.internal.logging.InternalLogger: void debug(java.lang.String,java.lang.Object,java.lang.Object)>("-D{}: {}", "io.netty.buffer.checkBounds", v12);
+label3:
+v13 = staticinvoke <io.netty.util.ResourceLeakDetectorFactory: io.netty.util.ResourceLeakDetectorFactory instance()>();
+v14 = virtualinvoke v13.<io.netty.util.ResourceLeakDetectorFactory: io.netty.util.ResourceLeakDetector newResourceLeakDetector(java.lang.Class)>(class "Lio/netty/buffer/ByteBuf;");
+<io.netty.buffer.AbstractByteBuf: io.netty.util.ResourceLeakDetector leakDetector> = v14;
+return;
+}
+}

@@ -1,0 +1,1124 @@
+public class org.jboss.threads.JBossThread extends java.lang.Thread
+{
+private static final java.lang.RuntimePermission MODIFY_THREAD_PERMISSION;
+private static final int MAX_INTERRUPT_SPINS;
+private volatile org.jboss.threads.InterruptHandler interruptHandler;
+private org.jboss.threads.ThreadNameInfo threadNameInfo;
+private java.util.List exitHandlers;
+private static final int STATE_MAYBE_INTERRUPTED;
+private static final int STATE_INTERRUPT_DEFERRED;
+private static final int STATE_INTERRUPT_PENDING;
+private static final int STATE_INTERRUPT_IN_PROGRESS;
+private final java.util.concurrent.atomic.AtomicInteger stateRef;
+public void <init>(java.lang.Runnable)
+{
+org.jboss.threads.JBossThread v0;
+java.lang.Runnable v1;
+java.util.concurrent.atomic.AtomicInteger v2;
+v0 := @this: org.jboss.threads.JBossThread;
+v1 := @parameter0: java.lang.Runnable;
+specialinvoke v0.<java.lang.Thread: void <init>(java.lang.Runnable)>(v1);
+v2 = new java.util.concurrent.atomic.AtomicInteger;
+specialinvoke v2.<java.util.concurrent.atomic.AtomicInteger: void <init>()>();
+v0.<org.jboss.threads.JBossThread: java.util.concurrent.atomic.AtomicInteger stateRef> = v2;
+return;
+}
+public void <init>(java.lang.Runnable, java.lang.String)
+{
+java.util.concurrent.atomic.AtomicInteger v3;
+org.jboss.threads.JBossThread v0;
+java.lang.String v2;
+java.lang.Runnable v1;
+v0 := @this: org.jboss.threads.JBossThread;
+v1 := @parameter0: java.lang.Runnable;
+v2 := @parameter1: java.lang.String;
+specialinvoke v0.<java.lang.Thread: void <init>(java.lang.Runnable,java.lang.String)>(v1, v2);
+v3 = new java.util.concurrent.atomic.AtomicInteger;
+specialinvoke v3.<java.util.concurrent.atomic.AtomicInteger: void <init>()>();
+v0.<org.jboss.threads.JBossThread: java.util.concurrent.atomic.AtomicInteger stateRef> = v3;
+return;
+}
+public void <init>(java.lang.ThreadGroup, java.lang.Runnable) throws java.lang.SecurityException
+{
+java.util.concurrent.atomic.AtomicInteger v3;
+org.jboss.threads.JBossThread v0;
+java.lang.ThreadGroup v1;
+java.lang.Runnable v2;
+v0 := @this: org.jboss.threads.JBossThread;
+v1 := @parameter0: java.lang.ThreadGroup;
+v2 := @parameter1: java.lang.Runnable;
+specialinvoke v0.<java.lang.Thread: void <init>(java.lang.ThreadGroup,java.lang.Runnable)>(v1, v2);
+v3 = new java.util.concurrent.atomic.AtomicInteger;
+specialinvoke v3.<java.util.concurrent.atomic.AtomicInteger: void <init>()>();
+v0.<org.jboss.threads.JBossThread: java.util.concurrent.atomic.AtomicInteger stateRef> = v3;
+return;
+}
+public void <init>(java.lang.ThreadGroup, java.lang.Runnable, java.lang.String) throws java.lang.SecurityException
+{
+java.util.concurrent.atomic.AtomicInteger v4;
+org.jboss.threads.JBossThread v0;
+java.lang.String v3;
+java.lang.ThreadGroup v1;
+java.lang.Runnable v2;
+v0 := @this: org.jboss.threads.JBossThread;
+v1 := @parameter0: java.lang.ThreadGroup;
+v2 := @parameter1: java.lang.Runnable;
+v3 := @parameter2: java.lang.String;
+specialinvoke v0.<java.lang.Thread: void <init>(java.lang.ThreadGroup,java.lang.Runnable,java.lang.String)>(v1, v2, v3);
+v4 = new java.util.concurrent.atomic.AtomicInteger;
+specialinvoke v4.<java.util.concurrent.atomic.AtomicInteger: void <init>()>();
+v0.<org.jboss.threads.JBossThread: java.util.concurrent.atomic.AtomicInteger stateRef> = v4;
+return;
+}
+public void <init>(java.lang.ThreadGroup, java.lang.Runnable, java.lang.String, long) throws java.lang.SecurityException
+{
+java.util.concurrent.atomic.AtomicInteger v5;
+org.jboss.threads.JBossThread v0;
+long v4;
+java.lang.String v3;
+java.lang.ThreadGroup v1;
+java.lang.Runnable v2;
+v0 := @this: org.jboss.threads.JBossThread;
+v1 := @parameter0: java.lang.ThreadGroup;
+v2 := @parameter1: java.lang.Runnable;
+v3 := @parameter2: java.lang.String;
+v4 := @parameter3: long;
+specialinvoke v0.<java.lang.Thread: void <init>(java.lang.ThreadGroup,java.lang.Runnable,java.lang.String,long)>(v1, v2, v3, v4);
+v5 = new java.util.concurrent.atomic.AtomicInteger;
+specialinvoke v5.<java.util.concurrent.atomic.AtomicInteger: void <init>()>();
+v0.<org.jboss.threads.JBossThread: java.util.concurrent.atomic.AtomicInteger stateRef> = v5;
+return;
+}
+public void interrupt()
+{
+java.lang.Throwable v12;
+byte v10;
+java.util.concurrent.atomic.AtomicInteger v5;
+java.lang.Thread v1;
+int v6, v7, v9;
+org.jboss.threads.JBossThread v0;
+org.jboss.threads.Messages v13, v8;
+boolean v11, v2, v3, v4;
+v0 := @this: org.jboss.threads.JBossThread;
+v1 = staticinvoke <java.lang.Thread: java.lang.Thread currentThread()>();
+if v1 == v0 goto label01;
+v2 = 1;
+goto label02;
+label01:
+v2 = 0;
+label02:
+v3 = v2;
+if v2 == 0 goto label03;
+virtualinvoke v0.<org.jboss.threads.JBossThread: void checkAccess()>();
+label03:
+v4 = virtualinvoke v0.<org.jboss.threads.JBossThread: boolean isInterrupted()>();
+if v4 == 0 goto label04;
+return;
+label04:
+v5 = v0.<org.jboss.threads.JBossThread: java.util.concurrent.atomic.AtomicInteger stateRef>;
+v6 = 0;
+label05:
+v7 = virtualinvoke v5.<java.util.concurrent.atomic.AtomicInteger: int get()>();
+if v7 != 2 goto label06;
+v8 = <org.jboss.threads.Messages: org.jboss.threads.Messages msg>;
+interfaceinvoke v8.<org.jboss.threads.Messages: void tracef(java.lang.String,java.lang.Object)>("Interrupting thread \"%s\" (already interrupted)", v0);
+return;
+label06:
+if v7 != 3 goto label08;
+v9 = <org.jboss.threads.JBossThread: int MAX_INTERRUPT_SPINS>;
+if v6 >= v9 goto label07;
+staticinvoke <org.jboss.threads.JDKSpecific: void onSpinWait()>();
+v6 = v6 + 1;
+goto label05;
+label07:
+staticinvoke <java.lang.Thread: void yield()>();
+goto label05;
+label08:
+if v7 != 1 goto label09;
+v10 = 2;
+goto label10;
+label09:
+v10 = 3;
+label10:
+v11 = virtualinvoke v5.<java.util.concurrent.atomic.AtomicInteger: boolean compareAndSet(int,int)>(v7, v10);
+if v11 == 0 goto label05;
+if v10 != 3 goto label15;
+label11:
+specialinvoke v0.<org.jboss.threads.JBossThread: void doInterrupt()>();
+label12:
+virtualinvoke v5.<java.util.concurrent.atomic.AtomicInteger: void set(int)>(0);
+if v3 == 0 goto label16;
+staticinvoke <java.util.concurrent.locks.LockSupport: void unpark(java.lang.Thread)>(v0);
+goto label16;
+label13:
+v12 := @caughtexception;
+virtualinvoke v5.<java.util.concurrent.atomic.AtomicInteger: void set(int)>(0);
+if v3 == 0 goto label14;
+staticinvoke <java.util.concurrent.locks.LockSupport: void unpark(java.lang.Thread)>(v0);
+label14:
+throw v12;
+label15:
+v13 = <org.jboss.threads.Messages: org.jboss.threads.Messages intMsg>;
+interfaceinvoke v13.<org.jboss.threads.Messages: void tracef(java.lang.String,java.lang.Object)>("Interrupting thread \"%s\" (deferred)", v0);
+label16:
+return;
+catch java.lang.Throwable from label11 to label12 with label13;
+}
+private void doInterrupt()
+{
+java.lang.Throwable v4, v6, v8;
+org.jboss.threads.InterruptHandler v3, v7;
+org.jboss.threads.JBossThread v0;
+org.jboss.threads.Messages v2, v5, v9;
+boolean v1;
+v0 := @this: org.jboss.threads.JBossThread;
+v1 = virtualinvoke v0.<org.jboss.threads.JBossThread: boolean isInterrupted()>();
+if v1 == 0 goto label01;
+return;
+label01:
+v2 = <org.jboss.threads.Messages: org.jboss.threads.Messages msg>;
+interfaceinvoke v2.<org.jboss.threads.Messages: void tracef(java.lang.String,java.lang.Object)>("Interrupting thread \"%s\"", v0);
+label02:
+specialinvoke v0.<java.lang.Thread: void interrupt()>();
+label03:
+v3 = v0.<org.jboss.threads.JBossThread: org.jboss.threads.InterruptHandler interruptHandler>;
+if v3 == null goto label12;
+label04:
+interfaceinvoke v3.<org.jboss.threads.InterruptHandler: void handleInterrupt(java.lang.Thread)>(v0);
+label05:
+goto label12;
+label06:
+v4 := @caughtexception;
+v5 = <org.jboss.threads.Messages: org.jboss.threads.Messages msg>;
+interfaceinvoke v5.<org.jboss.threads.Messages: void interruptHandlerThrew(java.lang.Throwable,org.jboss.threads.InterruptHandler)>(v4, v3);
+goto label12;
+label07:
+v6 := @caughtexception;
+v7 = v0.<org.jboss.threads.JBossThread: org.jboss.threads.InterruptHandler interruptHandler>;
+if v7 == null goto label11;
+label08:
+interfaceinvoke v7.<org.jboss.threads.InterruptHandler: void handleInterrupt(java.lang.Thread)>(v0);
+label09:
+goto label11;
+label10:
+v8 := @caughtexception;
+v9 = <org.jboss.threads.Messages: org.jboss.threads.Messages msg>;
+interfaceinvoke v9.<org.jboss.threads.Messages: void interruptHandlerThrew(java.lang.Throwable,org.jboss.threads.InterruptHandler)>(v8, v7);
+label11:
+throw v6;
+label12:
+return;
+catch java.lang.Throwable from label04 to label05 with label06;
+catch java.lang.Throwable from label02 to label03 with label07;
+catch java.lang.Throwable from label08 to label09 with label10;
+}
+public boolean isInterrupted()
+{
+java.util.concurrent.atomic.AtomicInteger v4;
+java.lang.Thread v1;
+int v5;
+org.jboss.threads.JBossThread v0;
+boolean v2, v3;
+v0 := @this: org.jboss.threads.JBossThread;
+v1 = staticinvoke <java.lang.Thread: java.lang.Thread currentThread()>();
+if v0 != v1 goto label1;
+v2 = specialinvoke v0.<java.lang.Thread: boolean isInterrupted()>();
+goto label4;
+label1:
+v3 = specialinvoke v0.<java.lang.Thread: boolean isInterrupted()>();
+if v3 != 0 goto label2;
+v4 = v0.<org.jboss.threads.JBossThread: java.util.concurrent.atomic.AtomicInteger stateRef>;
+v5 = virtualinvoke v4.<java.util.concurrent.atomic.AtomicInteger: int get()>();
+if v5 != 2 goto label3;
+label2:
+v2 = 1;
+goto label4;
+label3:
+v2 = 0;
+label4:
+return v2;
+}
+public static void executeWithInterruptDeferred(java.lang.Runnable)
+{
+java.lang.Throwable v3;
+org.jboss.threads.JBossThread v1;
+java.lang.Runnable v0;
+boolean v2;
+v0 := @parameter0: java.lang.Runnable;
+v1 = staticinvoke <org.jboss.threads.JBossThread: org.jboss.threads.JBossThread currentThread()>();
+v2 = staticinvoke <org.jboss.threads.JBossThread: boolean registerDeferral(org.jboss.threads.JBossThread)>(v1);
+if v2 == 0 goto label4;
+label1:
+interfaceinvoke v0.<java.lang.Runnable: void run()>();
+label2:
+staticinvoke <org.jboss.threads.JBossThread: boolean unregisterDeferral(org.jboss.threads.JBossThread)>(v1);
+goto label5;
+label3:
+v3 := @caughtexception;
+staticinvoke <org.jboss.threads.JBossThread: boolean unregisterDeferral(org.jboss.threads.JBossThread)>(v1);
+throw v3;
+label4:
+interfaceinvoke v0.<java.lang.Runnable: void run()>();
+label5:
+return;
+catch java.lang.Throwable from label1 to label2 with label3;
+}
+public static java.lang.Object executeWithInterruptDeferred(java.util.concurrent.Callable) throws java.lang.Exception
+{
+java.lang.Throwable v4;
+org.jboss.threads.JBossThread v1;
+java.lang.Object v3, v5;
+java.util.concurrent.Callable v0;
+boolean v2;
+v0 := @parameter0: java.util.concurrent.Callable;
+v1 = staticinvoke <org.jboss.threads.JBossThread: org.jboss.threads.JBossThread currentThread()>();
+v2 = staticinvoke <org.jboss.threads.JBossThread: boolean registerDeferral(org.jboss.threads.JBossThread)>(v1);
+if v2 == 0 goto label4;
+label1:
+v3 = interfaceinvoke v0.<java.util.concurrent.Callable: java.lang.Object call()>();
+label2:
+staticinvoke <org.jboss.threads.JBossThread: boolean unregisterDeferral(org.jboss.threads.JBossThread)>(v1);
+return v3;
+label3:
+v4 := @caughtexception;
+staticinvoke <org.jboss.threads.JBossThread: boolean unregisterDeferral(org.jboss.threads.JBossThread)>(v1);
+throw v4;
+label4:
+v5 = interfaceinvoke v0.<java.util.concurrent.Callable: java.lang.Object call()>();
+return v5;
+catch java.lang.Throwable from label1 to label2 with label3;
+}
+public static java.lang.Object executeWithInterruptDeferred(java.security.PrivilegedAction)
+{
+java.lang.Throwable v4;
+org.jboss.threads.JBossThread v1;
+java.lang.Object v3, v5;
+java.security.PrivilegedAction v0;
+boolean v2;
+v0 := @parameter0: java.security.PrivilegedAction;
+v1 = staticinvoke <org.jboss.threads.JBossThread: org.jboss.threads.JBossThread currentThread()>();
+v2 = staticinvoke <org.jboss.threads.JBossThread: boolean registerDeferral(org.jboss.threads.JBossThread)>(v1);
+if v2 == 0 goto label4;
+label1:
+v3 = interfaceinvoke v0.<java.security.PrivilegedAction: java.lang.Object run()>();
+label2:
+staticinvoke <org.jboss.threads.JBossThread: boolean unregisterDeferral(org.jboss.threads.JBossThread)>(v1);
+return v3;
+label3:
+v4 := @caughtexception;
+staticinvoke <org.jboss.threads.JBossThread: boolean unregisterDeferral(org.jboss.threads.JBossThread)>(v1);
+throw v4;
+label4:
+v5 = interfaceinvoke v0.<java.security.PrivilegedAction: java.lang.Object run()>();
+return v5;
+catch java.lang.Throwable from label1 to label2 with label3;
+}
+public static java.lang.Object executeWithInterruptDeferred(java.security.PrivilegedExceptionAction) throws java.lang.Exception
+{
+java.lang.Throwable v4;
+org.jboss.threads.JBossThread v1;
+java.lang.Object v3, v5;
+java.security.PrivilegedExceptionAction v0;
+boolean v2;
+v0 := @parameter0: java.security.PrivilegedExceptionAction;
+v1 = staticinvoke <org.jboss.threads.JBossThread: org.jboss.threads.JBossThread currentThread()>();
+v2 = staticinvoke <org.jboss.threads.JBossThread: boolean registerDeferral(org.jboss.threads.JBossThread)>(v1);
+if v2 == 0 goto label4;
+label1:
+v3 = interfaceinvoke v0.<java.security.PrivilegedExceptionAction: java.lang.Object run()>();
+label2:
+staticinvoke <org.jboss.threads.JBossThread: boolean unregisterDeferral(org.jboss.threads.JBossThread)>(v1);
+return v3;
+label3:
+v4 := @caughtexception;
+staticinvoke <org.jboss.threads.JBossThread: boolean unregisterDeferral(org.jboss.threads.JBossThread)>(v1);
+throw v4;
+label4:
+v5 = interfaceinvoke v0.<java.security.PrivilegedExceptionAction: java.lang.Object run()>();
+return v5;
+catch java.lang.Throwable from label1 to label2 with label3;
+}
+public static java.lang.Object applyInterruptDeferredEx(org.wildfly.common.function.ExceptionBiFunction, java.lang.Object, java.lang.Object) throws java.lang.Exception
+{
+java.lang.Throwable v6;
+org.wildfly.common.function.ExceptionBiFunction v0;
+org.jboss.threads.JBossThread v3;
+java.lang.Object v1, v2, v5, v7;
+boolean v4;
+v0 := @parameter0: org.wildfly.common.function.ExceptionBiFunction;
+v1 := @parameter1: java.lang.Object;
+v2 := @parameter2: java.lang.Object;
+v3 = staticinvoke <org.jboss.threads.JBossThread: org.jboss.threads.JBossThread currentThread()>();
+v4 = staticinvoke <org.jboss.threads.JBossThread: boolean registerDeferral(org.jboss.threads.JBossThread)>(v3);
+if v4 == 0 goto label4;
+label1:
+v5 = interfaceinvoke v0.<org.wildfly.common.function.ExceptionBiFunction: java.lang.Object apply(java.lang.Object,java.lang.Object)>(v1, v2);
+label2:
+staticinvoke <org.jboss.threads.JBossThread: boolean unregisterDeferral(org.jboss.threads.JBossThread)>(v3);
+return v5;
+label3:
+v6 := @caughtexception;
+staticinvoke <org.jboss.threads.JBossThread: boolean unregisterDeferral(org.jboss.threads.JBossThread)>(v3);
+throw v6;
+label4:
+v7 = interfaceinvoke v0.<org.wildfly.common.function.ExceptionBiFunction: java.lang.Object apply(java.lang.Object,java.lang.Object)>(v1, v2);
+return v7;
+catch java.lang.Throwable from label1 to label2 with label3;
+}
+public static java.lang.Object applyInterruptDeferredEx(org.wildfly.common.function.ExceptionFunction, java.lang.Object) throws java.lang.Exception
+{
+org.wildfly.common.function.ExceptionBiFunction v2;
+java.lang.Object v1, v3;
+org.wildfly.common.function.ExceptionFunction v0;
+v0 := @parameter0: org.wildfly.common.function.ExceptionFunction;
+v1 := @parameter1: java.lang.Object;
+v2 = staticinvoke <org.wildfly.common.function.Functions: org.wildfly.common.function.ExceptionBiFunction exceptionFunctionBiFunction()>();
+v3 = staticinvoke <org.jboss.threads.JBossThread: java.lang.Object applyInterruptDeferredEx(org.wildfly.common.function.ExceptionBiFunction,java.lang.Object,java.lang.Object)>(v2, v0, v1);
+return v3;
+}
+public static java.lang.Object getInterruptDeferredEx(org.wildfly.common.function.ExceptionSupplier) throws java.lang.Exception
+{
+org.wildfly.common.function.ExceptionBiFunction v1;
+java.lang.Object v3;
+org.wildfly.common.function.ExceptionFunction v2;
+org.wildfly.common.function.ExceptionSupplier v0;
+v0 := @parameter0: org.wildfly.common.function.ExceptionSupplier;
+v1 = staticinvoke <org.wildfly.common.function.Functions: org.wildfly.common.function.ExceptionBiFunction exceptionFunctionBiFunction()>();
+v2 = staticinvoke <org.wildfly.common.function.Functions: org.wildfly.common.function.ExceptionFunction exceptionSupplierFunction()>();
+v3 = staticinvoke <org.jboss.threads.JBossThread: java.lang.Object applyInterruptDeferredEx(org.wildfly.common.function.ExceptionBiFunction,java.lang.Object,java.lang.Object)>(v1, v2, v0);
+return v3;
+}
+public static void acceptInterruptDeferredEx(org.wildfly.common.function.ExceptionObjLongConsumer, java.lang.Object, long) throws java.lang.Exception
+{
+java.lang.Throwable v5;
+org.jboss.threads.JBossThread v3;
+java.lang.Object v1;
+long v2;
+org.wildfly.common.function.ExceptionObjLongConsumer v0;
+boolean v4;
+v0 := @parameter0: org.wildfly.common.function.ExceptionObjLongConsumer;
+v1 := @parameter1: java.lang.Object;
+v2 := @parameter2: long;
+v3 = staticinvoke <org.jboss.threads.JBossThread: org.jboss.threads.JBossThread currentThread()>();
+v4 = staticinvoke <org.jboss.threads.JBossThread: boolean registerDeferral(org.jboss.threads.JBossThread)>(v3);
+if v4 == 0 goto label4;
+label1:
+interfaceinvoke v0.<org.wildfly.common.function.ExceptionObjLongConsumer: void accept(java.lang.Object,long)>(v1, v2);
+label2:
+staticinvoke <org.jboss.threads.JBossThread: boolean unregisterDeferral(org.jboss.threads.JBossThread)>(v3);
+goto label5;
+label3:
+v5 := @caughtexception;
+staticinvoke <org.jboss.threads.JBossThread: boolean unregisterDeferral(org.jboss.threads.JBossThread)>(v3);
+throw v5;
+label4:
+interfaceinvoke v0.<org.wildfly.common.function.ExceptionObjLongConsumer: void accept(java.lang.Object,long)>(v1, v2);
+label5:
+return;
+catch java.lang.Throwable from label1 to label2 with label3;
+}
+public static void acceptInterruptDeferredEx(org.wildfly.common.function.ExceptionObjIntConsumer, java.lang.Object, int) throws java.lang.Exception
+{
+java.lang.Throwable v5;
+org.wildfly.common.function.ExceptionObjIntConsumer v0;
+int v2;
+org.jboss.threads.JBossThread v3;
+java.lang.Object v1;
+boolean v4;
+v0 := @parameter0: org.wildfly.common.function.ExceptionObjIntConsumer;
+v1 := @parameter1: java.lang.Object;
+v2 := @parameter2: int;
+v3 = staticinvoke <org.jboss.threads.JBossThread: org.jboss.threads.JBossThread currentThread()>();
+v4 = staticinvoke <org.jboss.threads.JBossThread: boolean registerDeferral(org.jboss.threads.JBossThread)>(v3);
+if v4 == 0 goto label4;
+label1:
+interfaceinvoke v0.<org.wildfly.common.function.ExceptionObjIntConsumer: void accept(java.lang.Object,int)>(v1, v2);
+label2:
+staticinvoke <org.jboss.threads.JBossThread: boolean unregisterDeferral(org.jboss.threads.JBossThread)>(v3);
+goto label5;
+label3:
+v5 := @caughtexception;
+staticinvoke <org.jboss.threads.JBossThread: boolean unregisterDeferral(org.jboss.threads.JBossThread)>(v3);
+throw v5;
+label4:
+interfaceinvoke v0.<org.wildfly.common.function.ExceptionObjIntConsumer: void accept(java.lang.Object,int)>(v1, v2);
+label5:
+return;
+catch java.lang.Throwable from label1 to label2 with label3;
+}
+public static void acceptInterruptDeferredEx(org.wildfly.common.function.ExceptionBiConsumer, java.lang.Object, java.lang.Object) throws java.lang.Exception
+{
+java.lang.Throwable v5;
+org.jboss.threads.JBossThread v3;
+java.lang.Object v1, v2;
+org.wildfly.common.function.ExceptionBiConsumer v0;
+boolean v4;
+v0 := @parameter0: org.wildfly.common.function.ExceptionBiConsumer;
+v1 := @parameter1: java.lang.Object;
+v2 := @parameter2: java.lang.Object;
+v3 = staticinvoke <org.jboss.threads.JBossThread: org.jboss.threads.JBossThread currentThread()>();
+v4 = staticinvoke <org.jboss.threads.JBossThread: boolean registerDeferral(org.jboss.threads.JBossThread)>(v3);
+if v4 == 0 goto label4;
+label1:
+interfaceinvoke v0.<org.wildfly.common.function.ExceptionBiConsumer: void accept(java.lang.Object,java.lang.Object)>(v1, v2);
+label2:
+staticinvoke <org.jboss.threads.JBossThread: boolean unregisterDeferral(org.jboss.threads.JBossThread)>(v3);
+goto label5;
+label3:
+v5 := @caughtexception;
+staticinvoke <org.jboss.threads.JBossThread: boolean unregisterDeferral(org.jboss.threads.JBossThread)>(v3);
+throw v5;
+label4:
+interfaceinvoke v0.<org.wildfly.common.function.ExceptionBiConsumer: void accept(java.lang.Object,java.lang.Object)>(v1, v2);
+label5:
+return;
+catch java.lang.Throwable from label1 to label2 with label3;
+}
+public static void acceptInterruptDeferredEx(org.wildfly.common.function.ExceptionConsumer, java.lang.Object) throws java.lang.Exception
+{
+org.wildfly.common.function.ExceptionConsumer v0;
+java.lang.Object v1;
+org.wildfly.common.function.ExceptionBiConsumer v2;
+v0 := @parameter0: org.wildfly.common.function.ExceptionConsumer;
+v1 := @parameter1: java.lang.Object;
+v2 = staticinvoke <org.wildfly.common.function.Functions: org.wildfly.common.function.ExceptionBiConsumer exceptionConsumerBiConsumer()>();
+staticinvoke <org.jboss.threads.JBossThread: void acceptInterruptDeferredEx(org.wildfly.common.function.ExceptionBiConsumer,java.lang.Object,java.lang.Object)>(v2, v0, v1);
+return;
+}
+public static void runInterruptDeferredEx(org.wildfly.common.function.ExceptionRunnable) throws java.lang.Exception
+{
+org.wildfly.common.function.ExceptionConsumer v2;
+org.wildfly.common.function.ExceptionRunnable v0;
+org.wildfly.common.function.ExceptionBiConsumer v1;
+v0 := @parameter0: org.wildfly.common.function.ExceptionRunnable;
+v1 = staticinvoke <org.wildfly.common.function.Functions: org.wildfly.common.function.ExceptionBiConsumer exceptionConsumerBiConsumer()>();
+v2 = staticinvoke <org.wildfly.common.function.Functions: org.wildfly.common.function.ExceptionConsumer exceptionRunnableConsumer()>();
+staticinvoke <org.jboss.threads.JBossThread: void acceptInterruptDeferredEx(org.wildfly.common.function.ExceptionBiConsumer,java.lang.Object,java.lang.Object)>(v1, v2, v0);
+return;
+}
+public static java.lang.Object applyInterruptResumedEx(org.wildfly.common.function.ExceptionBiFunction, java.lang.Object, java.lang.Object) throws java.lang.Exception
+{
+java.lang.Throwable v6;
+org.wildfly.common.function.ExceptionBiFunction v0;
+org.jboss.threads.JBossThread v3;
+java.lang.Object v1, v2, v5, v7;
+boolean v4;
+v0 := @parameter0: org.wildfly.common.function.ExceptionBiFunction;
+v1 := @parameter1: java.lang.Object;
+v2 := @parameter2: java.lang.Object;
+v3 = staticinvoke <org.jboss.threads.JBossThread: org.jboss.threads.JBossThread currentThread()>();
+v4 = staticinvoke <org.jboss.threads.JBossThread: boolean unregisterDeferral(org.jboss.threads.JBossThread)>(v3);
+if v4 == 0 goto label4;
+label1:
+v5 = interfaceinvoke v0.<org.wildfly.common.function.ExceptionBiFunction: java.lang.Object apply(java.lang.Object,java.lang.Object)>(v1, v2);
+label2:
+staticinvoke <org.jboss.threads.JBossThread: boolean registerDeferral(org.jboss.threads.JBossThread)>(v3);
+return v5;
+label3:
+v6 := @caughtexception;
+staticinvoke <org.jboss.threads.JBossThread: boolean registerDeferral(org.jboss.threads.JBossThread)>(v3);
+throw v6;
+label4:
+v7 = interfaceinvoke v0.<org.wildfly.common.function.ExceptionBiFunction: java.lang.Object apply(java.lang.Object,java.lang.Object)>(v1, v2);
+return v7;
+catch java.lang.Throwable from label1 to label2 with label3;
+}
+public static java.lang.Object applyInterruptResumedEx(org.wildfly.common.function.ExceptionFunction, java.lang.Object) throws java.lang.Exception
+{
+org.wildfly.common.function.ExceptionBiFunction v2;
+java.lang.Object v1, v3;
+org.wildfly.common.function.ExceptionFunction v0;
+v0 := @parameter0: org.wildfly.common.function.ExceptionFunction;
+v1 := @parameter1: java.lang.Object;
+v2 = staticinvoke <org.wildfly.common.function.Functions: org.wildfly.common.function.ExceptionBiFunction exceptionFunctionBiFunction()>();
+v3 = staticinvoke <org.jboss.threads.JBossThread: java.lang.Object applyInterruptResumedEx(org.wildfly.common.function.ExceptionBiFunction,java.lang.Object,java.lang.Object)>(v2, v0, v1);
+return v3;
+}
+public static java.lang.Object getInterruptResumedEx(org.wildfly.common.function.ExceptionSupplier) throws java.lang.Exception
+{
+org.wildfly.common.function.ExceptionBiFunction v1;
+java.lang.Object v3;
+org.wildfly.common.function.ExceptionFunction v2;
+org.wildfly.common.function.ExceptionSupplier v0;
+v0 := @parameter0: org.wildfly.common.function.ExceptionSupplier;
+v1 = staticinvoke <org.wildfly.common.function.Functions: org.wildfly.common.function.ExceptionBiFunction exceptionFunctionBiFunction()>();
+v2 = staticinvoke <org.wildfly.common.function.Functions: org.wildfly.common.function.ExceptionFunction exceptionSupplierFunction()>();
+v3 = staticinvoke <org.jboss.threads.JBossThread: java.lang.Object applyInterruptResumedEx(org.wildfly.common.function.ExceptionBiFunction,java.lang.Object,java.lang.Object)>(v1, v2, v0);
+return v3;
+}
+public static void acceptInterruptResumedEx(org.wildfly.common.function.ExceptionObjLongConsumer, java.lang.Object, long) throws java.lang.Exception
+{
+java.lang.Throwable v5;
+org.jboss.threads.JBossThread v3;
+java.lang.Object v1;
+long v2;
+org.wildfly.common.function.ExceptionObjLongConsumer v0;
+boolean v4;
+v0 := @parameter0: org.wildfly.common.function.ExceptionObjLongConsumer;
+v1 := @parameter1: java.lang.Object;
+v2 := @parameter2: long;
+v3 = staticinvoke <org.jboss.threads.JBossThread: org.jboss.threads.JBossThread currentThread()>();
+v4 = staticinvoke <org.jboss.threads.JBossThread: boolean unregisterDeferral(org.jboss.threads.JBossThread)>(v3);
+if v4 == 0 goto label4;
+label1:
+interfaceinvoke v0.<org.wildfly.common.function.ExceptionObjLongConsumer: void accept(java.lang.Object,long)>(v1, v2);
+label2:
+staticinvoke <org.jboss.threads.JBossThread: boolean registerDeferral(org.jboss.threads.JBossThread)>(v3);
+goto label5;
+label3:
+v5 := @caughtexception;
+staticinvoke <org.jboss.threads.JBossThread: boolean registerDeferral(org.jboss.threads.JBossThread)>(v3);
+throw v5;
+label4:
+interfaceinvoke v0.<org.wildfly.common.function.ExceptionObjLongConsumer: void accept(java.lang.Object,long)>(v1, v2);
+label5:
+return;
+catch java.lang.Throwable from label1 to label2 with label3;
+}
+public static void acceptInterruptResumedEx(org.wildfly.common.function.ExceptionObjIntConsumer, java.lang.Object, int) throws java.lang.Exception
+{
+java.lang.Throwable v5;
+org.wildfly.common.function.ExceptionObjIntConsumer v0;
+int v2;
+org.jboss.threads.JBossThread v3;
+java.lang.Object v1;
+boolean v4;
+v0 := @parameter0: org.wildfly.common.function.ExceptionObjIntConsumer;
+v1 := @parameter1: java.lang.Object;
+v2 := @parameter2: int;
+v3 = staticinvoke <org.jboss.threads.JBossThread: org.jboss.threads.JBossThread currentThread()>();
+v4 = staticinvoke <org.jboss.threads.JBossThread: boolean unregisterDeferral(org.jboss.threads.JBossThread)>(v3);
+if v4 == 0 goto label4;
+label1:
+interfaceinvoke v0.<org.wildfly.common.function.ExceptionObjIntConsumer: void accept(java.lang.Object,int)>(v1, v2);
+label2:
+staticinvoke <org.jboss.threads.JBossThread: boolean registerDeferral(org.jboss.threads.JBossThread)>(v3);
+goto label5;
+label3:
+v5 := @caughtexception;
+staticinvoke <org.jboss.threads.JBossThread: boolean registerDeferral(org.jboss.threads.JBossThread)>(v3);
+throw v5;
+label4:
+interfaceinvoke v0.<org.wildfly.common.function.ExceptionObjIntConsumer: void accept(java.lang.Object,int)>(v1, v2);
+label5:
+return;
+catch java.lang.Throwable from label1 to label2 with label3;
+}
+public static void acceptInterruptResumedEx(org.wildfly.common.function.ExceptionBiConsumer, java.lang.Object, java.lang.Object) throws java.lang.Exception
+{
+java.lang.Throwable v5;
+org.jboss.threads.JBossThread v3;
+java.lang.Object v1, v2;
+org.wildfly.common.function.ExceptionBiConsumer v0;
+boolean v4;
+v0 := @parameter0: org.wildfly.common.function.ExceptionBiConsumer;
+v1 := @parameter1: java.lang.Object;
+v2 := @parameter2: java.lang.Object;
+v3 = staticinvoke <org.jboss.threads.JBossThread: org.jboss.threads.JBossThread currentThread()>();
+v4 = staticinvoke <org.jboss.threads.JBossThread: boolean unregisterDeferral(org.jboss.threads.JBossThread)>(v3);
+if v4 == 0 goto label4;
+label1:
+interfaceinvoke v0.<org.wildfly.common.function.ExceptionBiConsumer: void accept(java.lang.Object,java.lang.Object)>(v1, v2);
+label2:
+staticinvoke <org.jboss.threads.JBossThread: boolean registerDeferral(org.jboss.threads.JBossThread)>(v3);
+goto label5;
+label3:
+v5 := @caughtexception;
+staticinvoke <org.jboss.threads.JBossThread: boolean registerDeferral(org.jboss.threads.JBossThread)>(v3);
+throw v5;
+label4:
+interfaceinvoke v0.<org.wildfly.common.function.ExceptionBiConsumer: void accept(java.lang.Object,java.lang.Object)>(v1, v2);
+label5:
+return;
+catch java.lang.Throwable from label1 to label2 with label3;
+}
+public static void acceptInterruptResumedEx(org.wildfly.common.function.ExceptionConsumer, java.lang.Object) throws java.lang.Exception
+{
+org.wildfly.common.function.ExceptionConsumer v0;
+java.lang.Object v1;
+org.wildfly.common.function.ExceptionBiConsumer v2;
+v0 := @parameter0: org.wildfly.common.function.ExceptionConsumer;
+v1 := @parameter1: java.lang.Object;
+v2 = staticinvoke <org.wildfly.common.function.Functions: org.wildfly.common.function.ExceptionBiConsumer exceptionConsumerBiConsumer()>();
+staticinvoke <org.jboss.threads.JBossThread: void acceptInterruptResumedEx(org.wildfly.common.function.ExceptionBiConsumer,java.lang.Object,java.lang.Object)>(v2, v0, v1);
+return;
+}
+public static void runInterruptResumedEx(org.wildfly.common.function.ExceptionRunnable) throws java.lang.Exception
+{
+org.wildfly.common.function.ExceptionConsumer v2;
+org.wildfly.common.function.ExceptionRunnable v0;
+org.wildfly.common.function.ExceptionBiConsumer v1;
+v0 := @parameter0: org.wildfly.common.function.ExceptionRunnable;
+v1 = staticinvoke <org.wildfly.common.function.Functions: org.wildfly.common.function.ExceptionBiConsumer exceptionConsumerBiConsumer()>();
+v2 = staticinvoke <org.wildfly.common.function.Functions: org.wildfly.common.function.ExceptionConsumer exceptionRunnableConsumer()>();
+staticinvoke <org.jboss.threads.JBossThread: void acceptInterruptResumedEx(org.wildfly.common.function.ExceptionBiConsumer,java.lang.Object,java.lang.Object)>(v1, v2, v0);
+return;
+}
+private static boolean unregisterDeferral(org.jboss.threads.JBossThread)
+{
+java.lang.Throwable v6;
+java.lang.IllegalStateException v4;
+byte v3;
+java.util.concurrent.atomic.AtomicInteger v1;
+int v2;
+org.jboss.threads.JBossThread v0;
+boolean v5;
+v0 := @parameter0: org.jboss.threads.JBossThread;
+if v0 != null goto label01;
+return 0;
+label01:
+v1 = v0.<org.jboss.threads.JBossThread: java.util.concurrent.atomic.AtomicInteger stateRef>;
+label02:
+v2 = virtualinvoke v1.<java.util.concurrent.atomic.AtomicInteger: int get()>();
+if v2 == 0 goto label03;
+if v2 != 3 goto label04;
+label03:
+return 0;
+label04:
+if v2 != 1 goto label05;
+v3 = 0;
+goto label07;
+label05:
+if v2 != 2 goto label06;
+v3 = 3;
+goto label07;
+label06:
+v4 = staticinvoke <org.wildfly.common.Assert: java.lang.IllegalStateException unreachableCode()>();
+throw v4;
+label07:
+v5 = virtualinvoke v1.<java.util.concurrent.atomic.AtomicInteger: boolean compareAndSet(int,int)>(v2, v3);
+if v5 == 0 goto label02;
+if v3 != 3 goto label11;
+label08:
+specialinvoke v0.<org.jboss.threads.JBossThread: void doInterrupt()>();
+label09:
+virtualinvoke v1.<java.util.concurrent.atomic.AtomicInteger: void set(int)>(0);
+goto label11;
+label10:
+v6 := @caughtexception;
+virtualinvoke v1.<java.util.concurrent.atomic.AtomicInteger: void set(int)>(0);
+throw v6;
+label11:
+return 1;
+catch java.lang.Throwable from label08 to label09 with label10;
+}
+private static boolean registerDeferral(org.jboss.threads.JBossThread)
+{
+java.lang.IllegalStateException v5;
+byte v4;
+java.util.concurrent.atomic.AtomicInteger v1;
+int v2;
+org.jboss.threads.JBossThread v0;
+boolean v3, v6, v7;
+v0 := @parameter0: org.jboss.threads.JBossThread;
+if v0 != null goto label01;
+return 0;
+label01:
+v1 = v0.<org.jboss.threads.JBossThread: java.util.concurrent.atomic.AtomicInteger stateRef>;
+label02:
+v2 = virtualinvoke v1.<java.util.concurrent.atomic.AtomicInteger: int get()>();
+label03:
+if v2 != 3 goto label04;
+staticinvoke <java.util.concurrent.locks.LockSupport: void park()>();
+v2 = virtualinvoke v1.<java.util.concurrent.atomic.AtomicInteger: int get()>();
+goto label03;
+label04:
+if v2 != 0 goto label06;
+v3 = staticinvoke <java.lang.Thread: boolean interrupted()>();
+if v3 == 0 goto label05;
+v4 = 1;
+goto label09;
+label05:
+v4 = 2;
+goto label09;
+label06:
+if v2 == 1 goto label07;
+if v2 != 2 goto label08;
+label07:
+return 0;
+label08:
+v5 = staticinvoke <org.wildfly.common.Assert: java.lang.IllegalStateException unreachableCode()>();
+throw v5;
+label09:
+v6 = virtualinvoke v1.<java.util.concurrent.atomic.AtomicInteger: boolean compareAndSet(int,int)>(v2, v4);
+if v6 == 0 goto label02;
+if v4 != 1 goto label10;
+v7 = staticinvoke <java.lang.Thread: boolean interrupted()>();
+if v7 == 0 goto label10;
+virtualinvoke v1.<java.util.concurrent.atomic.AtomicInteger: void set(int)>(2);
+label10:
+return 1;
+}
+public void run()
+{
+java.lang.Throwable v10, v16, v18, v7, v9;
+java.lang.Thread$UncaughtExceptionHandler v17, v8;
+boolean v14, v5;
+java.util.Iterator v13, v4;
+java.util.List v12, v3;
+org.jboss.threads.JBossThread v0;
+java.lang.Object v15, v6;
+org.jboss.threads.Messages v1, v11, v2;
+v0 := @this: org.jboss.threads.JBossThread;
+v1 = <org.jboss.threads.Messages: org.jboss.threads.Messages msg>;
+interfaceinvoke v1.<org.jboss.threads.Messages: void tracef(java.lang.String,java.lang.Object)>("Thread \"%s\" starting execution", v0);
+label01:
+specialinvoke v0.<java.lang.Thread: void run()>();
+label02:
+v2 = <org.jboss.threads.Messages: org.jboss.threads.Messages msg>;
+interfaceinvoke v2.<org.jboss.threads.Messages: void tracef(java.lang.String,java.lang.Object)>("Thread \"%s\" exiting", v0);
+v3 = v0.<org.jboss.threads.JBossThread: java.util.List exitHandlers>;
+if v3 == null goto label19;
+v4 = interfaceinvoke v3.<java.util.List: java.util.Iterator iterator()>();
+label03:
+v5 = interfaceinvoke v4.<java.util.Iterator: boolean hasNext()>();
+if v5 == 0 goto label19;
+v6 = interfaceinvoke v4.<java.util.Iterator: java.lang.Object next()>();
+label04:
+interfaceinvoke v6.<java.lang.Runnable: void run()>();
+label05:
+goto label03;
+label06:
+v7 := @caughtexception;
+label07:
+v8 = virtualinvoke v0.<org.jboss.threads.JBossThread: java.lang.Thread$UncaughtExceptionHandler getUncaughtExceptionHandler()>();
+interfaceinvoke v8.<java.lang.Thread$UncaughtExceptionHandler: void uncaughtException(java.lang.Thread,java.lang.Throwable)>(v0, v7);
+label08:
+goto label03;
+label09:
+v9 := @caughtexception;
+goto label03;
+label10:
+v10 := @caughtexception;
+v11 = <org.jboss.threads.Messages: org.jboss.threads.Messages msg>;
+interfaceinvoke v11.<org.jboss.threads.Messages: void tracef(java.lang.String,java.lang.Object)>("Thread \"%s\" exiting", v0);
+v12 = v0.<org.jboss.threads.JBossThread: java.util.List exitHandlers>;
+if v12 == null goto label18;
+v13 = interfaceinvoke v12.<java.util.List: java.util.Iterator iterator()>();
+label11:
+v14 = interfaceinvoke v13.<java.util.Iterator: boolean hasNext()>();
+if v14 == 0 goto label18;
+v15 = interfaceinvoke v13.<java.util.Iterator: java.lang.Object next()>();
+label12:
+interfaceinvoke v15.<java.lang.Runnable: void run()>();
+label13:
+goto label11;
+label14:
+v16 := @caughtexception;
+label15:
+v17 = virtualinvoke v0.<org.jboss.threads.JBossThread: java.lang.Thread$UncaughtExceptionHandler getUncaughtExceptionHandler()>();
+interfaceinvoke v17.<java.lang.Thread$UncaughtExceptionHandler: void uncaughtException(java.lang.Thread,java.lang.Throwable)>(v0, v16);
+label16:
+goto label11;
+label17:
+v18 := @caughtexception;
+goto label11;
+label18:
+throw v10;
+label19:
+return;
+catch java.lang.Throwable from label04 to label05 with label06;
+catch java.lang.Throwable from label07 to label08 with label09;
+catch java.lang.Throwable from label01 to label02 with label10;
+catch java.lang.Throwable from label12 to label13 with label14;
+catch java.lang.Throwable from label15 to label16 with label17;
+}
+public static boolean onExit(java.lang.Runnable) throws java.lang.SecurityException
+{
+org.jboss.threads.ContextClassLoaderSavingRunnable v6;
+java.lang.Runnable v0;
+java.lang.SecurityManager v1;
+java.util.ArrayList v5;
+java.util.List v4;
+org.jboss.threads.JBossThread v3;
+java.lang.RuntimePermission v2;
+java.lang.ClassLoader v7;
+v0 := @parameter0: java.lang.Runnable;
+v1 = staticinvoke <java.lang.System: java.lang.SecurityManager getSecurityManager()>();
+if v1 == null goto label1;
+v2 = <org.jboss.threads.JBossThread: java.lang.RuntimePermission MODIFY_THREAD_PERMISSION>;
+virtualinvoke v1.<java.lang.SecurityManager: void checkPermission(java.security.Permission)>(v2);
+label1:
+v3 = staticinvoke <org.jboss.threads.JBossThread: org.jboss.threads.JBossThread currentThread()>();
+if v3 == null goto label2;
+if v0 != null goto label3;
+label2:
+return 0;
+label3:
+v4 = v3.<org.jboss.threads.JBossThread: java.util.List exitHandlers>;
+if v4 != null goto label4;
+v5 = new java.util.ArrayList;
+specialinvoke v5.<java.util.ArrayList: void <init>()>();
+v4 = v5;
+v3.<org.jboss.threads.JBossThread: java.util.List exitHandlers> = v5;
+label4:
+v6 = new org.jboss.threads.ContextClassLoaderSavingRunnable;
+v7 = staticinvoke <org.jboss.threads.JBossExecutors: java.lang.ClassLoader getContextClassLoader(java.lang.Thread)>(v3);
+specialinvoke v6.<org.jboss.threads.ContextClassLoaderSavingRunnable: void <init>(java.lang.ClassLoader,java.lang.Runnable)>(v7, v0);
+interfaceinvoke v4.<java.util.List: boolean add(java.lang.Object)>(v6);
+return 1;
+}
+public static org.jboss.threads.JBossThread currentThread()
+{
+boolean v1;
+java.lang.Thread v0;
+v0 = staticinvoke <java.lang.Thread: java.lang.Thread currentThread()>();
+v1 = v0 instanceof org.jboss.threads.JBossThread;
+if v1 != 0 goto label1;
+v0 = null;
+label1:
+return v0;
+}
+public void start()
+{
+org.jboss.threads.JBossThread v0;
+org.jboss.threads.Messages v1;
+v0 := @this: org.jboss.threads.JBossThread;
+specialinvoke v0.<java.lang.Thread: void start()>();
+v1 = <org.jboss.threads.Messages: org.jboss.threads.Messages msg>;
+interfaceinvoke v1.<org.jboss.threads.Messages: void tracef(java.lang.String,java.lang.Object)>("Started thread \"%s\"", v0);
+return;
+}
+public void setUncaughtExceptionHandler(java.lang.Thread$UncaughtExceptionHandler)
+{
+org.jboss.threads.JBossThread v0;
+org.jboss.threads.Messages v2;
+java.lang.Thread$UncaughtExceptionHandler v1;
+v0 := @this: org.jboss.threads.JBossThread;
+v1 := @parameter0: java.lang.Thread$UncaughtExceptionHandler;
+specialinvoke v0.<java.lang.Thread: void setUncaughtExceptionHandler(java.lang.Thread$UncaughtExceptionHandler)>(v1);
+v2 = <org.jboss.threads.Messages: org.jboss.threads.Messages msg>;
+interfaceinvoke v2.<org.jboss.threads.Messages: void tracef(java.lang.String,java.lang.Object,java.lang.Object)>("Changed uncaught exception handler for \"%s\" to %s", v0, v1);
+return;
+}
+public static org.jboss.threads.InterruptHandler getAndSetInterruptHandler(org.jboss.threads.InterruptHandler)
+{
+java.lang.Throwable v5;
+java.lang.IllegalStateException v3;
+org.jboss.threads.JBossThread v1;
+org.jboss.threads.Messages v2;
+org.jboss.threads.InterruptHandler v0, v4;
+v0 := @parameter0: org.jboss.threads.InterruptHandler;
+v1 = staticinvoke <org.jboss.threads.JBossThread: org.jboss.threads.JBossThread currentThread()>();
+if v1 != null goto label1;
+v2 = <org.jboss.threads.Messages: org.jboss.threads.Messages msg>;
+v3 = interfaceinvoke v2.<org.jboss.threads.Messages: java.lang.IllegalStateException noInterruptHandlers()>();
+throw v3;
+label1:
+v4 = v1.<org.jboss.threads.JBossThread: org.jboss.threads.InterruptHandler interruptHandler>;
+label2:
+v1.<org.jboss.threads.JBossThread: org.jboss.threads.InterruptHandler interruptHandler> = v0;
+return v4;
+label3:
+v5 := @caughtexception;
+v1.<org.jboss.threads.JBossThread: org.jboss.threads.InterruptHandler interruptHandler> = v0;
+throw v5;
+catch java.lang.Throwable from label1 to label2 with label3;
+}
+public static java.lang.Object applyWithInterruptHandler(org.jboss.threads.InterruptHandler, org.wildfly.common.function.ExceptionBiFunction, java.lang.Object, java.lang.Object) throws java.lang.Exception
+{
+java.lang.Throwable v8;
+org.wildfly.common.function.ExceptionBiFunction v1;
+org.jboss.threads.InterruptHandler v0, v6;
+org.jboss.threads.JBossThread v4;
+java.lang.Object v2, v3, v5, v7;
+v0 := @parameter0: org.jboss.threads.InterruptHandler;
+v1 := @parameter1: org.wildfly.common.function.ExceptionBiFunction;
+v2 := @parameter2: java.lang.Object;
+v3 := @parameter3: java.lang.Object;
+v4 = staticinvoke <org.jboss.threads.JBossThread: org.jboss.threads.JBossThread currentThread()>();
+if v4 != null goto label1;
+v5 = interfaceinvoke v1.<org.wildfly.common.function.ExceptionBiFunction: java.lang.Object apply(java.lang.Object,java.lang.Object)>(v2, v3);
+return v5;
+label1:
+v6 = v4.<org.jboss.threads.JBossThread: org.jboss.threads.InterruptHandler interruptHandler>;
+v4.<org.jboss.threads.JBossThread: org.jboss.threads.InterruptHandler interruptHandler> = v0;
+label2:
+v7 = interfaceinvoke v1.<org.wildfly.common.function.ExceptionBiFunction: java.lang.Object apply(java.lang.Object,java.lang.Object)>(v2, v3);
+label3:
+v4.<org.jboss.threads.JBossThread: org.jboss.threads.InterruptHandler interruptHandler> = v6;
+return v7;
+label4:
+v8 := @caughtexception;
+v4.<org.jboss.threads.JBossThread: org.jboss.threads.InterruptHandler interruptHandler> = v6;
+throw v8;
+catch java.lang.Throwable from label2 to label3 with label4;
+}
+public static java.lang.Object applyWithInterruptHandler(org.jboss.threads.InterruptHandler, org.wildfly.common.function.ExceptionFunction, java.lang.Object) throws java.lang.Exception
+{
+org.wildfly.common.function.ExceptionBiFunction v3;
+java.lang.Object v2, v4;
+org.jboss.threads.InterruptHandler v0;
+org.wildfly.common.function.ExceptionFunction v1;
+v0 := @parameter0: org.jboss.threads.InterruptHandler;
+v1 := @parameter1: org.wildfly.common.function.ExceptionFunction;
+v2 := @parameter2: java.lang.Object;
+v3 = staticinvoke <org.wildfly.common.function.Functions: org.wildfly.common.function.ExceptionBiFunction exceptionFunctionBiFunction()>();
+v4 = staticinvoke <org.jboss.threads.JBossThread: java.lang.Object applyWithInterruptHandler(org.jboss.threads.InterruptHandler,org.wildfly.common.function.ExceptionBiFunction,java.lang.Object,java.lang.Object)>(v0, v3, v1, v2);
+return v4;
+}
+public static java.lang.Object getWithInterruptHandler(org.jboss.threads.InterruptHandler, org.wildfly.common.function.ExceptionSupplier) throws java.lang.Exception
+{
+org.wildfly.common.function.ExceptionBiFunction v2;
+java.lang.Object v4;
+org.jboss.threads.InterruptHandler v0;
+org.wildfly.common.function.ExceptionFunction v3;
+org.wildfly.common.function.ExceptionSupplier v1;
+v0 := @parameter0: org.jboss.threads.InterruptHandler;
+v1 := @parameter1: org.wildfly.common.function.ExceptionSupplier;
+v2 = staticinvoke <org.wildfly.common.function.Functions: org.wildfly.common.function.ExceptionBiFunction exceptionFunctionBiFunction()>();
+v3 = staticinvoke <org.wildfly.common.function.Functions: org.wildfly.common.function.ExceptionFunction exceptionSupplierFunction()>();
+v4 = staticinvoke <org.jboss.threads.JBossThread: java.lang.Object applyWithInterruptHandler(org.jboss.threads.InterruptHandler,org.wildfly.common.function.ExceptionBiFunction,java.lang.Object,java.lang.Object)>(v0, v2, v3, v1);
+return v4;
+}
+public static void acceptWithInterruptHandler(org.jboss.threads.InterruptHandler, org.wildfly.common.function.ExceptionObjLongConsumer, java.lang.Object, long) throws java.lang.Exception
+{
+java.lang.Throwable v6;
+org.jboss.threads.JBossThread v4;
+java.lang.Object v2;
+long v3;
+org.jboss.threads.InterruptHandler v0, v5;
+org.wildfly.common.function.ExceptionObjLongConsumer v1;
+v0 := @parameter0: org.jboss.threads.InterruptHandler;
+v1 := @parameter1: org.wildfly.common.function.ExceptionObjLongConsumer;
+v2 := @parameter2: java.lang.Object;
+v3 := @parameter3: long;
+v4 = staticinvoke <org.jboss.threads.JBossThread: org.jboss.threads.JBossThread currentThread()>();
+if v4 != null goto label1;
+interfaceinvoke v1.<org.wildfly.common.function.ExceptionObjLongConsumer: void accept(java.lang.Object,long)>(v2, v3);
+return;
+label1:
+v5 = v4.<org.jboss.threads.JBossThread: org.jboss.threads.InterruptHandler interruptHandler>;
+v4.<org.jboss.threads.JBossThread: org.jboss.threads.InterruptHandler interruptHandler> = v0;
+label2:
+interfaceinvoke v1.<org.wildfly.common.function.ExceptionObjLongConsumer: void accept(java.lang.Object,long)>(v2, v3);
+label3:
+v4.<org.jboss.threads.JBossThread: org.jboss.threads.InterruptHandler interruptHandler> = v5;
+return;
+label4:
+v6 := @caughtexception;
+v4.<org.jboss.threads.JBossThread: org.jboss.threads.InterruptHandler interruptHandler> = v5;
+throw v6;
+catch java.lang.Throwable from label2 to label3 with label4;
+}
+public static void acceptWithInterruptHandler(org.jboss.threads.InterruptHandler, org.wildfly.common.function.ExceptionObjIntConsumer, java.lang.Object, int) throws java.lang.Exception
+{
+java.lang.Throwable v6;
+org.wildfly.common.function.ExceptionObjIntConsumer v1;
+int v3;
+org.jboss.threads.JBossThread v4;
+java.lang.Object v2;
+org.jboss.threads.InterruptHandler v0, v5;
+v0 := @parameter0: org.jboss.threads.InterruptHandler;
+v1 := @parameter1: org.wildfly.common.function.ExceptionObjIntConsumer;
+v2 := @parameter2: java.lang.Object;
+v3 := @parameter3: int;
+v4 = staticinvoke <org.jboss.threads.JBossThread: org.jboss.threads.JBossThread currentThread()>();
+if v4 != null goto label1;
+interfaceinvoke v1.<org.wildfly.common.function.ExceptionObjIntConsumer: void accept(java.lang.Object,int)>(v2, v3);
+return;
+label1:
+v5 = v4.<org.jboss.threads.JBossThread: org.jboss.threads.InterruptHandler interruptHandler>;
+v4.<org.jboss.threads.JBossThread: org.jboss.threads.InterruptHandler interruptHandler> = v0;
+label2:
+interfaceinvoke v1.<org.wildfly.common.function.ExceptionObjIntConsumer: void accept(java.lang.Object,int)>(v2, v3);
+label3:
+v4.<org.jboss.threads.JBossThread: org.jboss.threads.InterruptHandler interruptHandler> = v5;
+return;
+label4:
+v6 := @caughtexception;
+v4.<org.jboss.threads.JBossThread: org.jboss.threads.InterruptHandler interruptHandler> = v5;
+throw v6;
+catch java.lang.Throwable from label2 to label3 with label4;
+}
+public static void acceptWithInterruptHandler(org.jboss.threads.InterruptHandler, org.wildfly.common.function.ExceptionBiConsumer, java.lang.Object, java.lang.Object) throws java.lang.Exception
+{
+java.lang.Throwable v6;
+org.jboss.threads.JBossThread v4;
+java.lang.Object v2, v3;
+org.jboss.threads.InterruptHandler v0, v5;
+org.wildfly.common.function.ExceptionBiConsumer v1;
+v0 := @parameter0: org.jboss.threads.InterruptHandler;
+v1 := @parameter1: org.wildfly.common.function.ExceptionBiConsumer;
+v2 := @parameter2: java.lang.Object;
+v3 := @parameter3: java.lang.Object;
+v4 = staticinvoke <org.jboss.threads.JBossThread: org.jboss.threads.JBossThread currentThread()>();
+if v4 != null goto label1;
+interfaceinvoke v1.<org.wildfly.common.function.ExceptionBiConsumer: void accept(java.lang.Object,java.lang.Object)>(v2, v3);
+return;
+label1:
+v5 = v4.<org.jboss.threads.JBossThread: org.jboss.threads.InterruptHandler interruptHandler>;
+v4.<org.jboss.threads.JBossThread: org.jboss.threads.InterruptHandler interruptHandler> = v0;
+label2:
+interfaceinvoke v1.<org.wildfly.common.function.ExceptionBiConsumer: void accept(java.lang.Object,java.lang.Object)>(v2, v3);
+label3:
+v4.<org.jboss.threads.JBossThread: org.jboss.threads.InterruptHandler interruptHandler> = v5;
+return;
+label4:
+v6 := @caughtexception;
+v4.<org.jboss.threads.JBossThread: org.jboss.threads.InterruptHandler interruptHandler> = v5;
+throw v6;
+catch java.lang.Throwable from label2 to label3 with label4;
+}
+public static void acceptWithInterruptHandler(org.jboss.threads.InterruptHandler, org.wildfly.common.function.ExceptionConsumer, java.lang.Object) throws java.lang.Exception
+{
+org.wildfly.common.function.ExceptionConsumer v1;
+java.lang.Object v2;
+org.jboss.threads.InterruptHandler v0;
+org.wildfly.common.function.ExceptionBiConsumer v3;
+v0 := @parameter0: org.jboss.threads.InterruptHandler;
+v1 := @parameter1: org.wildfly.common.function.ExceptionConsumer;
+v2 := @parameter2: java.lang.Object;
+v3 = staticinvoke <org.wildfly.common.function.Functions: org.wildfly.common.function.ExceptionBiConsumer exceptionConsumerBiConsumer()>();
+staticinvoke <org.jboss.threads.JBossThread: void acceptWithInterruptHandler(org.jboss.threads.InterruptHandler,org.wildfly.common.function.ExceptionBiConsumer,java.lang.Object,java.lang.Object)>(v0, v3, v1, v2);
+return;
+}
+public static void runWithInterruptHandler(org.jboss.threads.InterruptHandler, org.wildfly.common.function.ExceptionRunnable) throws java.lang.Exception
+{
+org.wildfly.common.function.ExceptionConsumer v3;
+org.wildfly.common.function.ExceptionRunnable v1;
+org.jboss.threads.InterruptHandler v0;
+org.wildfly.common.function.ExceptionBiConsumer v2;
+v0 := @parameter0: org.jboss.threads.InterruptHandler;
+v1 := @parameter1: org.wildfly.common.function.ExceptionRunnable;
+v2 = staticinvoke <org.wildfly.common.function.Functions: org.wildfly.common.function.ExceptionBiConsumer exceptionConsumerBiConsumer()>();
+v3 = staticinvoke <org.wildfly.common.function.Functions: org.wildfly.common.function.ExceptionConsumer exceptionRunnableConsumer()>();
+staticinvoke <org.jboss.threads.JBossThread: void acceptWithInterruptHandler(org.jboss.threads.InterruptHandler,org.wildfly.common.function.ExceptionBiConsumer,java.lang.Object,java.lang.Object)>(v0, v2, v3, v1);
+return;
+}
+org.jboss.threads.ThreadNameInfo getThreadNameInfo()
+{
+org.jboss.threads.JBossThread v0;
+org.jboss.threads.ThreadNameInfo v1;
+v0 := @this: org.jboss.threads.JBossThread;
+v1 = v0.<org.jboss.threads.JBossThread: org.jboss.threads.ThreadNameInfo threadNameInfo>;
+return v1;
+}
+void setThreadNameInfo(org.jboss.threads.ThreadNameInfo) throws java.lang.SecurityException
+{
+org.jboss.threads.JBossThread v0;
+org.jboss.threads.ThreadNameInfo v1;
+v0 := @this: org.jboss.threads.JBossThread;
+v1 := @parameter0: org.jboss.threads.ThreadNameInfo;
+virtualinvoke v0.<org.jboss.threads.JBossThread: void checkAccess()>();
+v0.<org.jboss.threads.JBossThread: org.jboss.threads.ThreadNameInfo threadNameInfo> = v1;
+return;
+}
+static void <clinit>()
+{
+org.jboss.threads.JBossThread$1 v1;
+int v3;
+java.lang.Object v2;
+java.lang.RuntimePermission v0;
+v0 = new java.lang.RuntimePermission;
+specialinvoke v0.<java.lang.RuntimePermission: void <init>(java.lang.String)>("modifyThread");
+<org.jboss.threads.JBossThread: java.lang.RuntimePermission MODIFY_THREAD_PERMISSION> = v0;
+v1 = new org.jboss.threads.JBossThread$1;
+specialinvoke v1.<org.jboss.threads.JBossThread$1: void <init>()>();
+v2 = staticinvoke <java.security.AccessController: java.lang.Object doPrivileged(java.security.PrivilegedAction)>(v1);
+v3 = virtualinvoke v2.<java.lang.Integer: int intValue()>();
+<org.jboss.threads.JBossThread: int MAX_INTERRUPT_SPINS> = v3;
+staticinvoke <org.jboss.threads.Version: java.lang.String getVersionString()>();
+return;
+}
+}

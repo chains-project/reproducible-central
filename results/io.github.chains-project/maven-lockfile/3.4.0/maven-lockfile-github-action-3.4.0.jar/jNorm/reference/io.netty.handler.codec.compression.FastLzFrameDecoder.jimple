@@ -1,0 +1,250 @@
+public class io.netty.handler.codec.compression.FastLzFrameDecoder extends io.netty.handler.codec.ByteToMessageDecoder
+{
+private io.netty.handler.codec.compression.FastLzFrameDecoder$State currentState;
+private final io.netty.handler.codec.compression.ByteBufChecksum checksum;
+private int chunkLength;
+private int originalLength;
+private boolean isCompressed;
+private boolean hasChecksum;
+private int currentChecksum;
+public void <init>()
+{
+io.netty.handler.codec.compression.FastLzFrameDecoder v0;
+v0 := @this: io.netty.handler.codec.compression.FastLzFrameDecoder;
+specialinvoke v0.<io.netty.handler.codec.compression.FastLzFrameDecoder: void <init>(boolean)>(0);
+return;
+}
+public void <init>(boolean)
+{
+io.netty.handler.codec.compression.FastLzFrameDecoder v0;
+java.util.zip.Adler32 v2;
+boolean v1;
+v0 := @this: io.netty.handler.codec.compression.FastLzFrameDecoder;
+v1 := @parameter0: boolean;
+if v1 == 0 goto label1;
+v2 = new java.util.zip.Adler32;
+specialinvoke v2.<java.util.zip.Adler32: void <init>()>();
+goto label2;
+label1:
+v2 = null;
+label2:
+specialinvoke v0.<io.netty.handler.codec.compression.FastLzFrameDecoder: void <init>(java.util.zip.Checksum)>(v2);
+return;
+}
+public void <init>(java.util.zip.Checksum)
+{
+io.netty.handler.codec.compression.FastLzFrameDecoder v0;
+java.util.zip.Checksum v1;
+io.netty.handler.codec.compression.FastLzFrameDecoder$State v2;
+io.netty.handler.codec.compression.ByteBufChecksum v3;
+v0 := @this: io.netty.handler.codec.compression.FastLzFrameDecoder;
+v1 := @parameter0: java.util.zip.Checksum;
+specialinvoke v0.<io.netty.handler.codec.ByteToMessageDecoder: void <init>()>();
+v2 = <io.netty.handler.codec.compression.FastLzFrameDecoder$State: io.netty.handler.codec.compression.FastLzFrameDecoder$State INIT_BLOCK>;
+v0.<io.netty.handler.codec.compression.FastLzFrameDecoder: io.netty.handler.codec.compression.FastLzFrameDecoder$State currentState> = v2;
+if v1 != null goto label1;
+v3 = null;
+goto label2;
+label1:
+v3 = staticinvoke <io.netty.handler.codec.compression.ByteBufChecksum: io.netty.handler.codec.compression.ByteBufChecksum wrapChecksum(java.util.zip.Checksum)>(v1);
+label2:
+v0.<io.netty.handler.codec.compression.FastLzFrameDecoder: io.netty.handler.codec.compression.ByteBufChecksum checksum> = v3;
+return;
+}
+protected void decode(io.netty.channel.ChannelHandlerContext, io.netty.buffer.ByteBuf, java.util.List) throws java.lang.Exception
+{
+java.lang.Integer v41, v42, v54, v56;
+byte v11, v12, v14, v19, v22;
+java.lang.Exception v63;
+java.lang.Throwable v60;
+java.lang.Object[] v40, v53;
+long v50;
+java.lang.String v43, v57;
+io.netty.handler.codec.compression.ByteBufChecksum v46;
+java.lang.IllegalStateException v62;
+io.netty.buffer.ByteBufAllocator v36;
+int[] v4;
+boolean v13, v15, v18, v21, v24, v27, v35, v47;
+java.util.List v3;
+io.netty.handler.codec.compression.DecompressionException v10, v39, v52;
+io.netty.channel.ChannelHandlerContext v1;
+io.netty.handler.codec.compression.FastLzFrameDecoder v0;
+io.netty.buffer.ByteBuf v2, v34;
+int v17, v20, v23, v25, v26, v28, v30, v31, v32, v33, v37, v38, v44, v45, v48, v49, v51, v55, v58, v6, v61, v7, v8, v9;
+io.netty.handler.codec.compression.FastLzFrameDecoder$State v16, v29, v5, v59, v64;
+v0 := @this: io.netty.handler.codec.compression.FastLzFrameDecoder;
+v1 := @parameter0: io.netty.channel.ChannelHandlerContext;
+v2 := @parameter1: io.netty.buffer.ByteBuf;
+v3 := @parameter2: java.util.List;
+label01:
+v4 = <io.netty.handler.codec.compression.FastLzFrameDecoder$1: int[] $SwitchMap$io$netty$handler$codec$compression$FastLzFrameDecoder$State>;
+v5 = v0.<io.netty.handler.codec.compression.FastLzFrameDecoder: io.netty.handler.codec.compression.FastLzFrameDecoder$State currentState>;
+v6 = virtualinvoke v5.<io.netty.handler.codec.compression.FastLzFrameDecoder$State: int ordinal()>();
+v7 = v4[v6];
+tableswitch(v7)
+{
+case 1: goto label02;
+case 2: goto label08;
+case 3: goto label17;
+case 4: goto label28;
+default: goto label29;
+};
+label02:
+v8 = virtualinvoke v2.<io.netty.buffer.ByteBuf: int readableBytes()>();
+if v8 < 4 goto label31;
+v9 = virtualinvoke v2.<io.netty.buffer.ByteBuf: int readUnsignedMedium()>();
+if v9 == 4607066 goto label03;
+v10 = new io.netty.handler.codec.compression.DecompressionException;
+specialinvoke v10.<io.netty.handler.codec.compression.DecompressionException: void <init>(java.lang.String)>("unexpected block identifier");
+throw v10;
+label03:
+v11 = virtualinvoke v2.<io.netty.buffer.ByteBuf: byte readByte()>();
+v12 = v11 & 1;
+if v12 != 1 goto label04;
+v13 = 1;
+goto label05;
+label04:
+v13 = 0;
+label05:
+v0.<io.netty.handler.codec.compression.FastLzFrameDecoder: boolean isCompressed> = v13;
+v14 = v11 & 16;
+if v14 != 16 goto label06;
+v15 = 1;
+goto label07;
+label06:
+v15 = 0;
+label07:
+v0.<io.netty.handler.codec.compression.FastLzFrameDecoder: boolean hasChecksum> = v15;
+v16 = <io.netty.handler.codec.compression.FastLzFrameDecoder$State: io.netty.handler.codec.compression.FastLzFrameDecoder$State INIT_BLOCK_PARAMS>;
+v0.<io.netty.handler.codec.compression.FastLzFrameDecoder: io.netty.handler.codec.compression.FastLzFrameDecoder$State currentState> = v16;
+label08:
+v17 = virtualinvoke v2.<io.netty.buffer.ByteBuf: int readableBytes()>();
+v18 = v0.<io.netty.handler.codec.compression.FastLzFrameDecoder: boolean isCompressed>;
+if v18 == 0 goto label09;
+v19 = 2;
+goto label10;
+label09:
+v19 = 0;
+label10:
+v20 = 2 + v19;
+v21 = v0.<io.netty.handler.codec.compression.FastLzFrameDecoder: boolean hasChecksum>;
+if v21 == 0 goto label11;
+v22 = 4;
+goto label12;
+label11:
+v22 = 0;
+label12:
+v23 = v20 + v22;
+if v17 < v23 goto label31;
+v24 = v0.<io.netty.handler.codec.compression.FastLzFrameDecoder: boolean hasChecksum>;
+if v24 == 0 goto label13;
+v25 = virtualinvoke v2.<io.netty.buffer.ByteBuf: int readInt()>();
+goto label14;
+label13:
+v25 = 0;
+label14:
+v0.<io.netty.handler.codec.compression.FastLzFrameDecoder: int currentChecksum> = v25;
+v26 = virtualinvoke v2.<io.netty.buffer.ByteBuf: int readUnsignedShort()>();
+v0.<io.netty.handler.codec.compression.FastLzFrameDecoder: int chunkLength> = v26;
+v27 = v0.<io.netty.handler.codec.compression.FastLzFrameDecoder: boolean isCompressed>;
+if v27 == 0 goto label15;
+v28 = virtualinvoke v2.<io.netty.buffer.ByteBuf: int readUnsignedShort()>();
+goto label16;
+label15:
+v28 = v0.<io.netty.handler.codec.compression.FastLzFrameDecoder: int chunkLength>;
+label16:
+v0.<io.netty.handler.codec.compression.FastLzFrameDecoder: int originalLength> = v28;
+v29 = <io.netty.handler.codec.compression.FastLzFrameDecoder$State: io.netty.handler.codec.compression.FastLzFrameDecoder$State DECOMPRESS_DATA>;
+v0.<io.netty.handler.codec.compression.FastLzFrameDecoder: io.netty.handler.codec.compression.FastLzFrameDecoder$State currentState> = v29;
+label17:
+v30 = v0.<io.netty.handler.codec.compression.FastLzFrameDecoder: int chunkLength>;
+v31 = virtualinvoke v2.<io.netty.buffer.ByteBuf: int readableBytes()>();
+if v31 < v30 goto label31;
+v32 = virtualinvoke v2.<io.netty.buffer.ByteBuf: int readerIndex()>();
+v33 = v0.<io.netty.handler.codec.compression.FastLzFrameDecoder: int originalLength>;
+v34 = null;
+label18:
+v35 = v0.<io.netty.handler.codec.compression.FastLzFrameDecoder: boolean isCompressed>;
+if v35 == 0 goto label20;
+v36 = interfaceinvoke v1.<io.netty.channel.ChannelHandlerContext: io.netty.buffer.ByteBufAllocator alloc()>();
+v34 = interfaceinvoke v36.<io.netty.buffer.ByteBufAllocator: io.netty.buffer.ByteBuf buffer(int)>(v33);
+v37 = virtualinvoke v34.<io.netty.buffer.ByteBuf: int writerIndex()>();
+v38 = staticinvoke <io.netty.handler.codec.compression.FastLz: int decompress(io.netty.buffer.ByteBuf,int,int,io.netty.buffer.ByteBuf,int,int)>(v2, v32, v30, v34, v37, v33);
+if v33 == v38 goto label19;
+v39 = new io.netty.handler.codec.compression.DecompressionException;
+v40 = newarray (java.lang.Object)[2];
+v41 = staticinvoke <java.lang.Integer: java.lang.Integer valueOf(int)>(v33);
+v40[0] = v41;
+v42 = staticinvoke <java.lang.Integer: java.lang.Integer valueOf(int)>(v38);
+v40[1] = v42;
+v43 = staticinvoke <java.lang.String: java.lang.String format(java.lang.String,java.lang.Object[])>("stream corrupted: originalLength(%d) and actual length(%d) mismatch", v40);
+specialinvoke v39.<io.netty.handler.codec.compression.DecompressionException: void <init>(java.lang.String)>(v43);
+throw v39;
+label19:
+v44 = virtualinvoke v34.<io.netty.buffer.ByteBuf: int writerIndex()>();
+v45 = v44 + v38;
+virtualinvoke v34.<io.netty.buffer.ByteBuf: io.netty.buffer.ByteBuf writerIndex(int)>(v45);
+goto label21;
+label20:
+v34 = virtualinvoke v2.<io.netty.buffer.ByteBuf: io.netty.buffer.ByteBuf retainedSlice(int,int)>(v32, v30);
+label21:
+v46 = v0.<io.netty.handler.codec.compression.FastLzFrameDecoder: io.netty.handler.codec.compression.ByteBufChecksum checksum>;
+v47 = v0.<io.netty.handler.codec.compression.FastLzFrameDecoder: boolean hasChecksum>;
+if v47 == 0 goto label22;
+if v46 == null goto label22;
+virtualinvoke v46.<io.netty.handler.codec.compression.ByteBufChecksum: void reset()>();
+v48 = virtualinvoke v34.<io.netty.buffer.ByteBuf: int readerIndex()>();
+v49 = virtualinvoke v34.<io.netty.buffer.ByteBuf: int readableBytes()>();
+virtualinvoke v46.<io.netty.handler.codec.compression.ByteBufChecksum: void update(io.netty.buffer.ByteBuf,int,int)>(v34, v48, v49);
+v50 = virtualinvoke v46.<io.netty.handler.codec.compression.ByteBufChecksum: long getValue()>();
+v51 = v0.<io.netty.handler.codec.compression.FastLzFrameDecoder: int currentChecksum>;
+if v50 == v51 goto label22;
+v52 = new io.netty.handler.codec.compression.DecompressionException;
+v53 = newarray (java.lang.Object)[2];
+v54 = staticinvoke <java.lang.Integer: java.lang.Integer valueOf(int)>(v50);
+v53[0] = v54;
+v55 = v0.<io.netty.handler.codec.compression.FastLzFrameDecoder: int currentChecksum>;
+v56 = staticinvoke <java.lang.Integer: java.lang.Integer valueOf(int)>(v55);
+v53[1] = v56;
+v57 = staticinvoke <java.lang.String: java.lang.String format(java.lang.String,java.lang.Object[])>("stream corrupted: mismatching checksum: %d (expected: %d)", v53);
+specialinvoke v52.<io.netty.handler.codec.compression.DecompressionException: void <init>(java.lang.String)>(v57);
+throw v52;
+label22:
+v58 = virtualinvoke v34.<io.netty.buffer.ByteBuf: int readableBytes()>();
+if v58 <= 0 goto label23;
+interfaceinvoke v3.<java.util.List: boolean add(java.lang.Object)>(v34);
+goto label24;
+label23:
+virtualinvoke v34.<io.netty.buffer.ByteBuf: boolean release()>();
+label24:
+v34 = null;
+virtualinvoke v2.<io.netty.buffer.ByteBuf: io.netty.buffer.ByteBuf skipBytes(int)>(v30);
+v59 = <io.netty.handler.codec.compression.FastLzFrameDecoder$State: io.netty.handler.codec.compression.FastLzFrameDecoder$State INIT_BLOCK>;
+v0.<io.netty.handler.codec.compression.FastLzFrameDecoder: io.netty.handler.codec.compression.FastLzFrameDecoder$State currentState> = v59;
+label25:
+goto label31;
+label26:
+v60 := @caughtexception;
+if v34 == null goto label27;
+virtualinvoke v34.<io.netty.buffer.ByteBuf: boolean release()>();
+label27:
+throw v60;
+label28:
+v61 = virtualinvoke v2.<io.netty.buffer.ByteBuf: int readableBytes()>();
+virtualinvoke v2.<io.netty.buffer.ByteBuf: io.netty.buffer.ByteBuf skipBytes(int)>(v61);
+goto label31;
+label29:
+v62 = new java.lang.IllegalStateException;
+specialinvoke v62.<java.lang.IllegalStateException: void <init>()>();
+throw v62;
+label30:
+v63 := @caughtexception;
+v64 = <io.netty.handler.codec.compression.FastLzFrameDecoder$State: io.netty.handler.codec.compression.FastLzFrameDecoder$State CORRUPTED>;
+v0.<io.netty.handler.codec.compression.FastLzFrameDecoder: io.netty.handler.codec.compression.FastLzFrameDecoder$State currentState> = v64;
+throw v63;
+label31:
+return;
+catch java.lang.Throwable from label18 to label25 with label26;
+catch java.lang.Exception from label01 to label30 with label30;
+}
+}

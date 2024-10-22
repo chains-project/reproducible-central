@@ -1,0 +1,661 @@
+final class io.netty.handler.ssl.SslUtils extends java.lang.Object
+{
+private static final io.netty.util.internal.logging.InternalLogger logger;
+static final java.util.Set TLSV13_CIPHERS;
+static final int GMSSL_PROTOCOL_VERSION;
+static final java.lang.String INVALID_CIPHER;
+static final int SSL_CONTENT_TYPE_CHANGE_CIPHER_SPEC;
+static final int SSL_CONTENT_TYPE_ALERT;
+static final int SSL_CONTENT_TYPE_HANDSHAKE;
+static final int SSL_CONTENT_TYPE_APPLICATION_DATA;
+static final int SSL_CONTENT_TYPE_EXTENSION_HEARTBEAT;
+static final int SSL_RECORD_HEADER_LENGTH;
+static final int NOT_ENOUGH_DATA;
+static final int NOT_ENCRYPTED;
+static final java.lang.String[] DEFAULT_CIPHER_SUITES;
+static final java.lang.String[] DEFAULT_TLSV13_CIPHER_SUITES;
+static final java.lang.String[] TLSV13_CIPHER_SUITES;
+private static final boolean TLSV1_3_JDK_SUPPORTED;
+private static final boolean TLSV1_3_JDK_DEFAULT_ENABLED;
+static boolean isTLSv13SupportedByJDK(java.security.Provider)
+{
+boolean v1, v2;
+java.security.Provider v0;
+v0 := @parameter0: java.security.Provider;
+if v0 != null goto label1;
+v1 = <io.netty.handler.ssl.SslUtils: boolean TLSV1_3_JDK_SUPPORTED>;
+return v1;
+label1:
+v2 = staticinvoke <io.netty.handler.ssl.SslUtils: boolean isTLSv13SupportedByJDK0(java.security.Provider)>(v0);
+return v2;
+}
+private static boolean isTLSv13SupportedByJDK0(java.security.Provider)
+{
+java.lang.Throwable v5;
+javax.net.ssl.SSLContext v1;
+io.netty.util.internal.logging.InternalLogger v6;
+javax.net.ssl.SSLParameters v2;
+java.lang.String[] v3;
+boolean v4;
+java.security.Provider v0;
+v0 := @parameter0: java.security.Provider;
+label1:
+v1 = staticinvoke <io.netty.handler.ssl.SslUtils: javax.net.ssl.SSLContext newInitContext(java.security.Provider)>(v0);
+v2 = virtualinvoke v1.<javax.net.ssl.SSLContext: javax.net.ssl.SSLParameters getSupportedSSLParameters()>();
+v3 = virtualinvoke v2.<javax.net.ssl.SSLParameters: java.lang.String[] getProtocols()>();
+v4 = staticinvoke <io.netty.handler.ssl.SslUtils: boolean arrayContains(java.lang.String[],java.lang.String)>(v3, "TLSv1.3");
+label2:
+return v4;
+label3:
+v5 := @caughtexception;
+v6 = <io.netty.handler.ssl.SslUtils: io.netty.util.internal.logging.InternalLogger logger>;
+interfaceinvoke v6.<io.netty.util.internal.logging.InternalLogger: void debug(java.lang.String,java.lang.Object,java.lang.Object)>("Unable to detect if JDK SSLEngine with provider {} supports TLSv1.3, assuming no", v0, v5);
+return 0;
+catch java.lang.Throwable from label1 to label2 with label3;
+}
+static boolean isTLSv13EnabledByJDK(java.security.Provider)
+{
+boolean v1, v2;
+java.security.Provider v0;
+v0 := @parameter0: java.security.Provider;
+if v0 != null goto label1;
+v1 = <io.netty.handler.ssl.SslUtils: boolean TLSV1_3_JDK_DEFAULT_ENABLED>;
+return v1;
+label1:
+v2 = staticinvoke <io.netty.handler.ssl.SslUtils: boolean isTLSv13EnabledByJDK0(java.security.Provider)>(v0);
+return v2;
+}
+private static boolean isTLSv13EnabledByJDK0(java.security.Provider)
+{
+java.lang.Throwable v5;
+javax.net.ssl.SSLContext v1;
+io.netty.util.internal.logging.InternalLogger v6;
+javax.net.ssl.SSLParameters v2;
+java.lang.String[] v3;
+boolean v4;
+java.security.Provider v0;
+v0 := @parameter0: java.security.Provider;
+label1:
+v1 = staticinvoke <io.netty.handler.ssl.SslUtils: javax.net.ssl.SSLContext newInitContext(java.security.Provider)>(v0);
+v2 = virtualinvoke v1.<javax.net.ssl.SSLContext: javax.net.ssl.SSLParameters getDefaultSSLParameters()>();
+v3 = virtualinvoke v2.<javax.net.ssl.SSLParameters: java.lang.String[] getProtocols()>();
+v4 = staticinvoke <io.netty.handler.ssl.SslUtils: boolean arrayContains(java.lang.String[],java.lang.String)>(v3, "TLSv1.3");
+label2:
+return v4;
+label3:
+v5 := @caughtexception;
+v6 = <io.netty.handler.ssl.SslUtils: io.netty.util.internal.logging.InternalLogger logger>;
+interfaceinvoke v6.<io.netty.util.internal.logging.InternalLogger: void debug(java.lang.String,java.lang.Object,java.lang.Object)>("Unable to detect if JDK SSLEngine with provider {} enables TLSv1.3 by default, assuming no", v0, v5);
+return 0;
+catch java.lang.Throwable from label1 to label2 with label3;
+}
+private static javax.net.ssl.SSLContext newInitContext(java.security.Provider) throws java.security.NoSuchAlgorithmException, java.security.KeyManagementException
+{
+javax.net.ssl.SSLContext v1;
+javax.net.ssl.TrustManager[] v2;
+java.security.Provider v0;
+v0 := @parameter0: java.security.Provider;
+if v0 != null goto label1;
+v1 = staticinvoke <javax.net.ssl.SSLContext: javax.net.ssl.SSLContext getInstance(java.lang.String)>("TLS");
+goto label2;
+label1:
+v1 = staticinvoke <javax.net.ssl.SSLContext: javax.net.ssl.SSLContext getInstance(java.lang.String,java.security.Provider)>("TLS", v0);
+label2:
+v2 = newarray (javax.net.ssl.TrustManager)[0];
+virtualinvoke v1.<javax.net.ssl.SSLContext: void init(javax.net.ssl.KeyManager[],javax.net.ssl.TrustManager[],java.security.SecureRandom)>(null, v2, null);
+return v1;
+}
+static javax.net.ssl.SSLContext getSSLContext(java.lang.String) throws java.security.NoSuchAlgorithmException, java.security.KeyManagementException, java.security.NoSuchProviderException
+{
+javax.net.ssl.SSLContext v3;
+javax.net.ssl.TrustManager[] v5;
+java.lang.String v0, v2, v4;
+boolean v1;
+v0 := @parameter0: java.lang.String;
+v1 = staticinvoke <io.netty.util.internal.StringUtil: boolean isNullOrEmpty(java.lang.String)>(v0);
+if v1 == 0 goto label1;
+v2 = staticinvoke <io.netty.handler.ssl.SslUtils: java.lang.String getTlsVersion()>();
+v3 = staticinvoke <javax.net.ssl.SSLContext: javax.net.ssl.SSLContext getInstance(java.lang.String)>(v2);
+goto label2;
+label1:
+v4 = staticinvoke <io.netty.handler.ssl.SslUtils: java.lang.String getTlsVersion()>();
+v3 = staticinvoke <javax.net.ssl.SSLContext: javax.net.ssl.SSLContext getInstance(java.lang.String,java.lang.String)>(v4, v0);
+label2:
+v5 = newarray (javax.net.ssl.TrustManager)[0];
+virtualinvoke v3.<javax.net.ssl.SSLContext: void init(javax.net.ssl.KeyManager[],javax.net.ssl.TrustManager[],java.security.SecureRandom)>(null, v5, null);
+return v3;
+}
+private static java.lang.String getTlsVersion()
+{
+java.lang.String v1;
+boolean v0;
+v0 = <io.netty.handler.ssl.SslUtils: boolean TLSV1_3_JDK_SUPPORTED>;
+if v0 == 0 goto label1;
+v1 = "TLSv1.3";
+goto label2;
+label1:
+v1 = "TLSv1.2";
+label2:
+return v1;
+}
+static boolean arrayContains(java.lang.String[], java.lang.String)
+{
+int v2, v3;
+java.lang.String[] v0;
+java.lang.String v1, v4;
+boolean v5;
+v0 := @parameter0: java.lang.String[];
+v1 := @parameter1: java.lang.String;
+v2 = lengthof v0;
+v3 = 0;
+label1:
+if v3 >= v2 goto label3;
+v4 = v0[v3];
+v5 = virtualinvoke v1.<java.lang.String: boolean equals(java.lang.Object)>(v4);
+if v5 == 0 goto label2;
+return 1;
+label2:
+v3 = v3 + 1;
+goto label1;
+label3:
+return 0;
+}
+static transient void addIfSupported(java.util.Set, java.util.List, java.lang.String[])
+{
+java.util.List v1;
+int v3, v4;
+java.util.Set v0;
+java.lang.String[] v2;
+java.lang.String v5;
+boolean v6;
+v0 := @parameter0: java.util.Set;
+v1 := @parameter1: java.util.List;
+v2 := @parameter2: java.lang.String[];
+v3 = lengthof v2;
+v4 = 0;
+label1:
+if v4 >= v3 goto label3;
+v5 = v2[v4];
+v6 = interfaceinvoke v0.<java.util.Set: boolean contains(java.lang.Object)>(v5);
+if v6 == 0 goto label2;
+interfaceinvoke v1.<java.util.List: boolean add(java.lang.Object)>(v5);
+label2:
+v4 = v4 + 1;
+goto label1;
+label3:
+return;
+}
+static void useFallbackCiphersIfDefaultIsEmpty(java.util.List, java.lang.Iterable)
+{
+java.util.Iterator v3;
+java.lang.Iterable v1;
+java.util.List v0;
+java.lang.Object v5;
+boolean v2, v4, v6, v7;
+v0 := @parameter0: java.util.List;
+v1 := @parameter1: java.lang.Iterable;
+v2 = interfaceinvoke v0.<java.util.List: boolean isEmpty()>();
+if v2 == 0 goto label2;
+v3 = interfaceinvoke v1.<java.lang.Iterable: java.util.Iterator iterator()>();
+label1:
+v4 = interfaceinvoke v3.<java.util.Iterator: boolean hasNext()>();
+if v4 == 0 goto label2;
+v5 = interfaceinvoke v3.<java.util.Iterator: java.lang.Object next()>();
+v6 = virtualinvoke v5.<java.lang.String: boolean startsWith(java.lang.String)>("SSL_");
+if v6 != 0 goto label1;
+v7 = virtualinvoke v5.<java.lang.String: boolean contains(java.lang.CharSequence)>("_RC4_");
+if v7 != 0 goto label1;
+interfaceinvoke v0.<java.util.List: boolean add(java.lang.Object)>(v5);
+goto label1;
+label2:
+return;
+}
+static transient void useFallbackCiphersIfDefaultIsEmpty(java.util.List, java.lang.String[])
+{
+java.lang.String[] v1;
+java.util.List v0, v2;
+v0 := @parameter0: java.util.List;
+v1 := @parameter1: java.lang.String[];
+v2 = staticinvoke <java.util.Arrays: java.util.List asList(java.lang.Object[])>(v1);
+staticinvoke <io.netty.handler.ssl.SslUtils: void useFallbackCiphersIfDefaultIsEmpty(java.util.List,java.lang.Iterable)>(v0, v2);
+return;
+}
+static javax.net.ssl.SSLHandshakeException toSSLHandshakeException(java.lang.Throwable)
+{
+java.lang.Throwable v0, v4;
+javax.net.ssl.SSLHandshakeException v2;
+java.lang.String v3;
+boolean v1;
+v0 := @parameter0: java.lang.Throwable;
+v1 = v0 instanceof javax.net.ssl.SSLHandshakeException;
+if v1 == 0 goto label1;
+return v0;
+label1:
+v2 = new javax.net.ssl.SSLHandshakeException;
+v3 = virtualinvoke v0.<java.lang.Throwable: java.lang.String getMessage()>();
+specialinvoke v2.<javax.net.ssl.SSLHandshakeException: void <init>(java.lang.String)>(v3);
+v4 = virtualinvoke v2.<javax.net.ssl.SSLHandshakeException: java.lang.Throwable initCause(java.lang.Throwable)>(v0);
+return v4;
+}
+static int getEncryptedPacketLength(io.netty.buffer.ByteBuf, int)
+{
+short v11, v12, v17, v18, v19, v21, v22, v3, v6, v8;
+byte v13, v14;
+io.netty.buffer.ByteBuf v0;
+int v1, v10, v15, v16, v2, v20, v23, v24, v5, v7, v9;
+boolean v4;
+v0 := @parameter0: io.netty.buffer.ByteBuf;
+v1 := @parameter1: int;
+v2 = 0;
+v3 = virtualinvoke v0.<io.netty.buffer.ByteBuf: short getUnsignedByte(int)>(v1);
+tableswitch(v3)
+{
+case 20: goto label01;
+case 21: goto label01;
+case 22: goto label01;
+case 23: goto label01;
+case 24: goto label01;
+default: goto label02;
+};
+label01:
+v4 = 1;
+goto label03;
+label02:
+v4 = 0;
+label03:
+if v4 == 0 goto label06;
+v5 = v1 + 1;
+v6 = virtualinvoke v0.<io.netty.buffer.ByteBuf: short getUnsignedByte(int)>(v5);
+if v6 == 3 goto label04;
+v7 = v1 + 1;
+v8 = virtualinvoke v0.<io.netty.buffer.ByteBuf: short getShort(int)>(v7);
+if v8 != 257 goto label05;
+label04:
+v9 = v1 + 3;
+v10 = staticinvoke <io.netty.handler.ssl.SslUtils: int unsignedShortBE(io.netty.buffer.ByteBuf,int)>(v0, v9);
+v2 = v10 + 5;
+if v2 > 5 goto label06;
+v4 = 0;
+goto label06;
+label05:
+v4 = 0;
+label06:
+if v4 != 0 goto label13;
+v11 = virtualinvoke v0.<io.netty.buffer.ByteBuf: short getUnsignedByte(int)>(v1);
+v12 = v11 & 128;
+if v12 == 0 goto label07;
+v13 = 2;
+goto label08;
+label07:
+v13 = 3;
+label08:
+v14 = v13;
+v15 = v1 + v13;
+v16 = v15 + 1;
+v17 = virtualinvoke v0.<io.netty.buffer.ByteBuf: short getUnsignedByte(int)>(v16);
+if v17 == 2 goto label09;
+if v17 != 3 goto label12;
+label09:
+if v14 != 2 goto label10;
+v18 = staticinvoke <io.netty.handler.ssl.SslUtils: short shortBE(io.netty.buffer.ByteBuf,int)>(v0, v1);
+v19 = v18 & 32767;
+v20 = v19 + 2;
+goto label11;
+label10:
+v21 = staticinvoke <io.netty.handler.ssl.SslUtils: short shortBE(io.netty.buffer.ByteBuf,int)>(v0, v1);
+v22 = v21 & 16383;
+v20 = v22 + 3;
+label11:
+v2 = v20;
+if v20 > v14 goto label13;
+v23 = (int) -1;
+return v23;
+label12:
+v24 = (int) -2;
+return v24;
+label13:
+return v2;
+}
+private static int unsignedShortBE(io.netty.buffer.ByteBuf, int)
+{
+java.nio.ByteOrder v3, v4;
+io.netty.buffer.ByteBuf v0;
+int v1, v2, v5;
+v0 := @parameter0: io.netty.buffer.ByteBuf;
+v1 := @parameter1: int;
+v2 = virtualinvoke v0.<io.netty.buffer.ByteBuf: int getUnsignedShort(int)>(v1);
+v3 = virtualinvoke v0.<io.netty.buffer.ByteBuf: java.nio.ByteOrder order()>();
+v4 = <java.nio.ByteOrder: java.nio.ByteOrder LITTLE_ENDIAN>;
+if v3 != v4 goto label1;
+v5 = staticinvoke <java.lang.Integer: int reverseBytes(int)>(v2);
+v2 = v5 >>> 16;
+label1:
+return v2;
+}
+private static short shortBE(io.netty.buffer.ByteBuf, int)
+{
+java.nio.ByteOrder v3, v4;
+short v2;
+io.netty.buffer.ByteBuf v0;
+int v1;
+v0 := @parameter0: io.netty.buffer.ByteBuf;
+v1 := @parameter1: int;
+v2 = virtualinvoke v0.<io.netty.buffer.ByteBuf: short getShort(int)>(v1);
+v3 = virtualinvoke v0.<io.netty.buffer.ByteBuf: java.nio.ByteOrder order()>();
+v4 = <java.nio.ByteOrder: java.nio.ByteOrder LITTLE_ENDIAN>;
+if v3 != v4 goto label1;
+v2 = staticinvoke <java.lang.Short: short reverseBytes(short)>(v2);
+label1:
+return v2;
+}
+private static short unsignedByte(byte)
+{
+short v1;
+byte v0;
+v0 := @parameter0: byte;
+v1 = v0 & 255;
+return v1;
+}
+private static int unsignedShortBE(java.nio.ByteBuffer, int)
+{
+short v2;
+int v1, v3, v4;
+java.nio.ByteBuffer v0;
+v0 := @parameter0: java.nio.ByteBuffer;
+v1 := @parameter1: int;
+v2 = staticinvoke <io.netty.handler.ssl.SslUtils: short shortBE(java.nio.ByteBuffer,int)>(v0, v1);
+v3 = (int) 65535;
+v4 = v2 & v3;
+return v4;
+}
+private static short shortBE(java.nio.ByteBuffer, int)
+{
+java.nio.ByteOrder v2, v3;
+short v4, v5;
+int v1;
+java.nio.ByteBuffer v0;
+v0 := @parameter0: java.nio.ByteBuffer;
+v1 := @parameter1: int;
+v2 = virtualinvoke v0.<java.nio.ByteBuffer: java.nio.ByteOrder order()>();
+v3 = <java.nio.ByteOrder: java.nio.ByteOrder BIG_ENDIAN>;
+if v2 != v3 goto label1;
+v4 = virtualinvoke v0.<java.nio.ByteBuffer: short getShort(int)>(v1);
+goto label2;
+label1:
+v5 = virtualinvoke v0.<java.nio.ByteBuffer: short getShort(int)>(v1);
+v4 = staticinvoke <io.netty.buffer.ByteBufUtil: short swapShort(short)>(v5);
+label2:
+return v4;
+}
+static int getEncryptedPacketLength(java.nio.ByteBuffer[], int)
+{
+java.nio.ByteBuffer v2, v5, v7, v8;
+int v1, v10, v11, v12, v13, v15, v3, v4, v6, v9;
+boolean v14;
+java.nio.ByteBuffer[] v0;
+v0 := @parameter0: java.nio.ByteBuffer[];
+v1 := @parameter1: int;
+v2 = v0[v1];
+v3 = virtualinvoke v2.<java.nio.ByteBuffer: int remaining()>();
+if v3 < 5 goto label1;
+v4 = staticinvoke <io.netty.handler.ssl.SslUtils: int getEncryptedPacketLength(java.nio.ByteBuffer)>(v2);
+return v4;
+label1:
+v5 = staticinvoke <java.nio.ByteBuffer: java.nio.ByteBuffer allocate(int)>(5);
+label2:
+v6 = v1;
+v1 = v1 + 1;
+v7 = v0[v6];
+v8 = virtualinvoke v7.<java.nio.ByteBuffer: java.nio.ByteBuffer duplicate()>();
+v9 = virtualinvoke v8.<java.nio.ByteBuffer: int remaining()>();
+v10 = virtualinvoke v5.<java.nio.ByteBuffer: int remaining()>();
+if v9 <= v10 goto label3;
+v11 = virtualinvoke v8.<java.nio.ByteBuffer: int position()>();
+v12 = virtualinvoke v5.<java.nio.ByteBuffer: int remaining()>();
+v13 = v11 + v12;
+virtualinvoke v8.<java.nio.ByteBuffer: java.nio.ByteBuffer limit(int)>(v13);
+label3:
+virtualinvoke v5.<java.nio.ByteBuffer: java.nio.ByteBuffer put(java.nio.ByteBuffer)>(v8);
+v14 = virtualinvoke v5.<java.nio.ByteBuffer: boolean hasRemaining()>();
+if v14 != 0 goto label2;
+virtualinvoke v5.<java.nio.ByteBuffer: java.nio.Buffer flip()>();
+v15 = staticinvoke <io.netty.handler.ssl.SslUtils: int getEncryptedPacketLength(java.nio.ByteBuffer)>(v5);
+return v15;
+}
+private static int getEncryptedPacketLength(java.nio.ByteBuffer)
+{
+java.nio.ByteBuffer v0;
+short v10, v14, v15, v21, v22, v23, v25, v26, v4, v8;
+byte v13, v16, v17, v20, v3, v7;
+int v1, v11, v12, v18, v19, v2, v24, v27, v28, v6, v9;
+boolean v5;
+v0 := @parameter0: java.nio.ByteBuffer;
+v1 = 0;
+v2 = virtualinvoke v0.<java.nio.ByteBuffer: int position()>();
+v3 = virtualinvoke v0.<java.nio.ByteBuffer: byte get(int)>(v2);
+v4 = staticinvoke <io.netty.handler.ssl.SslUtils: short unsignedByte(byte)>(v3);
+tableswitch(v4)
+{
+case 20: goto label01;
+case 21: goto label01;
+case 22: goto label01;
+case 23: goto label01;
+case 24: goto label01;
+default: goto label02;
+};
+label01:
+v5 = 1;
+goto label03;
+label02:
+v5 = 0;
+label03:
+if v5 == 0 goto label06;
+v6 = v2 + 1;
+v7 = virtualinvoke v0.<java.nio.ByteBuffer: byte get(int)>(v6);
+v8 = staticinvoke <io.netty.handler.ssl.SslUtils: short unsignedByte(byte)>(v7);
+if v8 == 3 goto label04;
+v9 = v2 + 1;
+v10 = virtualinvoke v0.<java.nio.ByteBuffer: short getShort(int)>(v9);
+if v10 != 257 goto label05;
+label04:
+v11 = v2 + 3;
+v12 = staticinvoke <io.netty.handler.ssl.SslUtils: int unsignedShortBE(java.nio.ByteBuffer,int)>(v0, v11);
+v1 = v12 + 5;
+if v1 > 5 goto label06;
+v5 = 0;
+goto label06;
+label05:
+v5 = 0;
+label06:
+if v5 != 0 goto label13;
+v13 = virtualinvoke v0.<java.nio.ByteBuffer: byte get(int)>(v2);
+v14 = staticinvoke <io.netty.handler.ssl.SslUtils: short unsignedByte(byte)>(v13);
+v15 = v14 & 128;
+if v15 == 0 goto label07;
+v16 = 2;
+goto label08;
+label07:
+v16 = 3;
+label08:
+v17 = v16;
+v18 = v2 + v16;
+v19 = v18 + 1;
+v20 = virtualinvoke v0.<java.nio.ByteBuffer: byte get(int)>(v19);
+v21 = staticinvoke <io.netty.handler.ssl.SslUtils: short unsignedByte(byte)>(v20);
+if v21 == 2 goto label09;
+if v21 != 3 goto label12;
+label09:
+if v17 != 2 goto label10;
+v22 = staticinvoke <io.netty.handler.ssl.SslUtils: short shortBE(java.nio.ByteBuffer,int)>(v0, v2);
+v23 = v22 & 32767;
+v24 = v23 + 2;
+goto label11;
+label10:
+v25 = staticinvoke <io.netty.handler.ssl.SslUtils: short shortBE(java.nio.ByteBuffer,int)>(v0, v2);
+v26 = v25 & 16383;
+v24 = v26 + 3;
+label11:
+v1 = v24;
+if v24 > v17 goto label13;
+v27 = (int) -1;
+return v27;
+label12:
+v28 = (int) -2;
+return v28;
+label13:
+return v1;
+}
+static void handleHandshakeFailure(io.netty.channel.ChannelHandlerContext, java.lang.Throwable, boolean)
+{
+java.lang.Throwable v1;
+io.netty.channel.ChannelHandlerContext v0;
+io.netty.handler.ssl.SslHandshakeCompletionEvent v3;
+boolean v2;
+v0 := @parameter0: io.netty.channel.ChannelHandlerContext;
+v1 := @parameter1: java.lang.Throwable;
+v2 := @parameter2: boolean;
+interfaceinvoke v0.<io.netty.channel.ChannelHandlerContext: io.netty.channel.ChannelHandlerContext flush()>();
+if v2 == 0 goto label1;
+v3 = new io.netty.handler.ssl.SslHandshakeCompletionEvent;
+specialinvoke v3.<io.netty.handler.ssl.SslHandshakeCompletionEvent: void <init>(java.lang.Throwable)>(v1);
+interfaceinvoke v0.<io.netty.channel.ChannelHandlerContext: io.netty.channel.ChannelHandlerContext fireUserEventTriggered(java.lang.Object)>(v3);
+label1:
+interfaceinvoke v0.<io.netty.channel.ChannelHandlerContext: io.netty.channel.ChannelFuture close()>();
+return;
+}
+static void zeroout(io.netty.buffer.ByteBuf)
+{
+int v2;
+io.netty.buffer.ByteBuf v0;
+boolean v1;
+v0 := @parameter0: io.netty.buffer.ByteBuf;
+v1 = virtualinvoke v0.<io.netty.buffer.ByteBuf: boolean isReadOnly()>();
+if v1 != 0 goto label1;
+v2 = virtualinvoke v0.<io.netty.buffer.ByteBuf: int capacity()>();
+virtualinvoke v0.<io.netty.buffer.ByteBuf: io.netty.buffer.ByteBuf setZero(int,int)>(0, v2);
+label1:
+return;
+}
+static void zerooutAndRelease(io.netty.buffer.ByteBuf)
+{
+io.netty.buffer.ByteBuf v0;
+v0 := @parameter0: io.netty.buffer.ByteBuf;
+staticinvoke <io.netty.handler.ssl.SslUtils: void zeroout(io.netty.buffer.ByteBuf)>(v0);
+virtualinvoke v0.<io.netty.buffer.ByteBuf: boolean release()>();
+return;
+}
+static io.netty.buffer.ByteBuf toBase64(io.netty.buffer.ByteBufAllocator, io.netty.buffer.ByteBuf)
+{
+io.netty.buffer.ByteBuf v1, v5;
+io.netty.buffer.ByteBufAllocator v0;
+int v2, v3, v6;
+io.netty.handler.codec.base64.Base64Dialect v4;
+v0 := @parameter0: io.netty.buffer.ByteBufAllocator;
+v1 := @parameter1: io.netty.buffer.ByteBuf;
+v2 = virtualinvoke v1.<io.netty.buffer.ByteBuf: int readerIndex()>();
+v3 = virtualinvoke v1.<io.netty.buffer.ByteBuf: int readableBytes()>();
+v4 = <io.netty.handler.codec.base64.Base64Dialect: io.netty.handler.codec.base64.Base64Dialect STANDARD>;
+v5 = staticinvoke <io.netty.handler.codec.base64.Base64: io.netty.buffer.ByteBuf encode(io.netty.buffer.ByteBuf,int,int,boolean,io.netty.handler.codec.base64.Base64Dialect,io.netty.buffer.ByteBufAllocator)>(v1, v2, v3, 1, v4, v0);
+v6 = virtualinvoke v1.<io.netty.buffer.ByteBuf: int writerIndex()>();
+virtualinvoke v1.<io.netty.buffer.ByteBuf: io.netty.buffer.ByteBuf readerIndex(int)>(v6);
+return v5;
+}
+static boolean isValidHostNameForSNI(java.lang.String)
+{
+int v1;
+java.lang.String v0;
+boolean v2, v3, v4, v5, v6;
+v0 := @parameter0: java.lang.String;
+if v0 == null goto label1;
+v1 = virtualinvoke v0.<java.lang.String: int indexOf(int)>(46);
+if v1 <= 0 goto label1;
+v2 = virtualinvoke v0.<java.lang.String: boolean endsWith(java.lang.String)>(".");
+if v2 != 0 goto label1;
+v3 = virtualinvoke v0.<java.lang.String: boolean startsWith(java.lang.String)>("/");
+if v3 != 0 goto label1;
+v4 = staticinvoke <io.netty.util.NetUtil: boolean isValidIpV4Address(java.lang.String)>(v0);
+if v4 != 0 goto label1;
+v5 = staticinvoke <io.netty.util.NetUtil: boolean isValidIpV6Address(java.lang.String)>(v0);
+if v5 != 0 goto label1;
+v6 = 1;
+goto label2;
+label1:
+v6 = 0;
+label2:
+return v6;
+}
+static boolean isTLSv13Cipher(java.lang.String)
+{
+java.util.Set v1;
+java.lang.String v0;
+boolean v2;
+v0 := @parameter0: java.lang.String;
+v1 = <io.netty.handler.ssl.SslUtils: java.util.Set TLSV13_CIPHERS>;
+v2 = interfaceinvoke v1.<java.util.Set: boolean contains(java.lang.Object)>(v0);
+return v2;
+}
+private void <init>()
+{
+io.netty.handler.ssl.SslUtils v0;
+v0 := @this: io.netty.handler.ssl.SslUtils;
+specialinvoke v0.<java.lang.Object: void <init>()>();
+return;
+}
+static void <clinit>()
+{
+java.lang.Object[] v14;
+java.util.Set v4;
+java.lang.String[] v10, v12, v13, v2, v5, v9;
+java.util.List v3;
+io.netty.util.internal.logging.InternalLogger v0;
+java.util.LinkedHashSet v1, v11;
+boolean v6, v7, v8;
+v0 = staticinvoke <io.netty.util.internal.logging.InternalLoggerFactory: io.netty.util.internal.logging.InternalLogger getInstance(java.lang.Class)>(class "Lio/netty/handler/ssl/SslUtils;");
+<io.netty.handler.ssl.SslUtils: io.netty.util.internal.logging.InternalLogger logger> = v0;
+v1 = new java.util.LinkedHashSet;
+v2 = newarray (java.lang.String)[5];
+v2[0] = "TLS_AES_256_GCM_SHA384";
+v2[1] = "TLS_CHACHA20_POLY1305_SHA256";
+v2[2] = "TLS_AES_128_GCM_SHA256";
+v2[3] = "TLS_AES_128_CCM_8_SHA256";
+v2[4] = "TLS_AES_128_CCM_SHA256";
+v3 = staticinvoke <java.util.Arrays: java.util.List asList(java.lang.Object[])>(v2);
+specialinvoke v1.<java.util.LinkedHashSet: void <init>(java.util.Collection)>(v3);
+v4 = staticinvoke <java.util.Collections: java.util.Set unmodifiableSet(java.util.Set)>(v1);
+<io.netty.handler.ssl.SslUtils: java.util.Set TLSV13_CIPHERS> = v4;
+v5 = newarray (java.lang.String)[2];
+v5[0] = "TLS_AES_128_GCM_SHA256";
+v5[1] = "TLS_AES_256_GCM_SHA384";
+<io.netty.handler.ssl.SslUtils: java.lang.String[] TLSV13_CIPHER_SUITES> = v5;
+v6 = staticinvoke <io.netty.handler.ssl.SslUtils: boolean isTLSv13SupportedByJDK0(java.security.Provider)>(null);
+<io.netty.handler.ssl.SslUtils: boolean TLSV1_3_JDK_SUPPORTED> = v6;
+v7 = staticinvoke <io.netty.handler.ssl.SslUtils: boolean isTLSv13EnabledByJDK0(java.security.Provider)>(null);
+<io.netty.handler.ssl.SslUtils: boolean TLSV1_3_JDK_DEFAULT_ENABLED> = v7;
+v8 = <io.netty.handler.ssl.SslUtils: boolean TLSV1_3_JDK_SUPPORTED>;
+if v8 == 0 goto label1;
+v9 = <io.netty.handler.ssl.SslUtils: java.lang.String[] TLSV13_CIPHER_SUITES>;
+<io.netty.handler.ssl.SslUtils: java.lang.String[] DEFAULT_TLSV13_CIPHER_SUITES> = v9;
+goto label2;
+label1:
+v10 = <io.netty.util.internal.EmptyArrays: java.lang.String[] EMPTY_STRINGS>;
+<io.netty.handler.ssl.SslUtils: java.lang.String[] DEFAULT_TLSV13_CIPHER_SUITES> = v10;
+label2:
+v11 = new java.util.LinkedHashSet;
+specialinvoke v11.<java.util.LinkedHashSet: void <init>()>();
+interfaceinvoke v11.<java.util.Set: boolean add(java.lang.Object)>("TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384");
+interfaceinvoke v11.<java.util.Set: boolean add(java.lang.Object)>("TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256");
+interfaceinvoke v11.<java.util.Set: boolean add(java.lang.Object)>("TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256");
+interfaceinvoke v11.<java.util.Set: boolean add(java.lang.Object)>("TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384");
+interfaceinvoke v11.<java.util.Set: boolean add(java.lang.Object)>("TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA");
+interfaceinvoke v11.<java.util.Set: boolean add(java.lang.Object)>("TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA");
+interfaceinvoke v11.<java.util.Set: boolean add(java.lang.Object)>("TLS_RSA_WITH_AES_128_GCM_SHA256");
+interfaceinvoke v11.<java.util.Set: boolean add(java.lang.Object)>("TLS_RSA_WITH_AES_128_CBC_SHA");
+interfaceinvoke v11.<java.util.Set: boolean add(java.lang.Object)>("TLS_RSA_WITH_AES_256_CBC_SHA");
+v12 = <io.netty.handler.ssl.SslUtils: java.lang.String[] DEFAULT_TLSV13_CIPHER_SUITES>;
+staticinvoke <java.util.Collections: boolean addAll(java.util.Collection,java.lang.Object[])>(v11, v12);
+v13 = <io.netty.util.internal.EmptyArrays: java.lang.String[] EMPTY_STRINGS>;
+v14 = interfaceinvoke v11.<java.util.Set: java.lang.Object[] toArray(java.lang.Object[])>(v13);
+<io.netty.handler.ssl.SslUtils: java.lang.String[] DEFAULT_CIPHER_SUITES> = v14;
+return;
+}
+}

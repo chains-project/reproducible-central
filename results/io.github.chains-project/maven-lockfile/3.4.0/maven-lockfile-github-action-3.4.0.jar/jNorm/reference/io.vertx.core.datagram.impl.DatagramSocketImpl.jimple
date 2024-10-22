@@ -1,0 +1,919 @@
+public class io.vertx.core.datagram.impl.DatagramSocketImpl extends java.lang.Object implements io.vertx.core.datagram.DatagramSocket, io.vertx.core.spi.metrics.MetricsProvider, io.vertx.core.Closeable
+{
+private final io.vertx.core.impl.ContextInternal context;
+private final io.vertx.core.spi.metrics.DatagramSocketMetrics metrics;
+private io.netty.channel.socket.DatagramChannel channel;
+private io.vertx.core.Handler packetHandler;
+private io.vertx.core.Handler endHandler;
+private io.vertx.core.Handler exceptionHandler;
+private long demand;
+private final io.vertx.core.impl.CloseFuture closeFuture;
+public static io.vertx.core.datagram.impl.DatagramSocketImpl create(io.vertx.core.impl.VertxInternal, io.vertx.core.impl.CloseFuture, io.vertx.core.datagram.DatagramSocketOptions)
+{
+io.vertx.core.datagram.impl.DatagramSocketImpl v3;
+io.vertx.core.impl.VertxInternal v0;
+io.vertx.core.impl.CloseFuture v1;
+io.vertx.core.datagram.DatagramSocketOptions v2;
+v0 := @parameter0: io.vertx.core.impl.VertxInternal;
+v1 := @parameter1: io.vertx.core.impl.CloseFuture;
+v2 := @parameter2: io.vertx.core.datagram.DatagramSocketOptions;
+v3 = new io.vertx.core.datagram.impl.DatagramSocketImpl;
+specialinvoke v3.<io.vertx.core.datagram.impl.DatagramSocketImpl: void <init>(io.vertx.core.impl.VertxInternal,io.vertx.core.impl.CloseFuture,io.vertx.core.datagram.DatagramSocketOptions)>(v0, v1, v2);
+specialinvoke v3.<io.vertx.core.datagram.impl.DatagramSocketImpl: void init()>();
+return v3;
+}
+private void <init>(io.vertx.core.impl.VertxInternal, io.vertx.core.impl.CloseFuture, io.vertx.core.datagram.DatagramSocketOptions)
+{
+io.vertx.core.datagram.impl.DatagramSocketImpl v0;
+io.netty.channel.ChannelOption v11;
+io.netty.handler.logging.LoggingHandler v18;
+io.vertx.core.impl.ContextInternal v9;
+io.vertx.core.spi.metrics.VertxMetrics v20;
+io.vertx.core.spi.transport.Transport v4;
+io.netty.channel.socket.DatagramChannel v7;
+io.netty.channel.socket.DatagramChannelConfig v10, v13;
+io.netty.handler.logging.ByteBufFormat v19;
+io.netty.channel.socket.InternetProtocolFamily v6;
+java.lang.Boolean v12;
+io.vertx.core.spi.metrics.DatagramSocketMetrics v21;
+io.vertx.core.datagram.DatagramSocketOptions v3, v8;
+boolean v16, v5;
+io.vertx.core.impl.VertxInternal v1;
+io.netty.channel.ChannelPipeline v17;
+io.netty.channel.RecvByteBufAllocator v14;
+io.netty.channel.EventLoop v15;
+io.vertx.core.impl.CloseFuture v2;
+v0 := @this: io.vertx.core.datagram.impl.DatagramSocketImpl;
+v1 := @parameter0: io.vertx.core.impl.VertxInternal;
+v2 := @parameter1: io.vertx.core.impl.CloseFuture;
+v3 := @parameter2: io.vertx.core.datagram.DatagramSocketOptions;
+specialinvoke v0.<java.lang.Object: void <init>()>();
+v4 = interfaceinvoke v1.<io.vertx.core.impl.VertxInternal: io.vertx.core.spi.transport.Transport transport()>();
+v5 = virtualinvoke v3.<io.vertx.core.datagram.DatagramSocketOptions: boolean isIpV6()>();
+if v5 == 0 goto label1;
+v6 = <io.netty.channel.socket.InternetProtocolFamily: io.netty.channel.socket.InternetProtocolFamily IPv6>;
+goto label2;
+label1:
+v6 = <io.netty.channel.socket.InternetProtocolFamily: io.netty.channel.socket.InternetProtocolFamily IPv4>;
+label2:
+v7 = interfaceinvoke v4.<io.vertx.core.spi.transport.Transport: io.netty.channel.socket.DatagramChannel datagramChannel(io.netty.channel.socket.InternetProtocolFamily)>(v6);
+v8 = new io.vertx.core.datagram.DatagramSocketOptions;
+specialinvoke v8.<io.vertx.core.datagram.DatagramSocketOptions: void <init>(io.vertx.core.datagram.DatagramSocketOptions)>(v3);
+interfaceinvoke v4.<io.vertx.core.spi.transport.Transport: void configure(io.netty.channel.socket.DatagramChannel,io.vertx.core.datagram.DatagramSocketOptions)>(v7, v8);
+v9 = interfaceinvoke v1.<io.vertx.core.impl.VertxInternal: io.vertx.core.impl.ContextInternal getOrCreateContext()>();
+v10 = interfaceinvoke v7.<io.netty.channel.socket.DatagramChannel: io.netty.channel.socket.DatagramChannelConfig config()>();
+v11 = <io.netty.channel.ChannelOption: io.netty.channel.ChannelOption DATAGRAM_CHANNEL_ACTIVE_ON_REGISTRATION>;
+v12 = staticinvoke <java.lang.Boolean: java.lang.Boolean valueOf(boolean)>(1);
+interfaceinvoke v10.<io.netty.channel.socket.DatagramChannelConfig: boolean setOption(io.netty.channel.ChannelOption,java.lang.Object)>(v11, v12);
+v13 = interfaceinvoke v7.<io.netty.channel.socket.DatagramChannel: io.netty.channel.socket.DatagramChannelConfig config()>();
+v14 = interfaceinvoke v13.<io.netty.channel.socket.DatagramChannelConfig: io.netty.channel.RecvByteBufAllocator getRecvByteBufAllocator()>();
+interfaceinvoke v14.<io.netty.channel.MaxMessagesRecvByteBufAllocator: io.netty.channel.MaxMessagesRecvByteBufAllocator maxMessagesPerRead(int)>(1);
+v15 = interfaceinvoke v9.<io.vertx.core.impl.ContextInternal: io.netty.channel.EventLoop nettyEventLoop()>();
+interfaceinvoke v15.<io.netty.channel.EventLoop: io.netty.channel.ChannelFuture register(io.netty.channel.Channel)>(v7);
+v16 = virtualinvoke v3.<io.vertx.core.datagram.DatagramSocketOptions: boolean getLogActivity()>();
+if v16 == 0 goto label3;
+v17 = interfaceinvoke v7.<io.netty.channel.socket.DatagramChannel: io.netty.channel.ChannelPipeline pipeline()>();
+v18 = new io.netty.handler.logging.LoggingHandler;
+v19 = virtualinvoke v3.<io.vertx.core.datagram.DatagramSocketOptions: io.netty.handler.logging.ByteBufFormat getActivityLogDataFormat()>();
+specialinvoke v18.<io.netty.handler.logging.LoggingHandler: void <init>(io.netty.handler.logging.ByteBufFormat)>(v19);
+interfaceinvoke v17.<io.netty.channel.ChannelPipeline: io.netty.channel.ChannelPipeline addLast(java.lang.String,io.netty.channel.ChannelHandler)>("logging", v18);
+label3:
+v20 = interfaceinvoke v1.<io.vertx.core.impl.VertxInternal: io.vertx.core.spi.metrics.VertxMetrics metricsSPI()>();
+if v20 == null goto label4;
+v21 = interfaceinvoke v20.<io.vertx.core.spi.metrics.VertxMetrics: io.vertx.core.spi.metrics.DatagramSocketMetrics createDatagramSocketMetrics(io.vertx.core.datagram.DatagramSocketOptions)>(v3);
+goto label5;
+label4:
+v21 = null;
+label5:
+v0.<io.vertx.core.datagram.impl.DatagramSocketImpl: io.vertx.core.spi.metrics.DatagramSocketMetrics metrics> = v21;
+v0.<io.vertx.core.datagram.impl.DatagramSocketImpl: io.netty.channel.socket.DatagramChannel channel> = v7;
+v0.<io.vertx.core.datagram.impl.DatagramSocketImpl: io.vertx.core.impl.ContextInternal context> = v9;
+v0.<io.vertx.core.datagram.impl.DatagramSocketImpl: long demand> = 9223372036854775807L;
+v0.<io.vertx.core.datagram.impl.DatagramSocketImpl: io.vertx.core.impl.CloseFuture closeFuture> = v2;
+return;
+}
+private void init()
+{
+io.vertx.core.datagram.impl.DatagramSocketImpl v0;
+io.vertx.core.net.impl.VertxHandler v4;
+io.netty.channel.socket.DatagramChannel v1;
+io.netty.channel.ChannelPipeline v2;
+java.util.function.Function v3;
+v0 := @this: io.vertx.core.datagram.impl.DatagramSocketImpl;
+v1 = v0.<io.vertx.core.datagram.impl.DatagramSocketImpl: io.netty.channel.socket.DatagramChannel channel>;
+v2 = interfaceinvoke v1.<io.netty.channel.socket.DatagramChannel: io.netty.channel.ChannelPipeline pipeline()>();
+v3 = staticinvoke <io.vertx.core.datagram.impl.DatagramSocketImpl$createConnection__916: java.util.function.Function bootstrap$(io.vertx.core.datagram.impl.DatagramSocketImpl)>(v0);
+v4 = staticinvoke <io.vertx.core.net.impl.VertxHandler: io.vertx.core.net.impl.VertxHandler create(java.util.function.Function)>(v3);
+interfaceinvoke v2.<io.netty.channel.ChannelPipeline: io.netty.channel.ChannelPipeline addLast(java.lang.String,io.netty.channel.ChannelHandler)>("handler", v4);
+return;
+}
+public io.vertx.core.datagram.DatagramSocket listenMulticastGroup(java.lang.String, io.vertx.core.Handler)
+{
+io.vertx.core.datagram.impl.DatagramSocketImpl v0;
+java.lang.String v1;
+io.vertx.core.Handler v2;
+io.vertx.core.Future v3;
+v0 := @this: io.vertx.core.datagram.impl.DatagramSocketImpl;
+v1 := @parameter0: java.lang.String;
+v2 := @parameter1: io.vertx.core.Handler;
+v3 = virtualinvoke v0.<io.vertx.core.datagram.impl.DatagramSocketImpl: io.vertx.core.Future listenMulticastGroup(java.lang.String)>(v1);
+if v2 == null goto label1;
+interfaceinvoke v3.<io.vertx.core.Future: io.vertx.core.Future onComplete(io.vertx.core.Handler)>(v2);
+label1:
+return v0;
+}
+private java.net.NetworkInterface determineMulticastNetworkIface() throws java.lang.Exception
+{
+io.vertx.core.datagram.impl.DatagramSocketImpl v0;
+java.net.InetAddress v4;
+io.netty.channel.socket.DatagramChannel v2, v5;
+io.netty.channel.socket.DatagramChannelConfig v6;
+java.net.NetworkInterface v1;
+java.net.InetSocketAddress v3;
+v0 := @this: io.vertx.core.datagram.impl.DatagramSocketImpl;
+v1 = null;
+v2 = v0.<io.vertx.core.datagram.impl.DatagramSocketImpl: io.netty.channel.socket.DatagramChannel channel>;
+v3 = interfaceinvoke v2.<io.netty.channel.socket.DatagramChannel: java.net.InetSocketAddress localAddress()>();
+if v3 == null goto label1;
+v4 = virtualinvoke v3.<java.net.InetSocketAddress: java.net.InetAddress getAddress()>();
+v1 = staticinvoke <java.net.NetworkInterface: java.net.NetworkInterface getByInetAddress(java.net.InetAddress)>(v4);
+label1:
+if v1 != null goto label2;
+v5 = v0.<io.vertx.core.datagram.impl.DatagramSocketImpl: io.netty.channel.socket.DatagramChannel channel>;
+v6 = interfaceinvoke v5.<io.netty.channel.socket.DatagramChannel: io.netty.channel.socket.DatagramChannelConfig config()>();
+v1 = interfaceinvoke v6.<io.netty.channel.socket.DatagramChannelConfig: java.net.NetworkInterface getNetworkInterface()>();
+label2:
+return v1;
+}
+public io.vertx.core.Future listenMulticastGroup(java.lang.String)
+{
+io.vertx.core.datagram.impl.DatagramSocketImpl v0;
+io.vertx.core.impl.ContextInternal v12, v14, v4, v6;
+java.net.InetAddress v9;
+io.netty.channel.socket.DatagramChannel v8;
+java.lang.String v1;
+io.vertx.core.impl.future.PromiseInternal v15;
+java.net.NetworkInterface v2;
+io.vertx.core.Future v13, v16, v5, v7;
+java.net.UnknownHostException v11;
+java.lang.Exception v3;
+io.netty.channel.ChannelFuture v10;
+v0 := @this: io.vertx.core.datagram.impl.DatagramSocketImpl;
+v1 := @parameter0: java.lang.String;
+label1:
+v2 = specialinvoke v0.<io.vertx.core.datagram.impl.DatagramSocketImpl: java.net.NetworkInterface determineMulticastNetworkIface()>();
+label2:
+goto label4;
+label3:
+v3 := @caughtexception;
+v4 = v0.<io.vertx.core.datagram.impl.DatagramSocketImpl: io.vertx.core.impl.ContextInternal context>;
+v5 = interfaceinvoke v4.<io.vertx.core.impl.ContextInternal: io.vertx.core.Future failedFuture(java.lang.Throwable)>(v3);
+return v5;
+label4:
+if v2 != null goto label5;
+v6 = v0.<io.vertx.core.datagram.impl.DatagramSocketImpl: io.vertx.core.impl.ContextInternal context>;
+v7 = interfaceinvoke v6.<io.vertx.core.impl.ContextInternal: io.vertx.core.Future failedFuture(java.lang.String)>("A valid network interface could not be determined from the socket bind address or multicast interface");
+return v7;
+label5:
+v8 = v0.<io.vertx.core.datagram.impl.DatagramSocketImpl: io.netty.channel.socket.DatagramChannel channel>;
+v9 = staticinvoke <java.net.InetAddress: java.net.InetAddress getByName(java.lang.String)>(v1);
+v10 = interfaceinvoke v8.<io.netty.channel.socket.DatagramChannel: io.netty.channel.ChannelFuture joinGroup(java.net.InetAddress,java.net.NetworkInterface,java.net.InetAddress)>(v9, v2, null);
+label6:
+goto label8;
+label7:
+v11 := @caughtexception;
+v12 = v0.<io.vertx.core.datagram.impl.DatagramSocketImpl: io.vertx.core.impl.ContextInternal context>;
+v13 = interfaceinvoke v12.<io.vertx.core.impl.ContextInternal: io.vertx.core.Future failedFuture(java.lang.Throwable)>(v11);
+return v13;
+label8:
+v14 = v0.<io.vertx.core.datagram.impl.DatagramSocketImpl: io.vertx.core.impl.ContextInternal context>;
+v15 = interfaceinvoke v14.<io.vertx.core.impl.ContextInternal: io.vertx.core.impl.future.PromiseInternal promise()>();
+interfaceinvoke v10.<io.netty.channel.ChannelFuture: io.netty.channel.ChannelFuture addListener(io.netty.util.concurrent.GenericFutureListener)>(v15);
+v16 = interfaceinvoke v15.<io.vertx.core.impl.future.PromiseInternal: io.vertx.core.Future future()>();
+return v16;
+catch java.lang.Exception from label1 to label2 with label3;
+catch java.net.UnknownHostException from label5 to label6 with label7;
+}
+public io.vertx.core.datagram.DatagramSocket listenMulticastGroup(java.lang.String, java.lang.String, java.lang.String, io.vertx.core.Handler)
+{
+io.vertx.core.datagram.impl.DatagramSocketImpl v0;
+java.lang.String v1, v2, v3;
+io.vertx.core.Handler v4;
+io.vertx.core.Future v5;
+v0 := @this: io.vertx.core.datagram.impl.DatagramSocketImpl;
+v1 := @parameter0: java.lang.String;
+v2 := @parameter1: java.lang.String;
+v3 := @parameter2: java.lang.String;
+v4 := @parameter3: io.vertx.core.Handler;
+v5 = virtualinvoke v0.<io.vertx.core.datagram.impl.DatagramSocketImpl: io.vertx.core.Future listenMulticastGroup(java.lang.String,java.lang.String,java.lang.String)>(v1, v2, v3);
+if v4 == null goto label1;
+interfaceinvoke v5.<io.vertx.core.Future: io.vertx.core.Future onComplete(io.vertx.core.Handler)>(v4);
+label1:
+return v0;
+}
+public io.vertx.core.Future listenMulticastGroup(java.lang.String, java.lang.String, java.lang.String)
+{
+io.vertx.core.datagram.impl.DatagramSocketImpl v0;
+io.vertx.core.impl.future.PromiseInternal v13;
+java.net.NetworkInterface v7;
+io.vertx.core.impl.ContextInternal v10, v12;
+io.vertx.core.Future v11, v14;
+java.lang.Exception v9;
+io.netty.channel.ChannelFuture v8;
+java.net.InetAddress v4, v6;
+io.netty.channel.socket.DatagramChannel v5;
+java.lang.String v1, v2, v3;
+v0 := @this: io.vertx.core.datagram.impl.DatagramSocketImpl;
+v1 := @parameter0: java.lang.String;
+v2 := @parameter1: java.lang.String;
+v3 := @parameter2: java.lang.String;
+label1:
+if v3 != null goto label2;
+v4 = null;
+goto label3;
+label2:
+v4 = staticinvoke <java.net.InetAddress: java.net.InetAddress getByName(java.lang.String)>(v3);
+label3:
+v5 = v0.<io.vertx.core.datagram.impl.DatagramSocketImpl: io.netty.channel.socket.DatagramChannel channel>;
+v6 = staticinvoke <java.net.InetAddress: java.net.InetAddress getByName(java.lang.String)>(v1);
+v7 = staticinvoke <java.net.NetworkInterface: java.net.NetworkInterface getByName(java.lang.String)>(v2);
+v8 = interfaceinvoke v5.<io.netty.channel.socket.DatagramChannel: io.netty.channel.ChannelFuture joinGroup(java.net.InetAddress,java.net.NetworkInterface,java.net.InetAddress)>(v6, v7, v4);
+label4:
+goto label6;
+label5:
+v9 := @caughtexception;
+v10 = v0.<io.vertx.core.datagram.impl.DatagramSocketImpl: io.vertx.core.impl.ContextInternal context>;
+v11 = interfaceinvoke v10.<io.vertx.core.impl.ContextInternal: io.vertx.core.Future failedFuture(java.lang.Throwable)>(v9);
+return v11;
+label6:
+v12 = v0.<io.vertx.core.datagram.impl.DatagramSocketImpl: io.vertx.core.impl.ContextInternal context>;
+v13 = interfaceinvoke v12.<io.vertx.core.impl.ContextInternal: io.vertx.core.impl.future.PromiseInternal promise()>();
+interfaceinvoke v8.<io.netty.channel.ChannelFuture: io.netty.channel.ChannelFuture addListener(io.netty.util.concurrent.GenericFutureListener)>(v13);
+v14 = interfaceinvoke v13.<io.vertx.core.impl.future.PromiseInternal: io.vertx.core.Future future()>();
+return v14;
+catch java.lang.Exception from label1 to label4 with label5;
+}
+public io.vertx.core.datagram.DatagramSocket unlistenMulticastGroup(java.lang.String, io.vertx.core.Handler)
+{
+io.vertx.core.datagram.impl.DatagramSocketImpl v0;
+java.lang.String v1;
+io.vertx.core.Handler v2;
+io.vertx.core.Future v3;
+v0 := @this: io.vertx.core.datagram.impl.DatagramSocketImpl;
+v1 := @parameter0: java.lang.String;
+v2 := @parameter1: io.vertx.core.Handler;
+v3 = virtualinvoke v0.<io.vertx.core.datagram.impl.DatagramSocketImpl: io.vertx.core.Future unlistenMulticastGroup(java.lang.String)>(v1);
+if v2 == null goto label1;
+interfaceinvoke v3.<io.vertx.core.Future: io.vertx.core.Future onComplete(io.vertx.core.Handler)>(v2);
+label1:
+return v0;
+}
+public io.vertx.core.Future unlistenMulticastGroup(java.lang.String)
+{
+io.vertx.core.datagram.impl.DatagramSocketImpl v0;
+io.vertx.core.impl.ContextInternal v12, v14, v4, v6;
+java.net.InetAddress v9;
+io.netty.channel.socket.DatagramChannel v8;
+java.lang.String v1;
+io.vertx.core.impl.future.PromiseInternal v15;
+java.net.NetworkInterface v2;
+io.vertx.core.Future v13, v16, v5, v7;
+java.lang.Exception v11, v3;
+io.netty.channel.ChannelFuture v10;
+v0 := @this: io.vertx.core.datagram.impl.DatagramSocketImpl;
+v1 := @parameter0: java.lang.String;
+label1:
+v2 = specialinvoke v0.<io.vertx.core.datagram.impl.DatagramSocketImpl: java.net.NetworkInterface determineMulticastNetworkIface()>();
+label2:
+goto label4;
+label3:
+v3 := @caughtexception;
+v4 = v0.<io.vertx.core.datagram.impl.DatagramSocketImpl: io.vertx.core.impl.ContextInternal context>;
+v5 = interfaceinvoke v4.<io.vertx.core.impl.ContextInternal: io.vertx.core.Future failedFuture(java.lang.Throwable)>(v3);
+return v5;
+label4:
+if v2 != null goto label5;
+v6 = v0.<io.vertx.core.datagram.impl.DatagramSocketImpl: io.vertx.core.impl.ContextInternal context>;
+v7 = interfaceinvoke v6.<io.vertx.core.impl.ContextInternal: io.vertx.core.Future failedFuture(java.lang.String)>("A valid network interface could not be determined from the socket bind address or multicast interface");
+return v7;
+label5:
+v8 = v0.<io.vertx.core.datagram.impl.DatagramSocketImpl: io.netty.channel.socket.DatagramChannel channel>;
+v9 = staticinvoke <java.net.InetAddress: java.net.InetAddress getByName(java.lang.String)>(v1);
+v10 = interfaceinvoke v8.<io.netty.channel.socket.DatagramChannel: io.netty.channel.ChannelFuture leaveGroup(java.net.InetAddress,java.net.NetworkInterface,java.net.InetAddress)>(v9, v2, null);
+label6:
+goto label8;
+label7:
+v11 := @caughtexception;
+v12 = v0.<io.vertx.core.datagram.impl.DatagramSocketImpl: io.vertx.core.impl.ContextInternal context>;
+v13 = interfaceinvoke v12.<io.vertx.core.impl.ContextInternal: io.vertx.core.Future failedFuture(java.lang.Throwable)>(v11);
+return v13;
+label8:
+v14 = v0.<io.vertx.core.datagram.impl.DatagramSocketImpl: io.vertx.core.impl.ContextInternal context>;
+v15 = interfaceinvoke v14.<io.vertx.core.impl.ContextInternal: io.vertx.core.impl.future.PromiseInternal promise()>();
+interfaceinvoke v10.<io.netty.channel.ChannelFuture: io.netty.channel.ChannelFuture addListener(io.netty.util.concurrent.GenericFutureListener)>(v15);
+v16 = interfaceinvoke v15.<io.vertx.core.impl.future.PromiseInternal: io.vertx.core.Future future()>();
+return v16;
+catch java.lang.Exception from label1 to label2 with label3;
+catch java.lang.Exception from label5 to label6 with label7;
+}
+public io.vertx.core.datagram.DatagramSocket unlistenMulticastGroup(java.lang.String, java.lang.String, java.lang.String, io.vertx.core.Handler)
+{
+io.vertx.core.datagram.impl.DatagramSocketImpl v0;
+java.lang.String v1, v2, v3;
+io.vertx.core.Handler v4;
+io.vertx.core.Future v5;
+v0 := @this: io.vertx.core.datagram.impl.DatagramSocketImpl;
+v1 := @parameter0: java.lang.String;
+v2 := @parameter1: java.lang.String;
+v3 := @parameter2: java.lang.String;
+v4 := @parameter3: io.vertx.core.Handler;
+v5 = virtualinvoke v0.<io.vertx.core.datagram.impl.DatagramSocketImpl: io.vertx.core.Future unlistenMulticastGroup(java.lang.String,java.lang.String,java.lang.String)>(v1, v2, v3);
+if v4 == null goto label1;
+interfaceinvoke v5.<io.vertx.core.Future: io.vertx.core.Future onComplete(io.vertx.core.Handler)>(v4);
+label1:
+return v0;
+}
+public io.vertx.core.Future unlistenMulticastGroup(java.lang.String, java.lang.String, java.lang.String)
+{
+io.vertx.core.datagram.impl.DatagramSocketImpl v0;
+io.vertx.core.impl.future.PromiseInternal v13;
+java.net.NetworkInterface v7;
+io.vertx.core.impl.ContextInternal v10, v12;
+io.vertx.core.Future v11, v14;
+java.lang.Exception v9;
+io.netty.channel.ChannelFuture v8;
+java.net.InetAddress v4, v6;
+io.netty.channel.socket.DatagramChannel v5;
+java.lang.String v1, v2, v3;
+v0 := @this: io.vertx.core.datagram.impl.DatagramSocketImpl;
+v1 := @parameter0: java.lang.String;
+v2 := @parameter1: java.lang.String;
+v3 := @parameter2: java.lang.String;
+label1:
+if v3 != null goto label2;
+v4 = null;
+goto label3;
+label2:
+v4 = staticinvoke <java.net.InetAddress: java.net.InetAddress getByName(java.lang.String)>(v3);
+label3:
+v5 = v0.<io.vertx.core.datagram.impl.DatagramSocketImpl: io.netty.channel.socket.DatagramChannel channel>;
+v6 = staticinvoke <java.net.InetAddress: java.net.InetAddress getByName(java.lang.String)>(v1);
+v7 = staticinvoke <java.net.NetworkInterface: java.net.NetworkInterface getByName(java.lang.String)>(v2);
+v8 = interfaceinvoke v5.<io.netty.channel.socket.DatagramChannel: io.netty.channel.ChannelFuture leaveGroup(java.net.InetAddress,java.net.NetworkInterface,java.net.InetAddress)>(v6, v7, v4);
+label4:
+goto label6;
+label5:
+v9 := @caughtexception;
+v10 = v0.<io.vertx.core.datagram.impl.DatagramSocketImpl: io.vertx.core.impl.ContextInternal context>;
+v11 = interfaceinvoke v10.<io.vertx.core.impl.ContextInternal: io.vertx.core.Future failedFuture(java.lang.Throwable)>(v9);
+return v11;
+label6:
+v12 = v0.<io.vertx.core.datagram.impl.DatagramSocketImpl: io.vertx.core.impl.ContextInternal context>;
+v13 = interfaceinvoke v12.<io.vertx.core.impl.ContextInternal: io.vertx.core.impl.future.PromiseInternal promise()>();
+interfaceinvoke v8.<io.netty.channel.ChannelFuture: io.netty.channel.ChannelFuture addListener(io.netty.util.concurrent.GenericFutureListener)>(v13);
+v14 = interfaceinvoke v13.<io.vertx.core.impl.future.PromiseInternal: io.vertx.core.Future future()>();
+return v14;
+catch java.lang.Exception from label1 to label4 with label5;
+}
+public io.vertx.core.datagram.DatagramSocket blockMulticastGroup(java.lang.String, java.lang.String, java.lang.String, io.vertx.core.Handler)
+{
+io.vertx.core.datagram.impl.DatagramSocketImpl v0;
+java.lang.String v1, v2, v3;
+io.vertx.core.Handler v4;
+io.vertx.core.Future v5;
+v0 := @this: io.vertx.core.datagram.impl.DatagramSocketImpl;
+v1 := @parameter0: java.lang.String;
+v2 := @parameter1: java.lang.String;
+v3 := @parameter2: java.lang.String;
+v4 := @parameter3: io.vertx.core.Handler;
+v5 = virtualinvoke v0.<io.vertx.core.datagram.impl.DatagramSocketImpl: io.vertx.core.Future blockMulticastGroup(java.lang.String,java.lang.String,java.lang.String)>(v1, v2, v3);
+if v4 == null goto label1;
+interfaceinvoke v5.<io.vertx.core.Future: io.vertx.core.Future onComplete(io.vertx.core.Handler)>(v4);
+label1:
+return v0;
+}
+public io.vertx.core.Future blockMulticastGroup(java.lang.String, java.lang.String, java.lang.String)
+{
+io.vertx.core.datagram.impl.DatagramSocketImpl v0;
+io.vertx.core.impl.future.PromiseInternal v13;
+java.net.NetworkInterface v7;
+io.vertx.core.impl.ContextInternal v10, v12;
+io.vertx.core.Future v11, v14;
+java.lang.Exception v9;
+io.netty.channel.ChannelFuture v8;
+java.net.InetAddress v4, v6;
+io.netty.channel.socket.DatagramChannel v5;
+java.lang.String v1, v2, v3;
+v0 := @this: io.vertx.core.datagram.impl.DatagramSocketImpl;
+v1 := @parameter0: java.lang.String;
+v2 := @parameter1: java.lang.String;
+v3 := @parameter2: java.lang.String;
+label1:
+if v3 != null goto label2;
+v4 = null;
+goto label3;
+label2:
+v4 = staticinvoke <java.net.InetAddress: java.net.InetAddress getByName(java.lang.String)>(v3);
+label3:
+v5 = v0.<io.vertx.core.datagram.impl.DatagramSocketImpl: io.netty.channel.socket.DatagramChannel channel>;
+v6 = staticinvoke <java.net.InetAddress: java.net.InetAddress getByName(java.lang.String)>(v1);
+v7 = staticinvoke <java.net.NetworkInterface: java.net.NetworkInterface getByName(java.lang.String)>(v2);
+v8 = interfaceinvoke v5.<io.netty.channel.socket.DatagramChannel: io.netty.channel.ChannelFuture block(java.net.InetAddress,java.net.NetworkInterface,java.net.InetAddress)>(v6, v7, v4);
+label4:
+goto label6;
+label5:
+v9 := @caughtexception;
+v10 = v0.<io.vertx.core.datagram.impl.DatagramSocketImpl: io.vertx.core.impl.ContextInternal context>;
+v11 = interfaceinvoke v10.<io.vertx.core.impl.ContextInternal: io.vertx.core.Future failedFuture(java.lang.Throwable)>(v9);
+return v11;
+label6:
+v12 = v0.<io.vertx.core.datagram.impl.DatagramSocketImpl: io.vertx.core.impl.ContextInternal context>;
+v13 = interfaceinvoke v12.<io.vertx.core.impl.ContextInternal: io.vertx.core.impl.future.PromiseInternal promise()>();
+interfaceinvoke v8.<io.netty.channel.ChannelFuture: io.netty.channel.ChannelFuture addListener(io.netty.util.concurrent.GenericFutureListener)>(v13);
+v14 = interfaceinvoke v13.<io.vertx.core.impl.future.PromiseInternal: io.vertx.core.Future future()>();
+return v14;
+catch java.lang.Exception from label1 to label4 with label5;
+}
+public io.vertx.core.datagram.DatagramSocket blockMulticastGroup(java.lang.String, java.lang.String, io.vertx.core.Handler)
+{
+io.vertx.core.datagram.impl.DatagramSocketImpl v0;
+java.lang.String v1, v2;
+io.vertx.core.Handler v3;
+io.vertx.core.Future v4;
+v0 := @this: io.vertx.core.datagram.impl.DatagramSocketImpl;
+v1 := @parameter0: java.lang.String;
+v2 := @parameter1: java.lang.String;
+v3 := @parameter2: io.vertx.core.Handler;
+v4 = virtualinvoke v0.<io.vertx.core.datagram.impl.DatagramSocketImpl: io.vertx.core.Future blockMulticastGroup(java.lang.String,java.lang.String)>(v1, v2);
+if v3 == null goto label1;
+interfaceinvoke v4.<io.vertx.core.Future: io.vertx.core.Future onComplete(io.vertx.core.Handler)>(v3);
+label1:
+return v0;
+}
+public io.vertx.core.Future blockMulticastGroup(java.lang.String, java.lang.String)
+{
+io.vertx.core.datagram.impl.DatagramSocketImpl v0;
+io.vertx.core.impl.future.PromiseInternal v11;
+io.vertx.core.impl.ContextInternal v10, v8;
+io.vertx.core.Future v12, v9;
+java.lang.Exception v7;
+io.netty.channel.ChannelFuture v6;
+java.net.InetAddress v4, v5;
+io.netty.channel.socket.DatagramChannel v3;
+java.lang.String v1, v2;
+v0 := @this: io.vertx.core.datagram.impl.DatagramSocketImpl;
+v1 := @parameter0: java.lang.String;
+v2 := @parameter1: java.lang.String;
+label1:
+v3 = v0.<io.vertx.core.datagram.impl.DatagramSocketImpl: io.netty.channel.socket.DatagramChannel channel>;
+v4 = staticinvoke <java.net.InetAddress: java.net.InetAddress getByName(java.lang.String)>(v1);
+v5 = staticinvoke <java.net.InetAddress: java.net.InetAddress getByName(java.lang.String)>(v2);
+v6 = interfaceinvoke v3.<io.netty.channel.socket.DatagramChannel: io.netty.channel.ChannelFuture block(java.net.InetAddress,java.net.InetAddress)>(v4, v5);
+label2:
+goto label4;
+label3:
+v7 := @caughtexception;
+v8 = v0.<io.vertx.core.datagram.impl.DatagramSocketImpl: io.vertx.core.impl.ContextInternal context>;
+v9 = interfaceinvoke v8.<io.vertx.core.impl.ContextInternal: io.vertx.core.Future failedFuture(java.lang.Throwable)>(v7);
+return v9;
+label4:
+v10 = v0.<io.vertx.core.datagram.impl.DatagramSocketImpl: io.vertx.core.impl.ContextInternal context>;
+v11 = interfaceinvoke v10.<io.vertx.core.impl.ContextInternal: io.vertx.core.impl.future.PromiseInternal promise()>();
+interfaceinvoke v6.<io.netty.channel.ChannelFuture: io.netty.channel.ChannelFuture addListener(io.netty.util.concurrent.GenericFutureListener)>(v11);
+v12 = interfaceinvoke v11.<io.vertx.core.impl.future.PromiseInternal: io.vertx.core.Future future()>();
+return v12;
+catch java.lang.Exception from label1 to label2 with label3;
+}
+public io.vertx.core.datagram.DatagramSocket listen(int, java.lang.String, io.vertx.core.Handler)
+{
+io.vertx.core.datagram.impl.DatagramSocketImpl v0;
+int v1;
+java.lang.String v2;
+io.vertx.core.Handler v3;
+io.vertx.core.Future v5;
+io.vertx.core.net.SocketAddress v4;
+v0 := @this: io.vertx.core.datagram.impl.DatagramSocketImpl;
+v1 := @parameter0: int;
+v2 := @parameter1: java.lang.String;
+v3 := @parameter2: io.vertx.core.Handler;
+staticinvoke <java.util.Objects: java.lang.Object requireNonNull(java.lang.Object,java.lang.String)>(v3, "no null handler accepted");
+v4 = staticinvoke <io.vertx.core.net.SocketAddress: io.vertx.core.net.SocketAddress inetSocketAddress(int,java.lang.String)>(v1, v2);
+v5 = specialinvoke v0.<io.vertx.core.datagram.impl.DatagramSocketImpl: io.vertx.core.Future listen(io.vertx.core.net.SocketAddress)>(v4);
+interfaceinvoke v5.<io.vertx.core.Future: io.vertx.core.Future onComplete(io.vertx.core.Handler)>(v3);
+return v0;
+}
+public io.vertx.core.Future listen(int, java.lang.String)
+{
+io.vertx.core.datagram.impl.DatagramSocketImpl v0;
+int v1;
+java.lang.String v2;
+io.vertx.core.Future v4;
+io.vertx.core.net.SocketAddress v3;
+v0 := @this: io.vertx.core.datagram.impl.DatagramSocketImpl;
+v1 := @parameter0: int;
+v2 := @parameter1: java.lang.String;
+v3 = staticinvoke <io.vertx.core.net.SocketAddress: io.vertx.core.net.SocketAddress inetSocketAddress(int,java.lang.String)>(v1, v2);
+v4 = specialinvoke v0.<io.vertx.core.datagram.impl.DatagramSocketImpl: io.vertx.core.Future listen(io.vertx.core.net.SocketAddress)>(v3);
+return v4;
+}
+public synchronized io.vertx.core.datagram.DatagramSocket handler(io.vertx.core.Handler)
+{
+io.vertx.core.datagram.impl.DatagramSocketImpl v0;
+io.vertx.core.Handler v1;
+v0 := @this: io.vertx.core.datagram.impl.DatagramSocketImpl;
+v1 := @parameter0: io.vertx.core.Handler;
+v0.<io.vertx.core.datagram.impl.DatagramSocketImpl: io.vertx.core.Handler packetHandler> = v1;
+return v0;
+}
+public io.vertx.core.datagram.impl.DatagramSocketImpl endHandler(io.vertx.core.Handler)
+{
+io.vertx.core.datagram.impl.DatagramSocketImpl v0;
+io.vertx.core.Handler v1;
+v0 := @this: io.vertx.core.datagram.impl.DatagramSocketImpl;
+v1 := @parameter0: io.vertx.core.Handler;
+v0.<io.vertx.core.datagram.impl.DatagramSocketImpl: io.vertx.core.Handler endHandler> = v1;
+return v0;
+}
+public io.vertx.core.datagram.impl.DatagramSocketImpl exceptionHandler(io.vertx.core.Handler)
+{
+io.vertx.core.datagram.impl.DatagramSocketImpl v0;
+io.vertx.core.Handler v1;
+v0 := @this: io.vertx.core.datagram.impl.DatagramSocketImpl;
+v1 := @parameter0: io.vertx.core.Handler;
+v0.<io.vertx.core.datagram.impl.DatagramSocketImpl: io.vertx.core.Handler exceptionHandler> = v1;
+return v0;
+}
+private io.vertx.core.Future listen(io.vertx.core.net.SocketAddress)
+{
+io.vertx.core.datagram.impl.DatagramSocketImpl v0;
+io.vertx.core.impl.VertxInternal v3;
+io.vertx.core.impl.future.PromiseInternal v6;
+io.vertx.core.impl.AddressResolver v4;
+io.netty.util.concurrent.GenericFutureListener v11;
+io.vertx.core.impl.ContextInternal v2, v5, v7;
+io.netty.channel.EventLoop v8;
+io.vertx.core.Future v12, v13;
+java.lang.String v9;
+io.netty.util.concurrent.Future v10;
+io.vertx.core.net.SocketAddress v1;
+v0 := @this: io.vertx.core.datagram.impl.DatagramSocketImpl;
+v1 := @parameter0: io.vertx.core.net.SocketAddress;
+v2 = v0.<io.vertx.core.datagram.impl.DatagramSocketImpl: io.vertx.core.impl.ContextInternal context>;
+v3 = interfaceinvoke v2.<io.vertx.core.impl.ContextInternal: io.vertx.core.impl.VertxInternal owner()>();
+v4 = interfaceinvoke v3.<io.vertx.core.impl.VertxInternal: io.vertx.core.impl.AddressResolver addressResolver()>();
+v5 = v0.<io.vertx.core.datagram.impl.DatagramSocketImpl: io.vertx.core.impl.ContextInternal context>;
+v6 = interfaceinvoke v5.<io.vertx.core.impl.ContextInternal: io.vertx.core.impl.future.PromiseInternal promise()>();
+v7 = v0.<io.vertx.core.datagram.impl.DatagramSocketImpl: io.vertx.core.impl.ContextInternal context>;
+v8 = interfaceinvoke v7.<io.vertx.core.impl.ContextInternal: io.netty.channel.EventLoop nettyEventLoop()>();
+v9 = interfaceinvoke v1.<io.vertx.core.net.SocketAddress: java.lang.String host()>();
+v10 = virtualinvoke v4.<io.vertx.core.impl.AddressResolver: io.netty.util.concurrent.Future resolveHostname(io.netty.channel.EventLoop,java.lang.String)>(v8, v9);
+v11 = staticinvoke <io.vertx.core.datagram.impl.DatagramSocketImpl$lambda_listen_1__917: io.netty.util.concurrent.GenericFutureListener bootstrap$(io.vertx.core.datagram.impl.DatagramSocketImpl,io.vertx.core.net.SocketAddress,io.vertx.core.impl.future.PromiseInternal)>(v0, v1, v6);
+interfaceinvoke v10.<io.netty.util.concurrent.Future: io.netty.util.concurrent.Future addListener(io.netty.util.concurrent.GenericFutureListener)>(v11);
+v12 = interfaceinvoke v6.<io.vertx.core.impl.future.PromiseInternal: io.vertx.core.Future future()>();
+v13 = interfaceinvoke v12.<io.vertx.core.Future: io.vertx.core.Future map(java.lang.Object)>(v0);
+return v13;
+}
+public synchronized io.vertx.core.datagram.DatagramSocket pause()
+{
+io.vertx.core.datagram.impl.DatagramSocketImpl v0;
+io.netty.channel.socket.DatagramChannel v3;
+byte v2;
+io.netty.channel.socket.DatagramChannelConfig v4;
+long v1;
+v0 := @this: io.vertx.core.datagram.impl.DatagramSocketImpl;
+v1 = v0.<io.vertx.core.datagram.impl.DatagramSocketImpl: long demand>;
+v2 = v1 cmp 0L;
+if v2 <= 0 goto label1;
+v0.<io.vertx.core.datagram.impl.DatagramSocketImpl: long demand> = 0L;
+v3 = v0.<io.vertx.core.datagram.impl.DatagramSocketImpl: io.netty.channel.socket.DatagramChannel channel>;
+v4 = interfaceinvoke v3.<io.netty.channel.socket.DatagramChannel: io.netty.channel.socket.DatagramChannelConfig config()>();
+interfaceinvoke v4.<io.netty.channel.socket.DatagramChannelConfig: io.netty.channel.socket.DatagramChannelConfig setAutoRead(boolean)>(0);
+label1:
+return v0;
+}
+public synchronized io.vertx.core.datagram.DatagramSocket resume()
+{
+io.vertx.core.datagram.impl.DatagramSocketImpl v0;
+io.netty.channel.socket.DatagramChannel v3;
+byte v2;
+io.netty.channel.socket.DatagramChannelConfig v4;
+long v1;
+v0 := @this: io.vertx.core.datagram.impl.DatagramSocketImpl;
+v1 = v0.<io.vertx.core.datagram.impl.DatagramSocketImpl: long demand>;
+v2 = v1 cmp 0L;
+if v2 != 0 goto label1;
+v0.<io.vertx.core.datagram.impl.DatagramSocketImpl: long demand> = 9223372036854775807L;
+v3 = v0.<io.vertx.core.datagram.impl.DatagramSocketImpl: io.netty.channel.socket.DatagramChannel channel>;
+v4 = interfaceinvoke v3.<io.netty.channel.socket.DatagramChannel: io.netty.channel.socket.DatagramChannelConfig config()>();
+interfaceinvoke v4.<io.netty.channel.socket.DatagramChannelConfig: io.netty.channel.socket.DatagramChannelConfig setAutoRead(boolean)>(1);
+label1:
+return v0;
+}
+public synchronized io.vertx.core.datagram.DatagramSocket fetch(long)
+{
+io.vertx.core.datagram.impl.DatagramSocketImpl v0;
+long v1, v10, v11, v12, v6;
+java.lang.IllegalArgumentException v3;
+io.netty.channel.socket.DatagramChannel v8;
+byte v13, v2, v5, v7;
+io.netty.channel.socket.DatagramChannelConfig v9;
+java.lang.String v4;
+v0 := @this: io.vertx.core.datagram.impl.DatagramSocketImpl;
+v1 := @parameter0: long;
+v2 = v1 cmp 0L;
+if v2 >= 0 goto label1;
+v3 = new java.lang.IllegalArgumentException;
+v4 = dynamicinvoke "makeConcatWithConstants" <java.lang.String (long)>(v1) <java.lang.invoke.StringConcatFactory: java.lang.invoke.CallSite makeConcatWithConstants(java.lang.invoke.MethodHandles$Lookup,java.lang.String,java.lang.invoke.MethodType,java.lang.String,java.lang.Object[])>("Illegal fetch \u0001");
+specialinvoke v3.<java.lang.IllegalArgumentException: void <init>(java.lang.String)>(v4);
+throw v3;
+label1:
+v5 = v1 cmp 0L;
+if v5 <= 0 goto label3;
+v6 = v0.<io.vertx.core.datagram.impl.DatagramSocketImpl: long demand>;
+v7 = v6 cmp 0L;
+if v7 != 0 goto label2;
+v8 = v0.<io.vertx.core.datagram.impl.DatagramSocketImpl: io.netty.channel.socket.DatagramChannel channel>;
+v9 = interfaceinvoke v8.<io.netty.channel.socket.DatagramChannel: io.netty.channel.socket.DatagramChannelConfig config()>();
+interfaceinvoke v9.<io.netty.channel.socket.DatagramChannelConfig: io.netty.channel.socket.DatagramChannelConfig setAutoRead(boolean)>(1);
+label2:
+v10 = v0.<io.vertx.core.datagram.impl.DatagramSocketImpl: long demand>;
+v11 = v10 + v1;
+v0.<io.vertx.core.datagram.impl.DatagramSocketImpl: long demand> = v11;
+v12 = v0.<io.vertx.core.datagram.impl.DatagramSocketImpl: long demand>;
+v13 = v12 cmp 0L;
+if v13 >= 0 goto label3;
+v0.<io.vertx.core.datagram.impl.DatagramSocketImpl: long demand> = 9223372036854775807L;
+label3:
+return v0;
+}
+public io.vertx.core.datagram.DatagramSocket send(io.vertx.core.buffer.Buffer, int, java.lang.String, io.vertx.core.Handler)
+{
+io.vertx.core.datagram.impl.DatagramSocketImpl v0;
+io.vertx.core.buffer.Buffer v1;
+int v2;
+java.lang.String v3;
+io.vertx.core.Handler v4;
+io.vertx.core.Future v5;
+v0 := @this: io.vertx.core.datagram.impl.DatagramSocketImpl;
+v1 := @parameter0: io.vertx.core.buffer.Buffer;
+v2 := @parameter1: int;
+v3 := @parameter2: java.lang.String;
+v4 := @parameter3: io.vertx.core.Handler;
+v5 = virtualinvoke v0.<io.vertx.core.datagram.impl.DatagramSocketImpl: io.vertx.core.Future send(io.vertx.core.buffer.Buffer,int,java.lang.String)>(v1, v2, v3);
+if v4 == null goto label1;
+interfaceinvoke v5.<io.vertx.core.Future: io.vertx.core.Future onComplete(io.vertx.core.Handler)>(v4);
+label1:
+return v0;
+}
+public io.vertx.core.Future send(io.vertx.core.buffer.Buffer, int, java.lang.String)
+{
+io.vertx.core.datagram.impl.DatagramSocketImpl v0;
+io.vertx.core.impl.ContextInternal v10, v12, v7;
+int v2, v4;
+java.lang.String v3, v6;
+io.vertx.core.impl.VertxInternal v8;
+io.vertx.core.impl.future.PromiseInternal v11;
+io.vertx.core.impl.AddressResolver v9;
+io.netty.util.concurrent.GenericFutureListener v15;
+io.netty.channel.EventLoop v13;
+java.lang.IllegalArgumentException v5;
+io.vertx.core.Future v16;
+io.vertx.core.buffer.Buffer v1;
+io.netty.util.concurrent.Future v14;
+v0 := @this: io.vertx.core.datagram.impl.DatagramSocketImpl;
+v1 := @parameter0: io.vertx.core.buffer.Buffer;
+v2 := @parameter1: int;
+v3 := @parameter2: java.lang.String;
+staticinvoke <java.util.Objects: java.lang.Object requireNonNull(java.lang.Object,java.lang.String)>(v1, "no null packet accepted");
+staticinvoke <java.util.Objects: java.lang.Object requireNonNull(java.lang.Object,java.lang.String)>(v3, "no null host accepted");
+if v2 < 0 goto label1;
+v4 = (int) 65535;
+if v2 <= v4 goto label2;
+label1:
+v5 = new java.lang.IllegalArgumentException;
+v6 = dynamicinvoke "makeConcatWithConstants" <java.lang.String (int)>(v2) <java.lang.invoke.StringConcatFactory: java.lang.invoke.CallSite makeConcatWithConstants(java.lang.invoke.MethodHandles$Lookup,java.lang.String,java.lang.invoke.MethodType,java.lang.String,java.lang.Object[])>("port out of range:\u0001");
+specialinvoke v5.<java.lang.IllegalArgumentException: void <init>(java.lang.String)>(v6);
+throw v5;
+label2:
+v7 = v0.<io.vertx.core.datagram.impl.DatagramSocketImpl: io.vertx.core.impl.ContextInternal context>;
+v8 = interfaceinvoke v7.<io.vertx.core.impl.ContextInternal: io.vertx.core.impl.VertxInternal owner()>();
+v9 = interfaceinvoke v8.<io.vertx.core.impl.VertxInternal: io.vertx.core.impl.AddressResolver addressResolver()>();
+v10 = v0.<io.vertx.core.datagram.impl.DatagramSocketImpl: io.vertx.core.impl.ContextInternal context>;
+v11 = interfaceinvoke v10.<io.vertx.core.impl.ContextInternal: io.vertx.core.impl.future.PromiseInternal promise()>();
+v12 = v0.<io.vertx.core.datagram.impl.DatagramSocketImpl: io.vertx.core.impl.ContextInternal context>;
+v13 = interfaceinvoke v12.<io.vertx.core.impl.ContextInternal: io.netty.channel.EventLoop nettyEventLoop()>();
+v14 = virtualinvoke v9.<io.vertx.core.impl.AddressResolver: io.netty.util.concurrent.Future resolveHostname(io.netty.channel.EventLoop,java.lang.String)>(v13, v3);
+v15 = staticinvoke <io.vertx.core.datagram.impl.DatagramSocketImpl$lambda_send_3__918: io.netty.util.concurrent.GenericFutureListener bootstrap$(io.vertx.core.datagram.impl.DatagramSocketImpl,io.vertx.core.buffer.Buffer,io.netty.util.concurrent.Future,int,java.lang.String,io.vertx.core.impl.future.PromiseInternal)>(v0, v1, v14, v2, v3, v11);
+interfaceinvoke v14.<io.netty.util.concurrent.Future: io.netty.util.concurrent.Future addListener(io.netty.util.concurrent.GenericFutureListener)>(v15);
+v16 = interfaceinvoke v11.<io.vertx.core.impl.future.PromiseInternal: io.vertx.core.Future future()>();
+return v16;
+}
+public io.vertx.core.streams.WriteStream sender(int, java.lang.String)
+{
+io.vertx.core.datagram.impl.DatagramSocketImpl v0;
+int v1, v3;
+io.vertx.core.datagram.impl.PacketWriteStreamImpl v4;
+java.lang.String v2;
+v0 := @this: io.vertx.core.datagram.impl.DatagramSocketImpl;
+v1 := @parameter0: int;
+v2 := @parameter1: java.lang.String;
+v3 = (int) 65535;
+staticinvoke <io.vertx.core.impl.Arguments: void requireInRange(int,int,int,java.lang.String)>(v1, 0, v3, "port p must be in range 0 <= p <= 65535");
+staticinvoke <java.util.Objects: java.lang.Object requireNonNull(java.lang.Object,java.lang.String)>(v2, "no null host accepted");
+v4 = new io.vertx.core.datagram.impl.PacketWriteStreamImpl;
+specialinvoke v4.<io.vertx.core.datagram.impl.PacketWriteStreamImpl: void <init>(io.vertx.core.datagram.impl.DatagramSocketImpl,int,java.lang.String)>(v0, v1, v2);
+return v4;
+}
+public io.vertx.core.datagram.DatagramSocket send(java.lang.String, int, java.lang.String, io.vertx.core.Handler)
+{
+io.vertx.core.datagram.impl.DatagramSocketImpl v0;
+io.vertx.core.buffer.Buffer v5;
+io.vertx.core.datagram.DatagramSocket v6;
+int v2;
+java.lang.String v1, v3;
+io.vertx.core.Handler v4;
+v0 := @this: io.vertx.core.datagram.impl.DatagramSocketImpl;
+v1 := @parameter0: java.lang.String;
+v2 := @parameter1: int;
+v3 := @parameter2: java.lang.String;
+v4 := @parameter3: io.vertx.core.Handler;
+v5 = staticinvoke <io.vertx.core.buffer.Buffer: io.vertx.core.buffer.Buffer buffer(java.lang.String)>(v1);
+v6 = virtualinvoke v0.<io.vertx.core.datagram.impl.DatagramSocketImpl: io.vertx.core.datagram.DatagramSocket send(io.vertx.core.buffer.Buffer,int,java.lang.String,io.vertx.core.Handler)>(v5, v2, v3, v4);
+return v6;
+}
+public io.vertx.core.Future send(java.lang.String, int, java.lang.String)
+{
+io.vertx.core.datagram.impl.DatagramSocketImpl v0;
+io.vertx.core.buffer.Buffer v4;
+int v2;
+java.lang.String v1, v3;
+io.vertx.core.Future v5;
+v0 := @this: io.vertx.core.datagram.impl.DatagramSocketImpl;
+v1 := @parameter0: java.lang.String;
+v2 := @parameter1: int;
+v3 := @parameter2: java.lang.String;
+v4 = staticinvoke <io.vertx.core.buffer.Buffer: io.vertx.core.buffer.Buffer buffer(java.lang.String)>(v1);
+v5 = virtualinvoke v0.<io.vertx.core.datagram.impl.DatagramSocketImpl: io.vertx.core.Future send(io.vertx.core.buffer.Buffer,int,java.lang.String)>(v4, v2, v3);
+return v5;
+}
+public io.vertx.core.datagram.DatagramSocket send(java.lang.String, java.lang.String, int, java.lang.String, io.vertx.core.Handler)
+{
+io.vertx.core.datagram.impl.DatagramSocketImpl v0;
+io.vertx.core.datagram.DatagramSocket v7;
+io.vertx.core.buffer.Buffer v6;
+int v3;
+java.lang.String v1, v2, v4;
+io.vertx.core.Handler v5;
+v0 := @this: io.vertx.core.datagram.impl.DatagramSocketImpl;
+v1 := @parameter0: java.lang.String;
+v2 := @parameter1: java.lang.String;
+v3 := @parameter2: int;
+v4 := @parameter3: java.lang.String;
+v5 := @parameter4: io.vertx.core.Handler;
+v6 = staticinvoke <io.vertx.core.buffer.Buffer: io.vertx.core.buffer.Buffer buffer(java.lang.String,java.lang.String)>(v1, v2);
+v7 = virtualinvoke v0.<io.vertx.core.datagram.impl.DatagramSocketImpl: io.vertx.core.datagram.DatagramSocket send(io.vertx.core.buffer.Buffer,int,java.lang.String,io.vertx.core.Handler)>(v6, v3, v4, v5);
+return v7;
+}
+public io.vertx.core.Future send(java.lang.String, java.lang.String, int, java.lang.String)
+{
+io.vertx.core.datagram.impl.DatagramSocketImpl v0;
+io.vertx.core.buffer.Buffer v5;
+int v3;
+java.lang.String v1, v2, v4;
+io.vertx.core.Future v6;
+v0 := @this: io.vertx.core.datagram.impl.DatagramSocketImpl;
+v1 := @parameter0: java.lang.String;
+v2 := @parameter1: java.lang.String;
+v3 := @parameter2: int;
+v4 := @parameter3: java.lang.String;
+v5 = staticinvoke <io.vertx.core.buffer.Buffer: io.vertx.core.buffer.Buffer buffer(java.lang.String,java.lang.String)>(v1, v2);
+v6 = virtualinvoke v0.<io.vertx.core.datagram.impl.DatagramSocketImpl: io.vertx.core.Future send(io.vertx.core.buffer.Buffer,int,java.lang.String)>(v5, v3, v4);
+return v6;
+}
+public io.vertx.core.net.SocketAddress localAddress()
+{
+io.vertx.core.datagram.impl.DatagramSocketImpl v0;
+io.netty.channel.socket.DatagramChannel v4;
+io.vertx.core.impl.VertxInternal v2;
+io.vertx.core.impl.ContextInternal v1;
+java.net.InetSocketAddress v5;
+io.vertx.core.spi.transport.Transport v3;
+io.vertx.core.net.SocketAddress v6;
+v0 := @this: io.vertx.core.datagram.impl.DatagramSocketImpl;
+v1 = v0.<io.vertx.core.datagram.impl.DatagramSocketImpl: io.vertx.core.impl.ContextInternal context>;
+v2 = interfaceinvoke v1.<io.vertx.core.impl.ContextInternal: io.vertx.core.impl.VertxInternal owner()>();
+v3 = interfaceinvoke v2.<io.vertx.core.impl.VertxInternal: io.vertx.core.spi.transport.Transport transport()>();
+v4 = v0.<io.vertx.core.datagram.impl.DatagramSocketImpl: io.netty.channel.socket.DatagramChannel channel>;
+v5 = interfaceinvoke v4.<io.netty.channel.socket.DatagramChannel: java.net.InetSocketAddress localAddress()>();
+v6 = interfaceinvoke v3.<io.vertx.core.spi.transport.Transport: io.vertx.core.net.SocketAddress convert(java.net.SocketAddress)>(v5);
+return v6;
+}
+public void close(io.vertx.core.Handler)
+{
+io.vertx.core.datagram.impl.DatagramSocketImpl v0;
+io.vertx.core.impl.VertxInternal v3;
+io.vertx.core.impl.future.PromiseInternal v6;
+io.vertx.core.impl.CloseFuture v5;
+io.vertx.core.impl.ContextInternal v2, v4;
+io.vertx.core.Handler v1;
+v0 := @this: io.vertx.core.datagram.impl.DatagramSocketImpl;
+v1 := @parameter0: io.vertx.core.Handler;
+v2 = v0.<io.vertx.core.datagram.impl.DatagramSocketImpl: io.vertx.core.impl.ContextInternal context>;
+v3 = interfaceinvoke v2.<io.vertx.core.impl.ContextInternal: io.vertx.core.impl.VertxInternal owner()>();
+v4 = interfaceinvoke v3.<io.vertx.core.impl.VertxInternal: io.vertx.core.impl.ContextInternal getOrCreateContext()>();
+v5 = v0.<io.vertx.core.datagram.impl.DatagramSocketImpl: io.vertx.core.impl.CloseFuture closeFuture>;
+if v1 == null goto label1;
+v6 = interfaceinvoke v4.<io.vertx.core.impl.ContextInternal: io.vertx.core.impl.future.PromiseInternal promise(io.vertx.core.Handler)>(v1);
+goto label2;
+label1:
+v6 = null;
+label2:
+virtualinvoke v5.<io.vertx.core.impl.CloseFuture: void close(io.vertx.core.Promise)>(v6);
+return;
+}
+public synchronized io.vertx.core.Future close()
+{
+io.vertx.core.datagram.impl.DatagramSocketImpl v0;
+io.vertx.core.impl.VertxInternal v2;
+io.vertx.core.impl.future.PromiseInternal v4;
+io.vertx.core.impl.CloseFuture v5;
+io.vertx.core.impl.ContextInternal v1, v3;
+io.vertx.core.Future v6;
+v0 := @this: io.vertx.core.datagram.impl.DatagramSocketImpl;
+v1 = v0.<io.vertx.core.datagram.impl.DatagramSocketImpl: io.vertx.core.impl.ContextInternal context>;
+v2 = interfaceinvoke v1.<io.vertx.core.impl.ContextInternal: io.vertx.core.impl.VertxInternal owner()>();
+v3 = interfaceinvoke v2.<io.vertx.core.impl.VertxInternal: io.vertx.core.impl.ContextInternal getOrCreateContext()>();
+v4 = interfaceinvoke v3.<io.vertx.core.impl.ContextInternal: io.vertx.core.impl.future.PromiseInternal promise()>();
+v5 = v0.<io.vertx.core.datagram.impl.DatagramSocketImpl: io.vertx.core.impl.CloseFuture closeFuture>;
+virtualinvoke v5.<io.vertx.core.impl.CloseFuture: void close(io.vertx.core.Promise)>(v4);
+v6 = interfaceinvoke v4.<io.vertx.core.impl.future.PromiseInternal: io.vertx.core.Future future()>();
+return v6;
+}
+public void close(io.vertx.core.Promise)
+{
+io.vertx.core.datagram.impl.DatagramSocketImpl v0;
+io.netty.channel.socket.DatagramChannel v2, v4, v5;
+io.vertx.core.Promise v1;
+boolean v3;
+io.netty.channel.ChannelFuture v6;
+v0 := @this: io.vertx.core.datagram.impl.DatagramSocketImpl;
+v1 := @parameter0: io.vertx.core.Promise;
+v2 = v0.<io.vertx.core.datagram.impl.DatagramSocketImpl: io.netty.channel.socket.DatagramChannel channel>;
+v3 = interfaceinvoke v2.<io.netty.channel.socket.DatagramChannel: boolean isOpen()>();
+if v3 != 0 goto label1;
+interfaceinvoke v1.<io.vertx.core.Promise: void complete()>();
+goto label2;
+label1:
+v4 = v0.<io.vertx.core.datagram.impl.DatagramSocketImpl: io.netty.channel.socket.DatagramChannel channel>;
+interfaceinvoke v4.<io.netty.channel.socket.DatagramChannel: io.netty.channel.Channel flush()>();
+v5 = v0.<io.vertx.core.datagram.impl.DatagramSocketImpl: io.netty.channel.socket.DatagramChannel channel>;
+v6 = interfaceinvoke v5.<io.netty.channel.socket.DatagramChannel: io.netty.channel.ChannelFuture close()>();
+interfaceinvoke v6.<io.netty.channel.ChannelFuture: io.netty.channel.ChannelFuture addListener(io.netty.util.concurrent.GenericFutureListener)>(v1);
+label2:
+return;
+}
+public boolean isMetricsEnabled()
+{
+io.vertx.core.datagram.impl.DatagramSocketImpl v0;
+io.vertx.core.spi.metrics.DatagramSocketMetrics v1;
+boolean v2;
+v0 := @this: io.vertx.core.datagram.impl.DatagramSocketImpl;
+v1 = v0.<io.vertx.core.datagram.impl.DatagramSocketImpl: io.vertx.core.spi.metrics.DatagramSocketMetrics metrics>;
+if v1 == null goto label1;
+v2 = 1;
+goto label2;
+label1:
+v2 = 0;
+label2:
+return v2;
+}
+public io.vertx.core.spi.metrics.Metrics getMetrics()
+{
+io.vertx.core.datagram.impl.DatagramSocketImpl v0;
+io.vertx.core.spi.metrics.DatagramSocketMetrics v1;
+v0 := @this: io.vertx.core.datagram.impl.DatagramSocketImpl;
+v1 = v0.<io.vertx.core.datagram.impl.DatagramSocketImpl: io.vertx.core.spi.metrics.DatagramSocketMetrics metrics>;
+return v1;
+}
+protected void finalize() throws java.lang.Throwable
+{
+io.vertx.core.datagram.impl.DatagramSocketImpl v0;
+v0 := @this: io.vertx.core.datagram.impl.DatagramSocketImpl;
+virtualinvoke v0.<io.vertx.core.datagram.impl.DatagramSocketImpl: io.vertx.core.Future close()>();
+specialinvoke v0.<java.lang.Object: void finalize()>();
+return;
+}
+public io.vertx.core.datagram.impl.DatagramSocketImpl$Connection createConnection(io.netty.channel.ChannelHandlerContext)
+{
+io.vertx.core.datagram.impl.DatagramSocketImpl v0;
+io.netty.channel.ChannelHandlerContext v1;
+io.vertx.core.datagram.impl.DatagramSocketImpl$Connection v2;
+io.vertx.core.impl.ContextInternal v3;
+v0 := @this: io.vertx.core.datagram.impl.DatagramSocketImpl;
+v1 := @parameter0: io.netty.channel.ChannelHandlerContext;
+v2 = new io.vertx.core.datagram.impl.DatagramSocketImpl$Connection;
+v3 = v0.<io.vertx.core.datagram.impl.DatagramSocketImpl: io.vertx.core.impl.ContextInternal context>;
+specialinvoke v2.<io.vertx.core.datagram.impl.DatagramSocketImpl$Connection: void <init>(io.vertx.core.datagram.impl.DatagramSocketImpl,io.vertx.core.impl.ContextInternal,io.netty.channel.ChannelHandlerContext)>(v0, v3, v1);
+return v2;
+}
+}

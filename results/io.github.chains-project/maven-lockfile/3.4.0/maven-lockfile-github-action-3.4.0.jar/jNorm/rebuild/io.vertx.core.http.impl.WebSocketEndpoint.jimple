@@ -1,0 +1,132 @@
+class io.vertx.core.http.impl.WebSocketEndpoint extends io.vertx.core.http.impl.ClientHttpEndpointBase
+{
+private final int maxPoolSize;
+private final io.vertx.core.http.impl.HttpChannelConnector connector;
+private final java.util.Deque waiters;
+private int inflightConnections;
+void <init>(io.vertx.core.spi.metrics.ClientMetrics, int, io.vertx.core.http.impl.HttpChannelConnector, java.lang.Runnable)
+{
+io.vertx.core.http.impl.HttpChannelConnector v3;
+io.vertx.core.http.impl.WebSocketEndpoint v0;
+int v2;
+io.vertx.core.spi.metrics.ClientMetrics v1;
+java.util.ArrayDeque v5;
+java.lang.Runnable v4;
+v0 := @this: io.vertx.core.http.impl.WebSocketEndpoint;
+v1 := @parameter0: io.vertx.core.spi.metrics.ClientMetrics;
+v2 := @parameter1: int;
+v3 := @parameter2: io.vertx.core.http.impl.HttpChannelConnector;
+v4 := @parameter3: java.lang.Runnable;
+specialinvoke v0.<io.vertx.core.http.impl.ClientHttpEndpointBase: void <init>(io.vertx.core.spi.metrics.ClientMetrics,java.lang.Runnable)>(v1, v4);
+v0.<io.vertx.core.http.impl.WebSocketEndpoint: int maxPoolSize> = v2;
+v0.<io.vertx.core.http.impl.WebSocketEndpoint: io.vertx.core.http.impl.HttpChannelConnector connector> = v3;
+v5 = new java.util.ArrayDeque;
+specialinvoke v5.<java.util.ArrayDeque: void <init>()>();
+v0.<io.vertx.core.http.impl.WebSocketEndpoint: java.util.Deque waiters> = v5;
+return;
+}
+private void tryConnect(io.vertx.core.impl.ContextInternal, io.vertx.core.Handler)
+{
+io.vertx.core.impl.VertxInternal v4;
+io.vertx.core.http.impl.HttpChannelConnector v8;
+io.vertx.core.http.impl.WebSocketEndpoint$1Listener v9;
+io.vertx.core.impl.ContextInternal v1;
+io.vertx.core.impl.WorkerPool v6;
+io.netty.channel.EventLoop v5;
+io.vertx.core.http.impl.WebSocketEndpoint v0;
+java.lang.ClassLoader v7;
+io.vertx.core.Handler v2;
+boolean v3;
+v0 := @this: io.vertx.core.http.impl.WebSocketEndpoint;
+v1 := @parameter0: io.vertx.core.impl.ContextInternal;
+v2 := @parameter1: io.vertx.core.Handler;
+v3 = v1 instanceof io.vertx.core.impl.EventLoopContext;
+if v3 != 0 goto label1;
+v4 = interfaceinvoke v1.<io.vertx.core.impl.ContextInternal: io.vertx.core.impl.VertxInternal owner()>();
+v5 = interfaceinvoke v1.<io.vertx.core.impl.ContextInternal: io.netty.channel.EventLoop nettyEventLoop()>();
+v6 = interfaceinvoke v1.<io.vertx.core.impl.ContextInternal: io.vertx.core.impl.WorkerPool workerPool()>();
+v7 = interfaceinvoke v1.<io.vertx.core.impl.ContextInternal: java.lang.ClassLoader classLoader()>();
+v1 = interfaceinvoke v4.<io.vertx.core.impl.VertxInternal: io.vertx.core.impl.EventLoopContext createEventLoopContext(io.netty.channel.EventLoop,io.vertx.core.impl.WorkerPool,java.lang.ClassLoader)>(v5, v6, v7);
+label1:
+v8 = v0.<io.vertx.core.http.impl.WebSocketEndpoint: io.vertx.core.http.impl.HttpChannelConnector connector>;
+v9 = new io.vertx.core.http.impl.WebSocketEndpoint$1Listener;
+specialinvoke v9.<io.vertx.core.http.impl.WebSocketEndpoint$1Listener: void <init>(io.vertx.core.http.impl.WebSocketEndpoint,io.vertx.core.Handler)>(v0, v2);
+virtualinvoke v8.<io.vertx.core.http.impl.HttpChannelConnector: void httpConnect(io.vertx.core.impl.EventLoopContext,io.vertx.core.Handler)>(v1, v9);
+return;
+}
+public void requestConnection2(io.vertx.core.impl.ContextInternal, long, io.vertx.core.Handler)
+{
+java.lang.Throwable v10;
+io.vertx.core.impl.ContextInternal v1;
+long v2;
+java.util.Deque v6;
+io.vertx.core.http.impl.WebSocketEndpoint v0;
+int v4, v5, v8, v9;
+io.vertx.core.http.impl.WebSocketEndpoint$Waiter v7;
+io.vertx.core.Handler v3;
+v0 := @this: io.vertx.core.http.impl.WebSocketEndpoint;
+v1 := @parameter0: io.vertx.core.impl.ContextInternal;
+v2 := @parameter1: long;
+v3 := @parameter2: io.vertx.core.Handler;
+entermonitor v0;
+label1:
+v4 = v0.<io.vertx.core.http.impl.WebSocketEndpoint: int inflightConnections>;
+v5 = v0.<io.vertx.core.http.impl.WebSocketEndpoint: int maxPoolSize>;
+if v4 < v5 goto label3;
+v6 = v0.<io.vertx.core.http.impl.WebSocketEndpoint: java.util.Deque waiters>;
+v7 = new io.vertx.core.http.impl.WebSocketEndpoint$Waiter;
+specialinvoke v7.<io.vertx.core.http.impl.WebSocketEndpoint$Waiter: void <init>(io.vertx.core.Handler,io.vertx.core.impl.ContextInternal)>(v3, v1);
+interfaceinvoke v6.<java.util.Deque: boolean add(java.lang.Object)>(v7);
+exitmonitor v0;
+label2:
+return;
+label3:
+v8 = v0.<io.vertx.core.http.impl.WebSocketEndpoint: int inflightConnections>;
+v9 = v8 + 1;
+v0.<io.vertx.core.http.impl.WebSocketEndpoint: int inflightConnections> = v9;
+exitmonitor v0;
+label4:
+goto label6;
+label5:
+v10 := @caughtexception;
+exitmonitor v0;
+throw v10;
+label6:
+specialinvoke v0.<io.vertx.core.http.impl.WebSocketEndpoint: void tryConnect(io.vertx.core.impl.ContextInternal,io.vertx.core.Handler)>(v1, v3);
+return;
+catch java.lang.Throwable from label1 to label2 with label5;
+catch java.lang.Throwable from label3 to label4 with label5;
+}
+void checkExpired()
+{
+io.vertx.core.http.impl.WebSocketEndpoint v0;
+v0 := @this: io.vertx.core.http.impl.WebSocketEndpoint;
+return;
+}
+public void close()
+{
+java.lang.Throwable v4;
+java.util.function.Consumer v2;
+io.vertx.core.http.impl.WebSocketEndpoint v0;
+java.util.Deque v1, v3;
+v0 := @this: io.vertx.core.http.impl.WebSocketEndpoint;
+specialinvoke v0.<io.vertx.core.http.impl.ClientHttpEndpointBase: void close()>();
+entermonitor v0;
+label1:
+v1 = v0.<io.vertx.core.http.impl.WebSocketEndpoint: java.util.Deque waiters>;
+v2 = staticinvoke <io.vertx.core.http.impl.WebSocketEndpoint$lambda_close_1__1099: java.util.function.Consumer bootstrap$()>();
+interfaceinvoke v1.<java.util.Deque: void forEach(java.util.function.Consumer)>(v2);
+v3 = v0.<io.vertx.core.http.impl.WebSocketEndpoint: java.util.Deque waiters>;
+interfaceinvoke v3.<java.util.Deque: void clear()>();
+exitmonitor v0;
+label2:
+goto label4;
+label3:
+v4 := @caughtexception;
+exitmonitor v0;
+throw v4;
+label4:
+return;
+catch java.lang.Throwable from label1 to label2 with label3;
+}
+}

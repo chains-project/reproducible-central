@@ -1,0 +1,2527 @@
+public final class org.yaml.snakeyaml.emitter.Emitter extends java.lang.Object implements org.yaml.snakeyaml.emitter.Emitable
+{
+public static final int MIN_INDENT;
+public static final int MAX_INDENT;
+private static final char[] SPACE;
+private static final java.util.regex.Pattern SPACES_PATTERN;
+private static final java.util.Set INVALID_ANCHOR;
+private static final java.util.Map ESCAPE_REPLACEMENTS;
+private static final java.util.Map DEFAULT_TAG_PREFIXES;
+private final java.io.Writer stream;
+private final org.yaml.snakeyaml.util.ArrayStack states;
+private org.yaml.snakeyaml.emitter.EmitterState state;
+private final java.util.Queue events;
+private org.yaml.snakeyaml.events.Event event;
+private final org.yaml.snakeyaml.util.ArrayStack indents;
+private java.lang.Integer indent;
+private int flowLevel;
+private boolean rootContext;
+private boolean mappingContext;
+private boolean simpleKeyContext;
+private int column;
+private boolean whitespace;
+private boolean indention;
+private boolean openEnded;
+private final java.lang.Boolean canonical;
+private final java.lang.Boolean prettyFlow;
+private final boolean allowUnicode;
+private int bestIndent;
+private final int indicatorIndent;
+private final boolean indentWithIndicator;
+private int bestWidth;
+private final char[] bestLineBreak;
+private final boolean splitLines;
+private final int maxSimpleKeyLength;
+private final boolean emitComments;
+private java.util.Map tagPrefixes;
+private java.lang.String preparedAnchor;
+private java.lang.String preparedTag;
+private org.yaml.snakeyaml.emitter.ScalarAnalysis analysis;
+private org.yaml.snakeyaml.DumperOptions$ScalarStyle style;
+private final org.yaml.snakeyaml.comments.CommentEventsCollector blockCommentsCollector;
+private final org.yaml.snakeyaml.comments.CommentEventsCollector inlineCommentsCollector;
+private static final java.util.regex.Pattern HANDLE_FORMAT;
+private static final java.util.regex.Pattern LEADING_ZERO_PATTERN;
+public void <init>(java.io.Writer, org.yaml.snakeyaml.DumperOptions)
+{
+java.lang.NullPointerException v3, v4;
+org.yaml.snakeyaml.comments.CommentEventsCollector v30, v35;
+boolean v11, v13, v18, v26, v28, v9;
+org.yaml.snakeyaml.DumperOptions$LineBreak v23;
+java.io.Writer v1;
+java.util.Queue v31, v36;
+java.util.LinkedHashMap v29;
+org.yaml.snakeyaml.DumperOptions v2;
+org.yaml.snakeyaml.emitter.Emitter$ExpectStreamStart v6;
+int v14, v15, v16, v17, v19, v20, v21, v22, v27;
+java.lang.Boolean v10, v12;
+java.lang.String v24;
+org.yaml.snakeyaml.comments.CommentType[] v32, v37;
+org.yaml.snakeyaml.util.ArrayStack v5, v8;
+org.yaml.snakeyaml.emitter.Emitter v0;
+org.yaml.snakeyaml.comments.CommentType v33, v34, v38;
+char[] v25;
+java.util.ArrayDeque v7;
+v0 := @this: org.yaml.snakeyaml.emitter.Emitter;
+v1 := @parameter0: java.io.Writer;
+v2 := @parameter1: org.yaml.snakeyaml.DumperOptions;
+specialinvoke v0.<java.lang.Object: void <init>()>();
+if v1 != null goto label1;
+v3 = new java.lang.NullPointerException;
+specialinvoke v3.<java.lang.NullPointerException: void <init>(java.lang.String)>("Writer must be provided.");
+throw v3;
+label1:
+if v2 != null goto label2;
+v4 = new java.lang.NullPointerException;
+specialinvoke v4.<java.lang.NullPointerException: void <init>(java.lang.String)>("DumperOptions must be provided.");
+throw v4;
+label2:
+v0.<org.yaml.snakeyaml.emitter.Emitter: java.io.Writer stream> = v1;
+v5 = new org.yaml.snakeyaml.util.ArrayStack;
+specialinvoke v5.<org.yaml.snakeyaml.util.ArrayStack: void <init>(int)>(100);
+v0.<org.yaml.snakeyaml.emitter.Emitter: org.yaml.snakeyaml.util.ArrayStack states> = v5;
+v6 = new org.yaml.snakeyaml.emitter.Emitter$ExpectStreamStart;
+specialinvoke v6.<org.yaml.snakeyaml.emitter.Emitter$ExpectStreamStart: void <init>(org.yaml.snakeyaml.emitter.Emitter)>(v0);
+v0.<org.yaml.snakeyaml.emitter.Emitter: org.yaml.snakeyaml.emitter.EmitterState state> = v6;
+v7 = new java.util.ArrayDeque;
+specialinvoke v7.<java.util.ArrayDeque: void <init>(int)>(100);
+v0.<org.yaml.snakeyaml.emitter.Emitter: java.util.Queue events> = v7;
+v0.<org.yaml.snakeyaml.emitter.Emitter: org.yaml.snakeyaml.events.Event event> = null;
+v8 = new org.yaml.snakeyaml.util.ArrayStack;
+specialinvoke v8.<org.yaml.snakeyaml.util.ArrayStack: void <init>(int)>(10);
+v0.<org.yaml.snakeyaml.emitter.Emitter: org.yaml.snakeyaml.util.ArrayStack indents> = v8;
+v0.<org.yaml.snakeyaml.emitter.Emitter: java.lang.Integer indent> = null;
+v0.<org.yaml.snakeyaml.emitter.Emitter: int flowLevel> = 0;
+v0.<org.yaml.snakeyaml.emitter.Emitter: boolean mappingContext> = 0;
+v0.<org.yaml.snakeyaml.emitter.Emitter: boolean simpleKeyContext> = 0;
+v0.<org.yaml.snakeyaml.emitter.Emitter: int column> = 0;
+v0.<org.yaml.snakeyaml.emitter.Emitter: boolean whitespace> = 1;
+v0.<org.yaml.snakeyaml.emitter.Emitter: boolean indention> = 1;
+v0.<org.yaml.snakeyaml.emitter.Emitter: boolean openEnded> = 0;
+v9 = virtualinvoke v2.<org.yaml.snakeyaml.DumperOptions: boolean isCanonical()>();
+v10 = staticinvoke <java.lang.Boolean: java.lang.Boolean valueOf(boolean)>(v9);
+v0.<org.yaml.snakeyaml.emitter.Emitter: java.lang.Boolean canonical> = v10;
+v11 = virtualinvoke v2.<org.yaml.snakeyaml.DumperOptions: boolean isPrettyFlow()>();
+v12 = staticinvoke <java.lang.Boolean: java.lang.Boolean valueOf(boolean)>(v11);
+v0.<org.yaml.snakeyaml.emitter.Emitter: java.lang.Boolean prettyFlow> = v12;
+v13 = virtualinvoke v2.<org.yaml.snakeyaml.DumperOptions: boolean isAllowUnicode()>();
+v0.<org.yaml.snakeyaml.emitter.Emitter: boolean allowUnicode> = v13;
+v0.<org.yaml.snakeyaml.emitter.Emitter: int bestIndent> = 2;
+v14 = virtualinvoke v2.<org.yaml.snakeyaml.DumperOptions: int getIndent()>();
+if v14 <= 1 goto label3;
+v15 = virtualinvoke v2.<org.yaml.snakeyaml.DumperOptions: int getIndent()>();
+if v15 >= 10 goto label3;
+v16 = virtualinvoke v2.<org.yaml.snakeyaml.DumperOptions: int getIndent()>();
+v0.<org.yaml.snakeyaml.emitter.Emitter: int bestIndent> = v16;
+label3:
+v17 = virtualinvoke v2.<org.yaml.snakeyaml.DumperOptions: int getIndicatorIndent()>();
+v0.<org.yaml.snakeyaml.emitter.Emitter: int indicatorIndent> = v17;
+v18 = virtualinvoke v2.<org.yaml.snakeyaml.DumperOptions: boolean getIndentWithIndicator()>();
+v0.<org.yaml.snakeyaml.emitter.Emitter: boolean indentWithIndicator> = v18;
+v0.<org.yaml.snakeyaml.emitter.Emitter: int bestWidth> = 80;
+v19 = virtualinvoke v2.<org.yaml.snakeyaml.DumperOptions: int getWidth()>();
+v20 = v0.<org.yaml.snakeyaml.emitter.Emitter: int bestIndent>;
+v21 = v20 * 2;
+if v19 <= v21 goto label4;
+v22 = virtualinvoke v2.<org.yaml.snakeyaml.DumperOptions: int getWidth()>();
+v0.<org.yaml.snakeyaml.emitter.Emitter: int bestWidth> = v22;
+label4:
+v23 = virtualinvoke v2.<org.yaml.snakeyaml.DumperOptions: org.yaml.snakeyaml.DumperOptions$LineBreak getLineBreak()>();
+v24 = virtualinvoke v23.<org.yaml.snakeyaml.DumperOptions$LineBreak: java.lang.String getString()>();
+v25 = virtualinvoke v24.<java.lang.String: char[] toCharArray()>();
+v0.<org.yaml.snakeyaml.emitter.Emitter: char[] bestLineBreak> = v25;
+v26 = virtualinvoke v2.<org.yaml.snakeyaml.DumperOptions: boolean getSplitLines()>();
+v0.<org.yaml.snakeyaml.emitter.Emitter: boolean splitLines> = v26;
+v27 = virtualinvoke v2.<org.yaml.snakeyaml.DumperOptions: int getMaxSimpleKeyLength()>();
+v0.<org.yaml.snakeyaml.emitter.Emitter: int maxSimpleKeyLength> = v27;
+v28 = virtualinvoke v2.<org.yaml.snakeyaml.DumperOptions: boolean isProcessComments()>();
+v0.<org.yaml.snakeyaml.emitter.Emitter: boolean emitComments> = v28;
+v29 = new java.util.LinkedHashMap;
+specialinvoke v29.<java.util.LinkedHashMap: void <init>()>();
+v0.<org.yaml.snakeyaml.emitter.Emitter: java.util.Map tagPrefixes> = v29;
+v0.<org.yaml.snakeyaml.emitter.Emitter: java.lang.String preparedAnchor> = null;
+v0.<org.yaml.snakeyaml.emitter.Emitter: java.lang.String preparedTag> = null;
+v0.<org.yaml.snakeyaml.emitter.Emitter: org.yaml.snakeyaml.emitter.ScalarAnalysis analysis> = null;
+v0.<org.yaml.snakeyaml.emitter.Emitter: org.yaml.snakeyaml.DumperOptions$ScalarStyle style> = null;
+v30 = new org.yaml.snakeyaml.comments.CommentEventsCollector;
+v31 = v0.<org.yaml.snakeyaml.emitter.Emitter: java.util.Queue events>;
+v32 = newarray (org.yaml.snakeyaml.comments.CommentType)[2];
+v33 = <org.yaml.snakeyaml.comments.CommentType: org.yaml.snakeyaml.comments.CommentType BLANK_LINE>;
+v32[0] = v33;
+v34 = <org.yaml.snakeyaml.comments.CommentType: org.yaml.snakeyaml.comments.CommentType BLOCK>;
+v32[1] = v34;
+specialinvoke v30.<org.yaml.snakeyaml.comments.CommentEventsCollector: void <init>(java.util.Queue,org.yaml.snakeyaml.comments.CommentType[])>(v31, v32);
+v0.<org.yaml.snakeyaml.emitter.Emitter: org.yaml.snakeyaml.comments.CommentEventsCollector blockCommentsCollector> = v30;
+v35 = new org.yaml.snakeyaml.comments.CommentEventsCollector;
+v36 = v0.<org.yaml.snakeyaml.emitter.Emitter: java.util.Queue events>;
+v37 = newarray (org.yaml.snakeyaml.comments.CommentType)[1];
+v38 = <org.yaml.snakeyaml.comments.CommentType: org.yaml.snakeyaml.comments.CommentType IN_LINE>;
+v37[0] = v38;
+specialinvoke v35.<org.yaml.snakeyaml.comments.CommentEventsCollector: void <init>(java.util.Queue,org.yaml.snakeyaml.comments.CommentType[])>(v36, v37);
+v0.<org.yaml.snakeyaml.emitter.Emitter: org.yaml.snakeyaml.comments.CommentEventsCollector inlineCommentsCollector> = v35;
+return;
+}
+public void emit(org.yaml.snakeyaml.events.Event) throws java.io.IOException
+{
+org.yaml.snakeyaml.emitter.EmitterState v6;
+org.yaml.snakeyaml.emitter.Emitter v0;
+java.lang.Object v5;
+java.util.Queue v2, v4;
+org.yaml.snakeyaml.events.Event v1;
+boolean v3;
+v0 := @this: org.yaml.snakeyaml.emitter.Emitter;
+v1 := @parameter0: org.yaml.snakeyaml.events.Event;
+v2 = v0.<org.yaml.snakeyaml.emitter.Emitter: java.util.Queue events>;
+interfaceinvoke v2.<java.util.Queue: boolean add(java.lang.Object)>(v1);
+label1:
+v3 = specialinvoke v0.<org.yaml.snakeyaml.emitter.Emitter: boolean needMoreEvents()>();
+if v3 != 0 goto label2;
+v4 = v0.<org.yaml.snakeyaml.emitter.Emitter: java.util.Queue events>;
+v5 = interfaceinvoke v4.<java.util.Queue: java.lang.Object poll()>();
+v0.<org.yaml.snakeyaml.emitter.Emitter: org.yaml.snakeyaml.events.Event event> = v5;
+v6 = v0.<org.yaml.snakeyaml.emitter.Emitter: org.yaml.snakeyaml.emitter.EmitterState state>;
+interfaceinvoke v6.<org.yaml.snakeyaml.emitter.EmitterState: void expect()>();
+v0.<org.yaml.snakeyaml.emitter.Emitter: org.yaml.snakeyaml.events.Event event> = null;
+goto label1;
+label2:
+return;
+}
+private boolean needMoreEvents()
+{
+boolean v10, v11, v12, v13, v14, v15, v16, v17, v18, v2, v6, v7, v8, v9;
+java.util.Iterator v4;
+org.yaml.snakeyaml.emitter.Emitter v0;
+java.lang.Object v5;
+java.util.Queue v1, v3;
+v0 := @this: org.yaml.snakeyaml.emitter.Emitter;
+v1 = v0.<org.yaml.snakeyaml.emitter.Emitter: java.util.Queue events>;
+v2 = interfaceinvoke v1.<java.util.Queue: boolean isEmpty()>();
+if v2 == 0 goto label01;
+return 1;
+label01:
+v3 = v0.<org.yaml.snakeyaml.emitter.Emitter: java.util.Queue events>;
+v4 = interfaceinvoke v3.<java.util.Queue: java.util.Iterator iterator()>();
+v5 = interfaceinvoke v4.<java.util.Iterator: java.lang.Object next()>();
+label02:
+v6 = v5 instanceof org.yaml.snakeyaml.events.CommentEvent;
+if v6 == 0 goto label04;
+v7 = interfaceinvoke v4.<java.util.Iterator: boolean hasNext()>();
+if v7 != 0 goto label03;
+return 1;
+label03:
+interfaceinvoke v4.<java.util.Iterator: java.lang.Object next()>();
+goto label02;
+label04:
+v8 = v5 instanceof org.yaml.snakeyaml.events.DocumentStartEvent;
+if v8 == 0 goto label05;
+v9 = specialinvoke v0.<org.yaml.snakeyaml.emitter.Emitter: boolean needEvents(java.util.Iterator,int)>(v4, 1);
+return v9;
+label05:
+v10 = v5 instanceof org.yaml.snakeyaml.events.SequenceStartEvent;
+if v10 == 0 goto label06;
+v11 = specialinvoke v0.<org.yaml.snakeyaml.emitter.Emitter: boolean needEvents(java.util.Iterator,int)>(v4, 2);
+return v11;
+label06:
+v12 = v5 instanceof org.yaml.snakeyaml.events.MappingStartEvent;
+if v12 == 0 goto label07;
+v13 = specialinvoke v0.<org.yaml.snakeyaml.emitter.Emitter: boolean needEvents(java.util.Iterator,int)>(v4, 3);
+return v13;
+label07:
+v14 = v5 instanceof org.yaml.snakeyaml.events.StreamStartEvent;
+if v14 == 0 goto label08;
+v15 = specialinvoke v0.<org.yaml.snakeyaml.emitter.Emitter: boolean needEvents(java.util.Iterator,int)>(v4, 2);
+return v15;
+label08:
+v16 = v5 instanceof org.yaml.snakeyaml.events.StreamEndEvent;
+if v16 == 0 goto label09;
+return 0;
+label09:
+v17 = v0.<org.yaml.snakeyaml.emitter.Emitter: boolean emitComments>;
+if v17 == 0 goto label10;
+v18 = specialinvoke v0.<org.yaml.snakeyaml.emitter.Emitter: boolean needEvents(java.util.Iterator,int)>(v4, 1);
+return v18;
+label10:
+return 0;
+}
+private boolean needEvents(java.util.Iterator, int)
+{
+java.util.Iterator v1;
+org.yaml.snakeyaml.emitter.Emitter v0;
+int v13, v2, v3, v4;
+java.lang.Object v6;
+boolean v10, v11, v12, v14, v5, v7, v8, v9;
+v0 := @this: org.yaml.snakeyaml.emitter.Emitter;
+v1 := @parameter0: java.util.Iterator;
+v2 := @parameter1: int;
+v3 = 0;
+v4 = 0;
+label1:
+v5 = interfaceinvoke v1.<java.util.Iterator: boolean hasNext()>();
+if v5 == 0 goto label7;
+v6 = interfaceinvoke v1.<java.util.Iterator: java.lang.Object next()>();
+v7 = v6 instanceof org.yaml.snakeyaml.events.CommentEvent;
+if v7 != 0 goto label1;
+v4 = v4 + 1;
+v8 = v6 instanceof org.yaml.snakeyaml.events.DocumentStartEvent;
+if v8 != 0 goto label2;
+v9 = v6 instanceof org.yaml.snakeyaml.events.CollectionStartEvent;
+if v9 == 0 goto label3;
+label2:
+v3 = v3 + 1;
+goto label6;
+label3:
+v10 = v6 instanceof org.yaml.snakeyaml.events.DocumentEndEvent;
+if v10 != 0 goto label4;
+v11 = v6 instanceof org.yaml.snakeyaml.events.CollectionEndEvent;
+if v11 == 0 goto label5;
+label4:
+v3 = v3 - 1;
+goto label6;
+label5:
+v12 = v6 instanceof org.yaml.snakeyaml.events.StreamEndEvent;
+if v12 == 0 goto label6;
+v13 = (int) -1;
+v3 = v13;
+label6:
+if v3 >= 0 goto label1;
+return 0;
+label7:
+if v4 >= v2 goto label8;
+v14 = 1;
+goto label9;
+label8:
+v14 = 0;
+label9:
+return v14;
+}
+private void increaseIndent(boolean, boolean)
+{
+org.yaml.snakeyaml.util.ArrayStack v3;
+java.lang.Integer v13, v4, v5, v7, v8, v9;
+org.yaml.snakeyaml.emitter.Emitter v0;
+int v10, v11, v12, v6;
+boolean v1, v2;
+v0 := @this: org.yaml.snakeyaml.emitter.Emitter;
+v1 := @parameter0: boolean;
+v2 := @parameter1: boolean;
+v3 = v0.<org.yaml.snakeyaml.emitter.Emitter: org.yaml.snakeyaml.util.ArrayStack indents>;
+v4 = v0.<org.yaml.snakeyaml.emitter.Emitter: java.lang.Integer indent>;
+virtualinvoke v3.<org.yaml.snakeyaml.util.ArrayStack: void push(java.lang.Object)>(v4);
+v5 = v0.<org.yaml.snakeyaml.emitter.Emitter: java.lang.Integer indent>;
+if v5 != null goto label2;
+if v1 == 0 goto label1;
+v6 = v0.<org.yaml.snakeyaml.emitter.Emitter: int bestIndent>;
+v7 = staticinvoke <java.lang.Integer: java.lang.Integer valueOf(int)>(v6);
+v0.<org.yaml.snakeyaml.emitter.Emitter: java.lang.Integer indent> = v7;
+goto label3;
+label1:
+v8 = staticinvoke <java.lang.Integer: java.lang.Integer valueOf(int)>(0);
+v0.<org.yaml.snakeyaml.emitter.Emitter: java.lang.Integer indent> = v8;
+goto label3;
+label2:
+if v2 != 0 goto label3;
+v9 = v0.<org.yaml.snakeyaml.emitter.Emitter: java.lang.Integer indent>;
+v10 = virtualinvoke v9.<java.lang.Integer: int intValue()>();
+v11 = v0.<org.yaml.snakeyaml.emitter.Emitter: int bestIndent>;
+v12 = v10 + v11;
+v13 = staticinvoke <java.lang.Integer: java.lang.Integer valueOf(int)>(v12);
+v0.<org.yaml.snakeyaml.emitter.Emitter: java.lang.Integer indent> = v13;
+label3:
+return;
+}
+private void expectNode(boolean, boolean, boolean) throws java.io.IOException
+{
+org.yaml.snakeyaml.events.Event v10, v12, v17, v23, v27, v4, v6, v8;
+int v14, v20;
+java.lang.Boolean v15, v21;
+java.lang.String v28;
+boolean v1, v11, v13, v16, v18, v19, v2, v22, v24, v25, v3, v5, v7, v9;
+org.yaml.snakeyaml.emitter.EmitterException v26;
+org.yaml.snakeyaml.emitter.Emitter v0;
+v0 := @this: org.yaml.snakeyaml.emitter.Emitter;
+v1 := @parameter0: boolean;
+v2 := @parameter1: boolean;
+v3 := @parameter2: boolean;
+v0.<org.yaml.snakeyaml.emitter.Emitter: boolean rootContext> = v1;
+v0.<org.yaml.snakeyaml.emitter.Emitter: boolean mappingContext> = v2;
+v0.<org.yaml.snakeyaml.emitter.Emitter: boolean simpleKeyContext> = v3;
+v4 = v0.<org.yaml.snakeyaml.emitter.Emitter: org.yaml.snakeyaml.events.Event event>;
+v5 = v4 instanceof org.yaml.snakeyaml.events.AliasEvent;
+if v5 == 0 goto label01;
+specialinvoke v0.<org.yaml.snakeyaml.emitter.Emitter: void expectAlias()>();
+goto label10;
+label01:
+v6 = v0.<org.yaml.snakeyaml.emitter.Emitter: org.yaml.snakeyaml.events.Event event>;
+v7 = v6 instanceof org.yaml.snakeyaml.events.ScalarEvent;
+if v7 != 0 goto label02;
+v8 = v0.<org.yaml.snakeyaml.emitter.Emitter: org.yaml.snakeyaml.events.Event event>;
+v9 = v8 instanceof org.yaml.snakeyaml.events.CollectionStartEvent;
+if v9 == 0 goto label09;
+label02:
+specialinvoke v0.<org.yaml.snakeyaml.emitter.Emitter: void processAnchor(java.lang.String)>("&");
+specialinvoke v0.<org.yaml.snakeyaml.emitter.Emitter: void processTag()>();
+v10 = v0.<org.yaml.snakeyaml.emitter.Emitter: org.yaml.snakeyaml.events.Event event>;
+v11 = v10 instanceof org.yaml.snakeyaml.events.ScalarEvent;
+if v11 == 0 goto label03;
+specialinvoke v0.<org.yaml.snakeyaml.emitter.Emitter: void expectScalar()>();
+goto label10;
+label03:
+v12 = v0.<org.yaml.snakeyaml.emitter.Emitter: org.yaml.snakeyaml.events.Event event>;
+v13 = v12 instanceof org.yaml.snakeyaml.events.SequenceStartEvent;
+if v13 == 0 goto label06;
+v14 = v0.<org.yaml.snakeyaml.emitter.Emitter: int flowLevel>;
+if v14 != 0 goto label04;
+v15 = v0.<org.yaml.snakeyaml.emitter.Emitter: java.lang.Boolean canonical>;
+v16 = virtualinvoke v15.<java.lang.Boolean: boolean booleanValue()>();
+if v16 != 0 goto label04;
+v17 = v0.<org.yaml.snakeyaml.emitter.Emitter: org.yaml.snakeyaml.events.Event event>;
+v18 = virtualinvoke v17.<org.yaml.snakeyaml.events.SequenceStartEvent: boolean isFlow()>();
+if v18 != 0 goto label04;
+v19 = specialinvoke v0.<org.yaml.snakeyaml.emitter.Emitter: boolean checkEmptySequence()>();
+if v19 == 0 goto label05;
+label04:
+specialinvoke v0.<org.yaml.snakeyaml.emitter.Emitter: void expectFlowSequence()>();
+goto label10;
+label05:
+specialinvoke v0.<org.yaml.snakeyaml.emitter.Emitter: void expectBlockSequence()>();
+goto label10;
+label06:
+v20 = v0.<org.yaml.snakeyaml.emitter.Emitter: int flowLevel>;
+if v20 != 0 goto label07;
+v21 = v0.<org.yaml.snakeyaml.emitter.Emitter: java.lang.Boolean canonical>;
+v22 = virtualinvoke v21.<java.lang.Boolean: boolean booleanValue()>();
+if v22 != 0 goto label07;
+v23 = v0.<org.yaml.snakeyaml.emitter.Emitter: org.yaml.snakeyaml.events.Event event>;
+v24 = virtualinvoke v23.<org.yaml.snakeyaml.events.MappingStartEvent: boolean isFlow()>();
+if v24 != 0 goto label07;
+v25 = specialinvoke v0.<org.yaml.snakeyaml.emitter.Emitter: boolean checkEmptyMapping()>();
+if v25 == 0 goto label08;
+label07:
+specialinvoke v0.<org.yaml.snakeyaml.emitter.Emitter: void expectFlowMapping()>();
+goto label10;
+label08:
+specialinvoke v0.<org.yaml.snakeyaml.emitter.Emitter: void expectBlockMapping()>();
+goto label10;
+label09:
+v26 = new org.yaml.snakeyaml.emitter.EmitterException;
+v27 = v0.<org.yaml.snakeyaml.emitter.Emitter: org.yaml.snakeyaml.events.Event event>;
+v28 = dynamicinvoke "makeConcatWithConstants" <java.lang.String (org.yaml.snakeyaml.events.Event)>(v27) <java.lang.invoke.StringConcatFactory: java.lang.invoke.CallSite makeConcatWithConstants(java.lang.invoke.MethodHandles$Lookup,java.lang.String,java.lang.invoke.MethodType,java.lang.String,java.lang.Object[])>("expected NodeEvent, but got \u0001");
+specialinvoke v26.<org.yaml.snakeyaml.emitter.EmitterException: void <init>(java.lang.String)>(v28);
+throw v26;
+label10:
+return;
+}
+private void expectAlias() throws java.io.IOException
+{
+org.yaml.snakeyaml.emitter.Emitter v0;
+java.lang.Object v5;
+org.yaml.snakeyaml.emitter.EmitterException v3;
+org.yaml.snakeyaml.util.ArrayStack v4;
+org.yaml.snakeyaml.events.Event v1;
+boolean v2;
+v0 := @this: org.yaml.snakeyaml.emitter.Emitter;
+v1 = v0.<org.yaml.snakeyaml.emitter.Emitter: org.yaml.snakeyaml.events.Event event>;
+v2 = v1 instanceof org.yaml.snakeyaml.events.AliasEvent;
+if v2 != 0 goto label1;
+v3 = new org.yaml.snakeyaml.emitter.EmitterException;
+specialinvoke v3.<org.yaml.snakeyaml.emitter.EmitterException: void <init>(java.lang.String)>("Alias must be provided");
+throw v3;
+label1:
+specialinvoke v0.<org.yaml.snakeyaml.emitter.Emitter: void processAnchor(java.lang.String)>("*");
+v4 = v0.<org.yaml.snakeyaml.emitter.Emitter: org.yaml.snakeyaml.util.ArrayStack states>;
+v5 = virtualinvoke v4.<org.yaml.snakeyaml.util.ArrayStack: java.lang.Object pop()>();
+v0.<org.yaml.snakeyaml.emitter.Emitter: org.yaml.snakeyaml.emitter.EmitterState state> = v5;
+return;
+}
+private void expectScalar() throws java.io.IOException
+{
+org.yaml.snakeyaml.emitter.Emitter v0;
+java.lang.Object v2, v4;
+org.yaml.snakeyaml.util.ArrayStack v1, v3;
+v0 := @this: org.yaml.snakeyaml.emitter.Emitter;
+specialinvoke v0.<org.yaml.snakeyaml.emitter.Emitter: void increaseIndent(boolean,boolean)>(1, 0);
+specialinvoke v0.<org.yaml.snakeyaml.emitter.Emitter: void processScalar()>();
+v1 = v0.<org.yaml.snakeyaml.emitter.Emitter: org.yaml.snakeyaml.util.ArrayStack indents>;
+v2 = virtualinvoke v1.<org.yaml.snakeyaml.util.ArrayStack: java.lang.Object pop()>();
+v0.<org.yaml.snakeyaml.emitter.Emitter: java.lang.Integer indent> = v2;
+v3 = v0.<org.yaml.snakeyaml.emitter.Emitter: org.yaml.snakeyaml.util.ArrayStack states>;
+v4 = virtualinvoke v3.<org.yaml.snakeyaml.util.ArrayStack: java.lang.Object pop()>();
+v0.<org.yaml.snakeyaml.emitter.Emitter: org.yaml.snakeyaml.emitter.EmitterState state> = v4;
+return;
+}
+private void expectFlowSequence() throws java.io.IOException
+{
+org.yaml.snakeyaml.emitter.Emitter$ExpectFirstFlowSequenceItem v5;
+org.yaml.snakeyaml.emitter.Emitter v0;
+int v1, v2;
+java.lang.Boolean v3;
+boolean v4;
+v0 := @this: org.yaml.snakeyaml.emitter.Emitter;
+virtualinvoke v0.<org.yaml.snakeyaml.emitter.Emitter: void writeIndicator(java.lang.String,boolean,boolean,boolean)>("[", 1, 1, 0);
+v1 = v0.<org.yaml.snakeyaml.emitter.Emitter: int flowLevel>;
+v2 = v1 + 1;
+v0.<org.yaml.snakeyaml.emitter.Emitter: int flowLevel> = v2;
+specialinvoke v0.<org.yaml.snakeyaml.emitter.Emitter: void increaseIndent(boolean,boolean)>(1, 0);
+v3 = v0.<org.yaml.snakeyaml.emitter.Emitter: java.lang.Boolean prettyFlow>;
+v4 = virtualinvoke v3.<java.lang.Boolean: boolean booleanValue()>();
+if v4 == 0 goto label1;
+virtualinvoke v0.<org.yaml.snakeyaml.emitter.Emitter: void writeIndent()>();
+label1:
+v5 = new org.yaml.snakeyaml.emitter.Emitter$ExpectFirstFlowSequenceItem;
+specialinvoke v5.<org.yaml.snakeyaml.emitter.Emitter$ExpectFirstFlowSequenceItem: void <init>(org.yaml.snakeyaml.emitter.Emitter)>(v0);
+v0.<org.yaml.snakeyaml.emitter.Emitter: org.yaml.snakeyaml.emitter.EmitterState state> = v5;
+return;
+}
+private void expectFlowMapping() throws java.io.IOException
+{
+org.yaml.snakeyaml.emitter.Emitter v0;
+int v1, v2;
+org.yaml.snakeyaml.emitter.Emitter$ExpectFirstFlowMappingKey v5;
+java.lang.Boolean v3;
+boolean v4;
+v0 := @this: org.yaml.snakeyaml.emitter.Emitter;
+virtualinvoke v0.<org.yaml.snakeyaml.emitter.Emitter: void writeIndicator(java.lang.String,boolean,boolean,boolean)>("{", 1, 1, 0);
+v1 = v0.<org.yaml.snakeyaml.emitter.Emitter: int flowLevel>;
+v2 = v1 + 1;
+v0.<org.yaml.snakeyaml.emitter.Emitter: int flowLevel> = v2;
+specialinvoke v0.<org.yaml.snakeyaml.emitter.Emitter: void increaseIndent(boolean,boolean)>(1, 0);
+v3 = v0.<org.yaml.snakeyaml.emitter.Emitter: java.lang.Boolean prettyFlow>;
+v4 = virtualinvoke v3.<java.lang.Boolean: boolean booleanValue()>();
+if v4 == 0 goto label1;
+virtualinvoke v0.<org.yaml.snakeyaml.emitter.Emitter: void writeIndent()>();
+label1:
+v5 = new org.yaml.snakeyaml.emitter.Emitter$ExpectFirstFlowMappingKey;
+specialinvoke v5.<org.yaml.snakeyaml.emitter.Emitter$ExpectFirstFlowMappingKey: void <init>(org.yaml.snakeyaml.emitter.Emitter)>(v0);
+v0.<org.yaml.snakeyaml.emitter.Emitter: org.yaml.snakeyaml.emitter.EmitterState state> = v5;
+return;
+}
+private void expectBlockSequence() throws java.io.IOException
+{
+org.yaml.snakeyaml.emitter.Emitter$ExpectFirstBlockSequenceItem v4;
+org.yaml.snakeyaml.emitter.Emitter v0;
+boolean v1, v2, v3;
+v0 := @this: org.yaml.snakeyaml.emitter.Emitter;
+v1 = v0.<org.yaml.snakeyaml.emitter.Emitter: boolean mappingContext>;
+if v1 == 0 goto label1;
+v2 = v0.<org.yaml.snakeyaml.emitter.Emitter: boolean indention>;
+if v2 != 0 goto label1;
+v3 = 1;
+goto label2;
+label1:
+v3 = 0;
+label2:
+specialinvoke v0.<org.yaml.snakeyaml.emitter.Emitter: void increaseIndent(boolean,boolean)>(0, v3);
+v4 = new org.yaml.snakeyaml.emitter.Emitter$ExpectFirstBlockSequenceItem;
+specialinvoke v4.<org.yaml.snakeyaml.emitter.Emitter$ExpectFirstBlockSequenceItem: void <init>(org.yaml.snakeyaml.emitter.Emitter)>(v0);
+v0.<org.yaml.snakeyaml.emitter.Emitter: org.yaml.snakeyaml.emitter.EmitterState state> = v4;
+return;
+}
+private void expectBlockMapping() throws java.io.IOException
+{
+org.yaml.snakeyaml.emitter.Emitter$ExpectFirstBlockMappingKey v1;
+org.yaml.snakeyaml.emitter.Emitter v0;
+v0 := @this: org.yaml.snakeyaml.emitter.Emitter;
+specialinvoke v0.<org.yaml.snakeyaml.emitter.Emitter: void increaseIndent(boolean,boolean)>(0, 0);
+v1 = new org.yaml.snakeyaml.emitter.Emitter$ExpectFirstBlockMappingKey;
+specialinvoke v1.<org.yaml.snakeyaml.emitter.Emitter$ExpectFirstBlockMappingKey: void <init>(org.yaml.snakeyaml.emitter.Emitter)>(v0);
+v0.<org.yaml.snakeyaml.emitter.Emitter: org.yaml.snakeyaml.emitter.EmitterState state> = v1;
+return;
+}
+private boolean isFoldedOrLiteral(org.yaml.snakeyaml.events.Event)
+{
+org.yaml.snakeyaml.events.Event$ID v2;
+org.yaml.snakeyaml.DumperOptions$ScalarStyle v4, v5, v6;
+org.yaml.snakeyaml.events.Event v1;
+org.yaml.snakeyaml.emitter.Emitter v0;
+boolean v3, v7;
+v0 := @this: org.yaml.snakeyaml.emitter.Emitter;
+v1 := @parameter0: org.yaml.snakeyaml.events.Event;
+v2 = <org.yaml.snakeyaml.events.Event$ID: org.yaml.snakeyaml.events.Event$ID Scalar>;
+v3 = virtualinvoke v1.<org.yaml.snakeyaml.events.Event: boolean is(org.yaml.snakeyaml.events.Event$ID)>(v2);
+if v3 != 0 goto label1;
+return 0;
+label1:
+v4 = virtualinvoke v1.<org.yaml.snakeyaml.events.ScalarEvent: org.yaml.snakeyaml.DumperOptions$ScalarStyle getScalarStyle()>();
+v5 = <org.yaml.snakeyaml.DumperOptions$ScalarStyle: org.yaml.snakeyaml.DumperOptions$ScalarStyle FOLDED>;
+if v4 == v5 goto label2;
+v6 = <org.yaml.snakeyaml.DumperOptions$ScalarStyle: org.yaml.snakeyaml.DumperOptions$ScalarStyle LITERAL>;
+if v4 != v6 goto label3;
+label2:
+v7 = 1;
+goto label4;
+label3:
+v7 = 0;
+label4:
+return v7;
+}
+private boolean checkEmptySequence()
+{
+org.yaml.snakeyaml.events.Event v1;
+org.yaml.snakeyaml.emitter.Emitter v0;
+java.lang.Object v6;
+java.util.Queue v3, v5;
+boolean v2, v4, v7, v8;
+v0 := @this: org.yaml.snakeyaml.emitter.Emitter;
+v1 = v0.<org.yaml.snakeyaml.emitter.Emitter: org.yaml.snakeyaml.events.Event event>;
+v2 = v1 instanceof org.yaml.snakeyaml.events.SequenceStartEvent;
+if v2 == 0 goto label1;
+v3 = v0.<org.yaml.snakeyaml.emitter.Emitter: java.util.Queue events>;
+v4 = interfaceinvoke v3.<java.util.Queue: boolean isEmpty()>();
+if v4 != 0 goto label1;
+v5 = v0.<org.yaml.snakeyaml.emitter.Emitter: java.util.Queue events>;
+v6 = interfaceinvoke v5.<java.util.Queue: java.lang.Object peek()>();
+v7 = v6 instanceof org.yaml.snakeyaml.events.SequenceEndEvent;
+if v7 == 0 goto label1;
+v8 = 1;
+goto label2;
+label1:
+v8 = 0;
+label2:
+return v8;
+}
+private boolean checkEmptyMapping()
+{
+org.yaml.snakeyaml.events.Event v1;
+org.yaml.snakeyaml.emitter.Emitter v0;
+java.lang.Object v6;
+java.util.Queue v3, v5;
+boolean v2, v4, v7, v8;
+v0 := @this: org.yaml.snakeyaml.emitter.Emitter;
+v1 = v0.<org.yaml.snakeyaml.emitter.Emitter: org.yaml.snakeyaml.events.Event event>;
+v2 = v1 instanceof org.yaml.snakeyaml.events.MappingStartEvent;
+if v2 == 0 goto label1;
+v3 = v0.<org.yaml.snakeyaml.emitter.Emitter: java.util.Queue events>;
+v4 = interfaceinvoke v3.<java.util.Queue: boolean isEmpty()>();
+if v4 != 0 goto label1;
+v5 = v0.<org.yaml.snakeyaml.emitter.Emitter: java.util.Queue events>;
+v6 = interfaceinvoke v5.<java.util.Queue: java.lang.Object peek()>();
+v7 = v6 instanceof org.yaml.snakeyaml.events.MappingEndEvent;
+if v7 == 0 goto label1;
+v8 = 1;
+goto label2;
+label1:
+v8 = 0;
+label2:
+return v8;
+}
+private boolean checkEmptyDocument()
+{
+org.yaml.snakeyaml.events.ImplicitTuple v10;
+org.yaml.snakeyaml.events.Event v1, v14;
+org.yaml.snakeyaml.emitter.Emitter v0;
+int v12;
+java.lang.Object v6;
+java.lang.String v11, v8, v9;
+java.util.Queue v3, v5;
+boolean v13, v2, v4, v7;
+v0 := @this: org.yaml.snakeyaml.emitter.Emitter;
+v1 = v0.<org.yaml.snakeyaml.emitter.Emitter: org.yaml.snakeyaml.events.Event event>;
+v2 = v1 instanceof org.yaml.snakeyaml.events.DocumentStartEvent;
+if v2 == 0 goto label1;
+v3 = v0.<org.yaml.snakeyaml.emitter.Emitter: java.util.Queue events>;
+v4 = interfaceinvoke v3.<java.util.Queue: boolean isEmpty()>();
+if v4 == 0 goto label2;
+label1:
+return 0;
+label2:
+v5 = v0.<org.yaml.snakeyaml.emitter.Emitter: java.util.Queue events>;
+v6 = interfaceinvoke v5.<java.util.Queue: java.lang.Object peek()>();
+v7 = v6 instanceof org.yaml.snakeyaml.events.ScalarEvent;
+if v7 == 0 goto label5;
+v8 = virtualinvoke v14.<org.yaml.snakeyaml.events.ScalarEvent: java.lang.String getAnchor()>();
+if v8 != null goto label3;
+v9 = virtualinvoke v14.<org.yaml.snakeyaml.events.ScalarEvent: java.lang.String getTag()>();
+if v9 != null goto label3;
+v10 = virtualinvoke v14.<org.yaml.snakeyaml.events.ScalarEvent: org.yaml.snakeyaml.events.ImplicitTuple getImplicit()>();
+if v10 == null goto label3;
+v11 = virtualinvoke v14.<org.yaml.snakeyaml.events.ScalarEvent: java.lang.String getValue()>();
+v12 = virtualinvoke v11.<java.lang.String: int length()>();
+if v12 != 0 goto label3;
+v13 = 1;
+goto label4;
+label3:
+v13 = 0;
+label4:
+return v13;
+label5:
+return 0;
+}
+private boolean checkSimpleKey()
+{
+org.yaml.snakeyaml.events.Event v13, v15, v16, v18, v2, v23, v26, v33, v35, v4, v7;
+boolean v14, v17, v24, v3, v34, v36, v38, v40, v41, v42, v43;
+org.yaml.snakeyaml.emitter.ScalarAnalysis v25, v28, v29, v37, v39;
+int v1, v11, v22, v31, v32;
+java.lang.String v10, v12, v19, v20, v21, v27, v30, v5, v6, v8, v9;
+org.yaml.snakeyaml.emitter.Emitter v0;
+v0 := @this: org.yaml.snakeyaml.emitter.Emitter;
+v1 = 0;
+v2 = v0.<org.yaml.snakeyaml.emitter.Emitter: org.yaml.snakeyaml.events.Event event>;
+v3 = v2 instanceof org.yaml.snakeyaml.events.NodeEvent;
+if v3 == 0 goto label02;
+v4 = v0.<org.yaml.snakeyaml.emitter.Emitter: org.yaml.snakeyaml.events.Event event>;
+v5 = virtualinvoke v4.<org.yaml.snakeyaml.events.NodeEvent: java.lang.String getAnchor()>();
+if v5 == null goto label02;
+v6 = v0.<org.yaml.snakeyaml.emitter.Emitter: java.lang.String preparedAnchor>;
+if v6 != null goto label01;
+v7 = v0.<org.yaml.snakeyaml.emitter.Emitter: org.yaml.snakeyaml.events.Event event>;
+v8 = virtualinvoke v7.<org.yaml.snakeyaml.events.NodeEvent: java.lang.String getAnchor()>();
+v9 = staticinvoke <org.yaml.snakeyaml.emitter.Emitter: java.lang.String prepareAnchor(java.lang.String)>(v8);
+v0.<org.yaml.snakeyaml.emitter.Emitter: java.lang.String preparedAnchor> = v9;
+label01:
+v10 = v0.<org.yaml.snakeyaml.emitter.Emitter: java.lang.String preparedAnchor>;
+v11 = virtualinvoke v10.<java.lang.String: int length()>();
+v1 = 0 + v11;
+label02:
+v12 = null;
+v13 = v0.<org.yaml.snakeyaml.emitter.Emitter: org.yaml.snakeyaml.events.Event event>;
+v14 = v13 instanceof org.yaml.snakeyaml.events.ScalarEvent;
+if v14 == 0 goto label03;
+v15 = v0.<org.yaml.snakeyaml.emitter.Emitter: org.yaml.snakeyaml.events.Event event>;
+v12 = virtualinvoke v15.<org.yaml.snakeyaml.events.ScalarEvent: java.lang.String getTag()>();
+goto label04;
+label03:
+v16 = v0.<org.yaml.snakeyaml.emitter.Emitter: org.yaml.snakeyaml.events.Event event>;
+v17 = v16 instanceof org.yaml.snakeyaml.events.CollectionStartEvent;
+if v17 == 0 goto label04;
+v18 = v0.<org.yaml.snakeyaml.emitter.Emitter: org.yaml.snakeyaml.events.Event event>;
+v12 = virtualinvoke v18.<org.yaml.snakeyaml.events.CollectionStartEvent: java.lang.String getTag()>();
+label04:
+if v12 == null goto label06;
+v19 = v0.<org.yaml.snakeyaml.emitter.Emitter: java.lang.String preparedTag>;
+if v19 != null goto label05;
+v20 = specialinvoke v0.<org.yaml.snakeyaml.emitter.Emitter: java.lang.String prepareTag(java.lang.String)>(v12);
+v0.<org.yaml.snakeyaml.emitter.Emitter: java.lang.String preparedTag> = v20;
+label05:
+v21 = v0.<org.yaml.snakeyaml.emitter.Emitter: java.lang.String preparedTag>;
+v22 = virtualinvoke v21.<java.lang.String: int length()>();
+v1 = v1 + v22;
+label06:
+v23 = v0.<org.yaml.snakeyaml.emitter.Emitter: org.yaml.snakeyaml.events.Event event>;
+v24 = v23 instanceof org.yaml.snakeyaml.events.ScalarEvent;
+if v24 == 0 goto label08;
+v25 = v0.<org.yaml.snakeyaml.emitter.Emitter: org.yaml.snakeyaml.emitter.ScalarAnalysis analysis>;
+if v25 != null goto label07;
+v26 = v0.<org.yaml.snakeyaml.emitter.Emitter: org.yaml.snakeyaml.events.Event event>;
+v27 = virtualinvoke v26.<org.yaml.snakeyaml.events.ScalarEvent: java.lang.String getValue()>();
+v28 = specialinvoke v0.<org.yaml.snakeyaml.emitter.Emitter: org.yaml.snakeyaml.emitter.ScalarAnalysis analyzeScalar(java.lang.String)>(v27);
+v0.<org.yaml.snakeyaml.emitter.Emitter: org.yaml.snakeyaml.emitter.ScalarAnalysis analysis> = v28;
+label07:
+v29 = v0.<org.yaml.snakeyaml.emitter.Emitter: org.yaml.snakeyaml.emitter.ScalarAnalysis analysis>;
+v30 = virtualinvoke v29.<org.yaml.snakeyaml.emitter.ScalarAnalysis: java.lang.String getScalar()>();
+v31 = virtualinvoke v30.<java.lang.String: int length()>();
+v1 = v1 + v31;
+label08:
+v32 = v0.<org.yaml.snakeyaml.emitter.Emitter: int maxSimpleKeyLength>;
+if v1 >= v32 goto label11;
+v33 = v0.<org.yaml.snakeyaml.emitter.Emitter: org.yaml.snakeyaml.events.Event event>;
+v34 = v33 instanceof org.yaml.snakeyaml.events.AliasEvent;
+if v34 != 0 goto label10;
+v35 = v0.<org.yaml.snakeyaml.emitter.Emitter: org.yaml.snakeyaml.events.Event event>;
+v36 = v35 instanceof org.yaml.snakeyaml.events.ScalarEvent;
+if v36 == 0 goto label09;
+v37 = v0.<org.yaml.snakeyaml.emitter.Emitter: org.yaml.snakeyaml.emitter.ScalarAnalysis analysis>;
+v38 = virtualinvoke v37.<org.yaml.snakeyaml.emitter.ScalarAnalysis: boolean isEmpty()>();
+if v38 != 0 goto label09;
+v39 = v0.<org.yaml.snakeyaml.emitter.Emitter: org.yaml.snakeyaml.emitter.ScalarAnalysis analysis>;
+v40 = virtualinvoke v39.<org.yaml.snakeyaml.emitter.ScalarAnalysis: boolean isMultiline()>();
+if v40 == 0 goto label10;
+label09:
+v41 = specialinvoke v0.<org.yaml.snakeyaml.emitter.Emitter: boolean checkEmptySequence()>();
+if v41 != 0 goto label10;
+v42 = specialinvoke v0.<org.yaml.snakeyaml.emitter.Emitter: boolean checkEmptyMapping()>();
+if v42 == 0 goto label11;
+label10:
+v43 = 1;
+goto label12;
+label11:
+v43 = 0;
+label12:
+return v43;
+}
+private void processAnchor(java.lang.String) throws java.io.IOException
+{
+org.yaml.snakeyaml.events.Event v2;
+org.yaml.snakeyaml.emitter.Emitter v0;
+java.lang.String v1, v3, v4, v5, v6, v7, v8;
+v0 := @this: org.yaml.snakeyaml.emitter.Emitter;
+v1 := @parameter0: java.lang.String;
+v2 = v0.<org.yaml.snakeyaml.emitter.Emitter: org.yaml.snakeyaml.events.Event event>;
+v3 = virtualinvoke v2.<org.yaml.snakeyaml.events.NodeEvent: java.lang.String getAnchor()>();
+if v3 != null goto label1;
+v0.<org.yaml.snakeyaml.emitter.Emitter: java.lang.String preparedAnchor> = null;
+return;
+label1:
+v4 = v0.<org.yaml.snakeyaml.emitter.Emitter: java.lang.String preparedAnchor>;
+if v4 != null goto label2;
+v5 = virtualinvoke v2.<org.yaml.snakeyaml.events.NodeEvent: java.lang.String getAnchor()>();
+v6 = staticinvoke <org.yaml.snakeyaml.emitter.Emitter: java.lang.String prepareAnchor(java.lang.String)>(v5);
+v0.<org.yaml.snakeyaml.emitter.Emitter: java.lang.String preparedAnchor> = v6;
+label2:
+v7 = v0.<org.yaml.snakeyaml.emitter.Emitter: java.lang.String preparedAnchor>;
+v8 = dynamicinvoke "makeConcatWithConstants" <java.lang.String (java.lang.String,java.lang.String)>(v1, v7) <java.lang.invoke.StringConcatFactory: java.lang.invoke.CallSite makeConcatWithConstants(java.lang.invoke.MethodHandles$Lookup,java.lang.String,java.lang.invoke.MethodType,java.lang.String,java.lang.Object[])>("\u0001\u0001");
+virtualinvoke v0.<org.yaml.snakeyaml.emitter.Emitter: void writeIndicator(java.lang.String,boolean,boolean,boolean)>(v8, 1, 0, 0);
+v0.<org.yaml.snakeyaml.emitter.Emitter: java.lang.String preparedAnchor> = null;
+return;
+}
+private void processTag() throws java.io.IOException
+{
+org.yaml.snakeyaml.DumperOptions$ScalarStyle v12, v5, v6, v9;
+org.yaml.snakeyaml.events.Event v1, v17, v3;
+java.lang.Boolean v18, v7;
+java.lang.String v22, v23, v24, v4;
+boolean v11, v14, v16, v19, v2, v20, v8;
+org.yaml.snakeyaml.emitter.EmitterException v21;
+org.yaml.snakeyaml.events.ImplicitTuple v10, v13, v15;
+org.yaml.snakeyaml.emitter.Emitter v0;
+v0 := @this: org.yaml.snakeyaml.emitter.Emitter;
+v1 = v0.<org.yaml.snakeyaml.emitter.Emitter: org.yaml.snakeyaml.events.Event event>;
+v2 = v1 instanceof org.yaml.snakeyaml.events.ScalarEvent;
+if v2 == 0 goto label06;
+v3 = v0.<org.yaml.snakeyaml.emitter.Emitter: org.yaml.snakeyaml.events.Event event>;
+v4 = virtualinvoke v3.<org.yaml.snakeyaml.events.ScalarEvent: java.lang.String getTag()>();
+v5 = v0.<org.yaml.snakeyaml.emitter.Emitter: org.yaml.snakeyaml.DumperOptions$ScalarStyle style>;
+if v5 != null goto label01;
+v6 = specialinvoke v0.<org.yaml.snakeyaml.emitter.Emitter: org.yaml.snakeyaml.DumperOptions$ScalarStyle chooseScalarStyle()>();
+v0.<org.yaml.snakeyaml.emitter.Emitter: org.yaml.snakeyaml.DumperOptions$ScalarStyle style> = v6;
+label01:
+v7 = v0.<org.yaml.snakeyaml.emitter.Emitter: java.lang.Boolean canonical>;
+v8 = virtualinvoke v7.<java.lang.Boolean: boolean booleanValue()>();
+if v8 == 0 goto label02;
+if v4 != null goto label05;
+label02:
+v9 = v0.<org.yaml.snakeyaml.emitter.Emitter: org.yaml.snakeyaml.DumperOptions$ScalarStyle style>;
+if v9 != null goto label03;
+v10 = virtualinvoke v3.<org.yaml.snakeyaml.events.ScalarEvent: org.yaml.snakeyaml.events.ImplicitTuple getImplicit()>();
+v11 = virtualinvoke v10.<org.yaml.snakeyaml.events.ImplicitTuple: boolean canOmitTagInPlainScalar()>();
+if v11 != 0 goto label04;
+label03:
+v12 = v0.<org.yaml.snakeyaml.emitter.Emitter: org.yaml.snakeyaml.DumperOptions$ScalarStyle style>;
+if v12 == null goto label05;
+v13 = virtualinvoke v3.<org.yaml.snakeyaml.events.ScalarEvent: org.yaml.snakeyaml.events.ImplicitTuple getImplicit()>();
+v14 = virtualinvoke v13.<org.yaml.snakeyaml.events.ImplicitTuple: boolean canOmitTagInNonPlainScalar()>();
+if v14 == 0 goto label05;
+label04:
+v0.<org.yaml.snakeyaml.emitter.Emitter: java.lang.String preparedTag> = null;
+return;
+label05:
+v15 = virtualinvoke v3.<org.yaml.snakeyaml.events.ScalarEvent: org.yaml.snakeyaml.events.ImplicitTuple getImplicit()>();
+v16 = virtualinvoke v15.<org.yaml.snakeyaml.events.ImplicitTuple: boolean canOmitTagInPlainScalar()>();
+if v16 == 0 goto label08;
+if v4 != null goto label09;
+v4 = "!";
+v0.<org.yaml.snakeyaml.emitter.Emitter: java.lang.String preparedTag> = null;
+goto label08;
+label06:
+v17 = v0.<org.yaml.snakeyaml.emitter.Emitter: org.yaml.snakeyaml.events.Event event>;
+v4 = virtualinvoke v17.<org.yaml.snakeyaml.events.CollectionStartEvent: java.lang.String getTag()>();
+v18 = v0.<org.yaml.snakeyaml.emitter.Emitter: java.lang.Boolean canonical>;
+v19 = virtualinvoke v18.<java.lang.Boolean: boolean booleanValue()>();
+if v19 == 0 goto label07;
+if v4 != null goto label09;
+label07:
+v20 = virtualinvoke v17.<org.yaml.snakeyaml.events.CollectionStartEvent: boolean getImplicit()>();
+if v20 == 0 goto label08;
+v0.<org.yaml.snakeyaml.emitter.Emitter: java.lang.String preparedTag> = null;
+return;
+label08:
+if v4 != null goto label09;
+v21 = new org.yaml.snakeyaml.emitter.EmitterException;
+specialinvoke v21.<org.yaml.snakeyaml.emitter.EmitterException: void <init>(java.lang.String)>("tag is not specified");
+throw v21;
+label09:
+v22 = v0.<org.yaml.snakeyaml.emitter.Emitter: java.lang.String preparedTag>;
+if v22 != null goto label10;
+v23 = specialinvoke v0.<org.yaml.snakeyaml.emitter.Emitter: java.lang.String prepareTag(java.lang.String)>(v4);
+v0.<org.yaml.snakeyaml.emitter.Emitter: java.lang.String preparedTag> = v23;
+label10:
+v24 = v0.<org.yaml.snakeyaml.emitter.Emitter: java.lang.String preparedTag>;
+virtualinvoke v0.<org.yaml.snakeyaml.emitter.Emitter: void writeIndicator(java.lang.String,boolean,boolean,boolean)>(v24, 1, 0, 0);
+v0.<org.yaml.snakeyaml.emitter.Emitter: java.lang.String preparedTag> = null;
+return;
+}
+private org.yaml.snakeyaml.DumperOptions$ScalarStyle chooseScalarStyle()
+{
+org.yaml.snakeyaml.events.Event v1;
+boolean v11, v13, v14, v16, v18, v21, v24, v25, v31, v33, v35, v39, v40, v42, v5, v9;
+org.yaml.snakeyaml.emitter.ScalarAnalysis v15, v17, v2, v20, v23, v32, v38, v4, v41;
+org.yaml.snakeyaml.DumperOptions$ScalarStyle v10, v26, v27, v28, v29, v34, v36, v37, v43, v44, v6, v7;
+int v19, v22, v30;
+java.lang.Boolean v8;
+java.lang.String v3;
+org.yaml.snakeyaml.events.ImplicitTuple v12;
+org.yaml.snakeyaml.emitter.Emitter v0;
+v0 := @this: org.yaml.snakeyaml.emitter.Emitter;
+v1 = v0.<org.yaml.snakeyaml.emitter.Emitter: org.yaml.snakeyaml.events.Event event>;
+v2 = v0.<org.yaml.snakeyaml.emitter.Emitter: org.yaml.snakeyaml.emitter.ScalarAnalysis analysis>;
+if v2 != null goto label01;
+v3 = virtualinvoke v1.<org.yaml.snakeyaml.events.ScalarEvent: java.lang.String getValue()>();
+v4 = specialinvoke v0.<org.yaml.snakeyaml.emitter.Emitter: org.yaml.snakeyaml.emitter.ScalarAnalysis analyzeScalar(java.lang.String)>(v3);
+v0.<org.yaml.snakeyaml.emitter.Emitter: org.yaml.snakeyaml.emitter.ScalarAnalysis analysis> = v4;
+label01:
+v5 = virtualinvoke v1.<org.yaml.snakeyaml.events.ScalarEvent: boolean isPlain()>();
+if v5 != 0 goto label02;
+v6 = virtualinvoke v1.<org.yaml.snakeyaml.events.ScalarEvent: org.yaml.snakeyaml.DumperOptions$ScalarStyle getScalarStyle()>();
+v7 = <org.yaml.snakeyaml.DumperOptions$ScalarStyle: org.yaml.snakeyaml.DumperOptions$ScalarStyle DOUBLE_QUOTED>;
+if v6 == v7 goto label03;
+label02:
+v8 = v0.<org.yaml.snakeyaml.emitter.Emitter: java.lang.Boolean canonical>;
+v9 = virtualinvoke v8.<java.lang.Boolean: boolean booleanValue()>();
+if v9 == 0 goto label04;
+label03:
+v10 = <org.yaml.snakeyaml.DumperOptions$ScalarStyle: org.yaml.snakeyaml.DumperOptions$ScalarStyle DOUBLE_QUOTED>;
+return v10;
+label04:
+v11 = virtualinvoke v1.<org.yaml.snakeyaml.events.ScalarEvent: boolean isPlain()>();
+if v11 == 0 goto label08;
+v12 = virtualinvoke v1.<org.yaml.snakeyaml.events.ScalarEvent: org.yaml.snakeyaml.events.ImplicitTuple getImplicit()>();
+v13 = virtualinvoke v12.<org.yaml.snakeyaml.events.ImplicitTuple: boolean canOmitTagInPlainScalar()>();
+if v13 == 0 goto label08;
+v14 = v0.<org.yaml.snakeyaml.emitter.Emitter: boolean simpleKeyContext>;
+if v14 == 0 goto label05;
+v15 = v0.<org.yaml.snakeyaml.emitter.Emitter: org.yaml.snakeyaml.emitter.ScalarAnalysis analysis>;
+v16 = virtualinvoke v15.<org.yaml.snakeyaml.emitter.ScalarAnalysis: boolean isEmpty()>();
+if v16 != 0 goto label08;
+v17 = v0.<org.yaml.snakeyaml.emitter.Emitter: org.yaml.snakeyaml.emitter.ScalarAnalysis analysis>;
+v18 = virtualinvoke v17.<org.yaml.snakeyaml.emitter.ScalarAnalysis: boolean isMultiline()>();
+if v18 != 0 goto label08;
+label05:
+v19 = v0.<org.yaml.snakeyaml.emitter.Emitter: int flowLevel>;
+if v19 == 0 goto label06;
+v20 = v0.<org.yaml.snakeyaml.emitter.Emitter: org.yaml.snakeyaml.emitter.ScalarAnalysis analysis>;
+v21 = virtualinvoke v20.<org.yaml.snakeyaml.emitter.ScalarAnalysis: boolean isAllowFlowPlain()>();
+if v21 != 0 goto label07;
+label06:
+v22 = v0.<org.yaml.snakeyaml.emitter.Emitter: int flowLevel>;
+if v22 != 0 goto label08;
+v23 = v0.<org.yaml.snakeyaml.emitter.Emitter: org.yaml.snakeyaml.emitter.ScalarAnalysis analysis>;
+v24 = virtualinvoke v23.<org.yaml.snakeyaml.emitter.ScalarAnalysis: boolean isAllowBlockPlain()>();
+if v24 == 0 goto label08;
+label07:
+return null;
+label08:
+v25 = virtualinvoke v1.<org.yaml.snakeyaml.events.ScalarEvent: boolean isPlain()>();
+if v25 != 0 goto label10;
+v26 = virtualinvoke v1.<org.yaml.snakeyaml.events.ScalarEvent: org.yaml.snakeyaml.DumperOptions$ScalarStyle getScalarStyle()>();
+v27 = <org.yaml.snakeyaml.DumperOptions$ScalarStyle: org.yaml.snakeyaml.DumperOptions$ScalarStyle LITERAL>;
+if v26 == v27 goto label09;
+v28 = virtualinvoke v1.<org.yaml.snakeyaml.events.ScalarEvent: org.yaml.snakeyaml.DumperOptions$ScalarStyle getScalarStyle()>();
+v29 = <org.yaml.snakeyaml.DumperOptions$ScalarStyle: org.yaml.snakeyaml.DumperOptions$ScalarStyle FOLDED>;
+if v28 != v29 goto label10;
+label09:
+v30 = v0.<org.yaml.snakeyaml.emitter.Emitter: int flowLevel>;
+if v30 != 0 goto label10;
+v31 = v0.<org.yaml.snakeyaml.emitter.Emitter: boolean simpleKeyContext>;
+if v31 != 0 goto label10;
+v32 = v0.<org.yaml.snakeyaml.emitter.Emitter: org.yaml.snakeyaml.emitter.ScalarAnalysis analysis>;
+v33 = virtualinvoke v32.<org.yaml.snakeyaml.emitter.ScalarAnalysis: boolean isAllowBlock()>();
+if v33 == 0 goto label10;
+v34 = virtualinvoke v1.<org.yaml.snakeyaml.events.ScalarEvent: org.yaml.snakeyaml.DumperOptions$ScalarStyle getScalarStyle()>();
+return v34;
+label10:
+v35 = virtualinvoke v1.<org.yaml.snakeyaml.events.ScalarEvent: boolean isPlain()>();
+if v35 != 0 goto label11;
+v36 = virtualinvoke v1.<org.yaml.snakeyaml.events.ScalarEvent: org.yaml.snakeyaml.DumperOptions$ScalarStyle getScalarStyle()>();
+v37 = <org.yaml.snakeyaml.DumperOptions$ScalarStyle: org.yaml.snakeyaml.DumperOptions$ScalarStyle SINGLE_QUOTED>;
+if v36 != v37 goto label13;
+label11:
+v38 = v0.<org.yaml.snakeyaml.emitter.Emitter: org.yaml.snakeyaml.emitter.ScalarAnalysis analysis>;
+v39 = virtualinvoke v38.<org.yaml.snakeyaml.emitter.ScalarAnalysis: boolean isAllowSingleQuoted()>();
+if v39 == 0 goto label13;
+v40 = v0.<org.yaml.snakeyaml.emitter.Emitter: boolean simpleKeyContext>;
+if v40 == 0 goto label12;
+v41 = v0.<org.yaml.snakeyaml.emitter.Emitter: org.yaml.snakeyaml.emitter.ScalarAnalysis analysis>;
+v42 = virtualinvoke v41.<org.yaml.snakeyaml.emitter.ScalarAnalysis: boolean isMultiline()>();
+if v42 != 0 goto label13;
+label12:
+v43 = <org.yaml.snakeyaml.DumperOptions$ScalarStyle: org.yaml.snakeyaml.DumperOptions$ScalarStyle SINGLE_QUOTED>;
+return v43;
+label13:
+v44 = <org.yaml.snakeyaml.DumperOptions$ScalarStyle: org.yaml.snakeyaml.DumperOptions$ScalarStyle DOUBLE_QUOTED>;
+return v44;
+}
+private void processScalar() throws java.io.IOException
+{
+org.yaml.snakeyaml.DumperOptions$ScalarStyle v10, v14, v26, v5, v6;
+org.yaml.snakeyaml.events.Event v1;
+int[] v13;
+int v15, v16;
+java.lang.String v12, v18, v20, v22, v24, v27, v3;
+boolean v7, v8, v9;
+org.yaml.snakeyaml.emitter.Emitter v0;
+org.yaml.snakeyaml.emitter.ScalarAnalysis v11, v17, v19, v2, v21, v23, v4;
+org.yaml.snakeyaml.error.YAMLException v25;
+v0 := @this: org.yaml.snakeyaml.emitter.Emitter;
+v1 = v0.<org.yaml.snakeyaml.emitter.Emitter: org.yaml.snakeyaml.events.Event event>;
+v2 = v0.<org.yaml.snakeyaml.emitter.Emitter: org.yaml.snakeyaml.emitter.ScalarAnalysis analysis>;
+if v2 != null goto label01;
+v3 = virtualinvoke v1.<org.yaml.snakeyaml.events.ScalarEvent: java.lang.String getValue()>();
+v4 = specialinvoke v0.<org.yaml.snakeyaml.emitter.Emitter: org.yaml.snakeyaml.emitter.ScalarAnalysis analyzeScalar(java.lang.String)>(v3);
+v0.<org.yaml.snakeyaml.emitter.Emitter: org.yaml.snakeyaml.emitter.ScalarAnalysis analysis> = v4;
+label01:
+v5 = v0.<org.yaml.snakeyaml.emitter.Emitter: org.yaml.snakeyaml.DumperOptions$ScalarStyle style>;
+if v5 != null goto label02;
+v6 = specialinvoke v0.<org.yaml.snakeyaml.emitter.Emitter: org.yaml.snakeyaml.DumperOptions$ScalarStyle chooseScalarStyle()>();
+v0.<org.yaml.snakeyaml.emitter.Emitter: org.yaml.snakeyaml.DumperOptions$ScalarStyle style> = v6;
+label02:
+v7 = v0.<org.yaml.snakeyaml.emitter.Emitter: boolean simpleKeyContext>;
+if v7 != 0 goto label03;
+v8 = v0.<org.yaml.snakeyaml.emitter.Emitter: boolean splitLines>;
+if v8 == 0 goto label03;
+v9 = 1;
+goto label04;
+label03:
+v9 = 0;
+label04:
+v10 = v0.<org.yaml.snakeyaml.emitter.Emitter: org.yaml.snakeyaml.DumperOptions$ScalarStyle style>;
+if v10 != null goto label05;
+v11 = v0.<org.yaml.snakeyaml.emitter.Emitter: org.yaml.snakeyaml.emitter.ScalarAnalysis analysis>;
+v12 = virtualinvoke v11.<org.yaml.snakeyaml.emitter.ScalarAnalysis: java.lang.String getScalar()>();
+virtualinvoke v0.<org.yaml.snakeyaml.emitter.Emitter: void writePlain(java.lang.String,boolean)>(v12, v9);
+goto label11;
+label05:
+v13 = <org.yaml.snakeyaml.emitter.Emitter$1: int[] $SwitchMap$org$yaml$snakeyaml$DumperOptions$ScalarStyle>;
+v14 = v0.<org.yaml.snakeyaml.emitter.Emitter: org.yaml.snakeyaml.DumperOptions$ScalarStyle style>;
+v15 = virtualinvoke v14.<org.yaml.snakeyaml.DumperOptions$ScalarStyle: int ordinal()>();
+v16 = v13[v15];
+tableswitch(v16)
+{
+case 1: goto label06;
+case 2: goto label07;
+case 3: goto label08;
+case 4: goto label09;
+default: goto label10;
+};
+label06:
+v17 = v0.<org.yaml.snakeyaml.emitter.Emitter: org.yaml.snakeyaml.emitter.ScalarAnalysis analysis>;
+v18 = virtualinvoke v17.<org.yaml.snakeyaml.emitter.ScalarAnalysis: java.lang.String getScalar()>();
+specialinvoke v0.<org.yaml.snakeyaml.emitter.Emitter: void writeDoubleQuoted(java.lang.String,boolean)>(v18, v9);
+goto label11;
+label07:
+v19 = v0.<org.yaml.snakeyaml.emitter.Emitter: org.yaml.snakeyaml.emitter.ScalarAnalysis analysis>;
+v20 = virtualinvoke v19.<org.yaml.snakeyaml.emitter.ScalarAnalysis: java.lang.String getScalar()>();
+specialinvoke v0.<org.yaml.snakeyaml.emitter.Emitter: void writeSingleQuoted(java.lang.String,boolean)>(v20, v9);
+goto label11;
+label08:
+v21 = v0.<org.yaml.snakeyaml.emitter.Emitter: org.yaml.snakeyaml.emitter.ScalarAnalysis analysis>;
+v22 = virtualinvoke v21.<org.yaml.snakeyaml.emitter.ScalarAnalysis: java.lang.String getScalar()>();
+virtualinvoke v0.<org.yaml.snakeyaml.emitter.Emitter: void writeFolded(java.lang.String,boolean)>(v22, v9);
+goto label11;
+label09:
+v23 = v0.<org.yaml.snakeyaml.emitter.Emitter: org.yaml.snakeyaml.emitter.ScalarAnalysis analysis>;
+v24 = virtualinvoke v23.<org.yaml.snakeyaml.emitter.ScalarAnalysis: java.lang.String getScalar()>();
+virtualinvoke v0.<org.yaml.snakeyaml.emitter.Emitter: void writeLiteral(java.lang.String)>(v24);
+goto label11;
+label10:
+v25 = new org.yaml.snakeyaml.error.YAMLException;
+v26 = v0.<org.yaml.snakeyaml.emitter.Emitter: org.yaml.snakeyaml.DumperOptions$ScalarStyle style>;
+v27 = dynamicinvoke "makeConcatWithConstants" <java.lang.String (org.yaml.snakeyaml.DumperOptions$ScalarStyle)>(v26) <java.lang.invoke.StringConcatFactory: java.lang.invoke.CallSite makeConcatWithConstants(java.lang.invoke.MethodHandles$Lookup,java.lang.String,java.lang.invoke.MethodType,java.lang.String,java.lang.Object[])>("Unexpected style: \u0001");
+specialinvoke v25.<org.yaml.snakeyaml.error.YAMLException: void <init>(java.lang.String)>(v27);
+throw v25;
+label11:
+v0.<org.yaml.snakeyaml.emitter.Emitter: org.yaml.snakeyaml.emitter.ScalarAnalysis analysis> = null;
+v0.<org.yaml.snakeyaml.emitter.Emitter: org.yaml.snakeyaml.DumperOptions$ScalarStyle style> = null;
+return;
+}
+private java.lang.String prepareVersion(org.yaml.snakeyaml.DumperOptions$Version)
+{
+org.yaml.snakeyaml.emitter.Emitter v0;
+int v2;
+org.yaml.snakeyaml.DumperOptions$Version v1;
+java.lang.String v4, v5;
+org.yaml.snakeyaml.emitter.EmitterException v3;
+v0 := @this: org.yaml.snakeyaml.emitter.Emitter;
+v1 := @parameter0: org.yaml.snakeyaml.DumperOptions$Version;
+v2 = virtualinvoke v1.<org.yaml.snakeyaml.DumperOptions$Version: int major()>();
+if v2 == 1 goto label1;
+v3 = new org.yaml.snakeyaml.emitter.EmitterException;
+v4 = dynamicinvoke "makeConcatWithConstants" <java.lang.String (org.yaml.snakeyaml.DumperOptions$Version)>(v1) <java.lang.invoke.StringConcatFactory: java.lang.invoke.CallSite makeConcatWithConstants(java.lang.invoke.MethodHandles$Lookup,java.lang.String,java.lang.invoke.MethodType,java.lang.String,java.lang.Object[])>("unsupported YAML version: \u0001");
+specialinvoke v3.<org.yaml.snakeyaml.emitter.EmitterException: void <init>(java.lang.String)>(v4);
+throw v3;
+label1:
+v5 = virtualinvoke v1.<org.yaml.snakeyaml.DumperOptions$Version: java.lang.String getRepresentation()>();
+return v5;
+}
+private java.lang.String prepareTagHandle(java.lang.String)
+{
+java.util.regex.Matcher v13;
+int v2, v5, v6;
+java.lang.String v1, v10, v16, v9;
+boolean v11, v14;
+char v4, v7;
+org.yaml.snakeyaml.emitter.EmitterException v15, v3, v8;
+org.yaml.snakeyaml.emitter.Emitter v0;
+java.util.regex.Pattern v12;
+v0 := @this: org.yaml.snakeyaml.emitter.Emitter;
+v1 := @parameter0: java.lang.String;
+v2 = virtualinvoke v1.<java.lang.String: int length()>();
+if v2 != 0 goto label1;
+v3 = new org.yaml.snakeyaml.emitter.EmitterException;
+specialinvoke v3.<org.yaml.snakeyaml.emitter.EmitterException: void <init>(java.lang.String)>("tag handle must not be empty");
+throw v3;
+label1:
+v4 = virtualinvoke v1.<java.lang.String: char charAt(int)>(0);
+if v4 != 33 goto label2;
+v5 = virtualinvoke v1.<java.lang.String: int length()>();
+v6 = v5 - 1;
+v7 = virtualinvoke v1.<java.lang.String: char charAt(int)>(v6);
+if v7 == 33 goto label3;
+label2:
+v8 = new org.yaml.snakeyaml.emitter.EmitterException;
+v9 = dynamicinvoke "makeConcatWithConstants" <java.lang.String (java.lang.String)>(v1) <java.lang.invoke.StringConcatFactory: java.lang.invoke.CallSite makeConcatWithConstants(java.lang.invoke.MethodHandles$Lookup,java.lang.String,java.lang.invoke.MethodType,java.lang.String,java.lang.Object[])>("tag handle must start and end with \'!\': \u0001");
+specialinvoke v8.<org.yaml.snakeyaml.emitter.EmitterException: void <init>(java.lang.String)>(v9);
+throw v8;
+label3:
+v10 = "!";
+v11 = virtualinvoke v10.<java.lang.String: boolean equals(java.lang.Object)>(v1);
+if v11 != 0 goto label4;
+v12 = <org.yaml.snakeyaml.emitter.Emitter: java.util.regex.Pattern HANDLE_FORMAT>;
+v13 = virtualinvoke v12.<java.util.regex.Pattern: java.util.regex.Matcher matcher(java.lang.CharSequence)>(v1);
+v14 = virtualinvoke v13.<java.util.regex.Matcher: boolean matches()>();
+if v14 != 0 goto label4;
+v15 = new org.yaml.snakeyaml.emitter.EmitterException;
+v16 = dynamicinvoke "makeConcatWithConstants" <java.lang.String (java.lang.String)>(v1) <java.lang.invoke.StringConcatFactory: java.lang.invoke.CallSite makeConcatWithConstants(java.lang.invoke.MethodHandles$Lookup,java.lang.String,java.lang.invoke.MethodType,java.lang.String,java.lang.Object[])>("invalid character in the tag handle: \u0001");
+specialinvoke v15.<org.yaml.snakeyaml.emitter.EmitterException: void <init>(java.lang.String)>(v16);
+throw v15;
+label4:
+return v1;
+}
+private java.lang.String prepareTagPrefix(java.lang.String)
+{
+char v6;
+org.yaml.snakeyaml.emitter.EmitterException v3;
+org.yaml.snakeyaml.emitter.Emitter v0;
+int v2, v5, v7;
+java.lang.StringBuilder v4;
+java.lang.String v1, v8;
+v0 := @this: org.yaml.snakeyaml.emitter.Emitter;
+v1 := @parameter0: java.lang.String;
+v2 = virtualinvoke v1.<java.lang.String: int length()>();
+if v2 != 0 goto label1;
+v3 = new org.yaml.snakeyaml.emitter.EmitterException;
+specialinvoke v3.<org.yaml.snakeyaml.emitter.EmitterException: void <init>(java.lang.String)>("tag prefix must not be empty");
+throw v3;
+label1:
+v4 = new java.lang.StringBuilder;
+specialinvoke v4.<java.lang.StringBuilder: void <init>()>();
+v5 = 0;
+v6 = virtualinvoke v1.<java.lang.String: char charAt(int)>(0);
+if v6 != 33 goto label2;
+v5 = 1;
+label2:
+v7 = virtualinvoke v1.<java.lang.String: int length()>();
+if v5 >= v7 goto label3;
+v5 = v5 + 1;
+goto label2;
+label3:
+if 0 >= v5 goto label4;
+virtualinvoke v4.<java.lang.StringBuilder: java.lang.StringBuilder append(java.lang.CharSequence,int,int)>(v1, 0, v5);
+label4:
+v8 = virtualinvoke v4.<java.lang.StringBuilder: java.lang.String toString()>();
+return v8;
+}
+private java.lang.String prepareTag(java.lang.String)
+{
+java.util.Map v19, v8;
+int v16, v17, v18, v2, v21;
+java.lang.String v1, v14, v22, v23, v24, v4, v6, v7;
+boolean v11, v13, v15, v5;
+java.util.Iterator v10;
+java.util.Set v9;
+org.yaml.snakeyaml.emitter.EmitterException v3;
+org.yaml.snakeyaml.emitter.Emitter v0;
+java.lang.Object v12, v20;
+v0 := @this: org.yaml.snakeyaml.emitter.Emitter;
+v1 := @parameter0: java.lang.String;
+v2 = virtualinvoke v1.<java.lang.String: int length()>();
+if v2 != 0 goto label1;
+v3 = new org.yaml.snakeyaml.emitter.EmitterException;
+specialinvoke v3.<org.yaml.snakeyaml.emitter.EmitterException: void <init>(java.lang.String)>("tag must not be empty");
+throw v3;
+label1:
+v4 = "!";
+v5 = virtualinvoke v4.<java.lang.String: boolean equals(java.lang.Object)>(v1);
+if v5 == 0 goto label2;
+return v1;
+label2:
+v6 = null;
+v7 = v1;
+v8 = v0.<org.yaml.snakeyaml.emitter.Emitter: java.util.Map tagPrefixes>;
+v9 = interfaceinvoke v8.<java.util.Map: java.util.Set keySet()>();
+v10 = interfaceinvoke v9.<java.util.Set: java.util.Iterator iterator()>();
+label3:
+v11 = interfaceinvoke v10.<java.util.Iterator: boolean hasNext()>();
+if v11 == 0 goto label5;
+v12 = interfaceinvoke v10.<java.util.Iterator: java.lang.Object next()>();
+v13 = virtualinvoke v1.<java.lang.String: boolean startsWith(java.lang.String)>(v12);
+if v13 == 0 goto label3;
+v14 = "!";
+v15 = virtualinvoke v14.<java.lang.String: boolean equals(java.lang.Object)>(v12);
+if v15 != 0 goto label4;
+v16 = virtualinvoke v12.<java.lang.String: int length()>();
+v17 = virtualinvoke v1.<java.lang.String: int length()>();
+if v16 >= v17 goto label3;
+label4:
+v6 = v12;
+goto label3;
+label5:
+if v6 == null goto label6;
+v18 = virtualinvoke v6.<java.lang.String: int length()>();
+v7 = virtualinvoke v1.<java.lang.String: java.lang.String substring(int)>(v18);
+v19 = v0.<org.yaml.snakeyaml.emitter.Emitter: java.util.Map tagPrefixes>;
+v20 = interfaceinvoke v19.<java.util.Map: java.lang.Object get(java.lang.Object)>(v6);
+label6:
+v21 = virtualinvoke v7.<java.lang.String: int length()>();
+if v21 <= 0 goto label7;
+v22 = virtualinvoke v7.<java.lang.String: java.lang.String substring(int,int)>(0, v21);
+goto label8;
+label7:
+v22 = "";
+label8:
+if v20 == null goto label9;
+v23 = dynamicinvoke "makeConcatWithConstants" <java.lang.String (java.lang.String,java.lang.String)>(v20, v22) <java.lang.invoke.StringConcatFactory: java.lang.invoke.CallSite makeConcatWithConstants(java.lang.invoke.MethodHandles$Lookup,java.lang.String,java.lang.invoke.MethodType,java.lang.String,java.lang.Object[])>("\u0001\u0001");
+return v23;
+label9:
+v24 = dynamicinvoke "makeConcatWithConstants" <java.lang.String (java.lang.String)>(v22) <java.lang.invoke.StringConcatFactory: java.lang.invoke.CallSite makeConcatWithConstants(java.lang.invoke.MethodHandles$Lookup,java.lang.String,java.lang.invoke.MethodType,java.lang.String,java.lang.Object[])>("!<\u0001>");
+return v24;
+}
+static java.lang.String prepareAnchor(java.lang.String)
+{
+java.util.regex.Matcher v13;
+int v1, v8, v9;
+java.lang.String v0, v11, v16;
+boolean v14, v5;
+java.util.Iterator v4;
+java.util.Set v3;
+char v7;
+org.yaml.snakeyaml.emitter.EmitterException v10, v15, v2;
+java.lang.Object v6;
+java.util.regex.Pattern v12;
+v0 := @parameter0: java.lang.String;
+v1 = virtualinvoke v0.<java.lang.String: int length()>();
+if v1 != 0 goto label1;
+v2 = new org.yaml.snakeyaml.emitter.EmitterException;
+specialinvoke v2.<org.yaml.snakeyaml.emitter.EmitterException: void <init>(java.lang.String)>("anchor must not be empty");
+throw v2;
+label1:
+v3 = <org.yaml.snakeyaml.emitter.Emitter: java.util.Set INVALID_ANCHOR>;
+v4 = interfaceinvoke v3.<java.util.Set: java.util.Iterator iterator()>();
+label2:
+v5 = interfaceinvoke v4.<java.util.Iterator: boolean hasNext()>();
+if v5 == 0 goto label3;
+v6 = interfaceinvoke v4.<java.util.Iterator: java.lang.Object next()>();
+v7 = virtualinvoke v6.<java.lang.Character: char charValue()>();
+v8 = virtualinvoke v0.<java.lang.String: int indexOf(int)>(v7);
+v9 = (int) -1;
+if v8 <= v9 goto label2;
+v10 = new org.yaml.snakeyaml.emitter.EmitterException;
+v11 = dynamicinvoke "makeConcatWithConstants" <java.lang.String (java.lang.Character,java.lang.String)>(v6, v0) <java.lang.invoke.StringConcatFactory: java.lang.invoke.CallSite makeConcatWithConstants(java.lang.invoke.MethodHandles$Lookup,java.lang.String,java.lang.invoke.MethodType,java.lang.String,java.lang.Object[])>("Invalid character \'\u0001\' in the anchor: \u0001");
+specialinvoke v10.<org.yaml.snakeyaml.emitter.EmitterException: void <init>(java.lang.String)>(v11);
+throw v10;
+label3:
+v12 = <org.yaml.snakeyaml.emitter.Emitter: java.util.regex.Pattern SPACES_PATTERN>;
+v13 = virtualinvoke v12.<java.util.regex.Pattern: java.util.regex.Matcher matcher(java.lang.CharSequence)>(v0);
+v14 = virtualinvoke v13.<java.util.regex.Matcher: boolean find()>();
+if v14 == 0 goto label4;
+v15 = new org.yaml.snakeyaml.emitter.EmitterException;
+v16 = dynamicinvoke "makeConcatWithConstants" <java.lang.String (java.lang.String)>(v0) <java.lang.invoke.StringConcatFactory: java.lang.invoke.CallSite makeConcatWithConstants(java.lang.invoke.MethodHandles$Lookup,java.lang.String,java.lang.invoke.MethodType,java.lang.String,java.lang.Object[])>("Anchor may not contain spaces: \u0001");
+specialinvoke v15.<org.yaml.snakeyaml.emitter.EmitterException: void <init>(java.lang.String)>(v16);
+throw v15;
+label4:
+return v0;
+}
+private org.yaml.snakeyaml.emitter.ScalarAnalysis analyzeScalar(java.lang.String)
+{
+java.util.regex.Matcher v9;
+java.lang.String v1, v31, v34;
+boolean v10, v11, v12, v13, v14, v15, v16, v17, v18, v19, v23, v24, v25, v26, v27, v38, v4, v42, v49, v5, v50, v59, v6, v60, v61, v62, v63, v64, v7;
+org.yaml.snakeyaml.scanner.Constant v21, v37, v48, v57;
+java.util.regex.Pattern v8;
+org.yaml.snakeyaml.emitter.ScalarAnalysis v3, v65;
+int v2, v20, v22, v28, v29, v30, v32, v33, v35, v36, v39, v40, v41, v43, v44, v45, v46, v47, v51, v52, v53, v54, v55, v56, v58;
+org.yaml.snakeyaml.emitter.Emitter v0;
+v0 := @this: org.yaml.snakeyaml.emitter.Emitter;
+v1 := @parameter0: java.lang.String;
+v2 = virtualinvoke v1.<java.lang.String: int length()>();
+if v2 != 0 goto label01;
+v3 = new org.yaml.snakeyaml.emitter.ScalarAnalysis;
+specialinvoke v3.<org.yaml.snakeyaml.emitter.ScalarAnalysis: void <init>(java.lang.String,boolean,boolean,boolean,boolean,boolean,boolean)>(v1, 1, 0, 0, 1, 1, 0);
+return v3;
+label01:
+v4 = 0;
+v5 = 0;
+v6 = 0;
+v7 = 0;
+v8 = <org.yaml.snakeyaml.emitter.Emitter: java.util.regex.Pattern LEADING_ZERO_PATTERN>;
+v9 = virtualinvoke v8.<java.util.regex.Pattern: java.util.regex.Matcher matcher(java.lang.CharSequence)>(v1);
+v10 = virtualinvoke v9.<java.util.regex.Matcher: boolean matches()>();
+v11 = 0;
+v12 = 0;
+v13 = 0;
+v14 = 0;
+v15 = 0;
+v16 = 0;
+v17 = virtualinvoke v1.<java.lang.String: boolean startsWith(java.lang.String)>("---");
+if v17 != 0 goto label02;
+v18 = virtualinvoke v1.<java.lang.String: boolean startsWith(java.lang.String)>("...");
+if v18 == 0 goto label03;
+label02:
+v4 = 1;
+v5 = 1;
+label03:
+v19 = 1;
+v20 = virtualinvoke v1.<java.lang.String: int length()>();
+if v20 == 1 goto label04;
+v21 = <org.yaml.snakeyaml.scanner.Constant: org.yaml.snakeyaml.scanner.Constant NULL_BL_T_LINEBR>;
+v22 = virtualinvoke v1.<java.lang.String: int codePointAt(int)>(1);
+v23 = virtualinvoke v21.<org.yaml.snakeyaml.scanner.Constant: boolean has(int)>(v22);
+if v23 == 0 goto label05;
+label04:
+v24 = 1;
+goto label06;
+label05:
+v24 = 0;
+label06:
+v25 = v24;
+v26 = 0;
+v27 = 0;
+v28 = 0;
+label07:
+v29 = virtualinvoke v1.<java.lang.String: int length()>();
+if v28 >= v29 goto label37;
+v30 = virtualinvoke v1.<java.lang.String: int codePointAt(int)>(v28);
+if v28 != 0 goto label11;
+v31 = "#,[]{}&*!|>\'\"%@`";
+v32 = virtualinvoke v31.<java.lang.String: int indexOf(int)>(v30);
+v33 = (int) -1;
+if v32 == v33 goto label08;
+v5 = 1;
+v4 = 1;
+label08:
+if v30 == 63 goto label09;
+if v30 != 58 goto label10;
+label09:
+v5 = 1;
+if v25 == 0 goto label10;
+v4 = 1;
+label10:
+if v30 != 45 goto label14;
+if v25 == 0 goto label14;
+v5 = 1;
+v4 = 1;
+goto label14;
+label11:
+v34 = ",?[]{}";
+v35 = virtualinvoke v34.<java.lang.String: int indexOf(int)>(v30);
+v36 = (int) -1;
+if v35 == v36 goto label12;
+v5 = 1;
+label12:
+if v30 != 58 goto label13;
+v5 = 1;
+if v25 == 0 goto label13;
+v4 = 1;
+label13:
+if v30 != 35 goto label14;
+if v19 == 0 goto label14;
+v5 = 1;
+v4 = 1;
+label14:
+v37 = <org.yaml.snakeyaml.scanner.Constant: org.yaml.snakeyaml.scanner.Constant LINEBR>;
+v38 = virtualinvoke v37.<org.yaml.snakeyaml.scanner.Constant: boolean has(int)>(v30);
+if v38 == 0 goto label15;
+v6 = 1;
+label15:
+if v30 == 10 goto label21;
+if 32 > v30 goto label16;
+if v30 <= 126 goto label21;
+label16:
+if v30 == 133 goto label19;
+if v30 < 160 goto label17;
+v39 = (int) 55295;
+if v30 <= v39 goto label19;
+label17:
+v40 = (int) 57344;
+if v30 < v40 goto label18;
+v41 = (int) 65533;
+if v30 <= v41 goto label19;
+label18:
+if v30 < 65536 goto label20;
+if v30 > 1114111 goto label20;
+label19:
+v42 = v0.<org.yaml.snakeyaml.emitter.Emitter: boolean allowUnicode>;
+if v42 != 0 goto label21;
+v7 = 1;
+goto label21;
+label20:
+v7 = 1;
+label21:
+if v30 != 32 goto label25;
+if v28 != 0 goto label22;
+v11 = 1;
+label22:
+v43 = virtualinvoke v1.<java.lang.String: int length()>();
+v44 = v43 - 1;
+if v28 != v44 goto label23;
+v13 = 1;
+label23:
+if v27 == 0 goto label24;
+v15 = 1;
+label24:
+v26 = 1;
+v27 = 0;
+goto label30;
+label25:
+if v38 == 0 goto label29;
+if v28 != 0 goto label26;
+v12 = 1;
+label26:
+v45 = virtualinvoke v1.<java.lang.String: int length()>();
+v46 = v45 - 1;
+if v28 != v46 goto label27;
+v14 = 1;
+label27:
+if v26 == 0 goto label28;
+v16 = 1;
+label28:
+v26 = 0;
+v27 = 1;
+goto label30;
+label29:
+v26 = 0;
+v27 = 0;
+label30:
+v47 = staticinvoke <java.lang.Character: int charCount(int)>(v30);
+v28 = v28 + v47;
+v48 = <org.yaml.snakeyaml.scanner.Constant: org.yaml.snakeyaml.scanner.Constant NULL_BL_T>;
+v49 = virtualinvoke v48.<org.yaml.snakeyaml.scanner.Constant: boolean has(int)>(v30);
+if v49 != 0 goto label31;
+if v38 == 0 goto label32;
+label31:
+v50 = 1;
+goto label33;
+label32:
+v50 = 0;
+label33:
+v19 = v50;
+v25 = 1;
+v51 = v28 + 1;
+v52 = virtualinvoke v1.<java.lang.String: int length()>();
+if v51 >= v52 goto label07;
+v53 = virtualinvoke v1.<java.lang.String: int codePointAt(int)>(v28);
+v54 = staticinvoke <java.lang.Character: int charCount(int)>(v53);
+v55 = v28 + v54;
+v56 = virtualinvoke v1.<java.lang.String: int length()>();
+if v55 >= v56 goto label07;
+v57 = <org.yaml.snakeyaml.scanner.Constant: org.yaml.snakeyaml.scanner.Constant NULL_BL_T>;
+v58 = virtualinvoke v1.<java.lang.String: int codePointAt(int)>(v55);
+v59 = virtualinvoke v57.<org.yaml.snakeyaml.scanner.Constant: boolean has(int)>(v58);
+if v59 != 0 goto label34;
+if v38 == 0 goto label35;
+label34:
+v60 = 1;
+goto label36;
+label35:
+v60 = 0;
+label36:
+v25 = v60;
+goto label07;
+label37:
+v61 = 1;
+v62 = 1;
+v63 = 1;
+v64 = 1;
+if v11 != 0 goto label38;
+if v12 != 0 goto label38;
+if v13 != 0 goto label38;
+if v14 != 0 goto label38;
+if v10 == 0 goto label39;
+label38:
+v62 = 0;
+v61 = 0;
+label39:
+if v13 == 0 goto label40;
+v64 = 0;
+label40:
+if v15 == 0 goto label41;
+v63 = 0;
+v62 = 0;
+v61 = 0;
+label41:
+if v16 != 0 goto label42;
+if v7 == 0 goto label43;
+label42:
+v64 = 0;
+v63 = 0;
+v62 = 0;
+v61 = 0;
+label43:
+if v6 == 0 goto label44;
+v61 = 0;
+label44:
+if v5 == 0 goto label45;
+v61 = 0;
+label45:
+if v4 == 0 goto label46;
+v62 = 0;
+label46:
+v65 = new org.yaml.snakeyaml.emitter.ScalarAnalysis;
+specialinvoke v65.<org.yaml.snakeyaml.emitter.ScalarAnalysis: void <init>(java.lang.String,boolean,boolean,boolean,boolean,boolean,boolean)>(v1, 0, v6, v61, v62, v63, v64);
+return v65;
+}
+void flushStream() throws java.io.IOException
+{
+java.io.Writer v1;
+org.yaml.snakeyaml.emitter.Emitter v0;
+v0 := @this: org.yaml.snakeyaml.emitter.Emitter;
+v1 = v0.<org.yaml.snakeyaml.emitter.Emitter: java.io.Writer stream>;
+virtualinvoke v1.<java.io.Writer: void flush()>();
+return;
+}
+void writeStreamStart()
+{
+org.yaml.snakeyaml.emitter.Emitter v0;
+v0 := @this: org.yaml.snakeyaml.emitter.Emitter;
+return;
+}
+void writeStreamEnd() throws java.io.IOException
+{
+org.yaml.snakeyaml.emitter.Emitter v0;
+v0 := @this: org.yaml.snakeyaml.emitter.Emitter;
+virtualinvoke v0.<org.yaml.snakeyaml.emitter.Emitter: void flushStream()>();
+return;
+}
+void writeIndicator(java.lang.String, boolean, boolean, boolean) throws java.io.IOException
+{
+int v12, v13, v14, v6, v7;
+java.lang.String v1;
+boolean v10, v11, v2, v3, v4, v5;
+org.yaml.snakeyaml.emitter.Emitter v0;
+java.io.Writer v15, v8;
+char[] v9;
+v0 := @this: org.yaml.snakeyaml.emitter.Emitter;
+v1 := @parameter0: java.lang.String;
+v2 := @parameter1: boolean;
+v3 := @parameter2: boolean;
+v4 := @parameter3: boolean;
+v5 = v0.<org.yaml.snakeyaml.emitter.Emitter: boolean whitespace>;
+if v5 != 0 goto label1;
+if v2 == 0 goto label1;
+v6 = v0.<org.yaml.snakeyaml.emitter.Emitter: int column>;
+v7 = v6 + 1;
+v0.<org.yaml.snakeyaml.emitter.Emitter: int column> = v7;
+v8 = v0.<org.yaml.snakeyaml.emitter.Emitter: java.io.Writer stream>;
+v9 = <org.yaml.snakeyaml.emitter.Emitter: char[] SPACE>;
+virtualinvoke v8.<java.io.Writer: void write(char[])>(v9);
+label1:
+v0.<org.yaml.snakeyaml.emitter.Emitter: boolean whitespace> = v3;
+v10 = v0.<org.yaml.snakeyaml.emitter.Emitter: boolean indention>;
+if v10 == 0 goto label2;
+if v4 == 0 goto label2;
+v11 = 1;
+goto label3;
+label2:
+v11 = 0;
+label3:
+v0.<org.yaml.snakeyaml.emitter.Emitter: boolean indention> = v11;
+v12 = v0.<org.yaml.snakeyaml.emitter.Emitter: int column>;
+v13 = virtualinvoke v1.<java.lang.String: int length()>();
+v14 = v12 + v13;
+v0.<org.yaml.snakeyaml.emitter.Emitter: int column> = v14;
+v0.<org.yaml.snakeyaml.emitter.Emitter: boolean openEnded> = 0;
+v15 = v0.<org.yaml.snakeyaml.emitter.Emitter: java.io.Writer stream>;
+virtualinvoke v15.<java.io.Writer: void write(java.lang.String)>(v1);
+return;
+}
+void writeIndent() throws java.io.IOException
+{
+java.lang.Integer v1, v2;
+org.yaml.snakeyaml.emitter.Emitter v0;
+int v3, v5, v6, v8, v9;
+boolean v4, v7;
+v0 := @this: org.yaml.snakeyaml.emitter.Emitter;
+v1 = v0.<org.yaml.snakeyaml.emitter.Emitter: java.lang.Integer indent>;
+if v1 == null goto label1;
+v2 = v0.<org.yaml.snakeyaml.emitter.Emitter: java.lang.Integer indent>;
+v3 = virtualinvoke v2.<java.lang.Integer: int intValue()>();
+goto label2;
+label1:
+v3 = 0;
+label2:
+v4 = v0.<org.yaml.snakeyaml.emitter.Emitter: boolean indention>;
+if v4 == 0 goto label3;
+v5 = v0.<org.yaml.snakeyaml.emitter.Emitter: int column>;
+if v5 > v3 goto label3;
+v6 = v0.<org.yaml.snakeyaml.emitter.Emitter: int column>;
+if v6 != v3 goto label4;
+v7 = v0.<org.yaml.snakeyaml.emitter.Emitter: boolean whitespace>;
+if v7 != 0 goto label4;
+label3:
+specialinvoke v0.<org.yaml.snakeyaml.emitter.Emitter: void writeLineBreak(java.lang.String)>(null);
+label4:
+v8 = v0.<org.yaml.snakeyaml.emitter.Emitter: int column>;
+v9 = v3 - v8;
+specialinvoke v0.<org.yaml.snakeyaml.emitter.Emitter: void writeWhitespace(int)>(v9);
+return;
+}
+private void writeWhitespace(int) throws java.io.IOException
+{
+org.yaml.snakeyaml.emitter.Emitter v0;
+int v1, v3, v4, v5, v6;
+java.io.Writer v7;
+char[] v2;
+v0 := @this: org.yaml.snakeyaml.emitter.Emitter;
+v1 := @parameter0: int;
+if v1 > 0 goto label1;
+return;
+label1:
+v0.<org.yaml.snakeyaml.emitter.Emitter: boolean whitespace> = 1;
+v2 = newarray (char)[v1];
+v3 = 0;
+label2:
+v4 = lengthof v2;
+if v3 >= v4 goto label3;
+v2[v3] = 32;
+v3 = v3 + 1;
+goto label2;
+label3:
+v5 = v0.<org.yaml.snakeyaml.emitter.Emitter: int column>;
+v6 = v5 + v1;
+v0.<org.yaml.snakeyaml.emitter.Emitter: int column> = v6;
+v7 = v0.<org.yaml.snakeyaml.emitter.Emitter: java.io.Writer stream>;
+virtualinvoke v7.<java.io.Writer: void write(char[])>(v2);
+return;
+}
+private void writeLineBreak(java.lang.String) throws java.io.IOException
+{
+org.yaml.snakeyaml.emitter.Emitter v0;
+java.io.Writer v2, v4;
+char[] v3;
+java.lang.String v1;
+v0 := @this: org.yaml.snakeyaml.emitter.Emitter;
+v1 := @parameter0: java.lang.String;
+v0.<org.yaml.snakeyaml.emitter.Emitter: boolean whitespace> = 1;
+v0.<org.yaml.snakeyaml.emitter.Emitter: boolean indention> = 1;
+v0.<org.yaml.snakeyaml.emitter.Emitter: int column> = 0;
+if v1 != null goto label1;
+v2 = v0.<org.yaml.snakeyaml.emitter.Emitter: java.io.Writer stream>;
+v3 = v0.<org.yaml.snakeyaml.emitter.Emitter: char[] bestLineBreak>;
+virtualinvoke v2.<java.io.Writer: void write(char[])>(v3);
+goto label2;
+label1:
+v4 = v0.<org.yaml.snakeyaml.emitter.Emitter: java.io.Writer stream>;
+virtualinvoke v4.<java.io.Writer: void write(java.lang.String)>(v1);
+label2:
+return;
+}
+void writeVersionDirective(java.lang.String) throws java.io.IOException
+{
+org.yaml.snakeyaml.emitter.Emitter v0;
+java.io.Writer v2, v3;
+java.lang.String v1;
+v0 := @this: org.yaml.snakeyaml.emitter.Emitter;
+v1 := @parameter0: java.lang.String;
+v2 = v0.<org.yaml.snakeyaml.emitter.Emitter: java.io.Writer stream>;
+virtualinvoke v2.<java.io.Writer: void write(java.lang.String)>("%YAML ");
+v3 = v0.<org.yaml.snakeyaml.emitter.Emitter: java.io.Writer stream>;
+virtualinvoke v3.<java.io.Writer: void write(java.lang.String)>(v1);
+specialinvoke v0.<org.yaml.snakeyaml.emitter.Emitter: void writeLineBreak(java.lang.String)>(null);
+return;
+}
+void writeTagDirective(java.lang.String, java.lang.String) throws java.io.IOException
+{
+org.yaml.snakeyaml.emitter.Emitter v0;
+java.io.Writer v3, v4, v5, v7;
+char[] v6;
+java.lang.String v1, v2;
+v0 := @this: org.yaml.snakeyaml.emitter.Emitter;
+v1 := @parameter0: java.lang.String;
+v2 := @parameter1: java.lang.String;
+v3 = v0.<org.yaml.snakeyaml.emitter.Emitter: java.io.Writer stream>;
+virtualinvoke v3.<java.io.Writer: void write(java.lang.String)>("%TAG ");
+v4 = v0.<org.yaml.snakeyaml.emitter.Emitter: java.io.Writer stream>;
+virtualinvoke v4.<java.io.Writer: void write(java.lang.String)>(v1);
+v5 = v0.<org.yaml.snakeyaml.emitter.Emitter: java.io.Writer stream>;
+v6 = <org.yaml.snakeyaml.emitter.Emitter: char[] SPACE>;
+virtualinvoke v5.<java.io.Writer: void write(char[])>(v6);
+v7 = v0.<org.yaml.snakeyaml.emitter.Emitter: java.io.Writer stream>;
+virtualinvoke v7.<java.io.Writer: void write(java.lang.String)>(v2);
+specialinvoke v0.<org.yaml.snakeyaml.emitter.Emitter: void writeLineBreak(java.lang.String)>(null);
+return;
+}
+private void writeSingleQuoted(java.lang.String, boolean) throws java.io.IOException
+{
+boolean v19, v2, v28, v3, v36, v4;
+org.yaml.snakeyaml.scanner.Constant v18, v27, v37;
+java.io.Writer v17, v32, v35;
+int v10, v11, v12, v13, v14, v15, v16, v23, v24, v29, v30, v31, v33, v34, v5, v6, v7, v8, v9;
+java.lang.String v1, v21, v26;
+char v20, v25;
+org.yaml.snakeyaml.emitter.Emitter v0;
+char[] v22;
+v0 := @this: org.yaml.snakeyaml.emitter.Emitter;
+v1 := @parameter0: java.lang.String;
+v2 := @parameter1: boolean;
+virtualinvoke v0.<org.yaml.snakeyaml.emitter.Emitter: void writeIndicator(java.lang.String,boolean,boolean,boolean)>("\'", 1, 0, 0);
+v3 = 0;
+v4 = 0;
+v5 = 0;
+v6 = 0;
+label01:
+v7 = virtualinvoke v1.<java.lang.String: int length()>();
+if v6 > v7 goto label19;
+v8 = 0;
+v9 = virtualinvoke v1.<java.lang.String: int length()>();
+if v6 >= v9 goto label02;
+v8 = virtualinvoke v1.<java.lang.String: char charAt(int)>(v6);
+label02:
+if v3 == 0 goto label06;
+if v8 == 0 goto label03;
+if v8 == 32 goto label14;
+label03:
+v10 = v5 + 1;
+if v10 != v6 goto label04;
+v11 = v0.<org.yaml.snakeyaml.emitter.Emitter: int column>;
+v12 = v0.<org.yaml.snakeyaml.emitter.Emitter: int bestWidth>;
+if v11 <= v12 goto label04;
+if v2 == 0 goto label04;
+if v5 == 0 goto label04;
+v13 = virtualinvoke v1.<java.lang.String: int length()>();
+if v6 == v13 goto label04;
+virtualinvoke v0.<org.yaml.snakeyaml.emitter.Emitter: void writeIndent()>();
+goto label05;
+label04:
+v14 = v6 - v5;
+v15 = v0.<org.yaml.snakeyaml.emitter.Emitter: int column>;
+v16 = v15 + v14;
+v0.<org.yaml.snakeyaml.emitter.Emitter: int column> = v16;
+v17 = v0.<org.yaml.snakeyaml.emitter.Emitter: java.io.Writer stream>;
+virtualinvoke v17.<java.io.Writer: void write(java.lang.String,int,int)>(v1, v5, v14);
+label05:
+v5 = v6;
+goto label14;
+label06:
+if v4 == 0 goto label13;
+if v8 == 0 goto label07;
+v18 = <org.yaml.snakeyaml.scanner.Constant: org.yaml.snakeyaml.scanner.Constant LINEBR>;
+v19 = virtualinvoke v18.<org.yaml.snakeyaml.scanner.Constant: boolean hasNo(int)>(v8);
+if v19 == 0 goto label14;
+label07:
+v20 = virtualinvoke v1.<java.lang.String: char charAt(int)>(v5);
+if v20 != 10 goto label08;
+specialinvoke v0.<org.yaml.snakeyaml.emitter.Emitter: void writeLineBreak(java.lang.String)>(null);
+label08:
+v21 = virtualinvoke v1.<java.lang.String: java.lang.String substring(int,int)>(v5, v6);
+v22 = virtualinvoke v21.<java.lang.String: char[] toCharArray()>();
+v23 = lengthof v22;
+v24 = 0;
+label09:
+if v24 >= v23 goto label12;
+v25 = v22[v24];
+if v25 != 10 goto label10;
+specialinvoke v0.<org.yaml.snakeyaml.emitter.Emitter: void writeLineBreak(java.lang.String)>(null);
+goto label11;
+label10:
+v26 = staticinvoke <java.lang.String: java.lang.String valueOf(char)>(v25);
+specialinvoke v0.<org.yaml.snakeyaml.emitter.Emitter: void writeLineBreak(java.lang.String)>(v26);
+label11:
+v24 = v24 + 1;
+goto label09;
+label12:
+virtualinvoke v0.<org.yaml.snakeyaml.emitter.Emitter: void writeIndent()>();
+v5 = v6;
+goto label14;
+label13:
+v27 = <org.yaml.snakeyaml.scanner.Constant: org.yaml.snakeyaml.scanner.Constant LINEBR>;
+v28 = virtualinvoke v27.<org.yaml.snakeyaml.scanner.Constant: boolean has(int,java.lang.String)>(v8, "\u0000 \'");
+if v28 == 0 goto label14;
+if v5 >= v6 goto label14;
+v29 = v6 - v5;
+v30 = v0.<org.yaml.snakeyaml.emitter.Emitter: int column>;
+v31 = v30 + v29;
+v0.<org.yaml.snakeyaml.emitter.Emitter: int column> = v31;
+v32 = v0.<org.yaml.snakeyaml.emitter.Emitter: java.io.Writer stream>;
+virtualinvoke v32.<java.io.Writer: void write(java.lang.String,int,int)>(v1, v5, v29);
+v5 = v6;
+label14:
+if v8 != 39 goto label15;
+v33 = v0.<org.yaml.snakeyaml.emitter.Emitter: int column>;
+v34 = v33 + 2;
+v0.<org.yaml.snakeyaml.emitter.Emitter: int column> = v34;
+v35 = v0.<org.yaml.snakeyaml.emitter.Emitter: java.io.Writer stream>;
+virtualinvoke v35.<java.io.Writer: void write(java.lang.String)>("\'\'");
+v5 = v6 + 1;
+label15:
+if v8 == 0 goto label18;
+if v8 != 32 goto label16;
+v36 = 1;
+goto label17;
+label16:
+v36 = 0;
+label17:
+v3 = v36;
+v37 = <org.yaml.snakeyaml.scanner.Constant: org.yaml.snakeyaml.scanner.Constant LINEBR>;
+v4 = virtualinvoke v37.<org.yaml.snakeyaml.scanner.Constant: boolean has(int)>(v8);
+label18:
+v6 = v6 + 1;
+goto label01;
+label19:
+virtualinvoke v0.<org.yaml.snakeyaml.emitter.Emitter: void writeIndicator(java.lang.String,boolean,boolean,boolean)>("\'", 0, 0, 0);
+return;
+}
+private void writeDoubleQuoted(java.lang.String, boolean) throws java.io.IOException
+{
+java.lang.Character v6;
+java.util.Map v19, v21;
+java.lang.String v1, v23, v39, v40, v43, v45, v46, v49, v51, v52, v55, v67, v68, v74, v9;
+char[] v35;
+boolean v2, v20, v25, v33, v34;
+java.io.Writer v18, v59, v72, v78;
+int v11, v12, v15, v16, v17, v26, v27, v28, v3, v31, v36, v4, v41, v42, v44, v47, v48, v5, v53, v54, v56, v57, v58, v60, v61, v63, v64, v65, v66, v69, v7, v70, v71, v75, v76, v77;
+char v10, v13, v14, v24, v29, v30, v32, v37, v38, v50, v62, v73, v8;
+org.yaml.snakeyaml.emitter.Emitter v0;
+java.lang.Object v22;
+v0 := @this: org.yaml.snakeyaml.emitter.Emitter;
+v1 := @parameter0: java.lang.String;
+v2 := @parameter1: boolean;
+virtualinvoke v0.<org.yaml.snakeyaml.emitter.Emitter: void writeIndicator(java.lang.String,boolean,boolean,boolean)>("\"", 1, 0, 0);
+v3 = 0;
+v4 = 0;
+label01:
+v5 = virtualinvoke v1.<java.lang.String: int length()>();
+if v4 > v5 goto label18;
+v6 = null;
+v7 = virtualinvoke v1.<java.lang.String: int length()>();
+if v4 >= v7 goto label02;
+v8 = virtualinvoke v1.<java.lang.String: char charAt(int)>(v4);
+v6 = staticinvoke <java.lang.Character: java.lang.Character valueOf(char)>(v8);
+label02:
+if v6 == null goto label03;
+v9 = "\"\\\u0085\u2028\u2029\ufeff";
+v10 = virtualinvoke v6.<java.lang.Character: char charValue()>();
+v11 = virtualinvoke v9.<java.lang.String: int indexOf(int)>(v10);
+v12 = (int) -1;
+if v11 != v12 goto label03;
+v13 = virtualinvoke v6.<java.lang.Character: char charValue()>();
+if 32 > v13 goto label03;
+v14 = virtualinvoke v6.<java.lang.Character: char charValue()>();
+if v14 <= 126 goto label12;
+label03:
+if v3 >= v4 goto label04;
+v15 = v4 - v3;
+v16 = v0.<org.yaml.snakeyaml.emitter.Emitter: int column>;
+v17 = v16 + v15;
+v0.<org.yaml.snakeyaml.emitter.Emitter: int column> = v17;
+v18 = v0.<org.yaml.snakeyaml.emitter.Emitter: java.io.Writer stream>;
+virtualinvoke v18.<java.io.Writer: void write(java.lang.String,int,int)>(v1, v3, v15);
+v3 = v4;
+label04:
+if v6 == null goto label12;
+v19 = <org.yaml.snakeyaml.emitter.Emitter: java.util.Map ESCAPE_REPLACEMENTS>;
+v20 = interfaceinvoke v19.<java.util.Map: boolean containsKey(java.lang.Object)>(v6);
+if v20 == 0 goto label05;
+v21 = <org.yaml.snakeyaml.emitter.Emitter: java.util.Map ESCAPE_REPLACEMENTS>;
+v22 = interfaceinvoke v21.<java.util.Map: java.lang.Object get(java.lang.Object)>(v6);
+v23 = dynamicinvoke "makeConcatWithConstants" <java.lang.String (java.lang.Object)>(v22) <java.lang.invoke.StringConcatFactory: java.lang.invoke.CallSite makeConcatWithConstants(java.lang.invoke.MethodHandles$Lookup,java.lang.String,java.lang.invoke.MethodType,java.lang.String,java.lang.Object[])>("\\\u0001");
+goto label11;
+label05:
+v24 = virtualinvoke v6.<java.lang.Character: char charValue()>();
+v25 = staticinvoke <java.lang.Character: boolean isHighSurrogate(char)>(v24);
+if v25 == 0 goto label06;
+v26 = v4 + 1;
+v27 = virtualinvoke v1.<java.lang.String: int length()>();
+if v26 >= v27 goto label06;
+v28 = v4 + 1;
+v29 = virtualinvoke v1.<java.lang.String: char charAt(int)>(v28);
+v30 = virtualinvoke v6.<java.lang.Character: char charValue()>();
+v31 = staticinvoke <java.lang.Character: int toCodePoint(char,char)>(v30, v29);
+goto label07;
+label06:
+v32 = virtualinvoke v6.<java.lang.Character: char charValue()>();
+v31 = v32;
+label07:
+v33 = v0.<org.yaml.snakeyaml.emitter.Emitter: boolean allowUnicode>;
+if v33 == 0 goto label08;
+v34 = staticinvoke <org.yaml.snakeyaml.reader.StreamReader: boolean isPrintable(int)>(v31);
+if v34 == 0 goto label08;
+v35 = staticinvoke <java.lang.Character: char[] toChars(int)>(v31);
+v23 = staticinvoke <java.lang.String: java.lang.String valueOf(char[])>(v35);
+v36 = staticinvoke <java.lang.Character: int charCount(int)>(v31);
+if v36 != 2 goto label11;
+v4 = v4 + 1;
+goto label11;
+label08:
+v37 = virtualinvoke v6.<java.lang.Character: char charValue()>();
+if v37 > 255 goto label09;
+v38 = virtualinvoke v6.<java.lang.Character: char charValue()>();
+v39 = staticinvoke <java.lang.Integer: java.lang.String toString(int,int)>(v38, 16);
+v40 = dynamicinvoke "makeConcatWithConstants" <java.lang.String (java.lang.String)>(v39) <java.lang.invoke.StringConcatFactory: java.lang.invoke.CallSite makeConcatWithConstants(java.lang.invoke.MethodHandles$Lookup,java.lang.String,java.lang.invoke.MethodType,java.lang.String,java.lang.Object[])>("0\u0001");
+v41 = virtualinvoke v40.<java.lang.String: int length()>();
+v42 = v41 - 2;
+v43 = virtualinvoke v40.<java.lang.String: java.lang.String substring(int)>(v42);
+v23 = dynamicinvoke "makeConcatWithConstants" <java.lang.String (java.lang.String)>(v43) <java.lang.invoke.StringConcatFactory: java.lang.invoke.CallSite makeConcatWithConstants(java.lang.invoke.MethodHandles$Lookup,java.lang.String,java.lang.invoke.MethodType,java.lang.String,java.lang.Object[])>("\\x\u0001");
+goto label11;
+label09:
+v44 = staticinvoke <java.lang.Character: int charCount(int)>(v31);
+if v44 != 2 goto label10;
+v4 = v4 + 1;
+v45 = staticinvoke <java.lang.Long: java.lang.String toHexString(long)>(v31);
+v46 = dynamicinvoke "makeConcatWithConstants" <java.lang.String (java.lang.String)>(v45) <java.lang.invoke.StringConcatFactory: java.lang.invoke.CallSite makeConcatWithConstants(java.lang.invoke.MethodHandles$Lookup,java.lang.String,java.lang.invoke.MethodType,java.lang.String,java.lang.Object[])>("000\u0001");
+v47 = virtualinvoke v46.<java.lang.String: int length()>();
+v48 = v47 - 8;
+v49 = virtualinvoke v46.<java.lang.String: java.lang.String substring(int)>(v48);
+v23 = dynamicinvoke "makeConcatWithConstants" <java.lang.String (java.lang.String)>(v49) <java.lang.invoke.StringConcatFactory: java.lang.invoke.CallSite makeConcatWithConstants(java.lang.invoke.MethodHandles$Lookup,java.lang.String,java.lang.invoke.MethodType,java.lang.String,java.lang.Object[])>("\\U\u0001");
+goto label11;
+label10:
+v50 = virtualinvoke v6.<java.lang.Character: char charValue()>();
+v51 = staticinvoke <java.lang.Integer: java.lang.String toString(int,int)>(v50, 16);
+v52 = dynamicinvoke "makeConcatWithConstants" <java.lang.String (java.lang.String)>(v51) <java.lang.invoke.StringConcatFactory: java.lang.invoke.CallSite makeConcatWithConstants(java.lang.invoke.MethodHandles$Lookup,java.lang.String,java.lang.invoke.MethodType,java.lang.String,java.lang.Object[])>("000\u0001");
+v53 = virtualinvoke v52.<java.lang.String: int length()>();
+v54 = v53 - 4;
+v55 = virtualinvoke v52.<java.lang.String: java.lang.String substring(int)>(v54);
+v23 = dynamicinvoke "makeConcatWithConstants" <java.lang.String (java.lang.String)>(v55) <java.lang.invoke.StringConcatFactory: java.lang.invoke.CallSite makeConcatWithConstants(java.lang.invoke.MethodHandles$Lookup,java.lang.String,java.lang.invoke.MethodType,java.lang.String,java.lang.Object[])>("\\u\u0001");
+label11:
+v56 = v0.<org.yaml.snakeyaml.emitter.Emitter: int column>;
+v57 = virtualinvoke v23.<java.lang.String: int length()>();
+v58 = v56 + v57;
+v0.<org.yaml.snakeyaml.emitter.Emitter: int column> = v58;
+v59 = v0.<org.yaml.snakeyaml.emitter.Emitter: java.io.Writer stream>;
+virtualinvoke v59.<java.io.Writer: void write(java.lang.String)>(v23);
+v3 = v4 + 1;
+label12:
+if 0 >= v4 goto label17;
+v60 = virtualinvoke v1.<java.lang.String: int length()>();
+v61 = v60 - 1;
+if v4 >= v61 goto label17;
+v62 = virtualinvoke v6.<java.lang.Character: char charValue()>();
+if v62 == 32 goto label13;
+if v3 < v4 goto label17;
+label13:
+v63 = v0.<org.yaml.snakeyaml.emitter.Emitter: int column>;
+v64 = v4 - v3;
+v65 = v63 + v64;
+v66 = v0.<org.yaml.snakeyaml.emitter.Emitter: int bestWidth>;
+if v65 <= v66 goto label17;
+if v2 == 0 goto label17;
+if v3 < v4 goto label14;
+v67 = "\\";
+goto label15;
+label14:
+v68 = virtualinvoke v1.<java.lang.String: java.lang.String substring(int,int)>(v3, v4);
+v67 = dynamicinvoke "makeConcatWithConstants" <java.lang.String (java.lang.String)>(v68) <java.lang.invoke.StringConcatFactory: java.lang.invoke.CallSite makeConcatWithConstants(java.lang.invoke.MethodHandles$Lookup,java.lang.String,java.lang.invoke.MethodType,java.lang.String,java.lang.Object[])>("\u0001\\");
+label15:
+if v3 >= v4 goto label16;
+v3 = v4;
+label16:
+v69 = v0.<org.yaml.snakeyaml.emitter.Emitter: int column>;
+v70 = virtualinvoke v67.<java.lang.String: int length()>();
+v71 = v69 + v70;
+v0.<org.yaml.snakeyaml.emitter.Emitter: int column> = v71;
+v72 = v0.<org.yaml.snakeyaml.emitter.Emitter: java.io.Writer stream>;
+virtualinvoke v72.<java.io.Writer: void write(java.lang.String)>(v67);
+virtualinvoke v0.<org.yaml.snakeyaml.emitter.Emitter: void writeIndent()>();
+v0.<org.yaml.snakeyaml.emitter.Emitter: boolean whitespace> = 0;
+v0.<org.yaml.snakeyaml.emitter.Emitter: boolean indention> = 0;
+v73 = virtualinvoke v1.<java.lang.String: char charAt(int)>(v3);
+if v73 != 32 goto label17;
+v74 = "\\";
+v75 = v0.<org.yaml.snakeyaml.emitter.Emitter: int column>;
+v76 = virtualinvoke v74.<java.lang.String: int length()>();
+v77 = v75 + v76;
+v0.<org.yaml.snakeyaml.emitter.Emitter: int column> = v77;
+v78 = v0.<org.yaml.snakeyaml.emitter.Emitter: java.io.Writer stream>;
+virtualinvoke v78.<java.io.Writer: void write(java.lang.String)>("\\");
+label17:
+v4 = v4 + 1;
+goto label01;
+label18:
+virtualinvoke v0.<org.yaml.snakeyaml.emitter.Emitter: void writeIndicator(java.lang.String,boolean,boolean,boolean)>("\"", 0, 0, 0);
+return;
+}
+private boolean writeCommentLines(java.util.List) throws java.io.IOException
+{
+int v14, v15, v16, v4;
+java.lang.String v18;
+boolean v13, v2, v3, v5, v7;
+java.util.Iterator v6;
+java.util.List v1;
+org.yaml.snakeyaml.emitter.Emitter v0;
+org.yaml.snakeyaml.comments.CommentType v10, v11, v12, v9;
+java.io.Writer v17;
+java.lang.Object v8;
+v0 := @this: org.yaml.snakeyaml.emitter.Emitter;
+v1 := @parameter0: java.util.List;
+v2 = 0;
+v3 = v0.<org.yaml.snakeyaml.emitter.Emitter: boolean emitComments>;
+if v3 == 0 goto label10;
+v4 = 0;
+v5 = 1;
+v6 = interfaceinvoke v1.<java.util.List: java.util.Iterator iterator()>();
+label01:
+v7 = interfaceinvoke v6.<java.util.Iterator: boolean hasNext()>();
+if v7 == 0 goto label10;
+v8 = interfaceinvoke v6.<java.util.Iterator: java.lang.Object next()>();
+v9 = virtualinvoke v8.<org.yaml.snakeyaml.comments.CommentLine: org.yaml.snakeyaml.comments.CommentType getCommentType()>();
+v10 = <org.yaml.snakeyaml.comments.CommentType: org.yaml.snakeyaml.comments.CommentType BLANK_LINE>;
+if v9 == v10 goto label08;
+if v5 == 0 goto label06;
+v5 = 0;
+v11 = virtualinvoke v8.<org.yaml.snakeyaml.comments.CommentLine: org.yaml.snakeyaml.comments.CommentType getCommentType()>();
+v12 = <org.yaml.snakeyaml.comments.CommentType: org.yaml.snakeyaml.comments.CommentType IN_LINE>;
+if v11 != v12 goto label02;
+v13 = 1;
+goto label03;
+label02:
+v13 = 0;
+label03:
+virtualinvoke v0.<org.yaml.snakeyaml.emitter.Emitter: void writeIndicator(java.lang.String,boolean,boolean,boolean)>("#", v13, 0, 0);
+v14 = v0.<org.yaml.snakeyaml.emitter.Emitter: int column>;
+if v14 <= 0 goto label04;
+v15 = v0.<org.yaml.snakeyaml.emitter.Emitter: int column>;
+v16 = v15 - 1;
+goto label05;
+label04:
+v16 = 0;
+label05:
+v4 = v16;
+goto label07;
+label06:
+specialinvoke v0.<org.yaml.snakeyaml.emitter.Emitter: void writeWhitespace(int)>(v4);
+virtualinvoke v0.<org.yaml.snakeyaml.emitter.Emitter: void writeIndicator(java.lang.String,boolean,boolean,boolean)>("#", 0, 0, 0);
+label07:
+v17 = v0.<org.yaml.snakeyaml.emitter.Emitter: java.io.Writer stream>;
+v18 = virtualinvoke v8.<org.yaml.snakeyaml.comments.CommentLine: java.lang.String getValue()>();
+virtualinvoke v17.<java.io.Writer: void write(java.lang.String)>(v18);
+specialinvoke v0.<org.yaml.snakeyaml.emitter.Emitter: void writeLineBreak(java.lang.String)>(null);
+goto label09;
+label08:
+specialinvoke v0.<org.yaml.snakeyaml.emitter.Emitter: void writeLineBreak(java.lang.String)>(null);
+virtualinvoke v0.<org.yaml.snakeyaml.emitter.Emitter: void writeIndent()>();
+label09:
+v2 = 1;
+goto label01;
+label10:
+return v2;
+}
+private void writeBlockComment() throws java.io.IOException
+{
+org.yaml.snakeyaml.comments.CommentEventsCollector v1, v3;
+java.util.List v4;
+org.yaml.snakeyaml.emitter.Emitter v0;
+boolean v2;
+v0 := @this: org.yaml.snakeyaml.emitter.Emitter;
+v1 = v0.<org.yaml.snakeyaml.emitter.Emitter: org.yaml.snakeyaml.comments.CommentEventsCollector blockCommentsCollector>;
+v2 = virtualinvoke v1.<org.yaml.snakeyaml.comments.CommentEventsCollector: boolean isEmpty()>();
+if v2 != 0 goto label1;
+virtualinvoke v0.<org.yaml.snakeyaml.emitter.Emitter: void writeIndent()>();
+v3 = v0.<org.yaml.snakeyaml.emitter.Emitter: org.yaml.snakeyaml.comments.CommentEventsCollector blockCommentsCollector>;
+v4 = virtualinvoke v3.<org.yaml.snakeyaml.comments.CommentEventsCollector: java.util.List consume()>();
+specialinvoke v0.<org.yaml.snakeyaml.emitter.Emitter: boolean writeCommentLines(java.util.List)>(v4);
+label1:
+return;
+}
+private boolean writeInlineComments() throws java.io.IOException
+{
+org.yaml.snakeyaml.comments.CommentEventsCollector v1;
+java.util.List v2;
+org.yaml.snakeyaml.emitter.Emitter v0;
+boolean v3;
+v0 := @this: org.yaml.snakeyaml.emitter.Emitter;
+v1 = v0.<org.yaml.snakeyaml.emitter.Emitter: org.yaml.snakeyaml.comments.CommentEventsCollector inlineCommentsCollector>;
+v2 = virtualinvoke v1.<org.yaml.snakeyaml.comments.CommentEventsCollector: java.util.List consume()>();
+v3 = specialinvoke v0.<org.yaml.snakeyaml.emitter.Emitter: boolean writeCommentLines(java.util.List)>(v2);
+return v3;
+}
+private java.lang.String determineBlockHints(java.lang.String)
+{
+int v12, v14, v15, v6, v7, v8;
+java.lang.String v1, v18;
+boolean v11, v17, v5;
+char v16, v4, v9;
+org.yaml.snakeyaml.scanner.Constant v10, v13, v3;
+org.yaml.snakeyaml.emitter.Emitter v0;
+java.lang.StringBuilder v2;
+v0 := @this: org.yaml.snakeyaml.emitter.Emitter;
+v1 := @parameter0: java.lang.String;
+v2 = new java.lang.StringBuilder;
+specialinvoke v2.<java.lang.StringBuilder: void <init>()>();
+v3 = <org.yaml.snakeyaml.scanner.Constant: org.yaml.snakeyaml.scanner.Constant LINEBR>;
+v4 = virtualinvoke v1.<java.lang.String: char charAt(int)>(0);
+v5 = virtualinvoke v3.<org.yaml.snakeyaml.scanner.Constant: boolean has(int,java.lang.String)>(v4, " ");
+if v5 == 0 goto label1;
+v6 = v0.<org.yaml.snakeyaml.emitter.Emitter: int bestIndent>;
+virtualinvoke v2.<java.lang.StringBuilder: java.lang.StringBuilder append(int)>(v6);
+label1:
+v7 = virtualinvoke v1.<java.lang.String: int length()>();
+v8 = v7 - 1;
+v9 = virtualinvoke v1.<java.lang.String: char charAt(int)>(v8);
+v10 = <org.yaml.snakeyaml.scanner.Constant: org.yaml.snakeyaml.scanner.Constant LINEBR>;
+v11 = virtualinvoke v10.<org.yaml.snakeyaml.scanner.Constant: boolean hasNo(int)>(v9);
+if v11 == 0 goto label2;
+virtualinvoke v2.<java.lang.StringBuilder: java.lang.StringBuilder append(java.lang.String)>("-");
+goto label4;
+label2:
+v12 = virtualinvoke v1.<java.lang.String: int length()>();
+if v12 == 1 goto label3;
+v13 = <org.yaml.snakeyaml.scanner.Constant: org.yaml.snakeyaml.scanner.Constant LINEBR>;
+v14 = virtualinvoke v1.<java.lang.String: int length()>();
+v15 = v14 - 2;
+v16 = virtualinvoke v1.<java.lang.String: char charAt(int)>(v15);
+v17 = virtualinvoke v13.<org.yaml.snakeyaml.scanner.Constant: boolean has(int)>(v16);
+if v17 == 0 goto label4;
+label3:
+virtualinvoke v2.<java.lang.StringBuilder: java.lang.StringBuilder append(java.lang.String)>("+");
+label4:
+v18 = virtualinvoke v2.<java.lang.StringBuilder: java.lang.String toString()>();
+return v18;
+}
+void writeFolded(java.lang.String, boolean) throws java.io.IOException
+{
+boolean v10, v11, v12, v19, v2, v21, v36, v42, v9;
+org.yaml.snakeyaml.scanner.Constant v18, v35, v41;
+java.io.Writer v34, v40;
+int v13, v14, v15, v16, v17, v24, v25, v28, v29, v30, v31, v32, v33, v37, v38, v39, v5, v6, v7;
+java.lang.String v1, v22, v27, v3, v4;
+char v20, v26, v8;
+org.yaml.snakeyaml.emitter.Emitter v0;
+char[] v23;
+v0 := @this: org.yaml.snakeyaml.emitter.Emitter;
+v1 := @parameter0: java.lang.String;
+v2 := @parameter1: boolean;
+v3 = specialinvoke v0.<org.yaml.snakeyaml.emitter.Emitter: java.lang.String determineBlockHints(java.lang.String)>(v1);
+v4 = dynamicinvoke "makeConcatWithConstants" <java.lang.String (java.lang.String)>(v3) <java.lang.invoke.StringConcatFactory: java.lang.invoke.CallSite makeConcatWithConstants(java.lang.invoke.MethodHandles$Lookup,java.lang.String,java.lang.invoke.MethodType,java.lang.String,java.lang.Object[])>(">\u0001");
+virtualinvoke v0.<org.yaml.snakeyaml.emitter.Emitter: void writeIndicator(java.lang.String,boolean,boolean,boolean)>(v4, 1, 0, 0);
+v5 = virtualinvoke v3.<java.lang.String: int length()>();
+if v5 <= 0 goto label01;
+v6 = virtualinvoke v3.<java.lang.String: int length()>();
+v7 = v6 - 1;
+v8 = virtualinvoke v3.<java.lang.String: char charAt(int)>(v7);
+if v8 != 43 goto label01;
+v0.<org.yaml.snakeyaml.emitter.Emitter: boolean openEnded> = 1;
+label01:
+v9 = specialinvoke v0.<org.yaml.snakeyaml.emitter.Emitter: boolean writeInlineComments()>();
+if v9 != 0 goto label02;
+specialinvoke v0.<org.yaml.snakeyaml.emitter.Emitter: void writeLineBreak(java.lang.String)>(null);
+label02:
+v10 = 1;
+v11 = 0;
+v12 = 1;
+v13 = 0;
+v14 = 0;
+label03:
+v15 = virtualinvoke v1.<java.lang.String: int length()>();
+if v14 > v15 goto label23;
+v16 = 0;
+v17 = virtualinvoke v1.<java.lang.String: int length()>();
+if v14 >= v17 goto label04;
+v16 = virtualinvoke v1.<java.lang.String: char charAt(int)>(v14);
+label04:
+if v12 == 0 goto label14;
+if v16 == 0 goto label05;
+v18 = <org.yaml.snakeyaml.scanner.Constant: org.yaml.snakeyaml.scanner.Constant LINEBR>;
+v19 = virtualinvoke v18.<org.yaml.snakeyaml.scanner.Constant: boolean hasNo(int)>(v16);
+if v19 == 0 goto label19;
+label05:
+if v10 != 0 goto label06;
+if v16 == 0 goto label06;
+if v16 == 32 goto label06;
+v20 = virtualinvoke v1.<java.lang.String: char charAt(int)>(v13);
+if v20 != 10 goto label06;
+specialinvoke v0.<org.yaml.snakeyaml.emitter.Emitter: void writeLineBreak(java.lang.String)>(null);
+label06:
+if v16 != 32 goto label07;
+v21 = 1;
+goto label08;
+label07:
+v21 = 0;
+label08:
+v10 = v21;
+v22 = virtualinvoke v1.<java.lang.String: java.lang.String substring(int,int)>(v13, v14);
+v23 = virtualinvoke v22.<java.lang.String: char[] toCharArray()>();
+v24 = lengthof v23;
+v25 = 0;
+label09:
+if v25 >= v24 goto label12;
+v26 = v23[v25];
+if v26 != 10 goto label10;
+specialinvoke v0.<org.yaml.snakeyaml.emitter.Emitter: void writeLineBreak(java.lang.String)>(null);
+goto label11;
+label10:
+v27 = staticinvoke <java.lang.String: java.lang.String valueOf(char)>(v26);
+specialinvoke v0.<org.yaml.snakeyaml.emitter.Emitter: void writeLineBreak(java.lang.String)>(v27);
+label11:
+v25 = v25 + 1;
+goto label09;
+label12:
+if v16 == 0 goto label13;
+virtualinvoke v0.<org.yaml.snakeyaml.emitter.Emitter: void writeIndent()>();
+label13:
+v13 = v14;
+goto label19;
+label14:
+if v11 == 0 goto label17;
+if v16 == 32 goto label19;
+v28 = v13 + 1;
+if v28 != v14 goto label15;
+v29 = v0.<org.yaml.snakeyaml.emitter.Emitter: int column>;
+v30 = v0.<org.yaml.snakeyaml.emitter.Emitter: int bestWidth>;
+if v29 <= v30 goto label15;
+if v2 == 0 goto label15;
+virtualinvoke v0.<org.yaml.snakeyaml.emitter.Emitter: void writeIndent()>();
+goto label16;
+label15:
+v31 = v14 - v13;
+v32 = v0.<org.yaml.snakeyaml.emitter.Emitter: int column>;
+v33 = v32 + v31;
+v0.<org.yaml.snakeyaml.emitter.Emitter: int column> = v33;
+v34 = v0.<org.yaml.snakeyaml.emitter.Emitter: java.io.Writer stream>;
+virtualinvoke v34.<java.io.Writer: void write(java.lang.String,int,int)>(v1, v13, v31);
+label16:
+v13 = v14;
+goto label19;
+label17:
+v35 = <org.yaml.snakeyaml.scanner.Constant: org.yaml.snakeyaml.scanner.Constant LINEBR>;
+v36 = virtualinvoke v35.<org.yaml.snakeyaml.scanner.Constant: boolean has(int,java.lang.String)>(v16, "\u0000 ");
+if v36 == 0 goto label19;
+v37 = v14 - v13;
+v38 = v0.<org.yaml.snakeyaml.emitter.Emitter: int column>;
+v39 = v38 + v37;
+v0.<org.yaml.snakeyaml.emitter.Emitter: int column> = v39;
+v40 = v0.<org.yaml.snakeyaml.emitter.Emitter: java.io.Writer stream>;
+virtualinvoke v40.<java.io.Writer: void write(java.lang.String,int,int)>(v1, v13, v37);
+if v16 != 0 goto label18;
+specialinvoke v0.<org.yaml.snakeyaml.emitter.Emitter: void writeLineBreak(java.lang.String)>(null);
+label18:
+v13 = v14;
+label19:
+if v16 == 0 goto label22;
+v41 = <org.yaml.snakeyaml.scanner.Constant: org.yaml.snakeyaml.scanner.Constant LINEBR>;
+v12 = virtualinvoke v41.<org.yaml.snakeyaml.scanner.Constant: boolean has(int)>(v16);
+if v16 != 32 goto label20;
+v42 = 1;
+goto label21;
+label20:
+v42 = 0;
+label21:
+v11 = v42;
+label22:
+v14 = v14 + 1;
+goto label03;
+label23:
+return;
+}
+void writeLiteral(java.lang.String) throws java.io.IOException
+{
+int v10, v11, v12, v13, v14, v19, v20, v26, v4, v5, v6;
+java.lang.String v1, v17, v2, v22, v3;
+boolean v16, v24, v8, v9;
+char v21, v7;
+org.yaml.snakeyaml.scanner.Constant v15, v23, v27;
+org.yaml.snakeyaml.emitter.Emitter v0;
+java.io.Writer v25;
+char[] v18;
+v0 := @this: org.yaml.snakeyaml.emitter.Emitter;
+v1 := @parameter0: java.lang.String;
+v2 = specialinvoke v0.<org.yaml.snakeyaml.emitter.Emitter: java.lang.String determineBlockHints(java.lang.String)>(v1);
+v3 = dynamicinvoke "makeConcatWithConstants" <java.lang.String (java.lang.String)>(v2) <java.lang.invoke.StringConcatFactory: java.lang.invoke.CallSite makeConcatWithConstants(java.lang.invoke.MethodHandles$Lookup,java.lang.String,java.lang.invoke.MethodType,java.lang.String,java.lang.Object[])>("|\u0001");
+virtualinvoke v0.<org.yaml.snakeyaml.emitter.Emitter: void writeIndicator(java.lang.String,boolean,boolean,boolean)>(v3, 1, 0, 0);
+v4 = virtualinvoke v2.<java.lang.String: int length()>();
+if v4 <= 0 goto label01;
+v5 = virtualinvoke v2.<java.lang.String: int length()>();
+v6 = v5 - 1;
+v7 = virtualinvoke v2.<java.lang.String: char charAt(int)>(v6);
+if v7 != 43 goto label01;
+v0.<org.yaml.snakeyaml.emitter.Emitter: boolean openEnded> = 1;
+label01:
+v8 = specialinvoke v0.<org.yaml.snakeyaml.emitter.Emitter: boolean writeInlineComments()>();
+if v8 != 0 goto label02;
+specialinvoke v0.<org.yaml.snakeyaml.emitter.Emitter: void writeLineBreak(java.lang.String)>(null);
+label02:
+v9 = 1;
+v10 = 0;
+v11 = 0;
+label03:
+v12 = virtualinvoke v1.<java.lang.String: int length()>();
+if v11 > v12 goto label16;
+v13 = 0;
+v14 = virtualinvoke v1.<java.lang.String: int length()>();
+if v11 >= v14 goto label04;
+v13 = virtualinvoke v1.<java.lang.String: char charAt(int)>(v11);
+label04:
+if v9 == 0 goto label11;
+if v13 == 0 goto label05;
+v15 = <org.yaml.snakeyaml.scanner.Constant: org.yaml.snakeyaml.scanner.Constant LINEBR>;
+v16 = virtualinvoke v15.<org.yaml.snakeyaml.scanner.Constant: boolean hasNo(int)>(v13);
+if v16 == 0 goto label14;
+label05:
+v17 = virtualinvoke v1.<java.lang.String: java.lang.String substring(int,int)>(v10, v11);
+v18 = virtualinvoke v17.<java.lang.String: char[] toCharArray()>();
+v19 = lengthof v18;
+v20 = 0;
+label06:
+if v20 >= v19 goto label09;
+v21 = v18[v20];
+if v21 != 10 goto label07;
+specialinvoke v0.<org.yaml.snakeyaml.emitter.Emitter: void writeLineBreak(java.lang.String)>(null);
+goto label08;
+label07:
+v22 = staticinvoke <java.lang.String: java.lang.String valueOf(char)>(v21);
+specialinvoke v0.<org.yaml.snakeyaml.emitter.Emitter: void writeLineBreak(java.lang.String)>(v22);
+label08:
+v20 = v20 + 1;
+goto label06;
+label09:
+if v13 == 0 goto label10;
+virtualinvoke v0.<org.yaml.snakeyaml.emitter.Emitter: void writeIndent()>();
+label10:
+v10 = v11;
+goto label14;
+label11:
+if v13 == 0 goto label12;
+v23 = <org.yaml.snakeyaml.scanner.Constant: org.yaml.snakeyaml.scanner.Constant LINEBR>;
+v24 = virtualinvoke v23.<org.yaml.snakeyaml.scanner.Constant: boolean has(int)>(v13);
+if v24 == 0 goto label14;
+label12:
+v25 = v0.<org.yaml.snakeyaml.emitter.Emitter: java.io.Writer stream>;
+v26 = v11 - v10;
+virtualinvoke v25.<java.io.Writer: void write(java.lang.String,int,int)>(v1, v10, v26);
+if v13 != 0 goto label13;
+specialinvoke v0.<org.yaml.snakeyaml.emitter.Emitter: void writeLineBreak(java.lang.String)>(null);
+label13:
+v10 = v11;
+label14:
+if v13 == 0 goto label15;
+v27 = <org.yaml.snakeyaml.scanner.Constant: org.yaml.snakeyaml.scanner.Constant LINEBR>;
+v9 = virtualinvoke v27.<org.yaml.snakeyaml.scanner.Constant: boolean has(int)>(v13);
+label15:
+v11 = v11 + 1;
+goto label03;
+label16:
+return;
+}
+void writePlain(java.lang.String, boolean) throws java.io.IOException
+{
+boolean v10, v11, v2, v25, v3, v34, v39, v5;
+org.yaml.snakeyaml.scanner.Constant v24, v33, v40;
+java.io.Writer v23, v38, v8;
+int v12, v13, v14, v15, v16, v17, v18, v19, v20, v21, v22, v29, v30, v35, v36, v37, v4, v6, v7;
+java.lang.String v1, v27, v32;
+char v26, v31;
+org.yaml.snakeyaml.emitter.Emitter v0;
+char[] v28, v9;
+v0 := @this: org.yaml.snakeyaml.emitter.Emitter;
+v1 := @parameter0: java.lang.String;
+v2 := @parameter1: boolean;
+v3 = v0.<org.yaml.snakeyaml.emitter.Emitter: boolean rootContext>;
+if v3 == 0 goto label01;
+v0.<org.yaml.snakeyaml.emitter.Emitter: boolean openEnded> = 1;
+label01:
+v4 = virtualinvoke v1.<java.lang.String: int length()>();
+if v4 != 0 goto label02;
+return;
+label02:
+v5 = v0.<org.yaml.snakeyaml.emitter.Emitter: boolean whitespace>;
+if v5 != 0 goto label03;
+v6 = v0.<org.yaml.snakeyaml.emitter.Emitter: int column>;
+v7 = v6 + 1;
+v0.<org.yaml.snakeyaml.emitter.Emitter: int column> = v7;
+v8 = v0.<org.yaml.snakeyaml.emitter.Emitter: java.io.Writer stream>;
+v9 = <org.yaml.snakeyaml.emitter.Emitter: char[] SPACE>;
+virtualinvoke v8.<java.io.Writer: void write(char[])>(v9);
+label03:
+v0.<org.yaml.snakeyaml.emitter.Emitter: boolean whitespace> = 0;
+v0.<org.yaml.snakeyaml.emitter.Emitter: boolean indention> = 0;
+v10 = 0;
+v11 = 0;
+v12 = 0;
+v13 = 0;
+label04:
+v14 = virtualinvoke v1.<java.lang.String: int length()>();
+if v13 > v14 goto label19;
+v15 = 0;
+v16 = virtualinvoke v1.<java.lang.String: int length()>();
+if v13 >= v16 goto label05;
+v15 = virtualinvoke v1.<java.lang.String: char charAt(int)>(v13);
+label05:
+if v10 == 0 goto label08;
+if v15 == 32 goto label15;
+v17 = v12 + 1;
+if v17 != v13 goto label06;
+v18 = v0.<org.yaml.snakeyaml.emitter.Emitter: int column>;
+v19 = v0.<org.yaml.snakeyaml.emitter.Emitter: int bestWidth>;
+if v18 <= v19 goto label06;
+if v2 == 0 goto label06;
+virtualinvoke v0.<org.yaml.snakeyaml.emitter.Emitter: void writeIndent()>();
+v0.<org.yaml.snakeyaml.emitter.Emitter: boolean whitespace> = 0;
+v0.<org.yaml.snakeyaml.emitter.Emitter: boolean indention> = 0;
+goto label07;
+label06:
+v20 = v13 - v12;
+v21 = v0.<org.yaml.snakeyaml.emitter.Emitter: int column>;
+v22 = v21 + v20;
+v0.<org.yaml.snakeyaml.emitter.Emitter: int column> = v22;
+v23 = v0.<org.yaml.snakeyaml.emitter.Emitter: java.io.Writer stream>;
+virtualinvoke v23.<java.io.Writer: void write(java.lang.String,int,int)>(v1, v12, v20);
+label07:
+v12 = v13;
+goto label15;
+label08:
+if v11 == 0 goto label14;
+v24 = <org.yaml.snakeyaml.scanner.Constant: org.yaml.snakeyaml.scanner.Constant LINEBR>;
+v25 = virtualinvoke v24.<org.yaml.snakeyaml.scanner.Constant: boolean hasNo(int)>(v15);
+if v25 == 0 goto label15;
+v26 = virtualinvoke v1.<java.lang.String: char charAt(int)>(v12);
+if v26 != 10 goto label09;
+specialinvoke v0.<org.yaml.snakeyaml.emitter.Emitter: void writeLineBreak(java.lang.String)>(null);
+label09:
+v27 = virtualinvoke v1.<java.lang.String: java.lang.String substring(int,int)>(v12, v13);
+v28 = virtualinvoke v27.<java.lang.String: char[] toCharArray()>();
+v29 = lengthof v28;
+v30 = 0;
+label10:
+if v30 >= v29 goto label13;
+v31 = v28[v30];
+if v31 != 10 goto label11;
+specialinvoke v0.<org.yaml.snakeyaml.emitter.Emitter: void writeLineBreak(java.lang.String)>(null);
+goto label12;
+label11:
+v32 = staticinvoke <java.lang.String: java.lang.String valueOf(char)>(v31);
+specialinvoke v0.<org.yaml.snakeyaml.emitter.Emitter: void writeLineBreak(java.lang.String)>(v32);
+label12:
+v30 = v30 + 1;
+goto label10;
+label13:
+virtualinvoke v0.<org.yaml.snakeyaml.emitter.Emitter: void writeIndent()>();
+v0.<org.yaml.snakeyaml.emitter.Emitter: boolean whitespace> = 0;
+v0.<org.yaml.snakeyaml.emitter.Emitter: boolean indention> = 0;
+v12 = v13;
+goto label15;
+label14:
+v33 = <org.yaml.snakeyaml.scanner.Constant: org.yaml.snakeyaml.scanner.Constant LINEBR>;
+v34 = virtualinvoke v33.<org.yaml.snakeyaml.scanner.Constant: boolean has(int,java.lang.String)>(v15, "\u0000 ");
+if v34 == 0 goto label15;
+v35 = v13 - v12;
+v36 = v0.<org.yaml.snakeyaml.emitter.Emitter: int column>;
+v37 = v36 + v35;
+v0.<org.yaml.snakeyaml.emitter.Emitter: int column> = v37;
+v38 = v0.<org.yaml.snakeyaml.emitter.Emitter: java.io.Writer stream>;
+virtualinvoke v38.<java.io.Writer: void write(java.lang.String,int,int)>(v1, v12, v35);
+v12 = v13;
+label15:
+if v15 == 0 goto label18;
+if v15 != 32 goto label16;
+v39 = 1;
+goto label17;
+label16:
+v39 = 0;
+label17:
+v10 = v39;
+v40 = <org.yaml.snakeyaml.scanner.Constant: org.yaml.snakeyaml.scanner.Constant LINEBR>;
+v11 = virtualinvoke v40.<org.yaml.snakeyaml.scanner.Constant: boolean has(int)>(v15);
+label18:
+v13 = v13 + 1;
+goto label04;
+label19:
+return;
+}
+static void <clinit>()
+{
+java.lang.Character v10, v12, v14, v16, v19, v21, v23, v25, v27, v29, v31, v33, v35, v37, v39, v4, v41, v43, v45, v47, v6, v8;
+java.util.Map v18, v20, v22, v24, v26, v28, v30, v32, v34, v36, v38, v40, v42, v44, v46, v49, v50;
+java.util.Set v11, v13, v15, v3, v5, v7, v9;
+java.util.regex.Pattern v1, v51, v52;
+java.util.HashMap v17;
+java.util.HashSet v2;
+java.util.LinkedHashMap v48;
+char[] v0;
+v0 = newarray (char)[1];
+v0[0] = 32;
+<org.yaml.snakeyaml.emitter.Emitter: char[] SPACE> = v0;
+v1 = staticinvoke <java.util.regex.Pattern: java.util.regex.Pattern compile(java.lang.String)>("\\s");
+<org.yaml.snakeyaml.emitter.Emitter: java.util.regex.Pattern SPACES_PATTERN> = v1;
+v2 = new java.util.HashSet;
+specialinvoke v2.<java.util.HashSet: void <init>()>();
+<org.yaml.snakeyaml.emitter.Emitter: java.util.Set INVALID_ANCHOR> = v2;
+v3 = <org.yaml.snakeyaml.emitter.Emitter: java.util.Set INVALID_ANCHOR>;
+v4 = staticinvoke <java.lang.Character: java.lang.Character valueOf(char)>(91);
+interfaceinvoke v3.<java.util.Set: boolean add(java.lang.Object)>(v4);
+v5 = <org.yaml.snakeyaml.emitter.Emitter: java.util.Set INVALID_ANCHOR>;
+v6 = staticinvoke <java.lang.Character: java.lang.Character valueOf(char)>(93);
+interfaceinvoke v5.<java.util.Set: boolean add(java.lang.Object)>(v6);
+v7 = <org.yaml.snakeyaml.emitter.Emitter: java.util.Set INVALID_ANCHOR>;
+v8 = staticinvoke <java.lang.Character: java.lang.Character valueOf(char)>(123);
+interfaceinvoke v7.<java.util.Set: boolean add(java.lang.Object)>(v8);
+v9 = <org.yaml.snakeyaml.emitter.Emitter: java.util.Set INVALID_ANCHOR>;
+v10 = staticinvoke <java.lang.Character: java.lang.Character valueOf(char)>(125);
+interfaceinvoke v9.<java.util.Set: boolean add(java.lang.Object)>(v10);
+v11 = <org.yaml.snakeyaml.emitter.Emitter: java.util.Set INVALID_ANCHOR>;
+v12 = staticinvoke <java.lang.Character: java.lang.Character valueOf(char)>(44);
+interfaceinvoke v11.<java.util.Set: boolean add(java.lang.Object)>(v12);
+v13 = <org.yaml.snakeyaml.emitter.Emitter: java.util.Set INVALID_ANCHOR>;
+v14 = staticinvoke <java.lang.Character: java.lang.Character valueOf(char)>(42);
+interfaceinvoke v13.<java.util.Set: boolean add(java.lang.Object)>(v14);
+v15 = <org.yaml.snakeyaml.emitter.Emitter: java.util.Set INVALID_ANCHOR>;
+v16 = staticinvoke <java.lang.Character: java.lang.Character valueOf(char)>(38);
+interfaceinvoke v15.<java.util.Set: boolean add(java.lang.Object)>(v16);
+v17 = new java.util.HashMap;
+specialinvoke v17.<java.util.HashMap: void <init>()>();
+<org.yaml.snakeyaml.emitter.Emitter: java.util.Map ESCAPE_REPLACEMENTS> = v17;
+v18 = <org.yaml.snakeyaml.emitter.Emitter: java.util.Map ESCAPE_REPLACEMENTS>;
+v19 = staticinvoke <java.lang.Character: java.lang.Character valueOf(char)>(0);
+interfaceinvoke v18.<java.util.Map: java.lang.Object put(java.lang.Object,java.lang.Object)>(v19, "0");
+v20 = <org.yaml.snakeyaml.emitter.Emitter: java.util.Map ESCAPE_REPLACEMENTS>;
+v21 = staticinvoke <java.lang.Character: java.lang.Character valueOf(char)>(7);
+interfaceinvoke v20.<java.util.Map: java.lang.Object put(java.lang.Object,java.lang.Object)>(v21, "a");
+v22 = <org.yaml.snakeyaml.emitter.Emitter: java.util.Map ESCAPE_REPLACEMENTS>;
+v23 = staticinvoke <java.lang.Character: java.lang.Character valueOf(char)>(8);
+interfaceinvoke v22.<java.util.Map: java.lang.Object put(java.lang.Object,java.lang.Object)>(v23, "b");
+v24 = <org.yaml.snakeyaml.emitter.Emitter: java.util.Map ESCAPE_REPLACEMENTS>;
+v25 = staticinvoke <java.lang.Character: java.lang.Character valueOf(char)>(9);
+interfaceinvoke v24.<java.util.Map: java.lang.Object put(java.lang.Object,java.lang.Object)>(v25, "t");
+v26 = <org.yaml.snakeyaml.emitter.Emitter: java.util.Map ESCAPE_REPLACEMENTS>;
+v27 = staticinvoke <java.lang.Character: java.lang.Character valueOf(char)>(10);
+interfaceinvoke v26.<java.util.Map: java.lang.Object put(java.lang.Object,java.lang.Object)>(v27, "n");
+v28 = <org.yaml.snakeyaml.emitter.Emitter: java.util.Map ESCAPE_REPLACEMENTS>;
+v29 = staticinvoke <java.lang.Character: java.lang.Character valueOf(char)>(11);
+interfaceinvoke v28.<java.util.Map: java.lang.Object put(java.lang.Object,java.lang.Object)>(v29, "v");
+v30 = <org.yaml.snakeyaml.emitter.Emitter: java.util.Map ESCAPE_REPLACEMENTS>;
+v31 = staticinvoke <java.lang.Character: java.lang.Character valueOf(char)>(12);
+interfaceinvoke v30.<java.util.Map: java.lang.Object put(java.lang.Object,java.lang.Object)>(v31, "f");
+v32 = <org.yaml.snakeyaml.emitter.Emitter: java.util.Map ESCAPE_REPLACEMENTS>;
+v33 = staticinvoke <java.lang.Character: java.lang.Character valueOf(char)>(13);
+interfaceinvoke v32.<java.util.Map: java.lang.Object put(java.lang.Object,java.lang.Object)>(v33, "r");
+v34 = <org.yaml.snakeyaml.emitter.Emitter: java.util.Map ESCAPE_REPLACEMENTS>;
+v35 = staticinvoke <java.lang.Character: java.lang.Character valueOf(char)>(27);
+interfaceinvoke v34.<java.util.Map: java.lang.Object put(java.lang.Object,java.lang.Object)>(v35, "e");
+v36 = <org.yaml.snakeyaml.emitter.Emitter: java.util.Map ESCAPE_REPLACEMENTS>;
+v37 = staticinvoke <java.lang.Character: java.lang.Character valueOf(char)>(34);
+interfaceinvoke v36.<java.util.Map: java.lang.Object put(java.lang.Object,java.lang.Object)>(v37, "\"");
+v38 = <org.yaml.snakeyaml.emitter.Emitter: java.util.Map ESCAPE_REPLACEMENTS>;
+v39 = staticinvoke <java.lang.Character: java.lang.Character valueOf(char)>(92);
+interfaceinvoke v38.<java.util.Map: java.lang.Object put(java.lang.Object,java.lang.Object)>(v39, "\\");
+v40 = <org.yaml.snakeyaml.emitter.Emitter: java.util.Map ESCAPE_REPLACEMENTS>;
+v41 = staticinvoke <java.lang.Character: java.lang.Character valueOf(char)>(133);
+interfaceinvoke v40.<java.util.Map: java.lang.Object put(java.lang.Object,java.lang.Object)>(v41, "N");
+v42 = <org.yaml.snakeyaml.emitter.Emitter: java.util.Map ESCAPE_REPLACEMENTS>;
+v43 = staticinvoke <java.lang.Character: java.lang.Character valueOf(char)>(160);
+interfaceinvoke v42.<java.util.Map: java.lang.Object put(java.lang.Object,java.lang.Object)>(v43, "_");
+v44 = <org.yaml.snakeyaml.emitter.Emitter: java.util.Map ESCAPE_REPLACEMENTS>;
+v45 = staticinvoke <java.lang.Character: java.lang.Character valueOf(char)>(8232);
+interfaceinvoke v44.<java.util.Map: java.lang.Object put(java.lang.Object,java.lang.Object)>(v45, "L");
+v46 = <org.yaml.snakeyaml.emitter.Emitter: java.util.Map ESCAPE_REPLACEMENTS>;
+v47 = staticinvoke <java.lang.Character: java.lang.Character valueOf(char)>(8233);
+interfaceinvoke v46.<java.util.Map: java.lang.Object put(java.lang.Object,java.lang.Object)>(v47, "P");
+v48 = new java.util.LinkedHashMap;
+specialinvoke v48.<java.util.LinkedHashMap: void <init>()>();
+<org.yaml.snakeyaml.emitter.Emitter: java.util.Map DEFAULT_TAG_PREFIXES> = v48;
+v49 = <org.yaml.snakeyaml.emitter.Emitter: java.util.Map DEFAULT_TAG_PREFIXES>;
+interfaceinvoke v49.<java.util.Map: java.lang.Object put(java.lang.Object,java.lang.Object)>("!", "!");
+v50 = <org.yaml.snakeyaml.emitter.Emitter: java.util.Map DEFAULT_TAG_PREFIXES>;
+interfaceinvoke v50.<java.util.Map: java.lang.Object put(java.lang.Object,java.lang.Object)>("tag:yaml.org,2002:", "!!");
+v51 = staticinvoke <java.util.regex.Pattern: java.util.regex.Pattern compile(java.lang.String)>("^![-_\\w]*!$");
+<org.yaml.snakeyaml.emitter.Emitter: java.util.regex.Pattern HANDLE_FORMAT> = v51;
+v52 = staticinvoke <java.util.regex.Pattern: java.util.regex.Pattern compile(java.lang.String)>("0[0-9_]+");
+<org.yaml.snakeyaml.emitter.Emitter: java.util.regex.Pattern LEADING_ZERO_PATTERN> = v52;
+return;
+}
+}

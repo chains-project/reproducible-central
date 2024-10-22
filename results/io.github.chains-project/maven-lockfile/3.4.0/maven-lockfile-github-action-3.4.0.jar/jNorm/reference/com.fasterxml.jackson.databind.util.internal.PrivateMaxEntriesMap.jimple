@@ -1,0 +1,987 @@
+public final class com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap extends java.util.AbstractMap implements java.util.concurrent.ConcurrentMap, java.io.Serializable
+{
+static final int NCPU;
+static final long MAXIMUM_CAPACITY;
+static final int NUMBER_OF_READ_BUFFERS;
+static final int READ_BUFFERS_MASK;
+static final int READ_BUFFER_THRESHOLD;
+static final int READ_BUFFER_DRAIN_THRESHOLD;
+static final int READ_BUFFER_SIZE;
+static final int READ_BUFFER_INDEX_MASK;
+static final int WRITE_BUFFER_DRAIN_THRESHOLD;
+final java.util.concurrent.ConcurrentMap data;
+final int concurrencyLevel;
+final long[] readBufferReadCount;
+final com.fasterxml.jackson.databind.util.internal.LinkedDeque evictionDeque;
+final java.util.concurrent.atomic.AtomicLong weightedSize;
+final java.util.concurrent.atomic.AtomicLong capacity;
+final java.util.concurrent.locks.Lock evictionLock;
+final java.util.Queue writeBuffer;
+final java.util.concurrent.atomic.AtomicLongArray readBufferWriteCount;
+final java.util.concurrent.atomic.AtomicLongArray readBufferDrainAtWriteCount;
+final java.util.concurrent.atomic.AtomicReferenceArray readBuffers;
+final java.util.concurrent.atomic.AtomicReference drainStatus;
+transient java.util.Set keySet;
+transient java.util.Collection values;
+transient java.util.Set entrySet;
+static final long serialVersionUID;
+static int ceilingNextPowerOfTwo(int)
+{
+int v0, v1, v2, v3, v4;
+v0 := @parameter0: int;
+v1 = v0 - 1;
+v2 = staticinvoke <java.lang.Integer: int numberOfLeadingZeros(int)>(v1);
+v3 = 32 - v2;
+v4 = 1 << v3;
+return v4;
+}
+private static int readBufferIndex(int, int)
+{
+int v0, v1, v2, v3;
+v0 := @parameter0: int;
+v1 := @parameter1: int;
+v2 = 16 * v0;
+v3 = v2 + v1;
+return v3;
+}
+void <init>(com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap$Builder)
+{
+com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap$Builder v1;
+long v4, v5;
+com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap$DrainStatus v14;
+java.util.concurrent.atomic.AtomicReference v13;
+java.util.concurrent.atomic.AtomicReferenceArray v21;
+long[] v16;
+int v15, v18, v2, v20, v22, v23, v7, v8;
+java.util.concurrent.locks.ReentrantLock v9;
+java.util.concurrent.ConcurrentHashMap v6;
+com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap v0;
+java.util.concurrent.atomic.AtomicLong v10, v3;
+com.fasterxml.jackson.databind.util.internal.LinkedDeque v11;
+java.util.concurrent.ConcurrentLinkedQueue v12;
+java.util.concurrent.atomic.AtomicLongArray v17, v19;
+v0 := @this: com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap;
+v1 := @parameter0: com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap$Builder;
+specialinvoke v0.<java.util.AbstractMap: void <init>()>();
+v2 = v1.<com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap$Builder: int concurrencyLevel>;
+v0.<com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap: int concurrencyLevel> = v2;
+v3 = new java.util.concurrent.atomic.AtomicLong;
+v4 = v1.<com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap$Builder: long capacity>;
+v5 = staticinvoke <java.lang.Math: long min(long,long)>(v4, 9223372034707292160L);
+specialinvoke v3.<java.util.concurrent.atomic.AtomicLong: void <init>(long)>(v5);
+v0.<com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap: java.util.concurrent.atomic.AtomicLong capacity> = v3;
+v6 = new java.util.concurrent.ConcurrentHashMap;
+v7 = v1.<com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap$Builder: int initialCapacity>;
+v8 = v0.<com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap: int concurrencyLevel>;
+specialinvoke v6.<java.util.concurrent.ConcurrentHashMap: void <init>(int,float,int)>(v7, 0.75F, v8);
+v0.<com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap: java.util.concurrent.ConcurrentMap data> = v6;
+v9 = new java.util.concurrent.locks.ReentrantLock;
+specialinvoke v9.<java.util.concurrent.locks.ReentrantLock: void <init>()>();
+v0.<com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap: java.util.concurrent.locks.Lock evictionLock> = v9;
+v10 = new java.util.concurrent.atomic.AtomicLong;
+specialinvoke v10.<java.util.concurrent.atomic.AtomicLong: void <init>()>();
+v0.<com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap: java.util.concurrent.atomic.AtomicLong weightedSize> = v10;
+v11 = new com.fasterxml.jackson.databind.util.internal.LinkedDeque;
+specialinvoke v11.<com.fasterxml.jackson.databind.util.internal.LinkedDeque: void <init>()>();
+v0.<com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap: com.fasterxml.jackson.databind.util.internal.LinkedDeque evictionDeque> = v11;
+v12 = new java.util.concurrent.ConcurrentLinkedQueue;
+specialinvoke v12.<java.util.concurrent.ConcurrentLinkedQueue: void <init>()>();
+v0.<com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap: java.util.Queue writeBuffer> = v12;
+v13 = new java.util.concurrent.atomic.AtomicReference;
+v14 = <com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap$DrainStatus: com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap$DrainStatus IDLE>;
+specialinvoke v13.<java.util.concurrent.atomic.AtomicReference: void <init>(java.lang.Object)>(v14);
+v0.<com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap: java.util.concurrent.atomic.AtomicReference drainStatus> = v13;
+v15 = <com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap: int NUMBER_OF_READ_BUFFERS>;
+v16 = newarray (long)[v15];
+v0.<com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap: long[] readBufferReadCount> = v16;
+v17 = new java.util.concurrent.atomic.AtomicLongArray;
+v18 = <com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap: int NUMBER_OF_READ_BUFFERS>;
+specialinvoke v17.<java.util.concurrent.atomic.AtomicLongArray: void <init>(int)>(v18);
+v0.<com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap: java.util.concurrent.atomic.AtomicLongArray readBufferWriteCount> = v17;
+v19 = new java.util.concurrent.atomic.AtomicLongArray;
+v20 = <com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap: int NUMBER_OF_READ_BUFFERS>;
+specialinvoke v19.<java.util.concurrent.atomic.AtomicLongArray: void <init>(int)>(v20);
+v0.<com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap: java.util.concurrent.atomic.AtomicLongArray readBufferDrainAtWriteCount> = v19;
+v21 = new java.util.concurrent.atomic.AtomicReferenceArray;
+v22 = <com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap: int NUMBER_OF_READ_BUFFERS>;
+v23 = v22 * 16;
+specialinvoke v21.<java.util.concurrent.atomic.AtomicReferenceArray: void <init>(int)>(v23);
+v0.<com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap: java.util.concurrent.atomic.AtomicReferenceArray readBuffers> = v21;
+return;
+}
+static void checkNotNull(java.lang.Object)
+{
+java.lang.Object v0;
+java.lang.NullPointerException v1;
+v0 := @parameter0: java.lang.Object;
+if v0 != null goto label1;
+v1 = new java.lang.NullPointerException;
+specialinvoke v1.<java.lang.NullPointerException: void <init>()>();
+throw v1;
+label1:
+return;
+}
+static void checkArgument(boolean)
+{
+java.lang.IllegalArgumentException v1;
+boolean v0;
+v0 := @parameter0: boolean;
+if v0 != 0 goto label1;
+v1 = new java.lang.IllegalArgumentException;
+specialinvoke v1.<java.lang.IllegalArgumentException: void <init>()>();
+throw v1;
+label1:
+return;
+}
+static void checkState(boolean)
+{
+java.lang.IllegalStateException v1;
+boolean v0;
+v0 := @parameter0: boolean;
+if v0 != 0 goto label1;
+v1 = new java.lang.IllegalStateException;
+specialinvoke v1.<java.lang.IllegalStateException: void <init>()>();
+throw v1;
+label1:
+return;
+}
+public long capacity()
+{
+com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap v0;
+java.util.concurrent.atomic.AtomicLong v1;
+long v2;
+v0 := @this: com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap;
+v1 = v0.<com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap: java.util.concurrent.atomic.AtomicLong capacity>;
+v2 = virtualinvoke v1.<java.util.concurrent.atomic.AtomicLong: long get()>();
+return v2;
+}
+public void setCapacity(long)
+{
+java.lang.Throwable v8;
+long v1, v6;
+com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap v0;
+java.util.concurrent.atomic.AtomicLong v5;
+java.util.concurrent.locks.Lock v4, v7, v9;
+byte v2;
+boolean v3;
+v0 := @this: com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap;
+v1 := @parameter0: long;
+v2 = v1 cmp 0L;
+if v2 < 0 goto label1;
+v3 = 1;
+goto label2;
+label1:
+v3 = 0;
+label2:
+staticinvoke <com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap: void checkArgument(boolean)>(v3);
+v4 = v0.<com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap: java.util.concurrent.locks.Lock evictionLock>;
+interfaceinvoke v4.<java.util.concurrent.locks.Lock: void lock()>();
+label3:
+v5 = v0.<com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap: java.util.concurrent.atomic.AtomicLong capacity>;
+v6 = staticinvoke <java.lang.Math: long min(long,long)>(v1, 9223372034707292160L);
+virtualinvoke v5.<java.util.concurrent.atomic.AtomicLong: void lazySet(long)>(v6);
+virtualinvoke v0.<com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap: void drainBuffers()>();
+virtualinvoke v0.<com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap: void evict()>();
+label4:
+v7 = v0.<com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap: java.util.concurrent.locks.Lock evictionLock>;
+interfaceinvoke v7.<java.util.concurrent.locks.Lock: void unlock()>();
+goto label6;
+label5:
+v8 := @caughtexception;
+v9 = v0.<com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap: java.util.concurrent.locks.Lock evictionLock>;
+interfaceinvoke v9.<java.util.concurrent.locks.Lock: void unlock()>();
+throw v8;
+label6:
+return;
+catch java.lang.Throwable from label3 to label4 with label5;
+}
+boolean hasOverflowed()
+{
+com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap v0;
+java.util.concurrent.atomic.AtomicLong v1, v3;
+byte v5;
+long v2, v4;
+boolean v6;
+v0 := @this: com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap;
+v1 = v0.<com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap: java.util.concurrent.atomic.AtomicLong weightedSize>;
+v2 = virtualinvoke v1.<java.util.concurrent.atomic.AtomicLong: long get()>();
+v3 = v0.<com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap: java.util.concurrent.atomic.AtomicLong capacity>;
+v4 = virtualinvoke v3.<java.util.concurrent.atomic.AtomicLong: long get()>();
+v5 = v2 cmp v4;
+if v5 <= 0 goto label1;
+v6 = 1;
+goto label2;
+label1:
+v6 = 0;
+label2:
+return v6;
+}
+void evict()
+{
+com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap v0;
+com.fasterxml.jackson.databind.util.internal.LinkedDeque v2;
+java.lang.Object v5;
+com.fasterxml.jackson.databind.util.internal.Linked v3;
+boolean v1;
+java.util.concurrent.ConcurrentMap v4;
+v0 := @this: com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap;
+label1:
+v1 = virtualinvoke v0.<com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap: boolean hasOverflowed()>();
+if v1 == 0 goto label3;
+v2 = v0.<com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap: com.fasterxml.jackson.databind.util.internal.LinkedDeque evictionDeque>;
+v3 = virtualinvoke v2.<com.fasterxml.jackson.databind.util.internal.LinkedDeque: com.fasterxml.jackson.databind.util.internal.Linked poll()>();
+if v3 != null goto label2;
+return;
+label2:
+v4 = v0.<com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap: java.util.concurrent.ConcurrentMap data>;
+v5 = v3.<com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap$Node: java.lang.Object key>;
+interfaceinvoke v4.<java.util.concurrent.ConcurrentMap: boolean remove(java.lang.Object,java.lang.Object)>(v5, v3);
+virtualinvoke v0.<com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap: void makeDead(com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap$Node)>(v3);
+goto label1;
+label3:
+return;
+}
+void afterRead(com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap$Node)
+{
+com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap v0;
+int v2;
+long v3;
+com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap$Node v1;
+v0 := @this: com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap;
+v1 := @parameter0: com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap$Node;
+v2 = staticinvoke <com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap: int readBufferIndex()>();
+v3 = virtualinvoke v0.<com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap: long recordRead(int,com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap$Node)>(v2, v1);
+virtualinvoke v0.<com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap: void drainOnReadIfNeeded(int,long)>(v2, v3);
+return;
+}
+static int readBufferIndex()
+{
+java.lang.Thread v0;
+int v2, v3;
+long v1;
+v0 = staticinvoke <java.lang.Thread: java.lang.Thread currentThread()>();
+v1 = virtualinvoke v0.<java.lang.Thread: long getId()>();
+v2 = <com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap: int READ_BUFFERS_MASK>;
+v3 = v1 & v2;
+return v3;
+}
+long recordRead(int, com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap$Node)
+{
+long v4, v6, v7;
+java.util.concurrent.atomic.AtomicReferenceArray v8;
+com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap v0;
+int v1, v9;
+com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap$Node v2;
+java.util.concurrent.atomic.AtomicLongArray v3, v5;
+v0 := @this: com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap;
+v1 := @parameter0: int;
+v2 := @parameter1: com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap$Node;
+v3 = v0.<com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap: java.util.concurrent.atomic.AtomicLongArray readBufferWriteCount>;
+v4 = virtualinvoke v3.<java.util.concurrent.atomic.AtomicLongArray: long get(int)>(v1);
+v5 = v0.<com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap: java.util.concurrent.atomic.AtomicLongArray readBufferWriteCount>;
+v6 = v4 + 1L;
+virtualinvoke v5.<java.util.concurrent.atomic.AtomicLongArray: void lazySet(int,long)>(v1, v6);
+v7 = v4 & 15L;
+v8 = v0.<com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap: java.util.concurrent.atomic.AtomicReferenceArray readBuffers>;
+v9 = staticinvoke <com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap: int readBufferIndex(int,int)>(v1, v7);
+virtualinvoke v8.<java.util.concurrent.atomic.AtomicReferenceArray: void lazySet(int,java.lang.Object)>(v9, v2);
+return v4;
+}
+void drainOnReadIfNeeded(int, long)
+{
+long v2, v4, v5;
+java.util.concurrent.atomic.AtomicReference v8;
+com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap v0;
+byte v6;
+int v1;
+java.lang.Object v9;
+boolean v10, v7;
+java.util.concurrent.atomic.AtomicLongArray v3;
+v0 := @this: com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap;
+v1 := @parameter0: int;
+v2 := @parameter1: long;
+v3 = v0.<com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap: java.util.concurrent.atomic.AtomicLongArray readBufferDrainAtWriteCount>;
+v4 = virtualinvoke v3.<java.util.concurrent.atomic.AtomicLongArray: long get(int)>(v1);
+v5 = v2 - v4;
+v6 = v5 cmp 4L;
+if v6 >= 0 goto label1;
+v7 = 1;
+goto label2;
+label1:
+v7 = 0;
+label2:
+v8 = v0.<com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap: java.util.concurrent.atomic.AtomicReference drainStatus>;
+v9 = virtualinvoke v8.<java.util.concurrent.atomic.AtomicReference: java.lang.Object get()>();
+v10 = virtualinvoke v9.<com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap$DrainStatus: boolean shouldDrainBuffers(boolean)>(v7);
+if v10 == 0 goto label3;
+virtualinvoke v0.<com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap: void tryToDrainBuffers()>();
+label3:
+return;
+}
+void afterWrite(java.lang.Runnable)
+{
+com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap v0;
+com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap$DrainStatus v4;
+java.util.Queue v2;
+java.lang.Runnable v1;
+java.util.concurrent.atomic.AtomicReference v3;
+v0 := @this: com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap;
+v1 := @parameter0: java.lang.Runnable;
+v2 = v0.<com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap: java.util.Queue writeBuffer>;
+interfaceinvoke v2.<java.util.Queue: boolean add(java.lang.Object)>(v1);
+v3 = v0.<com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap: java.util.concurrent.atomic.AtomicReference drainStatus>;
+v4 = <com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap$DrainStatus: com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap$DrainStatus REQUIRED>;
+virtualinvoke v3.<java.util.concurrent.atomic.AtomicReference: void lazySet(java.lang.Object)>(v4);
+virtualinvoke v0.<com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap: void tryToDrainBuffers()>();
+return;
+}
+void tryToDrainBuffers()
+{
+java.lang.Throwable v9;
+com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap$DrainStatus v11, v12, v4, v6, v7;
+java.util.concurrent.atomic.AtomicReference v10, v3, v5;
+com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap v0;
+java.util.concurrent.locks.Lock v1, v13, v8;
+boolean v2;
+v0 := @this: com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap;
+v1 = v0.<com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap: java.util.concurrent.locks.Lock evictionLock>;
+v2 = interfaceinvoke v1.<java.util.concurrent.locks.Lock: boolean tryLock()>();
+if v2 == 0 goto label4;
+label1:
+v3 = v0.<com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap: java.util.concurrent.atomic.AtomicReference drainStatus>;
+v4 = <com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap$DrainStatus: com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap$DrainStatus PROCESSING>;
+virtualinvoke v3.<java.util.concurrent.atomic.AtomicReference: void lazySet(java.lang.Object)>(v4);
+virtualinvoke v0.<com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap: void drainBuffers()>();
+label2:
+v5 = v0.<com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap: java.util.concurrent.atomic.AtomicReference drainStatus>;
+v6 = <com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap$DrainStatus: com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap$DrainStatus PROCESSING>;
+v7 = <com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap$DrainStatus: com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap$DrainStatus IDLE>;
+virtualinvoke v5.<java.util.concurrent.atomic.AtomicReference: boolean compareAndSet(java.lang.Object,java.lang.Object)>(v6, v7);
+v8 = v0.<com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap: java.util.concurrent.locks.Lock evictionLock>;
+interfaceinvoke v8.<java.util.concurrent.locks.Lock: void unlock()>();
+goto label4;
+label3:
+v9 := @caughtexception;
+v10 = v0.<com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap: java.util.concurrent.atomic.AtomicReference drainStatus>;
+v11 = <com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap$DrainStatus: com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap$DrainStatus PROCESSING>;
+v12 = <com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap$DrainStatus: com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap$DrainStatus IDLE>;
+virtualinvoke v10.<java.util.concurrent.atomic.AtomicReference: boolean compareAndSet(java.lang.Object,java.lang.Object)>(v11, v12);
+v13 = v0.<com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap: java.util.concurrent.locks.Lock evictionLock>;
+interfaceinvoke v13.<java.util.concurrent.locks.Lock: void unlock()>();
+throw v9;
+label4:
+return;
+catch java.lang.Throwable from label1 to label2 with label3;
+}
+void drainBuffers()
+{
+com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap v0;
+v0 := @this: com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap;
+virtualinvoke v0.<com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap: void drainReadBuffers()>();
+virtualinvoke v0.<com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap: void drainWriteBuffer()>();
+return;
+}
+void drainReadBuffers()
+{
+long v2;
+com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap v0;
+java.lang.Thread v1;
+int v3, v4, v5, v6, v7;
+v0 := @this: com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap;
+v1 = staticinvoke <java.lang.Thread: java.lang.Thread currentThread()>();
+v2 = virtualinvoke v1.<java.lang.Thread: long getId()>();
+v3 = <com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap: int NUMBER_OF_READ_BUFFERS>;
+v4 = v2 + v3;
+v5 = v2;
+label1:
+if v5 >= v4 goto label2;
+v6 = <com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap: int READ_BUFFERS_MASK>;
+v7 = v5 & v6;
+virtualinvoke v0.<com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap: void drainReadBuffer(int)>(v7);
+v5 = v5 + 1;
+goto label1;
+label2:
+return;
+}
+void drainReadBuffer(int)
+{
+long v13, v14, v3, v6, v7;
+java.util.concurrent.atomic.AtomicReferenceArray v11, v9;
+long[] v12, v5;
+int v1, v4, v8;
+com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap v0;
+java.lang.Object v10;
+java.util.concurrent.atomic.AtomicLongArray v15, v2;
+v0 := @this: com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap;
+v1 := @parameter0: int;
+v2 = v0.<com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap: java.util.concurrent.atomic.AtomicLongArray readBufferWriteCount>;
+v3 = virtualinvoke v2.<java.util.concurrent.atomic.AtomicLongArray: long get(int)>(v1);
+v4 = 0;
+label1:
+if v4 >= 8 goto label2;
+v5 = v0.<com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap: long[] readBufferReadCount>;
+v6 = v5[v1];
+v7 = v6 & 15L;
+v8 = staticinvoke <com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap: int readBufferIndex(int,int)>(v1, v7);
+v9 = v0.<com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap: java.util.concurrent.atomic.AtomicReferenceArray readBuffers>;
+v10 = virtualinvoke v9.<java.util.concurrent.atomic.AtomicReferenceArray: java.lang.Object get(int)>(v8);
+if v10 == null goto label2;
+v11 = v0.<com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap: java.util.concurrent.atomic.AtomicReferenceArray readBuffers>;
+virtualinvoke v11.<java.util.concurrent.atomic.AtomicReferenceArray: void lazySet(int,java.lang.Object)>(v8, null);
+virtualinvoke v0.<com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap: void applyRead(com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap$Node)>(v10);
+v12 = v0.<com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap: long[] readBufferReadCount>;
+v13 = v12[v1];
+v14 = v13 + 1L;
+v12[v1] = v14;
+v4 = v4 + 1;
+goto label1;
+label2:
+v15 = v0.<com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap: java.util.concurrent.atomic.AtomicLongArray readBufferDrainAtWriteCount>;
+virtualinvoke v15.<java.util.concurrent.atomic.AtomicLongArray: void lazySet(int,long)>(v1, v3);
+return;
+}
+void applyRead(com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap$Node)
+{
+com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap v0;
+com.fasterxml.jackson.databind.util.internal.LinkedDeque v2, v4;
+com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap$Node v1;
+boolean v3;
+v0 := @this: com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap;
+v1 := @parameter0: com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap$Node;
+v2 = v0.<com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap: com.fasterxml.jackson.databind.util.internal.LinkedDeque evictionDeque>;
+v3 = virtualinvoke v2.<com.fasterxml.jackson.databind.util.internal.LinkedDeque: boolean contains(com.fasterxml.jackson.databind.util.internal.Linked)>(v1);
+if v3 == 0 goto label1;
+v4 = v0.<com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap: com.fasterxml.jackson.databind.util.internal.LinkedDeque evictionDeque>;
+virtualinvoke v4.<com.fasterxml.jackson.databind.util.internal.LinkedDeque: void moveToBack(com.fasterxml.jackson.databind.util.internal.Linked)>(v1);
+label1:
+return;
+}
+void drainWriteBuffer()
+{
+com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap v0;
+int v1;
+java.lang.Object v3;
+java.util.Queue v2;
+v0 := @this: com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap;
+v1 = 0;
+label1:
+if v1 >= 16 goto label2;
+v2 = v0.<com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap: java.util.Queue writeBuffer>;
+v3 = interfaceinvoke v2.<java.util.Queue: java.lang.Object poll()>();
+if v3 == null goto label2;
+interfaceinvoke v3.<java.lang.Runnable: void run()>();
+v1 = v1 + 1;
+goto label1;
+label2:
+return;
+}
+boolean tryToRetire(com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap$Node, com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap$WeightedValue)
+{
+com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap v0;
+int v6, v7;
+java.lang.Object v5;
+com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap$Node v1;
+boolean v3, v8;
+com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap$WeightedValue v2, v4;
+v0 := @this: com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap;
+v1 := @parameter0: com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap$Node;
+v2 := @parameter1: com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap$WeightedValue;
+v3 = virtualinvoke v2.<com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap$WeightedValue: boolean isAlive()>();
+if v3 == 0 goto label1;
+v4 = new com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap$WeightedValue;
+v5 = v2.<com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap$WeightedValue: java.lang.Object value>;
+v6 = v2.<com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap$WeightedValue: int weight>;
+v7 = neg v6;
+specialinvoke v4.<com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap$WeightedValue: void <init>(java.lang.Object,int)>(v5, v7);
+v8 = virtualinvoke v1.<com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap$Node: boolean compareAndSet(java.lang.Object,java.lang.Object)>(v2, v4);
+return v8;
+label1:
+return 0;
+}
+void makeRetired(com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap$Node)
+{
+com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap v0;
+int v6, v7;
+java.lang.Object v2, v5;
+com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap$Node v1;
+boolean v3, v8;
+com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap$WeightedValue v4;
+v0 := @this: com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap;
+v1 := @parameter0: com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap$Node;
+label1:
+v2 = virtualinvoke v1.<com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap$Node: java.lang.Object get()>();
+v3 = virtualinvoke v2.<com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap$WeightedValue: boolean isAlive()>();
+if v3 != 0 goto label2;
+return;
+label2:
+v4 = new com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap$WeightedValue;
+v5 = v2.<com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap$WeightedValue: java.lang.Object value>;
+v6 = v2.<com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap$WeightedValue: int weight>;
+v7 = neg v6;
+specialinvoke v4.<com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap$WeightedValue: void <init>(java.lang.Object,int)>(v5, v7);
+v8 = virtualinvoke v1.<com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap$Node: boolean compareAndSet(java.lang.Object,java.lang.Object)>(v2, v4);
+if v8 == 0 goto label1;
+return;
+}
+void makeDead(com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap$Node)
+{
+long v11, v8;
+com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap v0;
+java.util.concurrent.atomic.AtomicLong v6, v7;
+int v10, v9;
+java.lang.Object v2, v4;
+com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap$Node v1;
+boolean v5;
+com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap$WeightedValue v3;
+v0 := @this: com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap;
+v1 := @parameter0: com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap$Node;
+label1:
+v2 = virtualinvoke v1.<com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap$Node: java.lang.Object get()>();
+v3 = new com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap$WeightedValue;
+v4 = v2.<com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap$WeightedValue: java.lang.Object value>;
+specialinvoke v3.<com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap$WeightedValue: void <init>(java.lang.Object,int)>(v4, 0);
+v5 = virtualinvoke v1.<com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap$Node: boolean compareAndSet(java.lang.Object,java.lang.Object)>(v2, v3);
+if v5 == 0 goto label1;
+v6 = v0.<com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap: java.util.concurrent.atomic.AtomicLong weightedSize>;
+v7 = v0.<com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap: java.util.concurrent.atomic.AtomicLong weightedSize>;
+v8 = virtualinvoke v7.<java.util.concurrent.atomic.AtomicLong: long get()>();
+v9 = v2.<com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap$WeightedValue: int weight>;
+v10 = staticinvoke <java.lang.Math: int abs(int)>(v9);
+v11 = v8 - v10;
+virtualinvoke v6.<java.util.concurrent.atomic.AtomicLong: void lazySet(long)>(v11);
+return;
+}
+public boolean isEmpty()
+{
+com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap v0;
+boolean v2;
+java.util.concurrent.ConcurrentMap v1;
+v0 := @this: com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap;
+v1 = v0.<com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap: java.util.concurrent.ConcurrentMap data>;
+v2 = interfaceinvoke v1.<java.util.concurrent.ConcurrentMap: boolean isEmpty()>();
+return v2;
+}
+public int size()
+{
+int v2;
+com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap v0;
+java.util.concurrent.ConcurrentMap v1;
+v0 := @this: com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap;
+v1 = v0.<com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap: java.util.concurrent.ConcurrentMap data>;
+v2 = interfaceinvoke v1.<java.util.concurrent.ConcurrentMap: int size()>();
+return v2;
+}
+public void clear()
+{
+java.lang.Throwable v13;
+com.fasterxml.jackson.databind.util.internal.Linked v3;
+java.util.concurrent.ConcurrentMap v4;
+java.util.concurrent.atomic.AtomicReferenceArray v7, v9;
+com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap v0;
+java.util.concurrent.locks.Lock v1, v12, v14;
+com.fasterxml.jackson.databind.util.internal.LinkedDeque v2;
+int v6, v8;
+java.lang.Object v11, v5;
+java.util.Queue v10;
+v0 := @this: com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap;
+v1 = v0.<com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap: java.util.concurrent.locks.Lock evictionLock>;
+interfaceinvoke v1.<java.util.concurrent.locks.Lock: void lock()>();
+label1:
+v2 = v0.<com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap: com.fasterxml.jackson.databind.util.internal.LinkedDeque evictionDeque>;
+v3 = virtualinvoke v2.<com.fasterxml.jackson.databind.util.internal.LinkedDeque: com.fasterxml.jackson.databind.util.internal.Linked poll()>();
+if v3 == null goto label2;
+v4 = v0.<com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap: java.util.concurrent.ConcurrentMap data>;
+v5 = v3.<com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap$Node: java.lang.Object key>;
+interfaceinvoke v4.<java.util.concurrent.ConcurrentMap: boolean remove(java.lang.Object,java.lang.Object)>(v5, v3);
+virtualinvoke v0.<com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap: void makeDead(com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap$Node)>(v3);
+goto label1;
+label2:
+v6 = 0;
+label3:
+v7 = v0.<com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap: java.util.concurrent.atomic.AtomicReferenceArray readBuffers>;
+v8 = virtualinvoke v7.<java.util.concurrent.atomic.AtomicReferenceArray: int length()>();
+if v6 >= v8 goto label4;
+v9 = v0.<com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap: java.util.concurrent.atomic.AtomicReferenceArray readBuffers>;
+virtualinvoke v9.<java.util.concurrent.atomic.AtomicReferenceArray: void lazySet(int,java.lang.Object)>(v6, null);
+v6 = v6 + 1;
+goto label3;
+label4:
+v10 = v0.<com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap: java.util.Queue writeBuffer>;
+v11 = interfaceinvoke v10.<java.util.Queue: java.lang.Object poll()>();
+if v11 == null goto label5;
+interfaceinvoke v11.<java.lang.Runnable: void run()>();
+goto label4;
+label5:
+v12 = v0.<com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap: java.util.concurrent.locks.Lock evictionLock>;
+interfaceinvoke v12.<java.util.concurrent.locks.Lock: void unlock()>();
+goto label7;
+label6:
+v13 := @caughtexception;
+v14 = v0.<com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap: java.util.concurrent.locks.Lock evictionLock>;
+interfaceinvoke v14.<java.util.concurrent.locks.Lock: void unlock()>();
+throw v13;
+label7:
+return;
+catch java.lang.Throwable from label1 to label5 with label6;
+}
+public boolean containsKey(java.lang.Object)
+{
+com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap v0;
+java.lang.Object v1;
+boolean v3;
+java.util.concurrent.ConcurrentMap v2;
+v0 := @this: com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap;
+v1 := @parameter0: java.lang.Object;
+v2 = v0.<com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap: java.util.concurrent.ConcurrentMap data>;
+v3 = interfaceinvoke v2.<java.util.concurrent.ConcurrentMap: boolean containsKey(java.lang.Object)>(v1);
+return v3;
+}
+public boolean containsValue(java.lang.Object)
+{
+java.util.Iterator v4;
+java.util.Collection v3;
+java.util.concurrent.ConcurrentMap v2;
+com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap v0;
+java.lang.Object v1, v6, v7;
+boolean v5, v8;
+v0 := @this: com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap;
+v1 := @parameter0: java.lang.Object;
+staticinvoke <com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap: void checkNotNull(java.lang.Object)>(v1);
+v2 = v0.<com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap: java.util.concurrent.ConcurrentMap data>;
+v3 = interfaceinvoke v2.<java.util.concurrent.ConcurrentMap: java.util.Collection values()>();
+v4 = interfaceinvoke v3.<java.util.Collection: java.util.Iterator iterator()>();
+label1:
+v5 = interfaceinvoke v4.<java.util.Iterator: boolean hasNext()>();
+if v5 == 0 goto label2;
+v6 = interfaceinvoke v4.<java.util.Iterator: java.lang.Object next()>();
+v7 = virtualinvoke v6.<com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap$Node: java.lang.Object getValue()>();
+v8 = virtualinvoke v7.<java.lang.Object: boolean equals(java.lang.Object)>(v1);
+if v8 == 0 goto label1;
+return 1;
+label2:
+return 0;
+}
+public java.lang.Object get(java.lang.Object)
+{
+com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap v0;
+java.lang.Object v1, v3, v4;
+java.util.concurrent.ConcurrentMap v2;
+v0 := @this: com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap;
+v1 := @parameter0: java.lang.Object;
+v2 = v0.<com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap: java.util.concurrent.ConcurrentMap data>;
+v3 = interfaceinvoke v2.<java.util.concurrent.ConcurrentMap: java.lang.Object get(java.lang.Object)>(v1);
+if v3 != null goto label1;
+return null;
+label1:
+virtualinvoke v0.<com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap: void afterRead(com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap$Node)>(v3);
+v4 = virtualinvoke v3.<com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap$Node: java.lang.Object getValue()>();
+return v4;
+}
+public java.lang.Object put(java.lang.Object, java.lang.Object)
+{
+com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap v0;
+java.lang.Object v1, v2, v3;
+v0 := @this: com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap;
+v1 := @parameter0: java.lang.Object;
+v2 := @parameter1: java.lang.Object;
+v3 = virtualinvoke v0.<com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap: java.lang.Object put(java.lang.Object,java.lang.Object,boolean)>(v1, v2, 0);
+return v3;
+}
+public java.lang.Object putIfAbsent(java.lang.Object, java.lang.Object)
+{
+com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap v0;
+java.lang.Object v1, v2, v3;
+v0 := @this: com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap;
+v1 := @parameter0: java.lang.Object;
+v2 := @parameter1: java.lang.Object;
+v3 = virtualinvoke v0.<com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap: java.lang.Object put(java.lang.Object,java.lang.Object,boolean)>(v1, v2, 1);
+return v3;
+}
+java.lang.Object put(java.lang.Object, java.lang.Object, boolean)
+{
+com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap$UpdateTask v16;
+java.util.concurrent.ConcurrentMap v6;
+int v14, v15;
+com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap$Node v5;
+boolean v12, v13, v3;
+com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap$WeightedValue v4;
+com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap v0;
+java.lang.Object v1, v10, v11, v17, v2, v7, v8;
+com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap$AddTask v9;
+v0 := @this: com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap;
+v1 := @parameter0: java.lang.Object;
+v2 := @parameter1: java.lang.Object;
+v3 := @parameter2: boolean;
+staticinvoke <com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap: void checkNotNull(java.lang.Object)>(v1);
+staticinvoke <com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap: void checkNotNull(java.lang.Object)>(v2);
+v4 = new com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap$WeightedValue;
+specialinvoke v4.<com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap$WeightedValue: void <init>(java.lang.Object,int)>(v2, 1);
+v5 = new com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap$Node;
+specialinvoke v5.<com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap$Node: void <init>(java.lang.Object,com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap$WeightedValue)>(v1, v4);
+label1:
+v6 = v0.<com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap: java.util.concurrent.ConcurrentMap data>;
+v7 = v5.<com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap$Node: java.lang.Object key>;
+v8 = interfaceinvoke v6.<java.util.concurrent.ConcurrentMap: java.lang.Object putIfAbsent(java.lang.Object,java.lang.Object)>(v7, v5);
+if v8 != null goto label2;
+v9 = new com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap$AddTask;
+specialinvoke v9.<com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap$AddTask: void <init>(com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap,com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap$Node,int)>(v0, v5, 1);
+virtualinvoke v0.<com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap: void afterWrite(java.lang.Runnable)>(v9);
+return null;
+label2:
+if v3 == 0 goto label3;
+virtualinvoke v0.<com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap: void afterRead(com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap$Node)>(v8);
+v10 = virtualinvoke v8.<com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap$Node: java.lang.Object getValue()>();
+return v10;
+label3:
+v11 = virtualinvoke v8.<com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap$Node: java.lang.Object get()>();
+v12 = virtualinvoke v11.<com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap$WeightedValue: boolean isAlive()>();
+if v12 == 0 goto label1;
+v13 = virtualinvoke v8.<com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap$Node: boolean compareAndSet(java.lang.Object,java.lang.Object)>(v11, v4);
+if v13 == 0 goto label3;
+v14 = v11.<com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap$WeightedValue: int weight>;
+v15 = 1 - v14;
+if v15 != 0 goto label4;
+virtualinvoke v0.<com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap: void afterRead(com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap$Node)>(v8);
+goto label5;
+label4:
+v16 = new com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap$UpdateTask;
+specialinvoke v16.<com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap$UpdateTask: void <init>(com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap,com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap$Node,int)>(v0, v8, v15);
+virtualinvoke v0.<com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap: void afterWrite(java.lang.Runnable)>(v16);
+label5:
+v17 = v11.<com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap$WeightedValue: java.lang.Object value>;
+return v17;
+}
+public java.lang.Object remove(java.lang.Object)
+{
+com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap$RemovalTask v4;
+com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap v0;
+java.lang.Object v1, v3, v5;
+java.util.concurrent.ConcurrentMap v2;
+v0 := @this: com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap;
+v1 := @parameter0: java.lang.Object;
+v2 = v0.<com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap: java.util.concurrent.ConcurrentMap data>;
+v3 = interfaceinvoke v2.<java.util.concurrent.ConcurrentMap: java.lang.Object remove(java.lang.Object)>(v1);
+if v3 != null goto label1;
+return null;
+label1:
+virtualinvoke v0.<com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap: void makeRetired(com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap$Node)>(v3);
+v4 = new com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap$RemovalTask;
+specialinvoke v4.<com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap$RemovalTask: void <init>(com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap,com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap$Node)>(v0, v3);
+virtualinvoke v0.<com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap: void afterWrite(java.lang.Runnable)>(v4);
+v5 = virtualinvoke v3.<com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap$Node: java.lang.Object getValue()>();
+return v5;
+}
+public boolean remove(java.lang.Object, java.lang.Object)
+{
+com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap$RemovalTask v10;
+java.util.concurrent.ConcurrentMap v3, v8;
+com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap v0;
+java.lang.Object v1, v2, v4, v5;
+boolean v11, v6, v7, v9;
+v0 := @this: com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap;
+v1 := @parameter0: java.lang.Object;
+v2 := @parameter1: java.lang.Object;
+v3 = v0.<com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap: java.util.concurrent.ConcurrentMap data>;
+v4 = interfaceinvoke v3.<java.util.concurrent.ConcurrentMap: java.lang.Object get(java.lang.Object)>(v1);
+if v4 == null goto label1;
+if v2 != null goto label2;
+label1:
+return 0;
+label2:
+v5 = virtualinvoke v4.<com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap$Node: java.lang.Object get()>();
+label3:
+v6 = virtualinvoke v5.<com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap$WeightedValue: boolean contains(java.lang.Object)>(v2);
+if v6 == 0 goto label5;
+v7 = virtualinvoke v0.<com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap: boolean tryToRetire(com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap$Node,com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap$WeightedValue)>(v4, v5);
+if v7 == 0 goto label4;
+v8 = v0.<com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap: java.util.concurrent.ConcurrentMap data>;
+v9 = interfaceinvoke v8.<java.util.concurrent.ConcurrentMap: boolean remove(java.lang.Object,java.lang.Object)>(v1, v4);
+if v9 == 0 goto label5;
+v10 = new com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap$RemovalTask;
+specialinvoke v10.<com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap$RemovalTask: void <init>(com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap,com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap$Node)>(v0, v4);
+virtualinvoke v0.<com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap: void afterWrite(java.lang.Runnable)>(v10);
+return 1;
+label4:
+virtualinvoke v4.<com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap$Node: java.lang.Object get()>();
+v11 = virtualinvoke v5.<com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap$WeightedValue: boolean isAlive()>();
+if v11 != 0 goto label3;
+label5:
+return 0;
+}
+public java.lang.Object replace(java.lang.Object, java.lang.Object)
+{
+com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap$UpdateTask v11;
+java.util.concurrent.ConcurrentMap v4;
+com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap v0;
+int v10, v9;
+java.lang.Object v1, v12, v2, v5, v6;
+boolean v7, v8;
+com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap$WeightedValue v3;
+v0 := @this: com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap;
+v1 := @parameter0: java.lang.Object;
+v2 := @parameter1: java.lang.Object;
+staticinvoke <com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap: void checkNotNull(java.lang.Object)>(v1);
+staticinvoke <com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap: void checkNotNull(java.lang.Object)>(v2);
+v3 = new com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap$WeightedValue;
+specialinvoke v3.<com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap$WeightedValue: void <init>(java.lang.Object,int)>(v2, 1);
+v4 = v0.<com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap: java.util.concurrent.ConcurrentMap data>;
+v5 = interfaceinvoke v4.<java.util.concurrent.ConcurrentMap: java.lang.Object get(java.lang.Object)>(v1);
+if v5 != null goto label1;
+return null;
+label1:
+v6 = virtualinvoke v5.<com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap$Node: java.lang.Object get()>();
+v7 = virtualinvoke v6.<com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap$WeightedValue: boolean isAlive()>();
+if v7 != 0 goto label2;
+return null;
+label2:
+v8 = virtualinvoke v5.<com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap$Node: boolean compareAndSet(java.lang.Object,java.lang.Object)>(v6, v3);
+if v8 == 0 goto label1;
+v9 = v6.<com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap$WeightedValue: int weight>;
+v10 = 1 - v9;
+if v10 != 0 goto label3;
+virtualinvoke v0.<com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap: void afterRead(com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap$Node)>(v5);
+goto label4;
+label3:
+v11 = new com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap$UpdateTask;
+specialinvoke v11.<com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap$UpdateTask: void <init>(com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap,com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap$Node,int)>(v0, v5, v10);
+virtualinvoke v0.<com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap: void afterWrite(java.lang.Runnable)>(v11);
+label4:
+v12 = v6.<com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap$WeightedValue: java.lang.Object value>;
+return v12;
+}
+public boolean replace(java.lang.Object, java.lang.Object, java.lang.Object)
+{
+com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap$UpdateTask v13;
+java.util.concurrent.ConcurrentMap v5;
+com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap v0;
+int v11, v12;
+java.lang.Object v1, v2, v3, v6, v7;
+boolean v10, v8, v9;
+com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap$WeightedValue v4;
+v0 := @this: com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap;
+v1 := @parameter0: java.lang.Object;
+v2 := @parameter1: java.lang.Object;
+v3 := @parameter2: java.lang.Object;
+staticinvoke <com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap: void checkNotNull(java.lang.Object)>(v1);
+staticinvoke <com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap: void checkNotNull(java.lang.Object)>(v2);
+staticinvoke <com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap: void checkNotNull(java.lang.Object)>(v3);
+v4 = new com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap$WeightedValue;
+specialinvoke v4.<com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap$WeightedValue: void <init>(java.lang.Object,int)>(v3, 1);
+v5 = v0.<com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap: java.util.concurrent.ConcurrentMap data>;
+v6 = interfaceinvoke v5.<java.util.concurrent.ConcurrentMap: java.lang.Object get(java.lang.Object)>(v1);
+if v6 != null goto label1;
+return 0;
+label1:
+v7 = virtualinvoke v6.<com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap$Node: java.lang.Object get()>();
+v8 = virtualinvoke v7.<com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap$WeightedValue: boolean isAlive()>();
+if v8 == 0 goto label2;
+v9 = virtualinvoke v7.<com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap$WeightedValue: boolean contains(java.lang.Object)>(v2);
+if v9 != 0 goto label3;
+label2:
+return 0;
+label3:
+v10 = virtualinvoke v6.<com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap$Node: boolean compareAndSet(java.lang.Object,java.lang.Object)>(v7, v4);
+if v10 == 0 goto label1;
+v11 = v7.<com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap$WeightedValue: int weight>;
+v12 = 1 - v11;
+if v12 != 0 goto label4;
+virtualinvoke v0.<com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap: void afterRead(com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap$Node)>(v6);
+goto label5;
+label4:
+v13 = new com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap$UpdateTask;
+specialinvoke v13.<com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap$UpdateTask: void <init>(com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap,com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap$Node,int)>(v0, v6, v12);
+virtualinvoke v0.<com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap: void afterWrite(java.lang.Runnable)>(v13);
+label5:
+return 1;
+}
+public java.util.Set keySet()
+{
+com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap v0;
+com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap$KeySet v2;
+java.util.Set v1, v3;
+v0 := @this: com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap;
+v1 = v0.<com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap: java.util.Set keySet>;
+if v1 != null goto label1;
+v2 = new com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap$KeySet;
+v3 = v2;
+specialinvoke v2.<com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap$KeySet: void <init>(com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap)>(v0);
+v0.<com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap: java.util.Set keySet> = v2;
+goto label2;
+label1:
+v3 = v1;
+label2:
+return v3;
+}
+public java.util.Collection values()
+{
+com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap v0;
+java.util.Collection v1, v3;
+com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap$Values v2;
+v0 := @this: com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap;
+v1 = v0.<com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap: java.util.Collection values>;
+if v1 != null goto label1;
+v2 = new com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap$Values;
+v3 = v2;
+specialinvoke v2.<com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap$Values: void <init>(com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap)>(v0);
+v0.<com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap: java.util.Collection values> = v2;
+goto label2;
+label1:
+v3 = v1;
+label2:
+return v3;
+}
+public java.util.Set entrySet()
+{
+com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap v0;
+com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap$EntrySet v2;
+java.util.Set v1, v3;
+v0 := @this: com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap;
+v1 = v0.<com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap: java.util.Set entrySet>;
+if v1 != null goto label1;
+v2 = new com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap$EntrySet;
+v3 = v2;
+specialinvoke v2.<com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap$EntrySet: void <init>(com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap)>(v0);
+v0.<com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap: java.util.Set entrySet> = v2;
+goto label2;
+label1:
+v3 = v1;
+label2:
+return v3;
+}
+java.lang.Object writeReplace()
+{
+com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap v0;
+com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap$SerializationProxy v1;
+v0 := @this: com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap;
+v1 = new com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap$SerializationProxy;
+specialinvoke v1.<com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap$SerializationProxy: void <init>(com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap)>(v0);
+return v1;
+}
+private void readObject(java.io.ObjectInputStream) throws java.io.InvalidObjectException
+{
+java.io.ObjectInputStream v1;
+com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap v0;
+java.io.InvalidObjectException v2;
+v0 := @this: com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap;
+v1 := @parameter0: java.io.ObjectInputStream;
+v2 = new java.io.InvalidObjectException;
+specialinvoke v2.<java.io.InvalidObjectException: void <init>(java.lang.String)>("Proxy required");
+throw v2;
+}
+static void <clinit>()
+{
+java.lang.Runtime v0;
+int v1, v2, v3, v4, v5, v6;
+v0 = staticinvoke <java.lang.Runtime: java.lang.Runtime getRuntime()>();
+v1 = virtualinvoke v0.<java.lang.Runtime: int availableProcessors()>();
+<com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap: int NCPU> = v1;
+v2 = <com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap: int NCPU>;
+v3 = staticinvoke <com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap: int ceilingNextPowerOfTwo(int)>(v2);
+v4 = staticinvoke <java.lang.Math: int min(int,int)>(4, v3);
+<com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap: int NUMBER_OF_READ_BUFFERS> = v4;
+v5 = <com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap: int NUMBER_OF_READ_BUFFERS>;
+v6 = v5 - 1;
+<com.fasterxml.jackson.databind.util.internal.PrivateMaxEntriesMap: int READ_BUFFERS_MASK> = v6;
+return;
+}
+}

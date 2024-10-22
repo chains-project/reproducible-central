@@ -1,0 +1,686 @@
+public abstract class io.netty.handler.codec.ByteToMessageDecoder extends io.netty.channel.ChannelInboundHandlerAdapter
+{
+public static final io.netty.handler.codec.ByteToMessageDecoder$Cumulator MERGE_CUMULATOR;
+public static final io.netty.handler.codec.ByteToMessageDecoder$Cumulator COMPOSITE_CUMULATOR;
+private static final byte STATE_INIT;
+private static final byte STATE_CALLING_CHILD_DECODE;
+private static final byte STATE_HANDLER_REMOVED_PENDING;
+io.netty.buffer.ByteBuf cumulation;
+private io.netty.handler.codec.ByteToMessageDecoder$Cumulator cumulator;
+private boolean singleDecode;
+private boolean first;
+private boolean firedChannelRead;
+private boolean selfFiredChannelRead;
+private byte decodeState;
+private int discardAfterReads;
+private int numReads;
+protected void <init>()
+{
+io.netty.handler.codec.ByteToMessageDecoder v0;
+io.netty.handler.codec.ByteToMessageDecoder$Cumulator v1;
+v0 := @this: io.netty.handler.codec.ByteToMessageDecoder;
+specialinvoke v0.<io.netty.channel.ChannelInboundHandlerAdapter: void <init>()>();
+v1 = <io.netty.handler.codec.ByteToMessageDecoder: io.netty.handler.codec.ByteToMessageDecoder$Cumulator MERGE_CUMULATOR>;
+v0.<io.netty.handler.codec.ByteToMessageDecoder: io.netty.handler.codec.ByteToMessageDecoder$Cumulator cumulator> = v1;
+v0.<io.netty.handler.codec.ByteToMessageDecoder: byte decodeState> = 0;
+v0.<io.netty.handler.codec.ByteToMessageDecoder: int discardAfterReads> = 16;
+virtualinvoke v0.<io.netty.handler.codec.ByteToMessageDecoder: void ensureNotSharable()>();
+return;
+}
+public void setSingleDecode(boolean)
+{
+io.netty.handler.codec.ByteToMessageDecoder v0;
+boolean v1;
+v0 := @this: io.netty.handler.codec.ByteToMessageDecoder;
+v1 := @parameter0: boolean;
+v0.<io.netty.handler.codec.ByteToMessageDecoder: boolean singleDecode> = v1;
+return;
+}
+public boolean isSingleDecode()
+{
+io.netty.handler.codec.ByteToMessageDecoder v0;
+boolean v1;
+v0 := @this: io.netty.handler.codec.ByteToMessageDecoder;
+v1 = v0.<io.netty.handler.codec.ByteToMessageDecoder: boolean singleDecode>;
+return v1;
+}
+public void setCumulator(io.netty.handler.codec.ByteToMessageDecoder$Cumulator)
+{
+java.lang.Object v2;
+io.netty.handler.codec.ByteToMessageDecoder v0;
+io.netty.handler.codec.ByteToMessageDecoder$Cumulator v1;
+v0 := @this: io.netty.handler.codec.ByteToMessageDecoder;
+v1 := @parameter0: io.netty.handler.codec.ByteToMessageDecoder$Cumulator;
+v2 = staticinvoke <io.netty.util.internal.ObjectUtil: java.lang.Object checkNotNull(java.lang.Object,java.lang.String)>(v1, "cumulator");
+v0.<io.netty.handler.codec.ByteToMessageDecoder: io.netty.handler.codec.ByteToMessageDecoder$Cumulator cumulator> = v2;
+return;
+}
+public void setDiscardAfterReads(int)
+{
+int v1;
+io.netty.handler.codec.ByteToMessageDecoder v0;
+v0 := @this: io.netty.handler.codec.ByteToMessageDecoder;
+v1 := @parameter0: int;
+staticinvoke <io.netty.util.internal.ObjectUtil: int checkPositive(int,java.lang.String)>(v1, "discardAfterReads");
+v0.<io.netty.handler.codec.ByteToMessageDecoder: int discardAfterReads> = v1;
+return;
+}
+protected int actualReadableBytes()
+{
+int v2;
+io.netty.handler.codec.ByteToMessageDecoder v0;
+io.netty.buffer.ByteBuf v1;
+v0 := @this: io.netty.handler.codec.ByteToMessageDecoder;
+v1 = virtualinvoke v0.<io.netty.handler.codec.ByteToMessageDecoder: io.netty.buffer.ByteBuf internalBuffer()>();
+v2 = virtualinvoke v1.<io.netty.buffer.ByteBuf: int readableBytes()>();
+return v2;
+}
+protected io.netty.buffer.ByteBuf internalBuffer()
+{
+io.netty.buffer.ByteBuf v1, v2, v3;
+io.netty.handler.codec.ByteToMessageDecoder v0;
+v0 := @this: io.netty.handler.codec.ByteToMessageDecoder;
+v1 = v0.<io.netty.handler.codec.ByteToMessageDecoder: io.netty.buffer.ByteBuf cumulation>;
+if v1 == null goto label1;
+v2 = v0.<io.netty.handler.codec.ByteToMessageDecoder: io.netty.buffer.ByteBuf cumulation>;
+return v2;
+label1:
+v3 = <io.netty.buffer.Unpooled: io.netty.buffer.ByteBuf EMPTY_BUFFER>;
+return v3;
+}
+public final void handlerRemoved(io.netty.channel.ChannelHandlerContext) throws java.lang.Exception
+{
+io.netty.channel.ChannelHandlerContext v1;
+byte v2;
+io.netty.buffer.ByteBuf v3;
+int v4;
+io.netty.handler.codec.ByteToMessageDecoder v0;
+v0 := @this: io.netty.handler.codec.ByteToMessageDecoder;
+v1 := @parameter0: io.netty.channel.ChannelHandlerContext;
+v2 = v0.<io.netty.handler.codec.ByteToMessageDecoder: byte decodeState>;
+if v2 != 1 goto label1;
+v0.<io.netty.handler.codec.ByteToMessageDecoder: byte decodeState> = 2;
+return;
+label1:
+v3 = v0.<io.netty.handler.codec.ByteToMessageDecoder: io.netty.buffer.ByteBuf cumulation>;
+if v3 == null goto label3;
+v0.<io.netty.handler.codec.ByteToMessageDecoder: io.netty.buffer.ByteBuf cumulation> = null;
+v0.<io.netty.handler.codec.ByteToMessageDecoder: int numReads> = 0;
+v4 = virtualinvoke v3.<io.netty.buffer.ByteBuf: int readableBytes()>();
+if v4 <= 0 goto label2;
+interfaceinvoke v1.<io.netty.channel.ChannelHandlerContext: io.netty.channel.ChannelHandlerContext fireChannelRead(java.lang.Object)>(v3);
+interfaceinvoke v1.<io.netty.channel.ChannelHandlerContext: io.netty.channel.ChannelHandlerContext fireChannelReadComplete()>();
+goto label3;
+label2:
+virtualinvoke v3.<io.netty.buffer.ByteBuf: boolean release()>();
+label3:
+virtualinvoke v0.<io.netty.handler.codec.ByteToMessageDecoder: void handlerRemoved0(io.netty.channel.ChannelHandlerContext)>(v1);
+return;
+}
+protected void handlerRemoved0(io.netty.channel.ChannelHandlerContext) throws java.lang.Exception
+{
+io.netty.channel.ChannelHandlerContext v1;
+io.netty.handler.codec.ByteToMessageDecoder v0;
+v0 := @this: io.netty.handler.codec.ByteToMessageDecoder;
+v1 := @parameter0: io.netty.channel.ChannelHandlerContext;
+return;
+}
+public void channelRead(io.netty.channel.ChannelHandlerContext, java.lang.Object) throws java.lang.Exception
+{
+io.netty.util.IllegalReferenceCountException v17, v18, v38, v39;
+io.netty.buffer.ByteBufAllocator v8;
+io.netty.handler.codec.ByteToMessageDecoder$Cumulator v7;
+boolean v15, v26, v27, v28, v3, v36, v47, v48, v49, v6, v9;
+io.netty.handler.codec.DecoderException v30, v32;
+java.lang.Exception v31;
+java.lang.Throwable v29, v33, v50;
+io.netty.channel.ChannelHandlerContext v1;
+io.netty.buffer.ByteBuf v10, v11, v12, v13, v14, v16, v34, v35, v37, v5;
+int v22, v23, v24, v25, v43, v44, v45, v46;
+io.netty.handler.codec.ByteToMessageDecoder v0;
+java.lang.String v20, v21, v41, v42;
+io.netty.handler.codec.CodecOutputList v4;
+java.lang.Class v19, v40;
+java.lang.Object v2;
+v0 := @this: io.netty.handler.codec.ByteToMessageDecoder;
+v1 := @parameter0: io.netty.channel.ChannelHandlerContext;
+v2 := @parameter1: java.lang.Object;
+v3 = v2 instanceof io.netty.buffer.ByteBuf;
+if v3 == 0 goto label28;
+v0.<io.netty.handler.codec.ByteToMessageDecoder: boolean selfFiredChannelRead> = 1;
+v4 = staticinvoke <io.netty.handler.codec.CodecOutputList: io.netty.handler.codec.CodecOutputList newInstance()>();
+label01:
+v5 = v0.<io.netty.handler.codec.ByteToMessageDecoder: io.netty.buffer.ByteBuf cumulation>;
+if v5 != null goto label02;
+v6 = 1;
+goto label03;
+label02:
+v6 = 0;
+label03:
+v0.<io.netty.handler.codec.ByteToMessageDecoder: boolean first> = v6;
+v7 = v0.<io.netty.handler.codec.ByteToMessageDecoder: io.netty.handler.codec.ByteToMessageDecoder$Cumulator cumulator>;
+v8 = interfaceinvoke v1.<io.netty.channel.ChannelHandlerContext: io.netty.buffer.ByteBufAllocator alloc()>();
+v9 = v0.<io.netty.handler.codec.ByteToMessageDecoder: boolean first>;
+if v9 == 0 goto label04;
+v10 = <io.netty.buffer.Unpooled: io.netty.buffer.ByteBuf EMPTY_BUFFER>;
+goto label05;
+label04:
+v10 = v0.<io.netty.handler.codec.ByteToMessageDecoder: io.netty.buffer.ByteBuf cumulation>;
+label05:
+v11 = interfaceinvoke v7.<io.netty.handler.codec.ByteToMessageDecoder$Cumulator: io.netty.buffer.ByteBuf cumulate(io.netty.buffer.ByteBufAllocator,io.netty.buffer.ByteBuf,io.netty.buffer.ByteBuf)>(v8, v10, v2);
+v0.<io.netty.handler.codec.ByteToMessageDecoder: io.netty.buffer.ByteBuf cumulation> = v11;
+v12 = v0.<io.netty.handler.codec.ByteToMessageDecoder: io.netty.buffer.ByteBuf cumulation>;
+virtualinvoke v0.<io.netty.handler.codec.ByteToMessageDecoder: void callDecode(io.netty.channel.ChannelHandlerContext,io.netty.buffer.ByteBuf,java.util.List)>(v1, v12, v4);
+label06:
+v13 = v0.<io.netty.handler.codec.ByteToMessageDecoder: io.netty.buffer.ByteBuf cumulation>;
+if v13 == null goto label11;
+v14 = v0.<io.netty.handler.codec.ByteToMessageDecoder: io.netty.buffer.ByteBuf cumulation>;
+v15 = virtualinvoke v14.<io.netty.buffer.ByteBuf: boolean isReadable()>();
+if v15 != 0 goto label11;
+v0.<io.netty.handler.codec.ByteToMessageDecoder: int numReads> = 0;
+label07:
+v16 = v0.<io.netty.handler.codec.ByteToMessageDecoder: io.netty.buffer.ByteBuf cumulation>;
+virtualinvoke v16.<io.netty.buffer.ByteBuf: boolean release()>();
+label08:
+goto label10;
+label09:
+v17 := @caughtexception;
+v18 = new io.netty.util.IllegalReferenceCountException;
+v19 = virtualinvoke v0.<java.lang.Object: java.lang.Class getClass()>();
+v20 = virtualinvoke v19.<java.lang.Class: java.lang.String getSimpleName()>();
+v21 = dynamicinvoke "makeConcatWithConstants" <java.lang.String (java.lang.String)>(v20) <java.lang.invoke.StringConcatFactory: java.lang.invoke.CallSite makeConcatWithConstants(java.lang.invoke.MethodHandles$Lookup,java.lang.String,java.lang.invoke.MethodType,java.lang.String,java.lang.Object[])>("\u0001#decode() might have released its input buffer, or passed it down the pipeline without a retain() call, which is not allowed.");
+specialinvoke v18.<io.netty.util.IllegalReferenceCountException: void <init>(java.lang.String,java.lang.Throwable)>(v21, v17);
+throw v18;
+label10:
+v0.<io.netty.handler.codec.ByteToMessageDecoder: io.netty.buffer.ByteBuf cumulation> = null;
+goto label12;
+label11:
+v22 = v0.<io.netty.handler.codec.ByteToMessageDecoder: int numReads>;
+v23 = v22 + 1;
+v0.<io.netty.handler.codec.ByteToMessageDecoder: int numReads> = v23;
+v24 = v0.<io.netty.handler.codec.ByteToMessageDecoder: int discardAfterReads>;
+if v23 < v24 goto label12;
+v0.<io.netty.handler.codec.ByteToMessageDecoder: int numReads> = 0;
+virtualinvoke v0.<io.netty.handler.codec.ByteToMessageDecoder: void discardSomeReadBytes()>();
+label12:
+v25 = virtualinvoke v4.<io.netty.handler.codec.CodecOutputList: int size()>();
+v26 = v0.<io.netty.handler.codec.ByteToMessageDecoder: boolean firedChannelRead>;
+v27 = virtualinvoke v4.<io.netty.handler.codec.CodecOutputList: boolean insertSinceRecycled()>();
+v28 = v26 | v27;
+v0.<io.netty.handler.codec.ByteToMessageDecoder: boolean firedChannelRead> = v28;
+staticinvoke <io.netty.handler.codec.ByteToMessageDecoder: void fireChannelRead(io.netty.channel.ChannelHandlerContext,io.netty.handler.codec.CodecOutputList,int)>(v1, v4, v25);
+label13:
+virtualinvoke v4.<io.netty.handler.codec.CodecOutputList: void recycle()>();
+goto label29;
+label14:
+v29 := @caughtexception;
+virtualinvoke v4.<io.netty.handler.codec.CodecOutputList: void recycle()>();
+throw v29;
+label15:
+v30 := @caughtexception;
+throw v30;
+label16:
+v31 := @caughtexception;
+v32 = new io.netty.handler.codec.DecoderException;
+specialinvoke v32.<io.netty.handler.codec.DecoderException: void <init>(java.lang.Throwable)>(v31);
+throw v32;
+label17:
+v33 := @caughtexception;
+label18:
+v34 = v0.<io.netty.handler.codec.ByteToMessageDecoder: io.netty.buffer.ByteBuf cumulation>;
+if v34 == null goto label23;
+v35 = v0.<io.netty.handler.codec.ByteToMessageDecoder: io.netty.buffer.ByteBuf cumulation>;
+v36 = virtualinvoke v35.<io.netty.buffer.ByteBuf: boolean isReadable()>();
+if v36 != 0 goto label23;
+v0.<io.netty.handler.codec.ByteToMessageDecoder: int numReads> = 0;
+label19:
+v37 = v0.<io.netty.handler.codec.ByteToMessageDecoder: io.netty.buffer.ByteBuf cumulation>;
+virtualinvoke v37.<io.netty.buffer.ByteBuf: boolean release()>();
+label20:
+goto label22;
+label21:
+v38 := @caughtexception;
+v39 = new io.netty.util.IllegalReferenceCountException;
+v40 = virtualinvoke v0.<java.lang.Object: java.lang.Class getClass()>();
+v41 = virtualinvoke v40.<java.lang.Class: java.lang.String getSimpleName()>();
+v42 = dynamicinvoke "makeConcatWithConstants" <java.lang.String (java.lang.String)>(v41) <java.lang.invoke.StringConcatFactory: java.lang.invoke.CallSite makeConcatWithConstants(java.lang.invoke.MethodHandles$Lookup,java.lang.String,java.lang.invoke.MethodType,java.lang.String,java.lang.Object[])>("\u0001#decode() might have released its input buffer, or passed it down the pipeline without a retain() call, which is not allowed.");
+specialinvoke v39.<io.netty.util.IllegalReferenceCountException: void <init>(java.lang.String,java.lang.Throwable)>(v42, v38);
+throw v39;
+label22:
+v0.<io.netty.handler.codec.ByteToMessageDecoder: io.netty.buffer.ByteBuf cumulation> = null;
+goto label24;
+label23:
+v43 = v0.<io.netty.handler.codec.ByteToMessageDecoder: int numReads>;
+v44 = v43 + 1;
+v0.<io.netty.handler.codec.ByteToMessageDecoder: int numReads> = v44;
+v45 = v0.<io.netty.handler.codec.ByteToMessageDecoder: int discardAfterReads>;
+if v44 < v45 goto label24;
+v0.<io.netty.handler.codec.ByteToMessageDecoder: int numReads> = 0;
+virtualinvoke v0.<io.netty.handler.codec.ByteToMessageDecoder: void discardSomeReadBytes()>();
+label24:
+v46 = virtualinvoke v4.<io.netty.handler.codec.CodecOutputList: int size()>();
+v47 = v0.<io.netty.handler.codec.ByteToMessageDecoder: boolean firedChannelRead>;
+v48 = virtualinvoke v4.<io.netty.handler.codec.CodecOutputList: boolean insertSinceRecycled()>();
+v49 = v47 | v48;
+v0.<io.netty.handler.codec.ByteToMessageDecoder: boolean firedChannelRead> = v49;
+staticinvoke <io.netty.handler.codec.ByteToMessageDecoder: void fireChannelRead(io.netty.channel.ChannelHandlerContext,io.netty.handler.codec.CodecOutputList,int)>(v1, v4, v46);
+label25:
+virtualinvoke v4.<io.netty.handler.codec.CodecOutputList: void recycle()>();
+goto label27;
+label26:
+v50 := @caughtexception;
+virtualinvoke v4.<io.netty.handler.codec.CodecOutputList: void recycle()>();
+throw v50;
+label27:
+throw v33;
+label28:
+interfaceinvoke v1.<io.netty.channel.ChannelHandlerContext: io.netty.channel.ChannelHandlerContext fireChannelRead(java.lang.Object)>(v2);
+label29:
+return;
+catch io.netty.util.IllegalReferenceCountException from label07 to label08 with label09;
+catch java.lang.Throwable from label06 to label13 with label14;
+catch io.netty.handler.codec.DecoderException from label01 to label06 with label15;
+catch java.lang.Exception from label01 to label06 with label16;
+catch java.lang.Throwable from label01 to label06 with label17;
+catch io.netty.util.IllegalReferenceCountException from label19 to label20 with label21;
+catch java.lang.Throwable from label18 to label25 with label26;
+}
+static void fireChannelRead(io.netty.channel.ChannelHandlerContext, java.util.List, int)
+{
+io.netty.channel.ChannelHandlerContext v0;
+java.util.List v1;
+int v2, v4;
+java.lang.Object v5;
+boolean v3;
+v0 := @parameter0: io.netty.channel.ChannelHandlerContext;
+v1 := @parameter1: java.util.List;
+v2 := @parameter2: int;
+v3 = v1 instanceof io.netty.handler.codec.CodecOutputList;
+if v3 == 0 goto label1;
+staticinvoke <io.netty.handler.codec.ByteToMessageDecoder: void fireChannelRead(io.netty.channel.ChannelHandlerContext,io.netty.handler.codec.CodecOutputList,int)>(v0, v1, v2);
+goto label3;
+label1:
+v4 = 0;
+label2:
+if v4 >= v2 goto label3;
+v5 = interfaceinvoke v1.<java.util.List: java.lang.Object get(int)>(v4);
+interfaceinvoke v0.<io.netty.channel.ChannelHandlerContext: io.netty.channel.ChannelHandlerContext fireChannelRead(java.lang.Object)>(v5);
+v4 = v4 + 1;
+goto label2;
+label3:
+return;
+}
+static void fireChannelRead(io.netty.channel.ChannelHandlerContext, io.netty.handler.codec.CodecOutputList, int)
+{
+io.netty.channel.ChannelHandlerContext v0;
+int v2, v3;
+java.lang.Object v4;
+io.netty.handler.codec.CodecOutputList v1;
+v0 := @parameter0: io.netty.channel.ChannelHandlerContext;
+v1 := @parameter1: io.netty.handler.codec.CodecOutputList;
+v2 := @parameter2: int;
+v3 = 0;
+label1:
+if v3 >= v2 goto label2;
+v4 = virtualinvoke v1.<io.netty.handler.codec.CodecOutputList: java.lang.Object getUnsafe(int)>(v3);
+interfaceinvoke v0.<io.netty.channel.ChannelHandlerContext: io.netty.channel.ChannelHandlerContext fireChannelRead(java.lang.Object)>(v4);
+v3 = v3 + 1;
+goto label1;
+label2:
+return;
+}
+public void channelReadComplete(io.netty.channel.ChannelHandlerContext) throws java.lang.Exception
+{
+io.netty.channel.Channel v4;
+io.netty.channel.ChannelHandlerContext v1;
+io.netty.channel.ChannelConfig v5;
+io.netty.handler.codec.ByteToMessageDecoder v0;
+boolean v2, v3, v6;
+v0 := @this: io.netty.handler.codec.ByteToMessageDecoder;
+v1 := @parameter0: io.netty.channel.ChannelHandlerContext;
+v0.<io.netty.handler.codec.ByteToMessageDecoder: int numReads> = 0;
+virtualinvoke v0.<io.netty.handler.codec.ByteToMessageDecoder: void discardSomeReadBytes()>();
+v2 = v0.<io.netty.handler.codec.ByteToMessageDecoder: boolean selfFiredChannelRead>;
+if v2 == 0 goto label1;
+v3 = v0.<io.netty.handler.codec.ByteToMessageDecoder: boolean firedChannelRead>;
+if v3 != 0 goto label1;
+v4 = interfaceinvoke v1.<io.netty.channel.ChannelHandlerContext: io.netty.channel.Channel channel()>();
+v5 = interfaceinvoke v4.<io.netty.channel.Channel: io.netty.channel.ChannelConfig config()>();
+v6 = interfaceinvoke v5.<io.netty.channel.ChannelConfig: boolean isAutoRead()>();
+if v6 != 0 goto label1;
+interfaceinvoke v1.<io.netty.channel.ChannelHandlerContext: io.netty.channel.ChannelHandlerContext read()>();
+label1:
+v0.<io.netty.handler.codec.ByteToMessageDecoder: boolean firedChannelRead> = 0;
+interfaceinvoke v1.<io.netty.channel.ChannelHandlerContext: io.netty.channel.ChannelHandlerContext fireChannelReadComplete()>();
+return;
+}
+protected final void discardSomeReadBytes()
+{
+io.netty.buffer.ByteBuf v1, v3, v5;
+int v4;
+io.netty.handler.codec.ByteToMessageDecoder v0;
+boolean v2;
+v0 := @this: io.netty.handler.codec.ByteToMessageDecoder;
+v1 = v0.<io.netty.handler.codec.ByteToMessageDecoder: io.netty.buffer.ByteBuf cumulation>;
+if v1 == null goto label1;
+v2 = v0.<io.netty.handler.codec.ByteToMessageDecoder: boolean first>;
+if v2 != 0 goto label1;
+v3 = v0.<io.netty.handler.codec.ByteToMessageDecoder: io.netty.buffer.ByteBuf cumulation>;
+v4 = virtualinvoke v3.<io.netty.buffer.ByteBuf: int refCnt()>();
+if v4 != 1 goto label1;
+v5 = v0.<io.netty.handler.codec.ByteToMessageDecoder: io.netty.buffer.ByteBuf cumulation>;
+virtualinvoke v5.<io.netty.buffer.ByteBuf: io.netty.buffer.ByteBuf discardSomeReadBytes()>();
+label1:
+return;
+}
+public void channelInactive(io.netty.channel.ChannelHandlerContext) throws java.lang.Exception
+{
+io.netty.channel.ChannelHandlerContext v1;
+io.netty.handler.codec.ByteToMessageDecoder v0;
+v0 := @this: io.netty.handler.codec.ByteToMessageDecoder;
+v1 := @parameter0: io.netty.channel.ChannelHandlerContext;
+specialinvoke v0.<io.netty.handler.codec.ByteToMessageDecoder: void channelInputClosed(io.netty.channel.ChannelHandlerContext,boolean)>(v1, 1);
+return;
+}
+public void userEventTriggered(io.netty.channel.ChannelHandlerContext, java.lang.Object) throws java.lang.Exception
+{
+io.netty.channel.ChannelHandlerContext v1;
+java.lang.Object v2;
+io.netty.handler.codec.ByteToMessageDecoder v0;
+boolean v3;
+v0 := @this: io.netty.handler.codec.ByteToMessageDecoder;
+v1 := @parameter0: io.netty.channel.ChannelHandlerContext;
+v2 := @parameter1: java.lang.Object;
+v3 = v2 instanceof io.netty.channel.socket.ChannelInputShutdownEvent;
+if v3 == 0 goto label1;
+specialinvoke v0.<io.netty.handler.codec.ByteToMessageDecoder: void channelInputClosed(io.netty.channel.ChannelHandlerContext,boolean)>(v1, 0);
+label1:
+specialinvoke v0.<io.netty.channel.ChannelInboundHandlerAdapter: void userEventTriggered(io.netty.channel.ChannelHandlerContext,java.lang.Object)>(v1, v2);
+return;
+}
+private void channelInputClosed(io.netty.channel.ChannelHandlerContext, boolean)
+{
+java.lang.Throwable v11, v15, v7;
+io.netty.channel.ChannelHandlerContext v1;
+io.netty.buffer.ByteBuf v12, v13, v4, v5;
+int v14, v6;
+io.netty.handler.codec.ByteToMessageDecoder v0;
+io.netty.handler.codec.CodecOutputList v3;
+boolean v2;
+io.netty.handler.codec.DecoderException v10, v8;
+java.lang.Exception v9;
+v0 := @this: io.netty.handler.codec.ByteToMessageDecoder;
+v1 := @parameter0: io.netty.channel.ChannelHandlerContext;
+v2 := @parameter1: boolean;
+v3 = staticinvoke <io.netty.handler.codec.CodecOutputList: io.netty.handler.codec.CodecOutputList newInstance()>();
+label01:
+virtualinvoke v0.<io.netty.handler.codec.ByteToMessageDecoder: void channelInputClosed(io.netty.channel.ChannelHandlerContext,java.util.List)>(v1, v3);
+label02:
+v4 = v0.<io.netty.handler.codec.ByteToMessageDecoder: io.netty.buffer.ByteBuf cumulation>;
+if v4 == null goto label03;
+v5 = v0.<io.netty.handler.codec.ByteToMessageDecoder: io.netty.buffer.ByteBuf cumulation>;
+virtualinvoke v5.<io.netty.buffer.ByteBuf: boolean release()>();
+v0.<io.netty.handler.codec.ByteToMessageDecoder: io.netty.buffer.ByteBuf cumulation> = null;
+label03:
+v6 = virtualinvoke v3.<io.netty.handler.codec.CodecOutputList: int size()>();
+staticinvoke <io.netty.handler.codec.ByteToMessageDecoder: void fireChannelRead(io.netty.channel.ChannelHandlerContext,io.netty.handler.codec.CodecOutputList,int)>(v1, v3, v6);
+if v6 <= 0 goto label04;
+interfaceinvoke v1.<io.netty.channel.ChannelHandlerContext: io.netty.channel.ChannelHandlerContext fireChannelReadComplete()>();
+label04:
+if v2 == 0 goto label05;
+interfaceinvoke v1.<io.netty.channel.ChannelHandlerContext: io.netty.channel.ChannelHandlerContext fireChannelInactive()>();
+label05:
+virtualinvoke v3.<io.netty.handler.codec.CodecOutputList: void recycle()>();
+goto label16;
+label06:
+v7 := @caughtexception;
+virtualinvoke v3.<io.netty.handler.codec.CodecOutputList: void recycle()>();
+throw v7;
+label07:
+v8 := @caughtexception;
+throw v8;
+label08:
+v9 := @caughtexception;
+v10 = new io.netty.handler.codec.DecoderException;
+specialinvoke v10.<io.netty.handler.codec.DecoderException: void <init>(java.lang.Throwable)>(v9);
+throw v10;
+label09:
+v11 := @caughtexception;
+label10:
+v12 = v0.<io.netty.handler.codec.ByteToMessageDecoder: io.netty.buffer.ByteBuf cumulation>;
+if v12 == null goto label11;
+v13 = v0.<io.netty.handler.codec.ByteToMessageDecoder: io.netty.buffer.ByteBuf cumulation>;
+virtualinvoke v13.<io.netty.buffer.ByteBuf: boolean release()>();
+v0.<io.netty.handler.codec.ByteToMessageDecoder: io.netty.buffer.ByteBuf cumulation> = null;
+label11:
+v14 = virtualinvoke v3.<io.netty.handler.codec.CodecOutputList: int size()>();
+staticinvoke <io.netty.handler.codec.ByteToMessageDecoder: void fireChannelRead(io.netty.channel.ChannelHandlerContext,io.netty.handler.codec.CodecOutputList,int)>(v1, v3, v14);
+if v14 <= 0 goto label12;
+interfaceinvoke v1.<io.netty.channel.ChannelHandlerContext: io.netty.channel.ChannelHandlerContext fireChannelReadComplete()>();
+label12:
+if v2 == 0 goto label13;
+interfaceinvoke v1.<io.netty.channel.ChannelHandlerContext: io.netty.channel.ChannelHandlerContext fireChannelInactive()>();
+label13:
+virtualinvoke v3.<io.netty.handler.codec.CodecOutputList: void recycle()>();
+goto label15;
+label14:
+v15 := @caughtexception;
+virtualinvoke v3.<io.netty.handler.codec.CodecOutputList: void recycle()>();
+throw v15;
+label15:
+throw v11;
+label16:
+return;
+catch java.lang.Throwable from label02 to label05 with label06;
+catch io.netty.handler.codec.DecoderException from label01 to label02 with label07;
+catch java.lang.Exception from label01 to label02 with label08;
+catch java.lang.Throwable from label01 to label02 with label09;
+catch java.lang.Throwable from label10 to label13 with label14;
+}
+void channelInputClosed(io.netty.channel.ChannelHandlerContext, java.util.List) throws java.lang.Exception
+{
+io.netty.channel.ChannelHandlerContext v1;
+java.util.List v2;
+io.netty.buffer.ByteBuf v3, v4, v6, v7, v8;
+io.netty.handler.codec.ByteToMessageDecoder v0;
+boolean v5;
+v0 := @this: io.netty.handler.codec.ByteToMessageDecoder;
+v1 := @parameter0: io.netty.channel.ChannelHandlerContext;
+v2 := @parameter1: java.util.List;
+v3 = v0.<io.netty.handler.codec.ByteToMessageDecoder: io.netty.buffer.ByteBuf cumulation>;
+if v3 == null goto label3;
+v4 = v0.<io.netty.handler.codec.ByteToMessageDecoder: io.netty.buffer.ByteBuf cumulation>;
+virtualinvoke v0.<io.netty.handler.codec.ByteToMessageDecoder: void callDecode(io.netty.channel.ChannelHandlerContext,io.netty.buffer.ByteBuf,java.util.List)>(v1, v4, v2);
+v5 = interfaceinvoke v1.<io.netty.channel.ChannelHandlerContext: boolean isRemoved()>();
+if v5 != 0 goto label4;
+v6 = v0.<io.netty.handler.codec.ByteToMessageDecoder: io.netty.buffer.ByteBuf cumulation>;
+if v6 != null goto label1;
+v7 = <io.netty.buffer.Unpooled: io.netty.buffer.ByteBuf EMPTY_BUFFER>;
+goto label2;
+label1:
+v7 = v0.<io.netty.handler.codec.ByteToMessageDecoder: io.netty.buffer.ByteBuf cumulation>;
+label2:
+virtualinvoke v0.<io.netty.handler.codec.ByteToMessageDecoder: void decodeLast(io.netty.channel.ChannelHandlerContext,io.netty.buffer.ByteBuf,java.util.List)>(v1, v7, v2);
+goto label4;
+label3:
+v8 = <io.netty.buffer.Unpooled: io.netty.buffer.ByteBuf EMPTY_BUFFER>;
+virtualinvoke v0.<io.netty.handler.codec.ByteToMessageDecoder: void decodeLast(io.netty.channel.ChannelHandlerContext,io.netty.buffer.ByteBuf,java.util.List)>(v1, v8, v2);
+label4:
+return;
+}
+protected void callDecode(io.netty.channel.ChannelHandlerContext, io.netty.buffer.ByteBuf, java.util.List)
+{
+io.netty.channel.ChannelHandlerContext v1;
+io.netty.buffer.ByteBuf v2;
+int v10, v11, v5, v7;
+io.netty.handler.codec.ByteToMessageDecoder v0;
+java.lang.String v14, v15;
+boolean v16, v4, v6, v8, v9;
+io.netty.handler.codec.DecoderException v12, v17, v19;
+java.lang.Exception v18;
+java.util.List v3;
+java.lang.Class v13;
+v0 := @this: io.netty.handler.codec.ByteToMessageDecoder;
+v1 := @parameter0: io.netty.channel.ChannelHandlerContext;
+v2 := @parameter1: io.netty.buffer.ByteBuf;
+v3 := @parameter2: java.util.List;
+label1:
+v4 = virtualinvoke v2.<io.netty.buffer.ByteBuf: boolean isReadable()>();
+if v4 == 0 goto label7;
+v5 = interfaceinvoke v3.<java.util.List: int size()>();
+if v5 <= 0 goto label2;
+staticinvoke <io.netty.handler.codec.ByteToMessageDecoder: void fireChannelRead(io.netty.channel.ChannelHandlerContext,java.util.List,int)>(v1, v3, v5);
+interfaceinvoke v3.<java.util.List: void clear()>();
+v6 = interfaceinvoke v1.<io.netty.channel.ChannelHandlerContext: boolean isRemoved()>();
+if v6 != 0 goto label7;
+label2:
+v7 = virtualinvoke v2.<io.netty.buffer.ByteBuf: int readableBytes()>();
+virtualinvoke v0.<io.netty.handler.codec.ByteToMessageDecoder: void decodeRemovalReentryProtection(io.netty.channel.ChannelHandlerContext,io.netty.buffer.ByteBuf,java.util.List)>(v1, v2, v3);
+v8 = interfaceinvoke v1.<io.netty.channel.ChannelHandlerContext: boolean isRemoved()>();
+if v8 != 0 goto label7;
+v9 = interfaceinvoke v3.<java.util.List: boolean isEmpty()>();
+if v9 == 0 goto label3;
+v10 = virtualinvoke v2.<io.netty.buffer.ByteBuf: int readableBytes()>();
+if v7 != v10 goto label1;
+goto label7;
+label3:
+v11 = virtualinvoke v2.<io.netty.buffer.ByteBuf: int readableBytes()>();
+if v7 != v11 goto label4;
+v12 = new io.netty.handler.codec.DecoderException;
+v13 = virtualinvoke v0.<java.lang.Object: java.lang.Class getClass()>();
+v14 = staticinvoke <io.netty.util.internal.StringUtil: java.lang.String simpleClassName(java.lang.Class)>(v13);
+v15 = dynamicinvoke "makeConcatWithConstants" <java.lang.String (java.lang.String)>(v14) <java.lang.invoke.StringConcatFactory: java.lang.invoke.CallSite makeConcatWithConstants(java.lang.invoke.MethodHandles$Lookup,java.lang.String,java.lang.invoke.MethodType,java.lang.String,java.lang.Object[])>("\u0001.decode() did not read anything but decoded a message.");
+specialinvoke v12.<io.netty.handler.codec.DecoderException: void <init>(java.lang.String)>(v15);
+throw v12;
+label4:
+v16 = virtualinvoke v0.<io.netty.handler.codec.ByteToMessageDecoder: boolean isSingleDecode()>();
+if v16 != 0 goto label7;
+goto label1;
+label5:
+v17 := @caughtexception;
+throw v17;
+label6:
+v18 := @caughtexception;
+v19 = new io.netty.handler.codec.DecoderException;
+specialinvoke v19.<io.netty.handler.codec.DecoderException: void <init>(java.lang.Throwable)>(v18);
+throw v19;
+label7:
+return;
+catch io.netty.handler.codec.DecoderException from label1 to label5 with label5;
+catch java.lang.Exception from label1 to label5 with label6;
+}
+protected abstract void decode(io.netty.channel.ChannelHandlerContext, io.netty.buffer.ByteBuf, java.util.List) throws java.lang.Exception;
+final void decodeRemovalReentryProtection(io.netty.channel.ChannelHandlerContext, io.netty.buffer.ByteBuf, java.util.List) throws java.lang.Exception
+{
+java.lang.Throwable v7;
+io.netty.channel.ChannelHandlerContext v1;
+java.util.List v3;
+byte v4, v8;
+io.netty.buffer.ByteBuf v2;
+int v10, v6;
+io.netty.handler.codec.ByteToMessageDecoder v0;
+boolean v5, v9;
+v0 := @this: io.netty.handler.codec.ByteToMessageDecoder;
+v1 := @parameter0: io.netty.channel.ChannelHandlerContext;
+v2 := @parameter1: io.netty.buffer.ByteBuf;
+v3 := @parameter2: java.util.List;
+v0.<io.netty.handler.codec.ByteToMessageDecoder: byte decodeState> = 1;
+label1:
+virtualinvoke v0.<io.netty.handler.codec.ByteToMessageDecoder: void decode(io.netty.channel.ChannelHandlerContext,io.netty.buffer.ByteBuf,java.util.List)>(v1, v2, v3);
+label2:
+v4 = v0.<io.netty.handler.codec.ByteToMessageDecoder: byte decodeState>;
+if v4 != 2 goto label3;
+v5 = 1;
+goto label4;
+label3:
+v5 = 0;
+label4:
+v0.<io.netty.handler.codec.ByteToMessageDecoder: byte decodeState> = 0;
+if v5 == 0 goto label9;
+v6 = interfaceinvoke v3.<java.util.List: int size()>();
+staticinvoke <io.netty.handler.codec.ByteToMessageDecoder: void fireChannelRead(io.netty.channel.ChannelHandlerContext,java.util.List,int)>(v1, v3, v6);
+interfaceinvoke v3.<java.util.List: void clear()>();
+virtualinvoke v0.<io.netty.handler.codec.ByteToMessageDecoder: void handlerRemoved(io.netty.channel.ChannelHandlerContext)>(v1);
+goto label9;
+label5:
+v7 := @caughtexception;
+v8 = v0.<io.netty.handler.codec.ByteToMessageDecoder: byte decodeState>;
+if v8 != 2 goto label6;
+v9 = 1;
+goto label7;
+label6:
+v9 = 0;
+label7:
+v0.<io.netty.handler.codec.ByteToMessageDecoder: byte decodeState> = 0;
+if v9 == 0 goto label8;
+v10 = interfaceinvoke v3.<java.util.List: int size()>();
+staticinvoke <io.netty.handler.codec.ByteToMessageDecoder: void fireChannelRead(io.netty.channel.ChannelHandlerContext,java.util.List,int)>(v1, v3, v10);
+interfaceinvoke v3.<java.util.List: void clear()>();
+virtualinvoke v0.<io.netty.handler.codec.ByteToMessageDecoder: void handlerRemoved(io.netty.channel.ChannelHandlerContext)>(v1);
+label8:
+throw v7;
+label9:
+return;
+catch java.lang.Throwable from label1 to label2 with label5;
+}
+protected void decodeLast(io.netty.channel.ChannelHandlerContext, io.netty.buffer.ByteBuf, java.util.List) throws java.lang.Exception
+{
+io.netty.channel.ChannelHandlerContext v1;
+java.util.List v3;
+io.netty.buffer.ByteBuf v2;
+io.netty.handler.codec.ByteToMessageDecoder v0;
+boolean v4;
+v0 := @this: io.netty.handler.codec.ByteToMessageDecoder;
+v1 := @parameter0: io.netty.channel.ChannelHandlerContext;
+v2 := @parameter1: io.netty.buffer.ByteBuf;
+v3 := @parameter2: java.util.List;
+v4 = virtualinvoke v2.<io.netty.buffer.ByteBuf: boolean isReadable()>();
+if v4 == 0 goto label1;
+virtualinvoke v0.<io.netty.handler.codec.ByteToMessageDecoder: void decodeRemovalReentryProtection(io.netty.channel.ChannelHandlerContext,io.netty.buffer.ByteBuf,java.util.List)>(v1, v2, v3);
+label1:
+return;
+}
+static io.netty.buffer.ByteBuf expandCumulation(io.netty.buffer.ByteBufAllocator, io.netty.buffer.ByteBuf, io.netty.buffer.ByteBuf)
+{
+java.lang.Throwable v13;
+io.netty.buffer.ByteBufAllocator v0;
+io.netty.buffer.ByteBuf v1, v11, v2, v7, v9;
+int v10, v12, v3, v4, v5, v6, v8;
+v0 := @parameter0: io.netty.buffer.ByteBufAllocator;
+v1 := @parameter1: io.netty.buffer.ByteBuf;
+v2 := @parameter2: io.netty.buffer.ByteBuf;
+v3 = virtualinvoke v1.<io.netty.buffer.ByteBuf: int readableBytes()>();
+v4 = virtualinvoke v2.<io.netty.buffer.ByteBuf: int readableBytes()>();
+v5 = v3 + v4;
+v6 = interfaceinvoke v0.<io.netty.buffer.ByteBufAllocator: int calculateNewCapacity(int,int)>(v5, 2147483647);
+v7 = interfaceinvoke v0.<io.netty.buffer.ByteBufAllocator: io.netty.buffer.ByteBuf buffer(int)>(v6);
+label1:
+v8 = virtualinvoke v1.<io.netty.buffer.ByteBuf: int readerIndex()>();
+v9 = virtualinvoke v7.<io.netty.buffer.ByteBuf: io.netty.buffer.ByteBuf setBytes(int,io.netty.buffer.ByteBuf,int,int)>(0, v1, v8, v3);
+v10 = virtualinvoke v2.<io.netty.buffer.ByteBuf: int readerIndex()>();
+v11 = virtualinvoke v9.<io.netty.buffer.ByteBuf: io.netty.buffer.ByteBuf setBytes(int,io.netty.buffer.ByteBuf,int,int)>(v3, v2, v10, v4);
+virtualinvoke v11.<io.netty.buffer.ByteBuf: io.netty.buffer.ByteBuf writerIndex(int)>(v5);
+v12 = virtualinvoke v2.<io.netty.buffer.ByteBuf: int writerIndex()>();
+virtualinvoke v2.<io.netty.buffer.ByteBuf: io.netty.buffer.ByteBuf readerIndex(int)>(v12);
+label2:
+virtualinvoke v1.<io.netty.buffer.ByteBuf: boolean release()>();
+return v7;
+label3:
+v13 := @caughtexception;
+virtualinvoke v7.<io.netty.buffer.ByteBuf: boolean release()>();
+throw v13;
+catch java.lang.Throwable from label1 to label2 with label3;
+}
+static void <clinit>()
+{
+io.netty.handler.codec.ByteToMessageDecoder$2 v1;
+io.netty.handler.codec.ByteToMessageDecoder$1 v0;
+v0 = new io.netty.handler.codec.ByteToMessageDecoder$1;
+specialinvoke v0.<io.netty.handler.codec.ByteToMessageDecoder$1: void <init>()>();
+<io.netty.handler.codec.ByteToMessageDecoder: io.netty.handler.codec.ByteToMessageDecoder$Cumulator MERGE_CUMULATOR> = v0;
+v1 = new io.netty.handler.codec.ByteToMessageDecoder$2;
+specialinvoke v1.<io.netty.handler.codec.ByteToMessageDecoder$2: void <init>()>();
+<io.netty.handler.codec.ByteToMessageDecoder: io.netty.handler.codec.ByteToMessageDecoder$Cumulator COMPOSITE_CUMULATOR> = v1;
+return;
+}
+}

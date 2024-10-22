@@ -1,0 +1,298 @@
+public class io.netty.handler.codec.json.JsonObjectDecoder extends io.netty.handler.codec.ByteToMessageDecoder
+{
+private static final int ST_CORRUPTED;
+private static final int ST_INIT;
+private static final int ST_DECODING_NORMAL;
+private static final int ST_DECODING_ARRAY_STREAM;
+private int openBraces;
+private int idx;
+private int lastReaderIndex;
+private int state;
+private boolean insideString;
+private final int maxObjectLength;
+private final boolean streamArrayElements;
+public void <init>()
+{
+io.netty.handler.codec.json.JsonObjectDecoder v0;
+v0 := @this: io.netty.handler.codec.json.JsonObjectDecoder;
+specialinvoke v0.<io.netty.handler.codec.json.JsonObjectDecoder: void <init>(int)>(1048576);
+return;
+}
+public void <init>(int)
+{
+int v1;
+io.netty.handler.codec.json.JsonObjectDecoder v0;
+v0 := @this: io.netty.handler.codec.json.JsonObjectDecoder;
+v1 := @parameter0: int;
+specialinvoke v0.<io.netty.handler.codec.json.JsonObjectDecoder: void <init>(int,boolean)>(v1, 0);
+return;
+}
+public void <init>(boolean)
+{
+boolean v1;
+io.netty.handler.codec.json.JsonObjectDecoder v0;
+v0 := @this: io.netty.handler.codec.json.JsonObjectDecoder;
+v1 := @parameter0: boolean;
+specialinvoke v0.<io.netty.handler.codec.json.JsonObjectDecoder: void <init>(int,boolean)>(1048576, v1);
+return;
+}
+public void <init>(int, boolean)
+{
+int v1, v3;
+boolean v2;
+io.netty.handler.codec.json.JsonObjectDecoder v0;
+v0 := @this: io.netty.handler.codec.json.JsonObjectDecoder;
+v1 := @parameter0: int;
+v2 := @parameter1: boolean;
+specialinvoke v0.<io.netty.handler.codec.ByteToMessageDecoder: void <init>()>();
+v3 = staticinvoke <io.netty.util.internal.ObjectUtil: int checkPositive(int,java.lang.String)>(v1, "maxObjectLength");
+v0.<io.netty.handler.codec.json.JsonObjectDecoder: int maxObjectLength> = v3;
+v0.<io.netty.handler.codec.json.JsonObjectDecoder: boolean streamArrayElements> = v2;
+return;
+}
+protected void decode(io.netty.channel.ChannelHandlerContext, io.netty.buffer.ByteBuf, java.util.List) throws java.lang.Exception
+{
+byte v23, v37, v41;
+boolean v33, v38, v42, v50;
+io.netty.handler.codec.json.JsonObjectDecoder v0;
+io.netty.handler.codec.TooLongFrameException v20;
+java.util.List v3;
+io.netty.channel.ChannelHandlerContext v1;
+io.netty.buffer.ByteBuf v2, v30, v47;
+int v10, v11, v12, v13, v14, v15, v16, v17, v18, v19, v21, v24, v25, v26, v27, v28, v29, v31, v32, v34, v35, v36, v39, v4, v40, v43, v44, v45, v46, v48, v49, v5, v51, v55, v56, v6, v7, v8, v9;
+java.lang.String v22, v53, v54;
+io.netty.handler.codec.CorruptedFrameException v52;
+v0 := @this: io.netty.handler.codec.json.JsonObjectDecoder;
+v1 := @parameter0: io.netty.channel.ChannelHandlerContext;
+v2 := @parameter1: io.netty.buffer.ByteBuf;
+v3 := @parameter2: java.util.List;
+v4 = v0.<io.netty.handler.codec.json.JsonObjectDecoder: int state>;
+v5 = (int) -1;
+if v4 != v5 goto label01;
+v6 = virtualinvoke v2.<io.netty.buffer.ByteBuf: int readableBytes()>();
+virtualinvoke v2.<io.netty.buffer.ByteBuf: io.netty.buffer.ByteBuf skipBytes(int)>(v6);
+return;
+label01:
+v7 = v0.<io.netty.handler.codec.json.JsonObjectDecoder: int idx>;
+v8 = virtualinvoke v2.<io.netty.buffer.ByteBuf: int readerIndex()>();
+if v7 <= v8 goto label02;
+v9 = v0.<io.netty.handler.codec.json.JsonObjectDecoder: int lastReaderIndex>;
+v10 = virtualinvoke v2.<io.netty.buffer.ByteBuf: int readerIndex()>();
+if v9 == v10 goto label02;
+v11 = virtualinvoke v2.<io.netty.buffer.ByteBuf: int readerIndex()>();
+v12 = v0.<io.netty.handler.codec.json.JsonObjectDecoder: int idx>;
+v13 = v0.<io.netty.handler.codec.json.JsonObjectDecoder: int lastReaderIndex>;
+v14 = v12 - v13;
+v15 = v11 + v14;
+v0.<io.netty.handler.codec.json.JsonObjectDecoder: int idx> = v15;
+label02:
+v16 = v0.<io.netty.handler.codec.json.JsonObjectDecoder: int idx>;
+v17 = virtualinvoke v2.<io.netty.buffer.ByteBuf: int writerIndex()>();
+v18 = v0.<io.netty.handler.codec.json.JsonObjectDecoder: int maxObjectLength>;
+if v17 <= v18 goto label03;
+v19 = virtualinvoke v2.<io.netty.buffer.ByteBuf: int readableBytes()>();
+virtualinvoke v2.<io.netty.buffer.ByteBuf: io.netty.buffer.ByteBuf skipBytes(int)>(v19);
+specialinvoke v0.<io.netty.handler.codec.json.JsonObjectDecoder: void reset()>();
+v20 = new io.netty.handler.codec.TooLongFrameException;
+v21 = v0.<io.netty.handler.codec.json.JsonObjectDecoder: int maxObjectLength>;
+v22 = dynamicinvoke "makeConcatWithConstants" <java.lang.String (int,int)>(v21, v17) <java.lang.invoke.StringConcatFactory: java.lang.invoke.CallSite makeConcatWithConstants(java.lang.invoke.MethodHandles$Lookup,java.lang.String,java.lang.invoke.MethodType,java.lang.String,java.lang.Object[])>("object length exceeds \u0001: \u0001 bytes discarded");
+specialinvoke v20.<io.netty.handler.codec.TooLongFrameException: void <init>(java.lang.String)>(v22);
+throw v20;
+label03:
+if v16 >= v17 goto label18;
+v23 = virtualinvoke v2.<io.netty.buffer.ByteBuf: byte getByte(int)>(v16);
+v24 = v0.<io.netty.handler.codec.json.JsonObjectDecoder: int state>;
+if v24 != 1 goto label05;
+specialinvoke v0.<io.netty.handler.codec.json.JsonObjectDecoder: void decodeByte(byte,io.netty.buffer.ByteBuf,int)>(v23, v2, v16);
+v25 = v0.<io.netty.handler.codec.json.JsonObjectDecoder: int openBraces>;
+if v25 != 0 goto label17;
+v26 = virtualinvoke v2.<io.netty.buffer.ByteBuf: int readerIndex()>();
+v27 = v16 + 1;
+v28 = virtualinvoke v2.<io.netty.buffer.ByteBuf: int readerIndex()>();
+v29 = v27 - v28;
+v30 = virtualinvoke v0.<io.netty.handler.codec.json.JsonObjectDecoder: io.netty.buffer.ByteBuf extractObject(io.netty.channel.ChannelHandlerContext,io.netty.buffer.ByteBuf,int,int)>(v1, v2, v26, v29);
+if v30 == null goto label04;
+interfaceinvoke v3.<java.util.List: boolean add(java.lang.Object)>(v30);
+label04:
+v31 = v16 + 1;
+virtualinvoke v2.<io.netty.buffer.ByteBuf: io.netty.buffer.ByteBuf readerIndex(int)>(v31);
+specialinvoke v0.<io.netty.handler.codec.json.JsonObjectDecoder: void reset()>();
+goto label17;
+label05:
+v32 = v0.<io.netty.handler.codec.json.JsonObjectDecoder: int state>;
+if v32 != 2 goto label13;
+specialinvoke v0.<io.netty.handler.codec.json.JsonObjectDecoder: void decodeByte(byte,io.netty.buffer.ByteBuf,int)>(v23, v2, v16);
+v33 = v0.<io.netty.handler.codec.json.JsonObjectDecoder: boolean insideString>;
+if v33 != 0 goto label17;
+v34 = v0.<io.netty.handler.codec.json.JsonObjectDecoder: int openBraces>;
+if v34 != 1 goto label06;
+if v23 == 44 goto label07;
+label06:
+v35 = v0.<io.netty.handler.codec.json.JsonObjectDecoder: int openBraces>;
+if v35 != 0 goto label17;
+if v23 != 93 goto label17;
+label07:
+v36 = virtualinvoke v2.<io.netty.buffer.ByteBuf: int readerIndex()>();
+label08:
+v37 = virtualinvoke v2.<io.netty.buffer.ByteBuf: byte getByte(int)>(v36);
+v38 = staticinvoke <java.lang.Character: boolean isWhitespace(int)>(v37);
+if v38 == 0 goto label09;
+virtualinvoke v2.<io.netty.buffer.ByteBuf: io.netty.buffer.ByteBuf skipBytes(int)>(1);
+v36 = v36 + 1;
+goto label08;
+label09:
+v39 = v16 - 1;
+label10:
+v40 = virtualinvoke v2.<io.netty.buffer.ByteBuf: int readerIndex()>();
+if v39 < v40 goto label11;
+v41 = virtualinvoke v2.<io.netty.buffer.ByteBuf: byte getByte(int)>(v39);
+v42 = staticinvoke <java.lang.Character: boolean isWhitespace(int)>(v41);
+if v42 == 0 goto label11;
+v39 = v39 - 1;
+goto label10;
+label11:
+v43 = virtualinvoke v2.<io.netty.buffer.ByteBuf: int readerIndex()>();
+v44 = v39 + 1;
+v45 = virtualinvoke v2.<io.netty.buffer.ByteBuf: int readerIndex()>();
+v46 = v44 - v45;
+v47 = virtualinvoke v0.<io.netty.handler.codec.json.JsonObjectDecoder: io.netty.buffer.ByteBuf extractObject(io.netty.channel.ChannelHandlerContext,io.netty.buffer.ByteBuf,int,int)>(v1, v2, v43, v46);
+if v47 == null goto label12;
+interfaceinvoke v3.<java.util.List: boolean add(java.lang.Object)>(v47);
+label12:
+v48 = v16 + 1;
+virtualinvoke v2.<io.netty.buffer.ByteBuf: io.netty.buffer.ByteBuf readerIndex(int)>(v48);
+if v23 != 93 goto label17;
+specialinvoke v0.<io.netty.handler.codec.json.JsonObjectDecoder: void reset()>();
+goto label17;
+label13:
+if v23 == 123 goto label14;
+if v23 != 91 goto label15;
+label14:
+specialinvoke v0.<io.netty.handler.codec.json.JsonObjectDecoder: void initDecoding(byte)>(v23);
+v49 = v0.<io.netty.handler.codec.json.JsonObjectDecoder: int state>;
+if v49 != 2 goto label17;
+virtualinvoke v2.<io.netty.buffer.ByteBuf: io.netty.buffer.ByteBuf skipBytes(int)>(1);
+goto label17;
+label15:
+v50 = staticinvoke <java.lang.Character: boolean isWhitespace(int)>(v23);
+if v50 == 0 goto label16;
+virtualinvoke v2.<io.netty.buffer.ByteBuf: io.netty.buffer.ByteBuf skipBytes(int)>(1);
+goto label17;
+label16:
+v51 = (int) -1;
+v0.<io.netty.handler.codec.json.JsonObjectDecoder: int state> = v51;
+v52 = new io.netty.handler.codec.CorruptedFrameException;
+v53 = staticinvoke <io.netty.buffer.ByteBufUtil: java.lang.String hexDump(io.netty.buffer.ByteBuf)>(v2);
+v54 = dynamicinvoke "makeConcatWithConstants" <java.lang.String (int,java.lang.String)>(v16, v53) <java.lang.invoke.StringConcatFactory: java.lang.invoke.CallSite makeConcatWithConstants(java.lang.invoke.MethodHandles$Lookup,java.lang.String,java.lang.invoke.MethodType,java.lang.String,java.lang.Object[])>("invalid JSON received at byte position \u0001: \u0001");
+specialinvoke v52.<io.netty.handler.codec.CorruptedFrameException: void <init>(java.lang.String)>(v54);
+throw v52;
+label17:
+v16 = v16 + 1;
+goto label03;
+label18:
+v55 = virtualinvoke v2.<io.netty.buffer.ByteBuf: int readableBytes()>();
+if v55 != 0 goto label19;
+v0.<io.netty.handler.codec.json.JsonObjectDecoder: int idx> = 0;
+goto label20;
+label19:
+v0.<io.netty.handler.codec.json.JsonObjectDecoder: int idx> = v16;
+label20:
+v56 = virtualinvoke v2.<io.netty.buffer.ByteBuf: int readerIndex()>();
+v0.<io.netty.handler.codec.json.JsonObjectDecoder: int lastReaderIndex> = v56;
+return;
+}
+protected io.netty.buffer.ByteBuf extractObject(io.netty.channel.ChannelHandlerContext, io.netty.buffer.ByteBuf, int, int)
+{
+io.netty.channel.ChannelHandlerContext v1;
+io.netty.buffer.ByteBuf v2, v5;
+int v3, v4;
+io.netty.handler.codec.json.JsonObjectDecoder v0;
+v0 := @this: io.netty.handler.codec.json.JsonObjectDecoder;
+v1 := @parameter0: io.netty.channel.ChannelHandlerContext;
+v2 := @parameter1: io.netty.buffer.ByteBuf;
+v3 := @parameter2: int;
+v4 := @parameter3: int;
+v5 = virtualinvoke v2.<io.netty.buffer.ByteBuf: io.netty.buffer.ByteBuf retainedSlice(int,int)>(v3, v4);
+return v5;
+}
+private void decodeByte(byte, io.netty.buffer.ByteBuf, int)
+{
+byte v1, v13;
+io.netty.buffer.ByteBuf v2;
+int v11, v12, v14, v3, v5, v6, v8, v9;
+boolean v10, v4, v7;
+io.netty.handler.codec.json.JsonObjectDecoder v0;
+v0 := @this: io.netty.handler.codec.json.JsonObjectDecoder;
+v1 := @parameter0: byte;
+v2 := @parameter1: io.netty.buffer.ByteBuf;
+v3 := @parameter2: int;
+if v1 == 123 goto label1;
+if v1 != 91 goto label2;
+label1:
+v4 = v0.<io.netty.handler.codec.json.JsonObjectDecoder: boolean insideString>;
+if v4 != 0 goto label2;
+v5 = v0.<io.netty.handler.codec.json.JsonObjectDecoder: int openBraces>;
+v6 = v5 + 1;
+v0.<io.netty.handler.codec.json.JsonObjectDecoder: int openBraces> = v6;
+goto label8;
+label2:
+if v1 == 125 goto label3;
+if v1 != 93 goto label4;
+label3:
+v7 = v0.<io.netty.handler.codec.json.JsonObjectDecoder: boolean insideString>;
+if v7 != 0 goto label4;
+v8 = v0.<io.netty.handler.codec.json.JsonObjectDecoder: int openBraces>;
+v9 = v8 - 1;
+v0.<io.netty.handler.codec.json.JsonObjectDecoder: int openBraces> = v9;
+goto label8;
+label4:
+if v1 != 34 goto label8;
+v10 = v0.<io.netty.handler.codec.json.JsonObjectDecoder: boolean insideString>;
+if v10 != 0 goto label5;
+v0.<io.netty.handler.codec.json.JsonObjectDecoder: boolean insideString> = 1;
+goto label8;
+label5:
+v11 = 0;
+v12 = v3 - 1;
+label6:
+if v12 < 0 goto label7;
+v13 = virtualinvoke v2.<io.netty.buffer.ByteBuf: byte getByte(int)>(v12);
+if v13 != 92 goto label7;
+v11 = v11 + 1;
+v12 = v12 - 1;
+goto label6;
+label7:
+v14 = v11 % 2;
+if v14 != 0 goto label8;
+v0.<io.netty.handler.codec.json.JsonObjectDecoder: boolean insideString> = 0;
+label8:
+return;
+}
+private void initDecoding(byte)
+{
+byte v1;
+boolean v2;
+io.netty.handler.codec.json.JsonObjectDecoder v0;
+v0 := @this: io.netty.handler.codec.json.JsonObjectDecoder;
+v1 := @parameter0: byte;
+v0.<io.netty.handler.codec.json.JsonObjectDecoder: int openBraces> = 1;
+if v1 != 91 goto label1;
+v2 = v0.<io.netty.handler.codec.json.JsonObjectDecoder: boolean streamArrayElements>;
+if v2 == 0 goto label1;
+v0.<io.netty.handler.codec.json.JsonObjectDecoder: int state> = 2;
+goto label2;
+label1:
+v0.<io.netty.handler.codec.json.JsonObjectDecoder: int state> = 1;
+label2:
+return;
+}
+private void reset()
+{
+io.netty.handler.codec.json.JsonObjectDecoder v0;
+v0 := @this: io.netty.handler.codec.json.JsonObjectDecoder;
+v0.<io.netty.handler.codec.json.JsonObjectDecoder: boolean insideString> = 0;
+v0.<io.netty.handler.codec.json.JsonObjectDecoder: int state> = 0;
+v0.<io.netty.handler.codec.json.JsonObjectDecoder: int openBraces> = 0;
+return;
+}
+}

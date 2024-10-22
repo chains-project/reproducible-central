@@ -1,0 +1,732 @@
+public final class io.smallrye.mutiny.operators.multi.MultiFlatMapOp$FlatMapMainSubscriber extends io.smallrye.mutiny.operators.multi.FlatMapManager implements io.smallrye.mutiny.subscription.MultiSubscriber, java.util.concurrent.Flow$Subscription, io.smallrye.mutiny.subscription.ContextSupport
+{
+final boolean delayError;
+final int maxConcurrency;
+final int requests;
+final int limit;
+final java.util.function.Function mapper;
+final java.util.function.Supplier innerQueueSupplier;
+final io.smallrye.mutiny.subscription.MultiSubscriber downstream;
+final java.util.concurrent.atomic.AtomicReference failures;
+volatile boolean done;
+volatile boolean cancelled;
+volatile java.util.concurrent.Flow$Subscription upstream;
+private static final java.util.concurrent.atomic.AtomicReferenceFieldUpdater UPSTREAM_UPDATER;
+java.util.concurrent.atomic.AtomicLong requested;
+java.util.concurrent.atomic.AtomicInteger wip;
+static final io.smallrye.mutiny.operators.multi.MultiFlatMapOp$FlatMapInner[] EMPTY_INNER_ARRAY;
+static final io.smallrye.mutiny.operators.multi.MultiFlatMapOp$FlatMapInner[] TERMINATED_INNER_ARRAY;
+int lastIndex;
+public void <init>(io.smallrye.mutiny.subscription.MultiSubscriber, java.util.function.Function, boolean, int, int)
+{
+java.util.concurrent.atomic.AtomicReference v6;
+java.util.function.Function v2;
+java.util.function.Supplier v9;
+java.util.concurrent.atomic.AtomicLong v7;
+io.smallrye.mutiny.operators.multi.MultiFlatMapOp$FlatMapMainSubscriber v0;
+java.util.concurrent.atomic.AtomicInteger v8;
+int v10, v4, v5;
+io.smallrye.mutiny.subscription.MultiSubscriber v1;
+boolean v3;
+v0 := @this: io.smallrye.mutiny.operators.multi.MultiFlatMapOp$FlatMapMainSubscriber;
+v1 := @parameter0: io.smallrye.mutiny.subscription.MultiSubscriber;
+v2 := @parameter1: java.util.function.Function;
+v3 := @parameter2: boolean;
+v4 := @parameter3: int;
+v5 := @parameter4: int;
+specialinvoke v0.<io.smallrye.mutiny.operators.multi.FlatMapManager: void <init>()>();
+v6 = new java.util.concurrent.atomic.AtomicReference;
+specialinvoke v6.<java.util.concurrent.atomic.AtomicReference: void <init>()>();
+v0.<io.smallrye.mutiny.operators.multi.MultiFlatMapOp$FlatMapMainSubscriber: java.util.concurrent.atomic.AtomicReference failures> = v6;
+v0.<io.smallrye.mutiny.operators.multi.MultiFlatMapOp$FlatMapMainSubscriber: java.util.concurrent.Flow$Subscription upstream> = null;
+v7 = new java.util.concurrent.atomic.AtomicLong;
+specialinvoke v7.<java.util.concurrent.atomic.AtomicLong: void <init>()>();
+v0.<io.smallrye.mutiny.operators.multi.MultiFlatMapOp$FlatMapMainSubscriber: java.util.concurrent.atomic.AtomicLong requested> = v7;
+v8 = new java.util.concurrent.atomic.AtomicInteger;
+specialinvoke v8.<java.util.concurrent.atomic.AtomicInteger: void <init>()>();
+v0.<io.smallrye.mutiny.operators.multi.MultiFlatMapOp$FlatMapMainSubscriber: java.util.concurrent.atomic.AtomicInteger wip> = v8;
+v0.<io.smallrye.mutiny.operators.multi.MultiFlatMapOp$FlatMapMainSubscriber: io.smallrye.mutiny.subscription.MultiSubscriber downstream> = v1;
+v0.<io.smallrye.mutiny.operators.multi.MultiFlatMapOp$FlatMapMainSubscriber: java.util.function.Function mapper> = v2;
+v0.<io.smallrye.mutiny.operators.multi.MultiFlatMapOp$FlatMapMainSubscriber: boolean delayError> = v3;
+v0.<io.smallrye.mutiny.operators.multi.MultiFlatMapOp$FlatMapMainSubscriber: int maxConcurrency> = v4;
+v0.<io.smallrye.mutiny.operators.multi.MultiFlatMapOp$FlatMapMainSubscriber: int requests> = v5;
+if v5 != 0 goto label1;
+v9 = staticinvoke <io.smallrye.mutiny.helpers.queues.Queues: java.util.function.Supplier getXsQueueSupplier()>();
+goto label2;
+label1:
+v9 = staticinvoke <io.smallrye.mutiny.helpers.queues.Queues: java.util.function.Supplier get(int)>(v5);
+label2:
+v0.<io.smallrye.mutiny.operators.multi.MultiFlatMapOp$FlatMapMainSubscriber: java.util.function.Supplier innerQueueSupplier> = v9;
+v10 = staticinvoke <io.smallrye.mutiny.helpers.Subscriptions: int unboundedOrLimit(int)>(v4);
+v0.<io.smallrye.mutiny.operators.multi.MultiFlatMapOp$FlatMapMainSubscriber: int limit> = v10;
+return;
+}
+io.smallrye.mutiny.operators.multi.MultiFlatMapOp$FlatMapInner[] empty()
+{
+io.smallrye.mutiny.operators.multi.MultiFlatMapOp$FlatMapInner[] v1;
+io.smallrye.mutiny.operators.multi.MultiFlatMapOp$FlatMapMainSubscriber v0;
+v0 := @this: io.smallrye.mutiny.operators.multi.MultiFlatMapOp$FlatMapMainSubscriber;
+v1 = <io.smallrye.mutiny.operators.multi.MultiFlatMapOp$FlatMapMainSubscriber: io.smallrye.mutiny.operators.multi.MultiFlatMapOp$FlatMapInner[] EMPTY_INNER_ARRAY>;
+return v1;
+}
+io.smallrye.mutiny.operators.multi.MultiFlatMapOp$FlatMapInner[] terminated()
+{
+io.smallrye.mutiny.operators.multi.MultiFlatMapOp$FlatMapInner[] v1;
+io.smallrye.mutiny.operators.multi.MultiFlatMapOp$FlatMapMainSubscriber v0;
+v0 := @this: io.smallrye.mutiny.operators.multi.MultiFlatMapOp$FlatMapMainSubscriber;
+v1 = <io.smallrye.mutiny.operators.multi.MultiFlatMapOp$FlatMapMainSubscriber: io.smallrye.mutiny.operators.multi.MultiFlatMapOp$FlatMapInner[] TERMINATED_INNER_ARRAY>;
+return v1;
+}
+io.smallrye.mutiny.operators.multi.MultiFlatMapOp$FlatMapInner[] newArray(int)
+{
+int v1;
+io.smallrye.mutiny.operators.multi.MultiFlatMapOp$FlatMapInner[] v2;
+io.smallrye.mutiny.operators.multi.MultiFlatMapOp$FlatMapMainSubscriber v0;
+v0 := @this: io.smallrye.mutiny.operators.multi.MultiFlatMapOp$FlatMapMainSubscriber;
+v1 := @parameter0: int;
+v2 = newarray (io.smallrye.mutiny.operators.multi.MultiFlatMapOp$FlatMapInner)[v1];
+return v2;
+}
+void setIndex(io.smallrye.mutiny.operators.multi.MultiFlatMapOp$FlatMapInner, int)
+{
+int v2;
+io.smallrye.mutiny.operators.multi.MultiFlatMapOp$FlatMapInner v1;
+io.smallrye.mutiny.operators.multi.MultiFlatMapOp$FlatMapMainSubscriber v0;
+v0 := @this: io.smallrye.mutiny.operators.multi.MultiFlatMapOp$FlatMapMainSubscriber;
+v1 := @parameter0: io.smallrye.mutiny.operators.multi.MultiFlatMapOp$FlatMapInner;
+v2 := @parameter1: int;
+v1.<io.smallrye.mutiny.operators.multi.MultiFlatMapOp$FlatMapInner: int index> = v2;
+return;
+}
+void unsubscribeEntry(io.smallrye.mutiny.operators.multi.MultiFlatMapOp$FlatMapInner, boolean)
+{
+io.smallrye.mutiny.operators.multi.MultiFlatMapOp$FlatMapInner v1;
+io.smallrye.mutiny.operators.multi.MultiFlatMapOp$FlatMapMainSubscriber v0;
+boolean v2;
+v0 := @this: io.smallrye.mutiny.operators.multi.MultiFlatMapOp$FlatMapMainSubscriber;
+v1 := @parameter0: io.smallrye.mutiny.operators.multi.MultiFlatMapOp$FlatMapInner;
+v2 := @parameter1: boolean;
+virtualinvoke v1.<io.smallrye.mutiny.operators.multi.MultiFlatMapOp$FlatMapInner: void cancel(boolean)>(v2);
+return;
+}
+public void request(long)
+{
+java.util.concurrent.atomic.AtomicLong v3;
+byte v2;
+io.smallrye.mutiny.operators.multi.MultiFlatMapOp$FlatMapMainSubscriber v0;
+long v1;
+java.lang.IllegalArgumentException v5;
+io.smallrye.mutiny.subscription.MultiSubscriber v4;
+v0 := @this: io.smallrye.mutiny.operators.multi.MultiFlatMapOp$FlatMapMainSubscriber;
+v1 := @parameter0: long;
+v2 = v1 cmp 0L;
+if v2 <= 0 goto label1;
+v3 = v0.<io.smallrye.mutiny.operators.multi.MultiFlatMapOp$FlatMapMainSubscriber: java.util.concurrent.atomic.AtomicLong requested>;
+staticinvoke <io.smallrye.mutiny.helpers.Subscriptions: long add(java.util.concurrent.atomic.AtomicLong,long)>(v3, v1);
+virtualinvoke v0.<io.smallrye.mutiny.operators.multi.MultiFlatMapOp$FlatMapMainSubscriber: void drain()>();
+goto label2;
+label1:
+v4 = v0.<io.smallrye.mutiny.operators.multi.MultiFlatMapOp$FlatMapMainSubscriber: io.smallrye.mutiny.subscription.MultiSubscriber downstream>;
+v5 = new java.lang.IllegalArgumentException;
+specialinvoke v5.<java.lang.IllegalArgumentException: void <init>(java.lang.String)>("Invalid requests, must be greater than 0");
+interfaceinvoke v4.<io.smallrye.mutiny.subscription.MultiSubscriber: void onFailure(java.lang.Throwable)>(v5);
+label2:
+return;
+}
+public void cancel()
+{
+io.smallrye.mutiny.operators.multi.MultiFlatMapOp$FlatMapMainSubscriber v0;
+java.util.concurrent.atomic.AtomicInteger v2;
+java.util.concurrent.atomic.AtomicReferenceFieldUpdater v4;
+int v3;
+java.lang.Object v6;
+io.smallrye.mutiny.helpers.Subscriptions$EmptySubscription v5;
+boolean v1;
+v0 := @this: io.smallrye.mutiny.operators.multi.MultiFlatMapOp$FlatMapMainSubscriber;
+v1 = v0.<io.smallrye.mutiny.operators.multi.MultiFlatMapOp$FlatMapMainSubscriber: boolean cancelled>;
+if v1 != 0 goto label1;
+v0.<io.smallrye.mutiny.operators.multi.MultiFlatMapOp$FlatMapMainSubscriber: boolean cancelled> = 1;
+v2 = v0.<io.smallrye.mutiny.operators.multi.MultiFlatMapOp$FlatMapMainSubscriber: java.util.concurrent.atomic.AtomicInteger wip>;
+v3 = virtualinvoke v2.<java.util.concurrent.atomic.AtomicInteger: int getAndIncrement()>();
+if v3 != 0 goto label1;
+v4 = <io.smallrye.mutiny.operators.multi.MultiFlatMapOp$FlatMapMainSubscriber: java.util.concurrent.atomic.AtomicReferenceFieldUpdater UPSTREAM_UPDATER>;
+v5 = <io.smallrye.mutiny.helpers.Subscriptions: io.smallrye.mutiny.helpers.Subscriptions$EmptySubscription CANCELLED>;
+v6 = virtualinvoke v4.<java.util.concurrent.atomic.AtomicReferenceFieldUpdater: java.lang.Object getAndSet(java.lang.Object,java.lang.Object)>(v0, v5);
+interfaceinvoke v6.<java.util.concurrent.Flow$Subscription: void cancel()>();
+virtualinvoke v0.<io.smallrye.mutiny.operators.multi.MultiFlatMapOp$FlatMapMainSubscriber: void unsubscribe()>();
+label1:
+return;
+}
+public void onSubscribe(java.util.concurrent.Flow$Subscription)
+{
+io.smallrye.mutiny.operators.multi.MultiFlatMapOp$FlatMapMainSubscriber v0;
+java.util.concurrent.atomic.AtomicReferenceFieldUpdater v2;
+int v5;
+long v6;
+io.smallrye.mutiny.subscription.MultiSubscriber v4;
+boolean v3;
+java.util.concurrent.Flow$Subscription v1;
+v0 := @this: io.smallrye.mutiny.operators.multi.MultiFlatMapOp$FlatMapMainSubscriber;
+v1 := @parameter0: java.util.concurrent.Flow$Subscription;
+v2 = <io.smallrye.mutiny.operators.multi.MultiFlatMapOp$FlatMapMainSubscriber: java.util.concurrent.atomic.AtomicReferenceFieldUpdater UPSTREAM_UPDATER>;
+v3 = virtualinvoke v2.<java.util.concurrent.atomic.AtomicReferenceFieldUpdater: boolean compareAndSet(java.lang.Object,java.lang.Object,java.lang.Object)>(v0, null, v1);
+if v3 == 0 goto label1;
+v4 = v0.<io.smallrye.mutiny.operators.multi.MultiFlatMapOp$FlatMapMainSubscriber: io.smallrye.mutiny.subscription.MultiSubscriber downstream>;
+interfaceinvoke v4.<io.smallrye.mutiny.subscription.MultiSubscriber: void onSubscribe(java.util.concurrent.Flow$Subscription)>(v0);
+v5 = v0.<io.smallrye.mutiny.operators.multi.MultiFlatMapOp$FlatMapMainSubscriber: int maxConcurrency>;
+v6 = staticinvoke <io.smallrye.mutiny.helpers.Subscriptions: long unboundedOrRequests(int)>(v5);
+interfaceinvoke v1.<java.util.concurrent.Flow$Subscription: void request(long)>(v6);
+label1:
+return;
+}
+public void onItem(java.lang.Object)
+{
+java.lang.Throwable v6;
+io.smallrye.mutiny.operators.multi.MultiFlatMapOp$FlatMapInner v8;
+java.util.concurrent.atomic.AtomicReference v7;
+java.util.function.Function v3;
+java.lang.NullPointerException v5;
+io.smallrye.mutiny.operators.multi.MultiFlatMapOp$FlatMapMainSubscriber v0;
+int v9;
+java.lang.Object v1, v4;
+boolean v10, v2;
+v0 := @this: io.smallrye.mutiny.operators.multi.MultiFlatMapOp$FlatMapMainSubscriber;
+v1 := @parameter0: java.lang.Object;
+v2 = v0.<io.smallrye.mutiny.operators.multi.MultiFlatMapOp$FlatMapMainSubscriber: boolean done>;
+if v2 == 0 goto label1;
+return;
+label1:
+v3 = v0.<io.smallrye.mutiny.operators.multi.MultiFlatMapOp$FlatMapMainSubscriber: java.util.function.Function mapper>;
+v4 = interfaceinvoke v3.<java.util.function.Function: java.lang.Object apply(java.lang.Object)>(v1);
+if v4 != null goto label3;
+v5 = new java.lang.NullPointerException;
+specialinvoke v5.<java.lang.NullPointerException: void <init>(java.lang.String)>("The mapper returned `null`");
+throw v5;
+label2:
+v6 := @caughtexception;
+v0.<io.smallrye.mutiny.operators.multi.MultiFlatMapOp$FlatMapMainSubscriber: boolean cancelled> = 1;
+v0.<io.smallrye.mutiny.operators.multi.MultiFlatMapOp$FlatMapMainSubscriber: boolean done> = 1;
+v7 = v0.<io.smallrye.mutiny.operators.multi.MultiFlatMapOp$FlatMapMainSubscriber: java.util.concurrent.atomic.AtomicReference failures>;
+staticinvoke <io.smallrye.mutiny.helpers.Subscriptions: boolean addFailure(java.util.concurrent.atomic.AtomicReference,java.lang.Throwable)>(v7, v6);
+specialinvoke v0.<io.smallrye.mutiny.operators.multi.MultiFlatMapOp$FlatMapMainSubscriber: void cancelUpstream(boolean)>(0);
+specialinvoke v0.<io.smallrye.mutiny.operators.multi.MultiFlatMapOp$FlatMapMainSubscriber: boolean handleTerminationIfDone()>();
+return;
+label3:
+v8 = new io.smallrye.mutiny.operators.multi.MultiFlatMapOp$FlatMapInner;
+v9 = v0.<io.smallrye.mutiny.operators.multi.MultiFlatMapOp$FlatMapMainSubscriber: int requests>;
+specialinvoke v8.<io.smallrye.mutiny.operators.multi.MultiFlatMapOp$FlatMapInner: void <init>(io.smallrye.mutiny.operators.multi.MultiFlatMapOp$FlatMapMainSubscriber,int)>(v0, v9);
+v10 = virtualinvoke v0.<io.smallrye.mutiny.operators.multi.MultiFlatMapOp$FlatMapMainSubscriber: boolean add(java.lang.Object)>(v8);
+if v10 == 0 goto label4;
+interfaceinvoke v4.<java.util.concurrent.Flow$Publisher: void subscribe(java.util.concurrent.Flow$Subscriber)>(v8);
+label4:
+return;
+catch java.lang.Throwable from label1 to label2 with label2;
+}
+public void onFailure(java.lang.Throwable)
+{
+java.lang.Throwable v1;
+io.smallrye.mutiny.operators.multi.MultiFlatMapOp$FlatMapInner v10;
+java.util.concurrent.atomic.AtomicReference v3, v5;
+io.smallrye.mutiny.operators.multi.MultiFlatMapOp$FlatMapInner[] v6;
+io.smallrye.mutiny.operators.multi.MultiFlatMapOp$FlatMapMainSubscriber v0;
+int v8, v9;
+java.lang.Object v7;
+boolean v2, v4;
+v0 := @this: io.smallrye.mutiny.operators.multi.MultiFlatMapOp$FlatMapMainSubscriber;
+v1 := @parameter0: java.lang.Throwable;
+v2 = v0.<io.smallrye.mutiny.operators.multi.MultiFlatMapOp$FlatMapMainSubscriber: boolean done>;
+if v2 == 0 goto label1;
+staticinvoke <io.smallrye.mutiny.infrastructure.Infrastructure: void handleDroppedException(java.lang.Throwable)>(v1);
+return;
+label1:
+v3 = v0.<io.smallrye.mutiny.operators.multi.MultiFlatMapOp$FlatMapMainSubscriber: java.util.concurrent.atomic.AtomicReference failures>;
+staticinvoke <io.smallrye.mutiny.helpers.Subscriptions: boolean addFailure(java.util.concurrent.atomic.AtomicReference,java.lang.Throwable)>(v3, v1);
+v0.<io.smallrye.mutiny.operators.multi.MultiFlatMapOp$FlatMapMainSubscriber: boolean done> = 1;
+v4 = v0.<io.smallrye.mutiny.operators.multi.MultiFlatMapOp$FlatMapMainSubscriber: boolean delayError>;
+if v4 != 0 goto label4;
+v5 = v0.<io.smallrye.mutiny.operators.multi.MultiFlatMapOp$FlatMapMainSubscriber: java.util.concurrent.atomic.AtomicReference inners>;
+v6 = virtualinvoke v0.<io.smallrye.mutiny.operators.multi.MultiFlatMapOp$FlatMapMainSubscriber: io.smallrye.mutiny.operators.multi.MultiFlatMapOp$FlatMapInner[] terminated()>();
+v7 = virtualinvoke v5.<java.util.concurrent.atomic.AtomicReference: java.lang.Object getAndSet(java.lang.Object)>(v6);
+v8 = lengthof v7;
+v9 = 0;
+label2:
+if v9 >= v8 goto label4;
+v10 = v7[v9];
+if v10 == null goto label3;
+virtualinvoke v10.<io.smallrye.mutiny.operators.multi.MultiFlatMapOp$FlatMapInner: void cancel(boolean)>(0);
+label3:
+v9 = v9 + 1;
+goto label2;
+label4:
+virtualinvoke v0.<io.smallrye.mutiny.operators.multi.MultiFlatMapOp$FlatMapMainSubscriber: void drain()>();
+return;
+}
+public void onCompletion()
+{
+io.smallrye.mutiny.operators.multi.MultiFlatMapOp$FlatMapMainSubscriber v0;
+boolean v1;
+v0 := @this: io.smallrye.mutiny.operators.multi.MultiFlatMapOp$FlatMapMainSubscriber;
+v1 = v0.<io.smallrye.mutiny.operators.multi.MultiFlatMapOp$FlatMapMainSubscriber: boolean done>;
+if v1 == 0 goto label1;
+return;
+label1:
+v0.<io.smallrye.mutiny.operators.multi.MultiFlatMapOp$FlatMapMainSubscriber: boolean done> = 1;
+virtualinvoke v0.<io.smallrye.mutiny.operators.multi.MultiFlatMapOp$FlatMapMainSubscriber: void drain()>();
+return;
+}
+void tryEmit(io.smallrye.mutiny.operators.multi.MultiFlatMapOp$FlatMapInner, java.lang.Object)
+{
+io.smallrye.mutiny.operators.multi.MultiFlatMapOp$FlatMapInner v1;
+long v6;
+byte v11, v8;
+io.smallrye.mutiny.operators.multi.MultiFlatMapOp$FlatMapMainSubscriber v0;
+java.util.concurrent.atomic.AtomicInteger v14, v3;
+int v15;
+io.smallrye.mutiny.subscription.MultiSubscriber v10;
+boolean v13, v17, v4, v9;
+java.util.concurrent.atomic.AtomicLong v12, v5;
+java.lang.Object v2;
+java.util.Queue v16, v7;
+v0 := @this: io.smallrye.mutiny.operators.multi.MultiFlatMapOp$FlatMapMainSubscriber;
+v1 := @parameter0: io.smallrye.mutiny.operators.multi.MultiFlatMapOp$FlatMapInner;
+v2 := @parameter1: java.lang.Object;
+v3 = v0.<io.smallrye.mutiny.operators.multi.MultiFlatMapOp$FlatMapMainSubscriber: java.util.concurrent.atomic.AtomicInteger wip>;
+v4 = virtualinvoke v3.<java.util.concurrent.atomic.AtomicInteger: boolean compareAndSet(int,int)>(0, 1);
+if v4 == 0 goto label7;
+v5 = v0.<io.smallrye.mutiny.operators.multi.MultiFlatMapOp$FlatMapMainSubscriber: java.util.concurrent.atomic.AtomicLong requested>;
+v6 = virtualinvoke v5.<java.util.concurrent.atomic.AtomicLong: long get()>();
+v7 = v1.<io.smallrye.mutiny.operators.multi.MultiFlatMapOp$FlatMapInner: java.util.Queue queue>;
+v8 = v6 cmp 0L;
+if v8 == 0 goto label3;
+if v7 == null goto label1;
+v9 = interfaceinvoke v7.<java.util.Queue: boolean isEmpty()>();
+if v9 == 0 goto label3;
+label1:
+v10 = v0.<io.smallrye.mutiny.operators.multi.MultiFlatMapOp$FlatMapMainSubscriber: io.smallrye.mutiny.subscription.MultiSubscriber downstream>;
+interfaceinvoke v10.<io.smallrye.mutiny.subscription.MultiSubscriber: void onNext(java.lang.Object)>(v2);
+v11 = v6 cmp 9223372036854775807L;
+if v11 == 0 goto label2;
+v12 = v0.<io.smallrye.mutiny.operators.multi.MultiFlatMapOp$FlatMapMainSubscriber: java.util.concurrent.atomic.AtomicLong requested>;
+virtualinvoke v12.<java.util.concurrent.atomic.AtomicLong: long decrementAndGet()>();
+label2:
+virtualinvoke v1.<io.smallrye.mutiny.operators.multi.MultiFlatMapOp$FlatMapInner: void request(long)>(1L);
+goto label5;
+label3:
+if v7 != null goto label4;
+v7 = virtualinvoke v0.<io.smallrye.mutiny.operators.multi.MultiFlatMapOp$FlatMapMainSubscriber: java.util.Queue getOrCreateInnerQueue(io.smallrye.mutiny.operators.multi.MultiFlatMapOp$FlatMapInner)>(v1);
+label4:
+v13 = interfaceinvoke v7.<java.util.Queue: boolean offer(java.lang.Object)>(v2);
+if v13 != 0 goto label5;
+virtualinvoke v0.<io.smallrye.mutiny.operators.multi.MultiFlatMapOp$FlatMapMainSubscriber: void failOverflow()>();
+v1.<io.smallrye.mutiny.operators.multi.MultiFlatMapOp$FlatMapInner: boolean done> = 1;
+virtualinvoke v0.<io.smallrye.mutiny.operators.multi.MultiFlatMapOp$FlatMapMainSubscriber: void drainLoop()>();
+return;
+label5:
+v14 = v0.<io.smallrye.mutiny.operators.multi.MultiFlatMapOp$FlatMapMainSubscriber: java.util.concurrent.atomic.AtomicInteger wip>;
+v15 = virtualinvoke v14.<java.util.concurrent.atomic.AtomicInteger: int decrementAndGet()>();
+if v15 != 0 goto label6;
+return;
+label6:
+virtualinvoke v0.<io.smallrye.mutiny.operators.multi.MultiFlatMapOp$FlatMapMainSubscriber: void drainLoop()>();
+goto label9;
+label7:
+v16 = virtualinvoke v0.<io.smallrye.mutiny.operators.multi.MultiFlatMapOp$FlatMapMainSubscriber: java.util.Queue getOrCreateInnerQueue(io.smallrye.mutiny.operators.multi.MultiFlatMapOp$FlatMapInner)>(v1);
+v17 = interfaceinvoke v16.<java.util.Queue: boolean offer(java.lang.Object)>(v2);
+if v17 != 0 goto label8;
+virtualinvoke v0.<io.smallrye.mutiny.operators.multi.MultiFlatMapOp$FlatMapMainSubscriber: void failOverflow()>();
+v1.<io.smallrye.mutiny.operators.multi.MultiFlatMapOp$FlatMapInner: boolean done> = 1;
+label8:
+virtualinvoke v0.<io.smallrye.mutiny.operators.multi.MultiFlatMapOp$FlatMapMainSubscriber: void drain()>();
+label9:
+return;
+}
+void drain()
+{
+int v2;
+io.smallrye.mutiny.operators.multi.MultiFlatMapOp$FlatMapMainSubscriber v0;
+java.util.concurrent.atomic.AtomicInteger v1;
+v0 := @this: io.smallrye.mutiny.operators.multi.MultiFlatMapOp$FlatMapMainSubscriber;
+v1 = v0.<io.smallrye.mutiny.operators.multi.MultiFlatMapOp$FlatMapMainSubscriber: java.util.concurrent.atomic.AtomicInteger wip>;
+v2 = virtualinvoke v1.<java.util.concurrent.atomic.AtomicInteger: int getAndIncrement()>();
+if v2 == 0 goto label1;
+return;
+label1:
+virtualinvoke v0.<io.smallrye.mutiny.operators.multi.MultiFlatMapOp$FlatMapMainSubscriber: void drainLoop()>();
+return;
+}
+void drainLoop()
+{
+byte v12, v20, v29, v33, v35, v38, v39, v40, v51;
+io.smallrye.mutiny.operators.multi.MultiFlatMapOp$FlatMapMainSubscriber v0;
+java.util.concurrent.atomic.AtomicInteger v55;
+boolean v15, v17, v21, v25, v26, v27, v30, v31, v34, v44, v46, v48, v49, v5, v52, v53, v6, v7;
+java.util.concurrent.Flow$Subscription v54;
+java.util.Queue v18, v47;
+java.lang.Throwable v23;
+java.lang.Object[] v3, v41;
+io.smallrye.mutiny.operators.multi.MultiFlatMapOp$FlatMapInner v16, v45;
+long v10, v11, v37, v9;
+java.util.concurrent.atomic.AtomicReference v24;
+int v1, v13, v14, v19, v28, v32, v4, v42, v43, v50, v56;
+io.smallrye.mutiny.subscription.MultiSubscriber v2;
+java.util.concurrent.atomic.AtomicLong v36, v8;
+java.lang.Object v22;
+v0 := @this: io.smallrye.mutiny.operators.multi.MultiFlatMapOp$FlatMapMainSubscriber;
+v1 = 1;
+v2 = v0.<io.smallrye.mutiny.operators.multi.MultiFlatMapOp$FlatMapMainSubscriber: io.smallrye.mutiny.subscription.MultiSubscriber downstream>;
+label01:
+v3 = virtualinvoke v0.<io.smallrye.mutiny.operators.multi.MultiFlatMapOp$FlatMapMainSubscriber: java.lang.Object[] get()>();
+v4 = lengthof v3;
+v5 = virtualinvoke v0.<io.smallrye.mutiny.operators.multi.MultiFlatMapOp$FlatMapMainSubscriber: boolean isEmpty()>();
+v6 = virtualinvoke v0.<io.smallrye.mutiny.operators.multi.MultiFlatMapOp$FlatMapMainSubscriber: boolean ifDoneOrCancelled()>();
+if v6 == 0 goto label02;
+return;
+label02:
+v7 = 0;
+v8 = v0.<io.smallrye.mutiny.operators.multi.MultiFlatMapOp$FlatMapMainSubscriber: java.util.concurrent.atomic.AtomicLong requested>;
+v9 = virtualinvoke v8.<java.util.concurrent.atomic.AtomicLong: long get()>();
+v10 = 0L;
+v11 = 0L;
+v12 = v9 cmp 0L;
+if v12 == 0 goto label22;
+if v5 != 0 goto label22;
+v13 = v0.<io.smallrye.mutiny.operators.multi.MultiFlatMapOp$FlatMapMainSubscriber: int lastIndex>;
+v14 = 0;
+label03:
+if v14 >= v4 goto label21;
+v15 = v0.<io.smallrye.mutiny.operators.multi.MultiFlatMapOp$FlatMapMainSubscriber: boolean cancelled>;
+if v15 == 0 goto label04;
+specialinvoke v0.<io.smallrye.mutiny.operators.multi.MultiFlatMapOp$FlatMapMainSubscriber: void cancelUpstream(boolean)>(0);
+return;
+label04:
+v16 = v3[v13];
+if v16 == null goto label19;
+v17 = v16.<io.smallrye.mutiny.operators.multi.MultiFlatMapOp$FlatMapInner: boolean done>;
+v18 = v16.<io.smallrye.mutiny.operators.multi.MultiFlatMapOp$FlatMapInner: java.util.Queue queue>;
+if v17 == 0 goto label05;
+if v18 != null goto label05;
+v19 = v16.<io.smallrye.mutiny.operators.multi.MultiFlatMapOp$FlatMapInner: int index>;
+virtualinvoke v0.<io.smallrye.mutiny.operators.multi.MultiFlatMapOp$FlatMapMainSubscriber: void remove(int)>(v19);
+v7 = 1;
+v11 = v11 + 1L;
+goto label19;
+label05:
+if v18 == null goto label19;
+label06:
+v20 = v10 cmp v9;
+if v20 == 0 goto label15;
+v21 = v16.<io.smallrye.mutiny.operators.multi.MultiFlatMapOp$FlatMapInner: boolean done>;
+label07:
+v22 = interfaceinvoke v18.<java.util.Queue: java.lang.Object poll()>();
+label08:
+goto label10;
+label09:
+v23 := @caughtexception;
+v24 = v0.<io.smallrye.mutiny.operators.multi.MultiFlatMapOp$FlatMapMainSubscriber: java.util.concurrent.atomic.AtomicReference failures>;
+staticinvoke <io.smallrye.mutiny.helpers.Subscriptions: boolean addFailure(java.util.concurrent.atomic.AtomicReference,java.lang.Throwable)>(v24, v23);
+v22 = null;
+v21 = 1;
+label10:
+if v22 != null goto label11;
+v25 = 1;
+goto label12;
+label11:
+v25 = 0;
+label12:
+v26 = v25;
+v27 = virtualinvoke v0.<io.smallrye.mutiny.operators.multi.MultiFlatMapOp$FlatMapMainSubscriber: boolean ifDoneOrCancelled()>();
+if v27 == 0 goto label13;
+return;
+label13:
+if v21 == 0 goto label14;
+if v25 == 0 goto label14;
+v28 = v16.<io.smallrye.mutiny.operators.multi.MultiFlatMapOp$FlatMapInner: int index>;
+virtualinvoke v0.<io.smallrye.mutiny.operators.multi.MultiFlatMapOp$FlatMapMainSubscriber: void remove(int)>(v28);
+v7 = 1;
+v11 = v11 + 1L;
+goto label15;
+label14:
+if v26 != 0 goto label15;
+interfaceinvoke v2.<io.smallrye.mutiny.subscription.MultiSubscriber: void onItem(java.lang.Object)>(v22);
+v10 = v10 + 1L;
+goto label06;
+label15:
+v29 = v10 cmp v9;
+if v29 != 0 goto label16;
+v30 = v16.<io.smallrye.mutiny.operators.multi.MultiFlatMapOp$FlatMapInner: boolean done>;
+v31 = interfaceinvoke v18.<java.util.Queue: boolean isEmpty()>();
+if v30 == 0 goto label16;
+if v31 == 0 goto label16;
+v32 = v16.<io.smallrye.mutiny.operators.multi.MultiFlatMapOp$FlatMapInner: int index>;
+virtualinvoke v0.<io.smallrye.mutiny.operators.multi.MultiFlatMapOp$FlatMapMainSubscriber: void remove(int)>(v32);
+v7 = 1;
+v11 = v11 + 1L;
+label16:
+v33 = v10 cmp 0L;
+if v33 == 0 goto label19;
+v34 = v16.<io.smallrye.mutiny.operators.multi.MultiFlatMapOp$FlatMapInner: boolean done>;
+if v34 != 0 goto label17;
+virtualinvoke v16.<io.smallrye.mutiny.operators.multi.MultiFlatMapOp$FlatMapInner: void request(long)>(v10);
+label17:
+v35 = v9 cmp 9223372036854775807L;
+if v35 == 0 goto label18;
+v36 = v0.<io.smallrye.mutiny.operators.multi.MultiFlatMapOp$FlatMapMainSubscriber: java.util.concurrent.atomic.AtomicLong requested>;
+v37 = neg v10;
+v9 = virtualinvoke v36.<java.util.concurrent.atomic.AtomicLong: long addAndGet(long)>(v37);
+v38 = v9 cmp 0L;
+if v38 == 0 goto label21;
+label18:
+v10 = 0L;
+label19:
+v39 = v9 cmp 0L;
+if v39 == 0 goto label21;
+v13 = v13 + 1;
+if v13 != v4 goto label20;
+v13 = 0;
+label20:
+v14 = v14 + 1;
+goto label03;
+label21:
+v0.<io.smallrye.mutiny.operators.multi.MultiFlatMapOp$FlatMapMainSubscriber: int lastIndex> = v13;
+label22:
+v40 = v9 cmp 0L;
+if v40 != 0 goto label29;
+if v5 != 0 goto label29;
+v41 = virtualinvoke v0.<io.smallrye.mutiny.operators.multi.MultiFlatMapOp$FlatMapMainSubscriber: java.lang.Object[] get()>();
+v42 = lengthof v41;
+v43 = 0;
+label23:
+if v43 >= v42 goto label29;
+v44 = v0.<io.smallrye.mutiny.operators.multi.MultiFlatMapOp$FlatMapMainSubscriber: boolean cancelled>;
+if v44 == 0 goto label24;
+specialinvoke v0.<io.smallrye.mutiny.operators.multi.MultiFlatMapOp$FlatMapMainSubscriber: void cancelUpstream(boolean)>(0);
+return;
+label24:
+v45 = v41[v43];
+if v45 == null goto label28;
+v46 = v45.<io.smallrye.mutiny.operators.multi.MultiFlatMapOp$FlatMapInner: boolean done>;
+v47 = v45.<io.smallrye.mutiny.operators.multi.MultiFlatMapOp$FlatMapInner: java.util.Queue queue>;
+if v47 == null goto label25;
+v48 = interfaceinvoke v47.<java.util.Queue: boolean isEmpty()>();
+if v48 == 0 goto label26;
+label25:
+v49 = 1;
+goto label27;
+label26:
+v49 = 0;
+label27:
+if v49 == 0 goto label29;
+if v46 == 0 goto label28;
+if v49 == 0 goto label28;
+v50 = v45.<io.smallrye.mutiny.operators.multi.MultiFlatMapOp$FlatMapInner: int index>;
+virtualinvoke v0.<io.smallrye.mutiny.operators.multi.MultiFlatMapOp$FlatMapMainSubscriber: void remove(int)>(v50);
+v7 = 1;
+v11 = v11 + 1L;
+label28:
+v43 = v43 + 1;
+goto label23;
+label29:
+v51 = v11 cmp 0L;
+if v51 == 0 goto label30;
+v52 = v0.<io.smallrye.mutiny.operators.multi.MultiFlatMapOp$FlatMapMainSubscriber: boolean done>;
+if v52 != 0 goto label30;
+v53 = v0.<io.smallrye.mutiny.operators.multi.MultiFlatMapOp$FlatMapMainSubscriber: boolean cancelled>;
+if v53 != 0 goto label30;
+v54 = v0.<io.smallrye.mutiny.operators.multi.MultiFlatMapOp$FlatMapMainSubscriber: java.util.concurrent.Flow$Subscription upstream>;
+interfaceinvoke v54.<java.util.concurrent.Flow$Subscription: void request(long)>(v11);
+label30:
+if v7 != 0 goto label01;
+v55 = v0.<io.smallrye.mutiny.operators.multi.MultiFlatMapOp$FlatMapMainSubscriber: java.util.concurrent.atomic.AtomicInteger wip>;
+v56 = neg v1;
+v1 = virtualinvoke v55.<java.util.concurrent.atomic.AtomicInteger: int addAndGet(int)>(v56);
+if v1 != 0 goto label01;
+return;
+catch java.lang.Throwable from label07 to label08 with label09;
+}
+private void cancelUpstream(boolean)
+{
+io.smallrye.mutiny.operators.multi.MultiFlatMapOp$FlatMapMainSubscriber v0;
+java.util.concurrent.atomic.AtomicReferenceFieldUpdater v2;
+java.lang.Object v4;
+io.smallrye.mutiny.helpers.Subscriptions$EmptySubscription v3;
+boolean v1;
+v0 := @this: io.smallrye.mutiny.operators.multi.MultiFlatMapOp$FlatMapMainSubscriber;
+v1 := @parameter0: boolean;
+v2 = <io.smallrye.mutiny.operators.multi.MultiFlatMapOp$FlatMapMainSubscriber: java.util.concurrent.atomic.AtomicReferenceFieldUpdater UPSTREAM_UPDATER>;
+v3 = <io.smallrye.mutiny.helpers.Subscriptions: io.smallrye.mutiny.helpers.Subscriptions$EmptySubscription CANCELLED>;
+v4 = virtualinvoke v2.<java.util.concurrent.atomic.AtomicReferenceFieldUpdater: java.lang.Object getAndSet(java.lang.Object,java.lang.Object)>(v0, v3);
+if v4 == null goto label1;
+interfaceinvoke v4.<java.util.concurrent.Flow$Subscription: void cancel()>();
+label1:
+virtualinvoke v0.<io.smallrye.mutiny.operators.multi.MultiFlatMapOp$FlatMapMainSubscriber: void unsubscribe(boolean)>(v1);
+return;
+}
+boolean ifDoneOrCancelled()
+{
+io.smallrye.mutiny.operators.multi.MultiFlatMapOp$FlatMapMainSubscriber v0;
+boolean v1, v2;
+v0 := @this: io.smallrye.mutiny.operators.multi.MultiFlatMapOp$FlatMapMainSubscriber;
+v1 = v0.<io.smallrye.mutiny.operators.multi.MultiFlatMapOp$FlatMapMainSubscriber: boolean cancelled>;
+if v1 == 0 goto label1;
+specialinvoke v0.<io.smallrye.mutiny.operators.multi.MultiFlatMapOp$FlatMapMainSubscriber: void cancelUpstream(boolean)>(0);
+return 1;
+label1:
+v2 = specialinvoke v0.<io.smallrye.mutiny.operators.multi.MultiFlatMapOp$FlatMapMainSubscriber: boolean handleTerminationIfDone()>();
+return v2;
+}
+private boolean handleTerminationIfDone()
+{
+java.lang.Throwable v14, v16, v6, v8;
+java.util.concurrent.atomic.AtomicReference v12, v15, v4, v7;
+io.smallrye.mutiny.operators.multi.MultiFlatMapOp$FlatMapMainSubscriber v0;
+io.smallrye.mutiny.subscription.MultiSubscriber v10, v11, v18, v19;
+boolean v1, v2, v3;
+java.lang.Object v13, v17, v5, v9;
+v0 := @this: io.smallrye.mutiny.operators.multi.MultiFlatMapOp$FlatMapMainSubscriber;
+v1 = v0.<io.smallrye.mutiny.operators.multi.MultiFlatMapOp$FlatMapMainSubscriber: boolean done>;
+v2 = virtualinvoke v0.<io.smallrye.mutiny.operators.multi.MultiFlatMapOp$FlatMapMainSubscriber: boolean isEmpty()>();
+v3 = v0.<io.smallrye.mutiny.operators.multi.MultiFlatMapOp$FlatMapMainSubscriber: boolean delayError>;
+if v3 == 0 goto label3;
+if v1 == 0 goto label5;
+if v2 == 0 goto label5;
+v4 = v0.<io.smallrye.mutiny.operators.multi.MultiFlatMapOp$FlatMapMainSubscriber: java.util.concurrent.atomic.AtomicReference failures>;
+v5 = virtualinvoke v4.<java.util.concurrent.atomic.AtomicReference: java.lang.Object get()>();
+if v5 == null goto label1;
+v6 = <io.smallrye.mutiny.helpers.Subscriptions: java.lang.Throwable TERMINATED>;
+if v5 == v6 goto label1;
+v7 = v0.<io.smallrye.mutiny.operators.multi.MultiFlatMapOp$FlatMapMainSubscriber: java.util.concurrent.atomic.AtomicReference failures>;
+v8 = <io.smallrye.mutiny.helpers.Subscriptions: java.lang.Throwable TERMINATED>;
+v9 = virtualinvoke v7.<java.util.concurrent.atomic.AtomicReference: java.lang.Object getAndSet(java.lang.Object)>(v8);
+v10 = v0.<io.smallrye.mutiny.operators.multi.MultiFlatMapOp$FlatMapMainSubscriber: io.smallrye.mutiny.subscription.MultiSubscriber downstream>;
+interfaceinvoke v10.<io.smallrye.mutiny.subscription.MultiSubscriber: void onFailure(java.lang.Throwable)>(v9);
+goto label2;
+label1:
+v11 = v0.<io.smallrye.mutiny.operators.multi.MultiFlatMapOp$FlatMapMainSubscriber: io.smallrye.mutiny.subscription.MultiSubscriber downstream>;
+interfaceinvoke v11.<io.smallrye.mutiny.subscription.MultiSubscriber: void onCompletion()>();
+label2:
+return 1;
+label3:
+if v1 == 0 goto label5;
+v12 = v0.<io.smallrye.mutiny.operators.multi.MultiFlatMapOp$FlatMapMainSubscriber: java.util.concurrent.atomic.AtomicReference failures>;
+v13 = virtualinvoke v12.<java.util.concurrent.atomic.AtomicReference: java.lang.Object get()>();
+if v13 == null goto label4;
+v14 = <io.smallrye.mutiny.helpers.Subscriptions: java.lang.Throwable TERMINATED>;
+if v13 == v14 goto label4;
+v15 = v0.<io.smallrye.mutiny.operators.multi.MultiFlatMapOp$FlatMapMainSubscriber: java.util.concurrent.atomic.AtomicReference failures>;
+v16 = <io.smallrye.mutiny.helpers.Subscriptions: java.lang.Throwable TERMINATED>;
+v17 = virtualinvoke v15.<java.util.concurrent.atomic.AtomicReference: java.lang.Object getAndSet(java.lang.Object)>(v16);
+virtualinvoke v0.<io.smallrye.mutiny.operators.multi.MultiFlatMapOp$FlatMapMainSubscriber: void unsubscribe(boolean)>(1);
+v18 = v0.<io.smallrye.mutiny.operators.multi.MultiFlatMapOp$FlatMapMainSubscriber: io.smallrye.mutiny.subscription.MultiSubscriber downstream>;
+interfaceinvoke v18.<io.smallrye.mutiny.subscription.MultiSubscriber: void onFailure(java.lang.Throwable)>(v17);
+return 1;
+label4:
+if v2 == 0 goto label5;
+v19 = v0.<io.smallrye.mutiny.operators.multi.MultiFlatMapOp$FlatMapMainSubscriber: io.smallrye.mutiny.subscription.MultiSubscriber downstream>;
+interfaceinvoke v19.<io.smallrye.mutiny.subscription.MultiSubscriber: void onCompletion()>();
+return 1;
+label5:
+return 0;
+}
+void innerError(io.smallrye.mutiny.operators.multi.MultiFlatMapOp$FlatMapInner, java.lang.Throwable)
+{
+java.lang.Throwable v2;
+io.smallrye.mutiny.operators.multi.MultiFlatMapOp$FlatMapInner v1;
+io.smallrye.mutiny.operators.multi.MultiFlatMapOp$FlatMapMainSubscriber v0;
+java.util.concurrent.atomic.AtomicReference v3;
+io.smallrye.mutiny.subscription.MultiSubscriber v6;
+boolean v4, v5;
+v0 := @this: io.smallrye.mutiny.operators.multi.MultiFlatMapOp$FlatMapMainSubscriber;
+v1 := @parameter0: io.smallrye.mutiny.operators.multi.MultiFlatMapOp$FlatMapInner;
+v2 := @parameter1: java.lang.Throwable;
+if v2 == null goto label2;
+v3 = v0.<io.smallrye.mutiny.operators.multi.MultiFlatMapOp$FlatMapMainSubscriber: java.util.concurrent.atomic.AtomicReference failures>;
+v4 = staticinvoke <io.smallrye.mutiny.helpers.Subscriptions: boolean addFailure(java.util.concurrent.atomic.AtomicReference,java.lang.Throwable)>(v3, v2);
+if v4 == 0 goto label3;
+v1.<io.smallrye.mutiny.operators.multi.MultiFlatMapOp$FlatMapInner: boolean done> = 1;
+v5 = v0.<io.smallrye.mutiny.operators.multi.MultiFlatMapOp$FlatMapMainSubscriber: boolean delayError>;
+if v5 != 0 goto label1;
+specialinvoke v0.<io.smallrye.mutiny.operators.multi.MultiFlatMapOp$FlatMapMainSubscriber: void cancelUpstream(boolean)>(1);
+v6 = v0.<io.smallrye.mutiny.operators.multi.MultiFlatMapOp$FlatMapMainSubscriber: io.smallrye.mutiny.subscription.MultiSubscriber downstream>;
+interfaceinvoke v6.<io.smallrye.mutiny.subscription.MultiSubscriber: void onFailure(java.lang.Throwable)>(v2);
+return;
+label1:
+virtualinvoke v0.<io.smallrye.mutiny.operators.multi.MultiFlatMapOp$FlatMapMainSubscriber: void drain()>();
+goto label3;
+label2:
+virtualinvoke v0.<io.smallrye.mutiny.operators.multi.MultiFlatMapOp$FlatMapMainSubscriber: void drain()>();
+label3:
+return;
+}
+void failOverflow()
+{
+io.smallrye.mutiny.subscription.BackPressureFailure v1;
+io.smallrye.mutiny.operators.multi.MultiFlatMapOp$FlatMapMainSubscriber v0;
+java.util.concurrent.atomic.AtomicReference v2;
+v0 := @this: io.smallrye.mutiny.operators.multi.MultiFlatMapOp$FlatMapMainSubscriber;
+v1 = new io.smallrye.mutiny.subscription.BackPressureFailure;
+specialinvoke v1.<io.smallrye.mutiny.subscription.BackPressureFailure: void <init>(java.lang.String)>("Buffer full, cannot emit item");
+v2 = v0.<io.smallrye.mutiny.operators.multi.MultiFlatMapOp$FlatMapMainSubscriber: java.util.concurrent.atomic.AtomicReference failures>;
+staticinvoke <io.smallrye.mutiny.helpers.Subscriptions: boolean addFailure(java.util.concurrent.atomic.AtomicReference,java.lang.Throwable)>(v2, v1);
+return;
+}
+void innerComplete()
+{
+int v2;
+io.smallrye.mutiny.operators.multi.MultiFlatMapOp$FlatMapMainSubscriber v0;
+java.util.concurrent.atomic.AtomicInteger v1;
+v0 := @this: io.smallrye.mutiny.operators.multi.MultiFlatMapOp$FlatMapMainSubscriber;
+v1 = v0.<io.smallrye.mutiny.operators.multi.MultiFlatMapOp$FlatMapMainSubscriber: java.util.concurrent.atomic.AtomicInteger wip>;
+v2 = virtualinvoke v1.<java.util.concurrent.atomic.AtomicInteger: int getAndIncrement()>();
+if v2 == 0 goto label1;
+return;
+label1:
+virtualinvoke v0.<io.smallrye.mutiny.operators.multi.MultiFlatMapOp$FlatMapMainSubscriber: void drainLoop()>();
+return;
+}
+java.util.Queue getOrCreateInnerQueue(io.smallrye.mutiny.operators.multi.MultiFlatMapOp$FlatMapInner)
+{
+io.smallrye.mutiny.operators.multi.MultiFlatMapOp$FlatMapInner v1;
+io.smallrye.mutiny.operators.multi.MultiFlatMapOp$FlatMapMainSubscriber v0;
+java.lang.Object v4;
+java.util.Queue v2;
+java.util.function.Supplier v3;
+v0 := @this: io.smallrye.mutiny.operators.multi.MultiFlatMapOp$FlatMapMainSubscriber;
+v1 := @parameter0: io.smallrye.mutiny.operators.multi.MultiFlatMapOp$FlatMapInner;
+v2 = v1.<io.smallrye.mutiny.operators.multi.MultiFlatMapOp$FlatMapInner: java.util.Queue queue>;
+if v2 != null goto label1;
+v3 = v0.<io.smallrye.mutiny.operators.multi.MultiFlatMapOp$FlatMapMainSubscriber: java.util.function.Supplier innerQueueSupplier>;
+v4 = interfaceinvoke v3.<java.util.function.Supplier: java.lang.Object get()>();
+v1.<io.smallrye.mutiny.operators.multi.MultiFlatMapOp$FlatMapInner: java.util.Queue queue> = v4;
+label1:
+return v4;
+}
+public io.smallrye.mutiny.Context context()
+{
+io.smallrye.mutiny.operators.multi.MultiFlatMapOp$FlatMapMainSubscriber v0;
+io.smallrye.mutiny.Context v4, v5;
+io.smallrye.mutiny.subscription.MultiSubscriber v1, v3;
+boolean v2;
+v0 := @this: io.smallrye.mutiny.operators.multi.MultiFlatMapOp$FlatMapMainSubscriber;
+v1 = v0.<io.smallrye.mutiny.operators.multi.MultiFlatMapOp$FlatMapMainSubscriber: io.smallrye.mutiny.subscription.MultiSubscriber downstream>;
+v2 = v1 instanceof io.smallrye.mutiny.subscription.ContextSupport;
+if v2 == 0 goto label1;
+v3 = v0.<io.smallrye.mutiny.operators.multi.MultiFlatMapOp$FlatMapMainSubscriber: io.smallrye.mutiny.subscription.MultiSubscriber downstream>;
+v4 = interfaceinvoke v3.<io.smallrye.mutiny.subscription.ContextSupport: io.smallrye.mutiny.Context context()>();
+return v4;
+label1:
+v5 = staticinvoke <io.smallrye.mutiny.Context: io.smallrye.mutiny.Context empty()>();
+return v5;
+}
+static void <clinit>()
+{
+io.smallrye.mutiny.operators.multi.MultiFlatMapOp$FlatMapInner[] v1, v2;
+java.util.concurrent.atomic.AtomicReferenceFieldUpdater v0;
+v0 = staticinvoke <java.util.concurrent.atomic.AtomicReferenceFieldUpdater: java.util.concurrent.atomic.AtomicReferenceFieldUpdater newUpdater(java.lang.Class,java.lang.Class,java.lang.String)>(class "Lio/smallrye/mutiny/operators/multi/MultiFlatMapOp$FlatMapMainSubscriber;", class "Ljava/util/concurrent/Flow$Subscription;", "upstream");
+<io.smallrye.mutiny.operators.multi.MultiFlatMapOp$FlatMapMainSubscriber: java.util.concurrent.atomic.AtomicReferenceFieldUpdater UPSTREAM_UPDATER> = v0;
+v1 = newarray (io.smallrye.mutiny.operators.multi.MultiFlatMapOp$FlatMapInner)[0];
+<io.smallrye.mutiny.operators.multi.MultiFlatMapOp$FlatMapMainSubscriber: io.smallrye.mutiny.operators.multi.MultiFlatMapOp$FlatMapInner[] EMPTY_INNER_ARRAY> = v1;
+v2 = newarray (io.smallrye.mutiny.operators.multi.MultiFlatMapOp$FlatMapInner)[0];
+<io.smallrye.mutiny.operators.multi.MultiFlatMapOp$FlatMapMainSubscriber: io.smallrye.mutiny.operators.multi.MultiFlatMapOp$FlatMapInner[] TERMINATED_INNER_ARRAY> = v2;
+return;
+}
+}

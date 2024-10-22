@@ -1,0 +1,631 @@
+abstract class io.netty.util.internal.shaded.org.jctools.queues.BaseMpscLinkedArrayQueue extends io.netty.util.internal.shaded.org.jctools.queues.BaseMpscLinkedArrayQueueColdProducerFields implements io.netty.util.internal.shaded.org.jctools.queues.MessagePassingQueue, io.netty.util.internal.shaded.org.jctools.queues.QueueProgressIndicators
+{
+private static final java.lang.Object JUMP;
+private static final java.lang.Object BUFFER_CONSUMED;
+private static final int CONTINUE_TO_P_INDEX_CAS;
+private static final int RETRY;
+private static final int QUEUE_FULL;
+private static final int QUEUE_RESIZE;
+static final boolean $assertionsDisabled;
+public void <init>(int)
+{
+java.lang.Object[] v6;
+io.netty.util.internal.shaded.org.jctools.queues.BaseMpscLinkedArrayQueue v0;
+int v1, v2, v3, v4, v5;
+v0 := @this: io.netty.util.internal.shaded.org.jctools.queues.BaseMpscLinkedArrayQueue;
+v1 := @parameter0: int;
+specialinvoke v0.<io.netty.util.internal.shaded.org.jctools.queues.BaseMpscLinkedArrayQueueColdProducerFields: void <init>()>();
+staticinvoke <io.netty.util.internal.shaded.org.jctools.util.RangeUtil: int checkGreaterThanOrEqual(int,int,java.lang.String)>(v1, 2, "initialCapacity");
+v2 = staticinvoke <io.netty.util.internal.shaded.org.jctools.util.Pow2: int roundToPowerOfTwo(int)>(v1);
+v3 = v2 - 1;
+v4 = v3 << 1;
+v5 = v2 + 1;
+v6 = staticinvoke <io.netty.util.internal.shaded.org.jctools.util.UnsafeRefArrayAccess: java.lang.Object[] allocateRefArray(int)>(v5);
+v0.<io.netty.util.internal.shaded.org.jctools.queues.BaseMpscLinkedArrayQueue: java.lang.Object[] producerBuffer> = v6;
+v0.<io.netty.util.internal.shaded.org.jctools.queues.BaseMpscLinkedArrayQueue: long producerMask> = v4;
+v0.<io.netty.util.internal.shaded.org.jctools.queues.BaseMpscLinkedArrayQueue: java.lang.Object[] consumerBuffer> = v6;
+v0.<io.netty.util.internal.shaded.org.jctools.queues.BaseMpscLinkedArrayQueue: long consumerMask> = v4;
+virtualinvoke v0.<io.netty.util.internal.shaded.org.jctools.queues.BaseMpscLinkedArrayQueue: void soProducerLimit(long)>(v4);
+return;
+}
+public int size()
+{
+io.netty.util.internal.shaded.org.jctools.queues.BaseMpscLinkedArrayQueue v0;
+long v1, v2, v3, v5, v6;
+byte v4, v7;
+v0 := @this: io.netty.util.internal.shaded.org.jctools.queues.BaseMpscLinkedArrayQueue;
+v1 = virtualinvoke v0.<io.netty.util.internal.shaded.org.jctools.queues.BaseMpscLinkedArrayQueue: long lvConsumerIndex()>();
+label1:
+v2 = v1;
+v3 = virtualinvoke v0.<io.netty.util.internal.shaded.org.jctools.queues.BaseMpscLinkedArrayQueue: long lvProducerIndex()>();
+v1 = virtualinvoke v0.<io.netty.util.internal.shaded.org.jctools.queues.BaseMpscLinkedArrayQueue: long lvConsumerIndex()>();
+v4 = v2 cmp v1;
+if v4 != 0 goto label1;
+v5 = v3 - v1;
+v6 = v5 >> 1;
+v7 = v6 cmp 2147483647L;
+if v7 <= 0 goto label2;
+return 2147483647;
+label2:
+return v6;
+}
+public boolean isEmpty()
+{
+byte v3;
+io.netty.util.internal.shaded.org.jctools.queues.BaseMpscLinkedArrayQueue v0;
+long v1, v2;
+boolean v4;
+v0 := @this: io.netty.util.internal.shaded.org.jctools.queues.BaseMpscLinkedArrayQueue;
+v1 = virtualinvoke v0.<io.netty.util.internal.shaded.org.jctools.queues.BaseMpscLinkedArrayQueue: long lvConsumerIndex()>();
+v2 = virtualinvoke v0.<io.netty.util.internal.shaded.org.jctools.queues.BaseMpscLinkedArrayQueue: long lvProducerIndex()>();
+v3 = v1 cmp v2;
+if v3 != 0 goto label1;
+v4 = 1;
+goto label2;
+label1:
+v4 = 0;
+label2:
+return v4;
+}
+public java.lang.String toString()
+{
+java.lang.Class v1;
+java.lang.String v2;
+io.netty.util.internal.shaded.org.jctools.queues.BaseMpscLinkedArrayQueue v0;
+v0 := @this: io.netty.util.internal.shaded.org.jctools.queues.BaseMpscLinkedArrayQueue;
+v1 = virtualinvoke v0.<java.lang.Object: java.lang.Class getClass()>();
+v2 = virtualinvoke v1.<java.lang.Class: java.lang.String getName()>();
+return v2;
+}
+public boolean offer(java.lang.Object)
+{
+java.lang.Object[] v8;
+io.netty.util.internal.shaded.org.jctools.queues.BaseMpscLinkedArrayQueue v0;
+long v11, v13, v3, v4, v5, v7;
+java.lang.NullPointerException v2;
+byte v6, v9;
+int v10;
+java.lang.Object v1;
+boolean v12;
+v0 := @this: io.netty.util.internal.shaded.org.jctools.queues.BaseMpscLinkedArrayQueue;
+v1 := @parameter0: java.lang.Object;
+if null != v1 goto label1;
+v2 = new java.lang.NullPointerException;
+specialinvoke v2.<java.lang.NullPointerException: void <init>()>();
+throw v2;
+label1:
+v3 = virtualinvoke v0.<io.netty.util.internal.shaded.org.jctools.queues.BaseMpscLinkedArrayQueue: long lvProducerLimit()>();
+v4 = virtualinvoke v0.<io.netty.util.internal.shaded.org.jctools.queues.BaseMpscLinkedArrayQueue: long lvProducerIndex()>();
+v5 = v4 & 1L;
+v6 = v5 cmp 1L;
+if v6 == 0 goto label1;
+v7 = v0.<io.netty.util.internal.shaded.org.jctools.queues.BaseMpscLinkedArrayQueue: long producerMask>;
+v8 = v0.<io.netty.util.internal.shaded.org.jctools.queues.BaseMpscLinkedArrayQueue: java.lang.Object[] producerBuffer>;
+v9 = v3 cmp v4;
+if v9 > 0 goto label4;
+v10 = specialinvoke v0.<io.netty.util.internal.shaded.org.jctools.queues.BaseMpscLinkedArrayQueue: int offerSlowPath(long,long,long)>(v7, v4, v3);
+tableswitch(v10)
+{
+case 0: goto label4;
+case 1: goto label1;
+case 2: goto label2;
+case 3: goto label3;
+default: goto label4;
+};
+label2:
+return 0;
+label3:
+specialinvoke v0.<io.netty.util.internal.shaded.org.jctools.queues.BaseMpscLinkedArrayQueue: void resize(long,java.lang.Object[],long,java.lang.Object,io.netty.util.internal.shaded.org.jctools.queues.MessagePassingQueue$Supplier)>(v7, v8, v4, v1, null);
+return 1;
+label4:
+v11 = v4 + 2L;
+v12 = virtualinvoke v0.<io.netty.util.internal.shaded.org.jctools.queues.BaseMpscLinkedArrayQueue: boolean casProducerIndex(long,long)>(v4, v11);
+if v12 == 0 goto label1;
+v13 = staticinvoke <io.netty.util.internal.shaded.org.jctools.queues.LinkedArrayQueueUtil: long modifiedCalcCircularRefElementOffset(long,long)>(v4, v7);
+staticinvoke <io.netty.util.internal.shaded.org.jctools.util.UnsafeRefArrayAccess: void soRefElement(java.lang.Object[],long,java.lang.Object)>(v8, v13, v1);
+return 1;
+}
+public java.lang.Object poll()
+{
+java.lang.Object[] v1, v9;
+io.netty.util.internal.shaded.org.jctools.queues.BaseMpscLinkedArrayQueue v0;
+long v11, v2, v3, v4, v6;
+byte v7;
+java.lang.Object v10, v5, v8;
+v0 := @this: io.netty.util.internal.shaded.org.jctools.queues.BaseMpscLinkedArrayQueue;
+v1 = v0.<io.netty.util.internal.shaded.org.jctools.queues.BaseMpscLinkedArrayQueue: java.lang.Object[] consumerBuffer>;
+v2 = virtualinvoke v0.<io.netty.util.internal.shaded.org.jctools.queues.BaseMpscLinkedArrayQueue: long lpConsumerIndex()>();
+v3 = v0.<io.netty.util.internal.shaded.org.jctools.queues.BaseMpscLinkedArrayQueue: long consumerMask>;
+v4 = staticinvoke <io.netty.util.internal.shaded.org.jctools.queues.LinkedArrayQueueUtil: long modifiedCalcCircularRefElementOffset(long,long)>(v2, v3);
+v5 = staticinvoke <io.netty.util.internal.shaded.org.jctools.util.UnsafeRefArrayAccess: java.lang.Object lvRefElement(java.lang.Object[],long)>(v1, v4);
+if v5 != null goto label3;
+v6 = virtualinvoke v0.<io.netty.util.internal.shaded.org.jctools.queues.BaseMpscLinkedArrayQueue: long lvProducerIndex()>();
+v7 = v2 cmp v6;
+if v7 == 0 goto label2;
+label1:
+v5 = staticinvoke <io.netty.util.internal.shaded.org.jctools.util.UnsafeRefArrayAccess: java.lang.Object lvRefElement(java.lang.Object[],long)>(v1, v4);
+if v5 == null goto label1;
+goto label3;
+label2:
+return null;
+label3:
+v8 = <io.netty.util.internal.shaded.org.jctools.queues.BaseMpscLinkedArrayQueue: java.lang.Object JUMP>;
+if v5 != v8 goto label4;
+v9 = specialinvoke v0.<io.netty.util.internal.shaded.org.jctools.queues.BaseMpscLinkedArrayQueue: java.lang.Object[] nextBuffer(java.lang.Object[],long)>(v1, v3);
+v10 = specialinvoke v0.<io.netty.util.internal.shaded.org.jctools.queues.BaseMpscLinkedArrayQueue: java.lang.Object newBufferPoll(java.lang.Object[],long)>(v9, v2);
+return v10;
+label4:
+staticinvoke <io.netty.util.internal.shaded.org.jctools.util.UnsafeRefArrayAccess: void soRefElement(java.lang.Object[],long,java.lang.Object)>(v1, v4, null);
+v11 = v2 + 2L;
+virtualinvoke v0.<io.netty.util.internal.shaded.org.jctools.queues.BaseMpscLinkedArrayQueue: void soConsumerIndex(long)>(v11);
+return v5;
+}
+public java.lang.Object peek()
+{
+java.lang.Object[] v1, v9;
+io.netty.util.internal.shaded.org.jctools.queues.BaseMpscLinkedArrayQueue v0;
+long v2, v3, v4, v6;
+byte v7;
+java.lang.Object v10, v5, v8;
+v0 := @this: io.netty.util.internal.shaded.org.jctools.queues.BaseMpscLinkedArrayQueue;
+v1 = v0.<io.netty.util.internal.shaded.org.jctools.queues.BaseMpscLinkedArrayQueue: java.lang.Object[] consumerBuffer>;
+v2 = virtualinvoke v0.<io.netty.util.internal.shaded.org.jctools.queues.BaseMpscLinkedArrayQueue: long lpConsumerIndex()>();
+v3 = v0.<io.netty.util.internal.shaded.org.jctools.queues.BaseMpscLinkedArrayQueue: long consumerMask>;
+v4 = staticinvoke <io.netty.util.internal.shaded.org.jctools.queues.LinkedArrayQueueUtil: long modifiedCalcCircularRefElementOffset(long,long)>(v2, v3);
+v5 = staticinvoke <io.netty.util.internal.shaded.org.jctools.util.UnsafeRefArrayAccess: java.lang.Object lvRefElement(java.lang.Object[],long)>(v1, v4);
+if v5 != null goto label2;
+v6 = virtualinvoke v0.<io.netty.util.internal.shaded.org.jctools.queues.BaseMpscLinkedArrayQueue: long lvProducerIndex()>();
+v7 = v2 cmp v6;
+if v7 == 0 goto label2;
+label1:
+v5 = staticinvoke <io.netty.util.internal.shaded.org.jctools.util.UnsafeRefArrayAccess: java.lang.Object lvRefElement(java.lang.Object[],long)>(v1, v4);
+if v5 == null goto label1;
+label2:
+v8 = <io.netty.util.internal.shaded.org.jctools.queues.BaseMpscLinkedArrayQueue: java.lang.Object JUMP>;
+if v5 != v8 goto label3;
+v9 = specialinvoke v0.<io.netty.util.internal.shaded.org.jctools.queues.BaseMpscLinkedArrayQueue: java.lang.Object[] nextBuffer(java.lang.Object[],long)>(v1, v3);
+v10 = specialinvoke v0.<io.netty.util.internal.shaded.org.jctools.queues.BaseMpscLinkedArrayQueue: java.lang.Object newBufferPeek(java.lang.Object[],long)>(v9, v2);
+return v10;
+label3:
+return v5;
+}
+private int offerSlowPath(long, long, long)
+{
+io.netty.util.internal.shaded.org.jctools.queues.BaseMpscLinkedArrayQueue v0;
+long v1, v10, v12, v2, v3, v4, v5, v6, v8;
+byte v11, v7;
+boolean v13, v9;
+v0 := @this: io.netty.util.internal.shaded.org.jctools.queues.BaseMpscLinkedArrayQueue;
+v1 := @parameter0: long;
+v2 := @parameter1: long;
+v3 := @parameter2: long;
+v4 = virtualinvoke v0.<io.netty.util.internal.shaded.org.jctools.queues.BaseMpscLinkedArrayQueue: long lvConsumerIndex()>();
+v5 = virtualinvoke v0.<io.netty.util.internal.shaded.org.jctools.queues.BaseMpscLinkedArrayQueue: long getCurrentBufferCapacity(long)>(v1);
+v6 = v4 + v5;
+v7 = v6 cmp v2;
+if v7 <= 0 goto label2;
+v8 = v4 + v5;
+v9 = virtualinvoke v0.<io.netty.util.internal.shaded.org.jctools.queues.BaseMpscLinkedArrayQueue: boolean casProducerLimit(long,long)>(v3, v8);
+if v9 != 0 goto label1;
+return 1;
+label1:
+return 0;
+label2:
+v10 = virtualinvoke v0.<io.netty.util.internal.shaded.org.jctools.queues.BaseMpscLinkedArrayQueue: long availableInQueue(long,long)>(v2, v4);
+v11 = v10 cmp 0L;
+if v11 > 0 goto label3;
+return 2;
+label3:
+v12 = v2 + 1L;
+v13 = virtualinvoke v0.<io.netty.util.internal.shaded.org.jctools.queues.BaseMpscLinkedArrayQueue: boolean casProducerIndex(long,long)>(v2, v12);
+if v13 == 0 goto label4;
+return 3;
+label4:
+return 1;
+}
+protected abstract long availableInQueue(long, long);
+private java.lang.Object[] nextBuffer(java.lang.Object[], long)
+{
+java.lang.Object[] v1;
+io.netty.util.internal.shaded.org.jctools.queues.BaseMpscLinkedArrayQueue v0;
+long v2, v3;
+int v5, v6, v7;
+java.lang.Object v4, v8;
+v0 := @this: io.netty.util.internal.shaded.org.jctools.queues.BaseMpscLinkedArrayQueue;
+v1 := @parameter0: java.lang.Object[];
+v2 := @parameter1: long;
+v3 = staticinvoke <io.netty.util.internal.shaded.org.jctools.queues.BaseMpscLinkedArrayQueue: long nextArrayOffset(long)>(v2);
+v4 = staticinvoke <io.netty.util.internal.shaded.org.jctools.util.UnsafeRefArrayAccess: java.lang.Object lvRefElement(java.lang.Object[],long)>(v1, v3);
+v0.<io.netty.util.internal.shaded.org.jctools.queues.BaseMpscLinkedArrayQueue: java.lang.Object[] consumerBuffer> = v4;
+v5 = staticinvoke <io.netty.util.internal.shaded.org.jctools.queues.LinkedArrayQueueUtil: int length(java.lang.Object[])>(v4);
+v6 = v5 - 2;
+v7 = v6 << 1;
+v0.<io.netty.util.internal.shaded.org.jctools.queues.BaseMpscLinkedArrayQueue: long consumerMask> = v7;
+v8 = <io.netty.util.internal.shaded.org.jctools.queues.BaseMpscLinkedArrayQueue: java.lang.Object BUFFER_CONSUMED>;
+staticinvoke <io.netty.util.internal.shaded.org.jctools.util.UnsafeRefArrayAccess: void soRefElement(java.lang.Object[],long,java.lang.Object)>(v1, v3, v8);
+return v4;
+}
+private static long nextArrayOffset(long)
+{
+long v0, v1, v2;
+v0 := @parameter0: long;
+v1 = v0 + 2L;
+v2 = staticinvoke <io.netty.util.internal.shaded.org.jctools.queues.LinkedArrayQueueUtil: long modifiedCalcCircularRefElementOffset(long,long)>(v1, 9223372036854775807L);
+return v2;
+}
+private java.lang.Object newBufferPoll(java.lang.Object[], long)
+{
+java.lang.IllegalStateException v6;
+java.lang.Object[] v1;
+io.netty.util.internal.shaded.org.jctools.queues.BaseMpscLinkedArrayQueue v0;
+long v2, v3, v4, v7;
+java.lang.Object v5;
+v0 := @this: io.netty.util.internal.shaded.org.jctools.queues.BaseMpscLinkedArrayQueue;
+v1 := @parameter0: java.lang.Object[];
+v2 := @parameter1: long;
+v3 = v0.<io.netty.util.internal.shaded.org.jctools.queues.BaseMpscLinkedArrayQueue: long consumerMask>;
+v4 = staticinvoke <io.netty.util.internal.shaded.org.jctools.queues.LinkedArrayQueueUtil: long modifiedCalcCircularRefElementOffset(long,long)>(v2, v3);
+v5 = staticinvoke <io.netty.util.internal.shaded.org.jctools.util.UnsafeRefArrayAccess: java.lang.Object lvRefElement(java.lang.Object[],long)>(v1, v4);
+if v5 != null goto label1;
+v6 = new java.lang.IllegalStateException;
+specialinvoke v6.<java.lang.IllegalStateException: void <init>(java.lang.String)>("new buffer must have at least one element");
+throw v6;
+label1:
+staticinvoke <io.netty.util.internal.shaded.org.jctools.util.UnsafeRefArrayAccess: void soRefElement(java.lang.Object[],long,java.lang.Object)>(v1, v4, null);
+v7 = v2 + 2L;
+virtualinvoke v0.<io.netty.util.internal.shaded.org.jctools.queues.BaseMpscLinkedArrayQueue: void soConsumerIndex(long)>(v7);
+return v5;
+}
+private java.lang.Object newBufferPeek(java.lang.Object[], long)
+{
+java.lang.IllegalStateException v6;
+java.lang.Object[] v1;
+io.netty.util.internal.shaded.org.jctools.queues.BaseMpscLinkedArrayQueue v0;
+java.lang.Object v5;
+long v2, v3, v4;
+v0 := @this: io.netty.util.internal.shaded.org.jctools.queues.BaseMpscLinkedArrayQueue;
+v1 := @parameter0: java.lang.Object[];
+v2 := @parameter1: long;
+v3 = v0.<io.netty.util.internal.shaded.org.jctools.queues.BaseMpscLinkedArrayQueue: long consumerMask>;
+v4 = staticinvoke <io.netty.util.internal.shaded.org.jctools.queues.LinkedArrayQueueUtil: long modifiedCalcCircularRefElementOffset(long,long)>(v2, v3);
+v5 = staticinvoke <io.netty.util.internal.shaded.org.jctools.util.UnsafeRefArrayAccess: java.lang.Object lvRefElement(java.lang.Object[],long)>(v1, v4);
+if null != v5 goto label1;
+v6 = new java.lang.IllegalStateException;
+specialinvoke v6.<java.lang.IllegalStateException: void <init>(java.lang.String)>("new buffer must have at least one element");
+throw v6;
+label1:
+return v5;
+}
+public long currentProducerIndex()
+{
+long v1, v2;
+io.netty.util.internal.shaded.org.jctools.queues.BaseMpscLinkedArrayQueue v0;
+v0 := @this: io.netty.util.internal.shaded.org.jctools.queues.BaseMpscLinkedArrayQueue;
+v1 = virtualinvoke v0.<io.netty.util.internal.shaded.org.jctools.queues.BaseMpscLinkedArrayQueue: long lvProducerIndex()>();
+v2 = v1 / 2L;
+return v2;
+}
+public long currentConsumerIndex()
+{
+long v1, v2;
+io.netty.util.internal.shaded.org.jctools.queues.BaseMpscLinkedArrayQueue v0;
+v0 := @this: io.netty.util.internal.shaded.org.jctools.queues.BaseMpscLinkedArrayQueue;
+v1 = virtualinvoke v0.<io.netty.util.internal.shaded.org.jctools.queues.BaseMpscLinkedArrayQueue: long lvConsumerIndex()>();
+v2 = v1 / 2L;
+return v2;
+}
+public abstract int capacity();
+public boolean relaxedOffer(java.lang.Object)
+{
+java.lang.Object v1;
+io.netty.util.internal.shaded.org.jctools.queues.BaseMpscLinkedArrayQueue v0;
+boolean v2;
+v0 := @this: io.netty.util.internal.shaded.org.jctools.queues.BaseMpscLinkedArrayQueue;
+v1 := @parameter0: java.lang.Object;
+v2 = virtualinvoke v0.<io.netty.util.internal.shaded.org.jctools.queues.BaseMpscLinkedArrayQueue: boolean offer(java.lang.Object)>(v1);
+return v2;
+}
+public java.lang.Object relaxedPoll()
+{
+java.lang.Object[] v1, v7;
+io.netty.util.internal.shaded.org.jctools.queues.BaseMpscLinkedArrayQueue v0;
+long v2, v3, v4, v9;
+java.lang.Object v5, v6, v8;
+v0 := @this: io.netty.util.internal.shaded.org.jctools.queues.BaseMpscLinkedArrayQueue;
+v1 = v0.<io.netty.util.internal.shaded.org.jctools.queues.BaseMpscLinkedArrayQueue: java.lang.Object[] consumerBuffer>;
+v2 = virtualinvoke v0.<io.netty.util.internal.shaded.org.jctools.queues.BaseMpscLinkedArrayQueue: long lpConsumerIndex()>();
+v3 = v0.<io.netty.util.internal.shaded.org.jctools.queues.BaseMpscLinkedArrayQueue: long consumerMask>;
+v4 = staticinvoke <io.netty.util.internal.shaded.org.jctools.queues.LinkedArrayQueueUtil: long modifiedCalcCircularRefElementOffset(long,long)>(v2, v3);
+v5 = staticinvoke <io.netty.util.internal.shaded.org.jctools.util.UnsafeRefArrayAccess: java.lang.Object lvRefElement(java.lang.Object[],long)>(v1, v4);
+if v5 != null goto label1;
+return null;
+label1:
+v6 = <io.netty.util.internal.shaded.org.jctools.queues.BaseMpscLinkedArrayQueue: java.lang.Object JUMP>;
+if v5 != v6 goto label2;
+v7 = specialinvoke v0.<io.netty.util.internal.shaded.org.jctools.queues.BaseMpscLinkedArrayQueue: java.lang.Object[] nextBuffer(java.lang.Object[],long)>(v1, v3);
+v8 = specialinvoke v0.<io.netty.util.internal.shaded.org.jctools.queues.BaseMpscLinkedArrayQueue: java.lang.Object newBufferPoll(java.lang.Object[],long)>(v7, v2);
+return v8;
+label2:
+staticinvoke <io.netty.util.internal.shaded.org.jctools.util.UnsafeRefArrayAccess: void soRefElement(java.lang.Object[],long,java.lang.Object)>(v1, v4, null);
+v9 = v2 + 2L;
+virtualinvoke v0.<io.netty.util.internal.shaded.org.jctools.queues.BaseMpscLinkedArrayQueue: void soConsumerIndex(long)>(v9);
+return v5;
+}
+public java.lang.Object relaxedPeek()
+{
+java.lang.Object[] v1, v7;
+io.netty.util.internal.shaded.org.jctools.queues.BaseMpscLinkedArrayQueue v0;
+long v2, v3, v4;
+java.lang.Object v5, v6, v8;
+v0 := @this: io.netty.util.internal.shaded.org.jctools.queues.BaseMpscLinkedArrayQueue;
+v1 = v0.<io.netty.util.internal.shaded.org.jctools.queues.BaseMpscLinkedArrayQueue: java.lang.Object[] consumerBuffer>;
+v2 = virtualinvoke v0.<io.netty.util.internal.shaded.org.jctools.queues.BaseMpscLinkedArrayQueue: long lpConsumerIndex()>();
+v3 = v0.<io.netty.util.internal.shaded.org.jctools.queues.BaseMpscLinkedArrayQueue: long consumerMask>;
+v4 = staticinvoke <io.netty.util.internal.shaded.org.jctools.queues.LinkedArrayQueueUtil: long modifiedCalcCircularRefElementOffset(long,long)>(v2, v3);
+v5 = staticinvoke <io.netty.util.internal.shaded.org.jctools.util.UnsafeRefArrayAccess: java.lang.Object lvRefElement(java.lang.Object[],long)>(v1, v4);
+v6 = <io.netty.util.internal.shaded.org.jctools.queues.BaseMpscLinkedArrayQueue: java.lang.Object JUMP>;
+if v5 != v6 goto label1;
+v7 = specialinvoke v0.<io.netty.util.internal.shaded.org.jctools.queues.BaseMpscLinkedArrayQueue: java.lang.Object[] nextBuffer(java.lang.Object[],long)>(v1, v3);
+v8 = specialinvoke v0.<io.netty.util.internal.shaded.org.jctools.queues.BaseMpscLinkedArrayQueue: java.lang.Object newBufferPeek(java.lang.Object[],long)>(v7, v2);
+return v8;
+label1:
+return v5;
+}
+public int fill(io.netty.util.internal.shaded.org.jctools.queues.MessagePassingQueue$Supplier)
+{
+byte v6;
+io.netty.util.internal.shaded.org.jctools.queues.BaseMpscLinkedArrayQueue v0;
+int v3, v4, v5;
+long v2;
+io.netty.util.internal.shaded.org.jctools.queues.MessagePassingQueue$Supplier v1;
+v0 := @this: io.netty.util.internal.shaded.org.jctools.queues.BaseMpscLinkedArrayQueue;
+v1 := @parameter0: io.netty.util.internal.shaded.org.jctools.queues.MessagePassingQueue$Supplier;
+v2 = 0L;
+v3 = virtualinvoke v0.<io.netty.util.internal.shaded.org.jctools.queues.BaseMpscLinkedArrayQueue: int capacity()>();
+label1:
+v4 = <io.netty.util.internal.shaded.org.jctools.util.PortableJvmInfo: int RECOMENDED_OFFER_BATCH>;
+v5 = virtualinvoke v0.<io.netty.util.internal.shaded.org.jctools.queues.BaseMpscLinkedArrayQueue: int fill(io.netty.util.internal.shaded.org.jctools.queues.MessagePassingQueue$Supplier,int)>(v1, v4);
+if v5 != 0 goto label2;
+return v2;
+label2:
+v2 = v2 + v5;
+v6 = v2 cmp v3;
+if v6 <= 0 goto label1;
+return v2;
+}
+public int fill(io.netty.util.internal.shaded.org.jctools.queues.MessagePassingQueue$Supplier, int)
+{
+java.lang.Object[] v11;
+long v10, v12, v13, v14, v18, v19, v21, v22, v23, v6, v7, v8;
+byte v15, v9;
+int v16, v2, v20;
+java.lang.String v5;
+boolean v17;
+io.netty.util.internal.shaded.org.jctools.queues.BaseMpscLinkedArrayQueue v0;
+java.lang.IllegalArgumentException v3, v4;
+io.netty.util.internal.shaded.org.jctools.queues.MessagePassingQueue$Supplier v1;
+java.lang.Object v24;
+v0 := @this: io.netty.util.internal.shaded.org.jctools.queues.BaseMpscLinkedArrayQueue;
+v1 := @parameter0: io.netty.util.internal.shaded.org.jctools.queues.MessagePassingQueue$Supplier;
+v2 := @parameter1: int;
+if null != v1 goto label1;
+v3 = new java.lang.IllegalArgumentException;
+specialinvoke v3.<java.lang.IllegalArgumentException: void <init>(java.lang.String)>("supplier is null");
+throw v3;
+label1:
+if v2 >= 0 goto label2;
+v4 = new java.lang.IllegalArgumentException;
+v5 = dynamicinvoke "makeConcatWithConstants" <java.lang.String (int)>(v2) <java.lang.invoke.StringConcatFactory: java.lang.invoke.CallSite makeConcatWithConstants(java.lang.invoke.MethodHandles$Lookup,java.lang.String,java.lang.invoke.MethodType,java.lang.String,java.lang.Object[])>("limit is negative:\u0001");
+specialinvoke v4.<java.lang.IllegalArgumentException: void <init>(java.lang.String)>(v5);
+throw v4;
+label2:
+if v2 != 0 goto label3;
+return 0;
+label3:
+v6 = virtualinvoke v0.<io.netty.util.internal.shaded.org.jctools.queues.BaseMpscLinkedArrayQueue: long lvProducerLimit()>();
+v7 = virtualinvoke v0.<io.netty.util.internal.shaded.org.jctools.queues.BaseMpscLinkedArrayQueue: long lvProducerIndex()>();
+v8 = v7 & 1L;
+v9 = v8 cmp 1L;
+if v9 == 0 goto label3;
+v10 = v0.<io.netty.util.internal.shaded.org.jctools.queues.BaseMpscLinkedArrayQueue: long producerMask>;
+v11 = v0.<io.netty.util.internal.shaded.org.jctools.queues.BaseMpscLinkedArrayQueue: java.lang.Object[] producerBuffer>;
+v12 = 2L * v2;
+v13 = v7 + v12;
+v14 = staticinvoke <java.lang.Math: long min(long,long)>(v6, v13);
+v15 = v7 cmp v6;
+if v15 < 0 goto label6;
+v16 = specialinvoke v0.<io.netty.util.internal.shaded.org.jctools.queues.BaseMpscLinkedArrayQueue: int offerSlowPath(long,long,long)>(v10, v7, v6);
+tableswitch(v16)
+{
+case 0: goto label3;
+case 1: goto label3;
+case 2: goto label4;
+case 3: goto label5;
+default: goto label6;
+};
+label4:
+return 0;
+label5:
+specialinvoke v0.<io.netty.util.internal.shaded.org.jctools.queues.BaseMpscLinkedArrayQueue: void resize(long,java.lang.Object[],long,java.lang.Object,io.netty.util.internal.shaded.org.jctools.queues.MessagePassingQueue$Supplier)>(v10, v11, v7, null, v1);
+return 1;
+label6:
+v17 = virtualinvoke v0.<io.netty.util.internal.shaded.org.jctools.queues.BaseMpscLinkedArrayQueue: boolean casProducerIndex(long,long)>(v7, v14);
+if v17 == 0 goto label3;
+v18 = v14 - v7;
+v19 = v18 / 2L;
+v20 = 0;
+label7:
+if v20 >= v19 goto label8;
+v21 = 2L * v20;
+v22 = v7 + v21;
+v23 = staticinvoke <io.netty.util.internal.shaded.org.jctools.queues.LinkedArrayQueueUtil: long modifiedCalcCircularRefElementOffset(long,long)>(v22, v10);
+v24 = interfaceinvoke v1.<io.netty.util.internal.shaded.org.jctools.queues.MessagePassingQueue$Supplier: java.lang.Object get()>();
+staticinvoke <io.netty.util.internal.shaded.org.jctools.util.UnsafeRefArrayAccess: void soRefElement(java.lang.Object[],long,java.lang.Object)>(v11, v23, v24);
+v20 = v20 + 1;
+goto label7;
+label8:
+return v19;
+}
+public void fill(io.netty.util.internal.shaded.org.jctools.queues.MessagePassingQueue$Supplier, io.netty.util.internal.shaded.org.jctools.queues.MessagePassingQueue$WaitStrategy, io.netty.util.internal.shaded.org.jctools.queues.MessagePassingQueue$ExitCondition)
+{
+io.netty.util.internal.shaded.org.jctools.queues.MessagePassingQueue$ExitCondition v3;
+io.netty.util.internal.shaded.org.jctools.queues.BaseMpscLinkedArrayQueue v0;
+io.netty.util.internal.shaded.org.jctools.queues.MessagePassingQueue$WaitStrategy v2;
+io.netty.util.internal.shaded.org.jctools.queues.MessagePassingQueue$Supplier v1;
+v0 := @this: io.netty.util.internal.shaded.org.jctools.queues.BaseMpscLinkedArrayQueue;
+v1 := @parameter0: io.netty.util.internal.shaded.org.jctools.queues.MessagePassingQueue$Supplier;
+v2 := @parameter1: io.netty.util.internal.shaded.org.jctools.queues.MessagePassingQueue$WaitStrategy;
+v3 := @parameter2: io.netty.util.internal.shaded.org.jctools.queues.MessagePassingQueue$ExitCondition;
+staticinvoke <io.netty.util.internal.shaded.org.jctools.queues.MessagePassingQueueUtil: void fill(io.netty.util.internal.shaded.org.jctools.queues.MessagePassingQueue,io.netty.util.internal.shaded.org.jctools.queues.MessagePassingQueue$Supplier,io.netty.util.internal.shaded.org.jctools.queues.MessagePassingQueue$WaitStrategy,io.netty.util.internal.shaded.org.jctools.queues.MessagePassingQueue$ExitCondition)>(v0, v1, v2, v3);
+return;
+}
+public int drain(io.netty.util.internal.shaded.org.jctools.queues.MessagePassingQueue$Consumer)
+{
+io.netty.util.internal.shaded.org.jctools.queues.MessagePassingQueue$Consumer v1;
+io.netty.util.internal.shaded.org.jctools.queues.BaseMpscLinkedArrayQueue v0;
+int v2, v3;
+v0 := @this: io.netty.util.internal.shaded.org.jctools.queues.BaseMpscLinkedArrayQueue;
+v1 := @parameter0: io.netty.util.internal.shaded.org.jctools.queues.MessagePassingQueue$Consumer;
+v2 = virtualinvoke v0.<io.netty.util.internal.shaded.org.jctools.queues.BaseMpscLinkedArrayQueue: int capacity()>();
+v3 = virtualinvoke v0.<io.netty.util.internal.shaded.org.jctools.queues.BaseMpscLinkedArrayQueue: int drain(io.netty.util.internal.shaded.org.jctools.queues.MessagePassingQueue$Consumer,int)>(v1, v2);
+return v3;
+}
+public int drain(io.netty.util.internal.shaded.org.jctools.queues.MessagePassingQueue$Consumer, int)
+{
+io.netty.util.internal.shaded.org.jctools.queues.MessagePassingQueue$Consumer v1;
+io.netty.util.internal.shaded.org.jctools.queues.BaseMpscLinkedArrayQueue v0;
+int v2, v3;
+v0 := @this: io.netty.util.internal.shaded.org.jctools.queues.BaseMpscLinkedArrayQueue;
+v1 := @parameter0: io.netty.util.internal.shaded.org.jctools.queues.MessagePassingQueue$Consumer;
+v2 := @parameter1: int;
+v3 = staticinvoke <io.netty.util.internal.shaded.org.jctools.queues.MessagePassingQueueUtil: int drain(io.netty.util.internal.shaded.org.jctools.queues.MessagePassingQueue,io.netty.util.internal.shaded.org.jctools.queues.MessagePassingQueue$Consumer,int)>(v0, v1, v2);
+return v3;
+}
+public void drain(io.netty.util.internal.shaded.org.jctools.queues.MessagePassingQueue$Consumer, io.netty.util.internal.shaded.org.jctools.queues.MessagePassingQueue$WaitStrategy, io.netty.util.internal.shaded.org.jctools.queues.MessagePassingQueue$ExitCondition)
+{
+io.netty.util.internal.shaded.org.jctools.queues.MessagePassingQueue$Consumer v1;
+io.netty.util.internal.shaded.org.jctools.queues.MessagePassingQueue$ExitCondition v3;
+io.netty.util.internal.shaded.org.jctools.queues.BaseMpscLinkedArrayQueue v0;
+io.netty.util.internal.shaded.org.jctools.queues.MessagePassingQueue$WaitStrategy v2;
+v0 := @this: io.netty.util.internal.shaded.org.jctools.queues.BaseMpscLinkedArrayQueue;
+v1 := @parameter0: io.netty.util.internal.shaded.org.jctools.queues.MessagePassingQueue$Consumer;
+v2 := @parameter1: io.netty.util.internal.shaded.org.jctools.queues.MessagePassingQueue$WaitStrategy;
+v3 := @parameter2: io.netty.util.internal.shaded.org.jctools.queues.MessagePassingQueue$ExitCondition;
+staticinvoke <io.netty.util.internal.shaded.org.jctools.queues.MessagePassingQueueUtil: void drain(io.netty.util.internal.shaded.org.jctools.queues.MessagePassingQueue,io.netty.util.internal.shaded.org.jctools.queues.MessagePassingQueue$Consumer,io.netty.util.internal.shaded.org.jctools.queues.MessagePassingQueue$WaitStrategy,io.netty.util.internal.shaded.org.jctools.queues.MessagePassingQueue$ExitCondition)>(v0, v1, v2, v3);
+return;
+}
+public java.util.Iterator iterator()
+{
+io.netty.util.internal.shaded.org.jctools.queues.BaseMpscLinkedArrayQueue$WeakIterator v1;
+java.lang.Object[] v2;
+io.netty.util.internal.shaded.org.jctools.queues.BaseMpscLinkedArrayQueue v0;
+long v3, v4;
+v0 := @this: io.netty.util.internal.shaded.org.jctools.queues.BaseMpscLinkedArrayQueue;
+v1 = new io.netty.util.internal.shaded.org.jctools.queues.BaseMpscLinkedArrayQueue$WeakIterator;
+v2 = v0.<io.netty.util.internal.shaded.org.jctools.queues.BaseMpscLinkedArrayQueue: java.lang.Object[] consumerBuffer>;
+v3 = virtualinvoke v0.<io.netty.util.internal.shaded.org.jctools.queues.BaseMpscLinkedArrayQueue: long lvConsumerIndex()>();
+v4 = virtualinvoke v0.<io.netty.util.internal.shaded.org.jctools.queues.BaseMpscLinkedArrayQueue: long lvProducerIndex()>();
+specialinvoke v1.<io.netty.util.internal.shaded.org.jctools.queues.BaseMpscLinkedArrayQueue$WeakIterator: void <init>(java.lang.Object[],long,long)>(v2, v3, v4);
+return v1;
+}
+private void resize(long, java.lang.Object[], long, java.lang.Object, io.netty.util.internal.shaded.org.jctools.queues.MessagePassingQueue$Supplier)
+{
+java.lang.Object[] v2, v9;
+long v1, v12, v13, v18, v19, v21, v22, v23, v24, v25, v26, v3;
+java.lang.AssertionError v15, v7;
+byte v14;
+int v16, v17, v8;
+boolean v11, v6;
+io.netty.util.internal.shaded.org.jctools.queues.BaseMpscLinkedArrayQueue v0;
+io.netty.util.internal.shaded.org.jctools.queues.MessagePassingQueue$Supplier v5;
+java.lang.Object v20, v27, v4;
+java.lang.OutOfMemoryError v10;
+v0 := @this: io.netty.util.internal.shaded.org.jctools.queues.BaseMpscLinkedArrayQueue;
+v1 := @parameter0: long;
+v2 := @parameter1: java.lang.Object[];
+v3 := @parameter2: long;
+v4 := @parameter3: java.lang.Object;
+v5 := @parameter4: io.netty.util.internal.shaded.org.jctools.queues.MessagePassingQueue$Supplier;
+v6 = <io.netty.util.internal.shaded.org.jctools.queues.BaseMpscLinkedArrayQueue: boolean $assertionsDisabled>;
+if v6 != 0 goto label1;
+if v4 == null goto label1;
+if v5 == null goto label1;
+if v4 == null goto label1;
+if v5 != null goto label1;
+v7 = new java.lang.AssertionError;
+specialinvoke v7.<java.lang.AssertionError: void <init>()>();
+throw v7;
+label1:
+v8 = virtualinvoke v0.<io.netty.util.internal.shaded.org.jctools.queues.BaseMpscLinkedArrayQueue: int getNextBufferSize(java.lang.Object[])>(v2);
+label2:
+v9 = staticinvoke <io.netty.util.internal.shaded.org.jctools.util.UnsafeRefArrayAccess: java.lang.Object[] allocateRefArray(int)>(v8);
+label3:
+goto label6;
+label4:
+v10 := @caughtexception;
+v11 = <io.netty.util.internal.shaded.org.jctools.queues.BaseMpscLinkedArrayQueue: boolean $assertionsDisabled>;
+if v11 != 0 goto label5;
+v12 = virtualinvoke v0.<io.netty.util.internal.shaded.org.jctools.queues.BaseMpscLinkedArrayQueue: long lvProducerIndex()>();
+v13 = v3 + 1L;
+v14 = v12 cmp v13;
+if v14 == 0 goto label5;
+v15 = new java.lang.AssertionError;
+specialinvoke v15.<java.lang.AssertionError: void <init>()>();
+throw v15;
+label5:
+virtualinvoke v0.<io.netty.util.internal.shaded.org.jctools.queues.BaseMpscLinkedArrayQueue: void soProducerIndex(long)>(v3);
+throw v10;
+label6:
+v0.<io.netty.util.internal.shaded.org.jctools.queues.BaseMpscLinkedArrayQueue: java.lang.Object[] producerBuffer> = v9;
+v16 = v8 - 2;
+v17 = v16 << 1;
+v0.<io.netty.util.internal.shaded.org.jctools.queues.BaseMpscLinkedArrayQueue: long producerMask> = v17;
+v18 = staticinvoke <io.netty.util.internal.shaded.org.jctools.queues.LinkedArrayQueueUtil: long modifiedCalcCircularRefElementOffset(long,long)>(v3, v1);
+v19 = staticinvoke <io.netty.util.internal.shaded.org.jctools.queues.LinkedArrayQueueUtil: long modifiedCalcCircularRefElementOffset(long,long)>(v3, v17);
+if v4 != null goto label7;
+v20 = interfaceinvoke v5.<io.netty.util.internal.shaded.org.jctools.queues.MessagePassingQueue$Supplier: java.lang.Object get()>();
+goto label8;
+label7:
+v20 = v4;
+label8:
+staticinvoke <io.netty.util.internal.shaded.org.jctools.util.UnsafeRefArrayAccess: void soRefElement(java.lang.Object[],long,java.lang.Object)>(v9, v19, v20);
+v21 = staticinvoke <io.netty.util.internal.shaded.org.jctools.queues.BaseMpscLinkedArrayQueue: long nextArrayOffset(long)>(v1);
+staticinvoke <io.netty.util.internal.shaded.org.jctools.util.UnsafeRefArrayAccess: void soRefElement(java.lang.Object[],long,java.lang.Object)>(v2, v21, v9);
+v22 = virtualinvoke v0.<io.netty.util.internal.shaded.org.jctools.queues.BaseMpscLinkedArrayQueue: long lvConsumerIndex()>();
+v23 = virtualinvoke v0.<io.netty.util.internal.shaded.org.jctools.queues.BaseMpscLinkedArrayQueue: long availableInQueue(long,long)>(v3, v22);
+staticinvoke <io.netty.util.internal.shaded.org.jctools.util.RangeUtil: long checkPositive(long,java.lang.String)>(v23, "availableInQueue");
+v24 = staticinvoke <java.lang.Math: long min(long,long)>(v17, v23);
+v25 = v3 + v24;
+virtualinvoke v0.<io.netty.util.internal.shaded.org.jctools.queues.BaseMpscLinkedArrayQueue: void soProducerLimit(long)>(v25);
+v26 = v3 + 2L;
+virtualinvoke v0.<io.netty.util.internal.shaded.org.jctools.queues.BaseMpscLinkedArrayQueue: void soProducerIndex(long)>(v26);
+v27 = <io.netty.util.internal.shaded.org.jctools.queues.BaseMpscLinkedArrayQueue: java.lang.Object JUMP>;
+staticinvoke <io.netty.util.internal.shaded.org.jctools.util.UnsafeRefArrayAccess: void soRefElement(java.lang.Object[],long,java.lang.Object)>(v2, v18, v27);
+return;
+catch java.lang.OutOfMemoryError from label2 to label3 with label4;
+}
+protected abstract int getNextBufferSize(java.lang.Object[]);
+protected abstract long getCurrentBufferCapacity(long);
+static void <clinit>()
+{
+java.lang.Class v0;
+java.lang.Object v3, v4;
+boolean v1, v2;
+v0 = class "Lio/netty/util/internal/shaded/org/jctools/queues/BaseMpscLinkedArrayQueue;";
+v1 = virtualinvoke v0.<java.lang.Class: boolean desiredAssertionStatus()>();
+if v1 != 0 goto label1;
+v2 = 1;
+goto label2;
+label1:
+v2 = 0;
+label2:
+<io.netty.util.internal.shaded.org.jctools.queues.BaseMpscLinkedArrayQueue: boolean $assertionsDisabled> = v2;
+v3 = new java.lang.Object;
+specialinvoke v3.<java.lang.Object: void <init>()>();
+<io.netty.util.internal.shaded.org.jctools.queues.BaseMpscLinkedArrayQueue: java.lang.Object JUMP> = v3;
+v4 = new java.lang.Object;
+specialinvoke v4.<java.lang.Object: void <init>()>();
+<io.netty.util.internal.shaded.org.jctools.queues.BaseMpscLinkedArrayQueue: java.lang.Object BUFFER_CONSUMED> = v4;
+return;
+}
+}

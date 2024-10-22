@@ -1,0 +1,2144 @@
+public abstract class com.fasterxml.jackson.core.base.ParserBase extends com.fasterxml.jackson.core.base.ParserMinimalBase
+{
+protected static final com.fasterxml.jackson.core.util.JacksonFeatureSet JSON_READ_CAPABILITIES;
+protected final com.fasterxml.jackson.core.io.IOContext _ioContext;
+protected final com.fasterxml.jackson.core.StreamReadConstraints _streamReadConstraints;
+protected boolean _closed;
+protected int _inputPtr;
+protected int _inputEnd;
+protected long _currInputProcessed;
+protected int _currInputRow;
+protected int _currInputRowStart;
+protected long _tokenInputTotal;
+protected int _tokenInputRow;
+protected int _tokenInputCol;
+protected com.fasterxml.jackson.core.json.JsonReadContext _parsingContext;
+protected com.fasterxml.jackson.core.JsonToken _nextToken;
+protected final com.fasterxml.jackson.core.util.TextBuffer _textBuffer;
+protected char[] _nameCopyBuffer;
+protected boolean _nameCopied;
+protected com.fasterxml.jackson.core.util.ByteArrayBuilder _byteArrayBuilder;
+protected byte[] _binaryValue;
+protected int _numTypesValid;
+protected int _numberInt;
+protected long _numberLong;
+protected float _numberFloat;
+protected double _numberDouble;
+protected java.math.BigInteger _numberBigInt;
+protected java.math.BigDecimal _numberBigDecimal;
+protected java.lang.String _numberString;
+protected boolean _numberNegative;
+protected int _intLength;
+protected int _fractLength;
+protected int _expLength;
+protected void <init>(com.fasterxml.jackson.core.io.IOContext, int)
+{
+com.fasterxml.jackson.core.StreamReadConstraints v3, v4;
+com.fasterxml.jackson.core.json.JsonReadContext v9;
+com.fasterxml.jackson.core.util.TextBuffer v5;
+com.fasterxml.jackson.core.JsonParser$Feature v6;
+com.fasterxml.jackson.core.json.DupDetector v8;
+com.fasterxml.jackson.core.io.IOContext v1;
+int v2;
+com.fasterxml.jackson.core.base.ParserBase v0;
+boolean v7;
+v0 := @this: com.fasterxml.jackson.core.base.ParserBase;
+v1 := @parameter0: com.fasterxml.jackson.core.io.IOContext;
+v2 := @parameter1: int;
+specialinvoke v0.<com.fasterxml.jackson.core.base.ParserMinimalBase: void <init>(int)>(v2);
+v0.<com.fasterxml.jackson.core.base.ParserBase: int _currInputRow> = 1;
+v0.<com.fasterxml.jackson.core.base.ParserBase: int _tokenInputRow> = 1;
+v0.<com.fasterxml.jackson.core.base.ParserBase: int _numTypesValid> = 0;
+v0.<com.fasterxml.jackson.core.base.ParserBase: com.fasterxml.jackson.core.io.IOContext _ioContext> = v1;
+v3 = virtualinvoke v1.<com.fasterxml.jackson.core.io.IOContext: com.fasterxml.jackson.core.StreamReadConstraints streamReadConstraints()>();
+if v3 != null goto label1;
+v4 = staticinvoke <com.fasterxml.jackson.core.StreamReadConstraints: com.fasterxml.jackson.core.StreamReadConstraints defaults()>();
+goto label2;
+label1:
+v4 = v3;
+label2:
+v0.<com.fasterxml.jackson.core.base.ParserBase: com.fasterxml.jackson.core.StreamReadConstraints _streamReadConstraints> = v4;
+v5 = virtualinvoke v1.<com.fasterxml.jackson.core.io.IOContext: com.fasterxml.jackson.core.util.TextBuffer constructReadConstrainedTextBuffer()>();
+v0.<com.fasterxml.jackson.core.base.ParserBase: com.fasterxml.jackson.core.util.TextBuffer _textBuffer> = v5;
+v6 = <com.fasterxml.jackson.core.JsonParser$Feature: com.fasterxml.jackson.core.JsonParser$Feature STRICT_DUPLICATE_DETECTION>;
+v7 = virtualinvoke v6.<com.fasterxml.jackson.core.JsonParser$Feature: boolean enabledIn(int)>(v2);
+if v7 == 0 goto label3;
+v8 = staticinvoke <com.fasterxml.jackson.core.json.DupDetector: com.fasterxml.jackson.core.json.DupDetector rootDetector(com.fasterxml.jackson.core.JsonParser)>(v0);
+goto label4;
+label3:
+v8 = null;
+label4:
+v9 = staticinvoke <com.fasterxml.jackson.core.json.JsonReadContext: com.fasterxml.jackson.core.json.JsonReadContext createRootContext(com.fasterxml.jackson.core.json.DupDetector)>(v8);
+v0.<com.fasterxml.jackson.core.base.ParserBase: com.fasterxml.jackson.core.json.JsonReadContext _parsingContext> = v9;
+return;
+}
+public com.fasterxml.jackson.core.Version version()
+{
+com.fasterxml.jackson.core.Version v1;
+com.fasterxml.jackson.core.base.ParserBase v0;
+v0 := @this: com.fasterxml.jackson.core.base.ParserBase;
+v1 = <com.fasterxml.jackson.core.json.PackageVersion: com.fasterxml.jackson.core.Version VERSION>;
+return v1;
+}
+public java.lang.Object getCurrentValue()
+{
+java.lang.Object v2;
+com.fasterxml.jackson.core.base.ParserBase v0;
+com.fasterxml.jackson.core.json.JsonReadContext v1;
+v0 := @this: com.fasterxml.jackson.core.base.ParserBase;
+v1 = v0.<com.fasterxml.jackson.core.base.ParserBase: com.fasterxml.jackson.core.json.JsonReadContext _parsingContext>;
+v2 = virtualinvoke v1.<com.fasterxml.jackson.core.json.JsonReadContext: java.lang.Object getCurrentValue()>();
+return v2;
+}
+public void setCurrentValue(java.lang.Object)
+{
+java.lang.Object v1;
+com.fasterxml.jackson.core.base.ParserBase v0;
+com.fasterxml.jackson.core.json.JsonReadContext v2;
+v0 := @this: com.fasterxml.jackson.core.base.ParserBase;
+v1 := @parameter0: java.lang.Object;
+v2 = v0.<com.fasterxml.jackson.core.base.ParserBase: com.fasterxml.jackson.core.json.JsonReadContext _parsingContext>;
+virtualinvoke v2.<com.fasterxml.jackson.core.json.JsonReadContext: void setCurrentValue(java.lang.Object)>(v1);
+return;
+}
+public com.fasterxml.jackson.core.JsonParser enable(com.fasterxml.jackson.core.JsonParser$Feature)
+{
+com.fasterxml.jackson.core.json.JsonReadContext v10, v6, v8;
+com.fasterxml.jackson.core.JsonParser$Feature v1, v5;
+com.fasterxml.jackson.core.json.DupDetector v7, v9;
+int v2, v3, v4;
+com.fasterxml.jackson.core.base.ParserBase v0;
+v0 := @this: com.fasterxml.jackson.core.base.ParserBase;
+v1 := @parameter0: com.fasterxml.jackson.core.JsonParser$Feature;
+v2 = v0.<com.fasterxml.jackson.core.base.ParserBase: int _features>;
+v3 = virtualinvoke v1.<com.fasterxml.jackson.core.JsonParser$Feature: int getMask()>();
+v4 = v2 | v3;
+v0.<com.fasterxml.jackson.core.base.ParserBase: int _features> = v4;
+v5 = <com.fasterxml.jackson.core.JsonParser$Feature: com.fasterxml.jackson.core.JsonParser$Feature STRICT_DUPLICATE_DETECTION>;
+if v1 != v5 goto label1;
+v6 = v0.<com.fasterxml.jackson.core.base.ParserBase: com.fasterxml.jackson.core.json.JsonReadContext _parsingContext>;
+v7 = virtualinvoke v6.<com.fasterxml.jackson.core.json.JsonReadContext: com.fasterxml.jackson.core.json.DupDetector getDupDetector()>();
+if v7 != null goto label1;
+v8 = v0.<com.fasterxml.jackson.core.base.ParserBase: com.fasterxml.jackson.core.json.JsonReadContext _parsingContext>;
+v9 = staticinvoke <com.fasterxml.jackson.core.json.DupDetector: com.fasterxml.jackson.core.json.DupDetector rootDetector(com.fasterxml.jackson.core.JsonParser)>(v0);
+v10 = virtualinvoke v8.<com.fasterxml.jackson.core.json.JsonReadContext: com.fasterxml.jackson.core.json.JsonReadContext withDupDetector(com.fasterxml.jackson.core.json.DupDetector)>(v9);
+v0.<com.fasterxml.jackson.core.base.ParserBase: com.fasterxml.jackson.core.json.JsonReadContext _parsingContext> = v10;
+label1:
+return v0;
+}
+public com.fasterxml.jackson.core.JsonParser disable(com.fasterxml.jackson.core.JsonParser$Feature)
+{
+com.fasterxml.jackson.core.json.JsonReadContext v8, v9;
+com.fasterxml.jackson.core.JsonParser$Feature v1, v7;
+int v2, v3, v4, v5, v6;
+com.fasterxml.jackson.core.base.ParserBase v0;
+v0 := @this: com.fasterxml.jackson.core.base.ParserBase;
+v1 := @parameter0: com.fasterxml.jackson.core.JsonParser$Feature;
+v2 = v0.<com.fasterxml.jackson.core.base.ParserBase: int _features>;
+v3 = virtualinvoke v1.<com.fasterxml.jackson.core.JsonParser$Feature: int getMask()>();
+v4 = (int) -1;
+v5 = v3 ^ v4;
+v6 = v2 & v5;
+v0.<com.fasterxml.jackson.core.base.ParserBase: int _features> = v6;
+v7 = <com.fasterxml.jackson.core.JsonParser$Feature: com.fasterxml.jackson.core.JsonParser$Feature STRICT_DUPLICATE_DETECTION>;
+if v1 != v7 goto label1;
+v8 = v0.<com.fasterxml.jackson.core.base.ParserBase: com.fasterxml.jackson.core.json.JsonReadContext _parsingContext>;
+v9 = virtualinvoke v8.<com.fasterxml.jackson.core.json.JsonReadContext: com.fasterxml.jackson.core.json.JsonReadContext withDupDetector(com.fasterxml.jackson.core.json.DupDetector)>(null);
+v0.<com.fasterxml.jackson.core.base.ParserBase: com.fasterxml.jackson.core.json.JsonReadContext _parsingContext> = v9;
+label1:
+return v0;
+}
+public com.fasterxml.jackson.core.JsonParser setFeatureMask(int)
+{
+int v1, v2, v3;
+com.fasterxml.jackson.core.base.ParserBase v0;
+v0 := @this: com.fasterxml.jackson.core.base.ParserBase;
+v1 := @parameter0: int;
+v2 = v0.<com.fasterxml.jackson.core.base.ParserBase: int _features>;
+v3 = v2 ^ v1;
+if v3 == 0 goto label1;
+v0.<com.fasterxml.jackson.core.base.ParserBase: int _features> = v1;
+virtualinvoke v0.<com.fasterxml.jackson.core.base.ParserBase: void _checkStdFeatureChanges(int,int)>(v1, v3);
+label1:
+return v0;
+}
+public com.fasterxml.jackson.core.JsonParser overrideStdFeatures(int, int)
+{
+int v1, v2, v3, v4, v5, v6, v7, v8, v9;
+com.fasterxml.jackson.core.base.ParserBase v0;
+v0 := @this: com.fasterxml.jackson.core.base.ParserBase;
+v1 := @parameter0: int;
+v2 := @parameter1: int;
+v3 = v0.<com.fasterxml.jackson.core.base.ParserBase: int _features>;
+v4 = (int) -1;
+v5 = v2 ^ v4;
+v6 = v3 & v5;
+v7 = v1 & v2;
+v8 = v6 | v7;
+v9 = v3 ^ v8;
+if v9 == 0 goto label1;
+v0.<com.fasterxml.jackson.core.base.ParserBase: int _features> = v8;
+virtualinvoke v0.<com.fasterxml.jackson.core.base.ParserBase: void _checkStdFeatureChanges(int,int)>(v8, v9);
+label1:
+return v0;
+}
+protected void _checkStdFeatureChanges(int, int)
+{
+com.fasterxml.jackson.core.json.JsonReadContext v11, v12, v13, v7, v9;
+com.fasterxml.jackson.core.JsonParser$Feature v3;
+com.fasterxml.jackson.core.json.DupDetector v10, v8;
+int v1, v2, v4, v5, v6;
+com.fasterxml.jackson.core.base.ParserBase v0;
+v0 := @this: com.fasterxml.jackson.core.base.ParserBase;
+v1 := @parameter0: int;
+v2 := @parameter1: int;
+v3 = <com.fasterxml.jackson.core.JsonParser$Feature: com.fasterxml.jackson.core.JsonParser$Feature STRICT_DUPLICATE_DETECTION>;
+v4 = virtualinvoke v3.<com.fasterxml.jackson.core.JsonParser$Feature: int getMask()>();
+v5 = v2 & v4;
+if v5 == 0 goto label2;
+v6 = v1 & v4;
+if v6 == 0 goto label2;
+v7 = v0.<com.fasterxml.jackson.core.base.ParserBase: com.fasterxml.jackson.core.json.JsonReadContext _parsingContext>;
+v8 = virtualinvoke v7.<com.fasterxml.jackson.core.json.JsonReadContext: com.fasterxml.jackson.core.json.DupDetector getDupDetector()>();
+if v8 != null goto label1;
+v9 = v0.<com.fasterxml.jackson.core.base.ParserBase: com.fasterxml.jackson.core.json.JsonReadContext _parsingContext>;
+v10 = staticinvoke <com.fasterxml.jackson.core.json.DupDetector: com.fasterxml.jackson.core.json.DupDetector rootDetector(com.fasterxml.jackson.core.JsonParser)>(v0);
+v11 = virtualinvoke v9.<com.fasterxml.jackson.core.json.JsonReadContext: com.fasterxml.jackson.core.json.JsonReadContext withDupDetector(com.fasterxml.jackson.core.json.DupDetector)>(v10);
+v0.<com.fasterxml.jackson.core.base.ParserBase: com.fasterxml.jackson.core.json.JsonReadContext _parsingContext> = v11;
+goto label2;
+label1:
+v12 = v0.<com.fasterxml.jackson.core.base.ParserBase: com.fasterxml.jackson.core.json.JsonReadContext _parsingContext>;
+v13 = virtualinvoke v12.<com.fasterxml.jackson.core.json.JsonReadContext: com.fasterxml.jackson.core.json.JsonReadContext withDupDetector(com.fasterxml.jackson.core.json.DupDetector)>(null);
+v0.<com.fasterxml.jackson.core.base.ParserBase: com.fasterxml.jackson.core.json.JsonReadContext _parsingContext> = v13;
+label2:
+return;
+}
+public java.lang.String getCurrentName() throws java.io.IOException
+{
+com.fasterxml.jackson.core.json.JsonReadContext v5, v6, v8;
+com.fasterxml.jackson.core.JsonToken v1, v2, v3, v4;
+com.fasterxml.jackson.core.base.ParserBase v0;
+java.lang.String v7, v9;
+v0 := @this: com.fasterxml.jackson.core.base.ParserBase;
+v1 = v0.<com.fasterxml.jackson.core.base.ParserBase: com.fasterxml.jackson.core.JsonToken _currToken>;
+v2 = <com.fasterxml.jackson.core.JsonToken: com.fasterxml.jackson.core.JsonToken START_OBJECT>;
+if v1 == v2 goto label1;
+v3 = v0.<com.fasterxml.jackson.core.base.ParserBase: com.fasterxml.jackson.core.JsonToken _currToken>;
+v4 = <com.fasterxml.jackson.core.JsonToken: com.fasterxml.jackson.core.JsonToken START_ARRAY>;
+if v3 != v4 goto label2;
+label1:
+v5 = v0.<com.fasterxml.jackson.core.base.ParserBase: com.fasterxml.jackson.core.json.JsonReadContext _parsingContext>;
+v6 = virtualinvoke v5.<com.fasterxml.jackson.core.json.JsonReadContext: com.fasterxml.jackson.core.json.JsonReadContext getParent()>();
+if v6 == null goto label2;
+v7 = virtualinvoke v6.<com.fasterxml.jackson.core.json.JsonReadContext: java.lang.String getCurrentName()>();
+return v7;
+label2:
+v8 = v0.<com.fasterxml.jackson.core.base.ParserBase: com.fasterxml.jackson.core.json.JsonReadContext _parsingContext>;
+v9 = virtualinvoke v8.<com.fasterxml.jackson.core.json.JsonReadContext: java.lang.String getCurrentName()>();
+return v9;
+}
+public void overrideCurrentName(java.lang.String)
+{
+java.lang.IllegalStateException v8;
+java.io.IOException v7;
+com.fasterxml.jackson.core.json.JsonReadContext v2;
+com.fasterxml.jackson.core.JsonToken v3, v4, v5, v6;
+com.fasterxml.jackson.core.base.ParserBase v0;
+java.lang.String v1;
+v0 := @this: com.fasterxml.jackson.core.base.ParserBase;
+v1 := @parameter0: java.lang.String;
+v2 = v0.<com.fasterxml.jackson.core.base.ParserBase: com.fasterxml.jackson.core.json.JsonReadContext _parsingContext>;
+v3 = v0.<com.fasterxml.jackson.core.base.ParserBase: com.fasterxml.jackson.core.JsonToken _currToken>;
+v4 = <com.fasterxml.jackson.core.JsonToken: com.fasterxml.jackson.core.JsonToken START_OBJECT>;
+if v3 == v4 goto label1;
+v5 = v0.<com.fasterxml.jackson.core.base.ParserBase: com.fasterxml.jackson.core.JsonToken _currToken>;
+v6 = <com.fasterxml.jackson.core.JsonToken: com.fasterxml.jackson.core.JsonToken START_ARRAY>;
+if v5 != v6 goto label2;
+label1:
+v2 = virtualinvoke v2.<com.fasterxml.jackson.core.json.JsonReadContext: com.fasterxml.jackson.core.json.JsonReadContext getParent()>();
+label2:
+virtualinvoke v2.<com.fasterxml.jackson.core.json.JsonReadContext: void setCurrentName(java.lang.String)>(v1);
+label3:
+goto label5;
+label4:
+v7 := @caughtexception;
+v8 = new java.lang.IllegalStateException;
+specialinvoke v8.<java.lang.IllegalStateException: void <init>(java.lang.Throwable)>(v7);
+throw v8;
+label5:
+return;
+catch java.io.IOException from label2 to label3 with label4;
+}
+public void close() throws java.io.IOException
+{
+java.lang.Throwable v5;
+int v2, v3, v4;
+com.fasterxml.jackson.core.base.ParserBase v0;
+boolean v1;
+v0 := @this: com.fasterxml.jackson.core.base.ParserBase;
+v1 = v0.<com.fasterxml.jackson.core.base.ParserBase: boolean _closed>;
+if v1 != 0 goto label4;
+v2 = v0.<com.fasterxml.jackson.core.base.ParserBase: int _inputPtr>;
+v3 = v0.<com.fasterxml.jackson.core.base.ParserBase: int _inputEnd>;
+v4 = staticinvoke <java.lang.Math: int max(int,int)>(v2, v3);
+v0.<com.fasterxml.jackson.core.base.ParserBase: int _inputPtr> = v4;
+v0.<com.fasterxml.jackson.core.base.ParserBase: boolean _closed> = 1;
+label1:
+virtualinvoke v0.<com.fasterxml.jackson.core.base.ParserBase: void _closeInput()>();
+label2:
+virtualinvoke v0.<com.fasterxml.jackson.core.base.ParserBase: void _releaseBuffers()>();
+goto label4;
+label3:
+v5 := @caughtexception;
+virtualinvoke v0.<com.fasterxml.jackson.core.base.ParserBase: void _releaseBuffers()>();
+throw v5;
+label4:
+return;
+catch java.lang.Throwable from label1 to label2 with label3;
+}
+public boolean isClosed()
+{
+com.fasterxml.jackson.core.base.ParserBase v0;
+boolean v1;
+v0 := @this: com.fasterxml.jackson.core.base.ParserBase;
+v1 = v0.<com.fasterxml.jackson.core.base.ParserBase: boolean _closed>;
+return v1;
+}
+public com.fasterxml.jackson.core.json.JsonReadContext getParsingContext()
+{
+com.fasterxml.jackson.core.base.ParserBase v0;
+com.fasterxml.jackson.core.json.JsonReadContext v1;
+v0 := @this: com.fasterxml.jackson.core.base.ParserBase;
+v1 = v0.<com.fasterxml.jackson.core.base.ParserBase: com.fasterxml.jackson.core.json.JsonReadContext _parsingContext>;
+return v1;
+}
+public com.fasterxml.jackson.core.JsonLocation getTokenLocation()
+{
+com.fasterxml.jackson.core.JsonLocation v1;
+int v4, v5;
+long v3;
+com.fasterxml.jackson.core.base.ParserBase v0;
+com.fasterxml.jackson.core.io.ContentReference v2;
+v0 := @this: com.fasterxml.jackson.core.base.ParserBase;
+v1 = new com.fasterxml.jackson.core.JsonLocation;
+v2 = virtualinvoke v0.<com.fasterxml.jackson.core.base.ParserBase: com.fasterxml.jackson.core.io.ContentReference _contentReference()>();
+v3 = virtualinvoke v0.<com.fasterxml.jackson.core.base.ParserBase: long getTokenCharacterOffset()>();
+v4 = virtualinvoke v0.<com.fasterxml.jackson.core.base.ParserBase: int getTokenLineNr()>();
+v5 = virtualinvoke v0.<com.fasterxml.jackson.core.base.ParserBase: int getTokenColumnNr()>();
+specialinvoke v1.<com.fasterxml.jackson.core.JsonLocation: void <init>(com.fasterxml.jackson.core.io.ContentReference,long,long,int,int)>(v2, -1L, v3, v4, v5);
+return v1;
+}
+public com.fasterxml.jackson.core.JsonLocation getCurrentLocation()
+{
+com.fasterxml.jackson.core.JsonLocation v5;
+long v7, v9;
+int v1, v10, v2, v3, v4, v8;
+com.fasterxml.jackson.core.base.ParserBase v0;
+com.fasterxml.jackson.core.io.ContentReference v6;
+v0 := @this: com.fasterxml.jackson.core.base.ParserBase;
+v1 = v0.<com.fasterxml.jackson.core.base.ParserBase: int _inputPtr>;
+v2 = v0.<com.fasterxml.jackson.core.base.ParserBase: int _currInputRowStart>;
+v3 = v1 - v2;
+v4 = v3 + 1;
+v5 = new com.fasterxml.jackson.core.JsonLocation;
+v6 = virtualinvoke v0.<com.fasterxml.jackson.core.base.ParserBase: com.fasterxml.jackson.core.io.ContentReference _contentReference()>();
+v7 = v0.<com.fasterxml.jackson.core.base.ParserBase: long _currInputProcessed>;
+v8 = v0.<com.fasterxml.jackson.core.base.ParserBase: int _inputPtr>;
+v9 = v7 + v8;
+v10 = v0.<com.fasterxml.jackson.core.base.ParserBase: int _currInputRow>;
+specialinvoke v5.<com.fasterxml.jackson.core.JsonLocation: void <init>(com.fasterxml.jackson.core.io.ContentReference,long,long,int,int)>(v6, -1L, v9, v10, v4);
+return v5;
+}
+public boolean hasTextCharacters()
+{
+com.fasterxml.jackson.core.JsonToken v1, v2, v3, v4;
+com.fasterxml.jackson.core.base.ParserBase v0;
+boolean v5;
+v0 := @this: com.fasterxml.jackson.core.base.ParserBase;
+v1 = v0.<com.fasterxml.jackson.core.base.ParserBase: com.fasterxml.jackson.core.JsonToken _currToken>;
+v2 = <com.fasterxml.jackson.core.JsonToken: com.fasterxml.jackson.core.JsonToken VALUE_STRING>;
+if v1 != v2 goto label1;
+return 1;
+label1:
+v3 = v0.<com.fasterxml.jackson.core.base.ParserBase: com.fasterxml.jackson.core.JsonToken _currToken>;
+v4 = <com.fasterxml.jackson.core.JsonToken: com.fasterxml.jackson.core.JsonToken FIELD_NAME>;
+if v3 != v4 goto label2;
+v5 = v0.<com.fasterxml.jackson.core.base.ParserBase: boolean _nameCopied>;
+return v5;
+label2:
+return 0;
+}
+public byte[] getBinaryValue(com.fasterxml.jackson.core.Base64Variant) throws java.io.IOException
+{
+byte[] v10, v2, v9;
+com.fasterxml.jackson.core.Base64Variant v1;
+com.fasterxml.jackson.core.util.ByteArrayBuilder v7;
+com.fasterxml.jackson.core.JsonToken v3, v4, v5;
+com.fasterxml.jackson.core.base.ParserBase v0;
+java.lang.String v6, v8;
+v0 := @this: com.fasterxml.jackson.core.base.ParserBase;
+v1 := @parameter0: com.fasterxml.jackson.core.Base64Variant;
+v2 = v0.<com.fasterxml.jackson.core.base.ParserBase: byte[] _binaryValue>;
+if v2 != null goto label2;
+v3 = v0.<com.fasterxml.jackson.core.base.ParserBase: com.fasterxml.jackson.core.JsonToken _currToken>;
+v4 = <com.fasterxml.jackson.core.JsonToken: com.fasterxml.jackson.core.JsonToken VALUE_STRING>;
+if v3 == v4 goto label1;
+v5 = v0.<com.fasterxml.jackson.core.base.ParserBase: com.fasterxml.jackson.core.JsonToken _currToken>;
+v6 = dynamicinvoke "makeConcatWithConstants" <java.lang.String (com.fasterxml.jackson.core.JsonToken)>(v5) <java.lang.invoke.StringConcatFactory: java.lang.invoke.CallSite makeConcatWithConstants(java.lang.invoke.MethodHandles$Lookup,java.lang.String,java.lang.invoke.MethodType,java.lang.String,java.lang.Object[])>("Current token (\u0001) not VALUE_STRING, can not access as binary");
+virtualinvoke v0.<com.fasterxml.jackson.core.base.ParserBase: void _reportError(java.lang.String)>(v6);
+label1:
+v7 = virtualinvoke v0.<com.fasterxml.jackson.core.base.ParserBase: com.fasterxml.jackson.core.util.ByteArrayBuilder _getByteArrayBuilder()>();
+v8 = virtualinvoke v0.<com.fasterxml.jackson.core.base.ParserBase: java.lang.String getText()>();
+virtualinvoke v0.<com.fasterxml.jackson.core.base.ParserBase: void _decodeBase64(java.lang.String,com.fasterxml.jackson.core.util.ByteArrayBuilder,com.fasterxml.jackson.core.Base64Variant)>(v8, v7, v1);
+v9 = virtualinvoke v7.<com.fasterxml.jackson.core.util.ByteArrayBuilder: byte[] toByteArray()>();
+v0.<com.fasterxml.jackson.core.base.ParserBase: byte[] _binaryValue> = v9;
+label2:
+v10 = v0.<com.fasterxml.jackson.core.base.ParserBase: byte[] _binaryValue>;
+return v10;
+}
+public long getTokenCharacterOffset()
+{
+long v1;
+com.fasterxml.jackson.core.base.ParserBase v0;
+v0 := @this: com.fasterxml.jackson.core.base.ParserBase;
+v1 = v0.<com.fasterxml.jackson.core.base.ParserBase: long _tokenInputTotal>;
+return v1;
+}
+public int getTokenLineNr()
+{
+int v1;
+com.fasterxml.jackson.core.base.ParserBase v0;
+v0 := @this: com.fasterxml.jackson.core.base.ParserBase;
+v1 = v0.<com.fasterxml.jackson.core.base.ParserBase: int _tokenInputRow>;
+return v1;
+}
+public int getTokenColumnNr()
+{
+int v1, v2;
+com.fasterxml.jackson.core.base.ParserBase v0;
+v0 := @this: com.fasterxml.jackson.core.base.ParserBase;
+v1 = v0.<com.fasterxml.jackson.core.base.ParserBase: int _tokenInputCol>;
+if v1 >= 0 goto label1;
+v2 = v1;
+goto label2;
+label1:
+v2 = v1 + 1;
+label2:
+return v2;
+}
+protected abstract void _closeInput() throws java.io.IOException;
+protected void _releaseBuffers() throws java.io.IOException
+{
+com.fasterxml.jackson.core.io.IOContext v3;
+char[] v2;
+com.fasterxml.jackson.core.base.ParserBase v0;
+com.fasterxml.jackson.core.util.TextBuffer v1;
+v0 := @this: com.fasterxml.jackson.core.base.ParserBase;
+v1 = v0.<com.fasterxml.jackson.core.base.ParserBase: com.fasterxml.jackson.core.util.TextBuffer _textBuffer>;
+virtualinvoke v1.<com.fasterxml.jackson.core.util.TextBuffer: void releaseBuffers()>();
+v2 = v0.<com.fasterxml.jackson.core.base.ParserBase: char[] _nameCopyBuffer>;
+if v2 == null goto label1;
+v0.<com.fasterxml.jackson.core.base.ParserBase: char[] _nameCopyBuffer> = null;
+v3 = v0.<com.fasterxml.jackson.core.base.ParserBase: com.fasterxml.jackson.core.io.IOContext _ioContext>;
+virtualinvoke v3.<com.fasterxml.jackson.core.io.IOContext: void releaseNameCopyBuffer(char[])>(v2);
+label1:
+return;
+}
+protected void _handleEOF() throws com.fasterxml.jackson.core.JsonParseException
+{
+com.fasterxml.jackson.core.JsonLocation v9;
+java.lang.Object[] v6;
+com.fasterxml.jackson.core.json.JsonReadContext v1, v3, v7;
+com.fasterxml.jackson.core.base.ParserBase v0;
+java.lang.String v10, v5;
+boolean v2, v4;
+com.fasterxml.jackson.core.io.ContentReference v8;
+v0 := @this: com.fasterxml.jackson.core.base.ParserBase;
+v1 = v0.<com.fasterxml.jackson.core.base.ParserBase: com.fasterxml.jackson.core.json.JsonReadContext _parsingContext>;
+v2 = virtualinvoke v1.<com.fasterxml.jackson.core.json.JsonReadContext: boolean inRoot()>();
+if v2 != 0 goto label3;
+v3 = v0.<com.fasterxml.jackson.core.base.ParserBase: com.fasterxml.jackson.core.json.JsonReadContext _parsingContext>;
+v4 = virtualinvoke v3.<com.fasterxml.jackson.core.json.JsonReadContext: boolean inArray()>();
+if v4 == 0 goto label1;
+v5 = "Array";
+goto label2;
+label1:
+v5 = "Object";
+label2:
+v6 = newarray (java.lang.Object)[2];
+v6[0] = v5;
+v7 = v0.<com.fasterxml.jackson.core.base.ParserBase: com.fasterxml.jackson.core.json.JsonReadContext _parsingContext>;
+v8 = virtualinvoke v0.<com.fasterxml.jackson.core.base.ParserBase: com.fasterxml.jackson.core.io.ContentReference _contentReference()>();
+v9 = virtualinvoke v7.<com.fasterxml.jackson.core.json.JsonReadContext: com.fasterxml.jackson.core.JsonLocation startLocation(com.fasterxml.jackson.core.io.ContentReference)>(v8);
+v6[1] = v9;
+v10 = staticinvoke <java.lang.String: java.lang.String format(java.lang.String,java.lang.Object[])>(": expected close marker for %s (start marker at %s)", v6);
+virtualinvoke v0.<com.fasterxml.jackson.core.base.ParserBase: void _reportInvalidEOF(java.lang.String,com.fasterxml.jackson.core.JsonToken)>(v10, null);
+label3:
+return;
+}
+protected final int _eofAsNextChar() throws com.fasterxml.jackson.core.JsonParseException
+{
+int v1;
+com.fasterxml.jackson.core.base.ParserBase v0;
+v0 := @this: com.fasterxml.jackson.core.base.ParserBase;
+virtualinvoke v0.<com.fasterxml.jackson.core.base.ParserBase: void _handleEOF()>();
+v1 = (int) -1;
+return v1;
+}
+public com.fasterxml.jackson.core.util.ByteArrayBuilder _getByteArrayBuilder()
+{
+com.fasterxml.jackson.core.util.ByteArrayBuilder v1, v2, v3, v4;
+com.fasterxml.jackson.core.base.ParserBase v0;
+v0 := @this: com.fasterxml.jackson.core.base.ParserBase;
+v1 = v0.<com.fasterxml.jackson.core.base.ParserBase: com.fasterxml.jackson.core.util.ByteArrayBuilder _byteArrayBuilder>;
+if v1 != null goto label1;
+v2 = new com.fasterxml.jackson.core.util.ByteArrayBuilder;
+specialinvoke v2.<com.fasterxml.jackson.core.util.ByteArrayBuilder: void <init>()>();
+v0.<com.fasterxml.jackson.core.base.ParserBase: com.fasterxml.jackson.core.util.ByteArrayBuilder _byteArrayBuilder> = v2;
+goto label2;
+label1:
+v3 = v0.<com.fasterxml.jackson.core.base.ParserBase: com.fasterxml.jackson.core.util.ByteArrayBuilder _byteArrayBuilder>;
+virtualinvoke v3.<com.fasterxml.jackson.core.util.ByteArrayBuilder: void reset()>();
+label2:
+v4 = v0.<com.fasterxml.jackson.core.base.ParserBase: com.fasterxml.jackson.core.util.ByteArrayBuilder _byteArrayBuilder>;
+return v4;
+}
+protected final com.fasterxml.jackson.core.JsonToken reset(boolean, int, int, int) throws java.io.IOException
+{
+int v2, v3, v4;
+com.fasterxml.jackson.core.JsonToken v5, v6;
+com.fasterxml.jackson.core.base.ParserBase v0;
+boolean v1;
+v0 := @this: com.fasterxml.jackson.core.base.ParserBase;
+v1 := @parameter0: boolean;
+v2 := @parameter1: int;
+v3 := @parameter2: int;
+v4 := @parameter3: int;
+if v3 >= 1 goto label1;
+if v4 >= 1 goto label1;
+v5 = virtualinvoke v0.<com.fasterxml.jackson.core.base.ParserBase: com.fasterxml.jackson.core.JsonToken resetInt(boolean,int)>(v1, v2);
+return v5;
+label1:
+v6 = virtualinvoke v0.<com.fasterxml.jackson.core.base.ParserBase: com.fasterxml.jackson.core.JsonToken resetFloat(boolean,int,int,int)>(v1, v2, v3, v4);
+return v6;
+}
+protected final com.fasterxml.jackson.core.JsonToken resetInt(boolean, int) throws java.io.IOException
+{
+int v2;
+com.fasterxml.jackson.core.JsonToken v4;
+com.fasterxml.jackson.core.StreamReadConstraints v3;
+com.fasterxml.jackson.core.base.ParserBase v0;
+boolean v1;
+v0 := @this: com.fasterxml.jackson.core.base.ParserBase;
+v1 := @parameter0: boolean;
+v2 := @parameter1: int;
+v3 = v0.<com.fasterxml.jackson.core.base.ParserBase: com.fasterxml.jackson.core.StreamReadConstraints _streamReadConstraints>;
+virtualinvoke v3.<com.fasterxml.jackson.core.StreamReadConstraints: void validateIntegerLength(int)>(v2);
+v0.<com.fasterxml.jackson.core.base.ParserBase: boolean _numberNegative> = v1;
+v0.<com.fasterxml.jackson.core.base.ParserBase: int _intLength> = v2;
+v0.<com.fasterxml.jackson.core.base.ParserBase: int _fractLength> = 0;
+v0.<com.fasterxml.jackson.core.base.ParserBase: int _expLength> = 0;
+v0.<com.fasterxml.jackson.core.base.ParserBase: int _numTypesValid> = 0;
+v4 = <com.fasterxml.jackson.core.JsonToken: com.fasterxml.jackson.core.JsonToken VALUE_NUMBER_INT>;
+return v4;
+}
+protected final com.fasterxml.jackson.core.JsonToken resetFloat(boolean, int, int, int) throws java.io.IOException
+{
+com.fasterxml.jackson.core.StreamReadConstraints v5;
+int v2, v3, v4, v6, v7;
+com.fasterxml.jackson.core.JsonToken v8;
+com.fasterxml.jackson.core.base.ParserBase v0;
+boolean v1;
+v0 := @this: com.fasterxml.jackson.core.base.ParserBase;
+v1 := @parameter0: boolean;
+v2 := @parameter1: int;
+v3 := @parameter2: int;
+v4 := @parameter3: int;
+v5 = v0.<com.fasterxml.jackson.core.base.ParserBase: com.fasterxml.jackson.core.StreamReadConstraints _streamReadConstraints>;
+v6 = v2 + v3;
+v7 = v6 + v4;
+virtualinvoke v5.<com.fasterxml.jackson.core.StreamReadConstraints: void validateFPLength(int)>(v7);
+v0.<com.fasterxml.jackson.core.base.ParserBase: boolean _numberNegative> = v1;
+v0.<com.fasterxml.jackson.core.base.ParserBase: int _intLength> = v2;
+v0.<com.fasterxml.jackson.core.base.ParserBase: int _fractLength> = v3;
+v0.<com.fasterxml.jackson.core.base.ParserBase: int _expLength> = v4;
+v0.<com.fasterxml.jackson.core.base.ParserBase: int _numTypesValid> = 0;
+v8 = <com.fasterxml.jackson.core.JsonToken: com.fasterxml.jackson.core.JsonToken VALUE_NUMBER_FLOAT>;
+return v8;
+}
+protected final com.fasterxml.jackson.core.JsonToken resetAsNaN(java.lang.String, double) throws java.io.IOException
+{
+com.fasterxml.jackson.core.JsonToken v4;
+com.fasterxml.jackson.core.base.ParserBase v0;
+java.lang.String v1;
+com.fasterxml.jackson.core.util.TextBuffer v3;
+double v2;
+v0 := @this: com.fasterxml.jackson.core.base.ParserBase;
+v1 := @parameter0: java.lang.String;
+v2 := @parameter1: double;
+v3 = v0.<com.fasterxml.jackson.core.base.ParserBase: com.fasterxml.jackson.core.util.TextBuffer _textBuffer>;
+virtualinvoke v3.<com.fasterxml.jackson.core.util.TextBuffer: void resetWithString(java.lang.String)>(v1);
+v0.<com.fasterxml.jackson.core.base.ParserBase: double _numberDouble> = v2;
+v0.<com.fasterxml.jackson.core.base.ParserBase: int _numTypesValid> = 8;
+v4 = <com.fasterxml.jackson.core.JsonToken: com.fasterxml.jackson.core.JsonToken VALUE_NUMBER_FLOAT>;
+return v4;
+}
+public boolean isNaN() throws java.io.IOException
+{
+int v3, v4;
+com.fasterxml.jackson.core.JsonToken v1, v2;
+com.fasterxml.jackson.core.base.ParserBase v0;
+boolean v6, v7;
+double v5;
+v0 := @this: com.fasterxml.jackson.core.base.ParserBase;
+v1 = v0.<com.fasterxml.jackson.core.base.ParserBase: com.fasterxml.jackson.core.JsonToken _currToken>;
+v2 = <com.fasterxml.jackson.core.JsonToken: com.fasterxml.jackson.core.JsonToken VALUE_NUMBER_FLOAT>;
+if v1 != v2 goto label3;
+v3 = v0.<com.fasterxml.jackson.core.base.ParserBase: int _numTypesValid>;
+v4 = v3 & 8;
+if v4 == 0 goto label3;
+v5 = virtualinvoke v0.<com.fasterxml.jackson.core.base.ParserBase: double _getNumberDouble()>();
+v6 = staticinvoke <java.lang.Double: boolean isFinite(double)>(v5);
+if v6 != 0 goto label1;
+v7 = 1;
+goto label2;
+label1:
+v7 = 0;
+label2:
+return v7;
+label3:
+return 0;
+}
+public java.lang.Number getNumberValue() throws java.io.IOException
+{
+java.lang.Float v21;
+java.lang.Double v25;
+long v10;
+java.lang.Integer v7;
+java.math.BigDecimal v17;
+java.lang.Long v11;
+int v1, v12, v13, v15, v16, v18, v19, v22, v23, v4, v5, v6, v8, v9;
+java.math.BigInteger v14;
+com.fasterxml.jackson.core.JsonToken v2, v3;
+double v24;
+float v20;
+com.fasterxml.jackson.core.base.ParserBase v0;
+v0 := @this: com.fasterxml.jackson.core.base.ParserBase;
+v1 = v0.<com.fasterxml.jackson.core.base.ParserBase: int _numTypesValid>;
+if v1 != 0 goto label1;
+virtualinvoke v0.<com.fasterxml.jackson.core.base.ParserBase: void _parseNumericValue(int)>(0);
+label1:
+v2 = v0.<com.fasterxml.jackson.core.base.ParserBase: com.fasterxml.jackson.core.JsonToken _currToken>;
+v3 = <com.fasterxml.jackson.core.JsonToken: com.fasterxml.jackson.core.JsonToken VALUE_NUMBER_INT>;
+if v2 != v3 goto label5;
+v4 = v0.<com.fasterxml.jackson.core.base.ParserBase: int _numTypesValid>;
+v5 = v4 & 1;
+if v5 == 0 goto label2;
+v6 = v0.<com.fasterxml.jackson.core.base.ParserBase: int _numberInt>;
+v7 = staticinvoke <java.lang.Integer: java.lang.Integer valueOf(int)>(v6);
+return v7;
+label2:
+v8 = v0.<com.fasterxml.jackson.core.base.ParserBase: int _numTypesValid>;
+v9 = v8 & 2;
+if v9 == 0 goto label3;
+v10 = v0.<com.fasterxml.jackson.core.base.ParserBase: long _numberLong>;
+v11 = staticinvoke <java.lang.Long: java.lang.Long valueOf(long)>(v10);
+return v11;
+label3:
+v12 = v0.<com.fasterxml.jackson.core.base.ParserBase: int _numTypesValid>;
+v13 = v12 & 4;
+if v13 == 0 goto label4;
+v14 = virtualinvoke v0.<com.fasterxml.jackson.core.base.ParserBase: java.math.BigInteger _getBigInteger()>();
+return v14;
+label4:
+virtualinvoke v0.<com.fasterxml.jackson.core.base.ParserBase: void _throwInternal()>();
+label5:
+v15 = v0.<com.fasterxml.jackson.core.base.ParserBase: int _numTypesValid>;
+v16 = v15 & 16;
+if v16 == 0 goto label6;
+v17 = virtualinvoke v0.<com.fasterxml.jackson.core.base.ParserBase: java.math.BigDecimal _getBigDecimal()>();
+return v17;
+label6:
+v18 = v0.<com.fasterxml.jackson.core.base.ParserBase: int _numTypesValid>;
+v19 = v18 & 32;
+if v19 == 0 goto label7;
+v20 = virtualinvoke v0.<com.fasterxml.jackson.core.base.ParserBase: float _getNumberFloat()>();
+v21 = staticinvoke <java.lang.Float: java.lang.Float valueOf(float)>(v20);
+return v21;
+label7:
+v22 = v0.<com.fasterxml.jackson.core.base.ParserBase: int _numTypesValid>;
+v23 = v22 & 8;
+if v23 != 0 goto label8;
+virtualinvoke v0.<com.fasterxml.jackson.core.base.ParserBase: void _throwInternal()>();
+label8:
+v24 = virtualinvoke v0.<com.fasterxml.jackson.core.base.ParserBase: double _getNumberDouble()>();
+v25 = staticinvoke <java.lang.Double: java.lang.Double valueOf(double)>(v24);
+return v25;
+}
+public java.lang.Number getNumberValueExact() throws java.io.IOException
+{
+java.lang.Float v22;
+java.lang.Double v26;
+long v10;
+java.lang.Integer v7;
+java.math.BigDecimal v18;
+java.lang.Long v11;
+int v12, v13, v15, v16, v17, v19, v20, v23, v24, v3, v4, v5, v6, v8, v9;
+java.math.BigInteger v14;
+com.fasterxml.jackson.core.JsonToken v1, v2;
+double v25;
+float v21;
+com.fasterxml.jackson.core.base.ParserBase v0;
+v0 := @this: com.fasterxml.jackson.core.base.ParserBase;
+v1 = v0.<com.fasterxml.jackson.core.base.ParserBase: com.fasterxml.jackson.core.JsonToken _currToken>;
+v2 = <com.fasterxml.jackson.core.JsonToken: com.fasterxml.jackson.core.JsonToken VALUE_NUMBER_INT>;
+if v1 != v2 goto label5;
+v3 = v0.<com.fasterxml.jackson.core.base.ParserBase: int _numTypesValid>;
+if v3 != 0 goto label1;
+virtualinvoke v0.<com.fasterxml.jackson.core.base.ParserBase: void _parseNumericValue(int)>(0);
+label1:
+v4 = v0.<com.fasterxml.jackson.core.base.ParserBase: int _numTypesValid>;
+v5 = v4 & 1;
+if v5 == 0 goto label2;
+v6 = v0.<com.fasterxml.jackson.core.base.ParserBase: int _numberInt>;
+v7 = staticinvoke <java.lang.Integer: java.lang.Integer valueOf(int)>(v6);
+return v7;
+label2:
+v8 = v0.<com.fasterxml.jackson.core.base.ParserBase: int _numTypesValid>;
+v9 = v8 & 2;
+if v9 == 0 goto label3;
+v10 = v0.<com.fasterxml.jackson.core.base.ParserBase: long _numberLong>;
+v11 = staticinvoke <java.lang.Long: java.lang.Long valueOf(long)>(v10);
+return v11;
+label3:
+v12 = v0.<com.fasterxml.jackson.core.base.ParserBase: int _numTypesValid>;
+v13 = v12 & 4;
+if v13 == 0 goto label4;
+v14 = virtualinvoke v0.<com.fasterxml.jackson.core.base.ParserBase: java.math.BigInteger _getBigInteger()>();
+return v14;
+label4:
+virtualinvoke v0.<com.fasterxml.jackson.core.base.ParserBase: void _throwInternal()>();
+label5:
+v15 = v0.<com.fasterxml.jackson.core.base.ParserBase: int _numTypesValid>;
+if v15 != 0 goto label6;
+virtualinvoke v0.<com.fasterxml.jackson.core.base.ParserBase: void _parseNumericValue(int)>(16);
+label6:
+v16 = v0.<com.fasterxml.jackson.core.base.ParserBase: int _numTypesValid>;
+v17 = v16 & 16;
+if v17 == 0 goto label7;
+v18 = virtualinvoke v0.<com.fasterxml.jackson.core.base.ParserBase: java.math.BigDecimal _getBigDecimal()>();
+return v18;
+label7:
+v19 = v0.<com.fasterxml.jackson.core.base.ParserBase: int _numTypesValid>;
+v20 = v19 & 32;
+if v20 == 0 goto label8;
+v21 = virtualinvoke v0.<com.fasterxml.jackson.core.base.ParserBase: float _getNumberFloat()>();
+v22 = staticinvoke <java.lang.Float: java.lang.Float valueOf(float)>(v21);
+return v22;
+label8:
+v23 = v0.<com.fasterxml.jackson.core.base.ParserBase: int _numTypesValid>;
+v24 = v23 & 8;
+if v24 != 0 goto label9;
+virtualinvoke v0.<com.fasterxml.jackson.core.base.ParserBase: void _throwInternal()>();
+label9:
+v25 = virtualinvoke v0.<com.fasterxml.jackson.core.base.ParserBase: double _getNumberDouble()>();
+v26 = staticinvoke <java.lang.Double: java.lang.Double valueOf(double)>(v25);
+return v26;
+}
+public java.lang.Object getNumberValueDeferred() throws java.io.IOException
+{
+java.lang.Float v31;
+java.lang.Integer v7;
+java.math.BigDecimal v23;
+java.lang.Long v11;
+java.math.BigInteger v14, v15, v18;
+float v30;
+com.fasterxml.jackson.core.base.ParserBase v0;
+java.lang.Double v27;
+long v10;
+int v12, v13, v21, v22, v24, v25, v28, v29, v3, v4, v5, v6, v8, v9;
+com.fasterxml.jackson.core.JsonToken v1, v19, v2, v20;
+java.lang.String v16, v17, v33;
+java.lang.Number v34;
+double v26;
+com.fasterxml.jackson.core.util.TextBuffer v32;
+v0 := @this: com.fasterxml.jackson.core.base.ParserBase;
+v1 = v0.<com.fasterxml.jackson.core.base.ParserBase: com.fasterxml.jackson.core.JsonToken _currToken>;
+v2 = <com.fasterxml.jackson.core.JsonToken: com.fasterxml.jackson.core.JsonToken VALUE_NUMBER_INT>;
+if v1 != v2 goto label07;
+v3 = v0.<com.fasterxml.jackson.core.base.ParserBase: int _numTypesValid>;
+if v3 != 0 goto label01;
+virtualinvoke v0.<com.fasterxml.jackson.core.base.ParserBase: void _parseNumericValue(int)>(0);
+label01:
+v4 = v0.<com.fasterxml.jackson.core.base.ParserBase: int _numTypesValid>;
+v5 = v4 & 1;
+if v5 == 0 goto label02;
+v6 = v0.<com.fasterxml.jackson.core.base.ParserBase: int _numberInt>;
+v7 = staticinvoke <java.lang.Integer: java.lang.Integer valueOf(int)>(v6);
+return v7;
+label02:
+v8 = v0.<com.fasterxml.jackson.core.base.ParserBase: int _numTypesValid>;
+v9 = v8 & 2;
+if v9 == 0 goto label03;
+v10 = v0.<com.fasterxml.jackson.core.base.ParserBase: long _numberLong>;
+v11 = staticinvoke <java.lang.Long: java.lang.Long valueOf(long)>(v10);
+return v11;
+label03:
+v12 = v0.<com.fasterxml.jackson.core.base.ParserBase: int _numTypesValid>;
+v13 = v12 & 4;
+if v13 == 0 goto label06;
+v14 = v0.<com.fasterxml.jackson.core.base.ParserBase: java.math.BigInteger _numberBigInt>;
+if v14 == null goto label04;
+v15 = v0.<com.fasterxml.jackson.core.base.ParserBase: java.math.BigInteger _numberBigInt>;
+return v15;
+label04:
+v16 = v0.<com.fasterxml.jackson.core.base.ParserBase: java.lang.String _numberString>;
+if v16 == null goto label05;
+v17 = v0.<com.fasterxml.jackson.core.base.ParserBase: java.lang.String _numberString>;
+return v17;
+label05:
+v18 = virtualinvoke v0.<com.fasterxml.jackson.core.base.ParserBase: java.math.BigInteger _getBigInteger()>();
+return v18;
+label06:
+virtualinvoke v0.<com.fasterxml.jackson.core.base.ParserBase: void _throwInternal()>();
+label07:
+v19 = v0.<com.fasterxml.jackson.core.base.ParserBase: com.fasterxml.jackson.core.JsonToken _currToken>;
+v20 = <com.fasterxml.jackson.core.JsonToken: com.fasterxml.jackson.core.JsonToken VALUE_NUMBER_FLOAT>;
+if v19 != v20 goto label11;
+v21 = v0.<com.fasterxml.jackson.core.base.ParserBase: int _numTypesValid>;
+v22 = v21 & 16;
+if v22 == 0 goto label08;
+v23 = virtualinvoke v0.<com.fasterxml.jackson.core.base.ParserBase: java.math.BigDecimal _getBigDecimal()>();
+return v23;
+label08:
+v24 = v0.<com.fasterxml.jackson.core.base.ParserBase: int _numTypesValid>;
+v25 = v24 & 8;
+if v25 == 0 goto label09;
+v26 = virtualinvoke v0.<com.fasterxml.jackson.core.base.ParserBase: double _getNumberDouble()>();
+v27 = staticinvoke <java.lang.Double: java.lang.Double valueOf(double)>(v26);
+return v27;
+label09:
+v28 = v0.<com.fasterxml.jackson.core.base.ParserBase: int _numTypesValid>;
+v29 = v28 & 32;
+if v29 == 0 goto label10;
+v30 = virtualinvoke v0.<com.fasterxml.jackson.core.base.ParserBase: float _getNumberFloat()>();
+v31 = staticinvoke <java.lang.Float: java.lang.Float valueOf(float)>(v30);
+return v31;
+label10:
+v32 = v0.<com.fasterxml.jackson.core.base.ParserBase: com.fasterxml.jackson.core.util.TextBuffer _textBuffer>;
+v33 = virtualinvoke v32.<com.fasterxml.jackson.core.util.TextBuffer: java.lang.String contentsAsString()>();
+return v33;
+label11:
+v34 = virtualinvoke v0.<com.fasterxml.jackson.core.base.ParserBase: java.lang.Number getNumberValue()>();
+return v34;
+}
+public com.fasterxml.jackson.core.JsonParser$NumberType getNumberType() throws java.io.IOException
+{
+com.fasterxml.jackson.core.JsonParser$NumberType v10, v13, v16, v17, v6, v9;
+int v1, v11, v12, v14, v15, v4, v5, v7, v8;
+com.fasterxml.jackson.core.JsonToken v2, v3;
+com.fasterxml.jackson.core.base.ParserBase v0;
+v0 := @this: com.fasterxml.jackson.core.base.ParserBase;
+v1 = v0.<com.fasterxml.jackson.core.base.ParserBase: int _numTypesValid>;
+if v1 != 0 goto label1;
+virtualinvoke v0.<com.fasterxml.jackson.core.base.ParserBase: void _parseNumericValue(int)>(0);
+label1:
+v2 = v0.<com.fasterxml.jackson.core.base.ParserBase: com.fasterxml.jackson.core.JsonToken _currToken>;
+v3 = <com.fasterxml.jackson.core.JsonToken: com.fasterxml.jackson.core.JsonToken VALUE_NUMBER_INT>;
+if v2 != v3 goto label4;
+v4 = v0.<com.fasterxml.jackson.core.base.ParserBase: int _numTypesValid>;
+v5 = v4 & 1;
+if v5 == 0 goto label2;
+v6 = <com.fasterxml.jackson.core.JsonParser$NumberType: com.fasterxml.jackson.core.JsonParser$NumberType INT>;
+return v6;
+label2:
+v7 = v0.<com.fasterxml.jackson.core.base.ParserBase: int _numTypesValid>;
+v8 = v7 & 2;
+if v8 == 0 goto label3;
+v9 = <com.fasterxml.jackson.core.JsonParser$NumberType: com.fasterxml.jackson.core.JsonParser$NumberType LONG>;
+return v9;
+label3:
+v10 = <com.fasterxml.jackson.core.JsonParser$NumberType: com.fasterxml.jackson.core.JsonParser$NumberType BIG_INTEGER>;
+return v10;
+label4:
+v11 = v0.<com.fasterxml.jackson.core.base.ParserBase: int _numTypesValid>;
+v12 = v11 & 16;
+if v12 == 0 goto label5;
+v13 = <com.fasterxml.jackson.core.JsonParser$NumberType: com.fasterxml.jackson.core.JsonParser$NumberType BIG_DECIMAL>;
+return v13;
+label5:
+v14 = v0.<com.fasterxml.jackson.core.base.ParserBase: int _numTypesValid>;
+v15 = v14 & 32;
+if v15 == 0 goto label6;
+v16 = <com.fasterxml.jackson.core.JsonParser$NumberType: com.fasterxml.jackson.core.JsonParser$NumberType FLOAT>;
+return v16;
+label6:
+v17 = <com.fasterxml.jackson.core.JsonParser$NumberType: com.fasterxml.jackson.core.JsonParser$NumberType DOUBLE>;
+return v17;
+}
+public int getIntValue() throws java.io.IOException
+{
+int v1, v2, v3, v4, v5, v6, v7;
+com.fasterxml.jackson.core.base.ParserBase v0;
+v0 := @this: com.fasterxml.jackson.core.base.ParserBase;
+v1 = v0.<com.fasterxml.jackson.core.base.ParserBase: int _numTypesValid>;
+v2 = v1 & 1;
+if v2 != 0 goto label2;
+v3 = v0.<com.fasterxml.jackson.core.base.ParserBase: int _numTypesValid>;
+if v3 != 0 goto label1;
+v4 = virtualinvoke v0.<com.fasterxml.jackson.core.base.ParserBase: int _parseIntValue()>();
+return v4;
+label1:
+v5 = v0.<com.fasterxml.jackson.core.base.ParserBase: int _numTypesValid>;
+v6 = v5 & 1;
+if v6 != 0 goto label2;
+virtualinvoke v0.<com.fasterxml.jackson.core.base.ParserBase: void convertNumberToInt()>();
+label2:
+v7 = v0.<com.fasterxml.jackson.core.base.ParserBase: int _numberInt>;
+return v7;
+}
+public long getLongValue() throws java.io.IOException
+{
+int v1, v2, v3, v4, v5;
+long v6;
+com.fasterxml.jackson.core.base.ParserBase v0;
+v0 := @this: com.fasterxml.jackson.core.base.ParserBase;
+v1 = v0.<com.fasterxml.jackson.core.base.ParserBase: int _numTypesValid>;
+v2 = v1 & 2;
+if v2 != 0 goto label2;
+v3 = v0.<com.fasterxml.jackson.core.base.ParserBase: int _numTypesValid>;
+if v3 != 0 goto label1;
+virtualinvoke v0.<com.fasterxml.jackson.core.base.ParserBase: void _parseNumericValue(int)>(2);
+label1:
+v4 = v0.<com.fasterxml.jackson.core.base.ParserBase: int _numTypesValid>;
+v5 = v4 & 2;
+if v5 != 0 goto label2;
+virtualinvoke v0.<com.fasterxml.jackson.core.base.ParserBase: void convertNumberToLong()>();
+label2:
+v6 = v0.<com.fasterxml.jackson.core.base.ParserBase: long _numberLong>;
+return v6;
+}
+public java.math.BigInteger getBigIntegerValue() throws java.io.IOException
+{
+int v1, v2, v3, v4, v5;
+java.math.BigInteger v6;
+com.fasterxml.jackson.core.base.ParserBase v0;
+v0 := @this: com.fasterxml.jackson.core.base.ParserBase;
+v1 = v0.<com.fasterxml.jackson.core.base.ParserBase: int _numTypesValid>;
+v2 = v1 & 4;
+if v2 != 0 goto label2;
+v3 = v0.<com.fasterxml.jackson.core.base.ParserBase: int _numTypesValid>;
+if v3 != 0 goto label1;
+virtualinvoke v0.<com.fasterxml.jackson.core.base.ParserBase: void _parseNumericValue(int)>(4);
+label1:
+v4 = v0.<com.fasterxml.jackson.core.base.ParserBase: int _numTypesValid>;
+v5 = v4 & 4;
+if v5 != 0 goto label2;
+virtualinvoke v0.<com.fasterxml.jackson.core.base.ParserBase: void convertNumberToBigInteger()>();
+label2:
+v6 = virtualinvoke v0.<com.fasterxml.jackson.core.base.ParserBase: java.math.BigInteger _getBigInteger()>();
+return v6;
+}
+public float getFloatValue() throws java.io.IOException
+{
+int v1, v2, v3, v4, v5;
+float v6;
+com.fasterxml.jackson.core.base.ParserBase v0;
+v0 := @this: com.fasterxml.jackson.core.base.ParserBase;
+v1 = v0.<com.fasterxml.jackson.core.base.ParserBase: int _numTypesValid>;
+v2 = v1 & 32;
+if v2 != 0 goto label2;
+v3 = v0.<com.fasterxml.jackson.core.base.ParserBase: int _numTypesValid>;
+if v3 != 0 goto label1;
+virtualinvoke v0.<com.fasterxml.jackson.core.base.ParserBase: void _parseNumericValue(int)>(32);
+label1:
+v4 = v0.<com.fasterxml.jackson.core.base.ParserBase: int _numTypesValid>;
+v5 = v4 & 32;
+if v5 != 0 goto label2;
+virtualinvoke v0.<com.fasterxml.jackson.core.base.ParserBase: void convertNumberToFloat()>();
+label2:
+v6 = virtualinvoke v0.<com.fasterxml.jackson.core.base.ParserBase: float _getNumberFloat()>();
+return v6;
+}
+public double getDoubleValue() throws java.io.IOException
+{
+int v1, v2, v3, v4, v5;
+com.fasterxml.jackson.core.base.ParserBase v0;
+double v6;
+v0 := @this: com.fasterxml.jackson.core.base.ParserBase;
+v1 = v0.<com.fasterxml.jackson.core.base.ParserBase: int _numTypesValid>;
+v2 = v1 & 8;
+if v2 != 0 goto label2;
+v3 = v0.<com.fasterxml.jackson.core.base.ParserBase: int _numTypesValid>;
+if v3 != 0 goto label1;
+virtualinvoke v0.<com.fasterxml.jackson.core.base.ParserBase: void _parseNumericValue(int)>(8);
+label1:
+v4 = v0.<com.fasterxml.jackson.core.base.ParserBase: int _numTypesValid>;
+v5 = v4 & 8;
+if v5 != 0 goto label2;
+virtualinvoke v0.<com.fasterxml.jackson.core.base.ParserBase: void convertNumberToDouble()>();
+label2:
+v6 = virtualinvoke v0.<com.fasterxml.jackson.core.base.ParserBase: double _getNumberDouble()>();
+return v6;
+}
+public java.math.BigDecimal getDecimalValue() throws java.io.IOException
+{
+java.math.BigDecimal v6;
+int v1, v2, v3, v4, v5;
+com.fasterxml.jackson.core.base.ParserBase v0;
+v0 := @this: com.fasterxml.jackson.core.base.ParserBase;
+v1 = v0.<com.fasterxml.jackson.core.base.ParserBase: int _numTypesValid>;
+v2 = v1 & 16;
+if v2 != 0 goto label2;
+v3 = v0.<com.fasterxml.jackson.core.base.ParserBase: int _numTypesValid>;
+if v3 != 0 goto label1;
+virtualinvoke v0.<com.fasterxml.jackson.core.base.ParserBase: void _parseNumericValue(int)>(16);
+label1:
+v4 = v0.<com.fasterxml.jackson.core.base.ParserBase: int _numTypesValid>;
+v5 = v4 & 16;
+if v5 != 0 goto label2;
+virtualinvoke v0.<com.fasterxml.jackson.core.base.ParserBase: void convertNumberToBigDecimal()>();
+label2:
+v6 = virtualinvoke v0.<com.fasterxml.jackson.core.base.ParserBase: java.math.BigDecimal _getBigDecimal()>();
+return v6;
+}
+public com.fasterxml.jackson.core.StreamReadConstraints streamReadConstraints()
+{
+com.fasterxml.jackson.core.StreamReadConstraints v1;
+com.fasterxml.jackson.core.base.ParserBase v0;
+v0 := @this: com.fasterxml.jackson.core.base.ParserBase;
+v1 = v0.<com.fasterxml.jackson.core.base.ParserBase: com.fasterxml.jackson.core.StreamReadConstraints _streamReadConstraints>;
+return v1;
+}
+protected void _parseNumericValue(int) throws java.io.IOException
+{
+long v11, v23;
+byte v13, v14;
+int v1, v18, v5, v8;
+com.fasterxml.jackson.core.JsonToken v24, v25, v26, v3, v4;
+boolean v10, v12, v19, v2, v20, v21, v22, v7;
+com.fasterxml.jackson.core.util.TextBuffer v15, v17, v6, v9;
+char[] v16;
+com.fasterxml.jackson.core.base.ParserBase v0;
+v0 := @this: com.fasterxml.jackson.core.base.ParserBase;
+v1 := @parameter0: int;
+v2 = v0.<com.fasterxml.jackson.core.base.ParserBase: boolean _closed>;
+if v2 == 0 goto label1;
+virtualinvoke v0.<com.fasterxml.jackson.core.base.ParserBase: void _reportError(java.lang.String)>("Internal error: _parseNumericValue called when parser instance closed");
+label1:
+v3 = v0.<com.fasterxml.jackson.core.base.ParserBase: com.fasterxml.jackson.core.JsonToken _currToken>;
+v4 = <com.fasterxml.jackson.core.JsonToken: com.fasterxml.jackson.core.JsonToken VALUE_NUMBER_INT>;
+if v3 != v4 goto label8;
+v5 = v0.<com.fasterxml.jackson.core.base.ParserBase: int _intLength>;
+if v5 > 9 goto label2;
+v6 = v0.<com.fasterxml.jackson.core.base.ParserBase: com.fasterxml.jackson.core.util.TextBuffer _textBuffer>;
+v7 = v0.<com.fasterxml.jackson.core.base.ParserBase: boolean _numberNegative>;
+v8 = virtualinvoke v6.<com.fasterxml.jackson.core.util.TextBuffer: int contentsAsInt(boolean)>(v7);
+v0.<com.fasterxml.jackson.core.base.ParserBase: int _numberInt> = v8;
+v0.<com.fasterxml.jackson.core.base.ParserBase: int _numTypesValid> = 1;
+return;
+label2:
+if v5 > 18 goto label5;
+v9 = v0.<com.fasterxml.jackson.core.base.ParserBase: com.fasterxml.jackson.core.util.TextBuffer _textBuffer>;
+v10 = v0.<com.fasterxml.jackson.core.base.ParserBase: boolean _numberNegative>;
+v11 = virtualinvoke v9.<com.fasterxml.jackson.core.util.TextBuffer: long contentsAsLong(boolean)>(v10);
+if v5 != 10 goto label4;
+v12 = v0.<com.fasterxml.jackson.core.base.ParserBase: boolean _numberNegative>;
+if v12 == 0 goto label3;
+v13 = v11 cmp -2147483648L;
+if v13 < 0 goto label4;
+v0.<com.fasterxml.jackson.core.base.ParserBase: int _numberInt> = v11;
+v0.<com.fasterxml.jackson.core.base.ParserBase: int _numTypesValid> = 1;
+return;
+label3:
+v14 = v11 cmp 2147483647L;
+if v14 > 0 goto label4;
+v0.<com.fasterxml.jackson.core.base.ParserBase: int _numberInt> = v11;
+v0.<com.fasterxml.jackson.core.base.ParserBase: int _numTypesValid> = 1;
+return;
+label4:
+v0.<com.fasterxml.jackson.core.base.ParserBase: long _numberLong> = v11;
+v0.<com.fasterxml.jackson.core.base.ParserBase: int _numTypesValid> = 2;
+return;
+label5:
+if v5 != 19 goto label7;
+v15 = v0.<com.fasterxml.jackson.core.base.ParserBase: com.fasterxml.jackson.core.util.TextBuffer _textBuffer>;
+v16 = virtualinvoke v15.<com.fasterxml.jackson.core.util.TextBuffer: char[] getTextBuffer()>();
+v17 = v0.<com.fasterxml.jackson.core.base.ParserBase: com.fasterxml.jackson.core.util.TextBuffer _textBuffer>;
+v18 = virtualinvoke v17.<com.fasterxml.jackson.core.util.TextBuffer: int getTextOffset()>();
+v19 = v0.<com.fasterxml.jackson.core.base.ParserBase: boolean _numberNegative>;
+if v19 == 0 goto label6;
+v18 = v18 + 1;
+label6:
+v20 = v0.<com.fasterxml.jackson.core.base.ParserBase: boolean _numberNegative>;
+v21 = staticinvoke <com.fasterxml.jackson.core.io.NumberInput: boolean inLongRange(char[],int,int,boolean)>(v16, v18, v5, v20);
+if v21 == 0 goto label7;
+v22 = v0.<com.fasterxml.jackson.core.base.ParserBase: boolean _numberNegative>;
+v23 = staticinvoke <com.fasterxml.jackson.core.io.NumberInput: long parseLong19(char[],int,boolean)>(v16, v18, v22);
+v0.<com.fasterxml.jackson.core.base.ParserBase: long _numberLong> = v23;
+v0.<com.fasterxml.jackson.core.base.ParserBase: int _numTypesValid> = 2;
+return;
+label7:
+specialinvoke v0.<com.fasterxml.jackson.core.base.ParserBase: void _parseSlowInt(int)>(v1);
+return;
+label8:
+v24 = v0.<com.fasterxml.jackson.core.base.ParserBase: com.fasterxml.jackson.core.JsonToken _currToken>;
+v25 = <com.fasterxml.jackson.core.JsonToken: com.fasterxml.jackson.core.JsonToken VALUE_NUMBER_FLOAT>;
+if v24 != v25 goto label9;
+specialinvoke v0.<com.fasterxml.jackson.core.base.ParserBase: void _parseSlowFloat(int)>(v1);
+return;
+label9:
+v26 = v0.<com.fasterxml.jackson.core.base.ParserBase: com.fasterxml.jackson.core.JsonToken _currToken>;
+virtualinvoke v0.<com.fasterxml.jackson.core.base.ParserBase: void _reportError(java.lang.String,java.lang.Object)>("Current token (%s) not numeric, can not use numeric value accessors", v26);
+return;
+}
+protected int _parseIntValue() throws java.io.IOException
+{
+com.fasterxml.jackson.core.util.TextBuffer v5;
+int v10, v4, v7, v8, v9;
+com.fasterxml.jackson.core.JsonToken v2, v3;
+com.fasterxml.jackson.core.base.ParserBase v0;
+boolean v1, v6;
+v0 := @this: com.fasterxml.jackson.core.base.ParserBase;
+v1 = v0.<com.fasterxml.jackson.core.base.ParserBase: boolean _closed>;
+if v1 == 0 goto label1;
+virtualinvoke v0.<com.fasterxml.jackson.core.base.ParserBase: void _reportError(java.lang.String)>("Internal error: _parseNumericValue called when parser instance closed");
+label1:
+v2 = v0.<com.fasterxml.jackson.core.base.ParserBase: com.fasterxml.jackson.core.JsonToken _currToken>;
+v3 = <com.fasterxml.jackson.core.JsonToken: com.fasterxml.jackson.core.JsonToken VALUE_NUMBER_INT>;
+if v2 != v3 goto label2;
+v4 = v0.<com.fasterxml.jackson.core.base.ParserBase: int _intLength>;
+if v4 > 9 goto label2;
+v5 = v0.<com.fasterxml.jackson.core.base.ParserBase: com.fasterxml.jackson.core.util.TextBuffer _textBuffer>;
+v6 = v0.<com.fasterxml.jackson.core.base.ParserBase: boolean _numberNegative>;
+v7 = virtualinvoke v5.<com.fasterxml.jackson.core.util.TextBuffer: int contentsAsInt(boolean)>(v6);
+v0.<com.fasterxml.jackson.core.base.ParserBase: int _numberInt> = v7;
+v0.<com.fasterxml.jackson.core.base.ParserBase: int _numTypesValid> = 1;
+return v7;
+label2:
+virtualinvoke v0.<com.fasterxml.jackson.core.base.ParserBase: void _parseNumericValue(int)>(1);
+v8 = v0.<com.fasterxml.jackson.core.base.ParserBase: int _numTypesValid>;
+v9 = v8 & 1;
+if v9 != 0 goto label3;
+virtualinvoke v0.<com.fasterxml.jackson.core.base.ParserBase: void convertNumberToInt()>();
+label3:
+v10 = v0.<com.fasterxml.jackson.core.base.ParserBase: int _numberInt>;
+return v10;
+}
+private void _parseSlowFloat(int) throws java.io.IOException
+{
+com.fasterxml.jackson.core.util.TextBuffer v2, v4, v6;
+int v1;
+com.fasterxml.jackson.core.base.ParserBase v0;
+java.lang.String v3, v5, v7;
+v0 := @this: com.fasterxml.jackson.core.base.ParserBase;
+v1 := @parameter0: int;
+if v1 != 16 goto label1;
+v0.<com.fasterxml.jackson.core.base.ParserBase: java.math.BigDecimal _numberBigDecimal> = null;
+v2 = v0.<com.fasterxml.jackson.core.base.ParserBase: com.fasterxml.jackson.core.util.TextBuffer _textBuffer>;
+v3 = virtualinvoke v2.<com.fasterxml.jackson.core.util.TextBuffer: java.lang.String contentsAsString()>();
+v0.<com.fasterxml.jackson.core.base.ParserBase: java.lang.String _numberString> = v3;
+v0.<com.fasterxml.jackson.core.base.ParserBase: int _numTypesValid> = 16;
+goto label3;
+label1:
+if v1 != 32 goto label2;
+v0.<com.fasterxml.jackson.core.base.ParserBase: float _numberFloat> = 0.0F;
+v4 = v0.<com.fasterxml.jackson.core.base.ParserBase: com.fasterxml.jackson.core.util.TextBuffer _textBuffer>;
+v5 = virtualinvoke v4.<com.fasterxml.jackson.core.util.TextBuffer: java.lang.String contentsAsString()>();
+v0.<com.fasterxml.jackson.core.base.ParserBase: java.lang.String _numberString> = v5;
+v0.<com.fasterxml.jackson.core.base.ParserBase: int _numTypesValid> = 32;
+goto label3;
+label2:
+v0.<com.fasterxml.jackson.core.base.ParserBase: double _numberDouble> = 0.0;
+v6 = v0.<com.fasterxml.jackson.core.base.ParserBase: com.fasterxml.jackson.core.util.TextBuffer _textBuffer>;
+v7 = virtualinvoke v6.<com.fasterxml.jackson.core.util.TextBuffer: java.lang.String contentsAsString()>();
+v0.<com.fasterxml.jackson.core.base.ParserBase: java.lang.String _numberString> = v7;
+v0.<com.fasterxml.jackson.core.base.ParserBase: int _numTypesValid> = 8;
+label3:
+return;
+}
+private void _parseSlowInt(int) throws java.io.IOException
+{
+int v1;
+com.fasterxml.jackson.core.base.ParserBase v0;
+java.lang.String v3;
+com.fasterxml.jackson.core.util.TextBuffer v2;
+v0 := @this: com.fasterxml.jackson.core.base.ParserBase;
+v1 := @parameter0: int;
+v2 = v0.<com.fasterxml.jackson.core.base.ParserBase: com.fasterxml.jackson.core.util.TextBuffer _textBuffer>;
+v3 = virtualinvoke v2.<com.fasterxml.jackson.core.util.TextBuffer: java.lang.String contentsAsString()>();
+if v1 == 1 goto label1;
+if v1 != 2 goto label2;
+label1:
+virtualinvoke v0.<com.fasterxml.jackson.core.base.ParserBase: void _reportTooLongIntegral(int,java.lang.String)>(v1, v3);
+label2:
+if v1 == 8 goto label3;
+if v1 != 32 goto label4;
+label3:
+v0.<com.fasterxml.jackson.core.base.ParserBase: java.lang.String _numberString> = v3;
+v0.<com.fasterxml.jackson.core.base.ParserBase: int _numTypesValid> = 8;
+goto label5;
+label4:
+v0.<com.fasterxml.jackson.core.base.ParserBase: java.math.BigInteger _numberBigInt> = null;
+v0.<com.fasterxml.jackson.core.base.ParserBase: java.lang.String _numberString> = v3;
+v0.<com.fasterxml.jackson.core.base.ParserBase: int _numTypesValid> = 4;
+label5:
+return;
+}
+protected void _reportTooLongIntegral(int, java.lang.String) throws java.io.IOException
+{
+int v1;
+com.fasterxml.jackson.core.base.ParserBase v0;
+java.lang.String v2;
+v0 := @this: com.fasterxml.jackson.core.base.ParserBase;
+v1 := @parameter0: int;
+v2 := @parameter1: java.lang.String;
+if v1 != 1 goto label1;
+virtualinvoke v0.<com.fasterxml.jackson.core.base.ParserBase: void reportOverflowInt(java.lang.String)>(v2);
+goto label2;
+label1:
+virtualinvoke v0.<com.fasterxml.jackson.core.base.ParserBase: void reportOverflowLong(java.lang.String)>(v2);
+label2:
+return;
+}
+protected void convertNumberToInt() throws java.io.IOException
+{
+java.math.BigDecimal v23, v24, v26;
+byte v19, v20, v5;
+java.math.BigInteger v10, v11, v13;
+com.fasterxml.jackson.core.base.ParserBase v0;
+long v3, v4;
+int v1, v12, v14, v15, v16, v17, v2, v21, v22, v25, v27, v28, v29, v30, v31, v8, v9;
+com.fasterxml.jackson.core.JsonToken v7;
+java.lang.String v6;
+double v18;
+v0 := @this: com.fasterxml.jackson.core.base.ParserBase;
+v1 = v0.<com.fasterxml.jackson.core.base.ParserBase: int _numTypesValid>;
+v2 = v1 & 2;
+if v2 == 0 goto label02;
+v3 = v0.<com.fasterxml.jackson.core.base.ParserBase: long _numberLong>;
+v4 = v0.<com.fasterxml.jackson.core.base.ParserBase: long _numberLong>;
+v5 = v31 cmp v4;
+if v5 == 0 goto label01;
+v6 = virtualinvoke v0.<com.fasterxml.jackson.core.base.ParserBase: java.lang.String getText()>();
+v7 = virtualinvoke v0.<com.fasterxml.jackson.core.base.ParserBase: com.fasterxml.jackson.core.JsonToken currentToken()>();
+virtualinvoke v0.<com.fasterxml.jackson.core.base.ParserBase: void reportOverflowInt(java.lang.String,com.fasterxml.jackson.core.JsonToken)>(v6, v7);
+label01:
+v0.<com.fasterxml.jackson.core.base.ParserBase: int _numberInt> = v3;
+goto label12;
+label02:
+v8 = v0.<com.fasterxml.jackson.core.base.ParserBase: int _numTypesValid>;
+v9 = v8 & 4;
+if v9 == 0 goto label05;
+v10 = virtualinvoke v0.<com.fasterxml.jackson.core.base.ParserBase: java.math.BigInteger _getBigInteger()>();
+v11 = <com.fasterxml.jackson.core.base.ParserBase: java.math.BigInteger BI_MIN_INT>;
+v12 = virtualinvoke v11.<java.math.BigInteger: int compareTo(java.math.BigInteger)>(v10);
+if v12 > 0 goto label03;
+v13 = <com.fasterxml.jackson.core.base.ParserBase: java.math.BigInteger BI_MAX_INT>;
+v14 = virtualinvoke v13.<java.math.BigInteger: int compareTo(java.math.BigInteger)>(v10);
+if v14 >= 0 goto label04;
+label03:
+virtualinvoke v0.<com.fasterxml.jackson.core.base.ParserBase: void reportOverflowInt()>();
+label04:
+v15 = virtualinvoke v10.<java.math.BigInteger: int intValue()>();
+v0.<com.fasterxml.jackson.core.base.ParserBase: int _numberInt> = v15;
+goto label12;
+label05:
+v16 = v0.<com.fasterxml.jackson.core.base.ParserBase: int _numTypesValid>;
+v17 = v16 & 8;
+if v17 == 0 goto label08;
+v18 = virtualinvoke v0.<com.fasterxml.jackson.core.base.ParserBase: double _getNumberDouble()>();
+v19 = v18 cmpg -2.147483648E9;
+if v19 < 0 goto label06;
+v20 = v18 cmpl 2.147483647E9;
+if v20 <= 0 goto label07;
+label06:
+virtualinvoke v0.<com.fasterxml.jackson.core.base.ParserBase: void reportOverflowInt()>();
+label07:
+v0.<com.fasterxml.jackson.core.base.ParserBase: int _numberInt> = v18;
+goto label12;
+label08:
+v21 = v0.<com.fasterxml.jackson.core.base.ParserBase: int _numTypesValid>;
+v22 = v21 & 16;
+if v22 == 0 goto label11;
+v23 = virtualinvoke v0.<com.fasterxml.jackson.core.base.ParserBase: java.math.BigDecimal _getBigDecimal()>();
+v24 = <com.fasterxml.jackson.core.base.ParserBase: java.math.BigDecimal BD_MIN_INT>;
+v25 = virtualinvoke v24.<java.math.BigDecimal: int compareTo(java.math.BigDecimal)>(v23);
+if v25 > 0 goto label09;
+v26 = <com.fasterxml.jackson.core.base.ParserBase: java.math.BigDecimal BD_MAX_INT>;
+v27 = virtualinvoke v26.<java.math.BigDecimal: int compareTo(java.math.BigDecimal)>(v23);
+if v27 >= 0 goto label10;
+label09:
+virtualinvoke v0.<com.fasterxml.jackson.core.base.ParserBase: void reportOverflowInt()>();
+label10:
+v28 = virtualinvoke v23.<java.math.BigDecimal: int intValue()>();
+v0.<com.fasterxml.jackson.core.base.ParserBase: int _numberInt> = v28;
+goto label12;
+label11:
+virtualinvoke v0.<com.fasterxml.jackson.core.base.ParserBase: void _throwInternal()>();
+label12:
+v29 = v0.<com.fasterxml.jackson.core.base.ParserBase: int _numTypesValid>;
+v30 = v29 | 1;
+v0.<com.fasterxml.jackson.core.base.ParserBase: int _numTypesValid> = v30;
+return;
+}
+protected void convertNumberToLong() throws java.io.IOException
+{
+long v11, v24;
+java.math.BigDecimal v19, v20, v22;
+byte v15, v16;
+int v1, v10, v12, v13, v17, v18, v2, v21, v23, v25, v26, v3, v4, v5, v8;
+java.math.BigInteger v6, v7, v9;
+double v14;
+com.fasterxml.jackson.core.base.ParserBase v0;
+v0 := @this: com.fasterxml.jackson.core.base.ParserBase;
+v1 = v0.<com.fasterxml.jackson.core.base.ParserBase: int _numTypesValid>;
+v2 = v1 & 1;
+if v2 == 0 goto label01;
+v3 = v0.<com.fasterxml.jackson.core.base.ParserBase: int _numberInt>;
+v0.<com.fasterxml.jackson.core.base.ParserBase: long _numberLong> = v3;
+goto label11;
+label01:
+v4 = v0.<com.fasterxml.jackson.core.base.ParserBase: int _numTypesValid>;
+v5 = v4 & 4;
+if v5 == 0 goto label04;
+v6 = virtualinvoke v0.<com.fasterxml.jackson.core.base.ParserBase: java.math.BigInteger _getBigInteger()>();
+v7 = <com.fasterxml.jackson.core.base.ParserBase: java.math.BigInteger BI_MIN_LONG>;
+v8 = virtualinvoke v7.<java.math.BigInteger: int compareTo(java.math.BigInteger)>(v6);
+if v8 > 0 goto label02;
+v9 = <com.fasterxml.jackson.core.base.ParserBase: java.math.BigInteger BI_MAX_LONG>;
+v10 = virtualinvoke v9.<java.math.BigInteger: int compareTo(java.math.BigInteger)>(v6);
+if v10 >= 0 goto label03;
+label02:
+virtualinvoke v0.<com.fasterxml.jackson.core.base.ParserBase: void reportOverflowLong()>();
+label03:
+v11 = virtualinvoke v6.<java.math.BigInteger: long longValue()>();
+v0.<com.fasterxml.jackson.core.base.ParserBase: long _numberLong> = v11;
+goto label11;
+label04:
+v12 = v0.<com.fasterxml.jackson.core.base.ParserBase: int _numTypesValid>;
+v13 = v12 & 8;
+if v13 == 0 goto label07;
+v14 = virtualinvoke v0.<com.fasterxml.jackson.core.base.ParserBase: double _getNumberDouble()>();
+v15 = v14 cmpg -9.223372036854776E18;
+if v15 < 0 goto label05;
+v16 = v14 cmpl 9.223372036854776E18;
+if v16 <= 0 goto label06;
+label05:
+virtualinvoke v0.<com.fasterxml.jackson.core.base.ParserBase: void reportOverflowLong()>();
+label06:
+v0.<com.fasterxml.jackson.core.base.ParserBase: long _numberLong> = v14;
+goto label11;
+label07:
+v17 = v0.<com.fasterxml.jackson.core.base.ParserBase: int _numTypesValid>;
+v18 = v17 & 16;
+if v18 == 0 goto label10;
+v19 = virtualinvoke v0.<com.fasterxml.jackson.core.base.ParserBase: java.math.BigDecimal _getBigDecimal()>();
+v20 = <com.fasterxml.jackson.core.base.ParserBase: java.math.BigDecimal BD_MIN_LONG>;
+v21 = virtualinvoke v20.<java.math.BigDecimal: int compareTo(java.math.BigDecimal)>(v19);
+if v21 > 0 goto label08;
+v22 = <com.fasterxml.jackson.core.base.ParserBase: java.math.BigDecimal BD_MAX_LONG>;
+v23 = virtualinvoke v22.<java.math.BigDecimal: int compareTo(java.math.BigDecimal)>(v19);
+if v23 >= 0 goto label09;
+label08:
+virtualinvoke v0.<com.fasterxml.jackson.core.base.ParserBase: void reportOverflowLong()>();
+label09:
+v24 = virtualinvoke v19.<java.math.BigDecimal: long longValue()>();
+v0.<com.fasterxml.jackson.core.base.ParserBase: long _numberLong> = v24;
+goto label11;
+label10:
+virtualinvoke v0.<com.fasterxml.jackson.core.base.ParserBase: void _throwInternal()>();
+label11:
+v25 = v0.<com.fasterxml.jackson.core.base.ParserBase: int _numTypesValid>;
+v26 = v25 | 2;
+v0.<com.fasterxml.jackson.core.base.ParserBase: int _numTypesValid> = v26;
+return;
+}
+protected void convertNumberToBigInteger() throws java.io.IOException
+{
+long v7;
+java.math.BigDecimal v16, v19, v3;
+int v1, v10, v11, v13, v14, v2, v21, v22, v5, v6, v9;
+java.math.BigInteger v12, v17, v20, v4, v8;
+java.lang.String v15;
+double v18;
+com.fasterxml.jackson.core.base.ParserBase v0;
+v0 := @this: com.fasterxml.jackson.core.base.ParserBase;
+v1 = v0.<com.fasterxml.jackson.core.base.ParserBase: int _numTypesValid>;
+v2 = v1 & 16;
+if v2 == 0 goto label1;
+v3 = virtualinvoke v0.<com.fasterxml.jackson.core.base.ParserBase: java.math.BigDecimal _getBigDecimal()>();
+v4 = virtualinvoke v0.<com.fasterxml.jackson.core.base.ParserBase: java.math.BigInteger _convertBigDecimalToBigInteger(java.math.BigDecimal)>(v3);
+v0.<com.fasterxml.jackson.core.base.ParserBase: java.math.BigInteger _numberBigInt> = v4;
+goto label6;
+label1:
+v5 = v0.<com.fasterxml.jackson.core.base.ParserBase: int _numTypesValid>;
+v6 = v5 & 2;
+if v6 == 0 goto label2;
+v7 = v0.<com.fasterxml.jackson.core.base.ParserBase: long _numberLong>;
+v8 = staticinvoke <java.math.BigInteger: java.math.BigInteger valueOf(long)>(v7);
+v0.<com.fasterxml.jackson.core.base.ParserBase: java.math.BigInteger _numberBigInt> = v8;
+goto label6;
+label2:
+v9 = v0.<com.fasterxml.jackson.core.base.ParserBase: int _numTypesValid>;
+v10 = v9 & 1;
+if v10 == 0 goto label3;
+v11 = v0.<com.fasterxml.jackson.core.base.ParserBase: int _numberInt>;
+v12 = staticinvoke <java.math.BigInteger: java.math.BigInteger valueOf(long)>(v11);
+v0.<com.fasterxml.jackson.core.base.ParserBase: java.math.BigInteger _numberBigInt> = v12;
+goto label6;
+label3:
+v13 = v0.<com.fasterxml.jackson.core.base.ParserBase: int _numTypesValid>;
+v14 = v13 & 8;
+if v14 == 0 goto label5;
+v15 = v0.<com.fasterxml.jackson.core.base.ParserBase: java.lang.String _numberString>;
+if v15 == null goto label4;
+v16 = virtualinvoke v0.<com.fasterxml.jackson.core.base.ParserBase: java.math.BigDecimal _getBigDecimal()>();
+v17 = virtualinvoke v0.<com.fasterxml.jackson.core.base.ParserBase: java.math.BigInteger _convertBigDecimalToBigInteger(java.math.BigDecimal)>(v16);
+v0.<com.fasterxml.jackson.core.base.ParserBase: java.math.BigInteger _numberBigInt> = v17;
+goto label6;
+label4:
+v18 = virtualinvoke v0.<com.fasterxml.jackson.core.base.ParserBase: double _getNumberDouble()>();
+v19 = staticinvoke <java.math.BigDecimal: java.math.BigDecimal valueOf(double)>(v18);
+v20 = virtualinvoke v0.<com.fasterxml.jackson.core.base.ParserBase: java.math.BigInteger _convertBigDecimalToBigInteger(java.math.BigDecimal)>(v19);
+v0.<com.fasterxml.jackson.core.base.ParserBase: java.math.BigInteger _numberBigInt> = v20;
+goto label6;
+label5:
+virtualinvoke v0.<com.fasterxml.jackson.core.base.ParserBase: void _throwInternal()>();
+label6:
+v21 = v0.<com.fasterxml.jackson.core.base.ParserBase: int _numTypesValid>;
+v22 = v21 | 4;
+v0.<com.fasterxml.jackson.core.base.ParserBase: int _numTypesValid> = v22;
+return;
+}
+protected void convertNumberToDouble() throws java.io.IOException
+{
+long v15;
+java.math.BigDecimal v5;
+int v1, v13, v14, v16, v17, v18, v19, v2, v20, v24, v25, v7, v8;
+java.math.BigInteger v11;
+java.lang.String v21, v3, v9;
+double v10, v12, v22, v4, v6;
+float v23;
+com.fasterxml.jackson.core.base.ParserBase v0;
+v0 := @this: com.fasterxml.jackson.core.base.ParserBase;
+v1 = v0.<com.fasterxml.jackson.core.base.ParserBase: int _numTypesValid>;
+v2 = v1 & 16;
+if v2 == 0 goto label2;
+v3 = v0.<com.fasterxml.jackson.core.base.ParserBase: java.lang.String _numberString>;
+if v3 == null goto label1;
+v4 = virtualinvoke v0.<com.fasterxml.jackson.core.base.ParserBase: double _getNumberDouble()>();
+v0.<com.fasterxml.jackson.core.base.ParserBase: double _numberDouble> = v4;
+goto label9;
+label1:
+v5 = virtualinvoke v0.<com.fasterxml.jackson.core.base.ParserBase: java.math.BigDecimal _getBigDecimal()>();
+v6 = virtualinvoke v5.<java.math.BigDecimal: double doubleValue()>();
+v0.<com.fasterxml.jackson.core.base.ParserBase: double _numberDouble> = v6;
+goto label9;
+label2:
+v7 = v0.<com.fasterxml.jackson.core.base.ParserBase: int _numTypesValid>;
+v8 = v7 & 4;
+if v8 == 0 goto label4;
+v9 = v0.<com.fasterxml.jackson.core.base.ParserBase: java.lang.String _numberString>;
+if v9 == null goto label3;
+v10 = virtualinvoke v0.<com.fasterxml.jackson.core.base.ParserBase: double _getNumberDouble()>();
+v0.<com.fasterxml.jackson.core.base.ParserBase: double _numberDouble> = v10;
+goto label9;
+label3:
+v11 = virtualinvoke v0.<com.fasterxml.jackson.core.base.ParserBase: java.math.BigInteger _getBigInteger()>();
+v12 = virtualinvoke v11.<java.math.BigInteger: double doubleValue()>();
+v0.<com.fasterxml.jackson.core.base.ParserBase: double _numberDouble> = v12;
+goto label9;
+label4:
+v13 = v0.<com.fasterxml.jackson.core.base.ParserBase: int _numTypesValid>;
+v14 = v13 & 2;
+if v14 == 0 goto label5;
+v15 = v0.<com.fasterxml.jackson.core.base.ParserBase: long _numberLong>;
+v0.<com.fasterxml.jackson.core.base.ParserBase: double _numberDouble> = v15;
+goto label9;
+label5:
+v16 = v0.<com.fasterxml.jackson.core.base.ParserBase: int _numTypesValid>;
+v17 = v16 & 1;
+if v17 == 0 goto label6;
+v18 = v0.<com.fasterxml.jackson.core.base.ParserBase: int _numberInt>;
+v0.<com.fasterxml.jackson.core.base.ParserBase: double _numberDouble> = v18;
+goto label9;
+label6:
+v19 = v0.<com.fasterxml.jackson.core.base.ParserBase: int _numTypesValid>;
+v20 = v19 & 32;
+if v20 == 0 goto label8;
+v21 = v0.<com.fasterxml.jackson.core.base.ParserBase: java.lang.String _numberString>;
+if v21 == null goto label7;
+v22 = virtualinvoke v0.<com.fasterxml.jackson.core.base.ParserBase: double _getNumberDouble()>();
+v0.<com.fasterxml.jackson.core.base.ParserBase: double _numberDouble> = v22;
+goto label9;
+label7:
+v23 = virtualinvoke v0.<com.fasterxml.jackson.core.base.ParserBase: float _getNumberFloat()>();
+v0.<com.fasterxml.jackson.core.base.ParserBase: double _numberDouble> = v23;
+goto label9;
+label8:
+virtualinvoke v0.<com.fasterxml.jackson.core.base.ParserBase: void _throwInternal()>();
+label9:
+v24 = v0.<com.fasterxml.jackson.core.base.ParserBase: int _numTypesValid>;
+v25 = v24 | 8;
+v0.<com.fasterxml.jackson.core.base.ParserBase: int _numTypesValid> = v25;
+return;
+}
+protected void convertNumberToFloat() throws java.io.IOException
+{
+long v15;
+java.math.BigDecimal v5;
+int v1, v13, v14, v16, v17, v18, v19, v2, v20, v24, v25, v7, v8;
+java.math.BigInteger v11;
+java.lang.String v21, v3, v9;
+double v23;
+float v10, v12, v22, v4, v6;
+com.fasterxml.jackson.core.base.ParserBase v0;
+v0 := @this: com.fasterxml.jackson.core.base.ParserBase;
+v1 = v0.<com.fasterxml.jackson.core.base.ParserBase: int _numTypesValid>;
+v2 = v1 & 16;
+if v2 == 0 goto label2;
+v3 = v0.<com.fasterxml.jackson.core.base.ParserBase: java.lang.String _numberString>;
+if v3 == null goto label1;
+v4 = virtualinvoke v0.<com.fasterxml.jackson.core.base.ParserBase: float _getNumberFloat()>();
+v0.<com.fasterxml.jackson.core.base.ParserBase: float _numberFloat> = v4;
+goto label9;
+label1:
+v5 = virtualinvoke v0.<com.fasterxml.jackson.core.base.ParserBase: java.math.BigDecimal _getBigDecimal()>();
+v6 = virtualinvoke v5.<java.math.BigDecimal: float floatValue()>();
+v0.<com.fasterxml.jackson.core.base.ParserBase: float _numberFloat> = v6;
+goto label9;
+label2:
+v7 = v0.<com.fasterxml.jackson.core.base.ParserBase: int _numTypesValid>;
+v8 = v7 & 4;
+if v8 == 0 goto label4;
+v9 = v0.<com.fasterxml.jackson.core.base.ParserBase: java.lang.String _numberString>;
+if v9 == null goto label3;
+v10 = virtualinvoke v0.<com.fasterxml.jackson.core.base.ParserBase: float _getNumberFloat()>();
+v0.<com.fasterxml.jackson.core.base.ParserBase: float _numberFloat> = v10;
+goto label9;
+label3:
+v11 = virtualinvoke v0.<com.fasterxml.jackson.core.base.ParserBase: java.math.BigInteger _getBigInteger()>();
+v12 = virtualinvoke v11.<java.math.BigInteger: float floatValue()>();
+v0.<com.fasterxml.jackson.core.base.ParserBase: float _numberFloat> = v12;
+goto label9;
+label4:
+v13 = v0.<com.fasterxml.jackson.core.base.ParserBase: int _numTypesValid>;
+v14 = v13 & 2;
+if v14 == 0 goto label5;
+v15 = v0.<com.fasterxml.jackson.core.base.ParserBase: long _numberLong>;
+v0.<com.fasterxml.jackson.core.base.ParserBase: float _numberFloat> = v15;
+goto label9;
+label5:
+v16 = v0.<com.fasterxml.jackson.core.base.ParserBase: int _numTypesValid>;
+v17 = v16 & 1;
+if v17 == 0 goto label6;
+v18 = v0.<com.fasterxml.jackson.core.base.ParserBase: int _numberInt>;
+v0.<com.fasterxml.jackson.core.base.ParserBase: float _numberFloat> = v18;
+goto label9;
+label6:
+v19 = v0.<com.fasterxml.jackson.core.base.ParserBase: int _numTypesValid>;
+v20 = v19 & 8;
+if v20 == 0 goto label8;
+v21 = v0.<com.fasterxml.jackson.core.base.ParserBase: java.lang.String _numberString>;
+if v21 == null goto label7;
+v22 = virtualinvoke v0.<com.fasterxml.jackson.core.base.ParserBase: float _getNumberFloat()>();
+v0.<com.fasterxml.jackson.core.base.ParserBase: float _numberFloat> = v22;
+goto label9;
+label7:
+v23 = virtualinvoke v0.<com.fasterxml.jackson.core.base.ParserBase: double _getNumberDouble()>();
+v0.<com.fasterxml.jackson.core.base.ParserBase: float _numberFloat> = v23;
+goto label9;
+label8:
+virtualinvoke v0.<com.fasterxml.jackson.core.base.ParserBase: void _throwInternal()>();
+label9:
+v24 = v0.<com.fasterxml.jackson.core.base.ParserBase: int _numTypesValid>;
+v25 = v24 | 32;
+v0.<com.fasterxml.jackson.core.base.ParserBase: int _numTypesValid> = v25;
+return;
+}
+protected void convertNumberToBigDecimal() throws java.io.IOException
+{
+long v14;
+java.math.BigDecimal v10, v15, v19, v7;
+int v1, v12, v13, v16, v17, v18, v2, v20, v21, v8, v9;
+java.math.BigInteger v11;
+java.lang.String v3, v4;
+boolean v6;
+com.fasterxml.jackson.core.StreamReadFeature v5;
+com.fasterxml.jackson.core.base.ParserBase v0;
+v0 := @this: com.fasterxml.jackson.core.base.ParserBase;
+v1 = v0.<com.fasterxml.jackson.core.base.ParserBase: int _numTypesValid>;
+v2 = v1 & 8;
+if v2 == 0 goto label3;
+v3 = v0.<com.fasterxml.jackson.core.base.ParserBase: java.lang.String _numberString>;
+if v3 != null goto label1;
+v4 = virtualinvoke v0.<com.fasterxml.jackson.core.base.ParserBase: java.lang.String getText()>();
+goto label2;
+label1:
+v4 = v0.<com.fasterxml.jackson.core.base.ParserBase: java.lang.String _numberString>;
+label2:
+v5 = <com.fasterxml.jackson.core.StreamReadFeature: com.fasterxml.jackson.core.StreamReadFeature USE_FAST_BIG_NUMBER_PARSER>;
+v6 = virtualinvoke v0.<com.fasterxml.jackson.core.base.ParserBase: boolean isEnabled(com.fasterxml.jackson.core.StreamReadFeature)>(v5);
+v7 = staticinvoke <com.fasterxml.jackson.core.io.NumberInput: java.math.BigDecimal parseBigDecimal(java.lang.String,boolean)>(v4, v6);
+v0.<com.fasterxml.jackson.core.base.ParserBase: java.math.BigDecimal _numberBigDecimal> = v7;
+goto label7;
+label3:
+v8 = v0.<com.fasterxml.jackson.core.base.ParserBase: int _numTypesValid>;
+v9 = v8 & 4;
+if v9 == 0 goto label4;
+v10 = new java.math.BigDecimal;
+v11 = virtualinvoke v0.<com.fasterxml.jackson.core.base.ParserBase: java.math.BigInteger _getBigInteger()>();
+specialinvoke v10.<java.math.BigDecimal: void <init>(java.math.BigInteger)>(v11);
+v0.<com.fasterxml.jackson.core.base.ParserBase: java.math.BigDecimal _numberBigDecimal> = v10;
+goto label7;
+label4:
+v12 = v0.<com.fasterxml.jackson.core.base.ParserBase: int _numTypesValid>;
+v13 = v12 & 2;
+if v13 == 0 goto label5;
+v14 = v0.<com.fasterxml.jackson.core.base.ParserBase: long _numberLong>;
+v15 = staticinvoke <java.math.BigDecimal: java.math.BigDecimal valueOf(long)>(v14);
+v0.<com.fasterxml.jackson.core.base.ParserBase: java.math.BigDecimal _numberBigDecimal> = v15;
+goto label7;
+label5:
+v16 = v0.<com.fasterxml.jackson.core.base.ParserBase: int _numTypesValid>;
+v17 = v16 & 1;
+if v17 == 0 goto label6;
+v18 = v0.<com.fasterxml.jackson.core.base.ParserBase: int _numberInt>;
+v19 = staticinvoke <java.math.BigDecimal: java.math.BigDecimal valueOf(long)>(v18);
+v0.<com.fasterxml.jackson.core.base.ParserBase: java.math.BigDecimal _numberBigDecimal> = v19;
+goto label7;
+label6:
+virtualinvoke v0.<com.fasterxml.jackson.core.base.ParserBase: void _throwInternal()>();
+label7:
+v20 = v0.<com.fasterxml.jackson.core.base.ParserBase: int _numTypesValid>;
+v21 = v20 | 16;
+v0.<com.fasterxml.jackson.core.base.ParserBase: int _numTypesValid> = v21;
+return;
+}
+protected java.math.BigInteger _convertBigDecimalToBigInteger(java.math.BigDecimal) throws java.io.IOException
+{
+java.math.BigDecimal v1;
+int v3;
+java.math.BigInteger v4;
+com.fasterxml.jackson.core.StreamReadConstraints v2;
+com.fasterxml.jackson.core.base.ParserBase v0;
+v0 := @this: com.fasterxml.jackson.core.base.ParserBase;
+v1 := @parameter0: java.math.BigDecimal;
+v2 = v0.<com.fasterxml.jackson.core.base.ParserBase: com.fasterxml.jackson.core.StreamReadConstraints _streamReadConstraints>;
+v3 = virtualinvoke v1.<java.math.BigDecimal: int scale()>();
+virtualinvoke v2.<com.fasterxml.jackson.core.StreamReadConstraints: void validateBigIntegerScale(int)>(v3);
+v4 = virtualinvoke v1.<java.math.BigDecimal: java.math.BigInteger toBigInteger()>();
+return v4;
+}
+protected java.math.BigInteger _getBigInteger() throws com.fasterxml.jackson.core.JsonParseException
+{
+java.lang.IllegalStateException v4;
+java.lang.NumberFormatException v9;
+com.fasterxml.jackson.core.StreamReadFeature v6;
+java.math.BigInteger v1, v13, v2, v8;
+com.fasterxml.jackson.core.base.ParserBase v0;
+java.lang.String v10, v11, v12, v3, v5;
+boolean v7;
+v0 := @this: com.fasterxml.jackson.core.base.ParserBase;
+v1 = v0.<com.fasterxml.jackson.core.base.ParserBase: java.math.BigInteger _numberBigInt>;
+if v1 == null goto label1;
+v2 = v0.<com.fasterxml.jackson.core.base.ParserBase: java.math.BigInteger _numberBigInt>;
+return v2;
+label1:
+v3 = v0.<com.fasterxml.jackson.core.base.ParserBase: java.lang.String _numberString>;
+if v3 != null goto label2;
+v4 = new java.lang.IllegalStateException;
+specialinvoke v4.<java.lang.IllegalStateException: void <init>(java.lang.String)>("cannot get BigInteger from current parser state");
+throw v4;
+label2:
+v5 = v0.<com.fasterxml.jackson.core.base.ParserBase: java.lang.String _numberString>;
+v6 = <com.fasterxml.jackson.core.StreamReadFeature: com.fasterxml.jackson.core.StreamReadFeature USE_FAST_BIG_NUMBER_PARSER>;
+v7 = virtualinvoke v0.<com.fasterxml.jackson.core.base.ParserBase: boolean isEnabled(com.fasterxml.jackson.core.StreamReadFeature)>(v6);
+v8 = staticinvoke <com.fasterxml.jackson.core.io.NumberInput: java.math.BigInteger parseBigInteger(java.lang.String,boolean)>(v5, v7);
+v0.<com.fasterxml.jackson.core.base.ParserBase: java.math.BigInteger _numberBigInt> = v8;
+label3:
+goto label5;
+label4:
+v9 := @caughtexception;
+v10 = v0.<com.fasterxml.jackson.core.base.ParserBase: java.lang.String _numberString>;
+v11 = virtualinvoke v0.<com.fasterxml.jackson.core.base.ParserBase: java.lang.String _longNumberDesc(java.lang.String)>(v10);
+v12 = dynamicinvoke "makeConcatWithConstants" <java.lang.String (java.lang.String)>(v11) <java.lang.invoke.StringConcatFactory: java.lang.invoke.CallSite makeConcatWithConstants(java.lang.invoke.MethodHandles$Lookup,java.lang.String,java.lang.invoke.MethodType,java.lang.String,java.lang.Object[])>("Malformed numeric value (\u0001)");
+virtualinvoke v0.<com.fasterxml.jackson.core.base.ParserBase: void _wrapError(java.lang.String,java.lang.Throwable)>(v12, v9);
+label5:
+v0.<com.fasterxml.jackson.core.base.ParserBase: java.lang.String _numberString> = null;
+v13 = v0.<com.fasterxml.jackson.core.base.ParserBase: java.math.BigInteger _numberBigInt>;
+return v13;
+catch java.lang.NumberFormatException from label2 to label3 with label4;
+}
+protected java.math.BigDecimal _getBigDecimal() throws com.fasterxml.jackson.core.JsonParseException
+{
+java.lang.IllegalStateException v4;
+java.lang.NumberFormatException v9;
+com.fasterxml.jackson.core.StreamReadFeature v6;
+java.math.BigDecimal v1, v13, v2, v8;
+com.fasterxml.jackson.core.base.ParserBase v0;
+java.lang.String v10, v11, v12, v3, v5;
+boolean v7;
+v0 := @this: com.fasterxml.jackson.core.base.ParserBase;
+v1 = v0.<com.fasterxml.jackson.core.base.ParserBase: java.math.BigDecimal _numberBigDecimal>;
+if v1 == null goto label1;
+v2 = v0.<com.fasterxml.jackson.core.base.ParserBase: java.math.BigDecimal _numberBigDecimal>;
+return v2;
+label1:
+v3 = v0.<com.fasterxml.jackson.core.base.ParserBase: java.lang.String _numberString>;
+if v3 != null goto label2;
+v4 = new java.lang.IllegalStateException;
+specialinvoke v4.<java.lang.IllegalStateException: void <init>(java.lang.String)>("cannot get BigDecimal from current parser state");
+throw v4;
+label2:
+v5 = v0.<com.fasterxml.jackson.core.base.ParserBase: java.lang.String _numberString>;
+v6 = <com.fasterxml.jackson.core.StreamReadFeature: com.fasterxml.jackson.core.StreamReadFeature USE_FAST_BIG_NUMBER_PARSER>;
+v7 = virtualinvoke v0.<com.fasterxml.jackson.core.base.ParserBase: boolean isEnabled(com.fasterxml.jackson.core.StreamReadFeature)>(v6);
+v8 = staticinvoke <com.fasterxml.jackson.core.io.NumberInput: java.math.BigDecimal parseBigDecimal(java.lang.String,boolean)>(v5, v7);
+v0.<com.fasterxml.jackson.core.base.ParserBase: java.math.BigDecimal _numberBigDecimal> = v8;
+label3:
+goto label5;
+label4:
+v9 := @caughtexception;
+v10 = v0.<com.fasterxml.jackson.core.base.ParserBase: java.lang.String _numberString>;
+v11 = virtualinvoke v0.<com.fasterxml.jackson.core.base.ParserBase: java.lang.String _longNumberDesc(java.lang.String)>(v10);
+v12 = dynamicinvoke "makeConcatWithConstants" <java.lang.String (java.lang.String)>(v11) <java.lang.invoke.StringConcatFactory: java.lang.invoke.CallSite makeConcatWithConstants(java.lang.invoke.MethodHandles$Lookup,java.lang.String,java.lang.invoke.MethodType,java.lang.String,java.lang.Object[])>("Malformed numeric value (\u0001)");
+virtualinvoke v0.<com.fasterxml.jackson.core.base.ParserBase: void _wrapError(java.lang.String,java.lang.Throwable)>(v12, v9);
+label5:
+v0.<com.fasterxml.jackson.core.base.ParserBase: java.lang.String _numberString> = null;
+v13 = v0.<com.fasterxml.jackson.core.base.ParserBase: java.math.BigDecimal _numberBigDecimal>;
+return v13;
+catch java.lang.NumberFormatException from label2 to label3 with label4;
+}
+protected double _getNumberDouble() throws com.fasterxml.jackson.core.JsonParseException
+{
+java.lang.NumberFormatException v6;
+com.fasterxml.jackson.core.StreamReadFeature v3;
+com.fasterxml.jackson.core.base.ParserBase v0;
+java.lang.String v1, v2, v7, v8, v9;
+boolean v4;
+double v10, v5;
+v0 := @this: com.fasterxml.jackson.core.base.ParserBase;
+v1 = v0.<com.fasterxml.jackson.core.base.ParserBase: java.lang.String _numberString>;
+if v1 == null goto label5;
+label1:
+v2 = v0.<com.fasterxml.jackson.core.base.ParserBase: java.lang.String _numberString>;
+v3 = <com.fasterxml.jackson.core.StreamReadFeature: com.fasterxml.jackson.core.StreamReadFeature USE_FAST_DOUBLE_PARSER>;
+v4 = virtualinvoke v0.<com.fasterxml.jackson.core.base.ParserBase: boolean isEnabled(com.fasterxml.jackson.core.StreamReadFeature)>(v3);
+v5 = staticinvoke <com.fasterxml.jackson.core.io.NumberInput: double parseDouble(java.lang.String,boolean)>(v2, v4);
+v0.<com.fasterxml.jackson.core.base.ParserBase: double _numberDouble> = v5;
+label2:
+goto label4;
+label3:
+v6 := @caughtexception;
+v7 = v0.<com.fasterxml.jackson.core.base.ParserBase: java.lang.String _numberString>;
+v8 = virtualinvoke v0.<com.fasterxml.jackson.core.base.ParserBase: java.lang.String _longNumberDesc(java.lang.String)>(v7);
+v9 = dynamicinvoke "makeConcatWithConstants" <java.lang.String (java.lang.String)>(v8) <java.lang.invoke.StringConcatFactory: java.lang.invoke.CallSite makeConcatWithConstants(java.lang.invoke.MethodHandles$Lookup,java.lang.String,java.lang.invoke.MethodType,java.lang.String,java.lang.Object[])>("Malformed numeric value (\u0001)");
+virtualinvoke v0.<com.fasterxml.jackson.core.base.ParserBase: void _wrapError(java.lang.String,java.lang.Throwable)>(v9, v6);
+label4:
+v0.<com.fasterxml.jackson.core.base.ParserBase: java.lang.String _numberString> = null;
+label5:
+v10 = v0.<com.fasterxml.jackson.core.base.ParserBase: double _numberDouble>;
+return v10;
+catch java.lang.NumberFormatException from label1 to label2 with label3;
+}
+protected float _getNumberFloat() throws com.fasterxml.jackson.core.JsonParseException
+{
+java.lang.NumberFormatException v6;
+com.fasterxml.jackson.core.StreamReadFeature v3;
+float v10, v5;
+com.fasterxml.jackson.core.base.ParserBase v0;
+java.lang.String v1, v2, v7, v8, v9;
+boolean v4;
+v0 := @this: com.fasterxml.jackson.core.base.ParserBase;
+v1 = v0.<com.fasterxml.jackson.core.base.ParserBase: java.lang.String _numberString>;
+if v1 == null goto label5;
+label1:
+v2 = v0.<com.fasterxml.jackson.core.base.ParserBase: java.lang.String _numberString>;
+v3 = <com.fasterxml.jackson.core.StreamReadFeature: com.fasterxml.jackson.core.StreamReadFeature USE_FAST_DOUBLE_PARSER>;
+v4 = virtualinvoke v0.<com.fasterxml.jackson.core.base.ParserBase: boolean isEnabled(com.fasterxml.jackson.core.StreamReadFeature)>(v3);
+v5 = staticinvoke <com.fasterxml.jackson.core.io.NumberInput: float parseFloat(java.lang.String,boolean)>(v2, v4);
+v0.<com.fasterxml.jackson.core.base.ParserBase: float _numberFloat> = v5;
+label2:
+goto label4;
+label3:
+v6 := @caughtexception;
+v7 = v0.<com.fasterxml.jackson.core.base.ParserBase: java.lang.String _numberString>;
+v8 = virtualinvoke v0.<com.fasterxml.jackson.core.base.ParserBase: java.lang.String _longNumberDesc(java.lang.String)>(v7);
+v9 = dynamicinvoke "makeConcatWithConstants" <java.lang.String (java.lang.String)>(v8) <java.lang.invoke.StringConcatFactory: java.lang.invoke.CallSite makeConcatWithConstants(java.lang.invoke.MethodHandles$Lookup,java.lang.String,java.lang.invoke.MethodType,java.lang.String,java.lang.Object[])>("Malformed numeric value (\u0001)");
+virtualinvoke v0.<com.fasterxml.jackson.core.base.ParserBase: void _wrapError(java.lang.String,java.lang.Throwable)>(v9, v6);
+label4:
+v0.<com.fasterxml.jackson.core.base.ParserBase: java.lang.String _numberString> = null;
+label5:
+v10 = v0.<com.fasterxml.jackson.core.base.ParserBase: float _numberFloat>;
+return v10;
+catch java.lang.NumberFormatException from label1 to label2 with label3;
+}
+protected void createChildArrayContext(int, int) throws java.io.IOException
+{
+com.fasterxml.jackson.core.StreamReadConstraints v5;
+com.fasterxml.jackson.core.json.JsonReadContext v3, v4, v6;
+int v1, v2, v7;
+com.fasterxml.jackson.core.base.ParserBase v0;
+v0 := @this: com.fasterxml.jackson.core.base.ParserBase;
+v1 := @parameter0: int;
+v2 := @parameter1: int;
+v3 = v0.<com.fasterxml.jackson.core.base.ParserBase: com.fasterxml.jackson.core.json.JsonReadContext _parsingContext>;
+v4 = virtualinvoke v3.<com.fasterxml.jackson.core.json.JsonReadContext: com.fasterxml.jackson.core.json.JsonReadContext createChildArrayContext(int,int)>(v1, v2);
+v0.<com.fasterxml.jackson.core.base.ParserBase: com.fasterxml.jackson.core.json.JsonReadContext _parsingContext> = v4;
+v5 = v0.<com.fasterxml.jackson.core.base.ParserBase: com.fasterxml.jackson.core.StreamReadConstraints _streamReadConstraints>;
+v6 = v0.<com.fasterxml.jackson.core.base.ParserBase: com.fasterxml.jackson.core.json.JsonReadContext _parsingContext>;
+v7 = virtualinvoke v6.<com.fasterxml.jackson.core.json.JsonReadContext: int getNestingDepth()>();
+virtualinvoke v5.<com.fasterxml.jackson.core.StreamReadConstraints: void validateNestingDepth(int)>(v7);
+return;
+}
+protected void createChildObjectContext(int, int) throws java.io.IOException
+{
+com.fasterxml.jackson.core.StreamReadConstraints v5;
+com.fasterxml.jackson.core.json.JsonReadContext v3, v4, v6;
+int v1, v2, v7;
+com.fasterxml.jackson.core.base.ParserBase v0;
+v0 := @this: com.fasterxml.jackson.core.base.ParserBase;
+v1 := @parameter0: int;
+v2 := @parameter1: int;
+v3 = v0.<com.fasterxml.jackson.core.base.ParserBase: com.fasterxml.jackson.core.json.JsonReadContext _parsingContext>;
+v4 = virtualinvoke v3.<com.fasterxml.jackson.core.json.JsonReadContext: com.fasterxml.jackson.core.json.JsonReadContext createChildObjectContext(int,int)>(v1, v2);
+v0.<com.fasterxml.jackson.core.base.ParserBase: com.fasterxml.jackson.core.json.JsonReadContext _parsingContext> = v4;
+v5 = v0.<com.fasterxml.jackson.core.base.ParserBase: com.fasterxml.jackson.core.StreamReadConstraints _streamReadConstraints>;
+v6 = v0.<com.fasterxml.jackson.core.base.ParserBase: com.fasterxml.jackson.core.json.JsonReadContext _parsingContext>;
+v7 = virtualinvoke v6.<com.fasterxml.jackson.core.json.JsonReadContext: int getNestingDepth()>();
+virtualinvoke v5.<com.fasterxml.jackson.core.StreamReadConstraints: void validateNestingDepth(int)>(v7);
+return;
+}
+protected void _reportMismatchedEndMarker(int, char) throws com.fasterxml.jackson.core.JsonParseException
+{
+com.fasterxml.jackson.core.JsonLocation v9;
+java.lang.Object[] v4;
+char v2;
+com.fasterxml.jackson.core.json.JsonReadContext v3;
+java.lang.Character v5, v6;
+int v1;
+com.fasterxml.jackson.core.base.ParserBase v0;
+java.lang.String v10, v7;
+com.fasterxml.jackson.core.io.ContentReference v8;
+v0 := @this: com.fasterxml.jackson.core.base.ParserBase;
+v1 := @parameter0: int;
+v2 := @parameter1: char;
+v3 = virtualinvoke v0.<com.fasterxml.jackson.core.base.ParserBase: com.fasterxml.jackson.core.json.JsonReadContext getParsingContext()>();
+v4 = newarray (java.lang.Object)[4];
+v5 = staticinvoke <java.lang.Character: java.lang.Character valueOf(char)>(v1);
+v4[0] = v5;
+v6 = staticinvoke <java.lang.Character: java.lang.Character valueOf(char)>(v2);
+v4[1] = v6;
+v7 = virtualinvoke v3.<com.fasterxml.jackson.core.json.JsonReadContext: java.lang.String typeDesc()>();
+v4[2] = v7;
+v8 = virtualinvoke v0.<com.fasterxml.jackson.core.base.ParserBase: com.fasterxml.jackson.core.io.ContentReference _contentReference()>();
+v9 = virtualinvoke v3.<com.fasterxml.jackson.core.json.JsonReadContext: com.fasterxml.jackson.core.JsonLocation startLocation(com.fasterxml.jackson.core.io.ContentReference)>(v8);
+v4[3] = v9;
+v10 = staticinvoke <java.lang.String: java.lang.String format(java.lang.String,java.lang.Object[])>("Unexpected close marker \'%s\': expected \'%c\' (for %s starting at %s)", v4);
+virtualinvoke v0.<com.fasterxml.jackson.core.base.ParserBase: void _reportError(java.lang.String)>(v10);
+return;
+}
+protected char _handleUnrecognizedCharacterEscape(char) throws com.fasterxml.jackson.core.JsonProcessingException
+{
+char v1;
+com.fasterxml.jackson.core.JsonParser$Feature v2, v4;
+com.fasterxml.jackson.core.base.ParserBase v0;
+java.lang.String v6, v7;
+boolean v3, v5;
+v0 := @this: com.fasterxml.jackson.core.base.ParserBase;
+v1 := @parameter0: char;
+v2 = <com.fasterxml.jackson.core.JsonParser$Feature: com.fasterxml.jackson.core.JsonParser$Feature ALLOW_BACKSLASH_ESCAPING_ANY_CHARACTER>;
+v3 = virtualinvoke v0.<com.fasterxml.jackson.core.base.ParserBase: boolean isEnabled(com.fasterxml.jackson.core.JsonParser$Feature)>(v2);
+if v3 == 0 goto label1;
+return v1;
+label1:
+if v1 != 39 goto label2;
+v4 = <com.fasterxml.jackson.core.JsonParser$Feature: com.fasterxml.jackson.core.JsonParser$Feature ALLOW_SINGLE_QUOTES>;
+v5 = virtualinvoke v0.<com.fasterxml.jackson.core.base.ParserBase: boolean isEnabled(com.fasterxml.jackson.core.JsonParser$Feature)>(v4);
+if v5 == 0 goto label2;
+return v1;
+label2:
+v6 = staticinvoke <com.fasterxml.jackson.core.base.ParserBase: java.lang.String _getCharDesc(int)>(v1);
+v7 = dynamicinvoke "makeConcatWithConstants" <java.lang.String (java.lang.String)>(v6) <java.lang.invoke.StringConcatFactory: java.lang.invoke.CallSite makeConcatWithConstants(java.lang.invoke.MethodHandles$Lookup,java.lang.String,java.lang.invoke.MethodType,java.lang.String,java.lang.Object[])>("Unrecognized character escape \u0001");
+virtualinvoke v0.<com.fasterxml.jackson.core.base.ParserBase: void _reportError(java.lang.String)>(v7);
+return v1;
+}
+protected void _throwUnquotedSpace(int, java.lang.String) throws com.fasterxml.jackson.core.JsonParseException
+{
+char v7;
+com.fasterxml.jackson.core.JsonParser$Feature v3;
+int v1;
+com.fasterxml.jackson.core.base.ParserBase v0;
+java.lang.String v2, v5, v6;
+boolean v4;
+v0 := @this: com.fasterxml.jackson.core.base.ParserBase;
+v1 := @parameter0: int;
+v2 := @parameter1: java.lang.String;
+v3 = <com.fasterxml.jackson.core.JsonParser$Feature: com.fasterxml.jackson.core.JsonParser$Feature ALLOW_UNQUOTED_CONTROL_CHARS>;
+v4 = virtualinvoke v0.<com.fasterxml.jackson.core.base.ParserBase: boolean isEnabled(com.fasterxml.jackson.core.JsonParser$Feature)>(v3);
+if v4 == 0 goto label1;
+if v1 <= 32 goto label2;
+label1:
+v5 = staticinvoke <com.fasterxml.jackson.core.base.ParserBase: java.lang.String _getCharDesc(int)>(v7);
+v6 = dynamicinvoke "makeConcatWithConstants" <java.lang.String (java.lang.String,java.lang.String)>(v5, v2) <java.lang.invoke.StringConcatFactory: java.lang.invoke.CallSite makeConcatWithConstants(java.lang.invoke.MethodHandles$Lookup,java.lang.String,java.lang.invoke.MethodType,java.lang.String,java.lang.Object[])>("Illegal unquoted character (\u0001): has to be escaped using backslash to be included in \u0001");
+virtualinvoke v0.<com.fasterxml.jackson.core.base.ParserBase: void _reportError(java.lang.String)>(v6);
+label2:
+return;
+}
+protected java.lang.String _validJsonTokenList() throws java.io.IOException
+{
+com.fasterxml.jackson.core.base.ParserBase v0;
+java.lang.String v1;
+v0 := @this: com.fasterxml.jackson.core.base.ParserBase;
+v1 = virtualinvoke v0.<com.fasterxml.jackson.core.base.ParserBase: java.lang.String _validJsonValueList()>();
+return v1;
+}
+protected java.lang.String _validJsonValueList() throws java.io.IOException
+{
+com.fasterxml.jackson.core.JsonParser$Feature v1;
+com.fasterxml.jackson.core.base.ParserBase v0;
+boolean v2;
+v0 := @this: com.fasterxml.jackson.core.base.ParserBase;
+v1 = <com.fasterxml.jackson.core.JsonParser$Feature: com.fasterxml.jackson.core.JsonParser$Feature ALLOW_NON_NUMERIC_NUMBERS>;
+v2 = virtualinvoke v0.<com.fasterxml.jackson.core.base.ParserBase: boolean isEnabled(com.fasterxml.jackson.core.JsonParser$Feature)>(v1);
+if v2 == 0 goto label1;
+return "(JSON String, Number (or \'NaN\'/\'INF\'/\'+INF\'), Array, Object or token \'null\', \'true\' or \'false\')";
+label1:
+return "(JSON String, Number, Array, Object or token \'null\', \'true\' or \'false\')";
+}
+protected char _decodeEscaped() throws java.io.IOException
+{
+java.lang.UnsupportedOperationException v1;
+com.fasterxml.jackson.core.base.ParserBase v0;
+v0 := @this: com.fasterxml.jackson.core.base.ParserBase;
+v1 = new java.lang.UnsupportedOperationException;
+specialinvoke v1.<java.lang.UnsupportedOperationException: void <init>()>();
+throw v1;
+}
+protected final int _decodeBase64Escape(com.fasterxml.jackson.core.Base64Variant, int, int) throws java.io.IOException
+{
+char v5;
+java.lang.IllegalArgumentException v4, v9;
+com.fasterxml.jackson.core.Base64Variant v1;
+int v2, v3, v6, v7, v8;
+com.fasterxml.jackson.core.base.ParserBase v0;
+v0 := @this: com.fasterxml.jackson.core.base.ParserBase;
+v1 := @parameter0: com.fasterxml.jackson.core.Base64Variant;
+v2 := @parameter1: int;
+v3 := @parameter2: int;
+if v2 == 92 goto label1;
+v4 = virtualinvoke v0.<com.fasterxml.jackson.core.base.ParserBase: java.lang.IllegalArgumentException reportInvalidBase64Char(com.fasterxml.jackson.core.Base64Variant,int,int)>(v1, v2, v3);
+throw v4;
+label1:
+v5 = virtualinvoke v0.<com.fasterxml.jackson.core.base.ParserBase: char _decodeEscaped()>();
+if v5 > 32 goto label2;
+if v3 != 0 goto label2;
+v6 = (int) -1;
+return v6;
+label2:
+v7 = virtualinvoke v1.<com.fasterxml.jackson.core.Base64Variant: int decodeBase64Char(int)>(v5);
+if v7 >= 0 goto label3;
+v8 = (int) -2;
+if v7 == v8 goto label3;
+v9 = virtualinvoke v0.<com.fasterxml.jackson.core.base.ParserBase: java.lang.IllegalArgumentException reportInvalidBase64Char(com.fasterxml.jackson.core.Base64Variant,int,int)>(v1, v5, v3);
+throw v9;
+label3:
+return v7;
+}
+protected final int _decodeBase64Escape(com.fasterxml.jackson.core.Base64Variant, char, int) throws java.io.IOException
+{
+char v2, v5;
+java.lang.IllegalArgumentException v4, v9;
+com.fasterxml.jackson.core.Base64Variant v1;
+int v3, v6, v7, v8;
+com.fasterxml.jackson.core.base.ParserBase v0;
+v0 := @this: com.fasterxml.jackson.core.base.ParserBase;
+v1 := @parameter0: com.fasterxml.jackson.core.Base64Variant;
+v2 := @parameter1: char;
+v3 := @parameter2: int;
+if v2 == 92 goto label1;
+v4 = virtualinvoke v0.<com.fasterxml.jackson.core.base.ParserBase: java.lang.IllegalArgumentException reportInvalidBase64Char(com.fasterxml.jackson.core.Base64Variant,int,int)>(v1, v2, v3);
+throw v4;
+label1:
+v5 = virtualinvoke v0.<com.fasterxml.jackson.core.base.ParserBase: char _decodeEscaped()>();
+if v5 > 32 goto label2;
+if v3 != 0 goto label2;
+v6 = (int) -1;
+return v6;
+label2:
+v7 = virtualinvoke v1.<com.fasterxml.jackson.core.Base64Variant: int decodeBase64Char(char)>(v5);
+if v7 >= 0 goto label4;
+v8 = (int) -2;
+if v7 != v8 goto label3;
+if v3 >= 2 goto label4;
+label3:
+v9 = virtualinvoke v0.<com.fasterxml.jackson.core.base.ParserBase: java.lang.IllegalArgumentException reportInvalidBase64Char(com.fasterxml.jackson.core.Base64Variant,int,int)>(v1, v5, v3);
+throw v9;
+label4:
+return v7;
+}
+protected java.lang.IllegalArgumentException reportInvalidBase64Char(com.fasterxml.jackson.core.Base64Variant, int, int) throws java.lang.IllegalArgumentException
+{
+com.fasterxml.jackson.core.Base64Variant v1;
+int v2, v3;
+com.fasterxml.jackson.core.base.ParserBase v0;
+java.lang.IllegalArgumentException v4;
+v0 := @this: com.fasterxml.jackson.core.base.ParserBase;
+v1 := @parameter0: com.fasterxml.jackson.core.Base64Variant;
+v2 := @parameter1: int;
+v3 := @parameter2: int;
+v4 = virtualinvoke v0.<com.fasterxml.jackson.core.base.ParserBase: java.lang.IllegalArgumentException reportInvalidBase64Char(com.fasterxml.jackson.core.Base64Variant,int,int,java.lang.String)>(v1, v2, v3, null);
+return v4;
+}
+protected java.lang.IllegalArgumentException reportInvalidBase64Char(com.fasterxml.jackson.core.Base64Variant, int, int, java.lang.String) throws java.lang.IllegalArgumentException
+{
+java.lang.Object[] v5;
+java.lang.Integer v8;
+int v12, v2, v3, v7;
+java.lang.String v15, v16, v4, v6, v9;
+boolean v10, v13, v14;
+char v11;
+java.lang.IllegalArgumentException v17;
+com.fasterxml.jackson.core.Base64Variant v1;
+com.fasterxml.jackson.core.base.ParserBase v0;
+v0 := @this: com.fasterxml.jackson.core.base.ParserBase;
+v1 := @parameter0: com.fasterxml.jackson.core.Base64Variant;
+v2 := @parameter1: int;
+v3 := @parameter2: int;
+v4 := @parameter3: java.lang.String;
+if v2 > 32 goto label1;
+v5 = newarray (java.lang.Object)[2];
+v6 = staticinvoke <java.lang.Integer: java.lang.String toHexString(int)>(v2);
+v5[0] = v6;
+v7 = v3 + 1;
+v8 = staticinvoke <java.lang.Integer: java.lang.Integer valueOf(int)>(v7);
+v5[1] = v8;
+v9 = staticinvoke <java.lang.String: java.lang.String format(java.lang.String,java.lang.Object[])>("Illegal white space character (code 0x%s) as character #%d of 4-char base64 unit: can only used between units", v5);
+goto label5;
+label1:
+v10 = virtualinvoke v1.<com.fasterxml.jackson.core.Base64Variant: boolean usesPaddingChar(int)>(v2);
+if v10 == 0 goto label2;
+v11 = virtualinvoke v1.<com.fasterxml.jackson.core.Base64Variant: char getPaddingChar()>();
+v12 = v3 + 1;
+v9 = dynamicinvoke "makeConcatWithConstants" <java.lang.String (char,int)>(v11, v12) <java.lang.invoke.StringConcatFactory: java.lang.invoke.CallSite makeConcatWithConstants(java.lang.invoke.MethodHandles$Lookup,java.lang.String,java.lang.invoke.MethodType,java.lang.String,java.lang.Object[])>("Unexpected padding character (\'\u0001\') as character #\u0001 of 4-char base64 unit: padding only legal as 3rd or 4th character");
+goto label5;
+label2:
+v13 = staticinvoke <java.lang.Character: boolean isDefined(int)>(v2);
+if v13 == 0 goto label3;
+v14 = staticinvoke <java.lang.Character: boolean isISOControl(int)>(v2);
+if v14 == 0 goto label4;
+label3:
+v15 = staticinvoke <java.lang.Integer: java.lang.String toHexString(int)>(v2);
+v9 = dynamicinvoke "makeConcatWithConstants" <java.lang.String (java.lang.String)>(v15) <java.lang.invoke.StringConcatFactory: java.lang.invoke.CallSite makeConcatWithConstants(java.lang.invoke.MethodHandles$Lookup,java.lang.String,java.lang.invoke.MethodType,java.lang.String,java.lang.Object[])>("Illegal character (code 0x\u0001) in base64 content");
+goto label5;
+label4:
+v16 = staticinvoke <java.lang.Integer: java.lang.String toHexString(int)>(v2);
+v9 = dynamicinvoke "makeConcatWithConstants" <java.lang.String (char,java.lang.String)>(v2, v16) <java.lang.invoke.StringConcatFactory: java.lang.invoke.CallSite makeConcatWithConstants(java.lang.invoke.MethodHandles$Lookup,java.lang.String,java.lang.invoke.MethodType,java.lang.String,java.lang.Object[])>("Illegal character \'\u0001\' (code 0x\u0001) in base64 content");
+label5:
+if v4 == null goto label6;
+v9 = dynamicinvoke "makeConcatWithConstants" <java.lang.String (java.lang.String,java.lang.String)>(v9, v4) <java.lang.invoke.StringConcatFactory: java.lang.invoke.CallSite makeConcatWithConstants(java.lang.invoke.MethodHandles$Lookup,java.lang.String,java.lang.invoke.MethodType,java.lang.String,java.lang.Object[])>("\u0001: \u0001");
+label6:
+v17 = new java.lang.IllegalArgumentException;
+specialinvoke v17.<java.lang.IllegalArgumentException: void <init>(java.lang.String)>(v9);
+return v17;
+}
+protected void _handleBase64MissingPadding(com.fasterxml.jackson.core.Base64Variant) throws java.io.IOException
+{
+com.fasterxml.jackson.core.Base64Variant v1;
+com.fasterxml.jackson.core.base.ParserBase v0;
+java.lang.String v2;
+v0 := @this: com.fasterxml.jackson.core.base.ParserBase;
+v1 := @parameter0: com.fasterxml.jackson.core.Base64Variant;
+v2 = virtualinvoke v1.<com.fasterxml.jackson.core.Base64Variant: java.lang.String missingPaddingMessage()>();
+virtualinvoke v0.<com.fasterxml.jackson.core.base.ParserBase: void _reportError(java.lang.String)>(v2);
+return;
+}
+protected java.lang.Object _getSourceReference()
+{
+com.fasterxml.jackson.core.JsonParser$Feature v1;
+com.fasterxml.jackson.core.io.IOContext v4;
+int v2;
+java.lang.Object v6;
+com.fasterxml.jackson.core.base.ParserBase v0;
+boolean v3;
+com.fasterxml.jackson.core.io.ContentReference v5;
+v0 := @this: com.fasterxml.jackson.core.base.ParserBase;
+v1 = <com.fasterxml.jackson.core.JsonParser$Feature: com.fasterxml.jackson.core.JsonParser$Feature INCLUDE_SOURCE_IN_LOCATION>;
+v2 = v0.<com.fasterxml.jackson.core.base.ParserBase: int _features>;
+v3 = virtualinvoke v1.<com.fasterxml.jackson.core.JsonParser$Feature: boolean enabledIn(int)>(v2);
+if v3 == 0 goto label1;
+v4 = v0.<com.fasterxml.jackson.core.base.ParserBase: com.fasterxml.jackson.core.io.IOContext _ioContext>;
+v5 = virtualinvoke v4.<com.fasterxml.jackson.core.io.IOContext: com.fasterxml.jackson.core.io.ContentReference contentReference()>();
+v6 = virtualinvoke v5.<com.fasterxml.jackson.core.io.ContentReference: java.lang.Object getRawContent()>();
+return v6;
+label1:
+return null;
+}
+protected com.fasterxml.jackson.core.io.ContentReference _contentReference()
+{
+com.fasterxml.jackson.core.JsonParser$Feature v1;
+com.fasterxml.jackson.core.io.IOContext v4;
+int v2;
+com.fasterxml.jackson.core.base.ParserBase v0;
+boolean v3;
+com.fasterxml.jackson.core.io.ContentReference v5, v6;
+v0 := @this: com.fasterxml.jackson.core.base.ParserBase;
+v1 = <com.fasterxml.jackson.core.JsonParser$Feature: com.fasterxml.jackson.core.JsonParser$Feature INCLUDE_SOURCE_IN_LOCATION>;
+v2 = v0.<com.fasterxml.jackson.core.base.ParserBase: int _features>;
+v3 = virtualinvoke v1.<com.fasterxml.jackson.core.JsonParser$Feature: boolean enabledIn(int)>(v2);
+if v3 == 0 goto label1;
+v4 = v0.<com.fasterxml.jackson.core.base.ParserBase: com.fasterxml.jackson.core.io.IOContext _ioContext>;
+v5 = virtualinvoke v4.<com.fasterxml.jackson.core.io.IOContext: com.fasterxml.jackson.core.io.ContentReference contentReference()>();
+return v5;
+label1:
+v6 = staticinvoke <com.fasterxml.jackson.core.io.ContentReference: com.fasterxml.jackson.core.io.ContentReference 'unknown'()>();
+return v6;
+}
+protected static int[] growArrayBy(int[], int)
+{
+int[] v0, v2, v5;
+int v1, v3, v4;
+v0 := @parameter0: int[];
+v1 := @parameter1: int;
+if v0 != null goto label1;
+v2 = newarray (int)[v1];
+return v2;
+label1:
+v3 = lengthof v0;
+v4 = v3 + v1;
+v5 = staticinvoke <java.util.Arrays: int[] copyOf(int[],int)>(v0, v4);
+return v5;
+}
+protected void loadMoreGuaranteed() throws java.io.IOException
+{
+com.fasterxml.jackson.core.base.ParserBase v0;
+boolean v1;
+v0 := @this: com.fasterxml.jackson.core.base.ParserBase;
+v1 = virtualinvoke v0.<com.fasterxml.jackson.core.base.ParserBase: boolean loadMore()>();
+if v1 != 0 goto label1;
+virtualinvoke v0.<com.fasterxml.jackson.core.base.ParserBase: void _reportInvalidEOF()>();
+label1:
+return;
+}
+protected boolean loadMore() throws java.io.IOException
+{
+com.fasterxml.jackson.core.base.ParserBase v0;
+v0 := @this: com.fasterxml.jackson.core.base.ParserBase;
+return 0;
+}
+protected void _finishString() throws java.io.IOException
+{
+com.fasterxml.jackson.core.base.ParserBase v0;
+v0 := @this: com.fasterxml.jackson.core.base.ParserBase;
+return;
+}
+static void <clinit>()
+{
+com.fasterxml.jackson.core.util.JacksonFeatureSet v0;
+v0 = <com.fasterxml.jackson.core.base.ParserBase: com.fasterxml.jackson.core.util.JacksonFeatureSet DEFAULT_READ_CAPABILITIES>;
+<com.fasterxml.jackson.core.base.ParserBase: com.fasterxml.jackson.core.util.JacksonFeatureSet JSON_READ_CAPABILITIES> = v0;
+return;
+}
+}

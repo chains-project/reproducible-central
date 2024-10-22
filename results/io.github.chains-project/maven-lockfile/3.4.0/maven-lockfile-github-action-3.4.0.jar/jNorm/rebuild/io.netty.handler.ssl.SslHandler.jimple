@@ -1,0 +1,2606 @@
+public class io.netty.handler.ssl.SslHandler extends io.netty.handler.codec.ByteToMessageDecoder implements io.netty.channel.ChannelOutboundHandler
+{
+private static final io.netty.util.internal.logging.InternalLogger logger;
+private static final java.util.regex.Pattern IGNORABLE_CLASS_IN_STACK;
+private static final java.util.regex.Pattern IGNORABLE_ERROR_MESSAGE;
+private static final int STATE_SENT_FIRST_MESSAGE;
+private static final int STATE_FLUSHED_BEFORE_HANDSHAKE;
+private static final int STATE_READ_DURING_HANDSHAKE;
+private static final int STATE_HANDSHAKE_STARTED;
+private static final int STATE_NEEDS_FLUSH;
+private static final int STATE_OUTBOUND_CLOSED;
+private static final int STATE_CLOSE_NOTIFY;
+private static final int STATE_PROCESS_TASK;
+private static final int STATE_FIRE_CHANNEL_READ;
+private static final int STATE_UNWRAP_REENTRY;
+private static final int MAX_PLAINTEXT_LENGTH;
+private volatile io.netty.channel.ChannelHandlerContext ctx;
+private final javax.net.ssl.SSLEngine engine;
+private final io.netty.handler.ssl.SslHandler$SslEngineType engineType;
+private final java.util.concurrent.Executor delegatedTaskExecutor;
+private final boolean jdkCompatibilityMode;
+private final java.nio.ByteBuffer[] singleBuffer;
+private final boolean startTls;
+private final io.netty.handler.ssl.SslHandler$SslTasksRunner sslTaskRunnerForUnwrap;
+private final io.netty.handler.ssl.SslHandler$SslTasksRunner sslTaskRunner;
+private io.netty.handler.ssl.SslHandler$SslHandlerCoalescingBufferQueue pendingUnencryptedWrites;
+private io.netty.util.concurrent.Promise handshakePromise;
+private final io.netty.handler.ssl.SslHandler$LazyChannelPromise sslClosePromise;
+private int packetLength;
+private short state;
+private volatile long handshakeTimeoutMillis;
+private volatile long closeNotifyFlushTimeoutMillis;
+private volatile long closeNotifyReadTimeoutMillis;
+volatile int wrapDataSize;
+static final boolean $assertionsDisabled;
+public void <init>(javax.net.ssl.SSLEngine)
+{
+io.netty.handler.ssl.SslHandler v0;
+javax.net.ssl.SSLEngine v1;
+v0 := @this: io.netty.handler.ssl.SslHandler;
+v1 := @parameter0: javax.net.ssl.SSLEngine;
+specialinvoke v0.<io.netty.handler.ssl.SslHandler: void <init>(javax.net.ssl.SSLEngine,boolean)>(v1, 0);
+return;
+}
+public void <init>(javax.net.ssl.SSLEngine, boolean)
+{
+io.netty.handler.ssl.SslHandler v0;
+io.netty.util.concurrent.ImmediateExecutor v3;
+boolean v2;
+javax.net.ssl.SSLEngine v1;
+v0 := @this: io.netty.handler.ssl.SslHandler;
+v1 := @parameter0: javax.net.ssl.SSLEngine;
+v2 := @parameter1: boolean;
+v3 = <io.netty.util.concurrent.ImmediateExecutor: io.netty.util.concurrent.ImmediateExecutor INSTANCE>;
+specialinvoke v0.<io.netty.handler.ssl.SslHandler: void <init>(javax.net.ssl.SSLEngine,boolean,java.util.concurrent.Executor)>(v1, v2, v3);
+return;
+}
+public void <init>(javax.net.ssl.SSLEngine, java.util.concurrent.Executor)
+{
+io.netty.handler.ssl.SslHandler v0;
+java.util.concurrent.Executor v2;
+javax.net.ssl.SSLEngine v1;
+v0 := @this: io.netty.handler.ssl.SslHandler;
+v1 := @parameter0: javax.net.ssl.SSLEngine;
+v2 := @parameter1: java.util.concurrent.Executor;
+specialinvoke v0.<io.netty.handler.ssl.SslHandler: void <init>(javax.net.ssl.SSLEngine,boolean,java.util.concurrent.Executor)>(v1, 0, v2);
+return;
+}
+public void <init>(javax.net.ssl.SSLEngine, boolean, java.util.concurrent.Executor)
+{
+javax.net.ssl.SSLEngine v1;
+io.netty.handler.codec.ByteToMessageDecoder$Cumulator v15;
+boolean v13, v2;
+java.nio.ByteBuffer[] v4;
+java.util.concurrent.Executor v3;
+io.netty.handler.ssl.SslHandler$SslEngineType v11, v12, v14;
+io.netty.handler.ssl.SslHandler$SslTasksRunner v5, v6;
+io.netty.handler.ssl.SslHandler v0;
+io.netty.handler.ssl.SslHandler$LazyChannelPromise v7, v8;
+java.lang.Object v10, v9;
+v0 := @this: io.netty.handler.ssl.SslHandler;
+v1 := @parameter0: javax.net.ssl.SSLEngine;
+v2 := @parameter1: boolean;
+v3 := @parameter2: java.util.concurrent.Executor;
+specialinvoke v0.<io.netty.handler.codec.ByteToMessageDecoder: void <init>()>();
+v4 = newarray (java.nio.ByteBuffer)[1];
+v0.<io.netty.handler.ssl.SslHandler: java.nio.ByteBuffer[] singleBuffer> = v4;
+v5 = new io.netty.handler.ssl.SslHandler$SslTasksRunner;
+specialinvoke v5.<io.netty.handler.ssl.SslHandler$SslTasksRunner: void <init>(io.netty.handler.ssl.SslHandler,boolean)>(v0, 1);
+v0.<io.netty.handler.ssl.SslHandler: io.netty.handler.ssl.SslHandler$SslTasksRunner sslTaskRunnerForUnwrap> = v5;
+v6 = new io.netty.handler.ssl.SslHandler$SslTasksRunner;
+specialinvoke v6.<io.netty.handler.ssl.SslHandler$SslTasksRunner: void <init>(io.netty.handler.ssl.SslHandler,boolean)>(v0, 0);
+v0.<io.netty.handler.ssl.SslHandler: io.netty.handler.ssl.SslHandler$SslTasksRunner sslTaskRunner> = v6;
+v7 = new io.netty.handler.ssl.SslHandler$LazyChannelPromise;
+specialinvoke v7.<io.netty.handler.ssl.SslHandler$LazyChannelPromise: void <init>(io.netty.handler.ssl.SslHandler)>(v0);
+v0.<io.netty.handler.ssl.SslHandler: io.netty.util.concurrent.Promise handshakePromise> = v7;
+v8 = new io.netty.handler.ssl.SslHandler$LazyChannelPromise;
+specialinvoke v8.<io.netty.handler.ssl.SslHandler$LazyChannelPromise: void <init>(io.netty.handler.ssl.SslHandler)>(v0);
+v0.<io.netty.handler.ssl.SslHandler: io.netty.handler.ssl.SslHandler$LazyChannelPromise sslClosePromise> = v8;
+v0.<io.netty.handler.ssl.SslHandler: long handshakeTimeoutMillis> = 10000L;
+v0.<io.netty.handler.ssl.SslHandler: long closeNotifyFlushTimeoutMillis> = 3000L;
+v0.<io.netty.handler.ssl.SslHandler: int wrapDataSize> = 16384;
+v9 = staticinvoke <io.netty.util.internal.ObjectUtil: java.lang.Object checkNotNull(java.lang.Object,java.lang.String)>(v1, "engine");
+v0.<io.netty.handler.ssl.SslHandler: javax.net.ssl.SSLEngine engine> = v9;
+v10 = staticinvoke <io.netty.util.internal.ObjectUtil: java.lang.Object checkNotNull(java.lang.Object,java.lang.String)>(v3, "delegatedTaskExecutor");
+v0.<io.netty.handler.ssl.SslHandler: java.util.concurrent.Executor delegatedTaskExecutor> = v10;
+v11 = staticinvoke <io.netty.handler.ssl.SslHandler$SslEngineType: io.netty.handler.ssl.SslHandler$SslEngineType forEngine(javax.net.ssl.SSLEngine)>(v1);
+v0.<io.netty.handler.ssl.SslHandler: io.netty.handler.ssl.SslHandler$SslEngineType engineType> = v11;
+v0.<io.netty.handler.ssl.SslHandler: boolean startTls> = v2;
+v12 = v0.<io.netty.handler.ssl.SslHandler: io.netty.handler.ssl.SslHandler$SslEngineType engineType>;
+v13 = virtualinvoke v12.<io.netty.handler.ssl.SslHandler$SslEngineType: boolean jdkCompatibilityMode(javax.net.ssl.SSLEngine)>(v1);
+v0.<io.netty.handler.ssl.SslHandler: boolean jdkCompatibilityMode> = v13;
+v14 = v0.<io.netty.handler.ssl.SslHandler: io.netty.handler.ssl.SslHandler$SslEngineType engineType>;
+v15 = v14.<io.netty.handler.ssl.SslHandler$SslEngineType: io.netty.handler.codec.ByteToMessageDecoder$Cumulator cumulator>;
+virtualinvoke v0.<io.netty.handler.ssl.SslHandler: void setCumulator(io.netty.handler.codec.ByteToMessageDecoder$Cumulator)>(v15);
+return;
+}
+public long getHandshakeTimeoutMillis()
+{
+long v1;
+io.netty.handler.ssl.SslHandler v0;
+v0 := @this: io.netty.handler.ssl.SslHandler;
+v1 = v0.<io.netty.handler.ssl.SslHandler: long handshakeTimeoutMillis>;
+return v1;
+}
+public void setHandshakeTimeout(long, java.util.concurrent.TimeUnit)
+{
+java.util.concurrent.TimeUnit v2;
+io.netty.handler.ssl.SslHandler v0;
+long v1, v3;
+v0 := @this: io.netty.handler.ssl.SslHandler;
+v1 := @parameter0: long;
+v2 := @parameter1: java.util.concurrent.TimeUnit;
+staticinvoke <io.netty.util.internal.ObjectUtil: java.lang.Object checkNotNull(java.lang.Object,java.lang.String)>(v2, "unit");
+v3 = virtualinvoke v2.<java.util.concurrent.TimeUnit: long toMillis(long)>(v1);
+virtualinvoke v0.<io.netty.handler.ssl.SslHandler: void setHandshakeTimeoutMillis(long)>(v3);
+return;
+}
+public void setHandshakeTimeoutMillis(long)
+{
+long v1, v2;
+io.netty.handler.ssl.SslHandler v0;
+v0 := @this: io.netty.handler.ssl.SslHandler;
+v1 := @parameter0: long;
+v2 = staticinvoke <io.netty.util.internal.ObjectUtil: long checkPositiveOrZero(long,java.lang.String)>(v1, "handshakeTimeoutMillis");
+v0.<io.netty.handler.ssl.SslHandler: long handshakeTimeoutMillis> = v2;
+return;
+}
+public final void setWrapDataSize(int)
+{
+int v1;
+io.netty.handler.ssl.SslHandler v0;
+v0 := @this: io.netty.handler.ssl.SslHandler;
+v1 := @parameter0: int;
+v0.<io.netty.handler.ssl.SslHandler: int wrapDataSize> = v1;
+return;
+}
+public long getCloseNotifyTimeoutMillis()
+{
+long v1;
+io.netty.handler.ssl.SslHandler v0;
+v0 := @this: io.netty.handler.ssl.SslHandler;
+v1 = virtualinvoke v0.<io.netty.handler.ssl.SslHandler: long getCloseNotifyFlushTimeoutMillis()>();
+return v1;
+}
+public void setCloseNotifyTimeout(long, java.util.concurrent.TimeUnit)
+{
+java.util.concurrent.TimeUnit v2;
+long v1;
+io.netty.handler.ssl.SslHandler v0;
+v0 := @this: io.netty.handler.ssl.SslHandler;
+v1 := @parameter0: long;
+v2 := @parameter1: java.util.concurrent.TimeUnit;
+virtualinvoke v0.<io.netty.handler.ssl.SslHandler: void setCloseNotifyFlushTimeout(long,java.util.concurrent.TimeUnit)>(v1, v2);
+return;
+}
+public void setCloseNotifyTimeoutMillis(long)
+{
+long v1;
+io.netty.handler.ssl.SslHandler v0;
+v0 := @this: io.netty.handler.ssl.SslHandler;
+v1 := @parameter0: long;
+virtualinvoke v0.<io.netty.handler.ssl.SslHandler: void setCloseNotifyFlushTimeoutMillis(long)>(v1);
+return;
+}
+public final long getCloseNotifyFlushTimeoutMillis()
+{
+long v1;
+io.netty.handler.ssl.SslHandler v0;
+v0 := @this: io.netty.handler.ssl.SslHandler;
+v1 = v0.<io.netty.handler.ssl.SslHandler: long closeNotifyFlushTimeoutMillis>;
+return v1;
+}
+public final void setCloseNotifyFlushTimeout(long, java.util.concurrent.TimeUnit)
+{
+java.util.concurrent.TimeUnit v2;
+io.netty.handler.ssl.SslHandler v0;
+long v1, v3;
+v0 := @this: io.netty.handler.ssl.SslHandler;
+v1 := @parameter0: long;
+v2 := @parameter1: java.util.concurrent.TimeUnit;
+v3 = virtualinvoke v2.<java.util.concurrent.TimeUnit: long toMillis(long)>(v1);
+virtualinvoke v0.<io.netty.handler.ssl.SslHandler: void setCloseNotifyFlushTimeoutMillis(long)>(v3);
+return;
+}
+public final void setCloseNotifyFlushTimeoutMillis(long)
+{
+long v1, v2;
+io.netty.handler.ssl.SslHandler v0;
+v0 := @this: io.netty.handler.ssl.SslHandler;
+v1 := @parameter0: long;
+v2 = staticinvoke <io.netty.util.internal.ObjectUtil: long checkPositiveOrZero(long,java.lang.String)>(v1, "closeNotifyFlushTimeoutMillis");
+v0.<io.netty.handler.ssl.SslHandler: long closeNotifyFlushTimeoutMillis> = v2;
+return;
+}
+public final long getCloseNotifyReadTimeoutMillis()
+{
+long v1;
+io.netty.handler.ssl.SslHandler v0;
+v0 := @this: io.netty.handler.ssl.SslHandler;
+v1 = v0.<io.netty.handler.ssl.SslHandler: long closeNotifyReadTimeoutMillis>;
+return v1;
+}
+public final void setCloseNotifyReadTimeout(long, java.util.concurrent.TimeUnit)
+{
+java.util.concurrent.TimeUnit v2;
+io.netty.handler.ssl.SslHandler v0;
+long v1, v3;
+v0 := @this: io.netty.handler.ssl.SslHandler;
+v1 := @parameter0: long;
+v2 := @parameter1: java.util.concurrent.TimeUnit;
+v3 = virtualinvoke v2.<java.util.concurrent.TimeUnit: long toMillis(long)>(v1);
+virtualinvoke v0.<io.netty.handler.ssl.SslHandler: void setCloseNotifyReadTimeoutMillis(long)>(v3);
+return;
+}
+public final void setCloseNotifyReadTimeoutMillis(long)
+{
+long v1, v2;
+io.netty.handler.ssl.SslHandler v0;
+v0 := @this: io.netty.handler.ssl.SslHandler;
+v1 := @parameter0: long;
+v2 = staticinvoke <io.netty.util.internal.ObjectUtil: long checkPositiveOrZero(long,java.lang.String)>(v1, "closeNotifyReadTimeoutMillis");
+v0.<io.netty.handler.ssl.SslHandler: long closeNotifyReadTimeoutMillis> = v2;
+return;
+}
+public javax.net.ssl.SSLEngine engine()
+{
+io.netty.handler.ssl.SslHandler v0;
+javax.net.ssl.SSLEngine v1;
+v0 := @this: io.netty.handler.ssl.SslHandler;
+v1 = v0.<io.netty.handler.ssl.SslHandler: javax.net.ssl.SSLEngine engine>;
+return v1;
+}
+public java.lang.String applicationProtocol()
+{
+io.netty.handler.ssl.SslHandler v0;
+java.lang.String v3;
+boolean v2;
+javax.net.ssl.SSLEngine v1;
+v0 := @this: io.netty.handler.ssl.SslHandler;
+v1 = virtualinvoke v0.<io.netty.handler.ssl.SslHandler: javax.net.ssl.SSLEngine engine()>();
+v2 = v1 instanceof io.netty.handler.ssl.ApplicationProtocolAccessor;
+if v2 != 0 goto label1;
+return null;
+label1:
+v3 = interfaceinvoke v1.<io.netty.handler.ssl.ApplicationProtocolAccessor: java.lang.String getNegotiatedApplicationProtocol()>();
+return v3;
+}
+public io.netty.util.concurrent.Future handshakeFuture()
+{
+io.netty.util.concurrent.Promise v1;
+io.netty.handler.ssl.SslHandler v0;
+v0 := @this: io.netty.handler.ssl.SslHandler;
+v1 = v0.<io.netty.handler.ssl.SslHandler: io.netty.util.concurrent.Promise handshakePromise>;
+return v1;
+}
+public io.netty.channel.ChannelFuture close()
+{
+io.netty.handler.ssl.SslHandler v0;
+io.netty.channel.ChannelFuture v1;
+v0 := @this: io.netty.handler.ssl.SslHandler;
+v1 = virtualinvoke v0.<io.netty.handler.ssl.SslHandler: io.netty.channel.ChannelFuture closeOutbound()>();
+return v1;
+}
+public io.netty.channel.ChannelFuture close(io.netty.channel.ChannelPromise)
+{
+io.netty.channel.ChannelPromise v1;
+io.netty.handler.ssl.SslHandler v0;
+io.netty.channel.ChannelFuture v2;
+v0 := @this: io.netty.handler.ssl.SslHandler;
+v1 := @parameter0: io.netty.channel.ChannelPromise;
+v2 = virtualinvoke v0.<io.netty.handler.ssl.SslHandler: io.netty.channel.ChannelFuture closeOutbound(io.netty.channel.ChannelPromise)>(v1);
+return v2;
+}
+public io.netty.channel.ChannelFuture closeOutbound()
+{
+io.netty.channel.ChannelHandlerContext v1;
+io.netty.channel.ChannelPromise v2;
+io.netty.handler.ssl.SslHandler v0;
+io.netty.channel.ChannelFuture v3;
+v0 := @this: io.netty.handler.ssl.SslHandler;
+v1 = v0.<io.netty.handler.ssl.SslHandler: io.netty.channel.ChannelHandlerContext ctx>;
+v2 = interfaceinvoke v1.<io.netty.channel.ChannelHandlerContext: io.netty.channel.ChannelPromise newPromise()>();
+v3 = virtualinvoke v0.<io.netty.handler.ssl.SslHandler: io.netty.channel.ChannelFuture closeOutbound(io.netty.channel.ChannelPromise)>(v2);
+return v3;
+}
+public io.netty.channel.ChannelFuture closeOutbound(io.netty.channel.ChannelPromise)
+{
+io.netty.util.concurrent.EventExecutor v3, v5;
+io.netty.channel.ChannelHandlerContext v2;
+io.netty.channel.ChannelPromise v1;
+io.netty.handler.ssl.SslHandler v0;
+io.netty.handler.ssl.SslHandler$1 v6;
+boolean v4;
+v0 := @this: io.netty.handler.ssl.SslHandler;
+v1 := @parameter0: io.netty.channel.ChannelPromise;
+v2 = v0.<io.netty.handler.ssl.SslHandler: io.netty.channel.ChannelHandlerContext ctx>;
+v3 = interfaceinvoke v2.<io.netty.channel.ChannelHandlerContext: io.netty.util.concurrent.EventExecutor executor()>();
+v4 = interfaceinvoke v3.<io.netty.util.concurrent.EventExecutor: boolean inEventLoop()>();
+if v4 == 0 goto label1;
+specialinvoke v0.<io.netty.handler.ssl.SslHandler: void closeOutbound0(io.netty.channel.ChannelPromise)>(v1);
+goto label2;
+label1:
+v5 = interfaceinvoke v2.<io.netty.channel.ChannelHandlerContext: io.netty.util.concurrent.EventExecutor executor()>();
+v6 = new io.netty.handler.ssl.SslHandler$1;
+specialinvoke v6.<io.netty.handler.ssl.SslHandler$1: void <init>(io.netty.handler.ssl.SslHandler,io.netty.channel.ChannelPromise)>(v0, v1);
+interfaceinvoke v5.<io.netty.util.concurrent.EventExecutor: void execute(java.lang.Runnable)>(v6);
+label2:
+return v1;
+}
+private void closeOutbound0(io.netty.channel.ChannelPromise)
+{
+java.lang.Exception v4;
+javax.net.ssl.SSLEngine v2;
+io.netty.channel.Channel v8;
+io.netty.channel.ChannelHandlerContext v3, v7;
+io.netty.channel.ChannelPromise v1;
+io.netty.handler.ssl.SslHandler v0;
+io.netty.util.internal.logging.InternalLogger v6;
+boolean v5;
+v0 := @this: io.netty.handler.ssl.SslHandler;
+v1 := @parameter0: io.netty.channel.ChannelPromise;
+specialinvoke v0.<io.netty.handler.ssl.SslHandler: void setState(int)>(32);
+v2 = v0.<io.netty.handler.ssl.SslHandler: javax.net.ssl.SSLEngine engine>;
+virtualinvoke v2.<javax.net.ssl.SSLEngine: void closeOutbound()>();
+label1:
+v3 = v0.<io.netty.handler.ssl.SslHandler: io.netty.channel.ChannelHandlerContext ctx>;
+specialinvoke v0.<io.netty.handler.ssl.SslHandler: void flush(io.netty.channel.ChannelHandlerContext,io.netty.channel.ChannelPromise)>(v3, v1);
+label2:
+goto label4;
+label3:
+v4 := @caughtexception;
+v5 = interfaceinvoke v1.<io.netty.channel.ChannelPromise: boolean tryFailure(java.lang.Throwable)>(v4);
+if v5 != 0 goto label4;
+v6 = <io.netty.handler.ssl.SslHandler: io.netty.util.internal.logging.InternalLogger logger>;
+v7 = v0.<io.netty.handler.ssl.SslHandler: io.netty.channel.ChannelHandlerContext ctx>;
+v8 = interfaceinvoke v7.<io.netty.channel.ChannelHandlerContext: io.netty.channel.Channel channel()>();
+interfaceinvoke v6.<io.netty.util.internal.logging.InternalLogger: void warn(java.lang.String,java.lang.Object,java.lang.Object)>("{} flush() raised a masked exception.", v8, v4);
+label4:
+return;
+catch java.lang.Exception from label1 to label2 with label3;
+}
+public io.netty.util.concurrent.Future sslCloseFuture()
+{
+io.netty.handler.ssl.SslHandler$LazyChannelPromise v1;
+io.netty.handler.ssl.SslHandler v0;
+v0 := @this: io.netty.handler.ssl.SslHandler;
+v1 = v0.<io.netty.handler.ssl.SslHandler: io.netty.handler.ssl.SslHandler$LazyChannelPromise sslClosePromise>;
+return v1;
+}
+public void handlerRemoved0(io.netty.channel.ChannelHandlerContext) throws java.lang.Exception
+{
+java.lang.Throwable v18;
+javax.net.ssl.SSLEngine v17, v19;
+io.netty.channel.ChannelHandlerContext v1;
+io.netty.handler.ssl.SslHandshakeCompletionEvent v13;
+boolean v12, v15, v4, v9;
+io.netty.util.concurrent.Promise v11, v8;
+javax.net.ssl.SSLHandshakeException v10;
+io.netty.handler.ssl.SslHandler$SslHandlerCoalescingBufferQueue v2, v3, v5;
+io.netty.channel.ChannelException v6;
+javax.net.ssl.SSLException v16, v7;
+io.netty.handler.ssl.SslHandler v0;
+io.netty.handler.ssl.SslHandler$LazyChannelPromise v14;
+v0 := @this: io.netty.handler.ssl.SslHandler;
+v1 := @parameter0: io.netty.channel.ChannelHandlerContext;
+label1:
+v2 = v0.<io.netty.handler.ssl.SslHandler: io.netty.handler.ssl.SslHandler$SslHandlerCoalescingBufferQueue pendingUnencryptedWrites>;
+if v2 == null goto label2;
+v3 = v0.<io.netty.handler.ssl.SslHandler: io.netty.handler.ssl.SslHandler$SslHandlerCoalescingBufferQueue pendingUnencryptedWrites>;
+v4 = virtualinvoke v3.<io.netty.handler.ssl.SslHandler$SslHandlerCoalescingBufferQueue: boolean isEmpty()>();
+if v4 != 0 goto label2;
+v5 = v0.<io.netty.handler.ssl.SslHandler: io.netty.handler.ssl.SslHandler$SslHandlerCoalescingBufferQueue pendingUnencryptedWrites>;
+v6 = new io.netty.channel.ChannelException;
+specialinvoke v6.<io.netty.channel.ChannelException: void <init>(java.lang.String)>("Pending write on removal of SslHandler");
+virtualinvoke v5.<io.netty.handler.ssl.SslHandler$SslHandlerCoalescingBufferQueue: void releaseAndFailAll(io.netty.channel.ChannelOutboundInvoker,java.lang.Throwable)>(v1, v6);
+label2:
+v0.<io.netty.handler.ssl.SslHandler: io.netty.handler.ssl.SslHandler$SslHandlerCoalescingBufferQueue pendingUnencryptedWrites> = null;
+v7 = null;
+v8 = v0.<io.netty.handler.ssl.SslHandler: io.netty.util.concurrent.Promise handshakePromise>;
+v9 = interfaceinvoke v8.<io.netty.util.concurrent.Promise: boolean isDone()>();
+if v9 != 0 goto label3;
+v10 = new javax.net.ssl.SSLHandshakeException;
+specialinvoke v10.<javax.net.ssl.SSLHandshakeException: void <init>(java.lang.String)>("SslHandler removed before handshake completed");
+v7 = v10;
+v11 = v0.<io.netty.handler.ssl.SslHandler: io.netty.util.concurrent.Promise handshakePromise>;
+v12 = interfaceinvoke v11.<io.netty.util.concurrent.Promise: boolean tryFailure(java.lang.Throwable)>(v10);
+if v12 == 0 goto label3;
+v13 = new io.netty.handler.ssl.SslHandshakeCompletionEvent;
+specialinvoke v13.<io.netty.handler.ssl.SslHandshakeCompletionEvent: void <init>(java.lang.Throwable)>(v10);
+interfaceinvoke v1.<io.netty.channel.ChannelHandlerContext: io.netty.channel.ChannelHandlerContext fireUserEventTriggered(java.lang.Object)>(v13);
+label3:
+v14 = v0.<io.netty.handler.ssl.SslHandler: io.netty.handler.ssl.SslHandler$LazyChannelPromise sslClosePromise>;
+v15 = virtualinvoke v14.<io.netty.handler.ssl.SslHandler$LazyChannelPromise: boolean isDone()>();
+if v15 != 0 goto label5;
+if v7 != null goto label4;
+v16 = new javax.net.ssl.SSLException;
+specialinvoke v16.<javax.net.ssl.SSLException: void <init>(java.lang.String)>("SslHandler removed before SSLEngine was closed");
+v7 = v16;
+label4:
+specialinvoke v0.<io.netty.handler.ssl.SslHandler: void notifyClosePromise(java.lang.Throwable)>(v7);
+label5:
+v17 = v0.<io.netty.handler.ssl.SslHandler: javax.net.ssl.SSLEngine engine>;
+staticinvoke <io.netty.util.ReferenceCountUtil: boolean release(java.lang.Object)>(v17);
+goto label7;
+label6:
+v18 := @caughtexception;
+v19 = v0.<io.netty.handler.ssl.SslHandler: javax.net.ssl.SSLEngine engine>;
+staticinvoke <io.netty.util.ReferenceCountUtil: boolean release(java.lang.Object)>(v19);
+throw v18;
+label7:
+return;
+catch java.lang.Throwable from label1 to label5 with label6;
+}
+public void bind(io.netty.channel.ChannelHandlerContext, java.net.SocketAddress, io.netty.channel.ChannelPromise) throws java.lang.Exception
+{
+io.netty.channel.ChannelHandlerContext v1;
+io.netty.channel.ChannelPromise v3;
+java.net.SocketAddress v2;
+io.netty.handler.ssl.SslHandler v0;
+v0 := @this: io.netty.handler.ssl.SslHandler;
+v1 := @parameter0: io.netty.channel.ChannelHandlerContext;
+v2 := @parameter1: java.net.SocketAddress;
+v3 := @parameter2: io.netty.channel.ChannelPromise;
+interfaceinvoke v1.<io.netty.channel.ChannelHandlerContext: io.netty.channel.ChannelFuture bind(java.net.SocketAddress,io.netty.channel.ChannelPromise)>(v2, v3);
+return;
+}
+public void connect(io.netty.channel.ChannelHandlerContext, java.net.SocketAddress, java.net.SocketAddress, io.netty.channel.ChannelPromise) throws java.lang.Exception
+{
+io.netty.channel.ChannelHandlerContext v1;
+io.netty.channel.ChannelPromise v4;
+java.net.SocketAddress v2, v3;
+io.netty.handler.ssl.SslHandler v0;
+v0 := @this: io.netty.handler.ssl.SslHandler;
+v1 := @parameter0: io.netty.channel.ChannelHandlerContext;
+v2 := @parameter1: java.net.SocketAddress;
+v3 := @parameter2: java.net.SocketAddress;
+v4 := @parameter3: io.netty.channel.ChannelPromise;
+interfaceinvoke v1.<io.netty.channel.ChannelHandlerContext: io.netty.channel.ChannelFuture connect(java.net.SocketAddress,java.net.SocketAddress,io.netty.channel.ChannelPromise)>(v2, v3, v4);
+return;
+}
+public void deregister(io.netty.channel.ChannelHandlerContext, io.netty.channel.ChannelPromise) throws java.lang.Exception
+{
+io.netty.channel.ChannelHandlerContext v1;
+io.netty.channel.ChannelPromise v2;
+io.netty.handler.ssl.SslHandler v0;
+v0 := @this: io.netty.handler.ssl.SslHandler;
+v1 := @parameter0: io.netty.channel.ChannelHandlerContext;
+v2 := @parameter1: io.netty.channel.ChannelPromise;
+interfaceinvoke v1.<io.netty.channel.ChannelHandlerContext: io.netty.channel.ChannelFuture deregister(io.netty.channel.ChannelPromise)>(v2);
+return;
+}
+public void disconnect(io.netty.channel.ChannelHandlerContext, io.netty.channel.ChannelPromise) throws java.lang.Exception
+{
+io.netty.channel.ChannelHandlerContext v1;
+io.netty.channel.ChannelPromise v2;
+io.netty.handler.ssl.SslHandler v0;
+v0 := @this: io.netty.handler.ssl.SslHandler;
+v1 := @parameter0: io.netty.channel.ChannelHandlerContext;
+v2 := @parameter1: io.netty.channel.ChannelPromise;
+specialinvoke v0.<io.netty.handler.ssl.SslHandler: void closeOutboundAndChannel(io.netty.channel.ChannelHandlerContext,io.netty.channel.ChannelPromise,boolean)>(v1, v2, 1);
+return;
+}
+public void close(io.netty.channel.ChannelHandlerContext, io.netty.channel.ChannelPromise) throws java.lang.Exception
+{
+io.netty.channel.ChannelHandlerContext v1;
+io.netty.channel.ChannelPromise v2;
+io.netty.handler.ssl.SslHandler v0;
+v0 := @this: io.netty.handler.ssl.SslHandler;
+v1 := @parameter0: io.netty.channel.ChannelHandlerContext;
+v2 := @parameter1: io.netty.channel.ChannelPromise;
+specialinvoke v0.<io.netty.handler.ssl.SslHandler: void closeOutboundAndChannel(io.netty.channel.ChannelHandlerContext,io.netty.channel.ChannelPromise,boolean)>(v1, v2, 0);
+return;
+}
+public void read(io.netty.channel.ChannelHandlerContext) throws java.lang.Exception
+{
+io.netty.channel.ChannelHandlerContext v1;
+io.netty.util.concurrent.Promise v2;
+io.netty.handler.ssl.SslHandler v0;
+boolean v3;
+v0 := @this: io.netty.handler.ssl.SslHandler;
+v1 := @parameter0: io.netty.channel.ChannelHandlerContext;
+v2 = v0.<io.netty.handler.ssl.SslHandler: io.netty.util.concurrent.Promise handshakePromise>;
+v3 = interfaceinvoke v2.<io.netty.util.concurrent.Promise: boolean isDone()>();
+if v3 != 0 goto label1;
+specialinvoke v0.<io.netty.handler.ssl.SslHandler: void setState(int)>(4);
+label1:
+interfaceinvoke v1.<io.netty.channel.ChannelHandlerContext: io.netty.channel.ChannelHandlerContext read()>();
+return;
+}
+private static java.lang.IllegalStateException newPendingWritesNullException()
+{
+java.lang.IllegalStateException v0;
+v0 = new java.lang.IllegalStateException;
+specialinvoke v0.<java.lang.IllegalStateException: void <init>(java.lang.String)>("pendingUnencryptedWrites is null, handlerRemoved0 called?");
+return v0;
+}
+public void write(io.netty.channel.ChannelHandlerContext, java.lang.Object, io.netty.channel.ChannelPromise) throws java.lang.Exception
+{
+java.lang.IllegalStateException v8;
+java.lang.Class[] v6;
+io.netty.handler.ssl.SslHandler$SslHandlerCoalescingBufferQueue v7, v9;
+io.netty.channel.ChannelHandlerContext v1;
+io.netty.channel.ChannelPromise v3;
+io.netty.handler.ssl.SslHandler v0;
+java.lang.Object v2;
+io.netty.handler.codec.UnsupportedMessageTypeException v5;
+boolean v4;
+v0 := @this: io.netty.handler.ssl.SslHandler;
+v1 := @parameter0: io.netty.channel.ChannelHandlerContext;
+v2 := @parameter1: java.lang.Object;
+v3 := @parameter2: io.netty.channel.ChannelPromise;
+v4 = v2 instanceof io.netty.buffer.ByteBuf;
+if v4 != 0 goto label1;
+v5 = new io.netty.handler.codec.UnsupportedMessageTypeException;
+v6 = newarray (java.lang.Class)[1];
+v6[0] = class "Lio/netty/buffer/ByteBuf;";
+specialinvoke v5.<io.netty.handler.codec.UnsupportedMessageTypeException: void <init>(java.lang.Object,java.lang.Class[])>(v2, v6);
+staticinvoke <io.netty.util.ReferenceCountUtil: void safeRelease(java.lang.Object)>(v2);
+interfaceinvoke v3.<io.netty.channel.ChannelPromise: io.netty.channel.ChannelPromise setFailure(java.lang.Throwable)>(v5);
+goto label3;
+label1:
+v7 = v0.<io.netty.handler.ssl.SslHandler: io.netty.handler.ssl.SslHandler$SslHandlerCoalescingBufferQueue pendingUnencryptedWrites>;
+if v7 != null goto label2;
+staticinvoke <io.netty.util.ReferenceCountUtil: void safeRelease(java.lang.Object)>(v2);
+v8 = staticinvoke <io.netty.handler.ssl.SslHandler: java.lang.IllegalStateException newPendingWritesNullException()>();
+interfaceinvoke v3.<io.netty.channel.ChannelPromise: io.netty.channel.ChannelPromise setFailure(java.lang.Throwable)>(v8);
+goto label3;
+label2:
+v9 = v0.<io.netty.handler.ssl.SslHandler: io.netty.handler.ssl.SslHandler$SslHandlerCoalescingBufferQueue pendingUnencryptedWrites>;
+virtualinvoke v9.<io.netty.handler.ssl.SslHandler$SslHandlerCoalescingBufferQueue: void add(io.netty.buffer.ByteBuf,io.netty.channel.ChannelPromise)>(v2, v3);
+label3:
+return;
+}
+public void flush(io.netty.channel.ChannelHandlerContext) throws java.lang.Exception
+{
+java.lang.Throwable v6;
+io.netty.channel.ChannelHandlerContext v1;
+io.netty.handler.ssl.SslHandler v0;
+boolean v2, v3, v5;
+io.netty.handler.ssl.SslHandler$SslHandlerCoalescingBufferQueue v4;
+v0 := @this: io.netty.handler.ssl.SslHandler;
+v1 := @parameter0: io.netty.channel.ChannelHandlerContext;
+v2 = v0.<io.netty.handler.ssl.SslHandler: boolean startTls>;
+if v2 == 0 goto label1;
+v3 = specialinvoke v0.<io.netty.handler.ssl.SslHandler: boolean isStateSet(int)>(1);
+if v3 != 0 goto label1;
+specialinvoke v0.<io.netty.handler.ssl.SslHandler: void setState(int)>(1);
+v4 = v0.<io.netty.handler.ssl.SslHandler: io.netty.handler.ssl.SslHandler$SslHandlerCoalescingBufferQueue pendingUnencryptedWrites>;
+virtualinvoke v4.<io.netty.handler.ssl.SslHandler$SslHandlerCoalescingBufferQueue: void writeAndRemoveAll(io.netty.channel.ChannelHandlerContext)>(v1);
+specialinvoke v0.<io.netty.handler.ssl.SslHandler: void forceFlush(io.netty.channel.ChannelHandlerContext)>(v1);
+specialinvoke v0.<io.netty.handler.ssl.SslHandler: void startHandshakeProcessing(boolean)>(1);
+return;
+label1:
+v5 = specialinvoke v0.<io.netty.handler.ssl.SslHandler: boolean isStateSet(int)>(128);
+if v5 == 0 goto label2;
+return;
+label2:
+specialinvoke v0.<io.netty.handler.ssl.SslHandler: void wrapAndFlush(io.netty.channel.ChannelHandlerContext)>(v1);
+label3:
+goto label5;
+label4:
+v6 := @caughtexception;
+specialinvoke v0.<io.netty.handler.ssl.SslHandler: void setHandshakeFailure(io.netty.channel.ChannelHandlerContext,java.lang.Throwable)>(v1, v6);
+staticinvoke <io.netty.util.internal.PlatformDependent: void throwException(java.lang.Throwable)>(v6);
+label5:
+return;
+catch java.lang.Throwable from label2 to label3 with label4;
+}
+private void wrapAndFlush(io.netty.channel.ChannelHandlerContext) throws javax.net.ssl.SSLException
+{
+java.lang.Throwable v9;
+io.netty.util.concurrent.Promise v7;
+io.netty.handler.ssl.SslHandler$SslHandlerCoalescingBufferQueue v2, v4;
+io.netty.channel.ChannelHandlerContext v1;
+io.netty.buffer.ByteBuf v5;
+io.netty.channel.ChannelPromise v6;
+io.netty.handler.ssl.SslHandler v0;
+boolean v3, v8;
+v0 := @this: io.netty.handler.ssl.SslHandler;
+v1 := @parameter0: io.netty.channel.ChannelHandlerContext;
+v2 = v0.<io.netty.handler.ssl.SslHandler: io.netty.handler.ssl.SslHandler$SslHandlerCoalescingBufferQueue pendingUnencryptedWrites>;
+v3 = virtualinvoke v2.<io.netty.handler.ssl.SslHandler$SslHandlerCoalescingBufferQueue: boolean isEmpty()>();
+if v3 == 0 goto label1;
+v4 = v0.<io.netty.handler.ssl.SslHandler: io.netty.handler.ssl.SslHandler$SslHandlerCoalescingBufferQueue pendingUnencryptedWrites>;
+v5 = <io.netty.buffer.Unpooled: io.netty.buffer.ByteBuf EMPTY_BUFFER>;
+v6 = interfaceinvoke v1.<io.netty.channel.ChannelHandlerContext: io.netty.channel.ChannelPromise newPromise()>();
+virtualinvoke v4.<io.netty.handler.ssl.SslHandler$SslHandlerCoalescingBufferQueue: void add(io.netty.buffer.ByteBuf,io.netty.channel.ChannelPromise)>(v5, v6);
+label1:
+v7 = v0.<io.netty.handler.ssl.SslHandler: io.netty.util.concurrent.Promise handshakePromise>;
+v8 = interfaceinvoke v7.<io.netty.util.concurrent.Promise: boolean isDone()>();
+if v8 != 0 goto label2;
+specialinvoke v0.<io.netty.handler.ssl.SslHandler: void setState(int)>(2);
+label2:
+specialinvoke v0.<io.netty.handler.ssl.SslHandler: void wrap(io.netty.channel.ChannelHandlerContext,boolean)>(v1, 0);
+label3:
+specialinvoke v0.<io.netty.handler.ssl.SslHandler: void forceFlush(io.netty.channel.ChannelHandlerContext)>(v1);
+goto label5;
+label4:
+v9 := @caughtexception;
+specialinvoke v0.<io.netty.handler.ssl.SslHandler: void forceFlush(io.netty.channel.ChannelHandlerContext)>(v1);
+throw v9;
+label5:
+return;
+catch java.lang.Throwable from label2 to label3 with label4;
+}
+private void wrap(io.netty.channel.ChannelHandlerContext, boolean) throws javax.net.ssl.SSLException
+{
+java.lang.IllegalStateException v38;
+io.netty.buffer.ByteBufAllocator v4;
+javax.net.ssl.SSLEngineResult$HandshakeStatus v29, v39;
+io.netty.channel.ChannelPromise v7;
+int[] v28;
+boolean v16, v18, v2, v32, v35, v6;
+io.netty.handler.ssl.SslHandler v0;
+io.netty.handler.ssl.SslHandler$LazyChannelPromise v25;
+java.lang.Throwable v24, v41;
+io.netty.handler.ssl.SslClosedEngineException v26;
+javax.net.ssl.SSLEngine v14;
+io.netty.channel.ChannelHandlerContext v1;
+javax.net.ssl.SSLEngineResult v15;
+io.netty.buffer.ByteBuf v11, v19, v20, v3, v37, v9;
+int v12, v13, v30, v31, v33, v5;
+java.lang.String v40;
+javax.net.ssl.SSLEngineResult$Status v21, v22;
+io.netty.util.concurrent.Promise v23;
+io.netty.handler.ssl.SslHandler$SslHandlerCoalescingBufferQueue v10, v17, v27, v34, v36, v8;
+v0 := @this: io.netty.handler.ssl.SslHandler;
+v1 := @parameter0: io.netty.channel.ChannelHandlerContext;
+v2 := @parameter1: boolean;
+v3 = null;
+v4 = interfaceinvoke v1.<io.netty.channel.ChannelHandlerContext: io.netty.buffer.ByteBufAllocator alloc()>();
+label01:
+v5 = v0.<io.netty.handler.ssl.SslHandler: int wrapDataSize>;
+label02:
+v6 = interfaceinvoke v1.<io.netty.channel.ChannelHandlerContext: boolean isRemoved()>();
+if v6 != 0 goto label24;
+v7 = interfaceinvoke v1.<io.netty.channel.ChannelHandlerContext: io.netty.channel.ChannelPromise newPromise()>();
+if v5 <= 0 goto label03;
+v8 = v0.<io.netty.handler.ssl.SslHandler: io.netty.handler.ssl.SslHandler$SslHandlerCoalescingBufferQueue pendingUnencryptedWrites>;
+v9 = virtualinvoke v8.<io.netty.handler.ssl.SslHandler$SslHandlerCoalescingBufferQueue: io.netty.buffer.ByteBuf remove(io.netty.buffer.ByteBufAllocator,int,io.netty.channel.ChannelPromise)>(v4, v5, v7);
+goto label04;
+label03:
+v10 = v0.<io.netty.handler.ssl.SslHandler: io.netty.handler.ssl.SslHandler$SslHandlerCoalescingBufferQueue pendingUnencryptedWrites>;
+v9 = virtualinvoke v10.<io.netty.handler.ssl.SslHandler$SslHandlerCoalescingBufferQueue: io.netty.buffer.ByteBuf removeFirst(io.netty.channel.ChannelPromise)>(v7);
+label04:
+v11 = v9;
+if v9 == null goto label24;
+if v3 != null goto label05;
+v12 = virtualinvoke v9.<io.netty.buffer.ByteBuf: int readableBytes()>();
+v13 = virtualinvoke v9.<io.netty.buffer.ByteBuf: int nioBufferCount()>();
+v3 = specialinvoke v0.<io.netty.handler.ssl.SslHandler: io.netty.buffer.ByteBuf allocateOutNetBuf(io.netty.channel.ChannelHandlerContext,int,int)>(v1, v12, v13);
+label05:
+v14 = v0.<io.netty.handler.ssl.SslHandler: javax.net.ssl.SSLEngine engine>;
+v15 = specialinvoke v0.<io.netty.handler.ssl.SslHandler: javax.net.ssl.SSLEngineResult wrap(io.netty.buffer.ByteBufAllocator,javax.net.ssl.SSLEngine,io.netty.buffer.ByteBuf,io.netty.buffer.ByteBuf)>(v4, v14, v11, v3);
+v16 = virtualinvoke v11.<io.netty.buffer.ByteBuf: boolean isReadable()>();
+if v16 == 0 goto label06;
+v17 = v0.<io.netty.handler.ssl.SslHandler: io.netty.handler.ssl.SslHandler$SslHandlerCoalescingBufferQueue pendingUnencryptedWrites>;
+virtualinvoke v17.<io.netty.handler.ssl.SslHandler$SslHandlerCoalescingBufferQueue: void addFirst(io.netty.buffer.ByteBuf,io.netty.channel.ChannelPromise)>(v11, v7);
+v7 = null;
+goto label07;
+label06:
+virtualinvoke v11.<io.netty.buffer.ByteBuf: boolean release()>();
+label07:
+v18 = virtualinvoke v3.<io.netty.buffer.ByteBuf: boolean isReadable()>();
+if v18 == 0 goto label09;
+v19 = v3;
+v3 = null;
+if v7 == null goto label08;
+interfaceinvoke v1.<io.netty.channel.ChannelHandlerContext: io.netty.channel.ChannelFuture write(java.lang.Object,io.netty.channel.ChannelPromise)>(v19, v7);
+goto label10;
+label08:
+interfaceinvoke v1.<io.netty.channel.ChannelHandlerContext: io.netty.channel.ChannelFuture write(java.lang.Object)>(v19);
+goto label10;
+label09:
+if v7 == null goto label10;
+v20 = <io.netty.buffer.Unpooled: io.netty.buffer.ByteBuf EMPTY_BUFFER>;
+interfaceinvoke v1.<io.netty.channel.ChannelHandlerContext: io.netty.channel.ChannelFuture write(java.lang.Object,io.netty.channel.ChannelPromise)>(v20, v7);
+label10:
+v21 = virtualinvoke v15.<javax.net.ssl.SSLEngineResult: javax.net.ssl.SSLEngineResult$Status getStatus()>();
+v22 = <javax.net.ssl.SSLEngineResult$Status: javax.net.ssl.SSLEngineResult$Status CLOSED>;
+if v21 != v22 goto label15;
+v23 = v0.<io.netty.handler.ssl.SslHandler: io.netty.util.concurrent.Promise handshakePromise>;
+v24 = interfaceinvoke v23.<io.netty.util.concurrent.Promise: java.lang.Throwable cause()>();
+if v24 != null goto label11;
+v25 = v0.<io.netty.handler.ssl.SslHandler: io.netty.handler.ssl.SslHandler$LazyChannelPromise sslClosePromise>;
+v24 = virtualinvoke v25.<io.netty.handler.ssl.SslHandler$LazyChannelPromise: java.lang.Throwable cause()>();
+if v24 != null goto label11;
+v26 = new io.netty.handler.ssl.SslClosedEngineException;
+specialinvoke v26.<io.netty.handler.ssl.SslClosedEngineException: void <init>(java.lang.String)>("SSLEngine closed already");
+v24 = v26;
+label11:
+v27 = v0.<io.netty.handler.ssl.SslHandler: io.netty.handler.ssl.SslHandler$SslHandlerCoalescingBufferQueue pendingUnencryptedWrites>;
+virtualinvoke v27.<io.netty.handler.ssl.SslHandler$SslHandlerCoalescingBufferQueue: void releaseAndFailAll(io.netty.channel.ChannelOutboundInvoker,java.lang.Throwable)>(v1, v24);
+label12:
+if v3 == null goto label13;
+virtualinvoke v3.<io.netty.buffer.ByteBuf: boolean release()>();
+label13:
+if v2 == 0 goto label14;
+specialinvoke v0.<io.netty.handler.ssl.SslHandler: void setState(int)>(16);
+label14:
+return;
+label15:
+v28 = <io.netty.handler.ssl.SslHandler$11: int[] $SwitchMap$javax$net$ssl$SSLEngineResult$HandshakeStatus>;
+v29 = virtualinvoke v15.<javax.net.ssl.SSLEngineResult: javax.net.ssl.SSLEngineResult$HandshakeStatus getHandshakeStatus()>();
+v30 = virtualinvoke v29.<javax.net.ssl.SSLEngineResult$HandshakeStatus: int ordinal()>();
+v31 = v28[v30];
+tableswitch(v31)
+{
+case 1: goto label16;
+case 2: goto label17;
+case 3: goto label17;
+case 4: goto label18;
+case 5: goto label19;
+default: goto label23;
+};
+label16:
+v32 = specialinvoke v0.<io.netty.handler.ssl.SslHandler: boolean runDelegatedTasks(boolean)>(v2);
+if v32 != 0 goto label02;
+goto label24;
+label17:
+specialinvoke v0.<io.netty.handler.ssl.SslHandler: boolean setHandshakeSuccess()>();
+goto label02;
+label18:
+v33 = virtualinvoke v15.<javax.net.ssl.SSLEngineResult: int bytesProduced()>();
+if v33 <= 0 goto label02;
+v34 = v0.<io.netty.handler.ssl.SslHandler: io.netty.handler.ssl.SslHandler$SslHandlerCoalescingBufferQueue pendingUnencryptedWrites>;
+v35 = virtualinvoke v34.<io.netty.handler.ssl.SslHandler$SslHandlerCoalescingBufferQueue: boolean isEmpty()>();
+if v35 == 0 goto label02;
+v36 = v0.<io.netty.handler.ssl.SslHandler: io.netty.handler.ssl.SslHandler$SslHandlerCoalescingBufferQueue pendingUnencryptedWrites>;
+v37 = <io.netty.buffer.Unpooled: io.netty.buffer.ByteBuf EMPTY_BUFFER>;
+virtualinvoke v36.<io.netty.handler.ssl.SslHandler$SslHandlerCoalescingBufferQueue: void add(io.netty.buffer.ByteBuf)>(v37);
+goto label02;
+label19:
+specialinvoke v0.<io.netty.handler.ssl.SslHandler: void readIfNeeded(io.netty.channel.ChannelHandlerContext)>(v1);
+label20:
+if v3 == null goto label21;
+virtualinvoke v3.<io.netty.buffer.ByteBuf: boolean release()>();
+label21:
+if v2 == 0 goto label22;
+specialinvoke v0.<io.netty.handler.ssl.SslHandler: void setState(int)>(16);
+label22:
+return;
+label23:
+v38 = new java.lang.IllegalStateException;
+v39 = virtualinvoke v15.<javax.net.ssl.SSLEngineResult: javax.net.ssl.SSLEngineResult$HandshakeStatus getHandshakeStatus()>();
+v40 = dynamicinvoke "makeConcatWithConstants" <java.lang.String (javax.net.ssl.SSLEngineResult$HandshakeStatus)>(v39) <java.lang.invoke.StringConcatFactory: java.lang.invoke.CallSite makeConcatWithConstants(java.lang.invoke.MethodHandles$Lookup,java.lang.String,java.lang.invoke.MethodType,java.lang.String,java.lang.Object[])>("Unknown handshake status: \u0001");
+specialinvoke v38.<java.lang.IllegalStateException: void <init>(java.lang.String)>(v40);
+throw v38;
+label24:
+if v3 == null goto label25;
+virtualinvoke v3.<io.netty.buffer.ByteBuf: boolean release()>();
+label25:
+if v2 == 0 goto label29;
+specialinvoke v0.<io.netty.handler.ssl.SslHandler: void setState(int)>(16);
+goto label29;
+label26:
+v41 := @caughtexception;
+if v3 == null goto label27;
+virtualinvoke v3.<io.netty.buffer.ByteBuf: boolean release()>();
+label27:
+if v2 == 0 goto label28;
+specialinvoke v0.<io.netty.handler.ssl.SslHandler: void setState(int)>(16);
+label28:
+throw v41;
+label29:
+return;
+catch java.lang.Throwable from label01 to label12 with label26;
+catch java.lang.Throwable from label15 to label20 with label26;
+catch java.lang.Throwable from label23 to label24 with label26;
+}
+private boolean wrapNonAppData(io.netty.channel.ChannelHandlerContext, boolean) throws javax.net.ssl.SSLException
+{
+java.lang.IllegalStateException v24;
+io.netty.buffer.ByteBufAllocator v4;
+javax.net.ssl.SSLEngineResult$HandshakeStatus v12, v25, v28, v30, v31;
+int[] v13;
+boolean v16, v18, v19, v2, v21, v23, v5;
+io.netty.handler.ssl.SslHandler v0;
+java.lang.Throwable v32;
+javax.net.ssl.SSLEngine v6;
+io.netty.channel.ChannelHandlerContext v1;
+javax.net.ssl.SSLEngineResult v8;
+io.netty.buffer.ByteBuf v3, v7;
+io.netty.handler.ssl.SslHandler$2 v11;
+int v14, v15, v20, v27, v29, v9;
+java.lang.String v26;
+io.netty.channel.ChannelFuture v10;
+io.netty.handler.ssl.SslHandler$SslHandlerCoalescingBufferQueue v17, v22;
+v0 := @this: io.netty.handler.ssl.SslHandler;
+v1 := @parameter0: io.netty.channel.ChannelHandlerContext;
+v2 := @parameter1: boolean;
+v3 = null;
+v4 = interfaceinvoke v1.<io.netty.channel.ChannelHandlerContext: io.netty.buffer.ByteBufAllocator alloc()>();
+label01:
+v5 = interfaceinvoke v1.<io.netty.channel.ChannelHandlerContext: boolean isRemoved()>();
+if v5 != 0 goto label19;
+if v3 != null goto label02;
+v3 = specialinvoke v0.<io.netty.handler.ssl.SslHandler: io.netty.buffer.ByteBuf allocateOutNetBuf(io.netty.channel.ChannelHandlerContext,int,int)>(v1, 2048, 1);
+label02:
+v6 = v0.<io.netty.handler.ssl.SslHandler: javax.net.ssl.SSLEngine engine>;
+v7 = <io.netty.buffer.Unpooled: io.netty.buffer.ByteBuf EMPTY_BUFFER>;
+v8 = specialinvoke v0.<io.netty.handler.ssl.SslHandler: javax.net.ssl.SSLEngineResult wrap(io.netty.buffer.ByteBufAllocator,javax.net.ssl.SSLEngine,io.netty.buffer.ByteBuf,io.netty.buffer.ByteBuf)>(v4, v6, v7, v3);
+v9 = virtualinvoke v8.<javax.net.ssl.SSLEngineResult: int bytesProduced()>();
+if v9 <= 0 goto label04;
+v10 = interfaceinvoke v1.<io.netty.channel.ChannelHandlerContext: io.netty.channel.ChannelFuture write(java.lang.Object)>(v3);
+v11 = new io.netty.handler.ssl.SslHandler$2;
+specialinvoke v11.<io.netty.handler.ssl.SslHandler$2: void <init>(io.netty.handler.ssl.SslHandler,io.netty.channel.ChannelHandlerContext)>(v0, v1);
+interfaceinvoke v10.<io.netty.channel.ChannelFuture: io.netty.channel.ChannelFuture addListener(io.netty.util.concurrent.GenericFutureListener)>(v11);
+if v2 == 0 goto label03;
+specialinvoke v0.<io.netty.handler.ssl.SslHandler: void setState(int)>(16);
+label03:
+v3 = null;
+label04:
+v12 = virtualinvoke v8.<javax.net.ssl.SSLEngineResult: javax.net.ssl.SSLEngineResult$HandshakeStatus getHandshakeStatus()>();
+v13 = <io.netty.handler.ssl.SslHandler$11: int[] $SwitchMap$javax$net$ssl$SSLEngineResult$HandshakeStatus>;
+v14 = virtualinvoke v12.<javax.net.ssl.SSLEngineResult$HandshakeStatus: int ordinal()>();
+v15 = v13[v14];
+tableswitch(v15)
+{
+case 1: goto label08;
+case 2: goto label05;
+case 3: goto label12;
+case 4: goto label17;
+case 5: goto label09;
+default: goto label16;
+};
+label05:
+v16 = specialinvoke v0.<io.netty.handler.ssl.SslHandler: boolean setHandshakeSuccess()>();
+if v16 == 0 goto label06;
+if v2 == 0 goto label06;
+v17 = v0.<io.netty.handler.ssl.SslHandler: io.netty.handler.ssl.SslHandler$SslHandlerCoalescingBufferQueue pendingUnencryptedWrites>;
+v18 = virtualinvoke v17.<io.netty.handler.ssl.SslHandler$SslHandlerCoalescingBufferQueue: boolean isEmpty()>();
+if v18 != 0 goto label06;
+specialinvoke v0.<io.netty.handler.ssl.SslHandler: void wrap(io.netty.channel.ChannelHandlerContext,boolean)>(v1, 1);
+label06:
+if v3 == null goto label07;
+virtualinvoke v3.<io.netty.buffer.ByteBuf: boolean release()>();
+label07:
+return 0;
+label08:
+v19 = specialinvoke v0.<io.netty.handler.ssl.SslHandler: boolean runDelegatedTasks(boolean)>(v2);
+if v19 != 0 goto label17;
+goto label19;
+label09:
+if v2 != 0 goto label10;
+v20 = specialinvoke v0.<io.netty.handler.ssl.SslHandler: int unwrapNonAppData(io.netty.channel.ChannelHandlerContext)>(v1);
+if v20 > 0 goto label17;
+label10:
+if v3 == null goto label11;
+virtualinvoke v3.<io.netty.buffer.ByteBuf: boolean release()>();
+label11:
+return 0;
+label12:
+v21 = specialinvoke v0.<io.netty.handler.ssl.SslHandler: boolean setHandshakeSuccess()>();
+if v21 == 0 goto label13;
+if v2 == 0 goto label13;
+v22 = v0.<io.netty.handler.ssl.SslHandler: io.netty.handler.ssl.SslHandler$SslHandlerCoalescingBufferQueue pendingUnencryptedWrites>;
+v23 = virtualinvoke v22.<io.netty.handler.ssl.SslHandler$SslHandlerCoalescingBufferQueue: boolean isEmpty()>();
+if v23 != 0 goto label13;
+specialinvoke v0.<io.netty.handler.ssl.SslHandler: void wrap(io.netty.channel.ChannelHandlerContext,boolean)>(v1, 1);
+label13:
+if v2 != 0 goto label14;
+specialinvoke v0.<io.netty.handler.ssl.SslHandler: int unwrapNonAppData(io.netty.channel.ChannelHandlerContext)>(v1);
+label14:
+if v3 == null goto label15;
+virtualinvoke v3.<io.netty.buffer.ByteBuf: boolean release()>();
+label15:
+return 1;
+label16:
+v24 = new java.lang.IllegalStateException;
+v25 = virtualinvoke v8.<javax.net.ssl.SSLEngineResult: javax.net.ssl.SSLEngineResult$HandshakeStatus getHandshakeStatus()>();
+v26 = dynamicinvoke "makeConcatWithConstants" <java.lang.String (javax.net.ssl.SSLEngineResult$HandshakeStatus)>(v25) <java.lang.invoke.StringConcatFactory: java.lang.invoke.CallSite makeConcatWithConstants(java.lang.invoke.MethodHandles$Lookup,java.lang.String,java.lang.invoke.MethodType,java.lang.String,java.lang.Object[])>("Unknown handshake status: \u0001");
+specialinvoke v24.<java.lang.IllegalStateException: void <init>(java.lang.String)>(v26);
+throw v24;
+label17:
+v27 = virtualinvoke v8.<javax.net.ssl.SSLEngineResult: int bytesProduced()>();
+if v27 != 0 goto label18;
+v28 = <javax.net.ssl.SSLEngineResult$HandshakeStatus: javax.net.ssl.SSLEngineResult$HandshakeStatus NEED_TASK>;
+if v12 != v28 goto label19;
+label18:
+v29 = virtualinvoke v8.<javax.net.ssl.SSLEngineResult: int bytesConsumed()>();
+if v29 != 0 goto label01;
+v30 = virtualinvoke v8.<javax.net.ssl.SSLEngineResult: javax.net.ssl.SSLEngineResult$HandshakeStatus getHandshakeStatus()>();
+v31 = <javax.net.ssl.SSLEngineResult$HandshakeStatus: javax.net.ssl.SSLEngineResult$HandshakeStatus NOT_HANDSHAKING>;
+if v30 != v31 goto label01;
+label19:
+if v3 == null goto label22;
+virtualinvoke v3.<io.netty.buffer.ByteBuf: boolean release()>();
+goto label22;
+label20:
+v32 := @caughtexception;
+if v3 == null goto label21;
+virtualinvoke v3.<io.netty.buffer.ByteBuf: boolean release()>();
+label21:
+throw v32;
+label22:
+return 0;
+catch java.lang.Throwable from label01 to label06 with label20;
+catch java.lang.Throwable from label08 to label10 with label20;
+catch java.lang.Throwable from label12 to label14 with label20;
+catch java.lang.Throwable from label16 to label19 with label20;
+}
+private javax.net.ssl.SSLEngineResult wrap(io.netty.buffer.ByteBufAllocator, javax.net.ssl.SSLEngine, io.netty.buffer.ByteBuf, io.netty.buffer.ByteBuf) throws javax.net.ssl.SSLException
+{
+io.netty.buffer.ByteBufAllocator v1;
+java.nio.ByteBuffer v14, v16, v19;
+boolean v10, v11, v8;
+java.nio.ByteBuffer[] v13, v29, v31;
+io.netty.handler.ssl.SslHandler v0;
+java.lang.Throwable v30;
+javax.net.ssl.SSLEngine v2;
+javax.net.ssl.SSLEngineResult v20;
+javax.net.ssl.SSLSession v27;
+io.netty.buffer.ByteBuf v3, v4, v5;
+int v12, v15, v17, v18, v21, v22, v23, v24, v28, v6, v7;
+javax.net.ssl.SSLEngineResult$Status v25, v26;
+io.netty.handler.ssl.SslHandler$SslEngineType v9;
+v0 := @this: io.netty.handler.ssl.SslHandler;
+v1 := @parameter0: io.netty.buffer.ByteBufAllocator;
+v2 := @parameter1: javax.net.ssl.SSLEngine;
+v3 := @parameter2: io.netty.buffer.ByteBuf;
+v4 := @parameter3: io.netty.buffer.ByteBuf;
+v5 = null;
+label1:
+v6 = virtualinvoke v3.<io.netty.buffer.ByteBuf: int readerIndex()>();
+v7 = virtualinvoke v3.<io.netty.buffer.ByteBuf: int readableBytes()>();
+v8 = virtualinvoke v3.<io.netty.buffer.ByteBuf: boolean isDirect()>();
+if v8 != 0 goto label2;
+v9 = v0.<io.netty.handler.ssl.SslHandler: io.netty.handler.ssl.SslHandler$SslEngineType engineType>;
+v10 = v9.<io.netty.handler.ssl.SslHandler$SslEngineType: boolean wantsDirectBuffer>;
+if v10 != 0 goto label4;
+label2:
+v11 = v3 instanceof io.netty.buffer.CompositeByteBuf;
+if v11 != 0 goto label3;
+v12 = virtualinvoke v3.<io.netty.buffer.ByteBuf: int nioBufferCount()>();
+if v12 != 1 goto label3;
+v13 = v0.<io.netty.handler.ssl.SslHandler: java.nio.ByteBuffer[] singleBuffer>;
+v14 = virtualinvoke v3.<io.netty.buffer.ByteBuf: java.nio.ByteBuffer internalNioBuffer(int,int)>(v6, v7);
+v13[0] = v14;
+goto label5;
+label3:
+v13 = virtualinvoke v3.<io.netty.buffer.ByteBuf: java.nio.ByteBuffer[] nioBuffers()>();
+goto label5;
+label4:
+v5 = interfaceinvoke v1.<io.netty.buffer.ByteBufAllocator: io.netty.buffer.ByteBuf directBuffer(int)>(v7);
+virtualinvoke v5.<io.netty.buffer.ByteBuf: io.netty.buffer.ByteBuf writeBytes(io.netty.buffer.ByteBuf,int,int)>(v3, v6, v7);
+v13 = v0.<io.netty.handler.ssl.SslHandler: java.nio.ByteBuffer[] singleBuffer>;
+v15 = virtualinvoke v5.<io.netty.buffer.ByteBuf: int readerIndex()>();
+v16 = virtualinvoke v5.<io.netty.buffer.ByteBuf: java.nio.ByteBuffer internalNioBuffer(int,int)>(v15, v7);
+v13[0] = v16;
+label5:
+v17 = virtualinvoke v4.<io.netty.buffer.ByteBuf: int writerIndex()>();
+v18 = virtualinvoke v4.<io.netty.buffer.ByteBuf: int writableBytes()>();
+v19 = virtualinvoke v4.<io.netty.buffer.ByteBuf: java.nio.ByteBuffer nioBuffer(int,int)>(v17, v18);
+v20 = virtualinvoke v2.<javax.net.ssl.SSLEngine: javax.net.ssl.SSLEngineResult wrap(java.nio.ByteBuffer[],java.nio.ByteBuffer)>(v13, v19);
+v21 = virtualinvoke v20.<javax.net.ssl.SSLEngineResult: int bytesConsumed()>();
+virtualinvoke v3.<io.netty.buffer.ByteBuf: io.netty.buffer.ByteBuf skipBytes(int)>(v21);
+v22 = virtualinvoke v4.<io.netty.buffer.ByteBuf: int writerIndex()>();
+v23 = virtualinvoke v20.<javax.net.ssl.SSLEngineResult: int bytesProduced()>();
+v24 = v22 + v23;
+virtualinvoke v4.<io.netty.buffer.ByteBuf: io.netty.buffer.ByteBuf writerIndex(int)>(v24);
+v25 = virtualinvoke v20.<javax.net.ssl.SSLEngineResult: javax.net.ssl.SSLEngineResult$Status getStatus()>();
+v26 = <javax.net.ssl.SSLEngineResult$Status: javax.net.ssl.SSLEngineResult$Status BUFFER_OVERFLOW>;
+if v25 != v26 goto label6;
+v27 = virtualinvoke v2.<javax.net.ssl.SSLEngine: javax.net.ssl.SSLSession getSession()>();
+v28 = interfaceinvoke v27.<javax.net.ssl.SSLSession: int getPacketBufferSize()>();
+virtualinvoke v4.<io.netty.buffer.ByteBuf: io.netty.buffer.ByteBuf ensureWritable(int)>(v28);
+goto label5;
+label6:
+v29 = v0.<io.netty.handler.ssl.SslHandler: java.nio.ByteBuffer[] singleBuffer>;
+v29[0] = null;
+if v5 == null goto label7;
+virtualinvoke v5.<io.netty.buffer.ByteBuf: boolean release()>();
+label7:
+return v20;
+label8:
+v30 := @caughtexception;
+v31 = v0.<io.netty.handler.ssl.SslHandler: java.nio.ByteBuffer[] singleBuffer>;
+v31[0] = null;
+if v5 == null goto label9;
+virtualinvoke v5.<io.netty.buffer.ByteBuf: boolean release()>();
+label9:
+throw v30;
+catch java.lang.Throwable from label1 to label6 with label8;
+}
+public void channelInactive(io.netty.channel.ChannelHandlerContext) throws java.lang.Exception
+{
+java.lang.Throwable v15, v3;
+io.netty.channel.ChannelHandlerContext v1;
+io.netty.handler.ssl.StacklessSSLHandshakeException v10;
+boolean v11, v12, v13, v16, v4, v5, v7, v9;
+io.netty.handler.codec.DecoderException v14;
+io.netty.util.concurrent.Promise v2, v8;
+java.nio.channels.ClosedChannelException v6;
+io.netty.handler.ssl.SslHandler v0;
+v0 := @this: io.netty.handler.ssl.SslHandler;
+v1 := @parameter0: io.netty.channel.ChannelHandlerContext;
+v2 = v0.<io.netty.handler.ssl.SslHandler: io.netty.util.concurrent.Promise handshakePromise>;
+v3 = interfaceinvoke v2.<io.netty.util.concurrent.Promise: java.lang.Throwable cause()>();
+if v3 == null goto label01;
+v4 = 1;
+goto label02;
+label01:
+v4 = 0;
+label02:
+v5 = v4;
+v6 = new java.nio.channels.ClosedChannelException;
+specialinvoke v6.<java.nio.channels.ClosedChannelException: void <init>()>();
+v7 = specialinvoke v0.<io.netty.handler.ssl.SslHandler: boolean isStateSet(int)>(8);
+if v7 == 0 goto label03;
+v8 = v0.<io.netty.handler.ssl.SslHandler: io.netty.util.concurrent.Promise handshakePromise>;
+v9 = interfaceinvoke v8.<io.netty.util.concurrent.Promise: boolean isDone()>();
+if v9 != 0 goto label03;
+v10 = staticinvoke <io.netty.handler.ssl.StacklessSSLHandshakeException: io.netty.handler.ssl.StacklessSSLHandshakeException newInstance(java.lang.String,java.lang.Class,java.lang.String)>("Connection closed while SSL/TLS handshake was in progress", class "Lio/netty/handler/ssl/SslHandler;", "channelInactive");
+staticinvoke <io.netty.util.internal.ThrowableUtil: void addSuppressed(java.lang.Throwable,java.lang.Throwable)>(v6, v10);
+label03:
+v11 = specialinvoke v0.<io.netty.handler.ssl.SslHandler: boolean isStateSet(int)>(32);
+if v11 != 0 goto label04;
+v12 = 1;
+goto label05;
+label04:
+v12 = 0;
+label05:
+v13 = specialinvoke v0.<io.netty.handler.ssl.SslHandler: boolean isStateSet(int)>(8);
+specialinvoke v0.<io.netty.handler.ssl.SslHandler: void setHandshakeFailure(io.netty.channel.ChannelHandlerContext,java.lang.Throwable,boolean,boolean,boolean)>(v1, v6, v12, v13, 0);
+specialinvoke v0.<io.netty.handler.ssl.SslHandler: void notifyClosePromise(java.lang.Throwable)>(v6);
+label06:
+specialinvoke v0.<io.netty.handler.codec.ByteToMessageDecoder: void channelInactive(io.netty.channel.ChannelHandlerContext)>(v1);
+label07:
+goto label10;
+label08:
+v14 := @caughtexception;
+if v5 == 0 goto label09;
+v15 = virtualinvoke v14.<io.netty.handler.codec.DecoderException: java.lang.Throwable getCause()>();
+v16 = v15 instanceof javax.net.ssl.SSLException;
+if v16 != 0 goto label10;
+label09:
+throw v14;
+label10:
+return;
+catch io.netty.handler.codec.DecoderException from label06 to label07 with label08;
+}
+public void exceptionCaught(io.netty.channel.ChannelHandlerContext, java.lang.Throwable) throws java.lang.Exception
+{
+java.lang.Throwable v2;
+io.netty.channel.Channel v7, v8;
+io.netty.channel.ChannelHandlerContext v1;
+io.netty.handler.ssl.SslHandler v0;
+io.netty.util.internal.logging.InternalLogger v4, v6;
+boolean v3, v5, v9;
+v0 := @this: io.netty.handler.ssl.SslHandler;
+v1 := @parameter0: io.netty.channel.ChannelHandlerContext;
+v2 := @parameter1: java.lang.Throwable;
+v3 = specialinvoke v0.<io.netty.handler.ssl.SslHandler: boolean ignoreException(java.lang.Throwable)>(v2);
+if v3 == 0 goto label2;
+v4 = <io.netty.handler.ssl.SslHandler: io.netty.util.internal.logging.InternalLogger logger>;
+v5 = interfaceinvoke v4.<io.netty.util.internal.logging.InternalLogger: boolean isDebugEnabled()>();
+if v5 == 0 goto label1;
+v6 = <io.netty.handler.ssl.SslHandler: io.netty.util.internal.logging.InternalLogger logger>;
+v7 = interfaceinvoke v1.<io.netty.channel.ChannelHandlerContext: io.netty.channel.Channel channel()>();
+interfaceinvoke v6.<io.netty.util.internal.logging.InternalLogger: void debug(java.lang.String,java.lang.Object,java.lang.Object)>("{} Swallowing a harmless \'connection reset by peer / broken pipe\' error that occurred while writing close_notify in response to the peer\'s close_notify", v7, v2);
+label1:
+v8 = interfaceinvoke v1.<io.netty.channel.ChannelHandlerContext: io.netty.channel.Channel channel()>();
+v9 = interfaceinvoke v8.<io.netty.channel.Channel: boolean isActive()>();
+if v9 == 0 goto label3;
+interfaceinvoke v1.<io.netty.channel.ChannelHandlerContext: io.netty.channel.ChannelFuture close()>();
+goto label3;
+label2:
+interfaceinvoke v1.<io.netty.channel.ChannelHandlerContext: io.netty.channel.ChannelHandlerContext fireExceptionCaught(java.lang.Throwable)>(v2);
+label3:
+return;
+}
+private boolean ignoreException(java.lang.Throwable)
+{
+java.util.regex.Matcher v20, v8;
+boolean v16, v18, v2, v21, v26, v28, v3, v33, v36, v5, v9;
+java.lang.StackTraceElement[] v10;
+io.netty.handler.ssl.SslHandler v0;
+io.netty.util.internal.logging.InternalLogger v35, v37;
+io.netty.handler.ssl.SslHandler$LazyChannelPromise v4;
+java.lang.ClassLoader v23;
+java.util.regex.Pattern v19, v7;
+java.lang.Throwable v1, v34;
+java.lang.Object[] v38;
+int v11, v12, v29;
+java.lang.StackTraceElement v13;
+java.lang.String v14, v15, v17, v30, v32, v6;
+java.lang.Class v22, v24, v25, v27, v31, v39;
+v0 := @this: io.netty.handler.ssl.SslHandler;
+v1 := @parameter0: java.lang.Throwable;
+v2 = v1 instanceof javax.net.ssl.SSLException;
+if v2 != 0 goto label9;
+v3 = v1 instanceof java.io.IOException;
+if v3 == 0 goto label9;
+v4 = v0.<io.netty.handler.ssl.SslHandler: io.netty.handler.ssl.SslHandler$LazyChannelPromise sslClosePromise>;
+v5 = virtualinvoke v4.<io.netty.handler.ssl.SslHandler$LazyChannelPromise: boolean isDone()>();
+if v5 == 0 goto label9;
+v6 = virtualinvoke v1.<java.lang.Throwable: java.lang.String getMessage()>();
+if v6 == null goto label1;
+v7 = <io.netty.handler.ssl.SslHandler: java.util.regex.Pattern IGNORABLE_ERROR_MESSAGE>;
+v8 = virtualinvoke v7.<java.util.regex.Pattern: java.util.regex.Matcher matcher(java.lang.CharSequence)>(v6);
+v9 = virtualinvoke v8.<java.util.regex.Matcher: boolean matches()>();
+if v9 == 0 goto label1;
+return 1;
+label1:
+v10 = virtualinvoke v1.<java.lang.Throwable: java.lang.StackTraceElement[] getStackTrace()>();
+v11 = lengthof v10;
+v12 = 0;
+label2:
+if v12 >= v11 goto label9;
+v13 = v10[v12];
+v14 = virtualinvoke v13.<java.lang.StackTraceElement: java.lang.String getClassName()>();
+v15 = virtualinvoke v13.<java.lang.StackTraceElement: java.lang.String getMethodName()>();
+v16 = virtualinvoke v14.<java.lang.String: boolean startsWith(java.lang.String)>("io.netty.");
+if v16 != 0 goto label8;
+v17 = "read";
+v18 = virtualinvoke v17.<java.lang.String: boolean equals(java.lang.Object)>(v15);
+if v18 == 0 goto label8;
+v19 = <io.netty.handler.ssl.SslHandler: java.util.regex.Pattern IGNORABLE_CLASS_IN_STACK>;
+v20 = virtualinvoke v19.<java.util.regex.Pattern: java.util.regex.Matcher matcher(java.lang.CharSequence)>(v14);
+v21 = virtualinvoke v20.<java.util.regex.Matcher: boolean matches()>();
+if v21 == 0 goto label3;
+return 1;
+label3:
+v22 = virtualinvoke v0.<java.lang.Object: java.lang.Class getClass()>();
+v23 = staticinvoke <io.netty.util.internal.PlatformDependent: java.lang.ClassLoader getClassLoader(java.lang.Class)>(v22);
+v24 = virtualinvoke v23.<java.lang.ClassLoader: java.lang.Class loadClass(java.lang.String)>(v14);
+v25 = class "Ljava/nio/channels/SocketChannel;";
+v26 = virtualinvoke v25.<java.lang.Class: boolean isAssignableFrom(java.lang.Class)>(v24);
+if v26 != 0 goto label4;
+v27 = class "Ljava/nio/channels/DatagramChannel;";
+v28 = virtualinvoke v27.<java.lang.Class: boolean isAssignableFrom(java.lang.Class)>(v24);
+if v28 == 0 goto label5;
+label4:
+return 1;
+label5:
+v29 = staticinvoke <io.netty.util.internal.PlatformDependent: int javaVersion()>();
+if v29 < 7 goto label8;
+v30 = "com.sun.nio.sctp.SctpChannel";
+v31 = virtualinvoke v24.<java.lang.Class: java.lang.Class getSuperclass()>();
+v32 = virtualinvoke v31.<java.lang.Class: java.lang.String getName()>();
+v33 = virtualinvoke v30.<java.lang.String: boolean equals(java.lang.Object)>(v32);
+if v33 == 0 goto label8;
+label6:
+return 1;
+label7:
+v34 := @caughtexception;
+v35 = <io.netty.handler.ssl.SslHandler: io.netty.util.internal.logging.InternalLogger logger>;
+v36 = interfaceinvoke v35.<io.netty.util.internal.logging.InternalLogger: boolean isDebugEnabled()>();
+if v36 == 0 goto label8;
+v37 = <io.netty.handler.ssl.SslHandler: io.netty.util.internal.logging.InternalLogger logger>;
+v38 = newarray (java.lang.Object)[3];
+v39 = virtualinvoke v0.<java.lang.Object: java.lang.Class getClass()>();
+v38[0] = v39;
+v38[1] = v14;
+v38[2] = v34;
+interfaceinvoke v37.<io.netty.util.internal.logging.InternalLogger: void debug(java.lang.String,java.lang.Object[])>("Unexpected exception while loading class {} classname {}", v38);
+label8:
+v12 = v12 + 1;
+goto label2;
+label9:
+return 0;
+catch java.lang.Throwable from label3 to label4 with label7;
+catch java.lang.Throwable from label5 to label6 with label7;
+}
+public static boolean isEncrypted(io.netty.buffer.ByteBuf)
+{
+io.netty.buffer.ByteBuf v0;
+int v1, v3, v4, v5;
+java.lang.IllegalArgumentException v2;
+boolean v6;
+v0 := @parameter0: io.netty.buffer.ByteBuf;
+v1 = virtualinvoke v0.<io.netty.buffer.ByteBuf: int readableBytes()>();
+if v1 >= 5 goto label1;
+v2 = new java.lang.IllegalArgumentException;
+specialinvoke v2.<java.lang.IllegalArgumentException: void <init>(java.lang.String)>("buffer must have at least 5 readable bytes");
+throw v2;
+label1:
+v3 = virtualinvoke v0.<io.netty.buffer.ByteBuf: int readerIndex()>();
+v4 = staticinvoke <io.netty.handler.ssl.SslUtils: int getEncryptedPacketLength(io.netty.buffer.ByteBuf,int)>(v0, v3);
+v5 = (int) -2;
+if v4 == v5 goto label2;
+v6 = 1;
+goto label3;
+label2:
+v6 = 0;
+label3:
+return v6;
+}
+private void decodeJdkCompatible(io.netty.channel.ChannelHandlerContext, io.netty.buffer.ByteBuf) throws io.netty.handler.ssl.NotSslRecordException
+{
+java.lang.Throwable v20;
+java.lang.AssertionError v13, v18;
+javax.net.ssl.SSLEngine v16;
+io.netty.channel.ChannelHandlerContext v1;
+io.netty.buffer.ByteBuf v2;
+int v11, v14, v3, v4, v5, v6, v7;
+java.lang.String v10, v19, v9;
+boolean v12, v15, v17;
+io.netty.handler.ssl.NotSslRecordException v8;
+io.netty.handler.ssl.SslHandler v0;
+v0 := @this: io.netty.handler.ssl.SslHandler;
+v1 := @parameter0: io.netty.channel.ChannelHandlerContext;
+v2 := @parameter1: io.netty.buffer.ByteBuf;
+v3 = v0.<io.netty.handler.ssl.SslHandler: int packetLength>;
+if v3 <= 0 goto label1;
+v4 = virtualinvoke v2.<io.netty.buffer.ByteBuf: int readableBytes()>();
+if v4 >= v3 goto label5;
+return;
+label1:
+v5 = virtualinvoke v2.<io.netty.buffer.ByteBuf: int readableBytes()>();
+if v5 >= 5 goto label2;
+return;
+label2:
+v6 = virtualinvoke v2.<io.netty.buffer.ByteBuf: int readerIndex()>();
+v3 = staticinvoke <io.netty.handler.ssl.SslUtils: int getEncryptedPacketLength(io.netty.buffer.ByteBuf,int)>(v2, v6);
+v7 = (int) -2;
+if v3 != v7 goto label3;
+v8 = new io.netty.handler.ssl.NotSslRecordException;
+v9 = staticinvoke <io.netty.buffer.ByteBufUtil: java.lang.String hexDump(io.netty.buffer.ByteBuf)>(v2);
+v10 = dynamicinvoke "makeConcatWithConstants" <java.lang.String (java.lang.String)>(v9) <java.lang.invoke.StringConcatFactory: java.lang.invoke.CallSite makeConcatWithConstants(java.lang.invoke.MethodHandles$Lookup,java.lang.String,java.lang.invoke.MethodType,java.lang.String,java.lang.Object[])>("not an SSL/TLS record: \u0001");
+specialinvoke v8.<io.netty.handler.ssl.NotSslRecordException: void <init>(java.lang.String)>(v10);
+v11 = virtualinvoke v2.<io.netty.buffer.ByteBuf: int readableBytes()>();
+virtualinvoke v2.<io.netty.buffer.ByteBuf: io.netty.buffer.ByteBuf skipBytes(int)>(v11);
+specialinvoke v0.<io.netty.handler.ssl.SslHandler: void setHandshakeFailure(io.netty.channel.ChannelHandlerContext,java.lang.Throwable)>(v1, v8);
+throw v8;
+label3:
+v12 = <io.netty.handler.ssl.SslHandler: boolean $assertionsDisabled>;
+if v12 != 0 goto label4;
+if v3 > 0 goto label4;
+v13 = new java.lang.AssertionError;
+specialinvoke v13.<java.lang.AssertionError: void <init>()>();
+throw v13;
+label4:
+if v3 <= v5 goto label5;
+v0.<io.netty.handler.ssl.SslHandler: int packetLength> = v3;
+return;
+label5:
+v0.<io.netty.handler.ssl.SslHandler: int packetLength> = 0;
+label6:
+v14 = specialinvoke v0.<io.netty.handler.ssl.SslHandler: int unwrap(io.netty.channel.ChannelHandlerContext,io.netty.buffer.ByteBuf,int)>(v1, v2, v3);
+v15 = <io.netty.handler.ssl.SslHandler: boolean $assertionsDisabled>;
+if v15 != 0 goto label8;
+if v14 == v3 goto label8;
+v16 = v0.<io.netty.handler.ssl.SslHandler: javax.net.ssl.SSLEngine engine>;
+v17 = virtualinvoke v16.<javax.net.ssl.SSLEngine: boolean isInboundDone()>();
+if v17 != 0 goto label8;
+v18 = new java.lang.AssertionError;
+v19 = dynamicinvoke "makeConcatWithConstants" <java.lang.String (int,int)>(v3, v14) <java.lang.invoke.StringConcatFactory: java.lang.invoke.CallSite makeConcatWithConstants(java.lang.invoke.MethodHandles$Lookup,java.lang.String,java.lang.invoke.MethodType,java.lang.String,java.lang.Object[])>("we feed the SSLEngine a packets worth of data: \u0001 but it only consumed: \u0001");
+specialinvoke v18.<java.lang.AssertionError: void <init>(java.lang.Object)>(v19);
+throw v18;
+label7:
+v20 := @caughtexception;
+specialinvoke v0.<io.netty.handler.ssl.SslHandler: void handleUnwrapThrowable(io.netty.channel.ChannelHandlerContext,java.lang.Throwable)>(v1, v20);
+label8:
+return;
+catch java.lang.Throwable from label6 to label7 with label7;
+}
+private void decodeNonJdkCompatible(io.netty.channel.ChannelHandlerContext, io.netty.buffer.ByteBuf)
+{
+java.lang.Throwable v4;
+io.netty.channel.ChannelHandlerContext v1;
+io.netty.buffer.ByteBuf v2;
+io.netty.handler.ssl.SslHandler v0;
+int v3;
+v0 := @this: io.netty.handler.ssl.SslHandler;
+v1 := @parameter0: io.netty.channel.ChannelHandlerContext;
+v2 := @parameter1: io.netty.buffer.ByteBuf;
+label1:
+v3 = virtualinvoke v2.<io.netty.buffer.ByteBuf: int readableBytes()>();
+specialinvoke v0.<io.netty.handler.ssl.SslHandler: int unwrap(io.netty.channel.ChannelHandlerContext,io.netty.buffer.ByteBuf,int)>(v1, v2, v3);
+label2:
+goto label4;
+label3:
+v4 := @caughtexception;
+specialinvoke v0.<io.netty.handler.ssl.SslHandler: void handleUnwrapThrowable(io.netty.channel.ChannelHandlerContext,java.lang.Throwable)>(v1, v4);
+label4:
+return;
+catch java.lang.Throwable from label1 to label2 with label3;
+}
+private void handleUnwrapThrowable(io.netty.channel.ChannelHandlerContext, java.lang.Throwable)
+{
+java.lang.Throwable v2, v9;
+io.netty.util.concurrent.Promise v3;
+io.netty.handler.ssl.SslHandler$SslHandlerCoalescingBufferQueue v6;
+io.netty.channel.ChannelHandlerContext v1;
+javax.net.ssl.SSLException v7;
+io.netty.handler.ssl.SslHandler v0;
+io.netty.handler.ssl.SslHandshakeCompletionEvent v5;
+io.netty.util.internal.logging.InternalLogger v8;
+boolean v4;
+v0 := @this: io.netty.handler.ssl.SslHandler;
+v1 := @parameter0: io.netty.channel.ChannelHandlerContext;
+v2 := @parameter1: java.lang.Throwable;
+label1:
+v3 = v0.<io.netty.handler.ssl.SslHandler: io.netty.util.concurrent.Promise handshakePromise>;
+v4 = interfaceinvoke v3.<io.netty.util.concurrent.Promise: boolean tryFailure(java.lang.Throwable)>(v2);
+if v4 == 0 goto label2;
+v5 = new io.netty.handler.ssl.SslHandshakeCompletionEvent;
+specialinvoke v5.<io.netty.handler.ssl.SslHandshakeCompletionEvent: void <init>(java.lang.Throwable)>(v2);
+interfaceinvoke v1.<io.netty.channel.ChannelHandlerContext: io.netty.channel.ChannelHandlerContext fireUserEventTriggered(java.lang.Object)>(v5);
+label2:
+v6 = v0.<io.netty.handler.ssl.SslHandler: io.netty.handler.ssl.SslHandler$SslHandlerCoalescingBufferQueue pendingUnencryptedWrites>;
+if v6 == null goto label3;
+specialinvoke v0.<io.netty.handler.ssl.SslHandler: void wrapAndFlush(io.netty.channel.ChannelHandlerContext)>(v1);
+label3:
+specialinvoke v0.<io.netty.handler.ssl.SslHandler: void setHandshakeFailure(io.netty.channel.ChannelHandlerContext,java.lang.Throwable,boolean,boolean,boolean)>(v1, v2, 1, 0, 1);
+goto label7;
+label4:
+v7 := @caughtexception;
+v8 = <io.netty.handler.ssl.SslHandler: io.netty.util.internal.logging.InternalLogger logger>;
+interfaceinvoke v8.<io.netty.util.internal.logging.InternalLogger: void debug(java.lang.String,java.lang.Throwable)>("SSLException during trying to call SSLEngine.wrap(...) because of an previous SSLException, ignoring...", v7);
+label5:
+specialinvoke v0.<io.netty.handler.ssl.SslHandler: void setHandshakeFailure(io.netty.channel.ChannelHandlerContext,java.lang.Throwable,boolean,boolean,boolean)>(v1, v2, 1, 0, 1);
+goto label7;
+label6:
+v9 := @caughtexception;
+specialinvoke v0.<io.netty.handler.ssl.SslHandler: void setHandshakeFailure(io.netty.channel.ChannelHandlerContext,java.lang.Throwable,boolean,boolean,boolean)>(v1, v2, 1, 0, 1);
+throw v9;
+label7:
+staticinvoke <io.netty.util.internal.PlatformDependent: void throwException(java.lang.Throwable)>(v2);
+return;
+catch javax.net.ssl.SSLException from label1 to label3 with label4;
+catch java.lang.Throwable from label1 to label3 with label6;
+catch java.lang.Throwable from label4 to label5 with label6;
+}
+protected void decode(io.netty.channel.ChannelHandlerContext, io.netty.buffer.ByteBuf, java.util.List) throws javax.net.ssl.SSLException
+{
+io.netty.channel.ChannelHandlerContext v1;
+java.util.List v3;
+io.netty.buffer.ByteBuf v2;
+io.netty.handler.ssl.SslHandler v0;
+boolean v4, v5;
+v0 := @this: io.netty.handler.ssl.SslHandler;
+v1 := @parameter0: io.netty.channel.ChannelHandlerContext;
+v2 := @parameter1: io.netty.buffer.ByteBuf;
+v3 := @parameter2: java.util.List;
+v4 = specialinvoke v0.<io.netty.handler.ssl.SslHandler: boolean isStateSet(int)>(128);
+if v4 == 0 goto label1;
+return;
+label1:
+v5 = v0.<io.netty.handler.ssl.SslHandler: boolean jdkCompatibilityMode>;
+if v5 == 0 goto label2;
+specialinvoke v0.<io.netty.handler.ssl.SslHandler: void decodeJdkCompatible(io.netty.channel.ChannelHandlerContext,io.netty.buffer.ByteBuf)>(v1, v2);
+goto label3;
+label2:
+specialinvoke v0.<io.netty.handler.ssl.SslHandler: void decodeNonJdkCompatible(io.netty.channel.ChannelHandlerContext,io.netty.buffer.ByteBuf)>(v1, v2);
+label3:
+return;
+}
+public void channelReadComplete(io.netty.channel.ChannelHandlerContext) throws java.lang.Exception
+{
+io.netty.channel.ChannelHandlerContext v1;
+io.netty.handler.ssl.SslHandler v0;
+v0 := @this: io.netty.handler.ssl.SslHandler;
+v1 := @parameter0: io.netty.channel.ChannelHandlerContext;
+specialinvoke v0.<io.netty.handler.ssl.SslHandler: void channelReadComplete0(io.netty.channel.ChannelHandlerContext)>(v1);
+return;
+}
+private void channelReadComplete0(io.netty.channel.ChannelHandlerContext)
+{
+io.netty.channel.ChannelHandlerContext v1;
+io.netty.handler.ssl.SslHandler v0;
+v0 := @this: io.netty.handler.ssl.SslHandler;
+v1 := @parameter0: io.netty.channel.ChannelHandlerContext;
+virtualinvoke v0.<io.netty.handler.ssl.SslHandler: void discardSomeReadBytes()>();
+specialinvoke v0.<io.netty.handler.ssl.SslHandler: void flushIfNeeded(io.netty.channel.ChannelHandlerContext)>(v1);
+specialinvoke v0.<io.netty.handler.ssl.SslHandler: void readIfNeeded(io.netty.channel.ChannelHandlerContext)>(v1);
+specialinvoke v0.<io.netty.handler.ssl.SslHandler: void clearState(int)>(256);
+interfaceinvoke v1.<io.netty.channel.ChannelHandlerContext: io.netty.channel.ChannelHandlerContext fireChannelReadComplete()>();
+return;
+}
+private void readIfNeeded(io.netty.channel.ChannelHandlerContext)
+{
+io.netty.util.concurrent.Promise v6;
+io.netty.channel.Channel v2;
+io.netty.channel.ChannelHandlerContext v1;
+io.netty.channel.ChannelConfig v3;
+io.netty.handler.ssl.SslHandler v0;
+boolean v4, v5, v7;
+v0 := @this: io.netty.handler.ssl.SslHandler;
+v1 := @parameter0: io.netty.channel.ChannelHandlerContext;
+v2 = interfaceinvoke v1.<io.netty.channel.ChannelHandlerContext: io.netty.channel.Channel channel()>();
+v3 = interfaceinvoke v2.<io.netty.channel.Channel: io.netty.channel.ChannelConfig config()>();
+v4 = interfaceinvoke v3.<io.netty.channel.ChannelConfig: boolean isAutoRead()>();
+if v4 != 0 goto label2;
+v5 = specialinvoke v0.<io.netty.handler.ssl.SslHandler: boolean isStateSet(int)>(256);
+if v5 == 0 goto label1;
+v6 = v0.<io.netty.handler.ssl.SslHandler: io.netty.util.concurrent.Promise handshakePromise>;
+v7 = interfaceinvoke v6.<io.netty.util.concurrent.Promise: boolean isDone()>();
+if v7 != 0 goto label2;
+label1:
+interfaceinvoke v1.<io.netty.channel.ChannelHandlerContext: io.netty.channel.ChannelHandlerContext read()>();
+label2:
+return;
+}
+private void flushIfNeeded(io.netty.channel.ChannelHandlerContext)
+{
+io.netty.channel.ChannelHandlerContext v1;
+io.netty.handler.ssl.SslHandler v0;
+boolean v2;
+v0 := @this: io.netty.handler.ssl.SslHandler;
+v1 := @parameter0: io.netty.channel.ChannelHandlerContext;
+v2 = specialinvoke v0.<io.netty.handler.ssl.SslHandler: boolean isStateSet(int)>(16);
+if v2 == 0 goto label1;
+specialinvoke v0.<io.netty.handler.ssl.SslHandler: void forceFlush(io.netty.channel.ChannelHandlerContext)>(v1);
+label1:
+return;
+}
+private int unwrapNonAppData(io.netty.channel.ChannelHandlerContext) throws javax.net.ssl.SSLException
+{
+io.netty.channel.ChannelHandlerContext v1;
+io.netty.buffer.ByteBuf v2;
+io.netty.handler.ssl.SslHandler v0;
+int v3;
+v0 := @this: io.netty.handler.ssl.SslHandler;
+v1 := @parameter0: io.netty.channel.ChannelHandlerContext;
+v2 = <io.netty.buffer.Unpooled: io.netty.buffer.ByteBuf EMPTY_BUFFER>;
+v3 = specialinvoke v0.<io.netty.handler.ssl.SslHandler: int unwrap(io.netty.channel.ChannelHandlerContext,io.netty.buffer.ByteBuf,int)>(v1, v2, 0);
+return v3;
+}
+private int unwrap(io.netty.channel.ChannelHandlerContext, io.netty.buffer.ByteBuf, int) throws javax.net.ssl.SSLException
+{
+javax.net.ssl.SSLEngineResult$HandshakeStatus v12, v15, v16, v21, v33, v35, v38, v39, v40;
+boolean v17, v18, v19, v20, v22, v23, v24, v34, v36, v41, v42, v44, v5, v6, v7;
+io.netty.handler.ssl.SslHandler v0;
+java.lang.Throwable v45;
+javax.net.ssl.SSLEngine v27;
+io.netty.channel.ChannelHandlerContext v1;
+javax.net.ssl.SSLEngineResult v10;
+javax.net.ssl.SSLSession v28;
+io.netty.buffer.ByteBuf v2, v8;
+int v13, v14, v29, v3, v31, v32, v4, v46;
+javax.net.ssl.SSLEngineResult$Status v11, v25, v26, v37;
+io.netty.util.concurrent.Promise v43;
+io.netty.handler.ssl.SslHandler$SslEngineType v30, v9;
+v0 := @this: io.netty.handler.ssl.SslHandler;
+v1 := @parameter0: io.netty.channel.ChannelHandlerContext;
+v2 := @parameter1: io.netty.buffer.ByteBuf;
+v3 := @parameter2: int;
+v4 = v3;
+v5 = 0;
+v6 = 0;
+v7 = 0;
+v8 = specialinvoke v0.<io.netty.handler.ssl.SslHandler: io.netty.buffer.ByteBuf allocate(io.netty.channel.ChannelHandlerContext,int)>(v1, v3);
+label01:
+v9 = v0.<io.netty.handler.ssl.SslHandler: io.netty.handler.ssl.SslHandler$SslEngineType engineType>;
+v10 = virtualinvoke v9.<io.netty.handler.ssl.SslHandler$SslEngineType: javax.net.ssl.SSLEngineResult unwrap(io.netty.handler.ssl.SslHandler,io.netty.buffer.ByteBuf,int,io.netty.buffer.ByteBuf)>(v0, v2, v3, v8);
+v11 = virtualinvoke v10.<javax.net.ssl.SSLEngineResult: javax.net.ssl.SSLEngineResult$Status getStatus()>();
+v12 = virtualinvoke v10.<javax.net.ssl.SSLEngineResult: javax.net.ssl.SSLEngineResult$HandshakeStatus getHandshakeStatus()>();
+v13 = virtualinvoke v10.<javax.net.ssl.SSLEngineResult: int bytesProduced()>();
+v14 = virtualinvoke v10.<javax.net.ssl.SSLEngineResult: int bytesConsumed()>();
+virtualinvoke v2.<io.netty.buffer.ByteBuf: io.netty.buffer.ByteBuf skipBytes(int)>(v14);
+v3 = v3 - v14;
+v15 = <javax.net.ssl.SSLEngineResult$HandshakeStatus: javax.net.ssl.SSLEngineResult$HandshakeStatus FINISHED>;
+if v12 == v15 goto label02;
+v16 = <javax.net.ssl.SSLEngineResult$HandshakeStatus: javax.net.ssl.SSLEngineResult$HandshakeStatus NOT_HANDSHAKING>;
+if v12 != v16 goto label08;
+label02:
+v17 = v5;
+v18 = virtualinvoke v8.<io.netty.buffer.ByteBuf: boolean isReadable()>();
+if v18 == 0 goto label03;
+v19 = specialinvoke v0.<io.netty.handler.ssl.SslHandler: boolean setHandshakeSuccessUnwrapMarkReentry()>();
+if v19 == 0 goto label04;
+goto label05;
+label03:
+v20 = specialinvoke v0.<io.netty.handler.ssl.SslHandler: boolean setHandshakeSuccess()>();
+if v20 != 0 goto label05;
+label04:
+v21 = <javax.net.ssl.SSLEngineResult$HandshakeStatus: javax.net.ssl.SSLEngineResult$HandshakeStatus FINISHED>;
+if v12 != v21 goto label06;
+label05:
+v22 = 1;
+goto label07;
+label06:
+v22 = 0;
+label07:
+v5 = v17 | v22;
+label08:
+v23 = virtualinvoke v8.<io.netty.buffer.ByteBuf: boolean isReadable()>();
+if v23 == 0 goto label11;
+specialinvoke v0.<io.netty.handler.ssl.SslHandler: void setState(int)>(256);
+v24 = specialinvoke v0.<io.netty.handler.ssl.SslHandler: boolean isStateSet(int)>(512);
+if v24 == 0 goto label09;
+v7 = 1;
+specialinvoke v0.<io.netty.handler.ssl.SslHandler: void executeChannelRead(io.netty.channel.ChannelHandlerContext,io.netty.buffer.ByteBuf)>(v1, v8);
+goto label10;
+label09:
+interfaceinvoke v1.<io.netty.channel.ChannelHandlerContext: io.netty.channel.ChannelHandlerContext fireChannelRead(java.lang.Object)>(v8);
+label10:
+v8 = null;
+label11:
+v25 = <javax.net.ssl.SSLEngineResult$Status: javax.net.ssl.SSLEngineResult$Status CLOSED>;
+if v11 != v25 goto label12;
+v6 = 1;
+goto label16;
+label12:
+v26 = <javax.net.ssl.SSLEngineResult$Status: javax.net.ssl.SSLEngineResult$Status BUFFER_OVERFLOW>;
+if v11 != v26 goto label16;
+if v8 == null goto label13;
+virtualinvoke v8.<io.netty.buffer.ByteBuf: boolean release()>();
+label13:
+v27 = v0.<io.netty.handler.ssl.SslHandler: javax.net.ssl.SSLEngine engine>;
+v28 = virtualinvoke v27.<javax.net.ssl.SSLEngine: javax.net.ssl.SSLSession getSession()>();
+v29 = interfaceinvoke v28.<javax.net.ssl.SSLSession: int getApplicationBufferSize()>();
+v30 = v0.<io.netty.handler.ssl.SslHandler: io.netty.handler.ssl.SslHandler$SslEngineType engineType>;
+if v29 >= v13 goto label14;
+v31 = v29;
+goto label15;
+label14:
+v31 = v29 - v13;
+label15:
+v32 = virtualinvoke v30.<io.netty.handler.ssl.SslHandler$SslEngineType: int calculatePendingData(io.netty.handler.ssl.SslHandler,int)>(v0, v31);
+v8 = specialinvoke v0.<io.netty.handler.ssl.SslHandler: io.netty.buffer.ByteBuf allocate(io.netty.channel.ChannelHandlerContext,int)>(v1, v32);
+goto label22;
+label16:
+v33 = <javax.net.ssl.SSLEngineResult$HandshakeStatus: javax.net.ssl.SSLEngineResult$HandshakeStatus NEED_TASK>;
+if v12 != v33 goto label17;
+v34 = specialinvoke v0.<io.netty.handler.ssl.SslHandler: boolean runDelegatedTasks(boolean)>(1);
+if v34 != 0 goto label18;
+v5 = 0;
+goto label23;
+label17:
+v35 = <javax.net.ssl.SSLEngineResult$HandshakeStatus: javax.net.ssl.SSLEngineResult$HandshakeStatus NEED_WRAP>;
+if v12 != v35 goto label18;
+v36 = specialinvoke v0.<io.netty.handler.ssl.SslHandler: boolean wrapNonAppData(io.netty.channel.ChannelHandlerContext,boolean)>(v1, 1);
+if v36 == 0 goto label18;
+if v3 == 0 goto label23;
+label18:
+v37 = <javax.net.ssl.SSLEngineResult$Status: javax.net.ssl.SSLEngineResult$Status BUFFER_UNDERFLOW>;
+if v11 == v37 goto label20;
+v38 = <javax.net.ssl.SSLEngineResult$HandshakeStatus: javax.net.ssl.SSLEngineResult$HandshakeStatus NEED_TASK>;
+if v12 == v38 goto label21;
+if v14 != 0 goto label19;
+if v13 == 0 goto label20;
+label19:
+if v3 != 0 goto label21;
+v39 = <javax.net.ssl.SSLEngineResult$HandshakeStatus: javax.net.ssl.SSLEngineResult$HandshakeStatus NOT_HANDSHAKING>;
+if v12 != v39 goto label21;
+label20:
+v40 = <javax.net.ssl.SSLEngineResult$HandshakeStatus: javax.net.ssl.SSLEngineResult$HandshakeStatus NEED_UNWRAP>;
+if v12 != v40 goto label23;
+specialinvoke v0.<io.netty.handler.ssl.SslHandler: void readIfNeeded(io.netty.channel.ChannelHandlerContext)>(v1);
+goto label23;
+label21:
+if v8 != null goto label22;
+v8 = specialinvoke v0.<io.netty.handler.ssl.SslHandler: io.netty.buffer.ByteBuf allocate(io.netty.channel.ChannelHandlerContext,int)>(v1, v3);
+label22:
+v41 = interfaceinvoke v1.<io.netty.channel.ChannelHandlerContext: boolean isRemoved()>();
+if v41 == 0 goto label01;
+label23:
+v42 = specialinvoke v0.<io.netty.handler.ssl.SslHandler: boolean isStateSet(int)>(2);
+if v42 == 0 goto label24;
+v43 = v0.<io.netty.handler.ssl.SslHandler: io.netty.util.concurrent.Promise handshakePromise>;
+v44 = interfaceinvoke v43.<io.netty.util.concurrent.Promise: boolean isDone()>();
+if v44 == 0 goto label24;
+specialinvoke v0.<io.netty.handler.ssl.SslHandler: void clearState(int)>(2);
+v5 = 1;
+label24:
+if v5 == 0 goto label25;
+specialinvoke v0.<io.netty.handler.ssl.SslHandler: void wrap(io.netty.channel.ChannelHandlerContext,boolean)>(v1, 1);
+label25:
+if v8 == null goto label26;
+virtualinvoke v8.<io.netty.buffer.ByteBuf: boolean release()>();
+label26:
+if v6 == 0 goto label32;
+if v7 == 0 goto label27;
+specialinvoke v0.<io.netty.handler.ssl.SslHandler: void executeNotifyClosePromise(io.netty.channel.ChannelHandlerContext)>(v1);
+goto label32;
+label27:
+specialinvoke v0.<io.netty.handler.ssl.SslHandler: void notifyClosePromise(java.lang.Throwable)>(null);
+goto label32;
+label28:
+v45 := @caughtexception;
+if v8 == null goto label29;
+virtualinvoke v8.<io.netty.buffer.ByteBuf: boolean release()>();
+label29:
+if v6 == 0 goto label31;
+if v7 == 0 goto label30;
+specialinvoke v0.<io.netty.handler.ssl.SslHandler: void executeNotifyClosePromise(io.netty.channel.ChannelHandlerContext)>(v1);
+goto label31;
+label30:
+specialinvoke v0.<io.netty.handler.ssl.SslHandler: void notifyClosePromise(java.lang.Throwable)>(null);
+label31:
+throw v45;
+label32:
+v46 = v4 - v3;
+return v46;
+catch java.lang.Throwable from label01 to label25 with label28;
+}
+private boolean setHandshakeSuccessUnwrapMarkReentry()
+{
+java.lang.Throwable v5;
+io.netty.handler.ssl.SslHandler v0;
+boolean v1, v2, v3, v4;
+v0 := @this: io.netty.handler.ssl.SslHandler;
+v1 = specialinvoke v0.<io.netty.handler.ssl.SslHandler: boolean isStateSet(int)>(512);
+if v1 != 0 goto label1;
+v2 = 1;
+goto label2;
+label1:
+v2 = 0;
+label2:
+v3 = v2;
+if v2 == 0 goto label3;
+specialinvoke v0.<io.netty.handler.ssl.SslHandler: void setState(int)>(512);
+label3:
+v4 = specialinvoke v0.<io.netty.handler.ssl.SslHandler: boolean setHandshakeSuccess()>();
+label4:
+if v3 == 0 goto label5;
+specialinvoke v0.<io.netty.handler.ssl.SslHandler: void clearState(int)>(512);
+label5:
+return v4;
+label6:
+v5 := @caughtexception;
+if v3 == 0 goto label7;
+specialinvoke v0.<io.netty.handler.ssl.SslHandler: void clearState(int)>(512);
+label7:
+throw v5;
+catch java.lang.Throwable from label3 to label4 with label6;
+}
+private void executeNotifyClosePromise(io.netty.channel.ChannelHandlerContext)
+{
+io.netty.util.concurrent.EventExecutor v2;
+io.netty.channel.ChannelHandlerContext v1;
+java.util.concurrent.RejectedExecutionException v4;
+io.netty.handler.ssl.SslHandler$3 v3;
+io.netty.handler.ssl.SslHandler v0;
+v0 := @this: io.netty.handler.ssl.SslHandler;
+v1 := @parameter0: io.netty.channel.ChannelHandlerContext;
+label1:
+v2 = interfaceinvoke v1.<io.netty.channel.ChannelHandlerContext: io.netty.util.concurrent.EventExecutor executor()>();
+v3 = new io.netty.handler.ssl.SslHandler$3;
+specialinvoke v3.<io.netty.handler.ssl.SslHandler$3: void <init>(io.netty.handler.ssl.SslHandler)>(v0);
+interfaceinvoke v2.<io.netty.util.concurrent.EventExecutor: void execute(java.lang.Runnable)>(v3);
+label2:
+goto label4;
+label3:
+v4 := @caughtexception;
+specialinvoke v0.<io.netty.handler.ssl.SslHandler: void notifyClosePromise(java.lang.Throwable)>(v4);
+label4:
+return;
+catch java.util.concurrent.RejectedExecutionException from label1 to label2 with label3;
+}
+private void executeChannelRead(io.netty.channel.ChannelHandlerContext, io.netty.buffer.ByteBuf)
+{
+io.netty.util.concurrent.EventExecutor v3;
+io.netty.channel.ChannelHandlerContext v1;
+java.util.concurrent.RejectedExecutionException v5;
+io.netty.buffer.ByteBuf v2;
+io.netty.handler.ssl.SslHandler v0;
+io.netty.handler.ssl.SslHandler$4 v4;
+v0 := @this: io.netty.handler.ssl.SslHandler;
+v1 := @parameter0: io.netty.channel.ChannelHandlerContext;
+v2 := @parameter1: io.netty.buffer.ByteBuf;
+label1:
+v3 = interfaceinvoke v1.<io.netty.channel.ChannelHandlerContext: io.netty.util.concurrent.EventExecutor executor()>();
+v4 = new io.netty.handler.ssl.SslHandler$4;
+specialinvoke v4.<io.netty.handler.ssl.SslHandler$4: void <init>(io.netty.handler.ssl.SslHandler,io.netty.channel.ChannelHandlerContext,io.netty.buffer.ByteBuf)>(v0, v1, v2);
+interfaceinvoke v3.<io.netty.util.concurrent.EventExecutor: void execute(java.lang.Runnable)>(v4);
+label2:
+goto label4;
+label3:
+v5 := @caughtexception;
+virtualinvoke v2.<io.netty.buffer.ByteBuf: boolean release()>();
+throw v5;
+label4:
+return;
+catch java.util.concurrent.RejectedExecutionException from label1 to label2 with label3;
+}
+private static java.nio.ByteBuffer toByteBuffer(io.netty.buffer.ByteBuf, int, int)
+{
+io.netty.buffer.ByteBuf v0;
+int v1, v2, v3;
+java.nio.ByteBuffer v4;
+v0 := @parameter0: io.netty.buffer.ByteBuf;
+v1 := @parameter1: int;
+v2 := @parameter2: int;
+v3 = virtualinvoke v0.<io.netty.buffer.ByteBuf: int nioBufferCount()>();
+if v3 != 1 goto label1;
+v4 = virtualinvoke v0.<io.netty.buffer.ByteBuf: java.nio.ByteBuffer internalNioBuffer(int,int)>(v1, v2);
+goto label2;
+label1:
+v4 = virtualinvoke v0.<io.netty.buffer.ByteBuf: java.nio.ByteBuffer nioBuffer(int,int)>(v1, v2);
+label2:
+return v4;
+}
+private static boolean inEventLoop(java.util.concurrent.Executor)
+{
+java.util.concurrent.Executor v0;
+boolean v1, v2, v3;
+v0 := @parameter0: java.util.concurrent.Executor;
+v1 = v0 instanceof io.netty.util.concurrent.EventExecutor;
+if v1 == 0 goto label1;
+v2 = interfaceinvoke v0.<io.netty.util.concurrent.EventExecutor: boolean inEventLoop()>();
+if v2 == 0 goto label1;
+v3 = 1;
+goto label2;
+label1:
+v3 = 0;
+label2:
+return v3;
+}
+private boolean runDelegatedTasks(boolean)
+{
+java.lang.Throwable v11, v12;
+java.util.concurrent.Executor v2, v4;
+java.lang.Runnable v7;
+javax.net.ssl.SSLEngine v6;
+io.netty.handler.ssl.SslHandler v0;
+io.netty.handler.ssl.SslHandler$AsyncTaskCompletionHandler v10;
+io.netty.util.concurrent.ImmediateExecutor v3;
+boolean v1, v5, v8, v9;
+v0 := @this: io.netty.handler.ssl.SslHandler;
+v1 := @parameter0: boolean;
+v2 = v0.<io.netty.handler.ssl.SslHandler: java.util.concurrent.Executor delegatedTaskExecutor>;
+v3 = <io.netty.util.concurrent.ImmediateExecutor: io.netty.util.concurrent.ImmediateExecutor INSTANCE>;
+if v2 == v3 goto label01;
+v4 = v0.<io.netty.handler.ssl.SslHandler: java.util.concurrent.Executor delegatedTaskExecutor>;
+v5 = staticinvoke <io.netty.handler.ssl.SslHandler: boolean inEventLoop(java.util.concurrent.Executor)>(v4);
+if v5 == 0 goto label12;
+label01:
+v6 = v0.<io.netty.handler.ssl.SslHandler: javax.net.ssl.SSLEngine engine>;
+v7 = virtualinvoke v6.<javax.net.ssl.SSLEngine: java.lang.Runnable getDelegatedTask()>();
+if v7 != null goto label02;
+return 1;
+label02:
+specialinvoke v0.<io.netty.handler.ssl.SslHandler: void setState(int)>(128);
+v8 = v7 instanceof io.netty.handler.ssl.AsyncRunnable;
+if v8 == 0 goto label09;
+v9 = 0;
+label03:
+v10 = new io.netty.handler.ssl.SslHandler$AsyncTaskCompletionHandler;
+specialinvoke v10.<io.netty.handler.ssl.SslHandler$AsyncTaskCompletionHandler: void <init>(io.netty.handler.ssl.SslHandler,boolean)>(v0, v1);
+interfaceinvoke v7.<io.netty.handler.ssl.AsyncRunnable: void run(java.lang.Runnable)>(v10);
+v9 = virtualinvoke v10.<io.netty.handler.ssl.SslHandler$AsyncTaskCompletionHandler: boolean resumeLater()>();
+if v9 == 0 goto label06;
+label04:
+if v9 != 0 goto label05;
+specialinvoke v0.<io.netty.handler.ssl.SslHandler: void clearState(int)>(128);
+label05:
+return 0;
+label06:
+if v9 != 0 goto label01;
+specialinvoke v0.<io.netty.handler.ssl.SslHandler: void clearState(int)>(128);
+goto label01;
+label07:
+v11 := @caughtexception;
+if v9 != 0 goto label08;
+specialinvoke v0.<io.netty.handler.ssl.SslHandler: void clearState(int)>(128);
+label08:
+throw v11;
+label09:
+interfaceinvoke v7.<java.lang.Runnable: void run()>();
+label10:
+specialinvoke v0.<io.netty.handler.ssl.SslHandler: void clearState(int)>(128);
+goto label01;
+label11:
+v12 := @caughtexception;
+specialinvoke v0.<io.netty.handler.ssl.SslHandler: void clearState(int)>(128);
+throw v12;
+label12:
+specialinvoke v0.<io.netty.handler.ssl.SslHandler: void executeDelegatedTask(boolean)>(v1);
+return 0;
+catch java.lang.Throwable from label03 to label04 with label07;
+catch java.lang.Throwable from label09 to label10 with label11;
+}
+private io.netty.handler.ssl.SslHandler$SslTasksRunner getTaskRunner(boolean)
+{
+io.netty.handler.ssl.SslHandler$SslTasksRunner v2;
+io.netty.handler.ssl.SslHandler v0;
+boolean v1;
+v0 := @this: io.netty.handler.ssl.SslHandler;
+v1 := @parameter0: boolean;
+if v1 == 0 goto label1;
+v2 = v0.<io.netty.handler.ssl.SslHandler: io.netty.handler.ssl.SslHandler$SslTasksRunner sslTaskRunnerForUnwrap>;
+goto label2;
+label1:
+v2 = v0.<io.netty.handler.ssl.SslHandler: io.netty.handler.ssl.SslHandler$SslTasksRunner sslTaskRunner>;
+label2:
+return v2;
+}
+private void executeDelegatedTask(boolean)
+{
+io.netty.handler.ssl.SslHandler$SslTasksRunner v2;
+io.netty.handler.ssl.SslHandler v0;
+boolean v1;
+v0 := @this: io.netty.handler.ssl.SslHandler;
+v1 := @parameter0: boolean;
+v2 = specialinvoke v0.<io.netty.handler.ssl.SslHandler: io.netty.handler.ssl.SslHandler$SslTasksRunner getTaskRunner(boolean)>(v1);
+specialinvoke v0.<io.netty.handler.ssl.SslHandler: void executeDelegatedTask(io.netty.handler.ssl.SslHandler$SslTasksRunner)>(v2);
+return;
+}
+private void executeDelegatedTask(io.netty.handler.ssl.SslHandler$SslTasksRunner)
+{
+java.util.concurrent.RejectedExecutionException v3;
+io.netty.handler.ssl.SslHandler$SslTasksRunner v1;
+io.netty.handler.ssl.SslHandler v0;
+java.util.concurrent.Executor v2;
+v0 := @this: io.netty.handler.ssl.SslHandler;
+v1 := @parameter0: io.netty.handler.ssl.SslHandler$SslTasksRunner;
+specialinvoke v0.<io.netty.handler.ssl.SslHandler: void setState(int)>(128);
+label1:
+v2 = v0.<io.netty.handler.ssl.SslHandler: java.util.concurrent.Executor delegatedTaskExecutor>;
+interfaceinvoke v2.<java.util.concurrent.Executor: void execute(java.lang.Runnable)>(v1);
+label2:
+goto label4;
+label3:
+v3 := @caughtexception;
+specialinvoke v0.<io.netty.handler.ssl.SslHandler: void clearState(int)>(128);
+throw v3;
+label4:
+return;
+catch java.util.concurrent.RejectedExecutionException from label1 to label2 with label3;
+}
+private boolean setHandshakeSuccess()
+{
+java.lang.Object[] v14;
+javax.net.ssl.SSLEngine v11;
+io.netty.channel.ChannelHandlerContext v15, v19, v22, v26, v4;
+javax.net.ssl.SSLSession v12;
+io.netty.handler.ssl.SslHandshakeCompletionEvent v20;
+java.lang.String v17, v18;
+boolean v10, v2, v21, v25, v6, v7, v8;
+io.netty.util.concurrent.Promise v1, v3;
+io.netty.channel.Channel v16, v23, v5;
+io.netty.channel.ChannelConfig v24;
+io.netty.handler.ssl.SslHandler v0;
+io.netty.util.internal.logging.InternalLogger v13, v9;
+v0 := @this: io.netty.handler.ssl.SslHandler;
+v1 = v0.<io.netty.handler.ssl.SslHandler: io.netty.util.concurrent.Promise handshakePromise>;
+v2 = interfaceinvoke v1.<io.netty.util.concurrent.Promise: boolean isDone()>();
+if v2 != 0 goto label1;
+v3 = v0.<io.netty.handler.ssl.SslHandler: io.netty.util.concurrent.Promise handshakePromise>;
+v4 = v0.<io.netty.handler.ssl.SslHandler: io.netty.channel.ChannelHandlerContext ctx>;
+v5 = interfaceinvoke v4.<io.netty.channel.ChannelHandlerContext: io.netty.channel.Channel channel()>();
+v6 = interfaceinvoke v3.<io.netty.util.concurrent.Promise: boolean trySuccess(java.lang.Object)>(v5);
+if v6 == 0 goto label1;
+v7 = 1;
+goto label2;
+label1:
+v7 = 0;
+label2:
+v8 = v7;
+if v7 == 0 goto label4;
+v9 = <io.netty.handler.ssl.SslHandler: io.netty.util.internal.logging.InternalLogger logger>;
+v10 = interfaceinvoke v9.<io.netty.util.internal.logging.InternalLogger: boolean isDebugEnabled()>();
+if v10 == 0 goto label3;
+v11 = v0.<io.netty.handler.ssl.SslHandler: javax.net.ssl.SSLEngine engine>;
+v12 = virtualinvoke v11.<javax.net.ssl.SSLEngine: javax.net.ssl.SSLSession getSession()>();
+v13 = <io.netty.handler.ssl.SslHandler: io.netty.util.internal.logging.InternalLogger logger>;
+v14 = newarray (java.lang.Object)[3];
+v15 = v0.<io.netty.handler.ssl.SslHandler: io.netty.channel.ChannelHandlerContext ctx>;
+v16 = interfaceinvoke v15.<io.netty.channel.ChannelHandlerContext: io.netty.channel.Channel channel()>();
+v14[0] = v16;
+v17 = interfaceinvoke v12.<javax.net.ssl.SSLSession: java.lang.String getProtocol()>();
+v14[1] = v17;
+v18 = interfaceinvoke v12.<javax.net.ssl.SSLSession: java.lang.String getCipherSuite()>();
+v14[2] = v18;
+interfaceinvoke v13.<io.netty.util.internal.logging.InternalLogger: void debug(java.lang.String,java.lang.Object[])>("{} HANDSHAKEN: protocol:{} cipher suite:{}", v14);
+label3:
+v19 = v0.<io.netty.handler.ssl.SslHandler: io.netty.channel.ChannelHandlerContext ctx>;
+v20 = <io.netty.handler.ssl.SslHandshakeCompletionEvent: io.netty.handler.ssl.SslHandshakeCompletionEvent SUCCESS>;
+interfaceinvoke v19.<io.netty.channel.ChannelHandlerContext: io.netty.channel.ChannelHandlerContext fireUserEventTriggered(java.lang.Object)>(v20);
+label4:
+v21 = specialinvoke v0.<io.netty.handler.ssl.SslHandler: boolean isStateSet(int)>(4);
+if v21 == 0 goto label5;
+specialinvoke v0.<io.netty.handler.ssl.SslHandler: void clearState(int)>(4);
+v22 = v0.<io.netty.handler.ssl.SslHandler: io.netty.channel.ChannelHandlerContext ctx>;
+v23 = interfaceinvoke v22.<io.netty.channel.ChannelHandlerContext: io.netty.channel.Channel channel()>();
+v24 = interfaceinvoke v23.<io.netty.channel.Channel: io.netty.channel.ChannelConfig config()>();
+v25 = interfaceinvoke v24.<io.netty.channel.ChannelConfig: boolean isAutoRead()>();
+if v25 != 0 goto label5;
+v26 = v0.<io.netty.handler.ssl.SslHandler: io.netty.channel.ChannelHandlerContext ctx>;
+interfaceinvoke v26.<io.netty.channel.ChannelHandlerContext: io.netty.channel.ChannelHandlerContext read()>();
+label5:
+return v8;
+}
+private void setHandshakeFailure(io.netty.channel.ChannelHandlerContext, java.lang.Throwable)
+{
+java.lang.Throwable v2;
+io.netty.channel.ChannelHandlerContext v1;
+io.netty.handler.ssl.SslHandler v0;
+v0 := @this: io.netty.handler.ssl.SslHandler;
+v1 := @parameter0: io.netty.channel.ChannelHandlerContext;
+v2 := @parameter1: java.lang.Throwable;
+specialinvoke v0.<io.netty.handler.ssl.SslHandler: void setHandshakeFailure(io.netty.channel.ChannelHandlerContext,java.lang.Throwable,boolean,boolean,boolean)>(v1, v2, 1, 1, 0);
+return;
+}
+private void setHandshakeFailure(io.netty.channel.ChannelHandlerContext, java.lang.Throwable, boolean, boolean, boolean)
+{
+java.lang.Throwable v18, v2;
+javax.net.ssl.SSLEngine v6, v7;
+io.netty.channel.ChannelHandlerContext v1;
+java.lang.String v11;
+boolean v10, v12, v13, v17, v3, v4, v5;
+io.netty.util.concurrent.Promise v16;
+io.netty.channel.Channel v15;
+javax.net.ssl.SSLException v8;
+io.netty.handler.ssl.SslHandler v0;
+io.netty.util.internal.logging.InternalLogger v14, v9;
+v0 := @this: io.netty.handler.ssl.SslHandler;
+v1 := @parameter0: io.netty.channel.ChannelHandlerContext;
+v2 := @parameter1: java.lang.Throwable;
+v3 := @parameter2: boolean;
+v4 := @parameter3: boolean;
+v5 := @parameter4: boolean;
+label01:
+specialinvoke v0.<io.netty.handler.ssl.SslHandler: void setState(int)>(32);
+v6 = v0.<io.netty.handler.ssl.SslHandler: javax.net.ssl.SSLEngine engine>;
+virtualinvoke v6.<javax.net.ssl.SSLEngine: void closeOutbound()>();
+if v3 == 0 goto label06;
+label02:
+v7 = v0.<io.netty.handler.ssl.SslHandler: javax.net.ssl.SSLEngine engine>;
+virtualinvoke v7.<javax.net.ssl.SSLEngine: void closeInbound()>();
+label03:
+goto label06;
+label04:
+v8 := @caughtexception;
+v9 = <io.netty.handler.ssl.SslHandler: io.netty.util.internal.logging.InternalLogger logger>;
+v10 = interfaceinvoke v9.<io.netty.util.internal.logging.InternalLogger: boolean isDebugEnabled()>();
+if v10 == 0 goto label06;
+v11 = virtualinvoke v8.<javax.net.ssl.SSLException: java.lang.String getMessage()>();
+if v11 == null goto label05;
+v12 = virtualinvoke v11.<java.lang.String: boolean contains(java.lang.CharSequence)>("possible truncation attack");
+if v12 != 0 goto label06;
+v13 = virtualinvoke v11.<java.lang.String: boolean contains(java.lang.CharSequence)>("closing inbound before receiving peer\'s close_notify");
+if v13 != 0 goto label06;
+label05:
+v14 = <io.netty.handler.ssl.SslHandler: io.netty.util.internal.logging.InternalLogger logger>;
+v15 = interfaceinvoke v1.<io.netty.channel.ChannelHandlerContext: io.netty.channel.Channel channel()>();
+interfaceinvoke v14.<io.netty.util.internal.logging.InternalLogger: void debug(java.lang.String,java.lang.Object,java.lang.Object)>("{} SSLEngine.closeInbound() raised an exception.", v15, v8);
+label06:
+v16 = v0.<io.netty.handler.ssl.SslHandler: io.netty.util.concurrent.Promise handshakePromise>;
+v17 = interfaceinvoke v16.<io.netty.util.concurrent.Promise: boolean tryFailure(java.lang.Throwable)>(v2);
+if v17 != 0 goto label07;
+if v5 == 0 goto label08;
+label07:
+staticinvoke <io.netty.handler.ssl.SslUtils: void handleHandshakeFailure(io.netty.channel.ChannelHandlerContext,java.lang.Throwable,boolean)>(v1, v2, v4);
+label08:
+specialinvoke v0.<io.netty.handler.ssl.SslHandler: void releaseAndFailAll(io.netty.channel.ChannelHandlerContext,java.lang.Throwable)>(v1, v2);
+goto label10;
+label09:
+v18 := @caughtexception;
+specialinvoke v0.<io.netty.handler.ssl.SslHandler: void releaseAndFailAll(io.netty.channel.ChannelHandlerContext,java.lang.Throwable)>(v1, v2);
+throw v18;
+label10:
+return;
+catch javax.net.ssl.SSLException from label02 to label03 with label04;
+catch java.lang.Throwable from label01 to label08 with label09;
+}
+private void setHandshakeFailureTransportFailure(io.netty.channel.ChannelHandlerContext, java.lang.Throwable)
+{
+java.lang.Throwable v2, v7;
+io.netty.util.concurrent.Promise v4;
+io.netty.channel.ChannelHandlerContext v1;
+javax.net.ssl.SSLException v3;
+io.netty.handler.ssl.SslHandler v0;
+io.netty.handler.ssl.SslHandshakeCompletionEvent v6;
+boolean v5;
+v0 := @this: io.netty.handler.ssl.SslHandler;
+v1 := @parameter0: io.netty.channel.ChannelHandlerContext;
+v2 := @parameter1: java.lang.Throwable;
+label1:
+v3 = new javax.net.ssl.SSLException;
+specialinvoke v3.<javax.net.ssl.SSLException: void <init>(java.lang.String,java.lang.Throwable)>("failure when writing TLS control frames", v2);
+specialinvoke v0.<io.netty.handler.ssl.SslHandler: void releaseAndFailAll(io.netty.channel.ChannelHandlerContext,java.lang.Throwable)>(v1, v3);
+v4 = v0.<io.netty.handler.ssl.SslHandler: io.netty.util.concurrent.Promise handshakePromise>;
+v5 = interfaceinvoke v4.<io.netty.util.concurrent.Promise: boolean tryFailure(java.lang.Throwable)>(v3);
+if v5 == 0 goto label2;
+v6 = new io.netty.handler.ssl.SslHandshakeCompletionEvent;
+specialinvoke v6.<io.netty.handler.ssl.SslHandshakeCompletionEvent: void <init>(java.lang.Throwable)>(v3);
+interfaceinvoke v1.<io.netty.channel.ChannelHandlerContext: io.netty.channel.ChannelHandlerContext fireUserEventTriggered(java.lang.Object)>(v6);
+label2:
+interfaceinvoke v1.<io.netty.channel.ChannelHandlerContext: io.netty.channel.ChannelFuture close()>();
+goto label4;
+label3:
+v7 := @caughtexception;
+interfaceinvoke v1.<io.netty.channel.ChannelHandlerContext: io.netty.channel.ChannelFuture close()>();
+throw v7;
+label4:
+return;
+catch java.lang.Throwable from label1 to label2 with label3;
+}
+private void releaseAndFailAll(io.netty.channel.ChannelHandlerContext, java.lang.Throwable)
+{
+java.lang.Throwable v2;
+io.netty.channel.ChannelHandlerContext v1;
+io.netty.handler.ssl.SslHandler v0;
+io.netty.handler.ssl.SslHandler$SslHandlerCoalescingBufferQueue v3, v4;
+v0 := @this: io.netty.handler.ssl.SslHandler;
+v1 := @parameter0: io.netty.channel.ChannelHandlerContext;
+v2 := @parameter1: java.lang.Throwable;
+v3 = v0.<io.netty.handler.ssl.SslHandler: io.netty.handler.ssl.SslHandler$SslHandlerCoalescingBufferQueue pendingUnencryptedWrites>;
+if v3 == null goto label1;
+v4 = v0.<io.netty.handler.ssl.SslHandler: io.netty.handler.ssl.SslHandler$SslHandlerCoalescingBufferQueue pendingUnencryptedWrites>;
+virtualinvoke v4.<io.netty.handler.ssl.SslHandler$SslHandlerCoalescingBufferQueue: void releaseAndFailAll(io.netty.channel.ChannelOutboundInvoker,java.lang.Throwable)>(v1, v2);
+label1:
+return;
+}
+private void notifyClosePromise(java.lang.Throwable)
+{
+java.lang.Throwable v1;
+io.netty.channel.Channel v4;
+io.netty.channel.ChannelHandlerContext v10, v3, v6;
+io.netty.handler.ssl.SslHandler v0;
+io.netty.handler.ssl.SslHandler$LazyChannelPromise v2, v8;
+io.netty.handler.ssl.SslCloseCompletionEvent v11, v7;
+boolean v5, v9;
+v0 := @this: io.netty.handler.ssl.SslHandler;
+v1 := @parameter0: java.lang.Throwable;
+if v1 != null goto label1;
+v2 = v0.<io.netty.handler.ssl.SslHandler: io.netty.handler.ssl.SslHandler$LazyChannelPromise sslClosePromise>;
+v3 = v0.<io.netty.handler.ssl.SslHandler: io.netty.channel.ChannelHandlerContext ctx>;
+v4 = interfaceinvoke v3.<io.netty.channel.ChannelHandlerContext: io.netty.channel.Channel channel()>();
+v5 = virtualinvoke v2.<io.netty.handler.ssl.SslHandler$LazyChannelPromise: boolean trySuccess(java.lang.Object)>(v4);
+if v5 == 0 goto label2;
+v6 = v0.<io.netty.handler.ssl.SslHandler: io.netty.channel.ChannelHandlerContext ctx>;
+v7 = <io.netty.handler.ssl.SslCloseCompletionEvent: io.netty.handler.ssl.SslCloseCompletionEvent SUCCESS>;
+interfaceinvoke v6.<io.netty.channel.ChannelHandlerContext: io.netty.channel.ChannelHandlerContext fireUserEventTriggered(java.lang.Object)>(v7);
+goto label2;
+label1:
+v8 = v0.<io.netty.handler.ssl.SslHandler: io.netty.handler.ssl.SslHandler$LazyChannelPromise sslClosePromise>;
+v9 = virtualinvoke v8.<io.netty.handler.ssl.SslHandler$LazyChannelPromise: boolean tryFailure(java.lang.Throwable)>(v1);
+if v9 == 0 goto label2;
+v10 = v0.<io.netty.handler.ssl.SslHandler: io.netty.channel.ChannelHandlerContext ctx>;
+v11 = new io.netty.handler.ssl.SslCloseCompletionEvent;
+specialinvoke v11.<io.netty.handler.ssl.SslCloseCompletionEvent: void <init>(java.lang.Throwable)>(v1);
+interfaceinvoke v10.<io.netty.channel.ChannelHandlerContext: io.netty.channel.ChannelHandlerContext fireUserEventTriggered(java.lang.Object)>(v11);
+label2:
+return;
+}
+private void closeOutboundAndChannel(io.netty.channel.ChannelHandlerContext, io.netty.channel.ChannelPromise, boolean) throws java.lang.Exception
+{
+java.lang.Throwable v13;
+javax.net.ssl.SSLEngine v4;
+io.netty.channel.ChannelHandlerContext v1;
+io.netty.channel.ChannelPromise v15, v2, v7, v9;
+io.netty.handler.ssl.SslHandler$5 v12, v18;
+boolean v14, v3, v6, v8;
+io.netty.channel.Channel v5;
+io.netty.handler.ssl.SslHandler v0;
+io.netty.handler.ssl.SslHandler$LazyChannelPromise v11, v17;
+io.netty.util.concurrent.Future v10, v16;
+v0 := @this: io.netty.handler.ssl.SslHandler;
+v1 := @parameter0: io.netty.channel.ChannelHandlerContext;
+v2 := @parameter1: io.netty.channel.ChannelPromise;
+v3 := @parameter2: boolean;
+specialinvoke v0.<io.netty.handler.ssl.SslHandler: void setState(int)>(32);
+v4 = v0.<io.netty.handler.ssl.SslHandler: javax.net.ssl.SSLEngine engine>;
+virtualinvoke v4.<javax.net.ssl.SSLEngine: void closeOutbound()>();
+v5 = interfaceinvoke v1.<io.netty.channel.ChannelHandlerContext: io.netty.channel.Channel channel()>();
+v6 = interfaceinvoke v5.<io.netty.channel.Channel: boolean isActive()>();
+if v6 != 0 goto label03;
+if v3 == 0 goto label01;
+interfaceinvoke v1.<io.netty.channel.ChannelHandlerContext: io.netty.channel.ChannelFuture disconnect(io.netty.channel.ChannelPromise)>(v2);
+goto label02;
+label01:
+interfaceinvoke v1.<io.netty.channel.ChannelHandlerContext: io.netty.channel.ChannelFuture close(io.netty.channel.ChannelPromise)>(v2);
+label02:
+return;
+label03:
+v7 = interfaceinvoke v1.<io.netty.channel.ChannelHandlerContext: io.netty.channel.ChannelPromise newPromise()>();
+label04:
+specialinvoke v0.<io.netty.handler.ssl.SslHandler: void flush(io.netty.channel.ChannelHandlerContext,io.netty.channel.ChannelPromise)>(v1, v7);
+label05:
+v8 = specialinvoke v0.<io.netty.handler.ssl.SslHandler: boolean isStateSet(int)>(64);
+if v8 != 0 goto label06;
+specialinvoke v0.<io.netty.handler.ssl.SslHandler: void setState(int)>(64);
+v9 = interfaceinvoke v1.<io.netty.channel.ChannelHandlerContext: io.netty.channel.ChannelPromise newPromise()>();
+v10 = staticinvoke <io.netty.util.concurrent.PromiseNotifier: io.netty.util.concurrent.Future cascade(boolean,io.netty.util.concurrent.Future,io.netty.util.concurrent.Promise)>(0, v9, v2);
+specialinvoke v0.<io.netty.handler.ssl.SslHandler: void safeClose(io.netty.channel.ChannelHandlerContext,io.netty.channel.ChannelFuture,io.netty.channel.ChannelPromise)>(v1, v7, v10);
+goto label10;
+label06:
+v11 = v0.<io.netty.handler.ssl.SslHandler: io.netty.handler.ssl.SslHandler$LazyChannelPromise sslClosePromise>;
+v12 = new io.netty.handler.ssl.SslHandler$5;
+specialinvoke v12.<io.netty.handler.ssl.SslHandler$5: void <init>(io.netty.handler.ssl.SslHandler,io.netty.channel.ChannelPromise)>(v0, v2);
+virtualinvoke v11.<io.netty.handler.ssl.SslHandler$LazyChannelPromise: io.netty.util.concurrent.Promise addListener(io.netty.util.concurrent.GenericFutureListener)>(v12);
+goto label10;
+label07:
+v13 := @caughtexception;
+v14 = specialinvoke v0.<io.netty.handler.ssl.SslHandler: boolean isStateSet(int)>(64);
+if v14 != 0 goto label08;
+specialinvoke v0.<io.netty.handler.ssl.SslHandler: void setState(int)>(64);
+v15 = interfaceinvoke v1.<io.netty.channel.ChannelHandlerContext: io.netty.channel.ChannelPromise newPromise()>();
+v16 = staticinvoke <io.netty.util.concurrent.PromiseNotifier: io.netty.util.concurrent.Future cascade(boolean,io.netty.util.concurrent.Future,io.netty.util.concurrent.Promise)>(0, v15, v2);
+specialinvoke v0.<io.netty.handler.ssl.SslHandler: void safeClose(io.netty.channel.ChannelHandlerContext,io.netty.channel.ChannelFuture,io.netty.channel.ChannelPromise)>(v1, v7, v16);
+goto label09;
+label08:
+v17 = v0.<io.netty.handler.ssl.SslHandler: io.netty.handler.ssl.SslHandler$LazyChannelPromise sslClosePromise>;
+v18 = new io.netty.handler.ssl.SslHandler$5;
+specialinvoke v18.<io.netty.handler.ssl.SslHandler$5: void <init>(io.netty.handler.ssl.SslHandler,io.netty.channel.ChannelPromise)>(v0, v2);
+virtualinvoke v17.<io.netty.handler.ssl.SslHandler$LazyChannelPromise: io.netty.util.concurrent.Promise addListener(io.netty.util.concurrent.GenericFutureListener)>(v18);
+label09:
+throw v13;
+label10:
+return;
+catch java.lang.Throwable from label04 to label05 with label07;
+}
+private void flush(io.netty.channel.ChannelHandlerContext, io.netty.channel.ChannelPromise) throws java.lang.Exception
+{
+io.netty.channel.ChannelHandlerContext v1;
+java.lang.IllegalStateException v6;
+io.netty.buffer.ByteBuf v5;
+io.netty.channel.ChannelPromise v2;
+io.netty.handler.ssl.SslHandler v0;
+io.netty.handler.ssl.SslHandler$SslHandlerCoalescingBufferQueue v3, v4;
+v0 := @this: io.netty.handler.ssl.SslHandler;
+v1 := @parameter0: io.netty.channel.ChannelHandlerContext;
+v2 := @parameter1: io.netty.channel.ChannelPromise;
+v3 = v0.<io.netty.handler.ssl.SslHandler: io.netty.handler.ssl.SslHandler$SslHandlerCoalescingBufferQueue pendingUnencryptedWrites>;
+if v3 == null goto label1;
+v4 = v0.<io.netty.handler.ssl.SslHandler: io.netty.handler.ssl.SslHandler$SslHandlerCoalescingBufferQueue pendingUnencryptedWrites>;
+v5 = <io.netty.buffer.Unpooled: io.netty.buffer.ByteBuf EMPTY_BUFFER>;
+virtualinvoke v4.<io.netty.handler.ssl.SslHandler$SslHandlerCoalescingBufferQueue: void add(io.netty.buffer.ByteBuf,io.netty.channel.ChannelPromise)>(v5, v2);
+goto label2;
+label1:
+v6 = staticinvoke <io.netty.handler.ssl.SslHandler: java.lang.IllegalStateException newPendingWritesNullException()>();
+interfaceinvoke v2.<io.netty.channel.ChannelPromise: io.netty.channel.ChannelPromise setFailure(java.lang.Throwable)>(v6);
+label2:
+virtualinvoke v0.<io.netty.handler.ssl.SslHandler: void flush(io.netty.channel.ChannelHandlerContext)>(v1);
+return;
+}
+public void handlerAdded(io.netty.channel.ChannelHandlerContext) throws java.lang.Exception
+{
+io.netty.channel.ChannelOption v6;
+long v12;
+io.netty.channel.Channel$Unsafe v10;
+io.netty.handler.ssl.SslHandler$SslHandlerCoalescingBufferQueue v3;
+io.netty.channel.Channel v2;
+io.netty.channel.ChannelOutboundBuffer v11;
+io.netty.channel.ChannelHandlerContext v1;
+byte v13;
+io.netty.channel.ChannelConfig v5;
+io.netty.handler.ssl.SslHandler v0;
+java.lang.Boolean v4;
+java.lang.Object v7;
+boolean v8, v9;
+v0 := @this: io.netty.handler.ssl.SslHandler;
+v1 := @parameter0: io.netty.channel.ChannelHandlerContext;
+v0.<io.netty.handler.ssl.SslHandler: io.netty.channel.ChannelHandlerContext ctx> = v1;
+v2 = interfaceinvoke v1.<io.netty.channel.ChannelHandlerContext: io.netty.channel.Channel channel()>();
+v3 = new io.netty.handler.ssl.SslHandler$SslHandlerCoalescingBufferQueue;
+specialinvoke v3.<io.netty.handler.ssl.SslHandler$SslHandlerCoalescingBufferQueue: void <init>(io.netty.handler.ssl.SslHandler,io.netty.channel.Channel,int)>(v0, v2, 16);
+v0.<io.netty.handler.ssl.SslHandler: io.netty.handler.ssl.SslHandler$SslHandlerCoalescingBufferQueue pendingUnencryptedWrites> = v3;
+specialinvoke v0.<io.netty.handler.ssl.SslHandler: void setOpensslEngineSocketFd(io.netty.channel.Channel)>(v2);
+v4 = <java.lang.Boolean: java.lang.Boolean TRUE>;
+v5 = interfaceinvoke v2.<io.netty.channel.Channel: io.netty.channel.ChannelConfig config()>();
+v6 = <io.netty.channel.ChannelOption: io.netty.channel.ChannelOption TCP_FASTOPEN_CONNECT>;
+v7 = interfaceinvoke v5.<io.netty.channel.ChannelConfig: java.lang.Object getOption(io.netty.channel.ChannelOption)>(v6);
+v8 = virtualinvoke v4.<java.lang.Boolean: boolean equals(java.lang.Object)>(v7);
+v9 = interfaceinvoke v2.<io.netty.channel.Channel: boolean isActive()>();
+if v9 != 0 goto label1;
+if v8 == 0 goto label3;
+label1:
+specialinvoke v0.<io.netty.handler.ssl.SslHandler: void startHandshakeProcessing(boolean)>(v9);
+if v8 == 0 goto label3;
+v10 = interfaceinvoke v2.<io.netty.channel.Channel: io.netty.channel.Channel$Unsafe unsafe()>();
+v11 = interfaceinvoke v10.<io.netty.channel.Channel$Unsafe: io.netty.channel.ChannelOutboundBuffer outboundBuffer()>();
+if v11 == null goto label2;
+v12 = virtualinvoke v11.<io.netty.channel.ChannelOutboundBuffer: long totalPendingWriteBytes()>();
+v13 = v12 cmp 0L;
+if v13 <= 0 goto label3;
+label2:
+specialinvoke v0.<io.netty.handler.ssl.SslHandler: void setState(int)>(16);
+label3:
+return;
+}
+private void startHandshakeProcessing(boolean)
+{
+io.netty.channel.ChannelHandlerContext v6;
+io.netty.handler.ssl.SslHandler v0;
+boolean v1, v2, v4, v5;
+javax.net.ssl.SSLEngine v3;
+v0 := @this: io.netty.handler.ssl.SslHandler;
+v1 := @parameter0: boolean;
+v2 = specialinvoke v0.<io.netty.handler.ssl.SslHandler: boolean isStateSet(int)>(8);
+if v2 != 0 goto label2;
+specialinvoke v0.<io.netty.handler.ssl.SslHandler: void setState(int)>(8);
+v3 = v0.<io.netty.handler.ssl.SslHandler: javax.net.ssl.SSLEngine engine>;
+v4 = virtualinvoke v3.<javax.net.ssl.SSLEngine: boolean getUseClientMode()>();
+if v4 == 0 goto label1;
+specialinvoke v0.<io.netty.handler.ssl.SslHandler: void handshake(boolean)>(v1);
+label1:
+specialinvoke v0.<io.netty.handler.ssl.SslHandler: void applyHandshakeTimeout()>();
+goto label3;
+label2:
+v5 = specialinvoke v0.<io.netty.handler.ssl.SslHandler: boolean isStateSet(int)>(16);
+if v5 == 0 goto label3;
+v6 = v0.<io.netty.handler.ssl.SslHandler: io.netty.channel.ChannelHandlerContext ctx>;
+specialinvoke v0.<io.netty.handler.ssl.SslHandler: void forceFlush(io.netty.channel.ChannelHandlerContext)>(v6);
+label3:
+return;
+}
+public io.netty.util.concurrent.Future renegotiate()
+{
+io.netty.util.concurrent.EventExecutor v3;
+io.netty.channel.ChannelHandlerContext v1;
+java.lang.IllegalStateException v2;
+io.netty.util.concurrent.Promise v4;
+io.netty.handler.ssl.SslHandler v0;
+io.netty.util.concurrent.Future v5;
+v0 := @this: io.netty.handler.ssl.SslHandler;
+v1 = v0.<io.netty.handler.ssl.SslHandler: io.netty.channel.ChannelHandlerContext ctx>;
+if v1 != null goto label1;
+v2 = new java.lang.IllegalStateException;
+specialinvoke v2.<java.lang.IllegalStateException: void <init>()>();
+throw v2;
+label1:
+v3 = interfaceinvoke v1.<io.netty.channel.ChannelHandlerContext: io.netty.util.concurrent.EventExecutor executor()>();
+v4 = interfaceinvoke v3.<io.netty.util.concurrent.EventExecutor: io.netty.util.concurrent.Promise newPromise()>();
+v5 = virtualinvoke v0.<io.netty.handler.ssl.SslHandler: io.netty.util.concurrent.Future renegotiate(io.netty.util.concurrent.Promise)>(v4);
+return v5;
+}
+public io.netty.util.concurrent.Future renegotiate(io.netty.util.concurrent.Promise)
+{
+io.netty.util.concurrent.EventExecutor v4;
+io.netty.channel.ChannelHandlerContext v2;
+java.lang.IllegalStateException v3;
+io.netty.util.concurrent.Promise v1;
+io.netty.handler.ssl.SslHandler v0;
+io.netty.handler.ssl.SslHandler$6 v6;
+boolean v5;
+v0 := @this: io.netty.handler.ssl.SslHandler;
+v1 := @parameter0: io.netty.util.concurrent.Promise;
+staticinvoke <io.netty.util.internal.ObjectUtil: java.lang.Object checkNotNull(java.lang.Object,java.lang.String)>(v1, "promise");
+v2 = v0.<io.netty.handler.ssl.SslHandler: io.netty.channel.ChannelHandlerContext ctx>;
+if v2 != null goto label1;
+v3 = new java.lang.IllegalStateException;
+specialinvoke v3.<java.lang.IllegalStateException: void <init>()>();
+throw v3;
+label1:
+v4 = interfaceinvoke v2.<io.netty.channel.ChannelHandlerContext: io.netty.util.concurrent.EventExecutor executor()>();
+v5 = interfaceinvoke v4.<io.netty.util.concurrent.EventExecutor: boolean inEventLoop()>();
+if v5 != 0 goto label2;
+v6 = new io.netty.handler.ssl.SslHandler$6;
+specialinvoke v6.<io.netty.handler.ssl.SslHandler$6: void <init>(io.netty.handler.ssl.SslHandler,io.netty.util.concurrent.Promise)>(v0, v1);
+interfaceinvoke v4.<io.netty.util.concurrent.EventExecutor: void execute(java.lang.Runnable)>(v6);
+return v1;
+label2:
+specialinvoke v0.<io.netty.handler.ssl.SslHandler: void renegotiateOnEventLoop(io.netty.util.concurrent.Promise)>(v1);
+return v1;
+}
+private void renegotiateOnEventLoop(io.netty.util.concurrent.Promise)
+{
+io.netty.util.concurrent.Promise v1, v2;
+io.netty.handler.ssl.SslHandler v0;
+boolean v3;
+v0 := @this: io.netty.handler.ssl.SslHandler;
+v1 := @parameter0: io.netty.util.concurrent.Promise;
+v2 = v0.<io.netty.handler.ssl.SslHandler: io.netty.util.concurrent.Promise handshakePromise>;
+v3 = interfaceinvoke v2.<io.netty.util.concurrent.Promise: boolean isDone()>();
+if v3 != 0 goto label1;
+staticinvoke <io.netty.util.concurrent.PromiseNotifier: io.netty.util.concurrent.Future cascade(io.netty.util.concurrent.Future,io.netty.util.concurrent.Promise)>(v2, v1);
+goto label2;
+label1:
+v0.<io.netty.handler.ssl.SslHandler: io.netty.util.concurrent.Promise handshakePromise> = v1;
+specialinvoke v0.<io.netty.handler.ssl.SslHandler: void handshake(boolean)>(1);
+specialinvoke v0.<io.netty.handler.ssl.SslHandler: void applyHandshakeTimeout()>();
+label2:
+return;
+}
+private void handshake(boolean)
+{
+java.lang.Throwable v10, v9;
+io.netty.util.concurrent.Promise v5;
+javax.net.ssl.SSLEngineResult$HandshakeStatus v3, v4;
+javax.net.ssl.SSLEngine v2, v8;
+io.netty.channel.ChannelHandlerContext v7;
+io.netty.handler.ssl.SslHandler v0;
+boolean v1, v6;
+v0 := @this: io.netty.handler.ssl.SslHandler;
+v1 := @parameter0: boolean;
+v2 = v0.<io.netty.handler.ssl.SslHandler: javax.net.ssl.SSLEngine engine>;
+v3 = virtualinvoke v2.<javax.net.ssl.SSLEngine: javax.net.ssl.SSLEngineResult$HandshakeStatus getHandshakeStatus()>();
+v4 = <javax.net.ssl.SSLEngineResult$HandshakeStatus: javax.net.ssl.SSLEngineResult$HandshakeStatus NOT_HANDSHAKING>;
+if v3 == v4 goto label1;
+return;
+label1:
+v5 = v0.<io.netty.handler.ssl.SslHandler: io.netty.util.concurrent.Promise handshakePromise>;
+v6 = interfaceinvoke v5.<io.netty.util.concurrent.Promise: boolean isDone()>();
+if v6 == 0 goto label2;
+return;
+label2:
+v7 = v0.<io.netty.handler.ssl.SslHandler: io.netty.channel.ChannelHandlerContext ctx>;
+label3:
+v8 = v0.<io.netty.handler.ssl.SslHandler: javax.net.ssl.SSLEngine engine>;
+virtualinvoke v8.<javax.net.ssl.SSLEngine: void beginHandshake()>();
+specialinvoke v0.<io.netty.handler.ssl.SslHandler: boolean wrapNonAppData(io.netty.channel.ChannelHandlerContext,boolean)>(v7, 0);
+label4:
+if v1 == 0 goto label9;
+specialinvoke v0.<io.netty.handler.ssl.SslHandler: void forceFlush(io.netty.channel.ChannelHandlerContext)>(v7);
+goto label9;
+label5:
+v9 := @caughtexception;
+specialinvoke v0.<io.netty.handler.ssl.SslHandler: void setHandshakeFailure(io.netty.channel.ChannelHandlerContext,java.lang.Throwable)>(v7, v9);
+label6:
+if v1 == 0 goto label9;
+specialinvoke v0.<io.netty.handler.ssl.SslHandler: void forceFlush(io.netty.channel.ChannelHandlerContext)>(v7);
+goto label9;
+label7:
+v10 := @caughtexception;
+if v1 == 0 goto label8;
+specialinvoke v0.<io.netty.handler.ssl.SslHandler: void forceFlush(io.netty.channel.ChannelHandlerContext)>(v7);
+label8:
+throw v10;
+label9:
+return;
+catch java.lang.Throwable from label3 to label4 with label5;
+catch java.lang.Throwable from label5 to label6 with label7;
+}
+private void applyHandshakeTimeout()
+{
+io.netty.util.concurrent.EventExecutor v6;
+io.netty.util.concurrent.Promise v1;
+io.netty.util.concurrent.ScheduledFuture v9;
+long v2;
+java.util.concurrent.TimeUnit v8;
+io.netty.channel.ChannelHandlerContext v5;
+byte v3;
+io.netty.handler.ssl.SslHandler v0;
+io.netty.handler.ssl.SslHandler$7 v7;
+boolean v4;
+io.netty.handler.ssl.SslHandler$8 v10;
+v0 := @this: io.netty.handler.ssl.SslHandler;
+v1 = v0.<io.netty.handler.ssl.SslHandler: io.netty.util.concurrent.Promise handshakePromise>;
+v2 = v0.<io.netty.handler.ssl.SslHandler: long handshakeTimeoutMillis>;
+v3 = v2 cmp 0L;
+if v3 <= 0 goto label1;
+v4 = interfaceinvoke v1.<io.netty.util.concurrent.Promise: boolean isDone()>();
+if v4 == 0 goto label2;
+label1:
+return;
+label2:
+v5 = v0.<io.netty.handler.ssl.SslHandler: io.netty.channel.ChannelHandlerContext ctx>;
+v6 = interfaceinvoke v5.<io.netty.channel.ChannelHandlerContext: io.netty.util.concurrent.EventExecutor executor()>();
+v7 = new io.netty.handler.ssl.SslHandler$7;
+specialinvoke v7.<io.netty.handler.ssl.SslHandler$7: void <init>(io.netty.handler.ssl.SslHandler,io.netty.util.concurrent.Promise,long)>(v0, v1, v2);
+v8 = <java.util.concurrent.TimeUnit: java.util.concurrent.TimeUnit MILLISECONDS>;
+v9 = interfaceinvoke v6.<io.netty.util.concurrent.EventExecutor: io.netty.util.concurrent.ScheduledFuture schedule(java.lang.Runnable,long,java.util.concurrent.TimeUnit)>(v7, v2, v8);
+v10 = new io.netty.handler.ssl.SslHandler$8;
+specialinvoke v10.<io.netty.handler.ssl.SslHandler$8: void <init>(io.netty.handler.ssl.SslHandler,io.netty.util.concurrent.Future)>(v0, v9);
+interfaceinvoke v1.<io.netty.util.concurrent.Promise: io.netty.util.concurrent.Promise addListener(io.netty.util.concurrent.GenericFutureListener)>(v10);
+return;
+}
+private void forceFlush(io.netty.channel.ChannelHandlerContext)
+{
+io.netty.channel.ChannelHandlerContext v1;
+io.netty.handler.ssl.SslHandler v0;
+v0 := @this: io.netty.handler.ssl.SslHandler;
+v1 := @parameter0: io.netty.channel.ChannelHandlerContext;
+specialinvoke v0.<io.netty.handler.ssl.SslHandler: void clearState(int)>(16);
+interfaceinvoke v1.<io.netty.channel.ChannelHandlerContext: io.netty.channel.ChannelHandlerContext flush()>();
+return;
+}
+private void setOpensslEngineSocketFd(io.netty.channel.Channel)
+{
+io.netty.channel.unix.FileDescriptor v6;
+javax.net.ssl.SSLEngine v3, v5;
+io.netty.channel.Channel v1;
+io.netty.handler.ssl.SslHandler v0;
+int v7;
+boolean v2, v4;
+v0 := @this: io.netty.handler.ssl.SslHandler;
+v1 := @parameter0: io.netty.channel.Channel;
+v2 = v1 instanceof io.netty.channel.unix.UnixChannel;
+if v2 == 0 goto label1;
+v3 = v0.<io.netty.handler.ssl.SslHandler: javax.net.ssl.SSLEngine engine>;
+v4 = v3 instanceof io.netty.handler.ssl.ReferenceCountedOpenSslEngine;
+if v4 == 0 goto label1;
+v5 = v0.<io.netty.handler.ssl.SslHandler: javax.net.ssl.SSLEngine engine>;
+v6 = interfaceinvoke v1.<io.netty.channel.unix.UnixChannel: io.netty.channel.unix.FileDescriptor fd()>();
+v7 = virtualinvoke v6.<io.netty.channel.unix.FileDescriptor: int intValue()>();
+virtualinvoke v5.<io.netty.handler.ssl.ReferenceCountedOpenSslEngine: void bioSetFd(int)>(v7);
+label1:
+return;
+}
+public void channelActive(io.netty.channel.ChannelHandlerContext) throws java.lang.Exception
+{
+io.netty.channel.Channel v2;
+io.netty.channel.ChannelHandlerContext v1;
+io.netty.handler.ssl.SslHandler v0;
+boolean v3;
+v0 := @this: io.netty.handler.ssl.SslHandler;
+v1 := @parameter0: io.netty.channel.ChannelHandlerContext;
+v2 = interfaceinvoke v1.<io.netty.channel.ChannelHandlerContext: io.netty.channel.Channel channel()>();
+specialinvoke v0.<io.netty.handler.ssl.SslHandler: void setOpensslEngineSocketFd(io.netty.channel.Channel)>(v2);
+v3 = v0.<io.netty.handler.ssl.SslHandler: boolean startTls>;
+if v3 != 0 goto label1;
+specialinvoke v0.<io.netty.handler.ssl.SslHandler: void startHandshakeProcessing(boolean)>(1);
+label1:
+interfaceinvoke v1.<io.netty.channel.ChannelHandlerContext: io.netty.channel.ChannelHandlerContext fireChannelActive()>();
+return;
+}
+private void safeClose(io.netty.channel.ChannelHandlerContext, io.netty.channel.ChannelFuture, io.netty.channel.ChannelPromise)
+{
+io.netty.util.concurrent.EventExecutor v9;
+io.netty.util.concurrent.ScheduledFuture v12;
+long v7;
+io.netty.channel.ChannelFuture v2;
+io.netty.channel.Channel v4;
+java.util.concurrent.TimeUnit v11;
+io.netty.channel.ChannelHandlerContext v1;
+byte v8;
+io.netty.channel.ChannelPromise v3;
+io.netty.handler.ssl.SslHandler$10 v13;
+io.netty.handler.ssl.SslHandler v0;
+io.netty.handler.ssl.SslHandler$9 v10;
+boolean v5, v6;
+v0 := @this: io.netty.handler.ssl.SslHandler;
+v1 := @parameter0: io.netty.channel.ChannelHandlerContext;
+v2 := @parameter1: io.netty.channel.ChannelFuture;
+v3 := @parameter2: io.netty.channel.ChannelPromise;
+v4 = interfaceinvoke v1.<io.netty.channel.ChannelHandlerContext: io.netty.channel.Channel channel()>();
+v5 = interfaceinvoke v4.<io.netty.channel.Channel: boolean isActive()>();
+if v5 != 0 goto label1;
+interfaceinvoke v1.<io.netty.channel.ChannelHandlerContext: io.netty.channel.ChannelFuture close(io.netty.channel.ChannelPromise)>(v3);
+return;
+label1:
+v6 = interfaceinvoke v2.<io.netty.channel.ChannelFuture: boolean isDone()>();
+if v6 != 0 goto label3;
+v7 = v0.<io.netty.handler.ssl.SslHandler: long closeNotifyFlushTimeoutMillis>;
+v8 = v7 cmp 0L;
+if v8 <= 0 goto label2;
+v9 = interfaceinvoke v1.<io.netty.channel.ChannelHandlerContext: io.netty.util.concurrent.EventExecutor executor()>();
+v10 = new io.netty.handler.ssl.SslHandler$9;
+specialinvoke v10.<io.netty.handler.ssl.SslHandler$9: void <init>(io.netty.handler.ssl.SslHandler,io.netty.channel.ChannelFuture,io.netty.channel.ChannelHandlerContext,io.netty.channel.ChannelPromise)>(v0, v2, v1, v3);
+v11 = <java.util.concurrent.TimeUnit: java.util.concurrent.TimeUnit MILLISECONDS>;
+v12 = interfaceinvoke v9.<io.netty.util.concurrent.EventExecutor: io.netty.util.concurrent.ScheduledFuture schedule(java.lang.Runnable,long,java.util.concurrent.TimeUnit)>(v10, v7, v11);
+goto label4;
+label2:
+v12 = null;
+goto label4;
+label3:
+v12 = null;
+label4:
+v13 = new io.netty.handler.ssl.SslHandler$10;
+specialinvoke v13.<io.netty.handler.ssl.SslHandler$10: void <init>(io.netty.handler.ssl.SslHandler,io.netty.util.concurrent.Future,io.netty.channel.ChannelHandlerContext,io.netty.channel.ChannelPromise)>(v0, v12, v1, v3);
+interfaceinvoke v2.<io.netty.channel.ChannelFuture: io.netty.channel.ChannelFuture addListener(io.netty.util.concurrent.GenericFutureListener)>(v13);
+return;
+}
+private static void addCloseListener(io.netty.channel.ChannelFuture, io.netty.channel.ChannelPromise)
+{
+io.netty.channel.ChannelPromise v1;
+io.netty.channel.ChannelFuture v0;
+v0 := @parameter0: io.netty.channel.ChannelFuture;
+v1 := @parameter1: io.netty.channel.ChannelPromise;
+staticinvoke <io.netty.util.concurrent.PromiseNotifier: io.netty.util.concurrent.Future cascade(boolean,io.netty.util.concurrent.Future,io.netty.util.concurrent.Promise)>(0, v0, v1);
+return;
+}
+private io.netty.buffer.ByteBuf allocate(io.netty.channel.ChannelHandlerContext, int)
+{
+io.netty.buffer.ByteBufAllocator v3;
+io.netty.handler.ssl.SslHandler$SslEngineType v4;
+io.netty.channel.ChannelHandlerContext v1;
+io.netty.buffer.ByteBuf v6, v7;
+io.netty.handler.ssl.SslHandler v0;
+int v2;
+boolean v5;
+v0 := @this: io.netty.handler.ssl.SslHandler;
+v1 := @parameter0: io.netty.channel.ChannelHandlerContext;
+v2 := @parameter1: int;
+v3 = interfaceinvoke v1.<io.netty.channel.ChannelHandlerContext: io.netty.buffer.ByteBufAllocator alloc()>();
+v4 = v0.<io.netty.handler.ssl.SslHandler: io.netty.handler.ssl.SslHandler$SslEngineType engineType>;
+v5 = v4.<io.netty.handler.ssl.SslHandler$SslEngineType: boolean wantsDirectBuffer>;
+if v5 == 0 goto label1;
+v6 = interfaceinvoke v3.<io.netty.buffer.ByteBufAllocator: io.netty.buffer.ByteBuf directBuffer(int)>(v2);
+return v6;
+label1:
+v7 = interfaceinvoke v3.<io.netty.buffer.ByteBufAllocator: io.netty.buffer.ByteBuf buffer(int)>(v2);
+return v7;
+}
+private io.netty.buffer.ByteBuf allocateOutNetBuf(io.netty.channel.ChannelHandlerContext, int, int)
+{
+io.netty.channel.ChannelHandlerContext v1;
+io.netty.buffer.ByteBuf v6;
+io.netty.handler.ssl.SslHandler v0;
+io.netty.buffer.ByteBufAllocator v5;
+int v2, v3;
+io.netty.handler.ssl.SslHandler$SslEngineType v4;
+v0 := @this: io.netty.handler.ssl.SslHandler;
+v1 := @parameter0: io.netty.channel.ChannelHandlerContext;
+v2 := @parameter1: int;
+v3 := @parameter2: int;
+v4 = v0.<io.netty.handler.ssl.SslHandler: io.netty.handler.ssl.SslHandler$SslEngineType engineType>;
+v5 = interfaceinvoke v1.<io.netty.channel.ChannelHandlerContext: io.netty.buffer.ByteBufAllocator alloc()>();
+v6 = virtualinvoke v4.<io.netty.handler.ssl.SslHandler$SslEngineType: io.netty.buffer.ByteBuf allocateWrapBuffer(io.netty.handler.ssl.SslHandler,io.netty.buffer.ByteBufAllocator,int,int)>(v0, v5, v2, v3);
+return v6;
+}
+private boolean isStateSet(int)
+{
+short v2;
+io.netty.handler.ssl.SslHandler v0;
+int v1, v3;
+boolean v4;
+v0 := @this: io.netty.handler.ssl.SslHandler;
+v1 := @parameter0: int;
+v2 = v0.<io.netty.handler.ssl.SslHandler: short state>;
+v3 = v2 & v1;
+if v3 != v1 goto label1;
+v4 = 1;
+goto label2;
+label1:
+v4 = 0;
+label2:
+return v4;
+}
+private void setState(int)
+{
+short v2;
+io.netty.handler.ssl.SslHandler v0;
+int v1, v3;
+v0 := @this: io.netty.handler.ssl.SslHandler;
+v1 := @parameter0: int;
+v2 = v0.<io.netty.handler.ssl.SslHandler: short state>;
+v3 = v2 | v1;
+v0.<io.netty.handler.ssl.SslHandler: short state> = v3;
+return;
+}
+private void clearState(int)
+{
+short v2;
+io.netty.handler.ssl.SslHandler v0;
+int v1, v3, v4, v5;
+v0 := @this: io.netty.handler.ssl.SslHandler;
+v1 := @parameter0: int;
+v2 = v0.<io.netty.handler.ssl.SslHandler: short state>;
+v3 = (int) -1;
+v4 = v1 ^ v3;
+v5 = v2 & v4;
+v0.<io.netty.handler.ssl.SslHandler: short state> = v5;
+return;
+}
+private static boolean attemptCopyToCumulation(io.netty.buffer.ByteBuf, io.netty.buffer.ByteBuf, int)
+{
+io.netty.buffer.ByteBuf v0, v1;
+int v2, v3, v4, v5, v6, v8;
+boolean v7, v9;
+v0 := @parameter0: io.netty.buffer.ByteBuf;
+v1 := @parameter1: io.netty.buffer.ByteBuf;
+v2 := @parameter2: int;
+v3 = virtualinvoke v1.<io.netty.buffer.ByteBuf: int readableBytes()>();
+v4 = virtualinvoke v0.<io.netty.buffer.ByteBuf: int capacity()>();
+v5 = virtualinvoke v0.<io.netty.buffer.ByteBuf: int readableBytes()>();
+v6 = v2 - v5;
+if v6 < v3 goto label3;
+v7 = virtualinvoke v0.<io.netty.buffer.ByteBuf: boolean isWritable(int)>(v3);
+if v7 == 0 goto label1;
+if v4 >= v2 goto label2;
+label1:
+if v4 >= v2 goto label3;
+v8 = virtualinvoke v0.<io.netty.buffer.ByteBuf: int ensureWritable(int,boolean)>(v3, 0);
+v9 = staticinvoke <io.netty.buffer.ByteBufUtil: boolean ensureWritableSuccess(int)>(v8);
+if v9 == 0 goto label3;
+label2:
+virtualinvoke v0.<io.netty.buffer.ByteBuf: io.netty.buffer.ByteBuf writeBytes(io.netty.buffer.ByteBuf)>(v1);
+virtualinvoke v1.<io.netty.buffer.ByteBuf: boolean release()>();
+return 1;
+label3:
+return 0;
+}
+static void <clinit>()
+{
+io.netty.util.internal.logging.InternalLogger v3;
+java.lang.Class v0;
+java.util.regex.Pattern v4, v5;
+boolean v1, v2;
+v0 = class "Lio/netty/handler/ssl/SslHandler;";
+v1 = virtualinvoke v0.<java.lang.Class: boolean desiredAssertionStatus()>();
+if v1 != 0 goto label1;
+v2 = 1;
+goto label2;
+label1:
+v2 = 0;
+label2:
+<io.netty.handler.ssl.SslHandler: boolean $assertionsDisabled> = v2;
+v3 = staticinvoke <io.netty.util.internal.logging.InternalLoggerFactory: io.netty.util.internal.logging.InternalLogger getInstance(java.lang.Class)>(class "Lio/netty/handler/ssl/SslHandler;");
+<io.netty.handler.ssl.SslHandler: io.netty.util.internal.logging.InternalLogger logger> = v3;
+v4 = staticinvoke <java.util.regex.Pattern: java.util.regex.Pattern compile(java.lang.String)>("^.*(?:Socket|Datagram|Sctp|Udt)Channel.*$");
+<io.netty.handler.ssl.SslHandler: java.util.regex.Pattern IGNORABLE_CLASS_IN_STACK> = v4;
+v5 = staticinvoke <java.util.regex.Pattern: java.util.regex.Pattern compile(java.lang.String,int)>("^.*(?:connection.*(?:reset|closed|abort|broken)|broken.*pipe).*$", 2);
+<io.netty.handler.ssl.SslHandler: java.util.regex.Pattern IGNORABLE_ERROR_MESSAGE> = v5;
+return;
+}
+}

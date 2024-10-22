@@ -1,0 +1,665 @@
+public class org.apache.commons.io.input.ReadAheadInputStream extends java.io.InputStream
+{
+private static final java.lang.ThreadLocal oneByte;
+private final java.util.concurrent.locks.ReentrantLock stateChangeLock;
+private java.nio.ByteBuffer activeBuffer;
+private java.nio.ByteBuffer readAheadBuffer;
+private boolean endOfStream;
+private boolean readInProgress;
+private boolean readAborted;
+private java.lang.Throwable readException;
+private boolean isClosed;
+private boolean isUnderlyingInputStreamBeingClosed;
+private boolean isReading;
+private final java.util.concurrent.atomic.AtomicBoolean isWaiting;
+private final java.io.InputStream underlyingInputStream;
+private final java.util.concurrent.ExecutorService executorService;
+private final boolean shutdownExecutorService;
+private final java.util.concurrent.locks.Condition asyncReadComplete;
+static final boolean $assertionsDisabled;
+private static java.util.concurrent.ExecutorService newExecutorService()
+{
+java.util.concurrent.ThreadFactory v0;
+java.util.concurrent.ExecutorService v1;
+v0 = staticinvoke <org.apache.commons.io.input.ReadAheadInputStream$newThread__267: java.util.concurrent.ThreadFactory bootstrap$()>();
+v1 = staticinvoke <java.util.concurrent.Executors: java.util.concurrent.ExecutorService newSingleThreadExecutor(java.util.concurrent.ThreadFactory)>(v0);
+return v1;
+}
+public static java.lang.Thread newThread(java.lang.Runnable)
+{
+java.lang.Runnable v0;
+java.lang.Thread v1;
+v0 := @parameter0: java.lang.Runnable;
+v1 = new java.lang.Thread;
+specialinvoke v1.<java.lang.Thread: void <init>(java.lang.Runnable,java.lang.String)>(v0, "commons-io-read-ahead");
+virtualinvoke v1.<java.lang.Thread: void setDaemon(boolean)>(1);
+return v1;
+}
+public void <init>(java.io.InputStream, int)
+{
+org.apache.commons.io.input.ReadAheadInputStream v0;
+int v2;
+java.util.concurrent.ExecutorService v3;
+java.io.InputStream v1;
+v0 := @this: org.apache.commons.io.input.ReadAheadInputStream;
+v1 := @parameter0: java.io.InputStream;
+v2 := @parameter1: int;
+v3 = staticinvoke <org.apache.commons.io.input.ReadAheadInputStream: java.util.concurrent.ExecutorService newExecutorService()>();
+specialinvoke v0.<org.apache.commons.io.input.ReadAheadInputStream: void <init>(java.io.InputStream,int,java.util.concurrent.ExecutorService,boolean)>(v1, v2, v3, 1);
+return;
+}
+public void <init>(java.io.InputStream, int, java.util.concurrent.ExecutorService)
+{
+org.apache.commons.io.input.ReadAheadInputStream v0;
+int v2;
+java.util.concurrent.ExecutorService v3;
+java.io.InputStream v1;
+v0 := @this: org.apache.commons.io.input.ReadAheadInputStream;
+v1 := @parameter0: java.io.InputStream;
+v2 := @parameter1: int;
+v3 := @parameter2: java.util.concurrent.ExecutorService;
+specialinvoke v0.<org.apache.commons.io.input.ReadAheadInputStream: void <init>(java.io.InputStream,int,java.util.concurrent.ExecutorService,boolean)>(v1, v2, v3, 0);
+return;
+}
+private void <init>(java.io.InputStream, int, java.util.concurrent.ExecutorService, boolean)
+{
+java.util.concurrent.atomic.AtomicBoolean v6;
+java.nio.ByteBuffer v13, v14, v15, v16;
+int v2;
+java.lang.String v10;
+java.util.concurrent.ExecutorService v3;
+boolean v4;
+java.util.concurrent.locks.ReentrantLock v5, v7;
+java.lang.IllegalArgumentException v9;
+java.util.concurrent.locks.Condition v8;
+org.apache.commons.io.input.ReadAheadInputStream v0;
+java.lang.Object v11, v12;
+java.io.InputStream v1;
+v0 := @this: org.apache.commons.io.input.ReadAheadInputStream;
+v1 := @parameter0: java.io.InputStream;
+v2 := @parameter1: int;
+v3 := @parameter2: java.util.concurrent.ExecutorService;
+v4 := @parameter3: boolean;
+specialinvoke v0.<java.io.InputStream: void <init>()>();
+v5 = new java.util.concurrent.locks.ReentrantLock;
+specialinvoke v5.<java.util.concurrent.locks.ReentrantLock: void <init>()>();
+v0.<org.apache.commons.io.input.ReadAheadInputStream: java.util.concurrent.locks.ReentrantLock stateChangeLock> = v5;
+v6 = new java.util.concurrent.atomic.AtomicBoolean;
+specialinvoke v6.<java.util.concurrent.atomic.AtomicBoolean: void <init>(boolean)>(0);
+v0.<org.apache.commons.io.input.ReadAheadInputStream: java.util.concurrent.atomic.AtomicBoolean isWaiting> = v6;
+v7 = v0.<org.apache.commons.io.input.ReadAheadInputStream: java.util.concurrent.locks.ReentrantLock stateChangeLock>;
+v8 = virtualinvoke v7.<java.util.concurrent.locks.ReentrantLock: java.util.concurrent.locks.Condition newCondition()>();
+v0.<org.apache.commons.io.input.ReadAheadInputStream: java.util.concurrent.locks.Condition asyncReadComplete> = v8;
+if v2 > 0 goto label1;
+v9 = new java.lang.IllegalArgumentException;
+v10 = dynamicinvoke "makeConcatWithConstants" <java.lang.String (int)>(v2) <java.lang.invoke.StringConcatFactory: java.lang.invoke.CallSite makeConcatWithConstants(java.lang.invoke.MethodHandles$Lookup,java.lang.String,java.lang.invoke.MethodType,java.lang.String,java.lang.Object[])>("bufferSizeInBytes should be greater than 0, but the value is \u0001");
+specialinvoke v9.<java.lang.IllegalArgumentException: void <init>(java.lang.String)>(v10);
+throw v9;
+label1:
+v11 = staticinvoke <java.util.Objects: java.lang.Object requireNonNull(java.lang.Object,java.lang.String)>(v3, "executorService");
+v0.<org.apache.commons.io.input.ReadAheadInputStream: java.util.concurrent.ExecutorService executorService> = v11;
+v12 = staticinvoke <java.util.Objects: java.lang.Object requireNonNull(java.lang.Object,java.lang.String)>(v1, "inputStream");
+v0.<org.apache.commons.io.input.ReadAheadInputStream: java.io.InputStream underlyingInputStream> = v12;
+v0.<org.apache.commons.io.input.ReadAheadInputStream: boolean shutdownExecutorService> = v4;
+v13 = staticinvoke <java.nio.ByteBuffer: java.nio.ByteBuffer allocate(int)>(v2);
+v0.<org.apache.commons.io.input.ReadAheadInputStream: java.nio.ByteBuffer activeBuffer> = v13;
+v14 = staticinvoke <java.nio.ByteBuffer: java.nio.ByteBuffer allocate(int)>(v2);
+v0.<org.apache.commons.io.input.ReadAheadInputStream: java.nio.ByteBuffer readAheadBuffer> = v14;
+v15 = v0.<org.apache.commons.io.input.ReadAheadInputStream: java.nio.ByteBuffer activeBuffer>;
+virtualinvoke v15.<java.nio.ByteBuffer: java.nio.ByteBuffer flip()>();
+v16 = v0.<org.apache.commons.io.input.ReadAheadInputStream: java.nio.ByteBuffer readAheadBuffer>;
+virtualinvoke v16.<java.nio.ByteBuffer: java.nio.ByteBuffer flip()>();
+return;
+}
+public int available() throws java.io.IOException
+{
+java.lang.Throwable v9;
+java.util.concurrent.locks.ReentrantLock v1, v10, v8;
+long v6, v7;
+java.nio.ByteBuffer v2, v4;
+org.apache.commons.io.input.ReadAheadInputStream v0;
+int v3, v5;
+v0 := @this: org.apache.commons.io.input.ReadAheadInputStream;
+v1 = v0.<org.apache.commons.io.input.ReadAheadInputStream: java.util.concurrent.locks.ReentrantLock stateChangeLock>;
+virtualinvoke v1.<java.util.concurrent.locks.ReentrantLock: void lock()>();
+label1:
+v2 = v0.<org.apache.commons.io.input.ReadAheadInputStream: java.nio.ByteBuffer activeBuffer>;
+v3 = virtualinvoke v2.<java.nio.ByteBuffer: int remaining()>();
+v4 = v0.<org.apache.commons.io.input.ReadAheadInputStream: java.nio.ByteBuffer readAheadBuffer>;
+v5 = virtualinvoke v4.<java.nio.ByteBuffer: int remaining()>();
+v6 = v3 + v5;
+v7 = staticinvoke <java.lang.Math: long min(long,long)>(2147483647L, v6);
+label2:
+v8 = v0.<org.apache.commons.io.input.ReadAheadInputStream: java.util.concurrent.locks.ReentrantLock stateChangeLock>;
+virtualinvoke v8.<java.util.concurrent.locks.ReentrantLock: void unlock()>();
+return v7;
+label3:
+v9 := @caughtexception;
+v10 = v0.<org.apache.commons.io.input.ReadAheadInputStream: java.util.concurrent.locks.ReentrantLock stateChangeLock>;
+virtualinvoke v10.<java.util.concurrent.locks.ReentrantLock: void unlock()>();
+throw v9;
+catch java.lang.Throwable from label1 to label2 with label3;
+}
+private void checkReadException() throws java.io.IOException
+{
+java.lang.Throwable v2, v4, v6;
+org.apache.commons.io.input.ReadAheadInputStream v0;
+java.io.IOException v5;
+boolean v1, v3;
+v0 := @this: org.apache.commons.io.input.ReadAheadInputStream;
+v1 = v0.<org.apache.commons.io.input.ReadAheadInputStream: boolean readAborted>;
+if v1 == 0 goto label2;
+v2 = v0.<org.apache.commons.io.input.ReadAheadInputStream: java.lang.Throwable readException>;
+v3 = v2 instanceof java.io.IOException;
+if v3 == 0 goto label1;
+v4 = v0.<org.apache.commons.io.input.ReadAheadInputStream: java.lang.Throwable readException>;
+throw v4;
+label1:
+v5 = new java.io.IOException;
+v6 = v0.<org.apache.commons.io.input.ReadAheadInputStream: java.lang.Throwable readException>;
+specialinvoke v5.<java.io.IOException: void <init>(java.lang.Throwable)>(v6);
+throw v5;
+label2:
+return;
+}
+public void close() throws java.io.IOException
+{
+java.lang.Throwable v17, v7;
+java.io.InterruptedIOException v15;
+java.lang.String v16;
+java.util.concurrent.ExecutorService v10, v11;
+boolean v1, v3, v5, v9;
+java.util.concurrent.locks.ReentrantLock v2, v4, v6, v8;
+java.util.concurrent.TimeUnit v12;
+org.apache.commons.io.input.ReadAheadInputStream v0;
+java.lang.InterruptedException v14;
+java.io.InputStream v13, v18;
+v0 := @this: org.apache.commons.io.input.ReadAheadInputStream;
+v1 = 0;
+v2 = v0.<org.apache.commons.io.input.ReadAheadInputStream: java.util.concurrent.locks.ReentrantLock stateChangeLock>;
+virtualinvoke v2.<java.util.concurrent.locks.ReentrantLock: void lock()>();
+label01:
+v3 = v0.<org.apache.commons.io.input.ReadAheadInputStream: boolean isClosed>;
+if v3 == 0 goto label03;
+label02:
+v4 = v0.<org.apache.commons.io.input.ReadAheadInputStream: java.util.concurrent.locks.ReentrantLock stateChangeLock>;
+virtualinvoke v4.<java.util.concurrent.locks.ReentrantLock: void unlock()>();
+return;
+label03:
+v0.<org.apache.commons.io.input.ReadAheadInputStream: boolean isClosed> = 1;
+v5 = v0.<org.apache.commons.io.input.ReadAheadInputStream: boolean isReading>;
+if v5 != 0 goto label04;
+v1 = 1;
+v0.<org.apache.commons.io.input.ReadAheadInputStream: boolean isUnderlyingInputStreamBeingClosed> = 1;
+label04:
+v6 = v0.<org.apache.commons.io.input.ReadAheadInputStream: java.util.concurrent.locks.ReentrantLock stateChangeLock>;
+virtualinvoke v6.<java.util.concurrent.locks.ReentrantLock: void unlock()>();
+goto label06;
+label05:
+v7 := @caughtexception;
+v8 = v0.<org.apache.commons.io.input.ReadAheadInputStream: java.util.concurrent.locks.ReentrantLock stateChangeLock>;
+virtualinvoke v8.<java.util.concurrent.locks.ReentrantLock: void unlock()>();
+throw v7;
+label06:
+v9 = v0.<org.apache.commons.io.input.ReadAheadInputStream: boolean shutdownExecutorService>;
+if v9 == 0 goto label12;
+label07:
+v10 = v0.<org.apache.commons.io.input.ReadAheadInputStream: java.util.concurrent.ExecutorService executorService>;
+interfaceinvoke v10.<java.util.concurrent.ExecutorService: java.util.List shutdownNow()>();
+v11 = v0.<org.apache.commons.io.input.ReadAheadInputStream: java.util.concurrent.ExecutorService executorService>;
+v12 = <java.util.concurrent.TimeUnit: java.util.concurrent.TimeUnit SECONDS>;
+interfaceinvoke v11.<java.util.concurrent.ExecutorService: boolean awaitTermination(long,java.util.concurrent.TimeUnit)>(9223372036854775807L, v12);
+label08:
+if v1 == 0 goto label12;
+v13 = v0.<org.apache.commons.io.input.ReadAheadInputStream: java.io.InputStream underlyingInputStream>;
+virtualinvoke v13.<java.io.InputStream: void close()>();
+goto label12;
+label09:
+v14 := @caughtexception;
+v15 = new java.io.InterruptedIOException;
+v16 = virtualinvoke v14.<java.lang.InterruptedException: java.lang.String getMessage()>();
+specialinvoke v15.<java.io.InterruptedIOException: void <init>(java.lang.String)>(v16);
+virtualinvoke v15.<java.io.InterruptedIOException: java.lang.Throwable initCause(java.lang.Throwable)>(v14);
+throw v15;
+label10:
+v17 := @caughtexception;
+if v1 == 0 goto label11;
+v18 = v0.<org.apache.commons.io.input.ReadAheadInputStream: java.io.InputStream underlyingInputStream>;
+virtualinvoke v18.<java.io.InputStream: void close()>();
+label11:
+throw v17;
+label12:
+return;
+catch java.lang.Throwable from label01 to label02 with label05;
+catch java.lang.Throwable from label03 to label04 with label05;
+catch java.lang.InterruptedException from label07 to label08 with label09;
+catch java.lang.Throwable from label07 to label08 with label10;
+}
+private void closeUnderlyingInputStreamIfNecessary()
+{
+java.lang.Throwable v6;
+java.util.concurrent.locks.ReentrantLock v2, v5, v7;
+java.io.IOException v9;
+org.apache.commons.io.input.ReadAheadInputStream v0;
+boolean v1, v3, v4;
+java.io.InputStream v8;
+v0 := @this: org.apache.commons.io.input.ReadAheadInputStream;
+v1 = 0;
+v2 = v0.<org.apache.commons.io.input.ReadAheadInputStream: java.util.concurrent.locks.ReentrantLock stateChangeLock>;
+virtualinvoke v2.<java.util.concurrent.locks.ReentrantLock: void lock()>();
+label1:
+v0.<org.apache.commons.io.input.ReadAheadInputStream: boolean isReading> = 0;
+v3 = v0.<org.apache.commons.io.input.ReadAheadInputStream: boolean isClosed>;
+if v3 == 0 goto label2;
+v4 = v0.<org.apache.commons.io.input.ReadAheadInputStream: boolean isUnderlyingInputStreamBeingClosed>;
+if v4 != 0 goto label2;
+v1 = 1;
+label2:
+v5 = v0.<org.apache.commons.io.input.ReadAheadInputStream: java.util.concurrent.locks.ReentrantLock stateChangeLock>;
+virtualinvoke v5.<java.util.concurrent.locks.ReentrantLock: void unlock()>();
+goto label4;
+label3:
+v6 := @caughtexception;
+v7 = v0.<org.apache.commons.io.input.ReadAheadInputStream: java.util.concurrent.locks.ReentrantLock stateChangeLock>;
+virtualinvoke v7.<java.util.concurrent.locks.ReentrantLock: void unlock()>();
+throw v6;
+label4:
+if v1 == 0 goto label8;
+label5:
+v8 = v0.<org.apache.commons.io.input.ReadAheadInputStream: java.io.InputStream underlyingInputStream>;
+virtualinvoke v8.<java.io.InputStream: void close()>();
+label6:
+goto label8;
+label7:
+v9 := @caughtexception;
+label8:
+return;
+catch java.lang.Throwable from label1 to label2 with label3;
+catch java.io.IOException from label5 to label6 with label7;
+}
+private boolean isEndOfStream()
+{
+org.apache.commons.io.input.ReadAheadInputStream v0;
+java.nio.ByteBuffer v1, v3;
+boolean v2, v4, v5, v6;
+v0 := @this: org.apache.commons.io.input.ReadAheadInputStream;
+v1 = v0.<org.apache.commons.io.input.ReadAheadInputStream: java.nio.ByteBuffer activeBuffer>;
+v2 = virtualinvoke v1.<java.nio.ByteBuffer: boolean hasRemaining()>();
+if v2 != 0 goto label1;
+v3 = v0.<org.apache.commons.io.input.ReadAheadInputStream: java.nio.ByteBuffer readAheadBuffer>;
+v4 = virtualinvoke v3.<java.nio.ByteBuffer: boolean hasRemaining()>();
+if v4 != 0 goto label1;
+v5 = v0.<org.apache.commons.io.input.ReadAheadInputStream: boolean endOfStream>;
+if v5 == 0 goto label1;
+v6 = 1;
+goto label2;
+label1:
+v6 = 0;
+label2:
+return v6;
+}
+public int read() throws java.io.IOException
+{
+java.lang.ThreadLocal v6;
+java.nio.ByteBuffer v1, v3;
+org.apache.commons.io.input.ReadAheadInputStream v0;
+short v10, v5;
+byte v11, v4;
+int v8, v9;
+java.lang.Object v7;
+boolean v2;
+v0 := @this: org.apache.commons.io.input.ReadAheadInputStream;
+v1 = v0.<org.apache.commons.io.input.ReadAheadInputStream: java.nio.ByteBuffer activeBuffer>;
+v2 = virtualinvoke v1.<java.nio.ByteBuffer: boolean hasRemaining()>();
+if v2 == 0 goto label1;
+v3 = v0.<org.apache.commons.io.input.ReadAheadInputStream: java.nio.ByteBuffer activeBuffer>;
+v4 = virtualinvoke v3.<java.nio.ByteBuffer: byte get()>();
+v5 = v4 & 255;
+return v5;
+label1:
+v6 = <org.apache.commons.io.input.ReadAheadInputStream: java.lang.ThreadLocal oneByte>;
+v7 = virtualinvoke v6.<java.lang.ThreadLocal: java.lang.Object get()>();
+v8 = virtualinvoke v0.<org.apache.commons.io.input.ReadAheadInputStream: int read(byte[],int,int)>(v7, 0, 1);
+v9 = (int) -1;
+if v8 != v9 goto label2;
+v10 = -1;
+goto label3;
+label2:
+v11 = v7[0];
+v10 = v11 & 255;
+label3:
+return v10;
+}
+public int read(byte[], int, int) throws java.io.IOException
+{
+java.lang.Throwable v15;
+byte[] v1;
+java.lang.IndexOutOfBoundsException v6;
+java.nio.ByteBuffer v10, v17, v20, v7;
+int v18, v19, v2, v3, v4, v5;
+boolean v11, v12, v8;
+java.util.concurrent.locks.ReentrantLock v13, v14, v16, v9;
+org.apache.commons.io.input.ReadAheadInputStream v0;
+v0 := @this: org.apache.commons.io.input.ReadAheadInputStream;
+v1 := @parameter0: byte[];
+v2 := @parameter1: int;
+v3 := @parameter2: int;
+if v2 < 0 goto label1;
+if v3 < 0 goto label1;
+v4 = lengthof v1;
+v5 = v4 - v2;
+if v3 <= v5 goto label2;
+label1:
+v6 = new java.lang.IndexOutOfBoundsException;
+specialinvoke v6.<java.lang.IndexOutOfBoundsException: void <init>()>();
+throw v6;
+label2:
+if v3 != 0 goto label3;
+return 0;
+label3:
+v7 = v0.<org.apache.commons.io.input.ReadAheadInputStream: java.nio.ByteBuffer activeBuffer>;
+v8 = virtualinvoke v7.<java.nio.ByteBuffer: boolean hasRemaining()>();
+if v8 != 0 goto label9;
+v9 = v0.<org.apache.commons.io.input.ReadAheadInputStream: java.util.concurrent.locks.ReentrantLock stateChangeLock>;
+virtualinvoke v9.<java.util.concurrent.locks.ReentrantLock: void lock()>();
+label4:
+specialinvoke v0.<org.apache.commons.io.input.ReadAheadInputStream: void waitForAsyncReadComplete()>();
+v10 = v0.<org.apache.commons.io.input.ReadAheadInputStream: java.nio.ByteBuffer readAheadBuffer>;
+v11 = virtualinvoke v10.<java.nio.ByteBuffer: boolean hasRemaining()>();
+if v11 != 0 goto label6;
+specialinvoke v0.<org.apache.commons.io.input.ReadAheadInputStream: void readAsync()>();
+specialinvoke v0.<org.apache.commons.io.input.ReadAheadInputStream: void waitForAsyncReadComplete()>();
+v12 = specialinvoke v0.<org.apache.commons.io.input.ReadAheadInputStream: boolean isEndOfStream()>();
+if v12 == 0 goto label6;
+label5:
+v13 = v0.<org.apache.commons.io.input.ReadAheadInputStream: java.util.concurrent.locks.ReentrantLock stateChangeLock>;
+virtualinvoke v13.<java.util.concurrent.locks.ReentrantLock: void unlock()>();
+return -1;
+label6:
+specialinvoke v0.<org.apache.commons.io.input.ReadAheadInputStream: void swapBuffers()>();
+specialinvoke v0.<org.apache.commons.io.input.ReadAheadInputStream: void readAsync()>();
+label7:
+v14 = v0.<org.apache.commons.io.input.ReadAheadInputStream: java.util.concurrent.locks.ReentrantLock stateChangeLock>;
+virtualinvoke v14.<java.util.concurrent.locks.ReentrantLock: void unlock()>();
+goto label9;
+label8:
+v15 := @caughtexception;
+v16 = v0.<org.apache.commons.io.input.ReadAheadInputStream: java.util.concurrent.locks.ReentrantLock stateChangeLock>;
+virtualinvoke v16.<java.util.concurrent.locks.ReentrantLock: void unlock()>();
+throw v15;
+label9:
+v17 = v0.<org.apache.commons.io.input.ReadAheadInputStream: java.nio.ByteBuffer activeBuffer>;
+v18 = virtualinvoke v17.<java.nio.ByteBuffer: int remaining()>();
+v19 = staticinvoke <java.lang.Math: int min(int,int)>(v3, v18);
+v20 = v0.<org.apache.commons.io.input.ReadAheadInputStream: java.nio.ByteBuffer activeBuffer>;
+virtualinvoke v20.<java.nio.ByteBuffer: java.nio.ByteBuffer get(byte[],int,int)>(v1, v2, v19);
+return v19;
+catch java.lang.Throwable from label4 to label5 with label8;
+catch java.lang.Throwable from label6 to label7 with label8;
+}
+private void readAsync() throws java.io.IOException
+{
+java.lang.Throwable v10;
+byte[] v3;
+java.util.concurrent.locks.ReentrantLock v1, v11, v6, v9;
+java.lang.Runnable v13;
+java.nio.ByteBuffer v2, v7, v8;
+org.apache.commons.io.input.ReadAheadInputStream v0;
+java.util.concurrent.ExecutorService v12;
+boolean v4, v5;
+v0 := @this: org.apache.commons.io.input.ReadAheadInputStream;
+v1 = v0.<org.apache.commons.io.input.ReadAheadInputStream: java.util.concurrent.locks.ReentrantLock stateChangeLock>;
+virtualinvoke v1.<java.util.concurrent.locks.ReentrantLock: void lock()>();
+label1:
+v2 = v0.<org.apache.commons.io.input.ReadAheadInputStream: java.nio.ByteBuffer readAheadBuffer>;
+v3 = virtualinvoke v2.<java.nio.ByteBuffer: byte[] array()>();
+v4 = v0.<org.apache.commons.io.input.ReadAheadInputStream: boolean endOfStream>;
+if v4 != 0 goto label2;
+v5 = v0.<org.apache.commons.io.input.ReadAheadInputStream: boolean readInProgress>;
+if v5 == 0 goto label3;
+label2:
+v6 = v0.<org.apache.commons.io.input.ReadAheadInputStream: java.util.concurrent.locks.ReentrantLock stateChangeLock>;
+virtualinvoke v6.<java.util.concurrent.locks.ReentrantLock: void unlock()>();
+return;
+label3:
+specialinvoke v0.<org.apache.commons.io.input.ReadAheadInputStream: void checkReadException()>();
+v7 = v0.<org.apache.commons.io.input.ReadAheadInputStream: java.nio.ByteBuffer readAheadBuffer>;
+virtualinvoke v7.<java.nio.ByteBuffer: java.nio.ByteBuffer position(int)>(0);
+v8 = v0.<org.apache.commons.io.input.ReadAheadInputStream: java.nio.ByteBuffer readAheadBuffer>;
+virtualinvoke v8.<java.nio.ByteBuffer: java.nio.ByteBuffer flip()>();
+v0.<org.apache.commons.io.input.ReadAheadInputStream: boolean readInProgress> = 1;
+label4:
+v9 = v0.<org.apache.commons.io.input.ReadAheadInputStream: java.util.concurrent.locks.ReentrantLock stateChangeLock>;
+virtualinvoke v9.<java.util.concurrent.locks.ReentrantLock: void unlock()>();
+goto label6;
+label5:
+v10 := @caughtexception;
+v11 = v0.<org.apache.commons.io.input.ReadAheadInputStream: java.util.concurrent.locks.ReentrantLock stateChangeLock>;
+virtualinvoke v11.<java.util.concurrent.locks.ReentrantLock: void unlock()>();
+throw v10;
+label6:
+v12 = v0.<org.apache.commons.io.input.ReadAheadInputStream: java.util.concurrent.ExecutorService executorService>;
+v13 = staticinvoke <org.apache.commons.io.input.ReadAheadInputStream$lambda_readAsync_1__268: java.lang.Runnable bootstrap$(org.apache.commons.io.input.ReadAheadInputStream,byte[])>(v0, v3);
+interfaceinvoke v12.<java.util.concurrent.ExecutorService: void execute(java.lang.Runnable)>(v13);
+return;
+catch java.lang.Throwable from label1 to label2 with label5;
+catch java.lang.Throwable from label3 to label4 with label5;
+}
+private void signalAsyncReadComplete()
+{
+java.lang.Throwable v4;
+java.util.concurrent.locks.Condition v2;
+org.apache.commons.io.input.ReadAheadInputStream v0;
+java.util.concurrent.locks.ReentrantLock v1, v3, v5;
+v0 := @this: org.apache.commons.io.input.ReadAheadInputStream;
+v1 = v0.<org.apache.commons.io.input.ReadAheadInputStream: java.util.concurrent.locks.ReentrantLock stateChangeLock>;
+virtualinvoke v1.<java.util.concurrent.locks.ReentrantLock: void lock()>();
+label1:
+v2 = v0.<org.apache.commons.io.input.ReadAheadInputStream: java.util.concurrent.locks.Condition asyncReadComplete>;
+interfaceinvoke v2.<java.util.concurrent.locks.Condition: void signalAll()>();
+label2:
+v3 = v0.<org.apache.commons.io.input.ReadAheadInputStream: java.util.concurrent.locks.ReentrantLock stateChangeLock>;
+virtualinvoke v3.<java.util.concurrent.locks.ReentrantLock: void unlock()>();
+goto label4;
+label3:
+v4 := @caughtexception;
+v5 = v0.<org.apache.commons.io.input.ReadAheadInputStream: java.util.concurrent.locks.ReentrantLock stateChangeLock>;
+virtualinvoke v5.<java.util.concurrent.locks.ReentrantLock: void unlock()>();
+throw v4;
+label4:
+return;
+catch java.lang.Throwable from label1 to label2 with label3;
+}
+public long skip(long) throws java.io.IOException
+{
+java.lang.Throwable v13;
+java.util.concurrent.locks.ReentrantLock v10, v12, v14;
+long v1, v11;
+java.nio.ByteBuffer v3, v6, v7;
+org.apache.commons.io.input.ReadAheadInputStream v0;
+byte v2, v5;
+int v4, v8, v9;
+v0 := @this: org.apache.commons.io.input.ReadAheadInputStream;
+v1 := @parameter0: long;
+v2 = v1 cmp 0L;
+if v2 > 0 goto label1;
+return 0L;
+label1:
+v3 = v0.<org.apache.commons.io.input.ReadAheadInputStream: java.nio.ByteBuffer activeBuffer>;
+v4 = virtualinvoke v3.<java.nio.ByteBuffer: int remaining()>();
+v5 = v1 cmp v4;
+if v5 > 0 goto label2;
+v6 = v0.<org.apache.commons.io.input.ReadAheadInputStream: java.nio.ByteBuffer activeBuffer>;
+v7 = v0.<org.apache.commons.io.input.ReadAheadInputStream: java.nio.ByteBuffer activeBuffer>;
+v8 = virtualinvoke v7.<java.nio.ByteBuffer: int position()>();
+v9 = v1 + v8;
+virtualinvoke v6.<java.nio.ByteBuffer: java.nio.ByteBuffer position(int)>(v9);
+return v1;
+label2:
+v10 = v0.<org.apache.commons.io.input.ReadAheadInputStream: java.util.concurrent.locks.ReentrantLock stateChangeLock>;
+virtualinvoke v10.<java.util.concurrent.locks.ReentrantLock: void lock()>();
+label3:
+v11 = specialinvoke v0.<org.apache.commons.io.input.ReadAheadInputStream: long skipInternal(long)>(v1);
+label4:
+v12 = v0.<org.apache.commons.io.input.ReadAheadInputStream: java.util.concurrent.locks.ReentrantLock stateChangeLock>;
+virtualinvoke v12.<java.util.concurrent.locks.ReentrantLock: void unlock()>();
+goto label6;
+label5:
+v13 := @caughtexception;
+v14 = v0.<org.apache.commons.io.input.ReadAheadInputStream: java.util.concurrent.locks.ReentrantLock stateChangeLock>;
+virtualinvoke v14.<java.util.concurrent.locks.ReentrantLock: void unlock()>();
+throw v13;
+label6:
+return v11;
+catch java.lang.Throwable from label3 to label4 with label5;
+}
+private long skipInternal(long) throws java.io.IOException
+{
+long v1, v21, v27, v28;
+java.lang.AssertionError v13, v5;
+java.nio.ByteBuffer v14, v15, v16, v17, v22, v23, v24, v25, v9;
+byte v8;
+int v10, v11, v18, v19, v20, v7;
+boolean v12, v2, v4, v6;
+java.util.concurrent.locks.ReentrantLock v3;
+org.apache.commons.io.input.ReadAheadInputStream v0;
+java.io.InputStream v26;
+v0 := @this: org.apache.commons.io.input.ReadAheadInputStream;
+v1 := @parameter0: long;
+v2 = <org.apache.commons.io.input.ReadAheadInputStream: boolean $assertionsDisabled>;
+if v2 != 0 goto label1;
+v3 = v0.<org.apache.commons.io.input.ReadAheadInputStream: java.util.concurrent.locks.ReentrantLock stateChangeLock>;
+v4 = virtualinvoke v3.<java.util.concurrent.locks.ReentrantLock: boolean isLocked()>();
+if v4 != 0 goto label1;
+v5 = new java.lang.AssertionError;
+specialinvoke v5.<java.lang.AssertionError: void <init>()>();
+throw v5;
+label1:
+specialinvoke v0.<org.apache.commons.io.input.ReadAheadInputStream: void waitForAsyncReadComplete()>();
+v6 = specialinvoke v0.<org.apache.commons.io.input.ReadAheadInputStream: boolean isEndOfStream()>();
+if v6 == 0 goto label2;
+return 0L;
+label2:
+v7 = virtualinvoke v0.<org.apache.commons.io.input.ReadAheadInputStream: int available()>();
+v8 = v7 cmp v1;
+if v8 < 0 goto label4;
+v9 = v0.<org.apache.commons.io.input.ReadAheadInputStream: java.nio.ByteBuffer activeBuffer>;
+v10 = virtualinvoke v9.<java.nio.ByteBuffer: int remaining()>();
+v11 = v1 - v10;
+v12 = <org.apache.commons.io.input.ReadAheadInputStream: boolean $assertionsDisabled>;
+if v12 != 0 goto label3;
+if v11 > 0 goto label3;
+v13 = new java.lang.AssertionError;
+specialinvoke v13.<java.lang.AssertionError: void <init>()>();
+throw v13;
+label3:
+v14 = v0.<org.apache.commons.io.input.ReadAheadInputStream: java.nio.ByteBuffer activeBuffer>;
+virtualinvoke v14.<java.nio.ByteBuffer: java.nio.ByteBuffer position(int)>(0);
+v15 = v0.<org.apache.commons.io.input.ReadAheadInputStream: java.nio.ByteBuffer activeBuffer>;
+virtualinvoke v15.<java.nio.ByteBuffer: java.nio.ByteBuffer flip()>();
+v16 = v0.<org.apache.commons.io.input.ReadAheadInputStream: java.nio.ByteBuffer readAheadBuffer>;
+v17 = v0.<org.apache.commons.io.input.ReadAheadInputStream: java.nio.ByteBuffer readAheadBuffer>;
+v18 = virtualinvoke v17.<java.nio.ByteBuffer: int position()>();
+v19 = v11 + v18;
+virtualinvoke v16.<java.nio.ByteBuffer: java.nio.ByteBuffer position(int)>(v19);
+specialinvoke v0.<org.apache.commons.io.input.ReadAheadInputStream: void swapBuffers()>();
+specialinvoke v0.<org.apache.commons.io.input.ReadAheadInputStream: void readAsync()>();
+return v1;
+label4:
+v20 = virtualinvoke v0.<org.apache.commons.io.input.ReadAheadInputStream: int available()>();
+v21 = v1 - v20;
+v22 = v0.<org.apache.commons.io.input.ReadAheadInputStream: java.nio.ByteBuffer activeBuffer>;
+virtualinvoke v22.<java.nio.ByteBuffer: java.nio.ByteBuffer position(int)>(0);
+v23 = v0.<org.apache.commons.io.input.ReadAheadInputStream: java.nio.ByteBuffer activeBuffer>;
+virtualinvoke v23.<java.nio.ByteBuffer: java.nio.ByteBuffer flip()>();
+v24 = v0.<org.apache.commons.io.input.ReadAheadInputStream: java.nio.ByteBuffer readAheadBuffer>;
+virtualinvoke v24.<java.nio.ByteBuffer: java.nio.ByteBuffer position(int)>(0);
+v25 = v0.<org.apache.commons.io.input.ReadAheadInputStream: java.nio.ByteBuffer readAheadBuffer>;
+virtualinvoke v25.<java.nio.ByteBuffer: java.nio.ByteBuffer flip()>();
+v26 = v0.<org.apache.commons.io.input.ReadAheadInputStream: java.io.InputStream underlyingInputStream>;
+v27 = virtualinvoke v26.<java.io.InputStream: long skip(long)>(v21);
+specialinvoke v0.<org.apache.commons.io.input.ReadAheadInputStream: void readAsync()>();
+v28 = v20 + v27;
+return v28;
+}
+private void swapBuffers()
+{
+org.apache.commons.io.input.ReadAheadInputStream v0;
+java.nio.ByteBuffer v1, v2;
+v0 := @this: org.apache.commons.io.input.ReadAheadInputStream;
+v1 = v0.<org.apache.commons.io.input.ReadAheadInputStream: java.nio.ByteBuffer activeBuffer>;
+v2 = v0.<org.apache.commons.io.input.ReadAheadInputStream: java.nio.ByteBuffer readAheadBuffer>;
+v0.<org.apache.commons.io.input.ReadAheadInputStream: java.nio.ByteBuffer activeBuffer> = v2;
+v0.<org.apache.commons.io.input.ReadAheadInputStream: java.nio.ByteBuffer readAheadBuffer> = v1;
+return;
+}
+private void waitForAsyncReadComplete() throws java.io.IOException
+{
+java.lang.Throwable v10;
+java.util.concurrent.locks.ReentrantLock v1, v12, v6;
+java.util.concurrent.atomic.AtomicBoolean v11, v2, v5;
+java.io.InterruptedIOException v8;
+java.util.concurrent.locks.Condition v4;
+org.apache.commons.io.input.ReadAheadInputStream v0;
+java.lang.InterruptedException v7;
+java.lang.String v9;
+boolean v3;
+v0 := @this: org.apache.commons.io.input.ReadAheadInputStream;
+v1 = v0.<org.apache.commons.io.input.ReadAheadInputStream: java.util.concurrent.locks.ReentrantLock stateChangeLock>;
+virtualinvoke v1.<java.util.concurrent.locks.ReentrantLock: void lock()>();
+label1:
+v2 = v0.<org.apache.commons.io.input.ReadAheadInputStream: java.util.concurrent.atomic.AtomicBoolean isWaiting>;
+virtualinvoke v2.<java.util.concurrent.atomic.AtomicBoolean: void set(boolean)>(1);
+label2:
+v3 = v0.<org.apache.commons.io.input.ReadAheadInputStream: boolean readInProgress>;
+if v3 == 0 goto label3;
+v4 = v0.<org.apache.commons.io.input.ReadAheadInputStream: java.util.concurrent.locks.Condition asyncReadComplete>;
+interfaceinvoke v4.<java.util.concurrent.locks.Condition: void await()>();
+goto label2;
+label3:
+v5 = v0.<org.apache.commons.io.input.ReadAheadInputStream: java.util.concurrent.atomic.AtomicBoolean isWaiting>;
+virtualinvoke v5.<java.util.concurrent.atomic.AtomicBoolean: void set(boolean)>(0);
+v6 = v0.<org.apache.commons.io.input.ReadAheadInputStream: java.util.concurrent.locks.ReentrantLock stateChangeLock>;
+virtualinvoke v6.<java.util.concurrent.locks.ReentrantLock: void unlock()>();
+goto label6;
+label4:
+v7 := @caughtexception;
+v8 = new java.io.InterruptedIOException;
+v9 = virtualinvoke v7.<java.lang.InterruptedException: java.lang.String getMessage()>();
+specialinvoke v8.<java.io.InterruptedIOException: void <init>(java.lang.String)>(v9);
+virtualinvoke v8.<java.io.InterruptedIOException: java.lang.Throwable initCause(java.lang.Throwable)>(v7);
+throw v8;
+label5:
+v10 := @caughtexception;
+v11 = v0.<org.apache.commons.io.input.ReadAheadInputStream: java.util.concurrent.atomic.AtomicBoolean isWaiting>;
+virtualinvoke v11.<java.util.concurrent.atomic.AtomicBoolean: void set(boolean)>(0);
+v12 = v0.<org.apache.commons.io.input.ReadAheadInputStream: java.util.concurrent.locks.ReentrantLock stateChangeLock>;
+virtualinvoke v12.<java.util.concurrent.locks.ReentrantLock: void unlock()>();
+throw v10;
+label6:
+specialinvoke v0.<org.apache.commons.io.input.ReadAheadInputStream: void checkReadException()>();
+return;
+catch java.lang.InterruptedException from label1 to label3 with label4;
+catch java.lang.Throwable from label1 to label3 with label5;
+}
+static void <clinit>()
+{
+java.lang.ThreadLocal v4;
+java.lang.Class v0;
+java.util.function.Supplier v3;
+boolean v1, v2;
+v0 = class "Lorg/apache/commons/io/input/ReadAheadInputStream;";
+v1 = virtualinvoke v0.<java.lang.Class: boolean desiredAssertionStatus()>();
+if v1 != 0 goto label1;
+v2 = 1;
+goto label2;
+label1:
+v2 = 0;
+label2:
+<org.apache.commons.io.input.ReadAheadInputStream: boolean $assertionsDisabled> = v2;
+v3 = staticinvoke <org.apache.commons.io.input.ReadAheadInputStream$lambda_static_0__269: java.util.function.Supplier bootstrap$()>();
+v4 = staticinvoke <java.lang.ThreadLocal: java.lang.ThreadLocal withInitial(java.util.function.Supplier)>(v3);
+<org.apache.commons.io.input.ReadAheadInputStream: java.lang.ThreadLocal oneByte> = v4;
+return;
+}
+}

@@ -1,0 +1,414 @@
+public final class io.netty.util.internal.ThreadLocalRandom extends java.util.Random
+{
+private static final io.netty.util.internal.logging.InternalLogger logger;
+private static final java.util.concurrent.atomic.AtomicLong seedUniquifier;
+private static volatile long initialSeedUniquifier;
+private static final java.lang.Thread seedGeneratorThread;
+private static final java.util.concurrent.BlockingQueue seedQueue;
+private static final long seedGeneratorStartTime;
+private static volatile long seedGeneratorEndTime;
+private static final long multiplier;
+private static final long addend;
+private static final long mask;
+private long rnd;
+boolean initialized;
+private long pad0;
+private long pad1;
+private long pad2;
+private long pad3;
+private long pad4;
+private long pad5;
+private long pad6;
+private long pad7;
+private static final long serialVersionUID;
+public static void setInitialSeedUniquifier(long)
+{
+long v0;
+v0 := @parameter0: long;
+<io.netty.util.internal.ThreadLocalRandom: long initialSeedUniquifier> = v0;
+return;
+}
+public static long getInitialSeedUniquifier()
+{
+byte v1, v11, v18, v29, v3;
+java.lang.Long v21;
+java.lang.Thread v19, v26, v27;
+boolean v8;
+java.util.concurrent.BlockingQueue v12, v14;
+io.netty.util.internal.logging.InternalLogger v17, v20;
+java.lang.Throwable v31;
+long v0, v10, v2, v22, v23, v24, v25, v28, v30, v4, v6, v7, v9;
+java.util.concurrent.TimeUnit v15, v5;
+java.lang.InterruptedException v16;
+java.lang.Object v13;
+v0 = <io.netty.util.internal.ThreadLocalRandom: long initialSeedUniquifier>;
+v1 = v0 cmp 0L;
+if v1 == 0 goto label01;
+return v0;
+label01:
+entermonitor class "Lio/netty/util/internal/ThreadLocalRandom;";
+label02:
+v2 = <io.netty.util.internal.ThreadLocalRandom: long initialSeedUniquifier>;
+v3 = v2 cmp 0L;
+if v3 == 0 goto label04;
+exitmonitor class "Lio/netty/util/internal/ThreadLocalRandom;";
+label03:
+return v2;
+label04:
+v4 = <io.netty.util.internal.ThreadLocalRandom: long seedGeneratorStartTime>;
+v5 = <java.util.concurrent.TimeUnit: java.util.concurrent.TimeUnit SECONDS>;
+v6 = virtualinvoke v5.<java.util.concurrent.TimeUnit: long toNanos(long)>(3L);
+v7 = v4 + v6;
+v8 = 0;
+label05:
+v9 = staticinvoke <java.lang.System: long nanoTime()>();
+v10 = v7 - v9;
+label06:
+v11 = v10 cmp 0L;
+if v11 > 0 goto label07;
+v12 = <io.netty.util.internal.ThreadLocalRandom: java.util.concurrent.BlockingQueue seedQueue>;
+v13 = interfaceinvoke v12.<java.util.concurrent.BlockingQueue: java.lang.Object poll()>();
+goto label08;
+label07:
+v14 = <io.netty.util.internal.ThreadLocalRandom: java.util.concurrent.BlockingQueue seedQueue>;
+v15 = <java.util.concurrent.TimeUnit: java.util.concurrent.TimeUnit NANOSECONDS>;
+interfaceinvoke v14.<java.util.concurrent.BlockingQueue: java.lang.Object poll(long,java.util.concurrent.TimeUnit)>(v10, v15);
+label08:
+if v13 == null goto label11;
+v2 = virtualinvoke v13.<java.lang.Long: long longValue()>();
+label09:
+goto label12;
+label10:
+v16 := @caughtexception;
+v8 = 1;
+v17 = <io.netty.util.internal.ThreadLocalRandom: io.netty.util.internal.logging.InternalLogger logger>;
+interfaceinvoke v17.<io.netty.util.internal.logging.InternalLogger: void warn(java.lang.String)>("Failed to generate a seed from SecureRandom due to an InterruptedException.");
+goto label12;
+label11:
+v18 = v10 cmp 0L;
+if v18 > 0 goto label05;
+v19 = <io.netty.util.internal.ThreadLocalRandom: java.lang.Thread seedGeneratorThread>;
+virtualinvoke v19.<java.lang.Thread: void interrupt()>();
+v20 = <io.netty.util.internal.ThreadLocalRandom: io.netty.util.internal.logging.InternalLogger logger>;
+v21 = staticinvoke <java.lang.Long: java.lang.Long valueOf(long)>(3L);
+interfaceinvoke v20.<io.netty.util.internal.logging.InternalLogger: void warn(java.lang.String,java.lang.Object)>("Failed to generate a seed from SecureRandom within {} seconds. Not enough entropy?", v21);
+label12:
+v22 = v2 ^ 3627065505421648153L;
+v23 = staticinvoke <java.lang.System: long nanoTime()>();
+v24 = staticinvoke <java.lang.Long: long reverse(long)>(v23);
+v25 = v22 ^ v24;
+<io.netty.util.internal.ThreadLocalRandom: long initialSeedUniquifier> = v25;
+if v8 == 0 goto label13;
+v26 = staticinvoke <java.lang.Thread: java.lang.Thread currentThread()>();
+virtualinvoke v26.<java.lang.Thread: void interrupt()>();
+v27 = <io.netty.util.internal.ThreadLocalRandom: java.lang.Thread seedGeneratorThread>;
+virtualinvoke v27.<java.lang.Thread: void interrupt()>();
+label13:
+v28 = <io.netty.util.internal.ThreadLocalRandom: long seedGeneratorEndTime>;
+v29 = v28 cmp 0L;
+if v29 != 0 goto label14;
+v30 = staticinvoke <java.lang.System: long nanoTime()>();
+<io.netty.util.internal.ThreadLocalRandom: long seedGeneratorEndTime> = v30;
+label14:
+exitmonitor class "Lio/netty/util/internal/ThreadLocalRandom;";
+label15:
+return v25;
+label16:
+v31 := @caughtexception;
+exitmonitor class "Lio/netty/util/internal/ThreadLocalRandom;";
+throw v31;
+catch java.lang.InterruptedException from label06 to label09 with label10;
+catch java.lang.Throwable from label02 to label03 with label16;
+catch java.lang.Throwable from label04 to label15 with label16;
+}
+private static long newSeed()
+{
+java.lang.Object[] v13, v23;
+long v1, v10, v16, v17, v18, v19, v26, v27, v3, v4;
+byte v11, v2, v7;
+java.lang.Long v14, v20, v24;
+java.lang.String v21, v25;
+boolean v6, v9;
+java.util.concurrent.TimeUnit v15;
+java.util.concurrent.atomic.AtomicLong v0, v5;
+io.netty.util.internal.logging.InternalLogger v12, v22, v8;
+label1:
+v0 = <io.netty.util.internal.ThreadLocalRandom: java.util.concurrent.atomic.AtomicLong seedUniquifier>;
+v1 = virtualinvoke v0.<java.util.concurrent.atomic.AtomicLong: long get()>();
+v2 = v1 cmp 0L;
+if v2 == 0 goto label2;
+v3 = v1;
+goto label3;
+label2:
+v3 = staticinvoke <io.netty.util.internal.ThreadLocalRandom: long getInitialSeedUniquifier()>();
+label3:
+v4 = v3 * 181783497276652981L;
+v5 = <io.netty.util.internal.ThreadLocalRandom: java.util.concurrent.atomic.AtomicLong seedUniquifier>;
+v6 = virtualinvoke v5.<java.util.concurrent.atomic.AtomicLong: boolean compareAndSet(long,long)>(v1, v4);
+if v6 == 0 goto label1;
+v7 = v1 cmp 0L;
+if v7 != 0 goto label5;
+v8 = <io.netty.util.internal.ThreadLocalRandom: io.netty.util.internal.logging.InternalLogger logger>;
+v9 = interfaceinvoke v8.<io.netty.util.internal.logging.InternalLogger: boolean isDebugEnabled()>();
+if v9 == 0 goto label5;
+v10 = <io.netty.util.internal.ThreadLocalRandom: long seedGeneratorEndTime>;
+v11 = v10 cmp 0L;
+if v11 == 0 goto label4;
+v12 = <io.netty.util.internal.ThreadLocalRandom: io.netty.util.internal.logging.InternalLogger logger>;
+v13 = newarray (java.lang.Object)[2];
+v14 = staticinvoke <java.lang.Long: java.lang.Long valueOf(long)>(v3);
+v13[0] = v14;
+v15 = <java.util.concurrent.TimeUnit: java.util.concurrent.TimeUnit NANOSECONDS>;
+v16 = <io.netty.util.internal.ThreadLocalRandom: long seedGeneratorEndTime>;
+v17 = <io.netty.util.internal.ThreadLocalRandom: long seedGeneratorStartTime>;
+v18 = v16 - v17;
+v19 = virtualinvoke v15.<java.util.concurrent.TimeUnit: long toMillis(long)>(v18);
+v20 = staticinvoke <java.lang.Long: java.lang.Long valueOf(long)>(v19);
+v13[1] = v20;
+v21 = staticinvoke <java.lang.String: java.lang.String format(java.lang.String,java.lang.Object[])>("-Dio.netty.initialSeedUniquifier: 0x%016x (took %d ms)", v13);
+interfaceinvoke v12.<io.netty.util.internal.logging.InternalLogger: void debug(java.lang.String)>(v21);
+goto label5;
+label4:
+v22 = <io.netty.util.internal.ThreadLocalRandom: io.netty.util.internal.logging.InternalLogger logger>;
+v23 = newarray (java.lang.Object)[1];
+v24 = staticinvoke <java.lang.Long: java.lang.Long valueOf(long)>(v3);
+v23[0] = v24;
+v25 = staticinvoke <java.lang.String: java.lang.String format(java.lang.String,java.lang.Object[])>("-Dio.netty.initialSeedUniquifier: 0x%016x", v23);
+interfaceinvoke v22.<io.netty.util.internal.logging.InternalLogger: void debug(java.lang.String)>(v25);
+label5:
+v26 = staticinvoke <java.lang.System: long nanoTime()>();
+v27 = v4 ^ v26;
+return v27;
+}
+private static long mix64(long)
+{
+long v0, v1, v2, v3, v4, v5, v6, v7, v8;
+v0 := @parameter0: long;
+v1 = v0 >>> 33;
+v2 = v0 ^ v1;
+v3 = v2 * -49064778989728563L;
+v4 = v3 >>> 33;
+v5 = v3 ^ v4;
+v6 = v5 * -4265267296055464877L;
+v7 = v6 >>> 33;
+v8 = v6 ^ v7;
+return v8;
+}
+void <init>()
+{
+long v1;
+io.netty.util.internal.ThreadLocalRandom v0;
+v0 := @this: io.netty.util.internal.ThreadLocalRandom;
+v1 = staticinvoke <io.netty.util.internal.ThreadLocalRandom: long newSeed()>();
+specialinvoke v0.<java.util.Random: void <init>(long)>(v1);
+v0.<io.netty.util.internal.ThreadLocalRandom: boolean initialized> = 1;
+return;
+}
+public static io.netty.util.internal.ThreadLocalRandom current()
+{
+io.netty.util.internal.InternalThreadLocalMap v0;
+io.netty.util.internal.ThreadLocalRandom v1;
+v0 = staticinvoke <io.netty.util.internal.InternalThreadLocalMap: io.netty.util.internal.InternalThreadLocalMap get()>();
+v1 = virtualinvoke v0.<io.netty.util.internal.InternalThreadLocalMap: io.netty.util.internal.ThreadLocalRandom random()>();
+return v1;
+}
+public void setSeed(long)
+{
+java.lang.UnsupportedOperationException v3;
+long v1, v4, v5;
+io.netty.util.internal.ThreadLocalRandom v0;
+boolean v2;
+v0 := @this: io.netty.util.internal.ThreadLocalRandom;
+v1 := @parameter0: long;
+v2 = v0.<io.netty.util.internal.ThreadLocalRandom: boolean initialized>;
+if v2 == 0 goto label1;
+v3 = new java.lang.UnsupportedOperationException;
+specialinvoke v3.<java.lang.UnsupportedOperationException: void <init>()>();
+throw v3;
+label1:
+v4 = v1 ^ 25214903917L;
+v5 = v4 & 281474976710655L;
+v0.<io.netty.util.internal.ThreadLocalRandom: long rnd> = v5;
+return;
+}
+protected int next(int)
+{
+long v2, v3, v4, v5, v6, v8;
+int v1, v7;
+io.netty.util.internal.ThreadLocalRandom v0;
+v0 := @this: io.netty.util.internal.ThreadLocalRandom;
+v1 := @parameter0: int;
+v2 = v0.<io.netty.util.internal.ThreadLocalRandom: long rnd>;
+v3 = v2 * 25214903917L;
+v4 = v3 + 11L;
+v5 = v4 & 281474976710655L;
+v0.<io.netty.util.internal.ThreadLocalRandom: long rnd> = v5;
+v6 = v0.<io.netty.util.internal.ThreadLocalRandom: long rnd>;
+v7 = 48 - v1;
+v8 = v6 >>> v7;
+return v8;
+}
+public int nextInt(int, int)
+{
+int v1, v2, v4, v5, v6;
+io.netty.util.internal.ThreadLocalRandom v0;
+java.lang.IllegalArgumentException v3;
+v0 := @this: io.netty.util.internal.ThreadLocalRandom;
+v1 := @parameter0: int;
+v2 := @parameter1: int;
+if v1 < v2 goto label1;
+v3 = new java.lang.IllegalArgumentException;
+specialinvoke v3.<java.lang.IllegalArgumentException: void <init>()>();
+throw v3;
+label1:
+v4 = v2 - v1;
+v5 = virtualinvoke v0.<io.netty.util.internal.ThreadLocalRandom: int nextInt(int)>(v4);
+v6 = v5 + v1;
+return v6;
+}
+public long nextLong(long)
+{
+long v1, v10, v12, v2, v5, v7, v8;
+byte v3;
+int v11, v4, v6, v9;
+io.netty.util.internal.ThreadLocalRandom v0;
+v0 := @this: io.netty.util.internal.ThreadLocalRandom;
+v1 := @parameter0: long;
+staticinvoke <io.netty.util.internal.ObjectUtil: long checkPositive(long,java.lang.String)>(v1, "n");
+v2 = 0L;
+label1:
+v3 = v1 cmp 2147483647L;
+if v3 < 0 goto label5;
+v4 = virtualinvoke v0.<io.netty.util.internal.ThreadLocalRandom: int next(int)>(2);
+v5 = v1 >>> 1;
+v6 = v4 & 2;
+if v6 != 0 goto label2;
+v7 = v5;
+goto label3;
+label2:
+v7 = v1 - v5;
+label3:
+v8 = v7;
+v9 = v4 & 1;
+if v9 != 0 goto label4;
+v10 = v1 - v7;
+v2 = v2 + v10;
+label4:
+v1 = v8;
+goto label1;
+label5:
+v11 = virtualinvoke v0.<io.netty.util.internal.ThreadLocalRandom: int nextInt(int)>(v1);
+v12 = v2 + v11;
+return v12;
+}
+public long nextLong(long, long)
+{
+long v1, v2, v5, v6, v7;
+java.lang.IllegalArgumentException v4;
+byte v3;
+io.netty.util.internal.ThreadLocalRandom v0;
+v0 := @this: io.netty.util.internal.ThreadLocalRandom;
+v1 := @parameter0: long;
+v2 := @parameter1: long;
+v3 = v1 cmp v2;
+if v3 < 0 goto label1;
+v4 = new java.lang.IllegalArgumentException;
+specialinvoke v4.<java.lang.IllegalArgumentException: void <init>()>();
+throw v4;
+label1:
+v5 = v2 - v1;
+v6 = virtualinvoke v0.<io.netty.util.internal.ThreadLocalRandom: long nextLong(long)>(v5);
+v7 = v6 + v1;
+return v7;
+}
+public double nextDouble(double)
+{
+io.netty.util.internal.ThreadLocalRandom v0;
+double v1, v2, v3;
+v0 := @this: io.netty.util.internal.ThreadLocalRandom;
+v1 := @parameter0: double;
+staticinvoke <io.netty.util.internal.ObjectUtil: double checkPositive(double,java.lang.String)>(v1, "n");
+v2 = virtualinvoke v0.<io.netty.util.internal.ThreadLocalRandom: double nextDouble()>();
+v3 = v2 * v1;
+return v3;
+}
+public double nextDouble(double, double)
+{
+java.lang.IllegalArgumentException v4;
+byte v3;
+io.netty.util.internal.ThreadLocalRandom v0;
+double v1, v2, v5, v6, v7, v8;
+v0 := @this: io.netty.util.internal.ThreadLocalRandom;
+v1 := @parameter0: double;
+v2 := @parameter1: double;
+v3 = v1 cmpl v2;
+if v3 < 0 goto label1;
+v4 = new java.lang.IllegalArgumentException;
+specialinvoke v4.<java.lang.IllegalArgumentException: void <init>()>();
+throw v4;
+label1:
+v5 = virtualinvoke v0.<io.netty.util.internal.ThreadLocalRandom: double nextDouble()>();
+v6 = v2 - v1;
+v7 = v5 * v6;
+v8 = v7 + v1;
+return v8;
+}
+static void <clinit>()
+{
+io.netty.util.internal.ThreadLocalRandom$1 v8;
+long v13, v14, v15, v16, v17, v2, v3, v7;
+io.netty.util.internal.ThreadLocalRandom$2 v11;
+byte v4;
+java.lang.Thread v10, v12, v9;
+boolean v5;
+java.util.concurrent.LinkedBlockingQueue v6;
+java.util.concurrent.atomic.AtomicLong v1;
+io.netty.util.internal.logging.InternalLogger v0;
+v0 = staticinvoke <io.netty.util.internal.logging.InternalLoggerFactory: io.netty.util.internal.logging.InternalLogger getInstance(java.lang.Class)>(class "Lio/netty/util/internal/ThreadLocalRandom;");
+<io.netty.util.internal.ThreadLocalRandom: io.netty.util.internal.logging.InternalLogger logger> = v0;
+v1 = new java.util.concurrent.atomic.AtomicLong;
+specialinvoke v1.<java.util.concurrent.atomic.AtomicLong: void <init>()>();
+<io.netty.util.internal.ThreadLocalRandom: java.util.concurrent.atomic.AtomicLong seedUniquifier> = v1;
+v2 = staticinvoke <io.netty.util.internal.SystemPropertyUtil: long getLong(java.lang.String,long)>("io.netty.initialSeedUniquifier", 0L);
+<io.netty.util.internal.ThreadLocalRandom: long initialSeedUniquifier> = v2;
+v3 = <io.netty.util.internal.ThreadLocalRandom: long initialSeedUniquifier>;
+v4 = v3 cmp 0L;
+if v4 != 0 goto label2;
+v5 = staticinvoke <io.netty.util.internal.SystemPropertyUtil: boolean getBoolean(java.lang.String,boolean)>("java.util.secureRandomSeed", 0);
+if v5 == 0 goto label1;
+v6 = new java.util.concurrent.LinkedBlockingQueue;
+specialinvoke v6.<java.util.concurrent.LinkedBlockingQueue: void <init>()>();
+<io.netty.util.internal.ThreadLocalRandom: java.util.concurrent.BlockingQueue seedQueue> = v6;
+v7 = staticinvoke <java.lang.System: long nanoTime()>();
+<io.netty.util.internal.ThreadLocalRandom: long seedGeneratorStartTime> = v7;
+v8 = new io.netty.util.internal.ThreadLocalRandom$1;
+specialinvoke v8.<io.netty.util.internal.ThreadLocalRandom$1: void <init>(java.lang.String)>("initialSeedUniquifierGenerator");
+<io.netty.util.internal.ThreadLocalRandom: java.lang.Thread seedGeneratorThread> = v8;
+v9 = <io.netty.util.internal.ThreadLocalRandom: java.lang.Thread seedGeneratorThread>;
+virtualinvoke v9.<java.lang.Thread: void setDaemon(boolean)>(1);
+v10 = <io.netty.util.internal.ThreadLocalRandom: java.lang.Thread seedGeneratorThread>;
+v11 = new io.netty.util.internal.ThreadLocalRandom$2;
+specialinvoke v11.<io.netty.util.internal.ThreadLocalRandom$2: void <init>()>();
+virtualinvoke v10.<java.lang.Thread: void setUncaughtExceptionHandler(java.lang.Thread$UncaughtExceptionHandler)>(v11);
+v12 = <io.netty.util.internal.ThreadLocalRandom: java.lang.Thread seedGeneratorThread>;
+virtualinvoke v12.<java.lang.Thread: void start()>();
+goto label3;
+label1:
+v13 = staticinvoke <java.lang.System: long currentTimeMillis()>();
+v14 = staticinvoke <io.netty.util.internal.ThreadLocalRandom: long mix64(long)>(v13);
+v15 = staticinvoke <java.lang.System: long nanoTime()>();
+v16 = staticinvoke <io.netty.util.internal.ThreadLocalRandom: long mix64(long)>(v15);
+v17 = v14 ^ v16;
+<io.netty.util.internal.ThreadLocalRandom: long initialSeedUniquifier> = v17;
+<io.netty.util.internal.ThreadLocalRandom: java.lang.Thread seedGeneratorThread> = null;
+<io.netty.util.internal.ThreadLocalRandom: java.util.concurrent.BlockingQueue seedQueue> = null;
+<io.netty.util.internal.ThreadLocalRandom: long seedGeneratorStartTime> = 0L;
+goto label3;
+label2:
+<io.netty.util.internal.ThreadLocalRandom: java.lang.Thread seedGeneratorThread> = null;
+<io.netty.util.internal.ThreadLocalRandom: java.util.concurrent.BlockingQueue seedQueue> = null;
+<io.netty.util.internal.ThreadLocalRandom: long seedGeneratorStartTime> = 0L;
+label3:
+return;
+}
+}

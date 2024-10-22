@@ -1,0 +1,249 @@
+public class io.quarkus.arc.runtime.devmode.EventsMonitor extends java.lang.Object
+{
+private static final int DEFAULT_LIMIT;
+private volatile boolean skipContextEvents;
+private final java.util.List events;
+private final io.smallrye.mutiny.operators.multi.processors.BroadcastProcessor eventsStream;
+private final io.smallrye.mutiny.operators.multi.processors.BroadcastProcessor skipContextEventsStream;
+public void <init>()
+{
+java.util.List v2;
+io.smallrye.mutiny.operators.multi.processors.BroadcastProcessor v3, v4;
+io.quarkus.arc.runtime.devmode.EventsMonitor v0;
+java.util.ArrayList v1;
+v0 := @this: io.quarkus.arc.runtime.devmode.EventsMonitor;
+specialinvoke v0.<java.lang.Object: void <init>()>();
+v0.<io.quarkus.arc.runtime.devmode.EventsMonitor: boolean skipContextEvents> = 1;
+v1 = new java.util.ArrayList;
+specialinvoke v1.<java.util.ArrayList: void <init>(int)>(500);
+v2 = staticinvoke <java.util.Collections: java.util.List synchronizedList(java.util.List)>(v1);
+v0.<io.quarkus.arc.runtime.devmode.EventsMonitor: java.util.List events> = v2;
+v3 = staticinvoke <io.smallrye.mutiny.operators.multi.processors.BroadcastProcessor: io.smallrye.mutiny.operators.multi.processors.BroadcastProcessor create()>();
+v0.<io.quarkus.arc.runtime.devmode.EventsMonitor: io.smallrye.mutiny.operators.multi.processors.BroadcastProcessor eventsStream> = v3;
+v4 = staticinvoke <io.smallrye.mutiny.operators.multi.processors.BroadcastProcessor: io.smallrye.mutiny.operators.multi.processors.BroadcastProcessor create()>();
+v0.<io.quarkus.arc.runtime.devmode.EventsMonitor: io.smallrye.mutiny.operators.multi.processors.BroadcastProcessor skipContextEventsStream> = v4;
+return;
+}
+void notify(java.lang.Object, jakarta.enterprise.inject.spi.EventMetadata)
+{
+java.lang.Throwable v12;
+io.smallrye.mutiny.operators.multi.processors.BroadcastProcessor v14;
+io.quarkus.arc.runtime.devmode.EventInfo v13;
+int v6, v9;
+io.quarkus.arc.runtime.devmode.EventsMonitor v0;
+jakarta.enterprise.inject.spi.EventMetadata v2;
+boolean v3, v4;
+java.util.List v10, v11, v15, v5, v7, v8;
+java.lang.Object v1;
+v0 := @this: io.quarkus.arc.runtime.devmode.EventsMonitor;
+v1 := @parameter0: java.lang.Object;
+v2 := @parameter1: jakarta.enterprise.inject.spi.EventMetadata;
+v3 = v0.<io.quarkus.arc.runtime.devmode.EventsMonitor: boolean skipContextEvents>;
+if v3 == 0 goto label1;
+v4 = virtualinvoke v0.<io.quarkus.arc.runtime.devmode.EventsMonitor: boolean isContextEvent(jakarta.enterprise.inject.spi.EventMetadata)>(v2);
+if v4 == 0 goto label1;
+return;
+label1:
+v5 = v0.<io.quarkus.arc.runtime.devmode.EventsMonitor: java.util.List events>;
+v6 = interfaceinvoke v5.<java.util.List: int size()>();
+if v6 <= 500 goto label6;
+v7 = v0.<io.quarkus.arc.runtime.devmode.EventsMonitor: java.util.List events>;
+entermonitor v7;
+label2:
+v8 = v0.<io.quarkus.arc.runtime.devmode.EventsMonitor: java.util.List events>;
+v9 = interfaceinvoke v8.<java.util.List: int size()>();
+if v9 <= 500 goto label3;
+v10 = v0.<io.quarkus.arc.runtime.devmode.EventsMonitor: java.util.List events>;
+v11 = interfaceinvoke v10.<java.util.List: java.util.List subList(int,int)>(0, 250);
+interfaceinvoke v11.<java.util.List: void clear()>();
+label3:
+exitmonitor v7;
+label4:
+goto label6;
+label5:
+v12 := @caughtexception;
+exitmonitor v7;
+throw v12;
+label6:
+v13 = specialinvoke v0.<io.quarkus.arc.runtime.devmode.EventsMonitor: io.quarkus.arc.runtime.devmode.EventInfo toEventInfo(java.lang.Object,jakarta.enterprise.inject.spi.EventMetadata)>(v1, v2);
+v14 = v0.<io.quarkus.arc.runtime.devmode.EventsMonitor: io.smallrye.mutiny.operators.multi.processors.BroadcastProcessor eventsStream>;
+virtualinvoke v14.<io.smallrye.mutiny.operators.multi.processors.BroadcastProcessor: void onNext(java.lang.Object)>(v13);
+v15 = v0.<io.quarkus.arc.runtime.devmode.EventsMonitor: java.util.List events>;
+interfaceinvoke v15.<java.util.List: boolean add(java.lang.Object)>(v13);
+return;
+catch java.lang.Throwable from label2 to label4 with label5;
+}
+public void clear()
+{
+java.util.List v1;
+io.quarkus.arc.runtime.devmode.EventsMonitor v0;
+v0 := @this: io.quarkus.arc.runtime.devmode.EventsMonitor;
+v1 = v0.<io.quarkus.arc.runtime.devmode.EventsMonitor: java.util.List events>;
+interfaceinvoke v1.<java.util.List: void clear()>();
+return;
+}
+public io.smallrye.mutiny.Multi streamEvents()
+{
+io.quarkus.arc.runtime.devmode.EventsMonitor v0;
+io.smallrye.mutiny.operators.multi.processors.BroadcastProcessor v1;
+v0 := @this: io.quarkus.arc.runtime.devmode.EventsMonitor;
+v1 = v0.<io.quarkus.arc.runtime.devmode.EventsMonitor: io.smallrye.mutiny.operators.multi.processors.BroadcastProcessor eventsStream>;
+return v1;
+}
+public io.smallrye.mutiny.Multi streamSkipContextEvents()
+{
+io.quarkus.arc.runtime.devmode.EventsMonitor v0;
+io.smallrye.mutiny.operators.multi.processors.BroadcastProcessor v1;
+v0 := @this: io.quarkus.arc.runtime.devmode.EventsMonitor;
+v1 = v0.<io.quarkus.arc.runtime.devmode.EventsMonitor: io.smallrye.mutiny.operators.multi.processors.BroadcastProcessor skipContextEventsStream>;
+return v1;
+}
+public java.util.List getLastEvents()
+{
+java.util.List v2;
+io.quarkus.arc.runtime.devmode.EventsMonitor v0;
+java.util.ArrayList v1;
+v0 := @this: io.quarkus.arc.runtime.devmode.EventsMonitor;
+v1 = new java.util.ArrayList;
+v2 = v0.<io.quarkus.arc.runtime.devmode.EventsMonitor: java.util.List events>;
+specialinvoke v1.<java.util.ArrayList: void <init>(java.util.Collection)>(v2);
+staticinvoke <java.util.Collections: void reverse(java.util.List)>(v1);
+return v1;
+}
+public boolean isSkipContextEvents()
+{
+io.quarkus.arc.runtime.devmode.EventsMonitor v0;
+boolean v1;
+v0 := @this: io.quarkus.arc.runtime.devmode.EventsMonitor;
+v1 = v0.<io.quarkus.arc.runtime.devmode.EventsMonitor: boolean skipContextEvents>;
+return v1;
+}
+public void toggleSkipContextEvents()
+{
+io.smallrye.mutiny.operators.multi.processors.BroadcastProcessor v3;
+java.lang.Boolean v5;
+io.quarkus.arc.runtime.devmode.EventsMonitor v0;
+boolean v1, v2, v4;
+v0 := @this: io.quarkus.arc.runtime.devmode.EventsMonitor;
+v1 = v0.<io.quarkus.arc.runtime.devmode.EventsMonitor: boolean skipContextEvents>;
+if v1 != 0 goto label1;
+v2 = 1;
+goto label2;
+label1:
+v2 = 0;
+label2:
+v0.<io.quarkus.arc.runtime.devmode.EventsMonitor: boolean skipContextEvents> = v2;
+v3 = v0.<io.quarkus.arc.runtime.devmode.EventsMonitor: io.smallrye.mutiny.operators.multi.processors.BroadcastProcessor skipContextEventsStream>;
+v4 = v0.<io.quarkus.arc.runtime.devmode.EventsMonitor: boolean skipContextEvents>;
+v5 = staticinvoke <java.lang.Boolean: java.lang.Boolean valueOf(boolean)>(v4);
+virtualinvoke v3.<io.smallrye.mutiny.operators.multi.processors.BroadcastProcessor: void onNext(java.lang.Object)>(v5);
+return;
+}
+boolean isContextEvent(jakarta.enterprise.inject.spi.EventMetadata)
+{
+java.util.Iterator v7;
+java.util.Set v4, v6;
+java.lang.reflect.Type v2;
+int v5;
+java.lang.Class v10;
+java.lang.Object v9;
+io.quarkus.arc.runtime.devmode.EventsMonitor v0;
+jakarta.enterprise.inject.spi.EventMetadata v1;
+boolean v11, v12, v13, v14, v3, v8;
+v0 := @this: io.quarkus.arc.runtime.devmode.EventsMonitor;
+v1 := @parameter0: jakarta.enterprise.inject.spi.EventMetadata;
+v2 = interfaceinvoke v1.<jakarta.enterprise.inject.spi.EventMetadata: java.lang.reflect.Type getType()>();
+v3 = virtualinvoke v2.<java.lang.Object: boolean equals(java.lang.Object)>(class "Ljava/lang/Object;");
+if v3 == 0 goto label1;
+v4 = interfaceinvoke v1.<jakarta.enterprise.inject.spi.EventMetadata: java.util.Set getQualifiers()>();
+v5 = interfaceinvoke v4.<java.util.Set: int size()>();
+if v5 == 2 goto label2;
+label1:
+return 0;
+label2:
+v6 = interfaceinvoke v1.<jakarta.enterprise.inject.spi.EventMetadata: java.util.Set getQualifiers()>();
+v7 = interfaceinvoke v6.<java.util.Set: java.util.Iterator iterator()>();
+label3:
+v8 = interfaceinvoke v7.<java.util.Iterator: boolean hasNext()>();
+if v8 == 0 goto label4;
+v9 = interfaceinvoke v7.<java.util.Iterator: java.lang.Object next()>();
+v10 = interfaceinvoke v9.<java.lang.'annotation'.Annotation: java.lang.Class annotationType()>();
+v11 = virtualinvoke v10.<java.lang.Object: boolean equals(java.lang.Object)>(class "Ljakarta/enterprise/inject/Any;");
+if v11 != 0 goto label3;
+v12 = virtualinvoke v10.<java.lang.Object: boolean equals(java.lang.Object)>(class "Ljakarta/enterprise/context/Initialized;");
+if v12 != 0 goto label3;
+v13 = virtualinvoke v10.<java.lang.Object: boolean equals(java.lang.Object)>(class "Ljakarta/enterprise/context/BeforeDestroyed;");
+if v13 != 0 goto label3;
+v14 = virtualinvoke v10.<java.lang.Object: boolean equals(java.lang.Object)>(class "Ljakarta/enterprise/context/Destroyed;");
+if v14 != 0 goto label3;
+return 0;
+label4:
+return 1;
+}
+private io.quarkus.arc.runtime.devmode.EventInfo toEventInfo(java.lang.Object, jakarta.enterprise.inject.spi.EventMetadata)
+{
+io.quarkus.arc.runtime.devmode.EventInfo v3;
+java.util.ArrayList v7;
+int v9;
+io.quarkus.arc.runtime.devmode.EventsMonitor v0;
+java.lang.String v18, v4, v6;
+jakarta.enterprise.inject.spi.EventMetadata v2;
+boolean v12, v15, v17, v19;
+java.util.Iterator v11;
+java.util.Set v10, v8;
+java.lang.reflect.Type v5;
+java.lang.Class v14, v16;
+java.lang.Object v1, v13;
+v0 := @this: io.quarkus.arc.runtime.devmode.EventsMonitor;
+v1 := @parameter0: java.lang.Object;
+v2 := @parameter1: jakarta.enterprise.inject.spi.EventMetadata;
+v3 = new io.quarkus.arc.runtime.devmode.EventInfo;
+specialinvoke v3.<io.quarkus.arc.runtime.devmode.EventInfo: void <init>()>();
+v4 = specialinvoke v0.<io.quarkus.arc.runtime.devmode.EventsMonitor: java.lang.String now()>();
+virtualinvoke v3.<io.quarkus.arc.runtime.devmode.EventInfo: void setTimestamp(java.lang.String)>(v4);
+v5 = interfaceinvoke v2.<jakarta.enterprise.inject.spi.EventMetadata: java.lang.reflect.Type getType()>();
+v6 = interfaceinvoke v5.<java.lang.reflect.Type: java.lang.String getTypeName()>();
+virtualinvoke v3.<io.quarkus.arc.runtime.devmode.EventInfo: void setType(java.lang.String)>(v6);
+v7 = new java.util.ArrayList;
+specialinvoke v7.<java.util.ArrayList: void <init>()>();
+v8 = interfaceinvoke v2.<jakarta.enterprise.inject.spi.EventMetadata: java.util.Set getQualifiers()>();
+v9 = interfaceinvoke v8.<java.util.Set: int size()>();
+if v9 <= 1 goto label2;
+v10 = interfaceinvoke v2.<jakarta.enterprise.inject.spi.EventMetadata: java.util.Set getQualifiers()>();
+v11 = interfaceinvoke v10.<java.util.Set: java.util.Iterator iterator()>();
+label1:
+v12 = interfaceinvoke v11.<java.util.Iterator: boolean hasNext()>();
+if v12 == 0 goto label2;
+v13 = interfaceinvoke v11.<java.util.Iterator: java.lang.Object next()>();
+v14 = interfaceinvoke v13.<java.lang.'annotation'.Annotation: java.lang.Class annotationType()>();
+v15 = virtualinvoke v14.<java.lang.Object: boolean equals(java.lang.Object)>(class "Ljakarta/enterprise/inject/Any;");
+if v15 != 0 goto label1;
+v16 = interfaceinvoke v13.<java.lang.'annotation'.Annotation: java.lang.Class annotationType()>();
+v17 = virtualinvoke v16.<java.lang.Object: boolean equals(java.lang.Object)>(class "Ljakarta/enterprise/inject/Default;");
+if v17 != 0 goto label1;
+v18 = interfaceinvoke v13.<java.lang.'annotation'.Annotation: java.lang.String toString()>();
+interfaceinvoke v7.<java.util.List: boolean add(java.lang.Object)>(v18);
+goto label1;
+label2:
+virtualinvoke v3.<io.quarkus.arc.runtime.devmode.EventInfo: void setQualifiers(java.util.List)>(v7);
+v19 = virtualinvoke v0.<io.quarkus.arc.runtime.devmode.EventsMonitor: boolean isContextEvent(jakarta.enterprise.inject.spi.EventMetadata)>(v2);
+virtualinvoke v3.<io.quarkus.arc.runtime.devmode.EventInfo: void setIsContextEvent(boolean)>(v19);
+return v3;
+}
+private java.lang.String now()
+{
+java.time.format.DateTimeFormatter v2;
+int v5;
+java.time.LocalDateTime v1;
+io.quarkus.arc.runtime.devmode.EventsMonitor v0;
+java.lang.String v3, v4, v6;
+v0 := @this: io.quarkus.arc.runtime.devmode.EventsMonitor;
+v1 = staticinvoke <java.time.LocalDateTime: java.time.LocalDateTime now()>();
+v2 = <java.time.format.DateTimeFormatter: java.time.format.DateTimeFormatter ISO_LOCAL_DATE_TIME>;
+v3 = virtualinvoke v1.<java.time.LocalDateTime: java.lang.String format(java.time.format.DateTimeFormatter)>(v2);
+v4 = virtualinvoke v3.<java.lang.String: java.lang.String replace(java.lang.CharSequence,java.lang.CharSequence)>("T", " ");
+v5 = virtualinvoke v4.<java.lang.String: int lastIndexOf(java.lang.String)>(".");
+v6 = virtualinvoke v4.<java.lang.String: java.lang.String substring(int,int)>(0, v5);
+return v6;
+}
+}

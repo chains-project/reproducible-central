@@ -1,0 +1,1180 @@
+public abstract class io.vertx.core.net.impl.ConnectionBase extends java.lang.Object
+{
+private static final long METRICS_REPORTED_BYTES_LOW_MASK;
+private static final long METRICS_REPORTED_BYTES_HIGH_MASK;
+public static final io.vertx.core.VertxException CLOSED_EXCEPTION;
+public static final io.netty.util.AttributeKey REMOTE_ADDRESS_OVERRIDE;
+public static final io.netty.util.AttributeKey LOCAL_ADDRESS_OVERRIDE;
+private static final io.vertx.core.impl.logging.Logger log;
+private static final int MAX_REGION_SIZE;
+public final io.netty.channel.VoidChannelPromise voidPromise;
+protected final io.vertx.core.impl.VertxInternal vertx;
+protected final io.netty.channel.ChannelHandlerContext chctx;
+protected final io.vertx.core.impl.ContextInternal context;
+private io.vertx.core.Handler exceptionHandler;
+private io.vertx.core.Handler closeHandler;
+private int writeInProgress;
+private java.lang.Object metric;
+private io.vertx.core.net.SocketAddress remoteAddress;
+private io.vertx.core.net.SocketAddress realRemoteAddress;
+private io.vertx.core.net.SocketAddress localAddress;
+private io.vertx.core.net.SocketAddress realLocalAddress;
+private io.netty.channel.ChannelPromise closePromise;
+private io.vertx.core.Future closeFuture;
+private long remainingBytesRead;
+private long remainingBytesWritten;
+private boolean read;
+private boolean needsFlush;
+private boolean closed;
+protected void <init>(io.vertx.core.impl.ContextInternal, io.netty.channel.ChannelHandlerContext)
+{
+io.vertx.core.impl.VertxInternal v3;
+io.vertx.core.impl.future.PromiseInternal v7;
+io.vertx.core.impl.ContextInternal v1;
+io.vertx.core.net.impl.ConnectionBase v0;
+io.vertx.core.Future v10, v9;
+io.netty.channel.Channel v5;
+io.netty.channel.VoidChannelPromise v4;
+io.netty.channel.ChannelHandlerContext v2;
+io.netty.channel.ChannelPromise v6, v8;
+io.vertx.core.Handler v11;
+v0 := @this: io.vertx.core.net.impl.ConnectionBase;
+v1 := @parameter0: io.vertx.core.impl.ContextInternal;
+v2 := @parameter1: io.netty.channel.ChannelHandlerContext;
+specialinvoke v0.<java.lang.Object: void <init>()>();
+v3 = interfaceinvoke v1.<io.vertx.core.impl.ContextInternal: io.vertx.core.impl.VertxInternal owner()>();
+v0.<io.vertx.core.net.impl.ConnectionBase: io.vertx.core.impl.VertxInternal vertx> = v3;
+v0.<io.vertx.core.net.impl.ConnectionBase: io.netty.channel.ChannelHandlerContext chctx> = v2;
+v0.<io.vertx.core.net.impl.ConnectionBase: io.vertx.core.impl.ContextInternal context> = v1;
+v4 = new io.netty.channel.VoidChannelPromise;
+v5 = interfaceinvoke v2.<io.netty.channel.ChannelHandlerContext: io.netty.channel.Channel channel()>();
+specialinvoke v4.<io.netty.channel.VoidChannelPromise: void <init>(io.netty.channel.Channel,boolean)>(v5, 0);
+v0.<io.vertx.core.net.impl.ConnectionBase: io.netty.channel.VoidChannelPromise voidPromise> = v4;
+v6 = interfaceinvoke v2.<io.netty.channel.ChannelHandlerContext: io.netty.channel.ChannelPromise newPromise()>();
+v0.<io.vertx.core.net.impl.ConnectionBase: io.netty.channel.ChannelPromise closePromise> = v6;
+v7 = interfaceinvoke v1.<io.vertx.core.impl.ContextInternal: io.vertx.core.impl.future.PromiseInternal promise()>();
+v8 = v0.<io.vertx.core.net.impl.ConnectionBase: io.netty.channel.ChannelPromise closePromise>;
+interfaceinvoke v8.<io.netty.channel.ChannelPromise: io.netty.channel.ChannelPromise addListener(io.netty.util.concurrent.GenericFutureListener)>(v7);
+v9 = interfaceinvoke v7.<io.vertx.core.impl.future.PromiseInternal: io.vertx.core.Future future()>();
+v0.<io.vertx.core.net.impl.ConnectionBase: io.vertx.core.Future closeFuture> = v9;
+v10 = v0.<io.vertx.core.net.impl.ConnectionBase: io.vertx.core.Future closeFuture>;
+v11 = staticinvoke <io.vertx.core.net.impl.ConnectionBase$checkCloseHandler__1367: io.vertx.core.Handler bootstrap$(io.vertx.core.net.impl.ConnectionBase)>(v0);
+interfaceinvoke v10.<io.vertx.core.Future: io.vertx.core.Future onComplete(io.vertx.core.Handler)>(v11);
+return;
+}
+public io.vertx.core.Future closeFuture()
+{
+io.vertx.core.net.impl.ConnectionBase v0;
+io.vertx.core.Future v1;
+v0 := @this: io.vertx.core.net.impl.ConnectionBase;
+v1 = v0.<io.vertx.core.net.impl.ConnectionBase: io.vertx.core.Future closeFuture>;
+return v1;
+}
+public void fail(java.lang.Throwable)
+{
+java.lang.Throwable v1;
+io.netty.channel.ChannelHandlerContext v2;
+io.netty.channel.ChannelPipeline v3;
+io.vertx.core.net.impl.ConnectionBase v0;
+v0 := @this: io.vertx.core.net.impl.ConnectionBase;
+v1 := @parameter0: java.lang.Throwable;
+v2 = v0.<io.vertx.core.net.impl.ConnectionBase: io.netty.channel.ChannelHandlerContext chctx>;
+v3 = interfaceinvoke v2.<io.netty.channel.ChannelHandlerContext: io.netty.channel.ChannelPipeline pipeline()>();
+interfaceinvoke v3.<io.netty.channel.ChannelPipeline: io.netty.channel.ChannelPipeline fireExceptionCaught(java.lang.Throwable)>(v1);
+return;
+}
+void close(io.netty.channel.ChannelPromise)
+{
+io.netty.channel.ChannelPromise v1, v2;
+io.netty.util.concurrent.GenericFutureListener v3;
+io.vertx.core.net.impl.ConnectionBase v0;
+v0 := @this: io.vertx.core.net.impl.ConnectionBase;
+v1 := @parameter0: io.netty.channel.ChannelPromise;
+v2 = v0.<io.vertx.core.net.impl.ConnectionBase: io.netty.channel.ChannelPromise closePromise>;
+v3 = staticinvoke <io.vertx.core.net.impl.ConnectionBase$lambda_close_0__1368: io.netty.util.concurrent.GenericFutureListener bootstrap$(io.netty.channel.ChannelPromise)>(v1);
+interfaceinvoke v2.<io.netty.channel.ChannelPromise: io.netty.channel.ChannelPromise addListener(io.netty.util.concurrent.GenericFutureListener)>(v3);
+virtualinvoke v0.<io.vertx.core.net.impl.ConnectionBase: io.vertx.core.Future close()>();
+return;
+}
+final void endReadAndFlush()
+{
+io.netty.channel.ChannelHandlerContext v3;
+io.vertx.core.net.impl.ConnectionBase v0;
+boolean v1, v2;
+v0 := @this: io.vertx.core.net.impl.ConnectionBase;
+v1 = v0.<io.vertx.core.net.impl.ConnectionBase: boolean read>;
+if v1 == 0 goto label1;
+v0.<io.vertx.core.net.impl.ConnectionBase: boolean read> = 0;
+v2 = v0.<io.vertx.core.net.impl.ConnectionBase: boolean needsFlush>;
+if v2 == 0 goto label1;
+v0.<io.vertx.core.net.impl.ConnectionBase: boolean needsFlush> = 0;
+v3 = v0.<io.vertx.core.net.impl.ConnectionBase: io.netty.channel.ChannelHandlerContext chctx>;
+interfaceinvoke v3.<io.netty.channel.ChannelHandlerContext: io.netty.channel.ChannelHandlerContext flush()>();
+label1:
+return;
+}
+final void read(java.lang.Object)
+{
+java.lang.Object v1;
+io.vertx.core.net.impl.ConnectionBase v0;
+boolean v2;
+v0 := @this: io.vertx.core.net.impl.ConnectionBase;
+v1 := @parameter0: java.lang.Object;
+v0.<io.vertx.core.net.impl.ConnectionBase: boolean read> = 1;
+v2 = <io.vertx.core.spi.metrics.Metrics: boolean METRICS_ENABLED>;
+if v2 == 0 goto label1;
+virtualinvoke v0.<io.vertx.core.net.impl.ConnectionBase: void reportBytesRead(java.lang.Object)>(v1);
+label1:
+virtualinvoke v0.<io.vertx.core.net.impl.ConnectionBase: void handleMessage(java.lang.Object)>(v1);
+return;
+}
+private void write(java.lang.Object, java.lang.Boolean, io.netty.channel.ChannelPromise)
+{
+io.vertx.core.net.impl.ConnectionBase v0;
+io.netty.channel.ChannelHandlerContext v10, v9;
+io.netty.channel.ChannelPromise v3;
+java.lang.Boolean v2;
+java.lang.Object v1;
+boolean v4, v5, v6, v7, v8;
+v0 := @this: io.vertx.core.net.impl.ConnectionBase;
+v1 := @parameter0: java.lang.Object;
+v2 := @parameter1: java.lang.Boolean;
+v3 := @parameter2: io.netty.channel.ChannelPromise;
+v4 = <io.vertx.core.spi.metrics.Metrics: boolean METRICS_ENABLED>;
+if v4 == 0 goto label1;
+virtualinvoke v0.<io.vertx.core.net.impl.ConnectionBase: void reportsBytesWritten(java.lang.Object)>(v1);
+label1:
+if v2 != null goto label4;
+v5 = v0.<io.vertx.core.net.impl.ConnectionBase: boolean read>;
+if v5 != 0 goto label2;
+v6 = 1;
+goto label3;
+label2:
+v6 = 0;
+label3:
+v7 = v6;
+goto label5;
+label4:
+v7 = virtualinvoke v2.<java.lang.Boolean: boolean booleanValue()>();
+label5:
+if v7 != 0 goto label6;
+v8 = 1;
+goto label7;
+label6:
+v8 = 0;
+label7:
+v0.<io.vertx.core.net.impl.ConnectionBase: boolean needsFlush> = v8;
+if v7 == 0 goto label8;
+v9 = v0.<io.vertx.core.net.impl.ConnectionBase: io.netty.channel.ChannelHandlerContext chctx>;
+interfaceinvoke v9.<io.netty.channel.ChannelHandlerContext: io.netty.channel.ChannelFuture writeAndFlush(java.lang.Object,io.netty.channel.ChannelPromise)>(v1, v3);
+goto label9;
+label8:
+v10 = v0.<io.vertx.core.net.impl.ConnectionBase: io.netty.channel.ChannelHandlerContext chctx>;
+interfaceinvoke v10.<io.netty.channel.ChannelHandlerContext: io.netty.channel.ChannelFuture write(java.lang.Object,io.netty.channel.ChannelPromise)>(v1, v3);
+label9:
+return;
+}
+private void writeClose(io.vertx.core.impl.future.PromiseInternal)
+{
+io.vertx.core.impl.future.PromiseInternal v1;
+io.vertx.core.net.impl.ConnectionBase v0;
+io.netty.channel.ChannelHandlerContext v3;
+io.netty.buffer.ByteBuf v7;
+io.netty.channel.ChannelPromise v4, v6;
+io.netty.channel.ChannelFutureListener v5;
+boolean v2;
+v0 := @this: io.vertx.core.net.impl.ConnectionBase;
+v1 := @parameter0: io.vertx.core.impl.future.PromiseInternal;
+v2 = v0.<io.vertx.core.net.impl.ConnectionBase: boolean closed>;
+if v2 == 0 goto label1;
+interfaceinvoke v1.<io.vertx.core.impl.future.PromiseInternal: void complete()>();
+return;
+label1:
+v0.<io.vertx.core.net.impl.ConnectionBase: boolean closed> = 1;
+v3 = v0.<io.vertx.core.net.impl.ConnectionBase: io.netty.channel.ChannelHandlerContext chctx>;
+v4 = interfaceinvoke v3.<io.netty.channel.ChannelHandlerContext: io.netty.channel.ChannelPromise newPromise()>();
+v5 = staticinvoke <io.vertx.core.net.impl.ConnectionBase$lambda_writeClose_1__1369: io.netty.channel.ChannelFutureListener bootstrap$(io.vertx.core.net.impl.ConnectionBase,io.vertx.core.impl.future.PromiseInternal)>(v0, v1);
+v6 = interfaceinvoke v4.<io.netty.channel.ChannelPromise: io.netty.channel.ChannelPromise addListener(io.netty.util.concurrent.GenericFutureListener)>(v5);
+v7 = <io.netty.buffer.Unpooled: io.netty.buffer.ByteBuf EMPTY_BUFFER>;
+virtualinvoke v0.<io.vertx.core.net.impl.ConnectionBase: void writeToChannel(java.lang.Object,boolean,io.netty.channel.ChannelPromise)>(v7, 1, v6);
+return;
+}
+private io.netty.channel.ChannelPromise wrap(io.netty.util.concurrent.FutureListener)
+{
+io.netty.channel.ChannelHandlerContext v2;
+io.netty.channel.ChannelPromise v3;
+io.netty.util.concurrent.FutureListener v1;
+io.vertx.core.net.impl.ConnectionBase v0;
+v0 := @this: io.vertx.core.net.impl.ConnectionBase;
+v1 := @parameter0: io.netty.util.concurrent.FutureListener;
+v2 = v0.<io.vertx.core.net.impl.ConnectionBase: io.netty.channel.ChannelHandlerContext chctx>;
+v3 = interfaceinvoke v2.<io.netty.channel.ChannelHandlerContext: io.netty.channel.ChannelPromise newPromise()>();
+interfaceinvoke v3.<io.netty.channel.ChannelPromise: io.netty.channel.ChannelPromise addListener(io.netty.util.concurrent.GenericFutureListener)>(v1);
+return v3;
+}
+public final void writeToChannel(java.lang.Object, io.netty.util.concurrent.FutureListener)
+{
+io.netty.channel.ChannelPromise v3;
+io.netty.util.concurrent.FutureListener v2;
+java.lang.Object v1;
+io.vertx.core.net.impl.ConnectionBase v0;
+v0 := @this: io.vertx.core.net.impl.ConnectionBase;
+v1 := @parameter0: java.lang.Object;
+v2 := @parameter1: io.netty.util.concurrent.FutureListener;
+if v2 != null goto label1;
+v3 = v0.<io.vertx.core.net.impl.ConnectionBase: io.netty.channel.VoidChannelPromise voidPromise>;
+goto label2;
+label1:
+v3 = specialinvoke v0.<io.vertx.core.net.impl.ConnectionBase: io.netty.channel.ChannelPromise wrap(io.netty.util.concurrent.FutureListener)>(v2);
+label2:
+virtualinvoke v0.<io.vertx.core.net.impl.ConnectionBase: void writeToChannel(java.lang.Object,io.netty.channel.ChannelPromise)>(v1, v3);
+return;
+}
+public final void writeToChannel(java.lang.Object, io.netty.channel.ChannelPromise)
+{
+java.lang.Object v1;
+io.netty.channel.ChannelPromise v2;
+io.vertx.core.net.impl.ConnectionBase v0;
+v0 := @this: io.vertx.core.net.impl.ConnectionBase;
+v1 := @parameter0: java.lang.Object;
+v2 := @parameter1: io.netty.channel.ChannelPromise;
+virtualinvoke v0.<io.vertx.core.net.impl.ConnectionBase: void writeToChannel(java.lang.Object,boolean,io.netty.channel.ChannelPromise)>(v1, 0, v2);
+return;
+}
+public final void writeToChannel(java.lang.Object, boolean, io.netty.channel.ChannelPromise)
+{
+io.netty.util.concurrent.EventExecutor v5;
+java.lang.Throwable v8;
+io.vertx.core.net.impl.ConnectionBase v0;
+io.netty.channel.ChannelHandlerContext v4;
+io.netty.channel.ChannelPromise v3;
+int v7;
+java.lang.Boolean v9;
+java.lang.Object v1;
+boolean v2, v6;
+v0 := @this: io.vertx.core.net.impl.ConnectionBase;
+v1 := @parameter0: java.lang.Object;
+v2 := @parameter1: boolean;
+v3 := @parameter2: io.netty.channel.ChannelPromise;
+entermonitor v0;
+label1:
+v4 = v0.<io.vertx.core.net.impl.ConnectionBase: io.netty.channel.ChannelHandlerContext chctx>;
+v5 = interfaceinvoke v4.<io.netty.channel.ChannelHandlerContext: io.netty.util.concurrent.EventExecutor executor()>();
+v6 = interfaceinvoke v5.<io.netty.util.concurrent.EventExecutor: boolean inEventLoop()>();
+if v6 == 0 goto label2;
+v7 = v0.<io.vertx.core.net.impl.ConnectionBase: int writeInProgress>;
+if v7 <= 0 goto label4;
+label2:
+specialinvoke v0.<io.vertx.core.net.impl.ConnectionBase: void queueForWrite(java.lang.Object,boolean,io.netty.channel.ChannelPromise)>(v1, v2, v3);
+exitmonitor v0;
+label3:
+return;
+label4:
+exitmonitor v0;
+label5:
+goto label7;
+label6:
+v8 := @caughtexception;
+exitmonitor v0;
+throw v8;
+label7:
+if v2 == 0 goto label8;
+v9 = staticinvoke <java.lang.Boolean: java.lang.Boolean valueOf(boolean)>(1);
+goto label9;
+label8:
+v9 = null;
+label9:
+specialinvoke v0.<io.vertx.core.net.impl.ConnectionBase: void write(java.lang.Object,java.lang.Boolean,io.netty.channel.ChannelPromise)>(v1, v9, v3);
+return;
+catch java.lang.Throwable from label1 to label3 with label6;
+catch java.lang.Throwable from label4 to label5 with label6;
+}
+private void queueForWrite(java.lang.Object, boolean, io.netty.channel.ChannelPromise)
+{
+io.netty.util.concurrent.EventExecutor v7;
+io.vertx.core.net.impl.ConnectionBase v0;
+java.lang.Runnable v8;
+io.netty.channel.ChannelHandlerContext v6;
+io.netty.channel.ChannelPromise v3;
+int v4, v5;
+java.lang.Object v1;
+boolean v2;
+v0 := @this: io.vertx.core.net.impl.ConnectionBase;
+v1 := @parameter0: java.lang.Object;
+v2 := @parameter1: boolean;
+v3 := @parameter2: io.netty.channel.ChannelPromise;
+v4 = v0.<io.vertx.core.net.impl.ConnectionBase: int writeInProgress>;
+v5 = v4 + 1;
+v0.<io.vertx.core.net.impl.ConnectionBase: int writeInProgress> = v5;
+v6 = v0.<io.vertx.core.net.impl.ConnectionBase: io.netty.channel.ChannelHandlerContext chctx>;
+v7 = interfaceinvoke v6.<io.netty.channel.ChannelHandlerContext: io.netty.util.concurrent.EventExecutor executor()>();
+v8 = staticinvoke <io.vertx.core.net.impl.ConnectionBase$lambda_queueForWrite_2__1370: java.lang.Runnable bootstrap$(io.vertx.core.net.impl.ConnectionBase,boolean,java.lang.Object,io.netty.channel.ChannelPromise)>(v0, v2, v1, v3);
+interfaceinvoke v7.<io.netty.util.concurrent.EventExecutor: void execute(java.lang.Runnable)>(v8);
+return;
+}
+public void writeToChannel(java.lang.Object)
+{
+io.netty.channel.VoidChannelPromise v2;
+java.lang.Object v1;
+io.vertx.core.net.impl.ConnectionBase v0;
+v0 := @this: io.vertx.core.net.impl.ConnectionBase;
+v1 := @parameter0: java.lang.Object;
+v2 = v0.<io.vertx.core.net.impl.ConnectionBase: io.netty.channel.VoidChannelPromise voidPromise>;
+virtualinvoke v0.<io.vertx.core.net.impl.ConnectionBase: void writeToChannel(java.lang.Object,io.netty.channel.ChannelPromise)>(v1, v2);
+return;
+}
+public final void flush()
+{
+io.netty.channel.VoidChannelPromise v1;
+io.vertx.core.net.impl.ConnectionBase v0;
+v0 := @this: io.vertx.core.net.impl.ConnectionBase;
+v1 = v0.<io.vertx.core.net.impl.ConnectionBase: io.netty.channel.VoidChannelPromise voidPromise>;
+virtualinvoke v0.<io.vertx.core.net.impl.ConnectionBase: void flush(io.netty.channel.ChannelPromise)>(v1);
+return;
+}
+public final void flush(io.netty.channel.ChannelPromise)
+{
+io.netty.buffer.ByteBuf v2;
+io.netty.channel.ChannelPromise v1;
+io.vertx.core.net.impl.ConnectionBase v0;
+v0 := @this: io.vertx.core.net.impl.ConnectionBase;
+v1 := @parameter0: io.netty.channel.ChannelPromise;
+v2 = <io.netty.buffer.Unpooled: io.netty.buffer.ByteBuf EMPTY_BUFFER>;
+virtualinvoke v0.<io.vertx.core.net.impl.ConnectionBase: void writeToChannel(java.lang.Object,boolean,io.netty.channel.ChannelPromise)>(v2, 1, v1);
+return;
+}
+public boolean isNotWritable()
+{
+io.netty.channel.Channel v2;
+io.netty.channel.ChannelHandlerContext v1;
+io.vertx.core.net.impl.ConnectionBase v0;
+boolean v3, v4;
+v0 := @this: io.vertx.core.net.impl.ConnectionBase;
+v1 = v0.<io.vertx.core.net.impl.ConnectionBase: io.netty.channel.ChannelHandlerContext chctx>;
+v2 = interfaceinvoke v1.<io.netty.channel.ChannelHandlerContext: io.netty.channel.Channel channel()>();
+v3 = interfaceinvoke v2.<io.netty.channel.Channel: boolean isWritable()>();
+if v3 != 0 goto label1;
+v4 = 1;
+goto label2;
+label1:
+v4 = 0;
+label2:
+return v4;
+}
+public io.vertx.core.Future close()
+{
+io.netty.util.concurrent.EventExecutor v4;
+io.vertx.core.impl.future.PromiseInternal v2;
+io.vertx.core.impl.ContextInternal v1;
+io.vertx.core.net.impl.ConnectionBase v0;
+io.vertx.core.Future v7;
+java.lang.Runnable v6;
+io.netty.channel.ChannelHandlerContext v3;
+boolean v5;
+v0 := @this: io.vertx.core.net.impl.ConnectionBase;
+v1 = v0.<io.vertx.core.net.impl.ConnectionBase: io.vertx.core.impl.ContextInternal context>;
+v2 = interfaceinvoke v1.<io.vertx.core.impl.ContextInternal: io.vertx.core.impl.future.PromiseInternal promise()>();
+v3 = v0.<io.vertx.core.net.impl.ConnectionBase: io.netty.channel.ChannelHandlerContext chctx>;
+v4 = interfaceinvoke v3.<io.netty.channel.ChannelHandlerContext: io.netty.util.concurrent.EventExecutor executor()>();
+v5 = interfaceinvoke v4.<io.netty.util.concurrent.EventExecutor: boolean inEventLoop()>();
+if v5 == 0 goto label1;
+specialinvoke v0.<io.vertx.core.net.impl.ConnectionBase: void writeClose(io.vertx.core.impl.future.PromiseInternal)>(v2);
+goto label2;
+label1:
+v6 = staticinvoke <io.vertx.core.net.impl.ConnectionBase$lambda_close_3__1371: java.lang.Runnable bootstrap$(io.vertx.core.net.impl.ConnectionBase,io.vertx.core.impl.future.PromiseInternal)>(v0, v2);
+interfaceinvoke v4.<io.netty.util.concurrent.EventExecutor: void execute(java.lang.Runnable)>(v6);
+label2:
+v7 = interfaceinvoke v2.<io.vertx.core.impl.future.PromiseInternal: io.vertx.core.Future future()>();
+return v7;
+}
+public final void close(io.vertx.core.Handler)
+{
+io.vertx.core.Handler v1;
+io.vertx.core.net.impl.ConnectionBase v0;
+io.vertx.core.Future v2;
+v0 := @this: io.vertx.core.net.impl.ConnectionBase;
+v1 := @parameter0: io.vertx.core.Handler;
+v2 = virtualinvoke v0.<io.vertx.core.net.impl.ConnectionBase: io.vertx.core.Future close()>();
+interfaceinvoke v2.<io.vertx.core.Future: io.vertx.core.Future onComplete(io.vertx.core.Handler)>(v1);
+return;
+}
+public synchronized io.vertx.core.net.impl.ConnectionBase closeHandler(io.vertx.core.Handler)
+{
+io.vertx.core.Handler v1;
+io.vertx.core.net.impl.ConnectionBase v0;
+v0 := @this: io.vertx.core.net.impl.ConnectionBase;
+v1 := @parameter0: io.vertx.core.Handler;
+v0.<io.vertx.core.net.impl.ConnectionBase: io.vertx.core.Handler closeHandler> = v1;
+return v0;
+}
+public synchronized io.vertx.core.net.impl.ConnectionBase exceptionHandler(io.vertx.core.Handler)
+{
+io.vertx.core.Handler v1;
+io.vertx.core.net.impl.ConnectionBase v0;
+v0 := @this: io.vertx.core.net.impl.ConnectionBase;
+v1 := @parameter0: io.vertx.core.Handler;
+v0.<io.vertx.core.net.impl.ConnectionBase: io.vertx.core.Handler exceptionHandler> = v1;
+return v0;
+}
+protected synchronized io.vertx.core.Handler exceptionHandler()
+{
+io.vertx.core.Handler v1;
+io.vertx.core.net.impl.ConnectionBase v0;
+v0 := @this: io.vertx.core.net.impl.ConnectionBase;
+v1 = v0.<io.vertx.core.net.impl.ConnectionBase: io.vertx.core.Handler exceptionHandler>;
+return v1;
+}
+public void doPause()
+{
+io.netty.channel.Channel v2;
+io.netty.channel.ChannelHandlerContext v1;
+io.netty.channel.ChannelConfig v3;
+io.vertx.core.net.impl.ConnectionBase v0;
+v0 := @this: io.vertx.core.net.impl.ConnectionBase;
+v1 = v0.<io.vertx.core.net.impl.ConnectionBase: io.netty.channel.ChannelHandlerContext chctx>;
+v2 = interfaceinvoke v1.<io.netty.channel.ChannelHandlerContext: io.netty.channel.Channel channel()>();
+v3 = interfaceinvoke v2.<io.netty.channel.Channel: io.netty.channel.ChannelConfig config()>();
+interfaceinvoke v3.<io.netty.channel.ChannelConfig: io.netty.channel.ChannelConfig setAutoRead(boolean)>(0);
+return;
+}
+public void doResume()
+{
+io.netty.channel.Channel v2;
+io.netty.channel.ChannelHandlerContext v1;
+io.netty.channel.ChannelConfig v3;
+io.vertx.core.net.impl.ConnectionBase v0;
+v0 := @this: io.vertx.core.net.impl.ConnectionBase;
+v1 = v0.<io.vertx.core.net.impl.ConnectionBase: io.netty.channel.ChannelHandlerContext chctx>;
+v2 = interfaceinvoke v1.<io.netty.channel.ChannelHandlerContext: io.netty.channel.Channel channel()>();
+v3 = interfaceinvoke v2.<io.netty.channel.Channel: io.netty.channel.ChannelConfig config()>();
+interfaceinvoke v3.<io.netty.channel.ChannelConfig: io.netty.channel.ChannelConfig setAutoRead(boolean)>(1);
+return;
+}
+public void doSetWriteQueueMaxSize(int)
+{
+io.netty.channel.Channel v3;
+io.netty.channel.ChannelHandlerContext v2;
+io.netty.channel.WriteBufferWaterMark v5;
+io.netty.channel.ChannelConfig v4;
+int v1, v6;
+io.vertx.core.net.impl.ConnectionBase v0;
+v0 := @this: io.vertx.core.net.impl.ConnectionBase;
+v1 := @parameter0: int;
+v2 = v0.<io.vertx.core.net.impl.ConnectionBase: io.netty.channel.ChannelHandlerContext chctx>;
+v3 = interfaceinvoke v2.<io.netty.channel.ChannelHandlerContext: io.netty.channel.Channel channel()>();
+v4 = interfaceinvoke v3.<io.netty.channel.Channel: io.netty.channel.ChannelConfig config()>();
+v5 = new io.netty.channel.WriteBufferWaterMark;
+v6 = v1 / 2;
+specialinvoke v5.<io.netty.channel.WriteBufferWaterMark: void <init>(int,int)>(v6, v1);
+interfaceinvoke v4.<io.netty.channel.ChannelConfig: io.netty.channel.ChannelConfig setWriteBufferWaterMark(io.netty.channel.WriteBufferWaterMark)>(v5);
+return;
+}
+public final io.netty.channel.Channel channel()
+{
+io.netty.channel.Channel v2;
+io.netty.channel.ChannelHandlerContext v1;
+io.vertx.core.net.impl.ConnectionBase v0;
+v0 := @this: io.vertx.core.net.impl.ConnectionBase;
+v1 = v0.<io.vertx.core.net.impl.ConnectionBase: io.netty.channel.ChannelHandlerContext chctx>;
+v2 = interfaceinvoke v1.<io.netty.channel.ChannelHandlerContext: io.netty.channel.Channel channel()>();
+return v2;
+}
+public final io.netty.channel.ChannelHandlerContext channelHandlerContext()
+{
+io.netty.channel.ChannelHandlerContext v1;
+io.vertx.core.net.impl.ConnectionBase v0;
+v0 := @this: io.vertx.core.net.impl.ConnectionBase;
+v1 = v0.<io.vertx.core.net.impl.ConnectionBase: io.netty.channel.ChannelHandlerContext chctx>;
+return v1;
+}
+public final io.vertx.core.impl.ContextInternal getContext()
+{
+io.vertx.core.impl.ContextInternal v1;
+io.vertx.core.net.impl.ConnectionBase v0;
+v0 := @this: io.vertx.core.net.impl.ConnectionBase;
+v1 = v0.<io.vertx.core.net.impl.ConnectionBase: io.vertx.core.impl.ContextInternal context>;
+return v1;
+}
+public final synchronized void metric(java.lang.Object)
+{
+java.lang.Object v1;
+io.vertx.core.net.impl.ConnectionBase v0;
+v0 := @this: io.vertx.core.net.impl.ConnectionBase;
+v1 := @parameter0: java.lang.Object;
+v0.<io.vertx.core.net.impl.ConnectionBase: java.lang.Object metric> = v1;
+return;
+}
+public final synchronized java.lang.Object metric()
+{
+java.lang.Object v1;
+io.vertx.core.net.impl.ConnectionBase v0;
+v0 := @this: io.vertx.core.net.impl.ConnectionBase;
+v1 = v0.<io.vertx.core.net.impl.ConnectionBase: java.lang.Object metric>;
+return v1;
+}
+public abstract io.vertx.core.spi.metrics.NetworkMetrics metrics();
+protected void handleException(java.lang.Throwable)
+{
+java.lang.Throwable v1;
+io.vertx.core.impl.ContextInternal v5;
+java.lang.Object v3;
+io.vertx.core.spi.metrics.NetworkMetrics v2;
+io.vertx.core.Handler v6;
+io.vertx.core.net.impl.ConnectionBase v0;
+io.vertx.core.net.SocketAddress v4;
+v0 := @this: io.vertx.core.net.impl.ConnectionBase;
+v1 := @parameter0: java.lang.Throwable;
+v2 = virtualinvoke v0.<io.vertx.core.net.impl.ConnectionBase: io.vertx.core.spi.metrics.NetworkMetrics metrics()>();
+if v2 == null goto label1;
+v3 = v0.<io.vertx.core.net.impl.ConnectionBase: java.lang.Object metric>;
+v4 = virtualinvoke v0.<io.vertx.core.net.impl.ConnectionBase: io.vertx.core.net.SocketAddress remoteAddress()>();
+interfaceinvoke v2.<io.vertx.core.spi.metrics.NetworkMetrics: void exceptionOccurred(java.lang.Object,io.vertx.core.net.SocketAddress,java.lang.Throwable)>(v3, v4, v1);
+label1:
+v5 = v0.<io.vertx.core.net.impl.ConnectionBase: io.vertx.core.impl.ContextInternal context>;
+v6 = staticinvoke <io.vertx.core.net.impl.ConnectionBase$lambda_handleException_4__1372: io.vertx.core.Handler bootstrap$(io.vertx.core.net.impl.ConnectionBase,java.lang.Throwable)>(v0, v1);
+interfaceinvoke v5.<io.vertx.core.impl.ContextInternal: void emit(java.lang.Object,io.vertx.core.Handler)>(v1, v6);
+return;
+}
+protected void handleClosed()
+{
+io.netty.channel.ChannelPromise v5;
+java.lang.Object v3;
+io.vertx.core.spi.metrics.NetworkMetrics v1;
+io.vertx.core.net.impl.ConnectionBase v0;
+boolean v2;
+io.vertx.core.net.SocketAddress v4;
+v0 := @this: io.vertx.core.net.impl.ConnectionBase;
+v0.<io.vertx.core.net.impl.ConnectionBase: boolean closed> = 1;
+v1 = virtualinvoke v0.<io.vertx.core.net.impl.ConnectionBase: io.vertx.core.spi.metrics.NetworkMetrics metrics()>();
+if v1 == null goto label1;
+virtualinvoke v0.<io.vertx.core.net.impl.ConnectionBase: void flushBytesRead()>();
+virtualinvoke v0.<io.vertx.core.net.impl.ConnectionBase: void flushBytesWritten()>();
+v2 = v1 instanceof io.vertx.core.spi.metrics.TCPMetrics;
+if v2 == 0 goto label1;
+v3 = virtualinvoke v0.<io.vertx.core.net.impl.ConnectionBase: java.lang.Object metric()>();
+v4 = virtualinvoke v0.<io.vertx.core.net.impl.ConnectionBase: io.vertx.core.net.SocketAddress remoteAddress()>();
+interfaceinvoke v1.<io.vertx.core.spi.metrics.TCPMetrics: void disconnected(java.lang.Object,io.vertx.core.net.SocketAddress)>(v3, v4);
+label1:
+v5 = v0.<io.vertx.core.net.impl.ConnectionBase: io.netty.channel.ChannelPromise closePromise>;
+interfaceinvoke v5.<io.netty.channel.ChannelPromise: io.netty.channel.ChannelPromise setSuccess()>();
+return;
+}
+public void checkCloseHandler(io.vertx.core.AsyncResult)
+{
+java.lang.Throwable v3;
+io.vertx.core.AsyncResult v1;
+io.vertx.core.Handler v2;
+io.vertx.core.net.impl.ConnectionBase v0;
+v0 := @this: io.vertx.core.net.impl.ConnectionBase;
+v1 := @parameter0: io.vertx.core.AsyncResult;
+entermonitor v0;
+label1:
+v2 = v0.<io.vertx.core.net.impl.ConnectionBase: io.vertx.core.Handler closeHandler>;
+exitmonitor v0;
+label2:
+goto label4;
+label3:
+v3 := @caughtexception;
+exitmonitor v0;
+throw v3;
+label4:
+if v2 == null goto label5;
+interfaceinvoke v2.<io.vertx.core.Handler: void handle(java.lang.Object)>(null);
+label5:
+return;
+catch java.lang.Throwable from label1 to label2 with label3;
+}
+protected void handleEvent(java.lang.Object)
+{
+java.lang.Object v1;
+io.vertx.core.net.impl.ConnectionBase v0;
+v0 := @this: io.vertx.core.net.impl.ConnectionBase;
+v1 := @parameter0: java.lang.Object;
+staticinvoke <io.netty.util.ReferenceCountUtil: boolean release(java.lang.Object)>(v1);
+return;
+}
+protected void handleIdle(io.netty.handler.timeout.IdleStateEvent)
+{
+io.vertx.core.impl.logging.Logger v2;
+io.netty.channel.ChannelHandlerContext v3;
+io.netty.handler.timeout.IdleStateEvent v1;
+io.vertx.core.net.impl.ConnectionBase v0;
+v0 := @this: io.vertx.core.net.impl.ConnectionBase;
+v1 := @parameter0: io.netty.handler.timeout.IdleStateEvent;
+v2 = <io.vertx.core.net.impl.ConnectionBase: io.vertx.core.impl.logging.Logger log>;
+interfaceinvoke v2.<io.vertx.core.impl.logging.Logger: void debug(java.lang.Object)>("The connection will be closed due to timeout");
+v3 = v0.<io.vertx.core.net.impl.ConnectionBase: io.netty.channel.ChannelHandlerContext chctx>;
+interfaceinvoke v3.<io.netty.channel.ChannelHandlerContext: io.netty.channel.ChannelFuture close()>();
+return;
+}
+protected abstract void handleInterestedOpsChanged();
+protected boolean supportsFileRegion()
+{
+io.vertx.core.impl.VertxInternal v1;
+io.vertx.core.net.impl.ConnectionBase v0;
+io.vertx.core.spi.transport.Transport v2;
+boolean v3, v4, v5;
+v0 := @this: io.vertx.core.net.impl.ConnectionBase;
+v1 = v0.<io.vertx.core.net.impl.ConnectionBase: io.vertx.core.impl.VertxInternal vertx>;
+v2 = interfaceinvoke v1.<io.vertx.core.impl.VertxInternal: io.vertx.core.spi.transport.Transport transport()>();
+v3 = interfaceinvoke v2.<io.vertx.core.spi.transport.Transport: boolean supportFileRegion()>();
+if v3 == 0 goto label1;
+v4 = virtualinvoke v0.<io.vertx.core.net.impl.ConnectionBase: boolean isSsl()>();
+if v4 != 0 goto label1;
+v5 = 1;
+goto label2;
+label1:
+v5 = 0;
+label2:
+return v5;
+}
+public final void reportBytesRead(java.lang.Object)
+{
+java.lang.Object v1;
+io.vertx.core.spi.metrics.NetworkMetrics v2;
+io.vertx.core.net.impl.ConnectionBase v0;
+v0 := @this: io.vertx.core.net.impl.ConnectionBase;
+v1 := @parameter0: java.lang.Object;
+v2 = virtualinvoke v0.<io.vertx.core.net.impl.ConnectionBase: io.vertx.core.spi.metrics.NetworkMetrics metrics()>();
+if v2 == null goto label1;
+specialinvoke v0.<io.vertx.core.net.impl.ConnectionBase: void doReportBytesRead(java.lang.Object,io.vertx.core.spi.metrics.NetworkMetrics)>(v1, v2);
+label1:
+return;
+}
+private void doReportBytesRead(java.lang.Object, io.vertx.core.spi.metrics.NetworkMetrics)
+{
+long v3, v4, v5, v6;
+io.vertx.core.spi.metrics.NetworkMetrics v2;
+io.vertx.core.net.impl.ConnectionBase v0;
+byte v7;
+java.lang.Object v1, v8;
+io.vertx.core.net.SocketAddress v9;
+v0 := @this: io.vertx.core.net.impl.ConnectionBase;
+v1 := @parameter0: java.lang.Object;
+v2 := @parameter1: io.vertx.core.spi.metrics.NetworkMetrics;
+v3 = v0.<io.vertx.core.net.impl.ConnectionBase: long remainingBytesRead>;
+v4 = virtualinvoke v0.<io.vertx.core.net.impl.ConnectionBase: long sizeof(java.lang.Object)>(v1);
+v5 = v3 + v4;
+v6 = v5 & -4096L;
+v7 = v6 cmp 0L;
+if v7 <= 0 goto label1;
+v5 = v5 & 4095L;
+v8 = virtualinvoke v0.<io.vertx.core.net.impl.ConnectionBase: java.lang.Object metric()>();
+v9 = virtualinvoke v0.<io.vertx.core.net.impl.ConnectionBase: io.vertx.core.net.SocketAddress remoteAddress()>();
+interfaceinvoke v2.<io.vertx.core.spi.metrics.NetworkMetrics: void bytesRead(java.lang.Object,io.vertx.core.net.SocketAddress,long)>(v8, v9, v6);
+label1:
+v0.<io.vertx.core.net.impl.ConnectionBase: long remainingBytesRead> = v5;
+return;
+}
+protected long sizeof(java.lang.Object)
+{
+int v3;
+java.lang.Object v1;
+io.vertx.core.net.impl.ConnectionBase v0;
+boolean v2;
+v0 := @this: io.vertx.core.net.impl.ConnectionBase;
+v1 := @parameter0: java.lang.Object;
+v2 = v1 instanceof io.netty.buffer.ByteBuf;
+if v2 == 0 goto label1;
+v3 = virtualinvoke v1.<io.netty.buffer.ByteBuf: int readableBytes()>();
+return v3;
+label1:
+return 0L;
+}
+public final void reportBytesRead(long)
+{
+long v1, v5, v6, v7;
+io.vertx.core.spi.metrics.NetworkMetrics v4;
+io.vertx.core.net.impl.ConnectionBase v0;
+java.lang.IllegalArgumentException v3;
+byte v2, v8;
+java.lang.Object v9;
+io.vertx.core.net.SocketAddress v10;
+v0 := @this: io.vertx.core.net.impl.ConnectionBase;
+v1 := @parameter0: long;
+v2 = v1 cmp 0L;
+if v2 >= 0 goto label1;
+v3 = new java.lang.IllegalArgumentException;
+specialinvoke v3.<java.lang.IllegalArgumentException: void <init>()>();
+throw v3;
+label1:
+v4 = virtualinvoke v0.<io.vertx.core.net.impl.ConnectionBase: io.vertx.core.spi.metrics.NetworkMetrics metrics()>();
+if v4 == null goto label3;
+v5 = v0.<io.vertx.core.net.impl.ConnectionBase: long remainingBytesRead>;
+v6 = v5 + v1;
+v7 = v6 & -4096L;
+v8 = v7 cmp 0L;
+if v8 <= 0 goto label2;
+v6 = v6 & 4095L;
+v9 = virtualinvoke v0.<io.vertx.core.net.impl.ConnectionBase: java.lang.Object metric()>();
+v10 = virtualinvoke v0.<io.vertx.core.net.impl.ConnectionBase: io.vertx.core.net.SocketAddress remoteAddress()>();
+interfaceinvoke v4.<io.vertx.core.spi.metrics.NetworkMetrics: void bytesRead(java.lang.Object,io.vertx.core.net.SocketAddress,long)>(v9, v10, v7);
+label2:
+v0.<io.vertx.core.net.impl.ConnectionBase: long remainingBytesRead> = v6;
+label3:
+return;
+}
+public final void reportsBytesWritten(java.lang.Object)
+{
+long v3, v4, v5, v6;
+io.vertx.core.spi.metrics.NetworkMetrics v2;
+io.vertx.core.net.impl.ConnectionBase v0;
+byte v7;
+java.lang.Object v1, v8;
+io.vertx.core.net.SocketAddress v9;
+v0 := @this: io.vertx.core.net.impl.ConnectionBase;
+v1 := @parameter0: java.lang.Object;
+v2 = virtualinvoke v0.<io.vertx.core.net.impl.ConnectionBase: io.vertx.core.spi.metrics.NetworkMetrics metrics()>();
+if v2 == null goto label2;
+v3 = virtualinvoke v0.<io.vertx.core.net.impl.ConnectionBase: long sizeof(java.lang.Object)>(v1);
+v4 = v0.<io.vertx.core.net.impl.ConnectionBase: long remainingBytesWritten>;
+v5 = v4 + v3;
+v6 = v5 & -4096L;
+v7 = v6 cmp 0L;
+if v7 <= 0 goto label1;
+v5 = v5 & 4095L;
+v8 = v0.<io.vertx.core.net.impl.ConnectionBase: java.lang.Object metric>;
+v9 = virtualinvoke v0.<io.vertx.core.net.impl.ConnectionBase: io.vertx.core.net.SocketAddress remoteAddress()>();
+interfaceinvoke v2.<io.vertx.core.spi.metrics.NetworkMetrics: void bytesWritten(java.lang.Object,io.vertx.core.net.SocketAddress,long)>(v8, v9, v6);
+label1:
+v0.<io.vertx.core.net.impl.ConnectionBase: long remainingBytesWritten> = v5;
+label2:
+return;
+}
+public final void reportBytesWritten(long)
+{
+long v1, v5, v6, v7;
+io.vertx.core.spi.metrics.NetworkMetrics v4;
+io.vertx.core.net.impl.ConnectionBase v0;
+java.lang.IllegalArgumentException v3;
+byte v2, v8;
+java.lang.Object v9;
+io.vertx.core.net.SocketAddress v10;
+v0 := @this: io.vertx.core.net.impl.ConnectionBase;
+v1 := @parameter0: long;
+v2 = v1 cmp 0L;
+if v2 >= 0 goto label1;
+v3 = new java.lang.IllegalArgumentException;
+specialinvoke v3.<java.lang.IllegalArgumentException: void <init>()>();
+throw v3;
+label1:
+v4 = virtualinvoke v0.<io.vertx.core.net.impl.ConnectionBase: io.vertx.core.spi.metrics.NetworkMetrics metrics()>();
+if v4 == null goto label3;
+v5 = v0.<io.vertx.core.net.impl.ConnectionBase: long remainingBytesWritten>;
+v6 = v5 + v1;
+v7 = v6 & -4096L;
+v8 = v7 cmp 0L;
+if v8 <= 0 goto label2;
+v6 = v6 & 4095L;
+v9 = v0.<io.vertx.core.net.impl.ConnectionBase: java.lang.Object metric>;
+v10 = virtualinvoke v0.<io.vertx.core.net.impl.ConnectionBase: io.vertx.core.net.SocketAddress remoteAddress()>();
+interfaceinvoke v4.<io.vertx.core.spi.metrics.NetworkMetrics: void bytesWritten(java.lang.Object,io.vertx.core.net.SocketAddress,long)>(v9, v10, v7);
+label2:
+v0.<io.vertx.core.net.impl.ConnectionBase: long remainingBytesWritten> = v6;
+label3:
+return;
+}
+public void flushBytesRead()
+{
+byte v3;
+java.lang.Object v4;
+long v2;
+io.vertx.core.spi.metrics.NetworkMetrics v1;
+io.vertx.core.net.impl.ConnectionBase v0;
+io.vertx.core.net.SocketAddress v5;
+v0 := @this: io.vertx.core.net.impl.ConnectionBase;
+v1 = virtualinvoke v0.<io.vertx.core.net.impl.ConnectionBase: io.vertx.core.spi.metrics.NetworkMetrics metrics()>();
+if v1 == null goto label1;
+v2 = v0.<io.vertx.core.net.impl.ConnectionBase: long remainingBytesRead>;
+v3 = v2 cmp 0L;
+if v3 <= 0 goto label1;
+v0.<io.vertx.core.net.impl.ConnectionBase: long remainingBytesRead> = 0L;
+v4 = virtualinvoke v0.<io.vertx.core.net.impl.ConnectionBase: java.lang.Object metric()>();
+v5 = virtualinvoke v0.<io.vertx.core.net.impl.ConnectionBase: io.vertx.core.net.SocketAddress remoteAddress()>();
+interfaceinvoke v1.<io.vertx.core.spi.metrics.NetworkMetrics: void bytesRead(java.lang.Object,io.vertx.core.net.SocketAddress,long)>(v4, v5, v2);
+label1:
+return;
+}
+public void flushBytesWritten()
+{
+byte v3;
+java.lang.Object v4;
+long v2;
+io.vertx.core.spi.metrics.NetworkMetrics v1;
+io.vertx.core.net.impl.ConnectionBase v0;
+io.vertx.core.net.SocketAddress v5;
+v0 := @this: io.vertx.core.net.impl.ConnectionBase;
+v1 = virtualinvoke v0.<io.vertx.core.net.impl.ConnectionBase: io.vertx.core.spi.metrics.NetworkMetrics metrics()>();
+if v1 == null goto label1;
+v2 = v0.<io.vertx.core.net.impl.ConnectionBase: long remainingBytesWritten>;
+v3 = v2 cmp 0L;
+if v3 <= 0 goto label1;
+v0.<io.vertx.core.net.impl.ConnectionBase: long remainingBytesWritten> = 0L;
+v4 = virtualinvoke v0.<io.vertx.core.net.impl.ConnectionBase: java.lang.Object metric()>();
+v5 = virtualinvoke v0.<io.vertx.core.net.impl.ConnectionBase: io.vertx.core.net.SocketAddress remoteAddress()>();
+interfaceinvoke v1.<io.vertx.core.spi.metrics.NetworkMetrics: void bytesWritten(java.lang.Object,io.vertx.core.net.SocketAddress,long)>(v4, v5, v2);
+label1:
+return;
+}
+private void sendFileRegion(java.io.RandomAccessFile, long, long, io.netty.channel.ChannelPromise)
+{
+java.io.RandomAccessFile v1;
+io.netty.util.concurrent.GenericFutureListener v12;
+long v2, v3;
+io.vertx.core.net.impl.ConnectionBase v0;
+io.netty.channel.ChannelHandlerContext v8;
+byte v5;
+io.netty.channel.ChannelPromise v4, v9;
+io.netty.channel.DefaultFileRegion v10, v6;
+java.nio.channels.FileChannel v11, v7;
+v0 := @this: io.vertx.core.net.impl.ConnectionBase;
+v1 := @parameter0: java.io.RandomAccessFile;
+v2 := @parameter1: long;
+v3 := @parameter2: long;
+v4 := @parameter3: io.netty.channel.ChannelPromise;
+v5 = v3 cmp 1048576L;
+if v5 >= 0 goto label1;
+v6 = new io.netty.channel.DefaultFileRegion;
+v7 = virtualinvoke v1.<java.io.RandomAccessFile: java.nio.channels.FileChannel getChannel()>();
+specialinvoke v6.<io.netty.channel.DefaultFileRegion: void <init>(java.nio.channels.FileChannel,long,long)>(v7, v2, v3);
+virtualinvoke v0.<io.vertx.core.net.impl.ConnectionBase: void writeToChannel(java.lang.Object,io.netty.channel.ChannelPromise)>(v6, v4);
+goto label2;
+label1:
+v8 = v0.<io.vertx.core.net.impl.ConnectionBase: io.netty.channel.ChannelHandlerContext chctx>;
+v9 = interfaceinvoke v8.<io.netty.channel.ChannelHandlerContext: io.netty.channel.ChannelPromise newPromise()>();
+v10 = new io.netty.channel.DefaultFileRegion;
+v11 = virtualinvoke v1.<java.io.RandomAccessFile: java.nio.channels.FileChannel getChannel()>();
+specialinvoke v10.<io.netty.channel.DefaultFileRegion: void <init>(java.nio.channels.FileChannel,long,long)>(v11, v2, 1048576L);
+interfaceinvoke v10.<io.netty.channel.FileRegion: io.netty.channel.FileRegion retain()>();
+virtualinvoke v0.<io.vertx.core.net.impl.ConnectionBase: void writeToChannel(java.lang.Object,io.netty.channel.ChannelPromise)>(v10, v9);
+v12 = staticinvoke <io.vertx.core.net.impl.ConnectionBase$lambda_sendFileRegion_5__1373: io.netty.util.concurrent.GenericFutureListener bootstrap$(io.vertx.core.net.impl.ConnectionBase,java.io.RandomAccessFile,long,long,io.netty.channel.ChannelPromise)>(v0, v1, v2, v3, v4);
+interfaceinvoke v9.<io.netty.channel.ChannelPromise: io.netty.channel.ChannelPromise addListener(io.netty.util.concurrent.GenericFutureListener)>(v12);
+label2:
+return;
+}
+public final io.netty.channel.ChannelFuture sendFile(java.io.RandomAccessFile, long, long) throws java.io.IOException
+{
+java.io.RandomAccessFile v1;
+io.netty.util.concurrent.GenericFutureListener v9;
+long v2, v3;
+io.vertx.core.net.impl.ConnectionBase v0;
+io.netty.handler.stream.ChunkedNioFile v7;
+io.netty.channel.ChannelHandlerContext v4;
+io.netty.channel.ChannelPromise v5;
+java.nio.channels.FileChannel v8;
+boolean v6;
+v0 := @this: io.vertx.core.net.impl.ConnectionBase;
+v1 := @parameter0: java.io.RandomAccessFile;
+v2 := @parameter1: long;
+v3 := @parameter2: long;
+v4 = v0.<io.vertx.core.net.impl.ConnectionBase: io.netty.channel.ChannelHandlerContext chctx>;
+v5 = interfaceinvoke v4.<io.netty.channel.ChannelHandlerContext: io.netty.channel.ChannelPromise newPromise()>();
+v6 = virtualinvoke v0.<io.vertx.core.net.impl.ConnectionBase: boolean supportsFileRegion()>();
+if v6 != 0 goto label1;
+v7 = new io.netty.handler.stream.ChunkedNioFile;
+v8 = virtualinvoke v1.<java.io.RandomAccessFile: java.nio.channels.FileChannel getChannel()>();
+specialinvoke v7.<io.netty.handler.stream.ChunkedNioFile: void <init>(java.nio.channels.FileChannel,long,long,int)>(v8, v2, v3, 8192);
+virtualinvoke v0.<io.vertx.core.net.impl.ConnectionBase: void writeToChannel(java.lang.Object,io.netty.channel.ChannelPromise)>(v7, v5);
+goto label2;
+label1:
+specialinvoke v0.<io.vertx.core.net.impl.ConnectionBase: void sendFileRegion(java.io.RandomAccessFile,long,long,io.netty.channel.ChannelPromise)>(v1, v2, v3, v5);
+label2:
+if v5 == null goto label3;
+v9 = staticinvoke <io.vertx.core.net.impl.ConnectionBase$lambda_sendFile_6__1374: io.netty.util.concurrent.GenericFutureListener bootstrap$(java.io.RandomAccessFile)>(v1);
+interfaceinvoke v5.<io.netty.channel.ChannelPromise: io.netty.channel.ChannelPromise addListener(io.netty.util.concurrent.GenericFutureListener)>(v9);
+goto label4;
+label3:
+virtualinvoke v1.<java.io.RandomAccessFile: void close()>();
+label4:
+return v5;
+}
+public boolean isSsl()
+{
+io.netty.channel.ChannelHandlerContext v1;
+io.netty.channel.ChannelHandler v3;
+io.netty.channel.ChannelPipeline v2;
+io.vertx.core.net.impl.ConnectionBase v0;
+boolean v4;
+v0 := @this: io.vertx.core.net.impl.ConnectionBase;
+v1 = v0.<io.vertx.core.net.impl.ConnectionBase: io.netty.channel.ChannelHandlerContext chctx>;
+v2 = interfaceinvoke v1.<io.netty.channel.ChannelHandlerContext: io.netty.channel.ChannelPipeline pipeline()>();
+v3 = interfaceinvoke v2.<io.netty.channel.ChannelPipeline: io.netty.channel.ChannelHandler get(java.lang.Class)>(class "Lio/netty/handler/ssl/SslHandler;");
+if v3 == null goto label1;
+v4 = 1;
+goto label2;
+label1:
+v4 = 0;
+label2:
+return v4;
+}
+public javax.net.ssl.SSLSession sslSession()
+{
+io.netty.channel.ChannelHandlerContext v1, v3;
+javax.net.ssl.SSLSession v6;
+io.netty.channel.ChannelHandler v4;
+io.netty.channel.ChannelPipeline v2;
+io.vertx.core.net.impl.ConnectionBase v0;
+javax.net.ssl.SSLEngine v5;
+v0 := @this: io.vertx.core.net.impl.ConnectionBase;
+v1 = v0.<io.vertx.core.net.impl.ConnectionBase: io.netty.channel.ChannelHandlerContext chctx>;
+v2 = interfaceinvoke v1.<io.netty.channel.ChannelHandlerContext: io.netty.channel.ChannelPipeline pipeline()>();
+v3 = interfaceinvoke v2.<io.netty.channel.ChannelPipeline: io.netty.channel.ChannelHandlerContext context(java.lang.Class)>(class "Lio/netty/handler/ssl/SslHandler;");
+if v3 == null goto label1;
+v4 = interfaceinvoke v3.<io.netty.channel.ChannelHandlerContext: io.netty.channel.ChannelHandler handler()>();
+v5 = virtualinvoke v4.<io.netty.handler.ssl.SslHandler: javax.net.ssl.SSLEngine engine()>();
+v6 = virtualinvoke v5.<javax.net.ssl.SSLEngine: javax.net.ssl.SSLSession getSession()>();
+return v6;
+label1:
+return null;
+}
+public javax.security.cert.X509Certificate[] peerCertificateChain() throws javax.net.ssl.SSLPeerUnverifiedException
+{
+javax.security.cert.X509Certificate[] v2;
+javax.net.ssl.SSLSession v1;
+io.vertx.core.net.impl.ConnectionBase v0;
+v0 := @this: io.vertx.core.net.impl.ConnectionBase;
+v1 = virtualinvoke v0.<io.vertx.core.net.impl.ConnectionBase: javax.net.ssl.SSLSession sslSession()>();
+if v1 == null goto label1;
+v2 = interfaceinvoke v1.<javax.net.ssl.SSLSession: javax.security.cert.X509Certificate[] getPeerCertificateChain()>();
+return v2;
+label1:
+return null;
+}
+public java.util.List peerCertificates() throws javax.net.ssl.SSLPeerUnverifiedException
+{
+java.util.List v3;
+javax.net.ssl.SSLSession v1;
+java.security.cert.Certificate[] v2;
+io.vertx.core.net.impl.ConnectionBase v0;
+v0 := @this: io.vertx.core.net.impl.ConnectionBase;
+v1 = virtualinvoke v0.<io.vertx.core.net.impl.ConnectionBase: javax.net.ssl.SSLSession sslSession()>();
+if v1 == null goto label1;
+v2 = interfaceinvoke v1.<javax.net.ssl.SSLSession: java.security.cert.Certificate[] getPeerCertificates()>();
+v3 = staticinvoke <java.util.Arrays: java.util.List asList(java.lang.Object[])>(v2);
+return v3;
+label1:
+return null;
+}
+public java.lang.String indicatedServerName()
+{
+io.netty.util.AttributeKey v3, v7;
+io.netty.util.Attribute v8;
+io.vertx.core.net.impl.ConnectionBase v0;
+io.netty.channel.Channel v2, v6;
+io.netty.channel.ChannelHandlerContext v1, v5;
+java.lang.Object v9;
+boolean v4;
+v0 := @this: io.vertx.core.net.impl.ConnectionBase;
+v1 = v0.<io.vertx.core.net.impl.ConnectionBase: io.netty.channel.ChannelHandlerContext chctx>;
+v2 = interfaceinvoke v1.<io.netty.channel.ChannelHandlerContext: io.netty.channel.Channel channel()>();
+v3 = <io.vertx.core.net.impl.SslHandshakeCompletionHandler: io.netty.util.AttributeKey SERVER_NAME_ATTR>;
+v4 = interfaceinvoke v2.<io.netty.channel.Channel: boolean hasAttr(io.netty.util.AttributeKey)>(v3);
+if v4 == 0 goto label1;
+v5 = v0.<io.vertx.core.net.impl.ConnectionBase: io.netty.channel.ChannelHandlerContext chctx>;
+v6 = interfaceinvoke v5.<io.netty.channel.ChannelHandlerContext: io.netty.channel.Channel channel()>();
+v7 = <io.vertx.core.net.impl.SslHandshakeCompletionHandler: io.netty.util.AttributeKey SERVER_NAME_ATTR>;
+v8 = interfaceinvoke v6.<io.netty.channel.Channel: io.netty.util.Attribute attr(io.netty.util.AttributeKey)>(v7);
+v9 = interfaceinvoke v8.<io.netty.util.Attribute: java.lang.Object get()>();
+return v9;
+label1:
+return null;
+}
+public io.netty.channel.ChannelPromise channelFuture()
+{
+io.netty.channel.ChannelHandlerContext v1;
+io.netty.channel.ChannelPromise v2;
+io.vertx.core.net.impl.ConnectionBase v0;
+v0 := @this: io.vertx.core.net.impl.ConnectionBase;
+v1 = v0.<io.vertx.core.net.impl.ConnectionBase: io.netty.channel.ChannelHandlerContext chctx>;
+v2 = interfaceinvoke v1.<io.netty.channel.ChannelHandlerContext: io.netty.channel.ChannelPromise newPromise()>();
+return v2;
+}
+public java.lang.String remoteName()
+{
+io.netty.channel.Channel v2;
+io.netty.channel.ChannelHandlerContext v1;
+java.net.SocketAddress v3;
+java.lang.String v5;
+io.vertx.core.net.impl.ConnectionBase v0;
+boolean v4;
+v0 := @this: io.vertx.core.net.impl.ConnectionBase;
+v1 = v0.<io.vertx.core.net.impl.ConnectionBase: io.netty.channel.ChannelHandlerContext chctx>;
+v2 = interfaceinvoke v1.<io.netty.channel.ChannelHandlerContext: io.netty.channel.Channel channel()>();
+v3 = interfaceinvoke v2.<io.netty.channel.Channel: java.net.SocketAddress remoteAddress()>();
+v4 = v3 instanceof java.net.InetSocketAddress;
+if v4 == 0 goto label1;
+v5 = virtualinvoke v3.<java.net.InetSocketAddress: java.lang.String getHostString()>();
+return v5;
+label1:
+return null;
+}
+private io.vertx.core.net.SocketAddress channelRemoteAddress()
+{
+io.netty.channel.Channel v2;
+io.netty.channel.ChannelHandlerContext v1;
+io.vertx.core.impl.VertxInternal v4;
+java.net.SocketAddress v3;
+io.vertx.core.net.impl.ConnectionBase v0;
+io.vertx.core.spi.transport.Transport v5;
+io.vertx.core.net.SocketAddress v6;
+v0 := @this: io.vertx.core.net.impl.ConnectionBase;
+v1 = v0.<io.vertx.core.net.impl.ConnectionBase: io.netty.channel.ChannelHandlerContext chctx>;
+v2 = interfaceinvoke v1.<io.netty.channel.ChannelHandlerContext: io.netty.channel.Channel channel()>();
+v3 = interfaceinvoke v2.<io.netty.channel.Channel: java.net.SocketAddress remoteAddress()>();
+if v3 == null goto label1;
+v4 = v0.<io.vertx.core.net.impl.ConnectionBase: io.vertx.core.impl.VertxInternal vertx>;
+v5 = interfaceinvoke v4.<io.vertx.core.impl.VertxInternal: io.vertx.core.spi.transport.Transport transport()>();
+v6 = interfaceinvoke v5.<io.vertx.core.spi.transport.Transport: io.vertx.core.net.SocketAddress convert(java.net.SocketAddress)>(v3);
+goto label2;
+label1:
+v6 = null;
+label2:
+return v6;
+}
+private io.vertx.core.net.SocketAddress socketAdressOverride(io.netty.util.AttributeKey)
+{
+io.netty.channel.Channel v3;
+io.netty.util.AttributeKey v1;
+io.netty.channel.ChannelHandlerContext v2;
+io.netty.util.Attribute v5;
+java.lang.Object v6;
+io.vertx.core.net.impl.ConnectionBase v0;
+boolean v4;
+v0 := @this: io.vertx.core.net.impl.ConnectionBase;
+v1 := @parameter0: io.netty.util.AttributeKey;
+v2 = v0.<io.vertx.core.net.impl.ConnectionBase: io.netty.channel.ChannelHandlerContext chctx>;
+v3 = interfaceinvoke v2.<io.netty.channel.ChannelHandlerContext: io.netty.channel.Channel channel()>();
+v4 = interfaceinvoke v3.<io.netty.channel.Channel: boolean hasAttr(io.netty.util.AttributeKey)>(v1);
+if v4 == 0 goto label1;
+v5 = interfaceinvoke v3.<io.netty.channel.Channel: io.netty.util.Attribute attr(io.netty.util.AttributeKey)>(v1);
+v6 = interfaceinvoke v5.<io.netty.util.Attribute: java.lang.Object getAndSet(java.lang.Object)>(null);
+goto label2;
+label1:
+v6 = null;
+label2:
+return v6;
+}
+public io.vertx.core.net.SocketAddress remoteAddress()
+{
+io.netty.util.AttributeKey v2;
+io.vertx.core.net.impl.ConnectionBase v0;
+io.vertx.core.net.SocketAddress v1;
+v0 := @this: io.vertx.core.net.impl.ConnectionBase;
+v1 = v0.<io.vertx.core.net.impl.ConnectionBase: io.vertx.core.net.SocketAddress remoteAddress>;
+if v1 != null goto label2;
+v2 = <io.vertx.core.net.impl.ConnectionBase: io.netty.util.AttributeKey REMOTE_ADDRESS_OVERRIDE>;
+v1 = specialinvoke v0.<io.vertx.core.net.impl.ConnectionBase: io.vertx.core.net.SocketAddress socketAdressOverride(io.netty.util.AttributeKey)>(v2);
+if v1 != null goto label1;
+v1 = specialinvoke v0.<io.vertx.core.net.impl.ConnectionBase: io.vertx.core.net.SocketAddress channelRemoteAddress()>();
+label1:
+if v1 == null goto label2;
+v0.<io.vertx.core.net.impl.ConnectionBase: io.vertx.core.net.SocketAddress remoteAddress> = v1;
+label2:
+return v1;
+}
+public io.vertx.core.net.SocketAddress remoteAddress(boolean)
+{
+io.vertx.core.net.impl.ConnectionBase v0;
+boolean v1;
+io.vertx.core.net.SocketAddress v2, v3;
+v0 := @this: io.vertx.core.net.impl.ConnectionBase;
+v1 := @parameter0: boolean;
+if v1 == 0 goto label3;
+v2 = v0.<io.vertx.core.net.impl.ConnectionBase: io.vertx.core.net.SocketAddress realRemoteAddress>;
+if v2 != null goto label1;
+v2 = specialinvoke v0.<io.vertx.core.net.impl.ConnectionBase: io.vertx.core.net.SocketAddress channelRemoteAddress()>();
+label1:
+if v2 == null goto label2;
+v0.<io.vertx.core.net.impl.ConnectionBase: io.vertx.core.net.SocketAddress realRemoteAddress> = v2;
+label2:
+return v2;
+label3:
+v3 = virtualinvoke v0.<io.vertx.core.net.impl.ConnectionBase: io.vertx.core.net.SocketAddress remoteAddress()>();
+return v3;
+}
+private io.vertx.core.net.SocketAddress channelLocalAddress()
+{
+io.netty.channel.Channel v2;
+io.netty.channel.ChannelHandlerContext v1;
+io.vertx.core.impl.VertxInternal v4;
+java.net.SocketAddress v3;
+io.vertx.core.net.impl.ConnectionBase v0;
+io.vertx.core.spi.transport.Transport v5;
+io.vertx.core.net.SocketAddress v6;
+v0 := @this: io.vertx.core.net.impl.ConnectionBase;
+v1 = v0.<io.vertx.core.net.impl.ConnectionBase: io.netty.channel.ChannelHandlerContext chctx>;
+v2 = interfaceinvoke v1.<io.netty.channel.ChannelHandlerContext: io.netty.channel.Channel channel()>();
+v3 = interfaceinvoke v2.<io.netty.channel.Channel: java.net.SocketAddress localAddress()>();
+if v3 == null goto label1;
+v4 = v0.<io.vertx.core.net.impl.ConnectionBase: io.vertx.core.impl.VertxInternal vertx>;
+v5 = interfaceinvoke v4.<io.vertx.core.impl.VertxInternal: io.vertx.core.spi.transport.Transport transport()>();
+v6 = interfaceinvoke v5.<io.vertx.core.spi.transport.Transport: io.vertx.core.net.SocketAddress convert(java.net.SocketAddress)>(v3);
+goto label2;
+label1:
+v6 = null;
+label2:
+return v6;
+}
+public io.vertx.core.net.SocketAddress localAddress()
+{
+io.netty.util.AttributeKey v2;
+io.vertx.core.net.impl.ConnectionBase v0;
+io.vertx.core.net.SocketAddress v1;
+v0 := @this: io.vertx.core.net.impl.ConnectionBase;
+v1 = v0.<io.vertx.core.net.impl.ConnectionBase: io.vertx.core.net.SocketAddress localAddress>;
+if v1 != null goto label2;
+v2 = <io.vertx.core.net.impl.ConnectionBase: io.netty.util.AttributeKey LOCAL_ADDRESS_OVERRIDE>;
+v1 = specialinvoke v0.<io.vertx.core.net.impl.ConnectionBase: io.vertx.core.net.SocketAddress socketAdressOverride(io.netty.util.AttributeKey)>(v2);
+if v1 != null goto label1;
+v1 = specialinvoke v0.<io.vertx.core.net.impl.ConnectionBase: io.vertx.core.net.SocketAddress channelLocalAddress()>();
+label1:
+if v1 == null goto label2;
+v0.<io.vertx.core.net.impl.ConnectionBase: io.vertx.core.net.SocketAddress localAddress> = v1;
+label2:
+return v1;
+}
+public io.vertx.core.net.SocketAddress localAddress(boolean)
+{
+io.vertx.core.net.impl.ConnectionBase v0;
+boolean v1;
+io.vertx.core.net.SocketAddress v2, v3;
+v0 := @this: io.vertx.core.net.impl.ConnectionBase;
+v1 := @parameter0: boolean;
+if v1 == 0 goto label3;
+v2 = v0.<io.vertx.core.net.impl.ConnectionBase: io.vertx.core.net.SocketAddress realLocalAddress>;
+if v2 != null goto label1;
+v2 = specialinvoke v0.<io.vertx.core.net.impl.ConnectionBase: io.vertx.core.net.SocketAddress channelLocalAddress()>();
+label1:
+if v2 == null goto label2;
+v0.<io.vertx.core.net.impl.ConnectionBase: io.vertx.core.net.SocketAddress realLocalAddress> = v2;
+label2:
+return v2;
+label3:
+v3 = virtualinvoke v0.<io.vertx.core.net.impl.ConnectionBase: io.vertx.core.net.SocketAddress localAddress()>();
+return v3;
+}
+protected void handleMessage(java.lang.Object)
+{
+java.lang.Object v1;
+io.vertx.core.net.impl.ConnectionBase v0;
+v0 := @this: io.vertx.core.net.impl.ConnectionBase;
+v1 := @parameter0: java.lang.Object;
+return;
+}
+static void <clinit>()
+{
+io.netty.util.AttributeKey v1, v2;
+io.vertx.core.VertxException v0;
+io.vertx.core.impl.logging.Logger v3;
+v0 = new io.vertx.core.VertxException;
+specialinvoke v0.<io.vertx.core.VertxException: void <init>(java.lang.String,boolean)>("Connection was closed", 1);
+<io.vertx.core.net.impl.ConnectionBase: io.vertx.core.VertxException CLOSED_EXCEPTION> = v0;
+v1 = staticinvoke <io.netty.util.AttributeKey: io.netty.util.AttributeKey valueOf(java.lang.String)>("RemoteAddressOverride");
+<io.vertx.core.net.impl.ConnectionBase: io.netty.util.AttributeKey REMOTE_ADDRESS_OVERRIDE> = v1;
+v2 = staticinvoke <io.netty.util.AttributeKey: io.netty.util.AttributeKey valueOf(java.lang.String)>("LocalAddressOverride");
+<io.vertx.core.net.impl.ConnectionBase: io.netty.util.AttributeKey LOCAL_ADDRESS_OVERRIDE> = v2;
+v3 = staticinvoke <io.vertx.core.impl.logging.LoggerFactory: io.vertx.core.impl.logging.Logger getLogger(java.lang.Class)>(class "Lio/vertx/core/net/impl/ConnectionBase;");
+<io.vertx.core.net.impl.ConnectionBase: io.vertx.core.impl.logging.Logger log> = v3;
+return;
+}
+}

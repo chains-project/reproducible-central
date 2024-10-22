@@ -1,0 +1,553 @@
+public class io.netty.handler.timeout.IdleStateHandler extends io.netty.channel.ChannelDuplexHandler
+{
+private static final long MIN_TIMEOUT_NANOS;
+private final io.netty.channel.ChannelFutureListener writeListener;
+private final boolean observeOutput;
+private final long readerIdleTimeNanos;
+private final long writerIdleTimeNanos;
+private final long allIdleTimeNanos;
+private io.netty.util.concurrent.Future readerIdleTimeout;
+private long lastReadTime;
+private boolean firstReaderIdleEvent;
+private io.netty.util.concurrent.Future writerIdleTimeout;
+private long lastWriteTime;
+private boolean firstWriterIdleEvent;
+private io.netty.util.concurrent.Future allIdleTimeout;
+private boolean firstAllIdleEvent;
+private byte state;
+private boolean reading;
+private long lastChangeCheckTimeStamp;
+private int lastMessageHashCode;
+private long lastPendingWriteBytes;
+private long lastFlushProgress;
+public void <init>(int, int, int)
+{
+java.util.concurrent.TimeUnit v4;
+io.netty.handler.timeout.IdleStateHandler v0;
+int v1, v2, v3;
+v0 := @this: io.netty.handler.timeout.IdleStateHandler;
+v1 := @parameter0: int;
+v2 := @parameter1: int;
+v3 := @parameter2: int;
+v4 = <java.util.concurrent.TimeUnit: java.util.concurrent.TimeUnit SECONDS>;
+specialinvoke v0.<io.netty.handler.timeout.IdleStateHandler: void <init>(long,long,long,java.util.concurrent.TimeUnit)>(v1, v2, v3, v4);
+return;
+}
+public void <init>(long, long, long, java.util.concurrent.TimeUnit)
+{
+java.util.concurrent.TimeUnit v4;
+io.netty.handler.timeout.IdleStateHandler v0;
+long v1, v2, v3;
+v0 := @this: io.netty.handler.timeout.IdleStateHandler;
+v1 := @parameter0: long;
+v2 := @parameter1: long;
+v3 := @parameter2: long;
+v4 := @parameter3: java.util.concurrent.TimeUnit;
+specialinvoke v0.<io.netty.handler.timeout.IdleStateHandler: void <init>(boolean,long,long,long,java.util.concurrent.TimeUnit)>(0, v1, v2, v3, v4);
+return;
+}
+public void <init>(boolean, long, long, long, java.util.concurrent.TimeUnit)
+{
+long v10, v12, v13, v14, v16, v17, v18, v2, v3, v4, v8, v9;
+byte v11, v15, v7;
+boolean v1;
+java.util.concurrent.TimeUnit v5;
+io.netty.handler.timeout.IdleStateHandler v0;
+io.netty.handler.timeout.IdleStateHandler$1 v6;
+v0 := @this: io.netty.handler.timeout.IdleStateHandler;
+v1 := @parameter0: boolean;
+v2 := @parameter1: long;
+v3 := @parameter2: long;
+v4 := @parameter3: long;
+v5 := @parameter4: java.util.concurrent.TimeUnit;
+specialinvoke v0.<io.netty.channel.ChannelDuplexHandler: void <init>()>();
+v6 = new io.netty.handler.timeout.IdleStateHandler$1;
+specialinvoke v6.<io.netty.handler.timeout.IdleStateHandler$1: void <init>(io.netty.handler.timeout.IdleStateHandler)>(v0);
+v0.<io.netty.handler.timeout.IdleStateHandler: io.netty.channel.ChannelFutureListener writeListener> = v6;
+v0.<io.netty.handler.timeout.IdleStateHandler: boolean firstReaderIdleEvent> = 1;
+v0.<io.netty.handler.timeout.IdleStateHandler: boolean firstWriterIdleEvent> = 1;
+v0.<io.netty.handler.timeout.IdleStateHandler: boolean firstAllIdleEvent> = 1;
+staticinvoke <io.netty.util.internal.ObjectUtil: java.lang.Object checkNotNull(java.lang.Object,java.lang.String)>(v5, "unit");
+v0.<io.netty.handler.timeout.IdleStateHandler: boolean observeOutput> = v1;
+v7 = v2 cmp 0L;
+if v7 > 0 goto label1;
+v0.<io.netty.handler.timeout.IdleStateHandler: long readerIdleTimeNanos> = 0L;
+goto label2;
+label1:
+v8 = virtualinvoke v5.<java.util.concurrent.TimeUnit: long toNanos(long)>(v2);
+v9 = <io.netty.handler.timeout.IdleStateHandler: long MIN_TIMEOUT_NANOS>;
+v10 = staticinvoke <java.lang.Math: long max(long,long)>(v8, v9);
+v0.<io.netty.handler.timeout.IdleStateHandler: long readerIdleTimeNanos> = v10;
+label2:
+v11 = v3 cmp 0L;
+if v11 > 0 goto label3;
+v0.<io.netty.handler.timeout.IdleStateHandler: long writerIdleTimeNanos> = 0L;
+goto label4;
+label3:
+v12 = virtualinvoke v5.<java.util.concurrent.TimeUnit: long toNanos(long)>(v3);
+v13 = <io.netty.handler.timeout.IdleStateHandler: long MIN_TIMEOUT_NANOS>;
+v14 = staticinvoke <java.lang.Math: long max(long,long)>(v12, v13);
+v0.<io.netty.handler.timeout.IdleStateHandler: long writerIdleTimeNanos> = v14;
+label4:
+v15 = v4 cmp 0L;
+if v15 > 0 goto label5;
+v0.<io.netty.handler.timeout.IdleStateHandler: long allIdleTimeNanos> = 0L;
+goto label6;
+label5:
+v16 = virtualinvoke v5.<java.util.concurrent.TimeUnit: long toNanos(long)>(v4);
+v17 = <io.netty.handler.timeout.IdleStateHandler: long MIN_TIMEOUT_NANOS>;
+v18 = staticinvoke <java.lang.Math: long max(long,long)>(v16, v17);
+v0.<io.netty.handler.timeout.IdleStateHandler: long allIdleTimeNanos> = v18;
+label6:
+return;
+}
+public long getReaderIdleTimeInMillis()
+{
+java.util.concurrent.TimeUnit v1;
+io.netty.handler.timeout.IdleStateHandler v0;
+long v2, v3;
+v0 := @this: io.netty.handler.timeout.IdleStateHandler;
+v1 = <java.util.concurrent.TimeUnit: java.util.concurrent.TimeUnit NANOSECONDS>;
+v2 = v0.<io.netty.handler.timeout.IdleStateHandler: long readerIdleTimeNanos>;
+v3 = virtualinvoke v1.<java.util.concurrent.TimeUnit: long toMillis(long)>(v2);
+return v3;
+}
+public long getWriterIdleTimeInMillis()
+{
+java.util.concurrent.TimeUnit v1;
+io.netty.handler.timeout.IdleStateHandler v0;
+long v2, v3;
+v0 := @this: io.netty.handler.timeout.IdleStateHandler;
+v1 = <java.util.concurrent.TimeUnit: java.util.concurrent.TimeUnit NANOSECONDS>;
+v2 = v0.<io.netty.handler.timeout.IdleStateHandler: long writerIdleTimeNanos>;
+v3 = virtualinvoke v1.<java.util.concurrent.TimeUnit: long toMillis(long)>(v2);
+return v3;
+}
+public long getAllIdleTimeInMillis()
+{
+java.util.concurrent.TimeUnit v1;
+io.netty.handler.timeout.IdleStateHandler v0;
+long v2, v3;
+v0 := @this: io.netty.handler.timeout.IdleStateHandler;
+v1 = <java.util.concurrent.TimeUnit: java.util.concurrent.TimeUnit NANOSECONDS>;
+v2 = v0.<io.netty.handler.timeout.IdleStateHandler: long allIdleTimeNanos>;
+v3 = virtualinvoke v1.<java.util.concurrent.TimeUnit: long toMillis(long)>(v2);
+return v3;
+}
+public void handlerAdded(io.netty.channel.ChannelHandlerContext) throws java.lang.Exception
+{
+io.netty.channel.Channel v2, v4;
+io.netty.channel.ChannelHandlerContext v1;
+io.netty.handler.timeout.IdleStateHandler v0;
+boolean v3, v5;
+v0 := @this: io.netty.handler.timeout.IdleStateHandler;
+v1 := @parameter0: io.netty.channel.ChannelHandlerContext;
+v2 = interfaceinvoke v1.<io.netty.channel.ChannelHandlerContext: io.netty.channel.Channel channel()>();
+v3 = interfaceinvoke v2.<io.netty.channel.Channel: boolean isActive()>();
+if v3 == 0 goto label1;
+v4 = interfaceinvoke v1.<io.netty.channel.ChannelHandlerContext: io.netty.channel.Channel channel()>();
+v5 = interfaceinvoke v4.<io.netty.channel.Channel: boolean isRegistered()>();
+if v5 == 0 goto label1;
+specialinvoke v0.<io.netty.handler.timeout.IdleStateHandler: void initialize(io.netty.channel.ChannelHandlerContext)>(v1);
+label1:
+return;
+}
+public void handlerRemoved(io.netty.channel.ChannelHandlerContext) throws java.lang.Exception
+{
+io.netty.channel.ChannelHandlerContext v1;
+io.netty.handler.timeout.IdleStateHandler v0;
+v0 := @this: io.netty.handler.timeout.IdleStateHandler;
+v1 := @parameter0: io.netty.channel.ChannelHandlerContext;
+specialinvoke v0.<io.netty.handler.timeout.IdleStateHandler: void destroy()>();
+return;
+}
+public void channelRegistered(io.netty.channel.ChannelHandlerContext) throws java.lang.Exception
+{
+io.netty.channel.Channel v2;
+io.netty.channel.ChannelHandlerContext v1;
+io.netty.handler.timeout.IdleStateHandler v0;
+boolean v3;
+v0 := @this: io.netty.handler.timeout.IdleStateHandler;
+v1 := @parameter0: io.netty.channel.ChannelHandlerContext;
+v2 = interfaceinvoke v1.<io.netty.channel.ChannelHandlerContext: io.netty.channel.Channel channel()>();
+v3 = interfaceinvoke v2.<io.netty.channel.Channel: boolean isActive()>();
+if v3 == 0 goto label1;
+specialinvoke v0.<io.netty.handler.timeout.IdleStateHandler: void initialize(io.netty.channel.ChannelHandlerContext)>(v1);
+label1:
+specialinvoke v0.<io.netty.channel.ChannelDuplexHandler: void channelRegistered(io.netty.channel.ChannelHandlerContext)>(v1);
+return;
+}
+public void channelActive(io.netty.channel.ChannelHandlerContext) throws java.lang.Exception
+{
+io.netty.channel.ChannelHandlerContext v1;
+io.netty.handler.timeout.IdleStateHandler v0;
+v0 := @this: io.netty.handler.timeout.IdleStateHandler;
+v1 := @parameter0: io.netty.channel.ChannelHandlerContext;
+specialinvoke v0.<io.netty.handler.timeout.IdleStateHandler: void initialize(io.netty.channel.ChannelHandlerContext)>(v1);
+specialinvoke v0.<io.netty.channel.ChannelDuplexHandler: void channelActive(io.netty.channel.ChannelHandlerContext)>(v1);
+return;
+}
+public void channelInactive(io.netty.channel.ChannelHandlerContext) throws java.lang.Exception
+{
+io.netty.channel.ChannelHandlerContext v1;
+io.netty.handler.timeout.IdleStateHandler v0;
+v0 := @this: io.netty.handler.timeout.IdleStateHandler;
+v1 := @parameter0: io.netty.channel.ChannelHandlerContext;
+specialinvoke v0.<io.netty.handler.timeout.IdleStateHandler: void destroy()>();
+specialinvoke v0.<io.netty.channel.ChannelDuplexHandler: void channelInactive(io.netty.channel.ChannelHandlerContext)>(v1);
+return;
+}
+public void channelRead(io.netty.channel.ChannelHandlerContext, java.lang.Object) throws java.lang.Exception
+{
+io.netty.channel.ChannelHandlerContext v1;
+io.netty.handler.timeout.IdleStateHandler v0;
+byte v4, v6;
+java.lang.Object v2;
+long v3, v5;
+v0 := @this: io.netty.handler.timeout.IdleStateHandler;
+v1 := @parameter0: io.netty.channel.ChannelHandlerContext;
+v2 := @parameter1: java.lang.Object;
+v3 = v0.<io.netty.handler.timeout.IdleStateHandler: long readerIdleTimeNanos>;
+v4 = v3 cmp 0L;
+if v4 > 0 goto label1;
+v5 = v0.<io.netty.handler.timeout.IdleStateHandler: long allIdleTimeNanos>;
+v6 = v5 cmp 0L;
+if v6 <= 0 goto label2;
+label1:
+v0.<io.netty.handler.timeout.IdleStateHandler: boolean reading> = 1;
+v0.<io.netty.handler.timeout.IdleStateHandler: boolean firstAllIdleEvent> = 1;
+v0.<io.netty.handler.timeout.IdleStateHandler: boolean firstReaderIdleEvent> = 1;
+label2:
+interfaceinvoke v1.<io.netty.channel.ChannelHandlerContext: io.netty.channel.ChannelHandlerContext fireChannelRead(java.lang.Object)>(v2);
+return;
+}
+public void channelReadComplete(io.netty.channel.ChannelHandlerContext) throws java.lang.Exception
+{
+long v2, v4, v7;
+io.netty.channel.ChannelHandlerContext v1;
+io.netty.handler.timeout.IdleStateHandler v0;
+byte v3, v5;
+boolean v6;
+v0 := @this: io.netty.handler.timeout.IdleStateHandler;
+v1 := @parameter0: io.netty.channel.ChannelHandlerContext;
+v2 = v0.<io.netty.handler.timeout.IdleStateHandler: long readerIdleTimeNanos>;
+v3 = v2 cmp 0L;
+if v3 > 0 goto label1;
+v4 = v0.<io.netty.handler.timeout.IdleStateHandler: long allIdleTimeNanos>;
+v5 = v4 cmp 0L;
+if v5 <= 0 goto label2;
+label1:
+v6 = v0.<io.netty.handler.timeout.IdleStateHandler: boolean reading>;
+if v6 == 0 goto label2;
+v7 = virtualinvoke v0.<io.netty.handler.timeout.IdleStateHandler: long ticksInNanos()>();
+v0.<io.netty.handler.timeout.IdleStateHandler: long lastReadTime> = v7;
+v0.<io.netty.handler.timeout.IdleStateHandler: boolean reading> = 0;
+label2:
+interfaceinvoke v1.<io.netty.channel.ChannelHandlerContext: io.netty.channel.ChannelHandlerContext fireChannelReadComplete()>();
+return;
+}
+public void write(io.netty.channel.ChannelHandlerContext, java.lang.Object, io.netty.channel.ChannelPromise) throws java.lang.Exception
+{
+long v4, v6;
+io.netty.channel.ChannelFuture v9;
+io.netty.channel.ChannelHandlerContext v1;
+io.netty.handler.timeout.IdleStateHandler v0;
+byte v5, v7;
+io.netty.channel.ChannelPromise v3, v8;
+io.netty.channel.ChannelFutureListener v10;
+java.lang.Object v2;
+v0 := @this: io.netty.handler.timeout.IdleStateHandler;
+v1 := @parameter0: io.netty.channel.ChannelHandlerContext;
+v2 := @parameter1: java.lang.Object;
+v3 := @parameter2: io.netty.channel.ChannelPromise;
+v4 = v0.<io.netty.handler.timeout.IdleStateHandler: long writerIdleTimeNanos>;
+v5 = v4 cmp 0L;
+if v5 > 0 goto label1;
+v6 = v0.<io.netty.handler.timeout.IdleStateHandler: long allIdleTimeNanos>;
+v7 = v6 cmp 0L;
+if v7 <= 0 goto label2;
+label1:
+v8 = interfaceinvoke v3.<io.netty.channel.ChannelPromise: io.netty.channel.ChannelPromise unvoid()>();
+v9 = interfaceinvoke v1.<io.netty.channel.ChannelHandlerContext: io.netty.channel.ChannelFuture write(java.lang.Object,io.netty.channel.ChannelPromise)>(v2, v8);
+v10 = v0.<io.netty.handler.timeout.IdleStateHandler: io.netty.channel.ChannelFutureListener writeListener>;
+interfaceinvoke v9.<io.netty.channel.ChannelFuture: io.netty.channel.ChannelFuture addListener(io.netty.util.concurrent.GenericFutureListener)>(v10);
+goto label3;
+label2:
+interfaceinvoke v1.<io.netty.channel.ChannelHandlerContext: io.netty.channel.ChannelFuture write(java.lang.Object,io.netty.channel.ChannelPromise)>(v2, v3);
+label3:
+return;
+}
+private void initialize(io.netty.channel.ChannelHandlerContext)
+{
+io.netty.handler.timeout.IdleStateHandler$WriterIdleTimeoutTask v12;
+long v10, v13, v16, v19, v3, v4, v7;
+io.netty.channel.ChannelHandlerContext v1;
+byte v11, v17, v2, v5;
+io.netty.handler.timeout.IdleStateHandler$ReaderIdleTimeoutTask v6;
+io.netty.handler.timeout.IdleStateHandler$AllIdleTimeoutTask v18;
+java.util.concurrent.TimeUnit v14, v20, v8;
+io.netty.handler.timeout.IdleStateHandler v0;
+io.netty.util.concurrent.Future v15, v21, v9;
+v0 := @this: io.netty.handler.timeout.IdleStateHandler;
+v1 := @parameter0: io.netty.channel.ChannelHandlerContext;
+v2 = v0.<io.netty.handler.timeout.IdleStateHandler: byte state>;
+lookupswitch(v2)
+{
+case 1: goto label1;
+case 2: goto label1;
+default: goto label2;
+};
+label1:
+return;
+label2:
+v0.<io.netty.handler.timeout.IdleStateHandler: byte state> = 1;
+specialinvoke v0.<io.netty.handler.timeout.IdleStateHandler: void initOutputChanged(io.netty.channel.ChannelHandlerContext)>(v1);
+v3 = virtualinvoke v0.<io.netty.handler.timeout.IdleStateHandler: long ticksInNanos()>();
+v0.<io.netty.handler.timeout.IdleStateHandler: long lastWriteTime> = v3;
+v0.<io.netty.handler.timeout.IdleStateHandler: long lastReadTime> = v3;
+v4 = v0.<io.netty.handler.timeout.IdleStateHandler: long readerIdleTimeNanos>;
+v5 = v4 cmp 0L;
+if v5 <= 0 goto label3;
+v6 = new io.netty.handler.timeout.IdleStateHandler$ReaderIdleTimeoutTask;
+specialinvoke v6.<io.netty.handler.timeout.IdleStateHandler$ReaderIdleTimeoutTask: void <init>(io.netty.handler.timeout.IdleStateHandler,io.netty.channel.ChannelHandlerContext)>(v0, v1);
+v7 = v0.<io.netty.handler.timeout.IdleStateHandler: long readerIdleTimeNanos>;
+v8 = <java.util.concurrent.TimeUnit: java.util.concurrent.TimeUnit NANOSECONDS>;
+v9 = virtualinvoke v0.<io.netty.handler.timeout.IdleStateHandler: io.netty.util.concurrent.Future schedule(io.netty.channel.ChannelHandlerContext,java.lang.Runnable,long,java.util.concurrent.TimeUnit)>(v1, v6, v7, v8);
+v0.<io.netty.handler.timeout.IdleStateHandler: io.netty.util.concurrent.Future readerIdleTimeout> = v9;
+label3:
+v10 = v0.<io.netty.handler.timeout.IdleStateHandler: long writerIdleTimeNanos>;
+v11 = v10 cmp 0L;
+if v11 <= 0 goto label4;
+v12 = new io.netty.handler.timeout.IdleStateHandler$WriterIdleTimeoutTask;
+specialinvoke v12.<io.netty.handler.timeout.IdleStateHandler$WriterIdleTimeoutTask: void <init>(io.netty.handler.timeout.IdleStateHandler,io.netty.channel.ChannelHandlerContext)>(v0, v1);
+v13 = v0.<io.netty.handler.timeout.IdleStateHandler: long writerIdleTimeNanos>;
+v14 = <java.util.concurrent.TimeUnit: java.util.concurrent.TimeUnit NANOSECONDS>;
+v15 = virtualinvoke v0.<io.netty.handler.timeout.IdleStateHandler: io.netty.util.concurrent.Future schedule(io.netty.channel.ChannelHandlerContext,java.lang.Runnable,long,java.util.concurrent.TimeUnit)>(v1, v12, v13, v14);
+v0.<io.netty.handler.timeout.IdleStateHandler: io.netty.util.concurrent.Future writerIdleTimeout> = v15;
+label4:
+v16 = v0.<io.netty.handler.timeout.IdleStateHandler: long allIdleTimeNanos>;
+v17 = v16 cmp 0L;
+if v17 <= 0 goto label5;
+v18 = new io.netty.handler.timeout.IdleStateHandler$AllIdleTimeoutTask;
+specialinvoke v18.<io.netty.handler.timeout.IdleStateHandler$AllIdleTimeoutTask: void <init>(io.netty.handler.timeout.IdleStateHandler,io.netty.channel.ChannelHandlerContext)>(v0, v1);
+v19 = v0.<io.netty.handler.timeout.IdleStateHandler: long allIdleTimeNanos>;
+v20 = <java.util.concurrent.TimeUnit: java.util.concurrent.TimeUnit NANOSECONDS>;
+v21 = virtualinvoke v0.<io.netty.handler.timeout.IdleStateHandler: io.netty.util.concurrent.Future schedule(io.netty.channel.ChannelHandlerContext,java.lang.Runnable,long,java.util.concurrent.TimeUnit)>(v1, v18, v19, v20);
+v0.<io.netty.handler.timeout.IdleStateHandler: io.netty.util.concurrent.Future allIdleTimeout> = v21;
+label5:
+return;
+}
+long ticksInNanos()
+{
+io.netty.handler.timeout.IdleStateHandler v0;
+long v1;
+v0 := @this: io.netty.handler.timeout.IdleStateHandler;
+v1 = staticinvoke <java.lang.System: long nanoTime()>();
+return v1;
+}
+io.netty.util.concurrent.Future schedule(io.netty.channel.ChannelHandlerContext, java.lang.Runnable, long, java.util.concurrent.TimeUnit)
+{
+io.netty.util.concurrent.EventExecutor v5;
+java.util.concurrent.TimeUnit v4;
+io.netty.channel.ChannelHandlerContext v1;
+io.netty.handler.timeout.IdleStateHandler v0;
+io.netty.util.concurrent.ScheduledFuture v6;
+long v3;
+java.lang.Runnable v2;
+v0 := @this: io.netty.handler.timeout.IdleStateHandler;
+v1 := @parameter0: io.netty.channel.ChannelHandlerContext;
+v2 := @parameter1: java.lang.Runnable;
+v3 := @parameter2: long;
+v4 := @parameter3: java.util.concurrent.TimeUnit;
+v5 = interfaceinvoke v1.<io.netty.channel.ChannelHandlerContext: io.netty.util.concurrent.EventExecutor executor()>();
+v6 = interfaceinvoke v5.<io.netty.util.concurrent.EventExecutor: io.netty.util.concurrent.ScheduledFuture schedule(java.lang.Runnable,long,java.util.concurrent.TimeUnit)>(v2, v3, v4);
+return v6;
+}
+private void destroy()
+{
+io.netty.handler.timeout.IdleStateHandler v0;
+io.netty.util.concurrent.Future v1, v2, v3, v4, v5, v6;
+v0 := @this: io.netty.handler.timeout.IdleStateHandler;
+v0.<io.netty.handler.timeout.IdleStateHandler: byte state> = 2;
+v1 = v0.<io.netty.handler.timeout.IdleStateHandler: io.netty.util.concurrent.Future readerIdleTimeout>;
+if v1 == null goto label1;
+v2 = v0.<io.netty.handler.timeout.IdleStateHandler: io.netty.util.concurrent.Future readerIdleTimeout>;
+interfaceinvoke v2.<io.netty.util.concurrent.Future: boolean cancel(boolean)>(0);
+v0.<io.netty.handler.timeout.IdleStateHandler: io.netty.util.concurrent.Future readerIdleTimeout> = null;
+label1:
+v3 = v0.<io.netty.handler.timeout.IdleStateHandler: io.netty.util.concurrent.Future writerIdleTimeout>;
+if v3 == null goto label2;
+v4 = v0.<io.netty.handler.timeout.IdleStateHandler: io.netty.util.concurrent.Future writerIdleTimeout>;
+interfaceinvoke v4.<io.netty.util.concurrent.Future: boolean cancel(boolean)>(0);
+v0.<io.netty.handler.timeout.IdleStateHandler: io.netty.util.concurrent.Future writerIdleTimeout> = null;
+label2:
+v5 = v0.<io.netty.handler.timeout.IdleStateHandler: io.netty.util.concurrent.Future allIdleTimeout>;
+if v5 == null goto label3;
+v6 = v0.<io.netty.handler.timeout.IdleStateHandler: io.netty.util.concurrent.Future allIdleTimeout>;
+interfaceinvoke v6.<io.netty.util.concurrent.Future: boolean cancel(boolean)>(0);
+v0.<io.netty.handler.timeout.IdleStateHandler: io.netty.util.concurrent.Future allIdleTimeout> = null;
+label3:
+return;
+}
+protected void channelIdle(io.netty.channel.ChannelHandlerContext, io.netty.handler.timeout.IdleStateEvent) throws java.lang.Exception
+{
+io.netty.channel.ChannelHandlerContext v1;
+io.netty.handler.timeout.IdleStateHandler v0;
+io.netty.handler.timeout.IdleStateEvent v2;
+v0 := @this: io.netty.handler.timeout.IdleStateHandler;
+v1 := @parameter0: io.netty.channel.ChannelHandlerContext;
+v2 := @parameter1: io.netty.handler.timeout.IdleStateEvent;
+interfaceinvoke v1.<io.netty.channel.ChannelHandlerContext: io.netty.channel.ChannelHandlerContext fireUserEventTriggered(java.lang.Object)>(v2);
+return;
+}
+protected io.netty.handler.timeout.IdleStateEvent newIdleStateEvent(io.netty.handler.timeout.IdleState, boolean)
+{
+io.netty.handler.timeout.IdleStateEvent v6, v7, v8;
+java.lang.IllegalArgumentException v9;
+io.netty.handler.timeout.IdleStateHandler v0;
+int[] v3;
+io.netty.handler.timeout.IdleState v1;
+int v4, v5;
+java.lang.String v10;
+boolean v2;
+v0 := @this: io.netty.handler.timeout.IdleStateHandler;
+v1 := @parameter0: io.netty.handler.timeout.IdleState;
+v2 := @parameter1: boolean;
+v3 = <io.netty.handler.timeout.IdleStateHandler$2: int[] $SwitchMap$io$netty$handler$timeout$IdleState>;
+v4 = virtualinvoke v1.<io.netty.handler.timeout.IdleState: int ordinal()>();
+v5 = v3[v4];
+tableswitch(v5)
+{
+case 1: goto label01;
+case 2: goto label04;
+case 3: goto label07;
+default: goto label10;
+};
+label01:
+if v2 == 0 goto label02;
+v6 = <io.netty.handler.timeout.IdleStateEvent: io.netty.handler.timeout.IdleStateEvent FIRST_ALL_IDLE_STATE_EVENT>;
+goto label03;
+label02:
+v6 = <io.netty.handler.timeout.IdleStateEvent: io.netty.handler.timeout.IdleStateEvent ALL_IDLE_STATE_EVENT>;
+label03:
+return v6;
+label04:
+if v2 == 0 goto label05;
+v7 = <io.netty.handler.timeout.IdleStateEvent: io.netty.handler.timeout.IdleStateEvent FIRST_READER_IDLE_STATE_EVENT>;
+goto label06;
+label05:
+v7 = <io.netty.handler.timeout.IdleStateEvent: io.netty.handler.timeout.IdleStateEvent READER_IDLE_STATE_EVENT>;
+label06:
+return v7;
+label07:
+if v2 == 0 goto label08;
+v8 = <io.netty.handler.timeout.IdleStateEvent: io.netty.handler.timeout.IdleStateEvent FIRST_WRITER_IDLE_STATE_EVENT>;
+goto label09;
+label08:
+v8 = <io.netty.handler.timeout.IdleStateEvent: io.netty.handler.timeout.IdleStateEvent WRITER_IDLE_STATE_EVENT>;
+label09:
+return v8;
+label10:
+v9 = new java.lang.IllegalArgumentException;
+v10 = dynamicinvoke "makeConcatWithConstants" <java.lang.String (io.netty.handler.timeout.IdleState,boolean)>(v1, v2) <java.lang.invoke.StringConcatFactory: java.lang.invoke.CallSite makeConcatWithConstants(java.lang.invoke.MethodHandles$Lookup,java.lang.String,java.lang.invoke.MethodType,java.lang.String,java.lang.Object[])>("Unhandled: state=\u0001, first=\u0001");
+specialinvoke v9.<java.lang.IllegalArgumentException: void <init>(java.lang.String)>(v10);
+throw v9;
+}
+private void initOutputChanged(io.netty.channel.ChannelHandlerContext)
+{
+long v8, v9;
+io.netty.channel.Channel$Unsafe v4;
+io.netty.channel.Channel v3;
+io.netty.channel.ChannelOutboundBuffer v5;
+io.netty.channel.ChannelHandlerContext v1;
+io.netty.handler.timeout.IdleStateHandler v0;
+int v7;
+java.lang.Object v6;
+boolean v2;
+v0 := @this: io.netty.handler.timeout.IdleStateHandler;
+v1 := @parameter0: io.netty.channel.ChannelHandlerContext;
+v2 = v0.<io.netty.handler.timeout.IdleStateHandler: boolean observeOutput>;
+if v2 == 0 goto label1;
+v3 = interfaceinvoke v1.<io.netty.channel.ChannelHandlerContext: io.netty.channel.Channel channel()>();
+v4 = interfaceinvoke v3.<io.netty.channel.Channel: io.netty.channel.Channel$Unsafe unsafe()>();
+v5 = interfaceinvoke v4.<io.netty.channel.Channel$Unsafe: io.netty.channel.ChannelOutboundBuffer outboundBuffer()>();
+if v5 == null goto label1;
+v6 = virtualinvoke v5.<io.netty.channel.ChannelOutboundBuffer: java.lang.Object current()>();
+v7 = staticinvoke <java.lang.System: int identityHashCode(java.lang.Object)>(v6);
+v0.<io.netty.handler.timeout.IdleStateHandler: int lastMessageHashCode> = v7;
+v8 = virtualinvoke v5.<io.netty.channel.ChannelOutboundBuffer: long totalPendingWriteBytes()>();
+v0.<io.netty.handler.timeout.IdleStateHandler: long lastPendingWriteBytes> = v8;
+v9 = virtualinvoke v5.<io.netty.channel.ChannelOutboundBuffer: long currentProgress()>();
+v0.<io.netty.handler.timeout.IdleStateHandler: long lastFlushProgress> = v9;
+label1:
+return;
+}
+private boolean hasOutputChanged(io.netty.channel.ChannelHandlerContext, boolean)
+{
+long v13, v15, v17, v18, v4, v5, v7;
+io.netty.channel.ChannelHandlerContext v1;
+byte v16, v19, v6;
+int v12, v14;
+boolean v2, v20, v3;
+io.netty.channel.Channel$Unsafe v9;
+io.netty.channel.Channel v8;
+io.netty.channel.ChannelOutboundBuffer v10;
+io.netty.handler.timeout.IdleStateHandler v0;
+java.lang.Object v11;
+v0 := @this: io.netty.handler.timeout.IdleStateHandler;
+v1 := @parameter0: io.netty.channel.ChannelHandlerContext;
+v2 := @parameter1: boolean;
+v3 = v0.<io.netty.handler.timeout.IdleStateHandler: boolean observeOutput>;
+if v3 == 0 goto label6;
+v4 = v0.<io.netty.handler.timeout.IdleStateHandler: long lastChangeCheckTimeStamp>;
+v5 = v0.<io.netty.handler.timeout.IdleStateHandler: long lastWriteTime>;
+v6 = v4 cmp v5;
+if v6 == 0 goto label1;
+v7 = v0.<io.netty.handler.timeout.IdleStateHandler: long lastWriteTime>;
+v0.<io.netty.handler.timeout.IdleStateHandler: long lastChangeCheckTimeStamp> = v7;
+if v2 != 0 goto label1;
+return 1;
+label1:
+v8 = interfaceinvoke v1.<io.netty.channel.ChannelHandlerContext: io.netty.channel.Channel channel()>();
+v9 = interfaceinvoke v8.<io.netty.channel.Channel: io.netty.channel.Channel$Unsafe unsafe()>();
+v10 = interfaceinvoke v9.<io.netty.channel.Channel$Unsafe: io.netty.channel.ChannelOutboundBuffer outboundBuffer()>();
+if v10 == null goto label6;
+v11 = virtualinvoke v10.<io.netty.channel.ChannelOutboundBuffer: java.lang.Object current()>();
+v12 = staticinvoke <java.lang.System: int identityHashCode(java.lang.Object)>(v11);
+v13 = virtualinvoke v10.<io.netty.channel.ChannelOutboundBuffer: long totalPendingWriteBytes()>();
+v14 = v0.<io.netty.handler.timeout.IdleStateHandler: int lastMessageHashCode>;
+if v12 != v14 goto label2;
+v15 = v0.<io.netty.handler.timeout.IdleStateHandler: long lastPendingWriteBytes>;
+v16 = v13 cmp v15;
+if v16 == 0 goto label3;
+label2:
+v0.<io.netty.handler.timeout.IdleStateHandler: int lastMessageHashCode> = v12;
+v0.<io.netty.handler.timeout.IdleStateHandler: long lastPendingWriteBytes> = v13;
+if v2 != 0 goto label3;
+return 1;
+label3:
+v17 = virtualinvoke v10.<io.netty.channel.ChannelOutboundBuffer: long currentProgress()>();
+v18 = v0.<io.netty.handler.timeout.IdleStateHandler: long lastFlushProgress>;
+v19 = v17 cmp v18;
+if v19 == 0 goto label6;
+v0.<io.netty.handler.timeout.IdleStateHandler: long lastFlushProgress> = v17;
+if v2 != 0 goto label4;
+v20 = 1;
+goto label5;
+label4:
+v20 = 0;
+label5:
+return v20;
+label6:
+return 0;
+}
+static void <clinit>()
+{
+java.util.concurrent.TimeUnit v0;
+long v1;
+v0 = <java.util.concurrent.TimeUnit: java.util.concurrent.TimeUnit MILLISECONDS>;
+v1 = virtualinvoke v0.<java.util.concurrent.TimeUnit: long toNanos(long)>(1L);
+<io.netty.handler.timeout.IdleStateHandler: long MIN_TIMEOUT_NANOS> = v1;
+return;
+}
+}

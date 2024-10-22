@@ -1,0 +1,258 @@
+public class org.jboss.logmanager.handlers.QueueHandler extends org.jboss.logmanager.ExtHandler
+{
+private final java.util.Deque buffer;
+private int limit;
+public void <init>()
+{
+org.jboss.logmanager.handlers.QueueHandler v0;
+java.util.ArrayDeque v1;
+v0 := @this: org.jboss.logmanager.handlers.QueueHandler;
+specialinvoke v0.<org.jboss.logmanager.ExtHandler: void <init>()>();
+v1 = new java.util.ArrayDeque;
+specialinvoke v1.<java.util.ArrayDeque: void <init>()>();
+v0.<org.jboss.logmanager.handlers.QueueHandler: java.util.Deque buffer> = v1;
+v0.<org.jboss.logmanager.handlers.QueueHandler: int limit> = 10;
+return;
+}
+public void <init>(int)
+{
+org.jboss.logmanager.handlers.QueueHandler v0;
+int v1;
+java.lang.IllegalArgumentException v3;
+java.util.ArrayDeque v2;
+v0 := @this: org.jboss.logmanager.handlers.QueueHandler;
+v1 := @parameter0: int;
+specialinvoke v0.<org.jboss.logmanager.ExtHandler: void <init>()>();
+v2 = new java.util.ArrayDeque;
+specialinvoke v2.<java.util.ArrayDeque: void <init>()>();
+v0.<org.jboss.logmanager.handlers.QueueHandler: java.util.Deque buffer> = v2;
+v0.<org.jboss.logmanager.handlers.QueueHandler: int limit> = 10;
+if v1 >= 1 goto label1;
+v3 = staticinvoke <org.jboss.logmanager.handlers.QueueHandler: java.lang.IllegalArgumentException badQueueLength()>();
+throw v3;
+label1:
+v0.<org.jboss.logmanager.handlers.QueueHandler: int limit> = v1;
+return;
+}
+public void publish(org.jboss.logmanager.ExtLogRecord)
+{
+org.jboss.logmanager.handlers.QueueHandler v0;
+org.jboss.logmanager.ExtLogRecord v1;
+boolean v2;
+v0 := @this: org.jboss.logmanager.handlers.QueueHandler;
+v1 := @parameter0: org.jboss.logmanager.ExtLogRecord;
+v2 = virtualinvoke v0.<org.jboss.logmanager.handlers.QueueHandler: boolean isEnabled()>();
+if v2 == 0 goto label1;
+if v1 == null goto label1;
+virtualinvoke v0.<org.jboss.logmanager.handlers.QueueHandler: void doPublish(org.jboss.logmanager.ExtLogRecord)>(v1);
+label1:
+return;
+}
+public void publish(java.util.logging.LogRecord)
+{
+org.jboss.logmanager.handlers.QueueHandler v0;
+java.util.logging.LogRecord v1;
+org.jboss.logmanager.ExtLogRecord v3;
+boolean v2;
+v0 := @this: org.jboss.logmanager.handlers.QueueHandler;
+v1 := @parameter0: java.util.logging.LogRecord;
+v2 = virtualinvoke v0.<org.jboss.logmanager.handlers.QueueHandler: boolean isEnabled()>();
+if v2 == 0 goto label1;
+if v1 == null goto label1;
+v3 = staticinvoke <org.jboss.logmanager.ExtLogRecord: org.jboss.logmanager.ExtLogRecord wrap(java.util.logging.LogRecord)>(v1);
+virtualinvoke v0.<org.jboss.logmanager.handlers.QueueHandler: void doPublish(org.jboss.logmanager.ExtLogRecord)>(v3);
+label1:
+return;
+}
+protected void doPublish(org.jboss.logmanager.ExtLogRecord)
+{
+java.lang.Throwable v10;
+org.jboss.logmanager.handlers.QueueHandler v0;
+java.util.Deque v2, v5, v8, v9;
+org.jboss.logmanager.ExtLogRecord v1;
+int v6, v7;
+boolean v3, v4;
+v0 := @this: org.jboss.logmanager.handlers.QueueHandler;
+v1 := @parameter0: org.jboss.logmanager.ExtLogRecord;
+v2 = v0.<org.jboss.logmanager.handlers.QueueHandler: java.util.Deque buffer>;
+entermonitor v2;
+label1:
+v3 = virtualinvoke v0.<org.jboss.logmanager.handlers.QueueHandler: boolean isLoggable(java.util.logging.LogRecord)>(v1);
+if v3 == 0 goto label5;
+v4 = virtualinvoke v0.<org.jboss.logmanager.handlers.QueueHandler: boolean isCallerCalculationRequired()>();
+if v4 == 0 goto label2;
+virtualinvoke v1.<org.jboss.logmanager.ExtLogRecord: void copyAll()>();
+goto label3;
+label2:
+virtualinvoke v1.<org.jboss.logmanager.ExtLogRecord: void disableCallerCalculation()>();
+virtualinvoke v1.<org.jboss.logmanager.ExtLogRecord: void copyMdc()>();
+label3:
+v5 = v0.<org.jboss.logmanager.handlers.QueueHandler: java.util.Deque buffer>;
+v6 = interfaceinvoke v5.<java.util.Deque: int size()>();
+v7 = v0.<org.jboss.logmanager.handlers.QueueHandler: int limit>;
+if v6 != v7 goto label4;
+v8 = v0.<org.jboss.logmanager.handlers.QueueHandler: java.util.Deque buffer>;
+interfaceinvoke v8.<java.util.Deque: java.lang.Object removeFirst()>();
+label4:
+v9 = v0.<org.jboss.logmanager.handlers.QueueHandler: java.util.Deque buffer>;
+interfaceinvoke v9.<java.util.Deque: void addLast(java.lang.Object)>(v1);
+label5:
+virtualinvoke v0.<org.jboss.logmanager.handlers.QueueHandler: void publishToNestedHandlers(org.jboss.logmanager.ExtLogRecord)>(v1);
+exitmonitor v2;
+label6:
+goto label8;
+label7:
+v10 := @caughtexception;
+exitmonitor v2;
+throw v10;
+label8:
+return;
+catch java.lang.Throwable from label1 to label6 with label7;
+}
+public int getLimit()
+{
+java.lang.Throwable v3;
+org.jboss.logmanager.handlers.QueueHandler v0;
+int v2;
+java.util.Deque v1;
+v0 := @this: org.jboss.logmanager.handlers.QueueHandler;
+v1 = v0.<org.jboss.logmanager.handlers.QueueHandler: java.util.Deque buffer>;
+entermonitor v1;
+label1:
+v2 = v0.<org.jboss.logmanager.handlers.QueueHandler: int limit>;
+exitmonitor v1;
+label2:
+return v2;
+label3:
+v3 := @caughtexception;
+exitmonitor v1;
+throw v3;
+catch java.lang.Throwable from label1 to label2 with label3;
+}
+public void setLimit(int)
+{
+java.lang.Throwable v4;
+org.jboss.logmanager.handlers.QueueHandler v0;
+int v1;
+java.lang.IllegalArgumentException v2;
+java.util.Deque v3;
+v0 := @this: org.jboss.logmanager.handlers.QueueHandler;
+v1 := @parameter0: int;
+if v1 >= 1 goto label1;
+v2 = staticinvoke <org.jboss.logmanager.handlers.QueueHandler: java.lang.IllegalArgumentException badQueueLength()>();
+throw v2;
+label1:
+v3 = v0.<org.jboss.logmanager.handlers.QueueHandler: java.util.Deque buffer>;
+entermonitor v3;
+label2:
+v0.<org.jboss.logmanager.handlers.QueueHandler: int limit> = v1;
+exitmonitor v3;
+label3:
+goto label5;
+label4:
+v4 := @caughtexception;
+exitmonitor v3;
+throw v4;
+label5:
+return;
+catch java.lang.Throwable from label2 to label3 with label4;
+}
+public org.jboss.logmanager.ExtLogRecord[] getQueue()
+{
+java.lang.Throwable v7;
+org.jboss.logmanager.handlers.QueueHandler v0;
+java.lang.Object[] v6;
+java.util.Deque v1, v2, v3;
+int v4;
+org.jboss.logmanager.ExtLogRecord[] v5;
+v0 := @this: org.jboss.logmanager.handlers.QueueHandler;
+v1 = v0.<org.jboss.logmanager.handlers.QueueHandler: java.util.Deque buffer>;
+entermonitor v1;
+label1:
+v2 = v0.<org.jboss.logmanager.handlers.QueueHandler: java.util.Deque buffer>;
+v3 = v0.<org.jboss.logmanager.handlers.QueueHandler: java.util.Deque buffer>;
+v4 = interfaceinvoke v3.<java.util.Deque: int size()>();
+v5 = newarray (org.jboss.logmanager.ExtLogRecord)[v4];
+v6 = interfaceinvoke v2.<java.util.Deque: java.lang.Object[] toArray(java.lang.Object[])>(v5);
+exitmonitor v1;
+label2:
+return v6;
+label3:
+v7 := @caughtexception;
+exitmonitor v1;
+throw v7;
+catch java.lang.Throwable from label1 to label2 with label3;
+}
+public java.lang.String[] getQueueAsStrings()
+{
+org.jboss.logmanager.handlers.QueueHandler v0;
+java.lang.String[] v3;
+org.jboss.logmanager.ExtLogRecord v12, v7;
+java.util.logging.Formatter v11, v4;
+java.lang.Exception v14;
+int v10, v2, v5, v6, v9;
+java.lang.String v13, v8;
+org.jboss.logmanager.ExtLogRecord[] v1;
+v0 := @this: org.jboss.logmanager.handlers.QueueHandler;
+v1 = virtualinvoke v0.<org.jboss.logmanager.handlers.QueueHandler: org.jboss.logmanager.ExtLogRecord[] getQueue()>();
+v2 = lengthof v1;
+v3 = newarray (java.lang.String)[v2];
+v4 = virtualinvoke v0.<org.jboss.logmanager.handlers.QueueHandler: java.util.logging.Formatter getFormatter()>();
+v5 = 0;
+v6 = 0;
+label1:
+if v6 >= v2 goto label6;
+label2:
+v7 = v1[v6];
+v8 = virtualinvoke v4.<java.util.logging.Formatter: java.lang.String format(java.util.logging.LogRecord)>(v7);
+v9 = virtualinvoke v8.<java.lang.String: int length()>();
+if v9 <= 0 goto label5;
+v10 = v5;
+v5 = v5 + 1;
+v11 = virtualinvoke v0.<org.jboss.logmanager.handlers.QueueHandler: java.util.logging.Formatter getFormatter()>();
+v12 = v1[v6];
+v13 = virtualinvoke v11.<java.util.logging.Formatter: java.lang.String format(java.util.logging.LogRecord)>(v12);
+v3[v10] = v13;
+label3:
+goto label5;
+label4:
+v14 := @caughtexception;
+virtualinvoke v0.<org.jboss.logmanager.handlers.QueueHandler: void reportError(java.lang.String,java.lang.Exception,int)>("Formatting error", v14, 5);
+label5:
+v6 = v6 + 1;
+goto label1;
+label6:
+return v3;
+catch java.lang.Exception from label2 to label3 with label4;
+}
+public void replay()
+{
+org.jboss.logmanager.handlers.QueueHandler v0;
+int v2, v4, v5;
+java.util.logging.Handler[] v1;
+org.jboss.logmanager.ExtLogRecord[] v3;
+org.jboss.logmanager.ExtLogRecord v6;
+v0 := @this: org.jboss.logmanager.handlers.QueueHandler;
+v1 = virtualinvoke v0.<org.jboss.logmanager.handlers.QueueHandler: java.util.logging.Handler[] getHandlers()>();
+v2 = lengthof v1;
+if v2 <= 0 goto label2;
+v3 = virtualinvoke v0.<org.jboss.logmanager.handlers.QueueHandler: org.jboss.logmanager.ExtLogRecord[] getQueue()>();
+v4 = lengthof v3;
+v5 = 0;
+label1:
+if v5 >= v4 goto label2;
+v6 = v3[v5];
+virtualinvoke v0.<org.jboss.logmanager.handlers.QueueHandler: void publishToNestedHandlers(org.jboss.logmanager.ExtLogRecord)>(v6);
+v5 = v5 + 1;
+goto label1;
+label2:
+return;
+}
+private static java.lang.IllegalArgumentException badQueueLength()
+{
+java.lang.IllegalArgumentException v0;
+v0 = new java.lang.IllegalArgumentException;
+specialinvoke v0.<java.lang.IllegalArgumentException: void <init>(java.lang.String)>("Queue length must be at least 1");
+return v0;
+}
+}

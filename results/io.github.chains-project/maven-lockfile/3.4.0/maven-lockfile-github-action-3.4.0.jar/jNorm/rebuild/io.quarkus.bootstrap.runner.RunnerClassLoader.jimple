@@ -1,0 +1,534 @@
+public final class io.quarkus.bootstrap.runner.RunnerClassLoader extends java.lang.ClassLoader
+{
+private final java.util.Map resourceDirectoryMap;
+private final java.util.Set parentFirstPackages;
+private final java.util.Set nonExistentResources;
+private final java.util.List fullyIndexedDirectories;
+private final java.util.Map directlyIndexedResourcesIndexMap;
+private final io.quarkus.bootstrap.runner.ClassLoadingResource[] currentlyBufferedResources;
+private boolean postBootPhase;
+private final io.quarkus.bootstrap.runner.RunnerClassLoader$CracResource resource;
+void <init>(java.lang.ClassLoader, java.util.Map, java.util.Set, java.util.Set, java.util.List, java.util.Map)
+{
+io.quarkus.bootstrap.runner.RunnerClassLoader v0;
+io.quarkus.bootstrap.runner.RunnerClassLoader$CracResource v10, v8;
+java.util.Set v3, v4;
+org.crac.Context v9;
+java.util.List v5;
+io.quarkus.bootstrap.runner.ClassLoadingResource[] v7;
+java.util.Map v2, v6;
+java.lang.ClassLoader v1;
+v0 := @this: io.quarkus.bootstrap.runner.RunnerClassLoader;
+v1 := @parameter0: java.lang.ClassLoader;
+v2 := @parameter1: java.util.Map;
+v3 := @parameter2: java.util.Set;
+v4 := @parameter3: java.util.Set;
+v5 := @parameter4: java.util.List;
+v6 := @parameter5: java.util.Map;
+specialinvoke v0.<java.lang.ClassLoader: void <init>(java.lang.ClassLoader)>(v1);
+v7 = newarray (io.quarkus.bootstrap.runner.ClassLoadingResource)[4];
+v0.<io.quarkus.bootstrap.runner.RunnerClassLoader: io.quarkus.bootstrap.runner.ClassLoadingResource[] currentlyBufferedResources> = v7;
+v0.<io.quarkus.bootstrap.runner.RunnerClassLoader: boolean postBootPhase> = 0;
+v0.<io.quarkus.bootstrap.runner.RunnerClassLoader: java.util.Map resourceDirectoryMap> = v2;
+v0.<io.quarkus.bootstrap.runner.RunnerClassLoader: java.util.Set parentFirstPackages> = v3;
+v0.<io.quarkus.bootstrap.runner.RunnerClassLoader: java.util.Set nonExistentResources> = v4;
+v0.<io.quarkus.bootstrap.runner.RunnerClassLoader: java.util.List fullyIndexedDirectories> = v5;
+v0.<io.quarkus.bootstrap.runner.RunnerClassLoader: java.util.Map directlyIndexedResourcesIndexMap> = v6;
+v8 = new io.quarkus.bootstrap.runner.RunnerClassLoader$CracResource;
+specialinvoke v8.<io.quarkus.bootstrap.runner.RunnerClassLoader$CracResource: void <init>(io.quarkus.bootstrap.runner.RunnerClassLoader)>(v0);
+v0.<io.quarkus.bootstrap.runner.RunnerClassLoader: io.quarkus.bootstrap.runner.RunnerClassLoader$CracResource resource> = v8;
+v9 = staticinvoke <org.crac.Core: org.crac.Context getGlobalContext()>();
+v10 = v0.<io.quarkus.bootstrap.runner.RunnerClassLoader: io.quarkus.bootstrap.runner.RunnerClassLoader$CracResource resource>;
+virtualinvoke v9.<org.crac.Context: void register(org.crac.Resource)>(v10);
+return;
+}
+public java.lang.Class loadClass(java.lang.String) throws java.lang.ClassNotFoundException
+{
+io.quarkus.bootstrap.runner.RunnerClassLoader v0;
+java.lang.Class v2;
+java.lang.String v1;
+v0 := @this: io.quarkus.bootstrap.runner.RunnerClassLoader;
+v1 := @parameter0: java.lang.String;
+v2 = virtualinvoke v0.<io.quarkus.bootstrap.runner.RunnerClassLoader: java.lang.Class loadClass(java.lang.String,boolean)>(v1, 0);
+return v2;
+}
+public java.lang.Class loadClass(java.lang.String, boolean) throws java.lang.ClassNotFoundException
+{
+byte[] v22;
+io.quarkus.bootstrap.runner.RunnerClassLoader v0;
+io.quarkus.bootstrap.runner.ClassLoadingResource v21;
+java.util.Map v13, v16;
+int v19, v20, v23;
+java.lang.String v1, v15, v17, v18, v6;
+boolean v2, v3, v8;
+java.lang.LinkageError v26;
+java.util.Set v7;
+java.security.ProtectionDomain v24;
+java.lang.Class v10, v12, v25, v27, v29, v5;
+java.lang.ClassNotFoundException v11;
+java.lang.Object v14;
+java.lang.ClassLoader v28, v4, v9;
+v0 := @this: io.quarkus.bootstrap.runner.RunnerClassLoader;
+v1 := @parameter0: java.lang.String;
+v2 := @parameter1: boolean;
+v3 = virtualinvoke v1.<java.lang.String: boolean startsWith(java.lang.String)>("java.");
+if v3 == 0 goto label01;
+v4 = virtualinvoke v0.<io.quarkus.bootstrap.runner.RunnerClassLoader: java.lang.ClassLoader getParent()>();
+v5 = virtualinvoke v4.<java.lang.ClassLoader: java.lang.Class loadClass(java.lang.String)>(v1);
+return v5;
+label01:
+v6 = specialinvoke v0.<io.quarkus.bootstrap.runner.RunnerClassLoader: java.lang.String getPackageNameFromClassName(java.lang.String)>(v1);
+v7 = v0.<io.quarkus.bootstrap.runner.RunnerClassLoader: java.util.Set parentFirstPackages>;
+v8 = interfaceinvoke v7.<java.util.Set: boolean contains(java.lang.Object)>(v6);
+if v8 == 0 goto label05;
+label02:
+v9 = virtualinvoke v0.<io.quarkus.bootstrap.runner.RunnerClassLoader: java.lang.ClassLoader getParent()>();
+v10 = virtualinvoke v9.<java.lang.ClassLoader: java.lang.Class loadClass(java.lang.String)>(v1);
+label03:
+return v10;
+label04:
+v11 := @caughtexception;
+label05:
+v12 = virtualinvoke v0.<io.quarkus.bootstrap.runner.RunnerClassLoader: java.lang.Class findLoadedClass(java.lang.String)>(v1);
+if v12 == null goto label06;
+return v12;
+label06:
+if v6 != null goto label07;
+v13 = v0.<io.quarkus.bootstrap.runner.RunnerClassLoader: java.util.Map resourceDirectoryMap>;
+v14 = interfaceinvoke v13.<java.util.Map: java.lang.Object get(java.lang.Object)>("");
+goto label08;
+label07:
+v15 = virtualinvoke v6.<java.lang.String: java.lang.String replace(char,char)>(46, 47);
+v16 = v0.<io.quarkus.bootstrap.runner.RunnerClassLoader: java.util.Map resourceDirectoryMap>;
+interfaceinvoke v16.<java.util.Map: java.lang.Object get(java.lang.Object)>(v15);
+label08:
+if v14 == null goto label15;
+v17 = virtualinvoke v1.<java.lang.String: java.lang.String replace(char,char)>(46, 47);
+v18 = dynamicinvoke "makeConcatWithConstants" <java.lang.String (java.lang.String)>(v17) <java.lang.invoke.StringConcatFactory: java.lang.invoke.CallSite makeConcatWithConstants(java.lang.invoke.MethodHandles$Lookup,java.lang.String,java.lang.invoke.MethodType,java.lang.String,java.lang.Object[])>("\u0001.class");
+v19 = lengthof v14;
+v20 = 0;
+label09:
+if v20 >= v19 goto label15;
+v21 = v14[v20];
+specialinvoke v0.<io.quarkus.bootstrap.runner.RunnerClassLoader: void accessingResource(io.quarkus.bootstrap.runner.ClassLoadingResource)>(v21);
+v22 = interfaceinvoke v21.<io.quarkus.bootstrap.runner.ClassLoadingResource: byte[] getResourceData(java.lang.String)>(v18);
+if v22 == null goto label14;
+specialinvoke v0.<io.quarkus.bootstrap.runner.RunnerClassLoader: void definePackage(java.lang.String,io.quarkus.bootstrap.runner.ClassLoadingResource[])>(v6, v14);
+label10:
+v23 = lengthof v22;
+v24 = interfaceinvoke v21.<io.quarkus.bootstrap.runner.ClassLoadingResource: java.security.ProtectionDomain getProtectionDomain()>();
+v25 = virtualinvoke v0.<io.quarkus.bootstrap.runner.RunnerClassLoader: java.lang.Class defineClass(java.lang.String,byte[],int,int,java.security.ProtectionDomain)>(v1, v22, 0, v23, v24);
+label11:
+return v25;
+label12:
+v26 := @caughtexception;
+v27 = virtualinvoke v0.<io.quarkus.bootstrap.runner.RunnerClassLoader: java.lang.Class findLoadedClass(java.lang.String)>(v1);
+if v27 == null goto label13;
+return v27;
+label13:
+throw v26;
+label14:
+v20 = v20 + 1;
+goto label09;
+label15:
+v28 = virtualinvoke v0.<io.quarkus.bootstrap.runner.RunnerClassLoader: java.lang.ClassLoader getParent()>();
+v29 = virtualinvoke v28.<java.lang.ClassLoader: java.lang.Class loadClass(java.lang.String)>(v1);
+return v29;
+catch java.lang.ClassNotFoundException from label02 to label03 with label04;
+catch java.lang.LinkageError from label10 to label11 with label12;
+}
+private void accessingResource(io.quarkus.bootstrap.runner.ClassLoadingResource)
+{
+java.lang.Throwable v26;
+io.quarkus.bootstrap.runner.RunnerClassLoader v0;
+io.quarkus.bootstrap.runner.ClassLoadingResource v1, v10, v13, v21, v5;
+int v12, v15, v19, v20, v24, v25, v6, v8;
+boolean v3;
+io.quarkus.bootstrap.runner.ClassLoadingResource[] v11, v14, v16, v17, v18, v2, v22, v23, v4, v7, v9;
+v0 := @this: io.quarkus.bootstrap.runner.RunnerClassLoader;
+v1 := @parameter0: io.quarkus.bootstrap.runner.ClassLoadingResource;
+v2 = v0.<io.quarkus.bootstrap.runner.RunnerClassLoader: io.quarkus.bootstrap.runner.ClassLoadingResource[] currentlyBufferedResources>;
+entermonitor v2;
+label01:
+v3 = v0.<io.quarkus.bootstrap.runner.RunnerClassLoader: boolean postBootPhase>;
+if v3 != 0 goto label03;
+exitmonitor v2;
+label02:
+return;
+label03:
+v4 = v0.<io.quarkus.bootstrap.runner.RunnerClassLoader: io.quarkus.bootstrap.runner.ClassLoadingResource[] currentlyBufferedResources>;
+v5 = v4[0];
+if v5 != v1 goto label05;
+exitmonitor v2;
+label04:
+return;
+label05:
+v6 = 1;
+label06:
+v7 = v0.<io.quarkus.bootstrap.runner.RunnerClassLoader: io.quarkus.bootstrap.runner.ClassLoadingResource[] currentlyBufferedResources>;
+v8 = lengthof v7;
+if v6 >= v8 goto label10;
+v9 = v0.<io.quarkus.bootstrap.runner.RunnerClassLoader: io.quarkus.bootstrap.runner.ClassLoadingResource[] currentlyBufferedResources>;
+v10 = v9[v6];
+if v10 == v1 goto label07;
+if v10 != null goto label09;
+label07:
+v11 = v0.<io.quarkus.bootstrap.runner.RunnerClassLoader: io.quarkus.bootstrap.runner.ClassLoadingResource[] currentlyBufferedResources>;
+v12 = v6 - 1;
+v13 = v11[v12];
+v14 = v0.<io.quarkus.bootstrap.runner.RunnerClassLoader: io.quarkus.bootstrap.runner.ClassLoadingResource[] currentlyBufferedResources>;
+v15 = v6 - 1;
+v14[v15] = v1;
+v16 = v0.<io.quarkus.bootstrap.runner.RunnerClassLoader: io.quarkus.bootstrap.runner.ClassLoadingResource[] currentlyBufferedResources>;
+v16[v6] = v13;
+exitmonitor v2;
+label08:
+return;
+label09:
+v6 = v6 + 1;
+goto label06;
+label10:
+v17 = v0.<io.quarkus.bootstrap.runner.RunnerClassLoader: io.quarkus.bootstrap.runner.ClassLoadingResource[] currentlyBufferedResources>;
+v18 = v0.<io.quarkus.bootstrap.runner.RunnerClassLoader: io.quarkus.bootstrap.runner.ClassLoadingResource[] currentlyBufferedResources>;
+v19 = lengthof v18;
+v20 = v19 - 1;
+v21 = v17[v20];
+v22 = v0.<io.quarkus.bootstrap.runner.RunnerClassLoader: io.quarkus.bootstrap.runner.ClassLoadingResource[] currentlyBufferedResources>;
+v23 = v0.<io.quarkus.bootstrap.runner.RunnerClassLoader: io.quarkus.bootstrap.runner.ClassLoadingResource[] currentlyBufferedResources>;
+v24 = lengthof v23;
+v25 = v24 - 1;
+v22[v25] = v1;
+exitmonitor v2;
+label11:
+goto label13;
+label12:
+v26 := @caughtexception;
+exitmonitor v2;
+throw v26;
+label13:
+interfaceinvoke v21.<io.quarkus.bootstrap.runner.ClassLoadingResource: void resetInternalCaches()>();
+return;
+catch java.lang.Throwable from label01 to label02 with label12;
+catch java.lang.Throwable from label03 to label04 with label12;
+catch java.lang.Throwable from label05 to label08 with label12;
+catch java.lang.Throwable from label09 to label11 with label12;
+}
+protected java.net.URL findResource(java.lang.String)
+{
+io.quarkus.bootstrap.runner.RunnerClassLoader v0;
+io.quarkus.bootstrap.runner.ClassLoadingResource v8;
+java.net.URL v9;
+java.util.Set v3;
+io.quarkus.bootstrap.runner.ClassLoadingResource[] v5;
+int v6, v7;
+java.lang.String v1, v2;
+boolean v4;
+v0 := @this: io.quarkus.bootstrap.runner.RunnerClassLoader;
+v1 := @parameter0: java.lang.String;
+v2 = specialinvoke v0.<io.quarkus.bootstrap.runner.RunnerClassLoader: java.lang.String sanitizeName(java.lang.String)>(v1);
+v3 = v0.<io.quarkus.bootstrap.runner.RunnerClassLoader: java.util.Set nonExistentResources>;
+v4 = interfaceinvoke v3.<java.util.Set: boolean contains(java.lang.Object)>(v2);
+if v4 == 0 goto label1;
+return null;
+label1:
+v5 = specialinvoke v0.<io.quarkus.bootstrap.runner.RunnerClassLoader: io.quarkus.bootstrap.runner.ClassLoadingResource[] getClassLoadingResources(java.lang.String)>(v2);
+if v5 != null goto label2;
+return null;
+label2:
+v6 = lengthof v5;
+v7 = 0;
+label3:
+if v7 >= v6 goto label5;
+v8 = v5[v7];
+specialinvoke v0.<io.quarkus.bootstrap.runner.RunnerClassLoader: void accessingResource(io.quarkus.bootstrap.runner.ClassLoadingResource)>(v8);
+v9 = interfaceinvoke v8.<io.quarkus.bootstrap.runner.ClassLoadingResource: java.net.URL getResourceURL(java.lang.String)>(v2);
+if v9 == null goto label4;
+return v9;
+label4:
+v7 = v7 + 1;
+goto label3;
+label5:
+return null;
+}
+private java.lang.String sanitizeName(java.lang.String)
+{
+io.quarkus.bootstrap.runner.RunnerClassLoader v0;
+int v2;
+char v3;
+java.lang.String v1, v4;
+v0 := @this: io.quarkus.bootstrap.runner.RunnerClassLoader;
+v1 := @parameter0: java.lang.String;
+v2 = virtualinvoke v1.<java.lang.String: int length()>();
+if v2 <= 0 goto label1;
+v3 = virtualinvoke v1.<java.lang.String: char charAt(int)>(0);
+if v3 != 47 goto label1;
+v4 = virtualinvoke v1.<java.lang.String: java.lang.String substring(int)>(1);
+return v4;
+label1:
+return v1;
+}
+private io.quarkus.bootstrap.runner.ClassLoadingResource[] getClassLoadingResources(java.lang.String)
+{
+io.quarkus.bootstrap.runner.RunnerClassLoader v0;
+java.util.List v6;
+java.util.Map v11, v13, v2, v9;
+java.lang.Object v10, v12, v3;
+java.lang.String v1, v4;
+boolean v5, v7, v8;
+v0 := @this: io.quarkus.bootstrap.runner.RunnerClassLoader;
+v1 := @parameter0: java.lang.String;
+v2 = v0.<io.quarkus.bootstrap.runner.RunnerClassLoader: java.util.Map directlyIndexedResourcesIndexMap>;
+v3 = interfaceinvoke v2.<java.util.Map: java.lang.Object get(java.lang.Object)>(v1);
+if v3 == null goto label1;
+return v3;
+label1:
+v4 = specialinvoke v0.<io.quarkus.bootstrap.runner.RunnerClassLoader: java.lang.String getDirNameFromResourceName(java.lang.String)>(v1);
+if v4 != null goto label2;
+v4 = "";
+label2:
+v5 = virtualinvoke v4.<java.lang.String: boolean equals(java.lang.Object)>(v1);
+if v5 != 0 goto label4;
+v6 = v0.<io.quarkus.bootstrap.runner.RunnerClassLoader: java.util.List fullyIndexedDirectories>;
+v7 = interfaceinvoke v6.<java.util.List: boolean contains(java.lang.Object)>(v4);
+if v7 == 0 goto label4;
+v8 = virtualinvoke v4.<java.lang.String: boolean isEmpty()>();
+if v8 == 0 goto label3;
+v9 = v0.<io.quarkus.bootstrap.runner.RunnerClassLoader: java.util.Map resourceDirectoryMap>;
+v10 = interfaceinvoke v9.<java.util.Map: java.lang.Object get(java.lang.Object)>(v1);
+return v10;
+label3:
+return null;
+label4:
+v11 = v0.<io.quarkus.bootstrap.runner.RunnerClassLoader: java.util.Map resourceDirectoryMap>;
+v12 = interfaceinvoke v11.<java.util.Map: java.lang.Object get(java.lang.Object)>(v4);
+if v12 != null goto label5;
+v13 = v0.<io.quarkus.bootstrap.runner.RunnerClassLoader: java.util.Map resourceDirectoryMap>;
+interfaceinvoke v13.<java.util.Map: java.lang.Object get(java.lang.Object)>(v1);
+label5:
+return v12;
+}
+protected java.util.Enumeration findResources(java.lang.String)
+{
+io.quarkus.bootstrap.runner.RunnerClassLoader v0;
+io.quarkus.bootstrap.runner.ClassLoadingResource v11;
+java.util.Enumeration v13, v5, v7;
+java.net.URL v12;
+java.util.Set v3;
+java.util.ArrayList v8;
+io.quarkus.bootstrap.runner.ClassLoadingResource[] v6;
+int v10, v9;
+java.lang.String v1, v2;
+boolean v4;
+v0 := @this: io.quarkus.bootstrap.runner.RunnerClassLoader;
+v1 := @parameter0: java.lang.String;
+v2 = specialinvoke v0.<io.quarkus.bootstrap.runner.RunnerClassLoader: java.lang.String sanitizeName(java.lang.String)>(v1);
+v3 = v0.<io.quarkus.bootstrap.runner.RunnerClassLoader: java.util.Set nonExistentResources>;
+v4 = interfaceinvoke v3.<java.util.Set: boolean contains(java.lang.Object)>(v2);
+if v4 == 0 goto label1;
+v5 = staticinvoke <java.util.Collections: java.util.Enumeration emptyEnumeration()>();
+return v5;
+label1:
+v6 = specialinvoke v0.<io.quarkus.bootstrap.runner.RunnerClassLoader: io.quarkus.bootstrap.runner.ClassLoadingResource[] getClassLoadingResources(java.lang.String)>(v2);
+if v6 != null goto label2;
+v7 = staticinvoke <java.util.Collections: java.util.Enumeration emptyEnumeration()>();
+return v7;
+label2:
+v8 = new java.util.ArrayList;
+specialinvoke v8.<java.util.ArrayList: void <init>()>();
+v9 = lengthof v6;
+v10 = 0;
+label3:
+if v10 >= v9 goto label5;
+v11 = v6[v10];
+specialinvoke v0.<io.quarkus.bootstrap.runner.RunnerClassLoader: void accessingResource(io.quarkus.bootstrap.runner.ClassLoadingResource)>(v11);
+v12 = interfaceinvoke v11.<io.quarkus.bootstrap.runner.ClassLoadingResource: java.net.URL getResourceURL(java.lang.String)>(v2);
+if v12 == null goto label4;
+interfaceinvoke v8.<java.util.List: boolean add(java.lang.Object)>(v12);
+label4:
+v10 = v10 + 1;
+goto label3;
+label5:
+v13 = staticinvoke <java.util.Collections: java.util.Enumeration enumeration(java.util.Collection)>(v8);
+return v13;
+}
+private void definePackage(java.lang.String, io.quarkus.bootstrap.runner.ClassLoadingResource[])
+{
+io.quarkus.bootstrap.runner.ManifestInfo v9;
+java.lang.Throwable v16;
+io.quarkus.bootstrap.runner.RunnerClassLoader v0;
+io.quarkus.bootstrap.runner.ClassLoadingResource v8;
+int v6, v7;
+java.lang.String v1, v10, v11, v12, v13, v14, v15;
+java.lang.Package v3, v5;
+io.quarkus.bootstrap.runner.ClassLoadingResource[] v2;
+java.lang.Object v4;
+v0 := @this: io.quarkus.bootstrap.runner.RunnerClassLoader;
+v1 := @parameter0: java.lang.String;
+v2 := @parameter1: io.quarkus.bootstrap.runner.ClassLoadingResource[];
+if v1 == null goto label9;
+v3 = virtualinvoke v0.<io.quarkus.bootstrap.runner.RunnerClassLoader: java.lang.Package getPackage(java.lang.String)>(v1);
+if v3 != null goto label9;
+v4 = virtualinvoke v0.<io.quarkus.bootstrap.runner.RunnerClassLoader: java.lang.Object getClassLoadingLock(java.lang.String)>(v1);
+entermonitor v4;
+label1:
+v5 = virtualinvoke v0.<io.quarkus.bootstrap.runner.RunnerClassLoader: java.lang.Package getPackage(java.lang.String)>(v1);
+if v5 != null goto label6;
+v6 = lengthof v2;
+v7 = 0;
+label2:
+if v7 >= v6 goto label5;
+v8 = v2[v7];
+v9 = interfaceinvoke v8.<io.quarkus.bootstrap.runner.ClassLoadingResource: io.quarkus.bootstrap.runner.ManifestInfo getManifestInfo()>();
+if v9 == null goto label4;
+v10 = virtualinvoke v9.<io.quarkus.bootstrap.runner.ManifestInfo: java.lang.String getSpecTitle()>();
+v11 = virtualinvoke v9.<io.quarkus.bootstrap.runner.ManifestInfo: java.lang.String getSpecVersion()>();
+v12 = virtualinvoke v9.<io.quarkus.bootstrap.runner.ManifestInfo: java.lang.String getSpecVendor()>();
+v13 = virtualinvoke v9.<io.quarkus.bootstrap.runner.ManifestInfo: java.lang.String getImplTitle()>();
+v14 = virtualinvoke v9.<io.quarkus.bootstrap.runner.ManifestInfo: java.lang.String getImplVersion()>();
+v15 = virtualinvoke v9.<io.quarkus.bootstrap.runner.ManifestInfo: java.lang.String getImplVendor()>();
+virtualinvoke v0.<io.quarkus.bootstrap.runner.RunnerClassLoader: java.lang.Package definePackage(java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.net.URL)>(v1, v10, v11, v12, v13, v14, v15, null);
+exitmonitor v4;
+label3:
+return;
+label4:
+v7 = v7 + 1;
+goto label2;
+label5:
+virtualinvoke v0.<io.quarkus.bootstrap.runner.RunnerClassLoader: java.lang.Package definePackage(java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.net.URL)>(v1, null, null, null, null, null, null, null);
+label6:
+exitmonitor v4;
+label7:
+goto label9;
+label8:
+v16 := @caughtexception;
+exitmonitor v4;
+throw v16;
+label9:
+return;
+catch java.lang.Throwable from label1 to label3 with label8;
+catch java.lang.Throwable from label4 to label7 with label8;
+}
+private java.lang.String getPackageNameFromClassName(java.lang.String)
+{
+io.quarkus.bootstrap.runner.RunnerClassLoader v0;
+int v2, v3;
+java.lang.String v1, v4;
+v0 := @this: io.quarkus.bootstrap.runner.RunnerClassLoader;
+v1 := @parameter0: java.lang.String;
+v2 = virtualinvoke v1.<java.lang.String: int lastIndexOf(int)>(46);
+v3 = (int) -1;
+if v2 != v3 goto label1;
+return null;
+label1:
+v4 = virtualinvoke v1.<java.lang.String: java.lang.String substring(int,int)>(0, v2);
+return v4;
+}
+private java.lang.String getDirNameFromResourceName(java.lang.String)
+{
+io.quarkus.bootstrap.runner.RunnerClassLoader v0;
+int v2, v3;
+java.lang.String v1, v4;
+v0 := @this: io.quarkus.bootstrap.runner.RunnerClassLoader;
+v1 := @parameter0: java.lang.String;
+v2 = virtualinvoke v1.<java.lang.String: int lastIndexOf(int)>(47);
+v3 = (int) -1;
+if v2 != v3 goto label1;
+return null;
+label1:
+v4 = virtualinvoke v1.<java.lang.String: java.lang.String substring(int,int)>(0, v2);
+return v4;
+}
+protected java.lang.Class findClass(java.lang.String, java.lang.String)
+{
+io.quarkus.bootstrap.runner.RunnerClassLoader v0;
+java.lang.Class v3;
+java.lang.ClassNotFoundException v4;
+java.lang.String v1, v2;
+v0 := @this: io.quarkus.bootstrap.runner.RunnerClassLoader;
+v1 := @parameter0: java.lang.String;
+v2 := @parameter1: java.lang.String;
+label1:
+v3 = virtualinvoke v0.<io.quarkus.bootstrap.runner.RunnerClassLoader: java.lang.Class loadClass(java.lang.String,boolean)>(v2, 0);
+label2:
+return v3;
+label3:
+v4 := @caughtexception;
+return null;
+catch java.lang.ClassNotFoundException from label1 to label2 with label3;
+}
+public void close()
+{
+io.quarkus.bootstrap.runner.RunnerClassLoader v0;
+io.quarkus.bootstrap.runner.ClassLoadingResource v9;
+java.util.Iterator v3;
+java.util.Set v2;
+java.util.Map v1;
+int v7, v8;
+java.lang.Object v5, v6;
+boolean v4;
+v0 := @this: io.quarkus.bootstrap.runner.RunnerClassLoader;
+v1 = v0.<io.quarkus.bootstrap.runner.RunnerClassLoader: java.util.Map resourceDirectoryMap>;
+v2 = interfaceinvoke v1.<java.util.Map: java.util.Set entrySet()>();
+v3 = interfaceinvoke v2.<java.util.Set: java.util.Iterator iterator()>();
+label1:
+v4 = interfaceinvoke v3.<java.util.Iterator: boolean hasNext()>();
+if v4 == 0 goto label3;
+v5 = interfaceinvoke v3.<java.util.Iterator: java.lang.Object next()>();
+v6 = interfaceinvoke v5.<java.util.Map$Entry: java.lang.Object getValue()>();
+v7 = lengthof v6;
+v8 = 0;
+label2:
+if v8 >= v7 goto label1;
+v9 = v6[v8];
+interfaceinvoke v9.<io.quarkus.bootstrap.runner.ClassLoadingResource: void close()>();
+v8 = v8 + 1;
+goto label2;
+label3:
+return;
+}
+public void resetInternalCaches()
+{
+java.lang.Throwable v11;
+io.quarkus.bootstrap.runner.RunnerClassLoader v0;
+io.quarkus.bootstrap.runner.ClassLoadingResource v10;
+java.util.Iterator v4;
+java.util.Set v3;
+io.quarkus.bootstrap.runner.ClassLoadingResource[] v1;
+java.util.Map v2;
+int v8, v9;
+java.lang.Object v6, v7;
+boolean v5;
+v0 := @this: io.quarkus.bootstrap.runner.RunnerClassLoader;
+v1 = v0.<io.quarkus.bootstrap.runner.RunnerClassLoader: io.quarkus.bootstrap.runner.ClassLoadingResource[] currentlyBufferedResources>;
+entermonitor v1;
+label1:
+v2 = v0.<io.quarkus.bootstrap.runner.RunnerClassLoader: java.util.Map resourceDirectoryMap>;
+v3 = interfaceinvoke v2.<java.util.Map: java.util.Set entrySet()>();
+v4 = interfaceinvoke v3.<java.util.Set: java.util.Iterator iterator()>();
+label2:
+v5 = interfaceinvoke v4.<java.util.Iterator: boolean hasNext()>();
+if v5 == 0 goto label4;
+v6 = interfaceinvoke v4.<java.util.Iterator: java.lang.Object next()>();
+v7 = interfaceinvoke v6.<java.util.Map$Entry: java.lang.Object getValue()>();
+v8 = lengthof v7;
+v9 = 0;
+label3:
+if v9 >= v8 goto label2;
+v10 = v7[v9];
+interfaceinvoke v10.<io.quarkus.bootstrap.runner.ClassLoadingResource: void resetInternalCaches()>();
+v9 = v9 + 1;
+goto label3;
+label4:
+v0.<io.quarkus.bootstrap.runner.RunnerClassLoader: boolean postBootPhase> = 1;
+exitmonitor v1;
+label5:
+goto label7;
+label6:
+v11 := @caughtexception;
+exitmonitor v1;
+throw v11;
+label7:
+return;
+catch java.lang.Throwable from label1 to label5 with label6;
+}
+}

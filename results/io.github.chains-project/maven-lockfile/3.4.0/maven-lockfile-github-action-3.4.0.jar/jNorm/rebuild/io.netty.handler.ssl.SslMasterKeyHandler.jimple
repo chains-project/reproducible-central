@@ -1,0 +1,159 @@
+public abstract class io.netty.handler.ssl.SslMasterKeyHandler extends io.netty.channel.ChannelInboundHandlerAdapter
+{
+private static final io.netty.util.internal.logging.InternalLogger logger;
+private static final java.lang.Class SSL_SESSIONIMPL_CLASS;
+private static final java.lang.reflect.Field SSL_SESSIONIMPL_MASTER_SECRET_FIELD;
+public static final java.lang.String SYSTEM_PROP_KEY;
+private static final java.lang.Throwable UNAVAILABILITY_CAUSE;
+protected void <init>()
+{
+io.netty.handler.ssl.SslMasterKeyHandler v0;
+v0 := @this: io.netty.handler.ssl.SslMasterKeyHandler;
+specialinvoke v0.<io.netty.channel.ChannelInboundHandlerAdapter: void <init>()>();
+return;
+}
+public static void ensureSunSslEngineAvailability()
+{
+java.lang.Throwable v0, v2;
+java.lang.IllegalStateException v1;
+v0 = <io.netty.handler.ssl.SslMasterKeyHandler: java.lang.Throwable UNAVAILABILITY_CAUSE>;
+if v0 == null goto label1;
+v1 = new java.lang.IllegalStateException;
+v2 = <io.netty.handler.ssl.SslMasterKeyHandler: java.lang.Throwable UNAVAILABILITY_CAUSE>;
+specialinvoke v1.<java.lang.IllegalStateException: void <init>(java.lang.String,java.lang.Throwable)>("Failed to find SSLSessionImpl on classpath", v2);
+throw v1;
+label1:
+return;
+}
+public static java.lang.Throwable sunSslEngineUnavailabilityCause()
+{
+java.lang.Throwable v0;
+v0 = <io.netty.handler.ssl.SslMasterKeyHandler: java.lang.Throwable UNAVAILABILITY_CAUSE>;
+return v0;
+}
+public static boolean isSunSslEngineAvailable()
+{
+java.lang.Throwable v0;
+boolean v1;
+v0 = <io.netty.handler.ssl.SslMasterKeyHandler: java.lang.Throwable UNAVAILABILITY_CAUSE>;
+if v0 != null goto label1;
+v1 = 1;
+goto label2;
+label1:
+v1 = 0;
+label2:
+return v1;
+}
+protected abstract void accept(javax.crypto.SecretKey, javax.net.ssl.SSLSession);
+public final void userEventTriggered(io.netty.channel.ChannelHandlerContext, java.lang.Object)
+{
+io.netty.handler.ssl.SslMasterKeyHandler v0;
+javax.crypto.spec.SecretKeySpec v19;
+javax.net.ssl.SSLEngine v7;
+io.netty.channel.ChannelHandlerContext v1;
+javax.net.ssl.SSLSession v8;
+io.netty.handler.ssl.SslHandshakeCompletionEvent v3;
+boolean v12, v17, v18, v4, v9;
+java.lang.IllegalAccessException v15;
+io.netty.channel.ChannelPipeline v5;
+java.lang.IllegalArgumentException v16;
+java.lang.reflect.Field v13;
+io.netty.channel.ChannelHandler v6;
+java.lang.Class v10, v11;
+java.lang.Object v14, v2;
+v0 := @this: io.netty.handler.ssl.SslMasterKeyHandler;
+v1 := @parameter0: io.netty.channel.ChannelHandlerContext;
+v2 := @parameter1: java.lang.Object;
+v3 = <io.netty.handler.ssl.SslHandshakeCompletionEvent: io.netty.handler.ssl.SslHandshakeCompletionEvent SUCCESS>;
+if v2 != v3 goto label6;
+v4 = virtualinvoke v0.<io.netty.handler.ssl.SslMasterKeyHandler: boolean masterKeyHandlerEnabled()>();
+if v4 == 0 goto label6;
+v5 = interfaceinvoke v1.<io.netty.channel.ChannelHandlerContext: io.netty.channel.ChannelPipeline pipeline()>();
+v6 = interfaceinvoke v5.<io.netty.channel.ChannelPipeline: io.netty.channel.ChannelHandler get(java.lang.Class)>(class "Lio/netty/handler/ssl/SslHandler;");
+v7 = virtualinvoke v6.<io.netty.handler.ssl.SslHandler: javax.net.ssl.SSLEngine engine()>();
+v8 = virtualinvoke v7.<javax.net.ssl.SSLEngine: javax.net.ssl.SSLSession getSession()>();
+v9 = staticinvoke <io.netty.handler.ssl.SslMasterKeyHandler: boolean isSunSslEngineAvailable()>();
+if v9 == 0 goto label5;
+v10 = virtualinvoke v8.<java.lang.Object: java.lang.Class getClass()>();
+v11 = <io.netty.handler.ssl.SslMasterKeyHandler: java.lang.Class SSL_SESSIONIMPL_CLASS>;
+v12 = virtualinvoke v10.<java.lang.Object: boolean equals(java.lang.Object)>(v11);
+if v12 == 0 goto label5;
+label1:
+v13 = <io.netty.handler.ssl.SslMasterKeyHandler: java.lang.reflect.Field SSL_SESSIONIMPL_MASTER_SECRET_FIELD>;
+v14 = virtualinvoke v13.<java.lang.reflect.Field: java.lang.Object get(java.lang.Object)>(v8);
+label2:
+goto label4;
+label3:
+v15 := @caughtexception;
+v16 = new java.lang.IllegalArgumentException;
+specialinvoke v16.<java.lang.IllegalArgumentException: void <init>(java.lang.String,java.lang.Throwable)>("Failed to access the field \'masterSecret\' via reflection.", v15);
+throw v16;
+label4:
+virtualinvoke v0.<io.netty.handler.ssl.SslMasterKeyHandler: void accept(javax.crypto.SecretKey,javax.net.ssl.SSLSession)>(v14, v8);
+goto label6;
+label5:
+v17 = staticinvoke <io.netty.handler.ssl.OpenSsl: boolean isAvailable()>();
+if v17 == 0 goto label6;
+v18 = v7 instanceof io.netty.handler.ssl.ReferenceCountedOpenSslEngine;
+if v18 == 0 goto label6;
+v19 = virtualinvoke v7.<io.netty.handler.ssl.ReferenceCountedOpenSslEngine: javax.crypto.spec.SecretKeySpec masterKey()>();
+virtualinvoke v0.<io.netty.handler.ssl.SslMasterKeyHandler: void accept(javax.crypto.SecretKey,javax.net.ssl.SSLSession)>(v19, v8);
+label6:
+interfaceinvoke v1.<io.netty.channel.ChannelHandlerContext: io.netty.channel.ChannelHandlerContext fireUserEventTriggered(java.lang.Object)>(v2);
+return;
+catch java.lang.IllegalAccessException from label1 to label2 with label3;
+}
+protected boolean masterKeyHandlerEnabled()
+{
+io.netty.handler.ssl.SslMasterKeyHandler v0;
+boolean v1;
+v0 := @this: io.netty.handler.ssl.SslMasterKeyHandler;
+v1 = staticinvoke <io.netty.util.internal.SystemPropertyUtil: boolean getBoolean(java.lang.String,boolean)>("io.netty.ssl.masterKeyHandler", 0);
+return v1;
+}
+public static io.netty.handler.ssl.SslMasterKeyHandler newWireSharkSslMasterKeyHandler()
+{
+io.netty.handler.ssl.SslMasterKeyHandler$WiresharkSslMasterKeyHandler v0;
+v0 = new io.netty.handler.ssl.SslMasterKeyHandler$WiresharkSslMasterKeyHandler;
+specialinvoke v0.<io.netty.handler.ssl.SslMasterKeyHandler$WiresharkSslMasterKeyHandler: void <init>()>();
+return v0;
+}
+static void <clinit>()
+{
+java.lang.Throwable v3, v4;
+java.lang.reflect.Field v2;
+io.netty.util.internal.logging.InternalLogger v0, v5, v7, v8;
+java.lang.Class v1;
+java.lang.String v9;
+boolean v6;
+v0 = staticinvoke <io.netty.util.internal.logging.InternalLoggerFactory: io.netty.util.internal.logging.InternalLogger getInstance(java.lang.Class)>(class "Lio/netty/handler/ssl/SslMasterKeyHandler;");
+<io.netty.handler.ssl.SslMasterKeyHandler: io.netty.util.internal.logging.InternalLogger logger> = v0;
+v1 = null;
+v2 = null;
+label1:
+v1 = staticinvoke <java.lang.Class: java.lang.Class forName(java.lang.String)>("sun.security.ssl.SSLSessionImpl");
+v2 = virtualinvoke v1.<java.lang.Class: java.lang.reflect.Field getDeclaredField(java.lang.String)>("masterSecret");
+v3 = staticinvoke <io.netty.util.internal.ReflectionUtil: java.lang.Throwable trySetAccessible(java.lang.reflect.AccessibleObject,boolean)>(v2, 1);
+label2:
+goto label5;
+label3:
+v4 := @caughtexception;
+v3 = v4;
+v5 = <io.netty.handler.ssl.SslMasterKeyHandler: io.netty.util.internal.logging.InternalLogger logger>;
+v6 = interfaceinvoke v5.<io.netty.util.internal.logging.InternalLogger: boolean isTraceEnabled()>();
+if v6 == 0 goto label4;
+v7 = <io.netty.handler.ssl.SslMasterKeyHandler: io.netty.util.internal.logging.InternalLogger logger>;
+interfaceinvoke v7.<io.netty.util.internal.logging.InternalLogger: void debug(java.lang.String,java.lang.Throwable)>("sun.security.ssl.SSLSessionImpl is unavailable.", v4);
+goto label5;
+label4:
+v8 = <io.netty.handler.ssl.SslMasterKeyHandler: io.netty.util.internal.logging.InternalLogger logger>;
+v9 = virtualinvoke v4.<java.lang.Throwable: java.lang.String getMessage()>();
+interfaceinvoke v8.<io.netty.util.internal.logging.InternalLogger: void debug(java.lang.String,java.lang.Object)>("sun.security.ssl.SSLSessionImpl is unavailable: {}", v9);
+label5:
+<io.netty.handler.ssl.SslMasterKeyHandler: java.lang.Throwable UNAVAILABILITY_CAUSE> = v3;
+<io.netty.handler.ssl.SslMasterKeyHandler: java.lang.Class SSL_SESSIONIMPL_CLASS> = v1;
+<io.netty.handler.ssl.SslMasterKeyHandler: java.lang.reflect.Field SSL_SESSIONIMPL_MASTER_SECRET_FIELD> = v2;
+return;
+catch java.lang.Throwable from label1 to label2 with label3;
+}
+}

@@ -1,0 +1,419 @@
+public class io.vertx.core.http.impl.HttpServerImpl extends io.vertx.core.net.impl.TCPServerBase implements io.vertx.core.http.HttpServer, io.vertx.core.Closeable, io.vertx.core.spi.metrics.MetricsProvider
+{
+static final io.vertx.core.impl.logging.Logger log;
+private static final io.vertx.core.Handler DEFAULT_EXCEPTION_HANDLER;
+private static final java.lang.String FLASH_POLICY_HANDLER_PROP_NAME;
+private static final java.lang.String DISABLE_WEBSOCKETS_PROP_NAME;
+private static final java.lang.String DISABLE_H2C_PROP_NAME;
+static final boolean USE_FLASH_POLICY_HANDLER;
+static final boolean DISABLE_WEBSOCKETS;
+final io.vertx.core.http.HttpServerOptions options;
+private final boolean disableH2c;
+private final io.vertx.core.http.impl.HttpServerImpl$HttpStreamHandler wsStream;
+private final io.vertx.core.http.impl.HttpServerImpl$HttpStreamHandler requestStream;
+private io.vertx.core.Handler invalidRequestHandler;
+private io.vertx.core.Handler connectionHandler;
+private io.vertx.core.Handler exceptionHandler;
+public void <init>(io.vertx.core.impl.VertxInternal, io.vertx.core.http.HttpServerOptions)
+{
+io.vertx.core.http.impl.HttpServerImpl v0;
+io.vertx.core.impl.VertxInternal v1;
+io.vertx.core.http.impl.HttpServerImpl$HttpStreamHandler v3, v4;
+io.vertx.core.http.HttpServerOptions v2, v5;
+boolean v6, v7, v8;
+v0 := @this: io.vertx.core.http.impl.HttpServerImpl;
+v1 := @parameter0: io.vertx.core.impl.VertxInternal;
+v2 := @parameter1: io.vertx.core.http.HttpServerOptions;
+specialinvoke v0.<io.vertx.core.net.impl.TCPServerBase: void <init>(io.vertx.core.impl.VertxInternal,io.vertx.core.net.NetServerOptions)>(v1, v2);
+v3 = new io.vertx.core.http.impl.HttpServerImpl$HttpStreamHandler;
+specialinvoke v3.<io.vertx.core.http.impl.HttpServerImpl$HttpStreamHandler: void <init>(io.vertx.core.http.impl.HttpServerImpl)>(v0);
+v0.<io.vertx.core.http.impl.HttpServerImpl: io.vertx.core.http.impl.HttpServerImpl$HttpStreamHandler wsStream> = v3;
+v4 = new io.vertx.core.http.impl.HttpServerImpl$HttpStreamHandler;
+specialinvoke v4.<io.vertx.core.http.impl.HttpServerImpl$HttpStreamHandler: void <init>(io.vertx.core.http.impl.HttpServerImpl)>(v0);
+v0.<io.vertx.core.http.impl.HttpServerImpl: io.vertx.core.http.impl.HttpServerImpl$HttpStreamHandler requestStream> = v4;
+v5 = new io.vertx.core.http.HttpServerOptions;
+specialinvoke v5.<io.vertx.core.http.HttpServerOptions: void <init>(io.vertx.core.http.HttpServerOptions)>(v2);
+v0.<io.vertx.core.http.impl.HttpServerImpl: io.vertx.core.http.HttpServerOptions options> = v5;
+v6 = staticinvoke <java.lang.Boolean: boolean getBoolean(java.lang.String)>("vertx.disableH2c");
+if v6 != 0 goto label1;
+v7 = virtualinvoke v2.<io.vertx.core.http.HttpServerOptions: boolean isSsl()>();
+if v7 == 0 goto label2;
+label1:
+v8 = 1;
+goto label3;
+label2:
+v8 = 0;
+label3:
+v0.<io.vertx.core.http.impl.HttpServerImpl: boolean disableH2c> = v8;
+return;
+}
+protected io.vertx.core.spi.metrics.TCPMetrics createMetrics(io.vertx.core.net.SocketAddress)
+{
+io.vertx.core.http.impl.HttpServerImpl v0;
+io.vertx.core.impl.VertxInternal v2;
+io.vertx.core.spi.metrics.HttpServerMetrics v5;
+io.vertx.core.http.HttpServerOptions v4;
+io.vertx.core.spi.metrics.VertxMetrics v3;
+io.vertx.core.net.SocketAddress v1;
+v0 := @this: io.vertx.core.http.impl.HttpServerImpl;
+v1 := @parameter0: io.vertx.core.net.SocketAddress;
+v2 = v0.<io.vertx.core.http.impl.HttpServerImpl: io.vertx.core.impl.VertxInternal vertx>;
+v3 = interfaceinvoke v2.<io.vertx.core.impl.VertxInternal: io.vertx.core.spi.metrics.VertxMetrics metricsSPI()>();
+if v3 == null goto label1;
+v4 = v0.<io.vertx.core.http.impl.HttpServerImpl: io.vertx.core.http.HttpServerOptions options>;
+v5 = interfaceinvoke v3.<io.vertx.core.spi.metrics.VertxMetrics: io.vertx.core.spi.metrics.HttpServerMetrics createHttpServerMetrics(io.vertx.core.http.HttpServerOptions,io.vertx.core.net.SocketAddress)>(v4, v1);
+return v5;
+label1:
+return null;
+}
+public synchronized io.vertx.core.http.HttpServer requestHandler(io.vertx.core.Handler)
+{
+io.vertx.core.http.impl.HttpServerImpl v0;
+io.vertx.core.http.impl.HttpServerImpl$HttpStreamHandler v2;
+io.vertx.core.Handler v1;
+v0 := @this: io.vertx.core.http.impl.HttpServerImpl;
+v1 := @parameter0: io.vertx.core.Handler;
+v2 = v0.<io.vertx.core.http.impl.HttpServerImpl: io.vertx.core.http.impl.HttpServerImpl$HttpStreamHandler requestStream>;
+virtualinvoke v2.<io.vertx.core.http.impl.HttpServerImpl$HttpStreamHandler: io.vertx.core.streams.ReadStream handler(io.vertx.core.Handler)>(v1);
+return v0;
+}
+public io.vertx.core.streams.ReadStream requestStream()
+{
+io.vertx.core.http.impl.HttpServerImpl v0;
+io.vertx.core.http.impl.HttpServerImpl$HttpStreamHandler v1;
+v0 := @this: io.vertx.core.http.impl.HttpServerImpl;
+v1 = v0.<io.vertx.core.http.impl.HttpServerImpl: io.vertx.core.http.impl.HttpServerImpl$HttpStreamHandler requestStream>;
+return v1;
+}
+public io.vertx.core.http.HttpServer webSocketHandler(io.vertx.core.Handler)
+{
+io.vertx.core.http.impl.HttpServerImpl v0;
+io.vertx.core.streams.ReadStream v2;
+io.vertx.core.Handler v1;
+v0 := @this: io.vertx.core.http.impl.HttpServerImpl;
+v1 := @parameter0: io.vertx.core.Handler;
+v2 = virtualinvoke v0.<io.vertx.core.http.impl.HttpServerImpl: io.vertx.core.streams.ReadStream webSocketStream()>();
+interfaceinvoke v2.<io.vertx.core.streams.ReadStream: io.vertx.core.streams.ReadStream handler(io.vertx.core.Handler)>(v1);
+return v0;
+}
+public io.vertx.core.Handler requestHandler()
+{
+io.vertx.core.http.impl.HttpServerImpl v0;
+io.vertx.core.http.impl.HttpServerImpl$HttpStreamHandler v1;
+io.vertx.core.Handler v2;
+v0 := @this: io.vertx.core.http.impl.HttpServerImpl;
+v1 = v0.<io.vertx.core.http.impl.HttpServerImpl: io.vertx.core.http.impl.HttpServerImpl$HttpStreamHandler requestStream>;
+v2 = virtualinvoke v1.<io.vertx.core.http.impl.HttpServerImpl$HttpStreamHandler: io.vertx.core.Handler handler()>();
+return v2;
+}
+public io.vertx.core.http.HttpServer invalidRequestHandler(io.vertx.core.Handler)
+{
+io.vertx.core.http.impl.HttpServerImpl v0;
+io.vertx.core.Handler v1;
+v0 := @this: io.vertx.core.http.impl.HttpServerImpl;
+v1 := @parameter0: io.vertx.core.Handler;
+v0.<io.vertx.core.http.impl.HttpServerImpl: io.vertx.core.Handler invalidRequestHandler> = v1;
+return v0;
+}
+public synchronized io.vertx.core.http.HttpServer connectionHandler(io.vertx.core.Handler)
+{
+io.vertx.core.http.impl.HttpServerImpl v0;
+java.lang.IllegalStateException v3;
+io.vertx.core.Handler v1;
+boolean v2;
+v0 := @this: io.vertx.core.http.impl.HttpServerImpl;
+v1 := @parameter0: io.vertx.core.Handler;
+v2 = virtualinvoke v0.<io.vertx.core.http.impl.HttpServerImpl: boolean isListening()>();
+if v2 == 0 goto label1;
+v3 = new java.lang.IllegalStateException;
+specialinvoke v3.<java.lang.IllegalStateException: void <init>(java.lang.String)>("Please set handler before server is listening");
+throw v3;
+label1:
+v0.<io.vertx.core.http.impl.HttpServerImpl: io.vertx.core.Handler connectionHandler> = v1;
+return v0;
+}
+public synchronized io.vertx.core.http.HttpServer exceptionHandler(io.vertx.core.Handler)
+{
+io.vertx.core.http.impl.HttpServerImpl v0;
+java.lang.IllegalStateException v3;
+io.vertx.core.Handler v1;
+boolean v2;
+v0 := @this: io.vertx.core.http.impl.HttpServerImpl;
+v1 := @parameter0: io.vertx.core.Handler;
+v2 = virtualinvoke v0.<io.vertx.core.http.impl.HttpServerImpl: boolean isListening()>();
+if v2 == 0 goto label1;
+v3 = new java.lang.IllegalStateException;
+specialinvoke v3.<java.lang.IllegalStateException: void <init>(java.lang.String)>("Please set handler before server is listening");
+throw v3;
+label1:
+v0.<io.vertx.core.http.impl.HttpServerImpl: io.vertx.core.Handler exceptionHandler> = v1;
+return v0;
+}
+public io.vertx.core.Handler webSocketHandler()
+{
+io.vertx.core.http.impl.HttpServerImpl v0;
+io.vertx.core.http.impl.HttpServerImpl$HttpStreamHandler v1;
+io.vertx.core.Handler v2;
+v0 := @this: io.vertx.core.http.impl.HttpServerImpl;
+v1 = v0.<io.vertx.core.http.impl.HttpServerImpl: io.vertx.core.http.impl.HttpServerImpl$HttpStreamHandler wsStream>;
+v2 = virtualinvoke v1.<io.vertx.core.http.impl.HttpServerImpl$HttpStreamHandler: io.vertx.core.Handler handler()>();
+return v2;
+}
+public io.vertx.core.streams.ReadStream webSocketStream()
+{
+io.vertx.core.http.impl.HttpServerImpl v0;
+io.vertx.core.http.impl.HttpServerImpl$HttpStreamHandler v1;
+v0 := @this: io.vertx.core.http.impl.HttpServerImpl;
+v1 = v0.<io.vertx.core.http.impl.HttpServerImpl: io.vertx.core.http.impl.HttpServerImpl$HttpStreamHandler wsStream>;
+return v1;
+}
+public io.vertx.core.Future listen()
+{
+io.vertx.core.http.impl.HttpServerImpl v0;
+int v2;
+io.vertx.core.http.HttpServerOptions v1, v3;
+java.lang.String v4;
+io.vertx.core.Future v5;
+v0 := @this: io.vertx.core.http.impl.HttpServerImpl;
+v1 = v0.<io.vertx.core.http.impl.HttpServerImpl: io.vertx.core.http.HttpServerOptions options>;
+v2 = virtualinvoke v1.<io.vertx.core.http.HttpServerOptions: int getPort()>();
+v3 = v0.<io.vertx.core.http.impl.HttpServerImpl: io.vertx.core.http.HttpServerOptions options>;
+v4 = virtualinvoke v3.<io.vertx.core.http.HttpServerOptions: java.lang.String getHost()>();
+v5 = virtualinvoke v0.<io.vertx.core.http.impl.HttpServerImpl: io.vertx.core.Future listen(int,java.lang.String)>(v2, v4);
+return v5;
+}
+protected java.util.function.BiConsumer childHandler(io.vertx.core.impl.ContextInternal, io.vertx.core.net.SocketAddress)
+{
+io.vertx.core.http.impl.HttpServerImpl v0;
+io.vertx.core.impl.ContextInternal v1;
+java.util.function.Supplier v25;
+io.vertx.core.http.impl.HttpServerWorker v26;
+int v11;
+java.lang.String v10, v14, v15, v9;
+boolean v13, v29, v3, v8;
+io.vertx.core.net.SocketAddress v2;
+io.vertx.core.http.impl.HttpServerConnectionHandler v16;
+io.vertx.core.impl.VertxInternal v27, v4;
+io.vertx.core.impl.WorkerPool v6;
+io.netty.channel.EventLoop v5;
+io.vertx.core.http.impl.HttpServerImpl$HttpStreamHandler v17, v20;
+io.vertx.core.http.HttpServerOptions v12, v28;
+java.lang.ClassLoader v7;
+io.vertx.core.Handler v18, v19, v21, v22, v23, v24, v30;
+v0 := @this: io.vertx.core.http.impl.HttpServerImpl;
+v1 := @parameter0: io.vertx.core.impl.ContextInternal;
+v2 := @parameter1: io.vertx.core.net.SocketAddress;
+v3 = v1 instanceof io.vertx.core.impl.EventLoopContext;
+if v3 != 0 goto label1;
+v4 = v0.<io.vertx.core.http.impl.HttpServerImpl: io.vertx.core.impl.VertxInternal vertx>;
+v5 = interfaceinvoke v1.<io.vertx.core.impl.ContextInternal: io.netty.channel.EventLoop nettyEventLoop()>();
+v6 = interfaceinvoke v1.<io.vertx.core.impl.ContextInternal: io.vertx.core.impl.WorkerPool workerPool()>();
+v7 = interfaceinvoke v1.<io.vertx.core.impl.ContextInternal: java.lang.ClassLoader classLoader()>();
+v1 = interfaceinvoke v4.<io.vertx.core.impl.VertxInternal: io.vertx.core.impl.EventLoopContext createEventLoopContext(io.netty.channel.EventLoop,io.vertx.core.impl.WorkerPool,java.lang.ClassLoader)>(v5, v6, v7);
+label1:
+v8 = interfaceinvoke v2.<io.vertx.core.net.SocketAddress: boolean isInetSocket()>();
+if v8 == 0 goto label2;
+v9 = interfaceinvoke v2.<io.vertx.core.net.SocketAddress: java.lang.String host()>();
+goto label3;
+label2:
+v9 = "localhost";
+label3:
+v10 = v9;
+v11 = interfaceinvoke v2.<io.vertx.core.net.SocketAddress: int port()>();
+v12 = v0.<io.vertx.core.http.impl.HttpServerImpl: io.vertx.core.http.HttpServerOptions options>;
+v13 = virtualinvoke v12.<io.vertx.core.http.HttpServerOptions: boolean isSsl()>();
+if v13 == 0 goto label4;
+v14 = "https";
+goto label5;
+label4:
+v14 = "http";
+label5:
+v15 = dynamicinvoke "makeConcatWithConstants" <java.lang.String (java.lang.String,java.lang.String,int)>(v14, v10, v11) <java.lang.invoke.StringConcatFactory: java.lang.invoke.CallSite makeConcatWithConstants(java.lang.invoke.MethodHandles$Lookup,java.lang.String,java.lang.invoke.MethodType,java.lang.String,java.lang.Object[])>("\u0001://\u0001:\u0001");
+v16 = new io.vertx.core.http.impl.HttpServerConnectionHandler;
+v17 = v0.<io.vertx.core.http.impl.HttpServerImpl: io.vertx.core.http.impl.HttpServerImpl$HttpStreamHandler requestStream>;
+v18 = v17.<io.vertx.core.http.impl.HttpServerImpl$HttpStreamHandler: io.vertx.core.Handler handler>;
+v19 = v0.<io.vertx.core.http.impl.HttpServerImpl: io.vertx.core.Handler invalidRequestHandler>;
+v20 = v0.<io.vertx.core.http.impl.HttpServerImpl: io.vertx.core.http.impl.HttpServerImpl$HttpStreamHandler wsStream>;
+v21 = v20.<io.vertx.core.http.impl.HttpServerImpl$HttpStreamHandler: io.vertx.core.Handler handler>;
+v22 = v0.<io.vertx.core.http.impl.HttpServerImpl: io.vertx.core.Handler connectionHandler>;
+v23 = v0.<io.vertx.core.http.impl.HttpServerImpl: io.vertx.core.Handler exceptionHandler>;
+if v23 != null goto label6;
+v24 = <io.vertx.core.http.impl.HttpServerImpl: io.vertx.core.Handler DEFAULT_EXCEPTION_HANDLER>;
+goto label7;
+label6:
+v24 = v0.<io.vertx.core.http.impl.HttpServerImpl: io.vertx.core.Handler exceptionHandler>;
+label7:
+specialinvoke v16.<io.vertx.core.http.impl.HttpServerConnectionHandler: void <init>(io.vertx.core.http.impl.HttpServerImpl,io.vertx.core.Handler,io.vertx.core.Handler,io.vertx.core.Handler,io.vertx.core.Handler,io.vertx.core.Handler)>(v0, v18, v19, v21, v22, v24);
+virtualinvoke v1.<java.lang.Object: java.lang.Class getClass()>();
+v25 = staticinvoke <io.vertx.core.http.impl.HttpServerImpl$duplicate__1069: java.util.function.Supplier bootstrap$(io.vertx.core.impl.ContextInternal)>(v1);
+v26 = new io.vertx.core.http.impl.HttpServerWorker;
+v27 = v0.<io.vertx.core.http.impl.HttpServerImpl: io.vertx.core.impl.VertxInternal vertx>;
+v28 = v0.<io.vertx.core.http.impl.HttpServerImpl: io.vertx.core.http.HttpServerOptions options>;
+v29 = v0.<io.vertx.core.http.impl.HttpServerImpl: boolean disableH2c>;
+v30 = v16.<io.vertx.core.http.impl.HttpServerConnectionHandler: io.vertx.core.Handler exceptionHandler>;
+specialinvoke v26.<io.vertx.core.http.impl.HttpServerWorker: void <init>(io.vertx.core.impl.EventLoopContext,java.util.function.Supplier,io.vertx.core.http.impl.HttpServerImpl,io.vertx.core.impl.VertxInternal,io.vertx.core.http.HttpServerOptions,java.lang.String,boolean,io.vertx.core.Handler,io.vertx.core.Handler)>(v1, v25, v0, v27, v28, v15, v29, v16, v30);
+return v26;
+}
+protected io.vertx.core.net.impl.SSLHelper createSSLHelper()
+{
+io.vertx.core.http.impl.HttpServerImpl v0;
+java.util.function.Function v6;
+io.vertx.core.net.impl.SSLHelper v1;
+java.util.List v4;
+java.util.stream.Stream v5, v7;
+io.vertx.core.http.HttpServerOptions v2, v3;
+java.lang.Object v9;
+java.util.stream.Collector v8;
+v0 := @this: io.vertx.core.http.impl.HttpServerImpl;
+v1 = new io.vertx.core.net.impl.SSLHelper;
+v2 = v0.<io.vertx.core.http.impl.HttpServerImpl: io.vertx.core.http.HttpServerOptions options>;
+v3 = v0.<io.vertx.core.http.impl.HttpServerImpl: io.vertx.core.http.HttpServerOptions options>;
+v4 = virtualinvoke v3.<io.vertx.core.http.HttpServerOptions: java.util.List getAlpnVersions()>();
+v5 = interfaceinvoke v4.<java.util.List: java.util.stream.Stream stream()>();
+v6 = staticinvoke <io.vertx.core.http.impl.HttpServerImpl$alpnName__1070: java.util.function.Function bootstrap$()>();
+v7 = interfaceinvoke v5.<java.util.stream.Stream: java.util.stream.Stream map(java.util.function.Function)>(v6);
+v8 = staticinvoke <java.util.stream.Collectors: java.util.stream.Collector toList()>();
+v9 = interfaceinvoke v7.<java.util.stream.Stream: java.lang.Object collect(java.util.stream.Collector)>(v8);
+specialinvoke v1.<io.vertx.core.net.impl.SSLHelper: void <init>(io.vertx.core.net.TCPSSLOptions,java.util.List)>(v2, v9);
+return v1;
+}
+public synchronized io.vertx.core.Future listen(io.vertx.core.net.SocketAddress)
+{
+io.vertx.core.http.impl.HttpServerImpl v0;
+java.lang.IllegalStateException v6;
+io.vertx.core.Future v7, v8;
+io.vertx.core.http.impl.HttpServerImpl$HttpStreamHandler v2, v4;
+io.vertx.core.Handler v3, v5;
+io.vertx.core.net.SocketAddress v1;
+v0 := @this: io.vertx.core.http.impl.HttpServerImpl;
+v1 := @parameter0: io.vertx.core.net.SocketAddress;
+v2 = v0.<io.vertx.core.http.impl.HttpServerImpl: io.vertx.core.http.impl.HttpServerImpl$HttpStreamHandler requestStream>;
+v3 = virtualinvoke v2.<io.vertx.core.http.impl.HttpServerImpl$HttpStreamHandler: io.vertx.core.Handler handler()>();
+if v3 != null goto label1;
+v4 = v0.<io.vertx.core.http.impl.HttpServerImpl: io.vertx.core.http.impl.HttpServerImpl$HttpStreamHandler wsStream>;
+v5 = virtualinvoke v4.<io.vertx.core.http.impl.HttpServerImpl$HttpStreamHandler: io.vertx.core.Handler handler()>();
+if v5 != null goto label1;
+v6 = new java.lang.IllegalStateException;
+specialinvoke v6.<java.lang.IllegalStateException: void <init>(java.lang.String)>("Set request or WebSocket handler first");
+throw v6;
+label1:
+v7 = virtualinvoke v0.<io.vertx.core.http.impl.HttpServerImpl: io.vertx.core.Future bind(io.vertx.core.net.SocketAddress)>(v1);
+v8 = interfaceinvoke v7.<io.vertx.core.Future: io.vertx.core.Future map(java.lang.Object)>(v0);
+return v8;
+}
+public io.vertx.core.Future close()
+{
+io.vertx.core.http.impl.HttpServerImpl v0;
+io.vertx.core.impl.VertxInternal v1;
+io.vertx.core.impl.future.PromiseInternal v3;
+io.vertx.core.impl.ContextInternal v2;
+io.vertx.core.Future v4;
+v0 := @this: io.vertx.core.http.impl.HttpServerImpl;
+v1 = v0.<io.vertx.core.http.impl.HttpServerImpl: io.vertx.core.impl.VertxInternal vertx>;
+v2 = interfaceinvoke v1.<io.vertx.core.impl.VertxInternal: io.vertx.core.impl.ContextInternal getOrCreateContext()>();
+v3 = interfaceinvoke v2.<io.vertx.core.impl.ContextInternal: io.vertx.core.impl.future.PromiseInternal promise()>();
+virtualinvoke v0.<io.vertx.core.http.impl.HttpServerImpl: void close(io.vertx.core.Promise)>(v3);
+v4 = interfaceinvoke v3.<io.vertx.core.impl.future.PromiseInternal: io.vertx.core.Future future()>();
+return v4;
+}
+public void close(io.vertx.core.Handler)
+{
+io.vertx.core.http.impl.HttpServerImpl v0;
+io.vertx.core.impl.VertxInternal v2;
+io.vertx.core.impl.future.PromiseInternal v4;
+io.vertx.core.impl.ContextInternal v3;
+io.vertx.core.Handler v1;
+io.vertx.core.Future v5;
+v0 := @this: io.vertx.core.http.impl.HttpServerImpl;
+v1 := @parameter0: io.vertx.core.Handler;
+v2 = v0.<io.vertx.core.http.impl.HttpServerImpl: io.vertx.core.impl.VertxInternal vertx>;
+v3 = interfaceinvoke v2.<io.vertx.core.impl.VertxInternal: io.vertx.core.impl.ContextInternal getOrCreateContext()>();
+v4 = interfaceinvoke v3.<io.vertx.core.impl.ContextInternal: io.vertx.core.impl.future.PromiseInternal promise()>();
+virtualinvoke v0.<io.vertx.core.http.impl.HttpServerImpl: void close(io.vertx.core.Promise)>(v4);
+if v1 == null goto label1;
+v5 = interfaceinvoke v4.<io.vertx.core.impl.future.PromiseInternal: io.vertx.core.Future future()>();
+interfaceinvoke v5.<io.vertx.core.Future: io.vertx.core.Future onComplete(io.vertx.core.Handler)>(v1);
+label1:
+return;
+}
+public synchronized void close(io.vertx.core.Promise)
+{
+io.vertx.core.http.impl.HttpServerImpl v0;
+io.vertx.core.Promise v1;
+io.vertx.core.Future v12;
+io.vertx.core.http.impl.HttpServerImpl$HttpStreamHandler v11, v2, v4, v6, v8, v9;
+io.vertx.core.Handler v10, v13, v3, v5, v7;
+v0 := @this: io.vertx.core.http.impl.HttpServerImpl;
+v1 := @parameter0: io.vertx.core.Promise;
+v2 = v0.<io.vertx.core.http.impl.HttpServerImpl: io.vertx.core.http.impl.HttpServerImpl$HttpStreamHandler wsStream>;
+v3 = virtualinvoke v2.<io.vertx.core.http.impl.HttpServerImpl$HttpStreamHandler: io.vertx.core.Handler endHandler()>();
+if v3 != null goto label1;
+v4 = v0.<io.vertx.core.http.impl.HttpServerImpl: io.vertx.core.http.impl.HttpServerImpl$HttpStreamHandler requestStream>;
+v5 = virtualinvoke v4.<io.vertx.core.http.impl.HttpServerImpl$HttpStreamHandler: io.vertx.core.Handler endHandler()>();
+if v5 == null goto label2;
+label1:
+v6 = v0.<io.vertx.core.http.impl.HttpServerImpl: io.vertx.core.http.impl.HttpServerImpl$HttpStreamHandler wsStream>;
+v7 = virtualinvoke v6.<io.vertx.core.http.impl.HttpServerImpl$HttpStreamHandler: io.vertx.core.Handler endHandler()>();
+v8 = v0.<io.vertx.core.http.impl.HttpServerImpl: io.vertx.core.http.impl.HttpServerImpl$HttpStreamHandler wsStream>;
+virtualinvoke v8.<io.vertx.core.http.impl.HttpServerImpl$HttpStreamHandler: io.vertx.core.streams.ReadStream endHandler(io.vertx.core.Handler)>(null);
+v9 = v0.<io.vertx.core.http.impl.HttpServerImpl: io.vertx.core.http.impl.HttpServerImpl$HttpStreamHandler requestStream>;
+v10 = virtualinvoke v9.<io.vertx.core.http.impl.HttpServerImpl$HttpStreamHandler: io.vertx.core.Handler endHandler()>();
+v11 = v0.<io.vertx.core.http.impl.HttpServerImpl: io.vertx.core.http.impl.HttpServerImpl$HttpStreamHandler requestStream>;
+virtualinvoke v11.<io.vertx.core.http.impl.HttpServerImpl$HttpStreamHandler: io.vertx.core.streams.ReadStream endHandler(io.vertx.core.Handler)>(null);
+v12 = interfaceinvoke v1.<io.vertx.core.Promise: io.vertx.core.Future future()>();
+v13 = staticinvoke <io.vertx.core.http.impl.HttpServerImpl$lambda_close_1__1071: io.vertx.core.Handler bootstrap$(io.vertx.core.Handler,io.vertx.core.Handler)>(v7, v10);
+interfaceinvoke v12.<io.vertx.core.Future: io.vertx.core.Future onComplete(io.vertx.core.Handler)>(v13);
+label2:
+specialinvoke v0.<io.vertx.core.net.impl.TCPServerBase: void close(io.vertx.core.Promise)>(v1);
+return;
+}
+public boolean isClosed()
+{
+io.vertx.core.http.impl.HttpServerImpl v0;
+boolean v1, v2;
+v0 := @this: io.vertx.core.http.impl.HttpServerImpl;
+v1 = virtualinvoke v0.<io.vertx.core.http.impl.HttpServerImpl: boolean isListening()>();
+if v1 != 0 goto label1;
+v2 = 1;
+goto label2;
+label1:
+v2 = 0;
+label2:
+return v2;
+}
+boolean requestAccept()
+{
+io.vertx.core.http.impl.HttpServerImpl v0;
+io.vertx.core.http.impl.HttpServerImpl$HttpStreamHandler v1;
+boolean v2;
+v0 := @this: io.vertx.core.http.impl.HttpServerImpl;
+v1 = v0.<io.vertx.core.http.impl.HttpServerImpl: io.vertx.core.http.impl.HttpServerImpl$HttpStreamHandler requestStream>;
+v2 = virtualinvoke v1.<io.vertx.core.http.impl.HttpServerImpl$HttpStreamHandler: boolean accept()>();
+return v2;
+}
+boolean wsAccept()
+{
+io.vertx.core.http.impl.HttpServerImpl v0;
+io.vertx.core.http.impl.HttpServerImpl$HttpStreamHandler v1;
+boolean v2;
+v0 := @this: io.vertx.core.http.impl.HttpServerImpl;
+v1 = v0.<io.vertx.core.http.impl.HttpServerImpl: io.vertx.core.http.impl.HttpServerImpl$HttpStreamHandler wsStream>;
+v2 = virtualinvoke v1.<io.vertx.core.http.impl.HttpServerImpl$HttpStreamHandler: boolean accept()>();
+return v2;
+}
+static void <clinit>()
+{
+io.vertx.core.impl.logging.Logger v0;
+io.vertx.core.Handler v1;
+boolean v2, v3;
+v0 = staticinvoke <io.vertx.core.impl.logging.LoggerFactory: io.vertx.core.impl.logging.Logger getLogger(java.lang.Class)>(class "Lio/vertx/core/http/impl/HttpServerImpl;");
+<io.vertx.core.http.impl.HttpServerImpl: io.vertx.core.impl.logging.Logger log> = v0;
+v1 = staticinvoke <io.vertx.core.http.impl.HttpServerImpl$lambda_static_0__1072: io.vertx.core.Handler bootstrap$()>();
+<io.vertx.core.http.impl.HttpServerImpl: io.vertx.core.Handler DEFAULT_EXCEPTION_HANDLER> = v1;
+v2 = staticinvoke <java.lang.Boolean: boolean getBoolean(java.lang.String)>("vertx.flashPolicyHandler");
+<io.vertx.core.http.impl.HttpServerImpl: boolean USE_FLASH_POLICY_HANDLER> = v2;
+v3 = staticinvoke <java.lang.Boolean: boolean getBoolean(java.lang.String)>("vertx.disableWebsockets");
+<io.vertx.core.http.impl.HttpServerImpl: boolean DISABLE_WEBSOCKETS> = v3;
+return;
+}
+}

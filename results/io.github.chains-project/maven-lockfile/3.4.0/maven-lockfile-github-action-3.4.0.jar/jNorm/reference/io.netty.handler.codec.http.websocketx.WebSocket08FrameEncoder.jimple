@@ -1,0 +1,259 @@
+public class io.netty.handler.codec.http.websocketx.WebSocket08FrameEncoder extends io.netty.handler.codec.MessageToMessageEncoder implements io.netty.handler.codec.http.websocketx.WebSocketFrameEncoder
+{
+private static final io.netty.util.internal.logging.InternalLogger logger;
+private static final byte OPCODE_CONT;
+private static final byte OPCODE_TEXT;
+private static final byte OPCODE_BINARY;
+private static final byte OPCODE_CLOSE;
+private static final byte OPCODE_PING;
+private static final byte OPCODE_PONG;
+private static final int GATHERING_WRITE_THRESHOLD;
+private final boolean maskPayload;
+public void <init>(boolean)
+{
+io.netty.handler.codec.http.websocketx.WebSocket08FrameEncoder v0;
+boolean v1;
+v0 := @this: io.netty.handler.codec.http.websocketx.WebSocket08FrameEncoder;
+v1 := @parameter0: boolean;
+specialinvoke v0.<io.netty.handler.codec.MessageToMessageEncoder: void <init>()>();
+v0.<io.netty.handler.codec.http.websocketx.WebSocket08FrameEncoder: boolean maskPayload> = v1;
+return;
+}
+protected void encode(io.netty.channel.ChannelHandlerContext, io.netty.handler.codec.http.websocketx.WebSocketFrame, java.util.List) throws java.lang.Exception
+{
+java.lang.Integer v21;
+byte v34, v6, v73, v83;
+java.nio.ByteOrder v58, v59, v65;
+io.netty.util.internal.logging.InternalLogger v17, v19;
+java.lang.Throwable v81;
+long v62, v63, v64, v67, v68;
+short v22, v44, v53;
+java.lang.String v14, v15, v31;
+java.lang.UnsupportedOperationException v12;
+io.netty.handler.codec.http.websocketx.WebSocket08FrameEncoder v0;
+io.netty.buffer.ByteBufAllocator v37, v41, v50;
+java.util.Random v55;
+java.lang.Byte v20;
+boolean v10, v11, v18, v23, v33, v40, v43, v49, v5, v52, v54, v57, v7, v8, v82, v9;
+io.netty.handler.codec.TooLongFrameException v30;
+java.util.List v3;
+io.netty.channel.ChannelHandlerContext v1;
+io.netty.buffer.ByteBuf v32, v4, v42, v51, v80;
+int v16, v24, v25, v26, v27, v28, v29, v35, v36, v38, v39, v45, v46, v47, v48, v56, v60, v61, v66, v69, v70, v71, v72, v74, v75, v76, v77, v78, v79;
+io.netty.handler.codec.http.websocketx.WebSocketFrame v2;
+java.lang.Class v13;
+v0 := @this: io.netty.handler.codec.http.websocketx.WebSocket08FrameEncoder;
+v1 := @parameter0: io.netty.channel.ChannelHandlerContext;
+v2 := @parameter1: io.netty.handler.codec.http.websocketx.WebSocketFrame;
+v3 := @parameter2: java.util.List;
+v4 = virtualinvoke v2.<io.netty.handler.codec.http.websocketx.WebSocketFrame: io.netty.buffer.ByteBuf content()>();
+v5 = v2 instanceof io.netty.handler.codec.http.websocketx.TextWebSocketFrame;
+if v5 == 0 goto label01;
+v6 = 1;
+goto label07;
+label01:
+v7 = v2 instanceof io.netty.handler.codec.http.websocketx.PingWebSocketFrame;
+if v7 == 0 goto label02;
+v6 = 9;
+goto label07;
+label02:
+v8 = v2 instanceof io.netty.handler.codec.http.websocketx.PongWebSocketFrame;
+if v8 == 0 goto label03;
+v6 = 10;
+goto label07;
+label03:
+v9 = v2 instanceof io.netty.handler.codec.http.websocketx.CloseWebSocketFrame;
+if v9 == 0 goto label04;
+v6 = 8;
+goto label07;
+label04:
+v10 = v2 instanceof io.netty.handler.codec.http.websocketx.BinaryWebSocketFrame;
+if v10 == 0 goto label05;
+v6 = 2;
+goto label07;
+label05:
+v11 = v2 instanceof io.netty.handler.codec.http.websocketx.ContinuationWebSocketFrame;
+if v11 == 0 goto label06;
+v6 = 0;
+goto label07;
+label06:
+v12 = new java.lang.UnsupportedOperationException;
+v13 = virtualinvoke v2.<java.lang.Object: java.lang.Class getClass()>();
+v14 = virtualinvoke v13.<java.lang.Class: java.lang.String getName()>();
+v15 = dynamicinvoke "makeConcatWithConstants" <java.lang.String (java.lang.String)>(v14) <java.lang.invoke.StringConcatFactory: java.lang.invoke.CallSite makeConcatWithConstants(java.lang.invoke.MethodHandles$Lookup,java.lang.String,java.lang.invoke.MethodType,java.lang.String,java.lang.Object[])>("Cannot encode frame of type: \u0001");
+specialinvoke v12.<java.lang.UnsupportedOperationException: void <init>(java.lang.String)>(v15);
+throw v12;
+label07:
+v16 = virtualinvoke v4.<io.netty.buffer.ByteBuf: int readableBytes()>();
+v17 = <io.netty.handler.codec.http.websocketx.WebSocket08FrameEncoder: io.netty.util.internal.logging.InternalLogger logger>;
+v18 = interfaceinvoke v17.<io.netty.util.internal.logging.InternalLogger: boolean isTraceEnabled()>();
+if v18 == 0 goto label08;
+v19 = <io.netty.handler.codec.http.websocketx.WebSocket08FrameEncoder: io.netty.util.internal.logging.InternalLogger logger>;
+v20 = staticinvoke <java.lang.Byte: java.lang.Byte valueOf(byte)>(v6);
+v21 = staticinvoke <java.lang.Integer: java.lang.Integer valueOf(int)>(v16);
+interfaceinvoke v19.<io.netty.util.internal.logging.InternalLogger: void trace(java.lang.String,java.lang.Object,java.lang.Object)>("Encoding WebSocket Frame opCode={} length={}", v20, v21);
+label08:
+v22 = 0;
+v23 = virtualinvoke v2.<io.netty.handler.codec.http.websocketx.WebSocketFrame: boolean isFinalFragment()>();
+if v23 == 0 goto label09;
+v22 = 128;
+label09:
+v24 = virtualinvoke v2.<io.netty.handler.codec.http.websocketx.WebSocketFrame: int rsv()>();
+v25 = v24 % 8;
+v26 = v25 << 4;
+v27 = v22 | v26;
+v28 = v6 % 128;
+v29 = v27 | v28;
+if v6 != 9 goto label10;
+if v16 <= 125 goto label10;
+v30 = new io.netty.handler.codec.TooLongFrameException;
+v31 = dynamicinvoke "makeConcatWithConstants" <java.lang.String (int)>(v16) <java.lang.invoke.StringConcatFactory: java.lang.invoke.CallSite makeConcatWithConstants(java.lang.invoke.MethodHandles$Lookup,java.lang.String,java.lang.invoke.MethodType,java.lang.String,java.lang.Object[])>("invalid payload for PING (payload length must be <= 125, was \u0001");
+specialinvoke v30.<io.netty.handler.codec.TooLongFrameException: void <init>(java.lang.String)>(v31);
+throw v30;
+label10:
+v32 = null;
+label11:
+v33 = v0.<io.netty.handler.codec.http.websocketx.WebSocket08FrameEncoder: boolean maskPayload>;
+if v33 == 0 goto label12;
+v34 = 4;
+goto label13;
+label12:
+v34 = 0;
+label13:
+if v16 > 125 goto label14;
+v35 = 2 + v34;
+v36 = v35 + v16;
+v37 = interfaceinvoke v1.<io.netty.channel.ChannelHandlerContext: io.netty.buffer.ByteBufAllocator alloc()>();
+v32 = interfaceinvoke v37.<io.netty.buffer.ByteBufAllocator: io.netty.buffer.ByteBuf buffer(int)>(v36);
+virtualinvoke v32.<io.netty.buffer.ByteBuf: io.netty.buffer.ByteBuf writeByte(int)>(v29);
+virtualinvoke v32.<io.netty.buffer.ByteBuf: io.netty.buffer.ByteBuf writeByte(int)>(v83);
+goto label23;
+label14:
+v38 = (int) 65535;
+if v16 > v38 goto label19;
+v39 = 4 + v34;
+v40 = v0.<io.netty.handler.codec.http.websocketx.WebSocket08FrameEncoder: boolean maskPayload>;
+if v40 != 0 goto label15;
+if v16 > 1024 goto label16;
+label15:
+v39 = v39 + v16;
+label16:
+v41 = interfaceinvoke v1.<io.netty.channel.ChannelHandlerContext: io.netty.buffer.ByteBufAllocator alloc()>();
+v32 = interfaceinvoke v41.<io.netty.buffer.ByteBufAllocator: io.netty.buffer.ByteBuf buffer(int)>(v39);
+virtualinvoke v32.<io.netty.buffer.ByteBuf: io.netty.buffer.ByteBuf writeByte(int)>(v29);
+v42 = v32;
+v43 = v0.<io.netty.handler.codec.http.websocketx.WebSocket08FrameEncoder: boolean maskPayload>;
+if v43 == 0 goto label17;
+v44 = 254;
+goto label18;
+label17:
+v44 = 126;
+label18:
+virtualinvoke v42.<io.netty.buffer.ByteBuf: io.netty.buffer.ByteBuf writeByte(int)>(v44);
+v45 = v16 >>> 8;
+v46 = v45 & 255;
+virtualinvoke v32.<io.netty.buffer.ByteBuf: io.netty.buffer.ByteBuf writeByte(int)>(v46);
+v47 = v16 & 255;
+virtualinvoke v32.<io.netty.buffer.ByteBuf: io.netty.buffer.ByteBuf writeByte(int)>(v47);
+goto label23;
+label19:
+v48 = 10 + v34;
+v49 = v0.<io.netty.handler.codec.http.websocketx.WebSocket08FrameEncoder: boolean maskPayload>;
+if v49 == 0 goto label20;
+v48 = v48 + v16;
+label20:
+v50 = interfaceinvoke v1.<io.netty.channel.ChannelHandlerContext: io.netty.buffer.ByteBufAllocator alloc()>();
+v32 = interfaceinvoke v50.<io.netty.buffer.ByteBufAllocator: io.netty.buffer.ByteBuf buffer(int)>(v48);
+virtualinvoke v32.<io.netty.buffer.ByteBuf: io.netty.buffer.ByteBuf writeByte(int)>(v29);
+v51 = v32;
+v52 = v0.<io.netty.handler.codec.http.websocketx.WebSocket08FrameEncoder: boolean maskPayload>;
+if v52 == 0 goto label21;
+v53 = 255;
+goto label22;
+label21:
+v53 = 127;
+label22:
+virtualinvoke v51.<io.netty.buffer.ByteBuf: io.netty.buffer.ByteBuf writeByte(int)>(v53);
+virtualinvoke v32.<io.netty.buffer.ByteBuf: io.netty.buffer.ByteBuf writeLong(long)>(v16);
+label23:
+v54 = v0.<io.netty.handler.codec.http.websocketx.WebSocket08FrameEncoder: boolean maskPayload>;
+if v54 == 0 goto label30;
+v55 = staticinvoke <io.netty.util.internal.PlatformDependent: java.util.Random threadLocalRandom()>();
+v56 = virtualinvoke v55.<java.util.Random: int nextInt(int)>(2147483647);
+virtualinvoke v32.<io.netty.buffer.ByteBuf: io.netty.buffer.ByteBuf writeInt(int)>(v56);
+v57 = virtualinvoke v4.<io.netty.buffer.ByteBuf: boolean isReadable()>();
+if v57 == 0 goto label29;
+v58 = virtualinvoke v4.<io.netty.buffer.ByteBuf: java.nio.ByteOrder order()>();
+v59 = virtualinvoke v32.<io.netty.buffer.ByteBuf: java.nio.ByteOrder order()>();
+v60 = virtualinvoke v4.<io.netty.buffer.ByteBuf: int readerIndex()>();
+v61 = virtualinvoke v4.<io.netty.buffer.ByteBuf: int writerIndex()>();
+if v58 != v59 goto label27;
+v62 = v56 & 4294967295L;
+v63 = v62 << 32;
+v64 = v62 | v63;
+v65 = <java.nio.ByteOrder: java.nio.ByteOrder LITTLE_ENDIAN>;
+if v58 != v65 goto label24;
+v64 = staticinvoke <java.lang.Long: long reverseBytes(long)>(v64);
+label24:
+v66 = v61 - 7;
+label25:
+if v60 >= v66 goto label26;
+v67 = virtualinvoke v4.<io.netty.buffer.ByteBuf: long getLong(int)>(v60);
+v68 = v67 ^ v64;
+virtualinvoke v32.<io.netty.buffer.ByteBuf: io.netty.buffer.ByteBuf writeLong(long)>(v68);
+v60 = v60 + 8;
+goto label25;
+label26:
+v69 = v61 - 3;
+if v60 >= v69 goto label27;
+v70 = virtualinvoke v4.<io.netty.buffer.ByteBuf: int getInt(int)>(v60);
+v71 = v70 ^ v64;
+virtualinvoke v32.<io.netty.buffer.ByteBuf: io.netty.buffer.ByteBuf writeInt(int)>(v71);
+v60 = v60 + 4;
+label27:
+v72 = 0;
+label28:
+if v60 >= v61 goto label29;
+v73 = virtualinvoke v4.<io.netty.buffer.ByteBuf: byte getByte(int)>(v60);
+v74 = v72;
+v72 = v72 + 1;
+v75 = v74 & 3;
+v76 = staticinvoke <io.netty.handler.codec.http.websocketx.WebSocketUtil: int byteAtIndex(int,int)>(v56, v75);
+v77 = v73 ^ v76;
+virtualinvoke v32.<io.netty.buffer.ByteBuf: io.netty.buffer.ByteBuf writeByte(int)>(v77);
+v60 = v60 + 1;
+goto label28;
+label29:
+interfaceinvoke v3.<java.util.List: boolean add(java.lang.Object)>(v32);
+goto label35;
+label30:
+v78 = virtualinvoke v32.<io.netty.buffer.ByteBuf: int writableBytes()>();
+v79 = virtualinvoke v4.<io.netty.buffer.ByteBuf: int readableBytes()>();
+if v78 < v79 goto label31;
+virtualinvoke v32.<io.netty.buffer.ByteBuf: io.netty.buffer.ByteBuf writeBytes(io.netty.buffer.ByteBuf)>(v4);
+interfaceinvoke v3.<java.util.List: boolean add(java.lang.Object)>(v32);
+goto label35;
+label31:
+interfaceinvoke v3.<java.util.List: boolean add(java.lang.Object)>(v32);
+v80 = virtualinvoke v4.<io.netty.buffer.ByteBuf: io.netty.buffer.ByteBuf retain()>();
+interfaceinvoke v3.<java.util.List: boolean add(java.lang.Object)>(v80);
+label32:
+goto label35;
+label33:
+v81 := @caughtexception;
+if v32 == null goto label34;
+virtualinvoke v32.<io.netty.buffer.ByteBuf: boolean release()>();
+label34:
+throw v81;
+label35:
+return;
+catch java.lang.Throwable from label11 to label32 with label33;
+}
+static void <clinit>()
+{
+io.netty.util.internal.logging.InternalLogger v0;
+v0 = staticinvoke <io.netty.util.internal.logging.InternalLoggerFactory: io.netty.util.internal.logging.InternalLogger getInstance(java.lang.Class)>(class "Lio/netty/handler/codec/http/websocketx/WebSocket08FrameEncoder;");
+<io.netty.handler.codec.http.websocketx.WebSocket08FrameEncoder: io.netty.util.internal.logging.InternalLogger logger> = v0;
+return;
+}
+}

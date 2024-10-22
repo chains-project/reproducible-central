@@ -1,0 +1,913 @@
+public class io.vertx.core.impl.HAManager extends java.lang.Object
+{
+private static final io.vertx.core.impl.logging.Logger log;
+private static final long QUORUM_CHECK_PERIOD;
+private final io.vertx.core.impl.VertxInternal vertx;
+private final io.vertx.core.impl.DeploymentManager deploymentManager;
+private final io.vertx.core.impl.VerticleManager verticleFactoryManager;
+private final io.vertx.core.spi.cluster.ClusterManager clusterManager;
+private final int quorumSize;
+private final java.lang.String group;
+private final io.vertx.core.json.JsonObject haInfo;
+private final java.util.Map clusterMap;
+private final java.lang.String nodeID;
+private final java.util.Queue toDeployOnQuorum;
+private long quorumTimerID;
+private long checkQuorumTimerID;
+private volatile boolean attainedQuorum;
+private volatile io.vertx.core.impl.FailoverCompleteHandler failoverCompleteHandler;
+private volatile boolean failDuringFailover;
+private volatile boolean stopped;
+private volatile boolean killed;
+public void <init>(io.vertx.core.impl.VertxInternal, io.vertx.core.impl.DeploymentManager, io.vertx.core.impl.VerticleManager, io.vertx.core.spi.cluster.ClusterManager, java.util.Map, int, java.lang.String)
+{
+io.vertx.core.impl.VertxInternal v1;
+io.vertx.core.spi.cluster.ClusterManager v4;
+io.vertx.core.json.JsonArray v10;
+io.vertx.core.impl.VerticleManager v3;
+io.vertx.core.impl.DeploymentManager v2;
+java.util.Map v5;
+int v6;
+io.vertx.core.impl.HAManager v0;
+io.vertx.core.json.JsonObject v11, v13, v9;
+java.lang.String v12, v14, v7;
+java.util.concurrent.ConcurrentLinkedQueue v8;
+v0 := @this: io.vertx.core.impl.HAManager;
+v1 := @parameter0: io.vertx.core.impl.VertxInternal;
+v2 := @parameter1: io.vertx.core.impl.DeploymentManager;
+v3 := @parameter2: io.vertx.core.impl.VerticleManager;
+v4 := @parameter3: io.vertx.core.spi.cluster.ClusterManager;
+v5 := @parameter4: java.util.Map;
+v6 := @parameter5: int;
+v7 := @parameter6: java.lang.String;
+specialinvoke v0.<java.lang.Object: void <init>()>();
+v8 = new java.util.concurrent.ConcurrentLinkedQueue;
+specialinvoke v8.<java.util.concurrent.ConcurrentLinkedQueue: void <init>()>();
+v0.<io.vertx.core.impl.HAManager: java.util.Queue toDeployOnQuorum> = v8;
+v0.<io.vertx.core.impl.HAManager: long checkQuorumTimerID> = -1L;
+v0.<io.vertx.core.impl.HAManager: io.vertx.core.impl.VertxInternal vertx> = v1;
+v0.<io.vertx.core.impl.HAManager: io.vertx.core.impl.DeploymentManager deploymentManager> = v2;
+v0.<io.vertx.core.impl.HAManager: io.vertx.core.impl.VerticleManager verticleFactoryManager> = v3;
+v0.<io.vertx.core.impl.HAManager: io.vertx.core.spi.cluster.ClusterManager clusterManager> = v4;
+v0.<io.vertx.core.impl.HAManager: java.util.Map clusterMap> = v5;
+v0.<io.vertx.core.impl.HAManager: int quorumSize> = v6;
+v0.<io.vertx.core.impl.HAManager: java.lang.String group> = v7;
+v9 = new io.vertx.core.json.JsonObject;
+specialinvoke v9.<io.vertx.core.json.JsonObject: void <init>()>();
+v10 = new io.vertx.core.json.JsonArray;
+specialinvoke v10.<io.vertx.core.json.JsonArray: void <init>()>();
+v11 = virtualinvoke v9.<io.vertx.core.json.JsonObject: io.vertx.core.json.JsonObject put(java.lang.String,java.lang.Object)>("verticles", v10);
+v12 = v0.<io.vertx.core.impl.HAManager: java.lang.String group>;
+v13 = virtualinvoke v11.<io.vertx.core.json.JsonObject: io.vertx.core.json.JsonObject put(java.lang.String,java.lang.Object)>("group", v12);
+v0.<io.vertx.core.impl.HAManager: io.vertx.core.json.JsonObject haInfo> = v13;
+v14 = interfaceinvoke v4.<io.vertx.core.spi.cluster.ClusterManager: java.lang.String getNodeId()>();
+v0.<io.vertx.core.impl.HAManager: java.lang.String nodeID> = v14;
+return;
+}
+void init()
+{
+java.lang.Throwable v12, v6;
+io.vertx.core.impl.VertxInternal v9;
+io.vertx.core.spi.cluster.ClusterManager v7;
+long v11;
+java.util.Map v2;
+io.vertx.core.impl.HAManager v0;
+io.vertx.core.json.JsonObject v1, v4;
+java.lang.String v3, v5;
+io.vertx.core.Handler v10;
+io.vertx.core.impl.HAManager$1 v8;
+v0 := @this: io.vertx.core.impl.HAManager;
+v1 = v0.<io.vertx.core.impl.HAManager: io.vertx.core.json.JsonObject haInfo>;
+entermonitor v1;
+label1:
+v2 = v0.<io.vertx.core.impl.HAManager: java.util.Map clusterMap>;
+v3 = v0.<io.vertx.core.impl.HAManager: java.lang.String nodeID>;
+v4 = v0.<io.vertx.core.impl.HAManager: io.vertx.core.json.JsonObject haInfo>;
+v5 = virtualinvoke v4.<io.vertx.core.json.JsonObject: java.lang.String encode()>();
+interfaceinvoke v2.<java.util.Map: java.lang.Object put(java.lang.Object,java.lang.Object)>(v3, v5);
+exitmonitor v1;
+label2:
+goto label4;
+label3:
+v6 := @caughtexception;
+exitmonitor v1;
+throw v6;
+label4:
+v7 = v0.<io.vertx.core.impl.HAManager: io.vertx.core.spi.cluster.ClusterManager clusterManager>;
+v8 = new io.vertx.core.impl.HAManager$1;
+specialinvoke v8.<io.vertx.core.impl.HAManager$1: void <init>(io.vertx.core.impl.HAManager)>(v0);
+interfaceinvoke v7.<io.vertx.core.spi.cluster.ClusterManager: void nodeListener(io.vertx.core.spi.cluster.NodeListener)>(v8);
+v9 = v0.<io.vertx.core.impl.HAManager: io.vertx.core.impl.VertxInternal vertx>;
+v10 = staticinvoke <io.vertx.core.impl.HAManager$lambda_init_0__1501: io.vertx.core.Handler bootstrap$(io.vertx.core.impl.HAManager)>(v0);
+v11 = interfaceinvoke v9.<io.vertx.core.impl.VertxInternal: long setPeriodic(long,io.vertx.core.Handler)>(1000L, v10);
+v0.<io.vertx.core.impl.HAManager: long quorumTimerID> = v11;
+entermonitor v0;
+label5:
+specialinvoke v0.<io.vertx.core.impl.HAManager: void checkQuorum()>();
+exitmonitor v0;
+label6:
+goto label8;
+label7:
+v12 := @caughtexception;
+exitmonitor v0;
+throw v12;
+label8:
+return;
+catch java.lang.Throwable from label1 to label2 with label3;
+catch java.lang.Throwable from label5 to label6 with label7;
+}
+public void removeFromHA(java.lang.String)
+{
+java.lang.Throwable v18;
+io.vertx.core.impl.DeploymentManager v2;
+java.util.Map v14;
+io.vertx.core.impl.HAManager v0;
+io.vertx.core.json.JsonObject v16, v6, v7;
+java.lang.String v1, v12, v15, v17;
+boolean v10, v13, v5;
+java.util.Iterator v9;
+io.vertx.core.json.JsonArray v8;
+io.vertx.core.impl.Deployment v3;
+io.vertx.core.DeploymentOptions v4;
+java.lang.Object v11;
+v0 := @this: io.vertx.core.impl.HAManager;
+v1 := @parameter0: java.lang.String;
+v2 = v0.<io.vertx.core.impl.HAManager: io.vertx.core.impl.DeploymentManager deploymentManager>;
+v3 = virtualinvoke v2.<io.vertx.core.impl.DeploymentManager: io.vertx.core.impl.Deployment getDeployment(java.lang.String)>(v1);
+if v3 == null goto label1;
+v4 = interfaceinvoke v3.<io.vertx.core.impl.Deployment: io.vertx.core.DeploymentOptions deploymentOptions()>();
+v5 = virtualinvoke v4.<io.vertx.core.DeploymentOptions: boolean isHa()>();
+if v5 != 0 goto label2;
+label1:
+return;
+label2:
+v6 = v0.<io.vertx.core.impl.HAManager: io.vertx.core.json.JsonObject haInfo>;
+entermonitor v6;
+label3:
+v7 = v0.<io.vertx.core.impl.HAManager: io.vertx.core.json.JsonObject haInfo>;
+v8 = virtualinvoke v7.<io.vertx.core.json.JsonObject: io.vertx.core.json.JsonArray getJsonArray(java.lang.String)>("verticles");
+v9 = virtualinvoke v8.<io.vertx.core.json.JsonArray: java.util.Iterator iterator()>();
+label4:
+v10 = interfaceinvoke v9.<java.util.Iterator: boolean hasNext()>();
+if v10 == 0 goto label5;
+v11 = interfaceinvoke v9.<java.util.Iterator: java.lang.Object next()>();
+v12 = virtualinvoke v11.<io.vertx.core.json.JsonObject: java.lang.String getString(java.lang.String)>("dep_id");
+v13 = virtualinvoke v12.<java.lang.String: boolean equals(java.lang.Object)>(v1);
+if v13 == 0 goto label4;
+interfaceinvoke v9.<java.util.Iterator: void remove()>();
+goto label4;
+label5:
+v14 = v0.<io.vertx.core.impl.HAManager: java.util.Map clusterMap>;
+v15 = v0.<io.vertx.core.impl.HAManager: java.lang.String nodeID>;
+v16 = v0.<io.vertx.core.impl.HAManager: io.vertx.core.json.JsonObject haInfo>;
+v17 = virtualinvoke v16.<io.vertx.core.json.JsonObject: java.lang.String encode()>();
+interfaceinvoke v14.<java.util.Map: java.lang.Object put(java.lang.Object,java.lang.Object)>(v15, v17);
+exitmonitor v6;
+label6:
+goto label8;
+label7:
+v18 := @caughtexception;
+exitmonitor v6;
+throw v18;
+label8:
+return;
+catch java.lang.Throwable from label3 to label6 with label7;
+}
+public void addDataToAHAInfo(java.lang.String, io.vertx.core.json.JsonObject)
+{
+java.lang.Throwable v9;
+java.util.Map v5;
+io.vertx.core.impl.HAManager v0;
+io.vertx.core.json.JsonObject v2, v3, v4, v7;
+java.lang.String v1, v6, v8;
+v0 := @this: io.vertx.core.impl.HAManager;
+v1 := @parameter0: java.lang.String;
+v2 := @parameter1: io.vertx.core.json.JsonObject;
+v3 = v0.<io.vertx.core.impl.HAManager: io.vertx.core.json.JsonObject haInfo>;
+entermonitor v3;
+label1:
+v4 = v0.<io.vertx.core.impl.HAManager: io.vertx.core.json.JsonObject haInfo>;
+virtualinvoke v4.<io.vertx.core.json.JsonObject: io.vertx.core.json.JsonObject put(java.lang.String,java.lang.Object)>(v1, v2);
+v5 = v0.<io.vertx.core.impl.HAManager: java.util.Map clusterMap>;
+v6 = v0.<io.vertx.core.impl.HAManager: java.lang.String nodeID>;
+v7 = v0.<io.vertx.core.impl.HAManager: io.vertx.core.json.JsonObject haInfo>;
+v8 = virtualinvoke v7.<io.vertx.core.json.JsonObject: java.lang.String encode()>();
+interfaceinvoke v5.<java.util.Map: java.lang.Object put(java.lang.Object,java.lang.Object)>(v6, v8);
+exitmonitor v3;
+label2:
+goto label4;
+label3:
+v9 := @caughtexception;
+exitmonitor v3;
+throw v9;
+label4:
+return;
+catch java.lang.Throwable from label1 to label2 with label3;
+}
+public void deployVerticle(java.lang.String, io.vertx.core.DeploymentOptions, io.vertx.core.Handler)
+{
+io.vertx.core.impl.logging.Logger v5;
+io.vertx.core.DeploymentOptions v2;
+io.vertx.core.impl.HAManager v0;
+java.lang.String v1;
+io.vertx.core.Handler v3;
+boolean v4;
+v0 := @this: io.vertx.core.impl.HAManager;
+v1 := @parameter0: java.lang.String;
+v2 := @parameter1: io.vertx.core.DeploymentOptions;
+v3 := @parameter2: io.vertx.core.Handler;
+v4 = v0.<io.vertx.core.impl.HAManager: boolean attainedQuorum>;
+if v4 == 0 goto label1;
+specialinvoke v0.<io.vertx.core.impl.HAManager: void doDeployVerticle(java.lang.String,io.vertx.core.DeploymentOptions,io.vertx.core.Handler)>(v1, v2, v3);
+goto label2;
+label1:
+v5 = <io.vertx.core.impl.HAManager: io.vertx.core.impl.logging.Logger log>;
+interfaceinvoke v5.<io.vertx.core.impl.logging.Logger: void info(java.lang.Object)>("Quorum not attained. Deployment of verticle will be delayed until there\'s a quorum.");
+specialinvoke v0.<io.vertx.core.impl.HAManager: void addToHADeployList(java.lang.String,io.vertx.core.DeploymentOptions,io.vertx.core.Handler)>(v1, v2, v3);
+label2:
+return;
+}
+public void stop()
+{
+io.vertx.core.impl.VertxInternal v8, v9;
+io.vertx.core.spi.cluster.ClusterManager v2;
+long v10, v6;
+byte v7;
+java.util.Map v4;
+io.vertx.core.impl.HAManager v0;
+java.lang.String v5;
+boolean v1, v3;
+v0 := @this: io.vertx.core.impl.HAManager;
+v1 = v0.<io.vertx.core.impl.HAManager: boolean stopped>;
+if v1 != 0 goto label3;
+v2 = v0.<io.vertx.core.impl.HAManager: io.vertx.core.spi.cluster.ClusterManager clusterManager>;
+v3 = interfaceinvoke v2.<io.vertx.core.spi.cluster.ClusterManager: boolean isActive()>();
+if v3 == 0 goto label1;
+v4 = v0.<io.vertx.core.impl.HAManager: java.util.Map clusterMap>;
+v5 = v0.<io.vertx.core.impl.HAManager: java.lang.String nodeID>;
+interfaceinvoke v4.<java.util.Map: java.lang.Object remove(java.lang.Object)>(v5);
+label1:
+v6 = v0.<io.vertx.core.impl.HAManager: long checkQuorumTimerID>;
+v7 = v6 cmp 0L;
+if v7 < 0 goto label2;
+v0.<io.vertx.core.impl.HAManager: long checkQuorumTimerID> = -1L;
+v8 = v0.<io.vertx.core.impl.HAManager: io.vertx.core.impl.VertxInternal vertx>;
+interfaceinvoke v8.<io.vertx.core.impl.VertxInternal: boolean cancelTimer(long)>(v6);
+label2:
+v9 = v0.<io.vertx.core.impl.HAManager: io.vertx.core.impl.VertxInternal vertx>;
+v10 = v0.<io.vertx.core.impl.HAManager: long quorumTimerID>;
+interfaceinvoke v9.<io.vertx.core.impl.VertxInternal: boolean cancelTimer(long)>(v10);
+v0.<io.vertx.core.impl.HAManager: boolean stopped> = 1;
+label3:
+return;
+}
+public void simulateKill()
+{
+java.lang.Throwable v23;
+long v13, v16, v17, v18, v21, v9;
+byte v10;
+java.lang.Thread v22, v24;
+io.vertx.core.impl.HAManager v0;
+boolean v1, v14;
+io.vertx.core.impl.VertxInternal v11, v12;
+io.vertx.core.spi.cluster.ClusterManager v4;
+io.vertx.core.Promise v3;
+io.vertx.core.Future v5, v7;
+java.util.concurrent.TimeUnit v15, v19;
+java.util.concurrent.CountDownLatch v2;
+java.lang.InterruptedException v20;
+io.vertx.core.Handler v6, v8;
+v0 := @this: io.vertx.core.impl.HAManager;
+v1 = v0.<io.vertx.core.impl.HAManager: boolean stopped>;
+if v1 != 0 goto label10;
+v0.<io.vertx.core.impl.HAManager: boolean killed> = 1;
+v2 = new java.util.concurrent.CountDownLatch;
+specialinvoke v2.<java.util.concurrent.CountDownLatch: void <init>(int)>(1);
+v3 = staticinvoke <io.vertx.core.Promise: io.vertx.core.Promise promise()>();
+v4 = v0.<io.vertx.core.impl.HAManager: io.vertx.core.spi.cluster.ClusterManager clusterManager>;
+interfaceinvoke v4.<io.vertx.core.spi.cluster.ClusterManager: void leave(io.vertx.core.Promise)>(v3);
+v5 = interfaceinvoke v3.<io.vertx.core.Promise: io.vertx.core.Future future()>();
+v6 = staticinvoke <io.vertx.core.impl.HAManager$lambda_simulateKill_1__1502: io.vertx.core.Handler bootstrap$()>();
+v7 = interfaceinvoke v5.<io.vertx.core.Future: io.vertx.core.Future onFailure(io.vertx.core.Handler)>(v6);
+v8 = staticinvoke <io.vertx.core.impl.HAManager$lambda_simulateKill_2__1503: io.vertx.core.Handler bootstrap$(java.util.concurrent.CountDownLatch)>(v2);
+interfaceinvoke v7.<io.vertx.core.Future: io.vertx.core.Future onComplete(io.vertx.core.Handler)>(v8);
+v9 = v0.<io.vertx.core.impl.HAManager: long checkQuorumTimerID>;
+v10 = v9 cmp 0L;
+if v10 < 0 goto label01;
+v0.<io.vertx.core.impl.HAManager: long checkQuorumTimerID> = -1L;
+v11 = v0.<io.vertx.core.impl.HAManager: io.vertx.core.impl.VertxInternal vertx>;
+interfaceinvoke v11.<io.vertx.core.impl.VertxInternal: boolean cancelTimer(long)>(v9);
+label01:
+v12 = v0.<io.vertx.core.impl.HAManager: io.vertx.core.impl.VertxInternal vertx>;
+v13 = v0.<io.vertx.core.impl.HAManager: long quorumTimerID>;
+interfaceinvoke v12.<io.vertx.core.impl.VertxInternal: boolean cancelTimer(long)>(v13);
+v14 = 0;
+label02:
+v15 = <java.util.concurrent.TimeUnit: java.util.concurrent.TimeUnit MINUTES>;
+v16 = virtualinvoke v15.<java.util.concurrent.TimeUnit: long toNanos(long)>(1L);
+v17 = staticinvoke <java.lang.System: long nanoTime()>();
+v18 = v17 + v16;
+label03:
+v19 = <java.util.concurrent.TimeUnit: java.util.concurrent.TimeUnit NANOSECONDS>;
+virtualinvoke v2.<java.util.concurrent.CountDownLatch: boolean await(long,java.util.concurrent.TimeUnit)>(v16, v19);
+label04:
+goto label06;
+label05:
+v20 := @caughtexception;
+v14 = 1;
+v21 = staticinvoke <java.lang.System: long nanoTime()>();
+v16 = v18 - v21;
+goto label03;
+label06:
+if v14 == 0 goto label09;
+v22 = staticinvoke <java.lang.Thread: java.lang.Thread currentThread()>();
+virtualinvoke v22.<java.lang.Thread: void interrupt()>();
+goto label09;
+label07:
+v23 := @caughtexception;
+if v14 == 0 goto label08;
+v24 = staticinvoke <java.lang.Thread: java.lang.Thread currentThread()>();
+virtualinvoke v24.<java.lang.Thread: void interrupt()>();
+label08:
+throw v23;
+label09:
+v0.<io.vertx.core.impl.HAManager: boolean stopped> = 1;
+label10:
+return;
+catch java.lang.InterruptedException from label03 to label04 with label05;
+catch java.lang.Throwable from label02 to label06 with label07;
+}
+public void setFailoverCompleteHandler(io.vertx.core.impl.FailoverCompleteHandler)
+{
+io.vertx.core.impl.HAManager v0;
+io.vertx.core.impl.FailoverCompleteHandler v1;
+v0 := @this: io.vertx.core.impl.HAManager;
+v1 := @parameter0: io.vertx.core.impl.FailoverCompleteHandler;
+v0.<io.vertx.core.impl.HAManager: io.vertx.core.impl.FailoverCompleteHandler failoverCompleteHandler> = v1;
+return;
+}
+public boolean isKilled()
+{
+io.vertx.core.impl.HAManager v0;
+boolean v1;
+v0 := @this: io.vertx.core.impl.HAManager;
+v1 = v0.<io.vertx.core.impl.HAManager: boolean killed>;
+return v1;
+}
+public void failDuringFailover(boolean)
+{
+io.vertx.core.impl.HAManager v0;
+boolean v1;
+v0 := @this: io.vertx.core.impl.HAManager;
+v1 := @parameter0: boolean;
+v0.<io.vertx.core.impl.HAManager: boolean failDuringFailover> = v1;
+return;
+}
+private void doDeployVerticle(java.lang.String, io.vertx.core.DeploymentOptions, io.vertx.core.Handler)
+{
+io.vertx.core.Future v6, v8;
+java.util.function.Function v7;
+io.vertx.core.impl.VerticleManager v5;
+io.vertx.core.DeploymentOptions v2;
+io.vertx.core.impl.HAManager v0;
+java.lang.String v1;
+io.vertx.core.Handler v3, v4;
+v0 := @this: io.vertx.core.impl.HAManager;
+v1 := @parameter0: java.lang.String;
+v2 := @parameter1: io.vertx.core.DeploymentOptions;
+v3 := @parameter2: io.vertx.core.Handler;
+v4 = staticinvoke <io.vertx.core.impl.HAManager$lambda_doDeployVerticle_5__1504: io.vertx.core.Handler bootstrap$(io.vertx.core.impl.HAManager,java.lang.String,io.vertx.core.DeploymentOptions,io.vertx.core.Handler)>(v0, v1, v2, v3);
+v5 = v0.<io.vertx.core.impl.HAManager: io.vertx.core.impl.VerticleManager verticleFactoryManager>;
+v6 = virtualinvoke v5.<io.vertx.core.impl.VerticleManager: io.vertx.core.Future deployVerticle(java.lang.String,io.vertx.core.DeploymentOptions)>(v1, v2);
+v7 = staticinvoke <io.vertx.core.impl.HAManager$deploymentID__1505: java.util.function.Function bootstrap$()>();
+v8 = interfaceinvoke v6.<io.vertx.core.Future: io.vertx.core.Future map(java.util.function.Function)>(v7);
+interfaceinvoke v8.<io.vertx.core.Future: io.vertx.core.Future onComplete(io.vertx.core.Handler)>(v4);
+return;
+}
+private synchronized void nodeAdded(java.lang.String)
+{
+io.vertx.core.impl.HAManager v0;
+long v2;
+java.lang.String v1;
+v0 := @this: io.vertx.core.impl.HAManager;
+v1 := @parameter0: java.lang.String;
+specialinvoke v0.<io.vertx.core.impl.HAManager: void addHaInfoIfLost()>();
+v2 = staticinvoke <java.lang.System: long currentTimeMillis()>();
+specialinvoke v0.<io.vertx.core.impl.HAManager: void checkQuorumWhenAdded(java.lang.String,long)>(v1, v2);
+return;
+}
+private synchronized void nodeLeft(java.lang.String)
+{
+java.util.Map v3, v8;
+io.vertx.core.impl.HAManager v0;
+io.vertx.core.json.JsonObject v17, v5;
+java.lang.String v1;
+boolean v11, v14, v16, v2;
+java.util.Iterator v10;
+io.vertx.core.spi.cluster.ClusterManager v6;
+java.util.Set v9;
+java.util.List v7;
+java.lang.Object v12, v13, v15, v18, v19, v4;
+v0 := @this: io.vertx.core.impl.HAManager;
+v1 := @parameter0: java.lang.String;
+specialinvoke v0.<io.vertx.core.impl.HAManager: void addHaInfoIfLost()>();
+specialinvoke v0.<io.vertx.core.impl.HAManager: void checkQuorum()>();
+v2 = v0.<io.vertx.core.impl.HAManager: boolean attainedQuorum>;
+if v2 == 0 goto label3;
+v3 = v0.<io.vertx.core.impl.HAManager: java.util.Map clusterMap>;
+v4 = interfaceinvoke v3.<java.util.Map: java.lang.Object get(java.lang.Object)>(v1);
+if v4 == null goto label1;
+v5 = new io.vertx.core.json.JsonObject;
+specialinvoke v5.<io.vertx.core.json.JsonObject: void <init>(java.lang.String)>(v4);
+specialinvoke v0.<io.vertx.core.impl.HAManager: void checkFailover(java.lang.String,io.vertx.core.json.JsonObject)>(v1, v5);
+label1:
+v6 = v0.<io.vertx.core.impl.HAManager: io.vertx.core.spi.cluster.ClusterManager clusterManager>;
+v7 = interfaceinvoke v6.<io.vertx.core.spi.cluster.ClusterManager: java.util.List getNodes()>();
+v8 = v0.<io.vertx.core.impl.HAManager: java.util.Map clusterMap>;
+v9 = interfaceinvoke v8.<java.util.Map: java.util.Set entrySet()>();
+v10 = interfaceinvoke v9.<java.util.Set: java.util.Iterator iterator()>();
+label2:
+v11 = interfaceinvoke v10.<java.util.Iterator: boolean hasNext()>();
+if v11 == 0 goto label3;
+v12 = interfaceinvoke v10.<java.util.Iterator: java.lang.Object next()>();
+v13 = interfaceinvoke v12.<java.util.Map$Entry: java.lang.Object getKey()>();
+v14 = virtualinvoke v1.<java.lang.String: boolean equals(java.lang.Object)>(v13);
+if v14 != 0 goto label2;
+v15 = interfaceinvoke v12.<java.util.Map$Entry: java.lang.Object getKey()>();
+v16 = interfaceinvoke v7.<java.util.List: boolean contains(java.lang.Object)>(v15);
+if v16 != 0 goto label2;
+v17 = new io.vertx.core.json.JsonObject;
+v18 = interfaceinvoke v12.<java.util.Map$Entry: java.lang.Object getValue()>();
+specialinvoke v17.<io.vertx.core.json.JsonObject: void <init>(java.lang.String)>(v18);
+v19 = interfaceinvoke v12.<java.util.Map$Entry: java.lang.Object getKey()>();
+specialinvoke v0.<io.vertx.core.impl.HAManager: void checkFailover(java.lang.String,io.vertx.core.json.JsonObject)>(v19, v17);
+goto label2;
+label3:
+return;
+}
+private void addHaInfoIfLost()
+{
+java.lang.Throwable v13;
+io.vertx.core.spi.cluster.ClusterManager v1;
+java.util.List v2;
+java.util.Map v5, v9;
+io.vertx.core.impl.HAManager v0;
+io.vertx.core.json.JsonObject v11, v8;
+java.lang.String v10, v12, v3, v6;
+boolean v4, v7;
+v0 := @this: io.vertx.core.impl.HAManager;
+v1 = v0.<io.vertx.core.impl.HAManager: io.vertx.core.spi.cluster.ClusterManager clusterManager>;
+v2 = interfaceinvoke v1.<io.vertx.core.spi.cluster.ClusterManager: java.util.List getNodes()>();
+v3 = v0.<io.vertx.core.impl.HAManager: java.lang.String nodeID>;
+v4 = interfaceinvoke v2.<java.util.List: boolean contains(java.lang.Object)>(v3);
+if v4 == 0 goto label4;
+v5 = v0.<io.vertx.core.impl.HAManager: java.util.Map clusterMap>;
+v6 = v0.<io.vertx.core.impl.HAManager: java.lang.String nodeID>;
+v7 = interfaceinvoke v5.<java.util.Map: boolean containsKey(java.lang.Object)>(v6);
+if v7 != 0 goto label4;
+v8 = v0.<io.vertx.core.impl.HAManager: io.vertx.core.json.JsonObject haInfo>;
+entermonitor v8;
+label1:
+v9 = v0.<io.vertx.core.impl.HAManager: java.util.Map clusterMap>;
+v10 = v0.<io.vertx.core.impl.HAManager: java.lang.String nodeID>;
+v11 = v0.<io.vertx.core.impl.HAManager: io.vertx.core.json.JsonObject haInfo>;
+v12 = virtualinvoke v11.<io.vertx.core.json.JsonObject: java.lang.String encode()>();
+interfaceinvoke v9.<java.util.Map: java.lang.Object put(java.lang.Object,java.lang.Object)>(v10, v12);
+exitmonitor v8;
+label2:
+goto label4;
+label3:
+v13 := @caughtexception;
+exitmonitor v8;
+throw v13;
+label4:
+return;
+catch java.lang.Throwable from label1 to label2 with label3;
+}
+private synchronized void checkQuorumWhenAdded(java.lang.String, long)
+{
+io.vertx.core.impl.VertxInternal v6;
+long v2, v8;
+java.util.Map v4;
+io.vertx.core.impl.HAManager v0;
+java.lang.String v1;
+io.vertx.core.Handler v7;
+boolean v3, v5;
+v0 := @this: io.vertx.core.impl.HAManager;
+v1 := @parameter0: java.lang.String;
+v2 := @parameter1: long;
+v3 = v0.<io.vertx.core.impl.HAManager: boolean stopped>;
+if v3 != 0 goto label2;
+v4 = v0.<io.vertx.core.impl.HAManager: java.util.Map clusterMap>;
+v5 = interfaceinvoke v4.<java.util.Map: boolean containsKey(java.lang.Object)>(v1);
+if v5 == 0 goto label1;
+specialinvoke v0.<io.vertx.core.impl.HAManager: void checkQuorum()>();
+goto label2;
+label1:
+v6 = v0.<io.vertx.core.impl.HAManager: io.vertx.core.impl.VertxInternal vertx>;
+v7 = staticinvoke <io.vertx.core.impl.HAManager$lambda_checkQuorumWhenAdded_8__1506: io.vertx.core.Handler bootstrap$(io.vertx.core.impl.HAManager,long,java.lang.String)>(v0, v2, v1);
+v8 = interfaceinvoke v6.<io.vertx.core.impl.VertxInternal: long setTimer(long,io.vertx.core.Handler)>(200L, v7);
+v0.<io.vertx.core.impl.HAManager: long checkQuorumTimerID> = v8;
+label2:
+return;
+}
+private void checkQuorum()
+{
+java.util.Map v8;
+int v1, v14, v4;
+io.vertx.core.impl.HAManager v0;
+io.vertx.core.json.JsonObject v10;
+java.lang.String v11, v12;
+boolean v13, v15, v16, v17, v19, v6;
+io.vertx.core.impl.logging.Logger v18, v20;
+java.util.Iterator v5;
+io.vertx.core.spi.cluster.ClusterManager v2;
+java.util.List v3;
+java.lang.Object v7, v9;
+v0 := @this: io.vertx.core.impl.HAManager;
+v1 = v0.<io.vertx.core.impl.HAManager: int quorumSize>;
+if v1 != 0 goto label1;
+v0.<io.vertx.core.impl.HAManager: boolean attainedQuorum> = 1;
+goto label7;
+label1:
+v2 = v0.<io.vertx.core.impl.HAManager: io.vertx.core.spi.cluster.ClusterManager clusterManager>;
+v3 = interfaceinvoke v2.<io.vertx.core.spi.cluster.ClusterManager: java.util.List getNodes()>();
+v4 = 0;
+v5 = interfaceinvoke v3.<java.util.List: java.util.Iterator iterator()>();
+label2:
+v6 = interfaceinvoke v5.<java.util.Iterator: boolean hasNext()>();
+if v6 == 0 goto label3;
+v7 = interfaceinvoke v5.<java.util.Iterator: java.lang.Object next()>();
+v8 = v0.<io.vertx.core.impl.HAManager: java.util.Map clusterMap>;
+v9 = interfaceinvoke v8.<java.util.Map: java.lang.Object get(java.lang.Object)>(v7);
+if v9 == null goto label2;
+v10 = new io.vertx.core.json.JsonObject;
+specialinvoke v10.<io.vertx.core.json.JsonObject: void <init>(java.lang.String)>(v9);
+v11 = virtualinvoke v10.<io.vertx.core.json.JsonObject: java.lang.String getString(java.lang.String)>("group");
+v12 = v0.<io.vertx.core.impl.HAManager: java.lang.String group>;
+v13 = virtualinvoke v11.<java.lang.String: boolean equals(java.lang.Object)>(v12);
+if v13 == 0 goto label2;
+v4 = v4 + 1;
+goto label2;
+label3:
+v14 = v0.<io.vertx.core.impl.HAManager: int quorumSize>;
+if v4 < v14 goto label4;
+v15 = 1;
+goto label5;
+label4:
+v15 = 0;
+label5:
+v16 = v15;
+v17 = v0.<io.vertx.core.impl.HAManager: boolean attainedQuorum>;
+if v17 != 0 goto label6;
+if v15 == 0 goto label6;
+v18 = <io.vertx.core.impl.HAManager: io.vertx.core.impl.logging.Logger log>;
+interfaceinvoke v18.<io.vertx.core.impl.logging.Logger: void info(java.lang.Object)>("A quorum has been obtained. Any deploymentIDs waiting on a quorum will now be deployed");
+v0.<io.vertx.core.impl.HAManager: boolean attainedQuorum> = 1;
+goto label7;
+label6:
+v19 = v0.<io.vertx.core.impl.HAManager: boolean attainedQuorum>;
+if v19 == 0 goto label7;
+if v16 != 0 goto label7;
+v20 = <io.vertx.core.impl.HAManager: io.vertx.core.impl.logging.Logger log>;
+interfaceinvoke v20.<io.vertx.core.impl.logging.Logger: void info(java.lang.Object)>("There is no longer a quorum. Any HA deploymentIDs will be undeployed until a quorum is re-attained");
+v0.<io.vertx.core.impl.HAManager: boolean attainedQuorum> = 0;
+label7:
+return;
+}
+private void addToHA(java.lang.String, java.lang.String, io.vertx.core.DeploymentOptions)
+{
+java.lang.Throwable v14;
+io.vertx.core.json.JsonArray v9;
+io.vertx.core.DeploymentOptions v3;
+java.util.Map v12;
+io.vertx.core.impl.HAManager v0;
+io.vertx.core.json.JsonObject v10, v4, v5, v6, v7, v8;
+java.lang.String v1, v11, v13, v2;
+v0 := @this: io.vertx.core.impl.HAManager;
+v1 := @parameter0: java.lang.String;
+v2 := @parameter1: java.lang.String;
+v3 := @parameter2: io.vertx.core.DeploymentOptions;
+v4 = v0.<io.vertx.core.impl.HAManager: io.vertx.core.json.JsonObject haInfo>;
+entermonitor v4;
+label1:
+v5 = new io.vertx.core.json.JsonObject;
+specialinvoke v5.<io.vertx.core.json.JsonObject: void <init>()>();
+v6 = virtualinvoke v5.<io.vertx.core.json.JsonObject: io.vertx.core.json.JsonObject put(java.lang.String,java.lang.Object)>("dep_id", v1);
+virtualinvoke v6.<io.vertx.core.json.JsonObject: io.vertx.core.json.JsonObject put(java.lang.String,java.lang.Object)>("verticle_name", v2);
+v7 = virtualinvoke v3.<io.vertx.core.DeploymentOptions: io.vertx.core.json.JsonObject toJson()>();
+virtualinvoke v6.<io.vertx.core.json.JsonObject: io.vertx.core.json.JsonObject put(java.lang.String,java.lang.Object)>("options", v7);
+v8 = v0.<io.vertx.core.impl.HAManager: io.vertx.core.json.JsonObject haInfo>;
+v9 = virtualinvoke v8.<io.vertx.core.json.JsonObject: io.vertx.core.json.JsonArray getJsonArray(java.lang.String)>("verticles");
+virtualinvoke v9.<io.vertx.core.json.JsonArray: io.vertx.core.json.JsonArray add(java.lang.Object)>(v6);
+v10 = v0.<io.vertx.core.impl.HAManager: io.vertx.core.json.JsonObject haInfo>;
+v11 = virtualinvoke v10.<io.vertx.core.json.JsonObject: java.lang.String encode()>();
+v12 = v0.<io.vertx.core.impl.HAManager: java.util.Map clusterMap>;
+v13 = v0.<io.vertx.core.impl.HAManager: java.lang.String nodeID>;
+interfaceinvoke v12.<java.util.Map: java.lang.Object put(java.lang.Object,java.lang.Object)>(v13, v11);
+exitmonitor v4;
+label2:
+goto label4;
+label3:
+v14 := @caughtexception;
+exitmonitor v4;
+throw v14;
+label4:
+return;
+catch java.lang.Throwable from label1 to label2 with label3;
+}
+private void addToHADeployList(java.lang.String, io.vertx.core.DeploymentOptions, io.vertx.core.Handler)
+{
+io.vertx.core.DeploymentOptions v2;
+io.vertx.core.impl.HAManager v0;
+java.lang.String v1;
+java.util.Queue v4;
+io.vertx.core.Handler v3;
+java.lang.Runnable v5;
+v0 := @this: io.vertx.core.impl.HAManager;
+v1 := @parameter0: java.lang.String;
+v2 := @parameter1: io.vertx.core.DeploymentOptions;
+v3 := @parameter2: io.vertx.core.Handler;
+v4 = v0.<io.vertx.core.impl.HAManager: java.util.Queue toDeployOnQuorum>;
+v5 = staticinvoke <io.vertx.core.impl.HAManager$lambda_addToHADeployList_10__1507: java.lang.Runnable bootstrap$(io.vertx.core.impl.HAManager,java.lang.String,io.vertx.core.DeploymentOptions,io.vertx.core.Handler)>(v0, v1, v2, v3);
+interfaceinvoke v4.<java.util.Queue: boolean add(java.lang.Object)>(v5);
+return;
+}
+private void checkHADeployments()
+{
+io.vertx.core.impl.logging.Logger v3;
+java.lang.Throwable v2;
+io.vertx.core.impl.HAManager v0;
+boolean v1;
+v0 := @this: io.vertx.core.impl.HAManager;
+label1:
+v1 = v0.<io.vertx.core.impl.HAManager: boolean attainedQuorum>;
+if v1 == 0 goto label2;
+specialinvoke v0.<io.vertx.core.impl.HAManager: void deployHADeployments()>();
+goto label5;
+label2:
+specialinvoke v0.<io.vertx.core.impl.HAManager: void undeployHADeployments()>();
+label3:
+goto label5;
+label4:
+v2 := @caughtexception;
+v3 = <io.vertx.core.impl.HAManager: io.vertx.core.impl.logging.Logger log>;
+interfaceinvoke v3.<io.vertx.core.impl.logging.Logger: void error(java.lang.Object,java.lang.Throwable)>("Failed when checking HA deploymentIDs", v2);
+label5:
+return;
+catch java.lang.Throwable from label1 to label3 with label4;
+}
+private void undeployHADeployments()
+{
+io.vertx.core.impl.VertxInternal v10;
+java.util.Iterator v3;
+java.util.Set v2;
+io.vertx.core.impl.Deployment v7;
+io.vertx.core.DeploymentOptions v8;
+io.vertx.core.impl.DeploymentManager v1, v6;
+io.vertx.core.impl.HAManager v0;
+java.lang.Object v5;
+io.vertx.core.Handler v11;
+boolean v4, v9;
+v0 := @this: io.vertx.core.impl.HAManager;
+v1 = v0.<io.vertx.core.impl.HAManager: io.vertx.core.impl.DeploymentManager deploymentManager>;
+v2 = virtualinvoke v1.<io.vertx.core.impl.DeploymentManager: java.util.Set deployments()>();
+v3 = interfaceinvoke v2.<java.util.Set: java.util.Iterator iterator()>();
+label1:
+v4 = interfaceinvoke v3.<java.util.Iterator: boolean hasNext()>();
+if v4 == 0 goto label2;
+v5 = interfaceinvoke v3.<java.util.Iterator: java.lang.Object next()>();
+v6 = v0.<io.vertx.core.impl.HAManager: io.vertx.core.impl.DeploymentManager deploymentManager>;
+v7 = virtualinvoke v6.<io.vertx.core.impl.DeploymentManager: io.vertx.core.impl.Deployment getDeployment(java.lang.String)>(v5);
+if v7 == null goto label1;
+v8 = interfaceinvoke v7.<io.vertx.core.impl.Deployment: io.vertx.core.DeploymentOptions deploymentOptions()>();
+v9 = virtualinvoke v8.<io.vertx.core.DeploymentOptions: boolean isHa()>();
+if v9 == 0 goto label1;
+v10 = v0.<io.vertx.core.impl.HAManager: io.vertx.core.impl.VertxInternal vertx>;
+v11 = staticinvoke <io.vertx.core.impl.HAManager$lambda_undeployHADeployments_13__1508: io.vertx.core.Handler bootstrap$(io.vertx.core.impl.HAManager,java.lang.String,io.vertx.core.impl.Deployment)>(v0, v5, v7);
+virtualinvoke v10.<io.vertx.core.impl.VertxImpl: void executeIsolated(io.vertx.core.Handler)>(v11);
+goto label1;
+label2:
+return;
+}
+private void deployHADeployments()
+{
+io.vertx.core.impl.logging.Logger v3, v8;
+java.lang.Throwable v7;
+int v2;
+io.vertx.core.impl.HAManager v0;
+java.lang.Object v6;
+java.lang.String v4;
+java.util.Queue v1, v5;
+v0 := @this: io.vertx.core.impl.HAManager;
+v1 = v0.<io.vertx.core.impl.HAManager: java.util.Queue toDeployOnQuorum>;
+v2 = interfaceinvoke v1.<java.util.Queue: int size()>();
+if v2 == 0 goto label5;
+v3 = <io.vertx.core.impl.HAManager: io.vertx.core.impl.logging.Logger log>;
+v4 = dynamicinvoke "makeConcatWithConstants" <java.lang.String (int)>(v2) <java.lang.invoke.StringConcatFactory: java.lang.invoke.CallSite makeConcatWithConstants(java.lang.invoke.MethodHandles$Lookup,java.lang.String,java.lang.invoke.MethodType,java.lang.String,java.lang.Object[])>("There are \u0001 HA deploymentIDs waiting on a quorum. These will now be deployed");
+interfaceinvoke v3.<io.vertx.core.impl.logging.Logger: void info(java.lang.Object)>(v4);
+label1:
+v5 = v0.<io.vertx.core.impl.HAManager: java.util.Queue toDeployOnQuorum>;
+v6 = interfaceinvoke v5.<java.util.Queue: java.lang.Object poll()>();
+if v6 == null goto label5;
+label2:
+interfaceinvoke v6.<java.lang.Runnable: void run()>();
+label3:
+goto label1;
+label4:
+v7 := @caughtexception;
+v8 = <io.vertx.core.impl.HAManager: io.vertx.core.impl.logging.Logger log>;
+interfaceinvoke v8.<io.vertx.core.impl.logging.Logger: void error(java.lang.Object,java.lang.Throwable)>("Failed to run redeployment task", v7);
+goto label1;
+label5:
+return;
+catch java.lang.Throwable from label2 to label3 with label4;
+}
+private void checkFailover(java.lang.String, io.vertx.core.json.JsonObject)
+{
+java.lang.Throwable v19;
+java.lang.Runnable v18, v21;
+java.util.Map v17;
+int v12, v5, v9;
+io.vertx.core.impl.HAManager v0;
+io.vertx.core.json.JsonObject v2;
+java.lang.String v1, v11, v13, v4, v6, v7;
+boolean v15, v8;
+io.vertx.core.impl.logging.Logger v10, v20;
+java.util.Iterator v14;
+io.vertx.core.json.JsonArray v3;
+java.lang.Object v16;
+v0 := @this: io.vertx.core.impl.HAManager;
+v1 := @parameter0: java.lang.String;
+v2 := @parameter1: io.vertx.core.json.JsonObject;
+label1:
+v3 = virtualinvoke v2.<io.vertx.core.json.JsonObject: io.vertx.core.json.JsonArray getJsonArray(java.lang.String)>("verticles");
+v4 = virtualinvoke v2.<io.vertx.core.json.JsonObject: java.lang.String getString(java.lang.String)>("group");
+v5 = virtualinvoke v1.<java.lang.String: int hashCode()>();
+v6 = specialinvoke v0.<io.vertx.core.impl.HAManager: java.lang.String chooseHashedNode(java.lang.String,int)>(v4, v5);
+if v6 == null goto label6;
+v7 = v0.<io.vertx.core.impl.HAManager: java.lang.String nodeID>;
+v8 = virtualinvoke v6.<java.lang.String: boolean equals(java.lang.Object)>(v7);
+if v8 == 0 goto label6;
+if v3 == null goto label3;
+v9 = virtualinvoke v3.<io.vertx.core.json.JsonArray: int size()>();
+if v9 == 0 goto label3;
+v10 = <io.vertx.core.impl.HAManager: io.vertx.core.impl.logging.Logger log>;
+v11 = v0.<io.vertx.core.impl.HAManager: java.lang.String nodeID>;
+v12 = virtualinvoke v3.<io.vertx.core.json.JsonArray: int size()>();
+v13 = dynamicinvoke "makeConcatWithConstants" <java.lang.String (java.lang.String,java.lang.String,int)>(v11, v1, v12) <java.lang.invoke.StringConcatFactory: java.lang.invoke.CallSite makeConcatWithConstants(java.lang.invoke.MethodHandles$Lookup,java.lang.String,java.lang.invoke.MethodType,java.lang.String,java.lang.Object[])>("node\u0001 says: Node \u0001 has failed. This node will deploy \u0001 deploymentIDs from that node.");
+interfaceinvoke v10.<io.vertx.core.impl.logging.Logger: void info(java.lang.Object)>(v13);
+v14 = virtualinvoke v3.<io.vertx.core.json.JsonArray: java.util.Iterator iterator()>();
+label2:
+v15 = interfaceinvoke v14.<java.util.Iterator: boolean hasNext()>();
+if v15 == 0 goto label3;
+v16 = interfaceinvoke v14.<java.util.Iterator: java.lang.Object next()>();
+specialinvoke v0.<io.vertx.core.impl.HAManager: void processFailover(io.vertx.core.json.JsonObject)>(v16);
+goto label2;
+label3:
+v17 = v0.<io.vertx.core.impl.HAManager: java.util.Map clusterMap>;
+interfaceinvoke v17.<java.util.Map: java.lang.Object remove(java.lang.Object)>(v1);
+v18 = staticinvoke <io.vertx.core.impl.HAManager$lambda_checkFailover_14__1509: java.lang.Runnable bootstrap$(io.vertx.core.impl.HAManager,java.lang.String,io.vertx.core.json.JsonObject)>(v0, v1, v2);
+specialinvoke v0.<io.vertx.core.impl.HAManager: void runOnContextAndWait(java.lang.Runnable)>(v18);
+label4:
+goto label6;
+label5:
+v19 := @caughtexception;
+v20 = <io.vertx.core.impl.HAManager: io.vertx.core.impl.logging.Logger log>;
+interfaceinvoke v20.<io.vertx.core.impl.logging.Logger: void error(java.lang.Object,java.lang.Throwable)>("Failed to handle failover", v19);
+v21 = staticinvoke <io.vertx.core.impl.HAManager$lambda_checkFailover_15__1510: java.lang.Runnable bootstrap$(io.vertx.core.impl.HAManager,java.lang.String,io.vertx.core.json.JsonObject)>(v0, v1, v2);
+specialinvoke v0.<io.vertx.core.impl.HAManager: void runOnContextAndWait(java.lang.Runnable)>(v21);
+label6:
+return;
+catch java.lang.Throwable from label1 to label4 with label5;
+}
+private void runOnContextAndWait(java.lang.Runnable)
+{
+java.util.concurrent.TimeUnit v5;
+java.util.concurrent.CountDownLatch v2;
+io.vertx.core.impl.VertxInternal v3;
+java.lang.InterruptedException v6;
+io.vertx.core.impl.HAManager v0;
+io.vertx.core.Handler v4;
+java.lang.Runnable v1;
+v0 := @this: io.vertx.core.impl.HAManager;
+v1 := @parameter0: java.lang.Runnable;
+v2 = new java.util.concurrent.CountDownLatch;
+specialinvoke v2.<java.util.concurrent.CountDownLatch: void <init>(int)>(1);
+v3 = v0.<io.vertx.core.impl.HAManager: io.vertx.core.impl.VertxInternal vertx>;
+v4 = staticinvoke <io.vertx.core.impl.HAManager$lambda_runOnContextAndWait_16__1511: io.vertx.core.Handler bootstrap$(java.lang.Runnable,java.util.concurrent.CountDownLatch)>(v1, v2);
+interfaceinvoke v3.<io.vertx.core.impl.VertxInternal: void runOnContext(io.vertx.core.Handler)>(v4);
+label1:
+v5 = <java.util.concurrent.TimeUnit: java.util.concurrent.TimeUnit SECONDS>;
+virtualinvoke v2.<java.util.concurrent.CountDownLatch: boolean await(long,java.util.concurrent.TimeUnit)>(30L, v5);
+label2:
+goto label4;
+label3:
+v6 := @caughtexception;
+label4:
+return;
+catch java.lang.InterruptedException from label1 to label2 with label3;
+}
+private void processFailover(io.vertx.core.json.JsonObject)
+{
+io.vertx.core.VertxException v11, v3;
+java.lang.IllegalStateException v13;
+io.vertx.core.impl.VertxInternal v7;
+java.util.concurrent.atomic.AtomicReference v6;
+java.util.concurrent.TimeUnit v9;
+java.util.concurrent.CountDownLatch v5;
+java.lang.InterruptedException v12;
+io.vertx.core.impl.HAManager v0;
+io.vertx.core.json.JsonObject v1;
+java.lang.String v4;
+io.vertx.core.Handler v8;
+boolean v10, v2;
+v0 := @this: io.vertx.core.impl.HAManager;
+v1 := @parameter0: io.vertx.core.json.JsonObject;
+v2 = v0.<io.vertx.core.impl.HAManager: boolean failDuringFailover>;
+if v2 == 0 goto label1;
+v3 = new io.vertx.core.VertxException;
+specialinvoke v3.<io.vertx.core.VertxException: void <init>(java.lang.String)>("Oops!");
+throw v3;
+label1:
+v4 = virtualinvoke v1.<io.vertx.core.json.JsonObject: java.lang.String getString(java.lang.String)>("verticle_name");
+v5 = new java.util.concurrent.CountDownLatch;
+specialinvoke v5.<java.util.concurrent.CountDownLatch: void <init>(int)>(1);
+v6 = new java.util.concurrent.atomic.AtomicReference;
+specialinvoke v6.<java.util.concurrent.atomic.AtomicReference: void <init>()>();
+v7 = v0.<io.vertx.core.impl.HAManager: io.vertx.core.impl.VertxInternal vertx>;
+v8 = staticinvoke <io.vertx.core.impl.HAManager$lambda_processFailover_18__1512: io.vertx.core.Handler bootstrap$(io.vertx.core.impl.HAManager,io.vertx.core.json.JsonObject,java.lang.String,java.util.concurrent.atomic.AtomicReference,java.util.concurrent.CountDownLatch)>(v0, v1, v4, v6, v5);
+virtualinvoke v7.<io.vertx.core.impl.VertxImpl: void executeIsolated(io.vertx.core.Handler)>(v8);
+label2:
+v9 = <java.util.concurrent.TimeUnit: java.util.concurrent.TimeUnit SECONDS>;
+v10 = virtualinvoke v5.<java.util.concurrent.CountDownLatch: boolean await(long,java.util.concurrent.TimeUnit)>(120L, v9);
+if v10 != 0 goto label4;
+v11 = new io.vertx.core.VertxException;
+specialinvoke v11.<io.vertx.core.VertxException: void <init>(java.lang.String)>("Timed out waiting for redeploy on failover");
+throw v11;
+label3:
+v12 := @caughtexception;
+v13 = new java.lang.IllegalStateException;
+specialinvoke v13.<java.lang.IllegalStateException: void <init>(java.lang.Throwable)>(v12);
+throw v13;
+label4:
+return;
+catch java.lang.InterruptedException from label2 to label3 with label3;
+}
+private java.lang.String chooseHashedNode(java.lang.String, int)
+{
+long v15, v17;
+java.util.ArrayList v5;
+java.util.Map v9;
+int v16, v2;
+io.vertx.core.impl.HAManager v0;
+io.vertx.core.json.JsonObject v11;
+java.lang.String v1, v12;
+boolean v13, v14, v7;
+java.util.Iterator v6;
+io.vertx.core.spi.cluster.ClusterManager v3;
+java.util.List v4;
+java.lang.Object v10, v18, v8;
+v0 := @this: io.vertx.core.impl.HAManager;
+v1 := @parameter0: java.lang.String;
+v2 := @parameter1: int;
+v3 = v0.<io.vertx.core.impl.HAManager: io.vertx.core.spi.cluster.ClusterManager clusterManager>;
+v4 = interfaceinvoke v3.<io.vertx.core.spi.cluster.ClusterManager: java.util.List getNodes()>();
+v5 = new java.util.ArrayList;
+specialinvoke v5.<java.util.ArrayList: void <init>()>();
+v6 = interfaceinvoke v4.<java.util.List: java.util.Iterator iterator()>();
+label1:
+v7 = interfaceinvoke v6.<java.util.Iterator: boolean hasNext()>();
+if v7 == 0 goto label3;
+v8 = interfaceinvoke v6.<java.util.Iterator: java.lang.Object next()>();
+v9 = v0.<io.vertx.core.impl.HAManager: java.util.Map clusterMap>;
+v10 = interfaceinvoke v9.<java.util.Map: java.lang.Object get(java.lang.Object)>(v8);
+if v10 == null goto label1;
+v11 = new io.vertx.core.json.JsonObject;
+specialinvoke v11.<io.vertx.core.json.JsonObject: void <init>(java.lang.String)>(v10);
+v12 = virtualinvoke v11.<io.vertx.core.json.JsonObject: java.lang.String getString(java.lang.String)>("group");
+if v1 == null goto label2;
+v13 = virtualinvoke v1.<java.lang.String: boolean equals(java.lang.Object)>(v12);
+if v13 == 0 goto label1;
+label2:
+virtualinvoke v5.<java.util.ArrayList: boolean add(java.lang.Object)>(v8);
+goto label1;
+label3:
+v14 = virtualinvoke v5.<java.util.ArrayList: boolean isEmpty()>();
+if v14 != 0 goto label4;
+v15 = v2 + 2147483647L;
+v16 = virtualinvoke v5.<java.util.ArrayList: int size()>();
+v17 = v15 % v16;
+v18 = virtualinvoke v5.<java.util.ArrayList: java.lang.Object get(int)>(v17);
+return v18;
+label4:
+return null;
+}
+static void <clinit>()
+{
+io.vertx.core.impl.logging.Logger v0;
+v0 = staticinvoke <io.vertx.core.impl.logging.LoggerFactory: io.vertx.core.impl.logging.Logger getLogger(java.lang.Class)>(class "Lio/vertx/core/impl/HAManager;");
+<io.vertx.core.impl.HAManager: io.vertx.core.impl.logging.Logger log> = v0;
+return;
+}
+}

@@ -1,0 +1,364 @@
+public class io.netty.handler.codec.http2.Http2MultiplexCodec extends io.netty.handler.codec.http2.Http2FrameCodec
+{
+private final io.netty.channel.ChannelHandler inboundStreamHandler;
+private final io.netty.channel.ChannelHandler upgradeStreamHandler;
+private final java.util.Queue readCompletePendingQueue;
+private boolean parentReadInProgress;
+private int idCount;
+volatile io.netty.channel.ChannelHandlerContext ctx;
+static final boolean $assertionsDisabled;
+void <init>(io.netty.handler.codec.http2.Http2ConnectionEncoder, io.netty.handler.codec.http2.Http2ConnectionDecoder, io.netty.handler.codec.http2.Http2Settings, io.netty.channel.ChannelHandler, io.netty.channel.ChannelHandler, boolean, boolean)
+{
+io.netty.handler.codec.http2.Http2ConnectionEncoder v1;
+io.netty.handler.codec.http2.Http2ConnectionDecoder v2;
+io.netty.handler.codec.http2.Http2MultiplexCodec v0;
+io.netty.handler.codec.http2.Http2Settings v3;
+io.netty.handler.codec.http2.MaxCapacityQueue v8;
+io.netty.channel.ChannelHandler v4, v5;
+java.util.ArrayDeque v9;
+boolean v6, v7;
+v0 := @this: io.netty.handler.codec.http2.Http2MultiplexCodec;
+v1 := @parameter0: io.netty.handler.codec.http2.Http2ConnectionEncoder;
+v2 := @parameter1: io.netty.handler.codec.http2.Http2ConnectionDecoder;
+v3 := @parameter2: io.netty.handler.codec.http2.Http2Settings;
+v4 := @parameter3: io.netty.channel.ChannelHandler;
+v5 := @parameter4: io.netty.channel.ChannelHandler;
+v6 := @parameter5: boolean;
+v7 := @parameter6: boolean;
+specialinvoke v0.<io.netty.handler.codec.http2.Http2FrameCodec: void <init>(io.netty.handler.codec.http2.Http2ConnectionEncoder,io.netty.handler.codec.http2.Http2ConnectionDecoder,io.netty.handler.codec.http2.Http2Settings,boolean,boolean)>(v1, v2, v3, v6, v7);
+v8 = new io.netty.handler.codec.http2.MaxCapacityQueue;
+v9 = new java.util.ArrayDeque;
+specialinvoke v9.<java.util.ArrayDeque: void <init>(int)>(8);
+specialinvoke v8.<io.netty.handler.codec.http2.MaxCapacityQueue: void <init>(java.util.Queue,int)>(v9, 100);
+v0.<io.netty.handler.codec.http2.Http2MultiplexCodec: java.util.Queue readCompletePendingQueue> = v8;
+v0.<io.netty.handler.codec.http2.Http2MultiplexCodec: io.netty.channel.ChannelHandler inboundStreamHandler> = v4;
+v0.<io.netty.handler.codec.http2.Http2MultiplexCodec: io.netty.channel.ChannelHandler upgradeStreamHandler> = v5;
+return;
+}
+public void onHttpClientUpgrade() throws io.netty.handler.codec.http2.Http2Exception
+{
+io.netty.handler.codec.http2.Http2MultiplexCodec v0;
+java.lang.Object[] v3;
+io.netty.handler.codec.http2.Http2Exception v4;
+io.netty.handler.codec.http2.Http2Error v2;
+io.netty.channel.ChannelHandler v1;
+v0 := @this: io.netty.handler.codec.http2.Http2MultiplexCodec;
+v1 = v0.<io.netty.handler.codec.http2.Http2MultiplexCodec: io.netty.channel.ChannelHandler upgradeStreamHandler>;
+if v1 != null goto label1;
+v2 = <io.netty.handler.codec.http2.Http2Error: io.netty.handler.codec.http2.Http2Error INTERNAL_ERROR>;
+v3 = newarray (java.lang.Object)[0];
+v4 = staticinvoke <io.netty.handler.codec.http2.Http2Exception: io.netty.handler.codec.http2.Http2Exception connectionError(io.netty.handler.codec.http2.Http2Error,java.lang.String,java.lang.Object[])>(v2, "Client is misconfigured for upgrade requests", v3);
+throw v4;
+label1:
+specialinvoke v0.<io.netty.handler.codec.http2.Http2FrameCodec: void onHttpClientUpgrade()>();
+return;
+}
+public final void handlerAdded0(io.netty.channel.ChannelHandlerContext) throws java.lang.Exception
+{
+io.netty.channel.Channel v3;
+io.netty.handler.codec.http2.Http2MultiplexCodec v0;
+io.netty.util.concurrent.EventExecutor v2;
+io.netty.channel.ChannelHandlerContext v1;
+java.lang.IllegalStateException v5;
+io.netty.channel.EventLoop v4;
+v0 := @this: io.netty.handler.codec.http2.Http2MultiplexCodec;
+v1 := @parameter0: io.netty.channel.ChannelHandlerContext;
+v2 = interfaceinvoke v1.<io.netty.channel.ChannelHandlerContext: io.netty.util.concurrent.EventExecutor executor()>();
+v3 = interfaceinvoke v1.<io.netty.channel.ChannelHandlerContext: io.netty.channel.Channel channel()>();
+v4 = interfaceinvoke v3.<io.netty.channel.Channel: io.netty.channel.EventLoop eventLoop()>();
+if v2 == v4 goto label1;
+v5 = new java.lang.IllegalStateException;
+specialinvoke v5.<java.lang.IllegalStateException: void <init>(java.lang.String)>("EventExecutor must be EventLoop of Channel");
+throw v5;
+label1:
+v0.<io.netty.handler.codec.http2.Http2MultiplexCodec: io.netty.channel.ChannelHandlerContext ctx> = v1;
+return;
+}
+public final void handlerRemoved0(io.netty.channel.ChannelHandlerContext) throws java.lang.Exception
+{
+io.netty.handler.codec.http2.Http2MultiplexCodec v0;
+io.netty.channel.ChannelHandlerContext v1;
+java.util.Queue v2;
+v0 := @this: io.netty.handler.codec.http2.Http2MultiplexCodec;
+v1 := @parameter0: io.netty.channel.ChannelHandlerContext;
+specialinvoke v0.<io.netty.handler.codec.http2.Http2FrameCodec: void handlerRemoved0(io.netty.channel.ChannelHandlerContext)>(v1);
+v2 = v0.<io.netty.handler.codec.http2.Http2MultiplexCodec: java.util.Queue readCompletePendingQueue>;
+interfaceinvoke v2.<java.util.Queue: void clear()>();
+return;
+}
+final void onHttp2Frame(io.netty.channel.ChannelHandlerContext, io.netty.handler.codec.http2.Http2Frame)
+{
+io.netty.channel.Channel v5;
+io.netty.handler.codec.http2.Http2MultiplexCodec v0;
+io.netty.channel.ChannelHandlerContext v1;
+io.netty.handler.codec.http2.Http2FrameStream v4;
+boolean v3, v6;
+io.netty.handler.codec.http2.Http2Frame v2;
+v0 := @this: io.netty.handler.codec.http2.Http2MultiplexCodec;
+v1 := @parameter0: io.netty.channel.ChannelHandlerContext;
+v2 := @parameter1: io.netty.handler.codec.http2.Http2Frame;
+v3 = v2 instanceof io.netty.handler.codec.http2.Http2StreamFrame;
+if v3 == 0 goto label1;
+v4 = interfaceinvoke v2.<io.netty.handler.codec.http2.Http2StreamFrame: io.netty.handler.codec.http2.Http2FrameStream stream()>();
+v5 = v4.<io.netty.handler.codec.http2.Http2FrameCodec$DefaultHttp2FrameStream: io.netty.channel.Channel attachment>;
+virtualinvoke v5.<io.netty.handler.codec.http2.AbstractHttp2StreamChannel: void fireChildRead(io.netty.handler.codec.http2.Http2Frame)>(v2);
+return;
+label1:
+v6 = v2 instanceof io.netty.handler.codec.http2.Http2GoAwayFrame;
+if v6 == 0 goto label2;
+specialinvoke v0.<io.netty.handler.codec.http2.Http2MultiplexCodec: void onHttp2GoAwayFrame(io.netty.channel.ChannelHandlerContext,io.netty.handler.codec.http2.Http2GoAwayFrame)>(v1, v2);
+label2:
+interfaceinvoke v1.<io.netty.channel.ChannelHandlerContext: io.netty.channel.ChannelHandlerContext fireChannelRead(java.lang.Object)>(v2);
+return;
+}
+final void onHttp2StreamStateChanged(io.netty.channel.ChannelHandlerContext, io.netty.handler.codec.http2.Http2FrameCodec$DefaultHttp2FrameStream)
+{
+java.lang.AssertionError v14;
+io.netty.channel.ChannelHandlerContext v1;
+int[] v3;
+io.netty.channel.ChannelFutureListener v24;
+int v5, v6, v7, v9;
+io.netty.handler.codec.http2.Http2FrameCodec$DefaultHttp2FrameStream v2;
+boolean v11, v12, v23;
+io.netty.handler.codec.http2.Http2Stream$State v4;
+io.netty.channel.EventLoop v21;
+io.netty.channel.ChannelFuture v22;
+io.netty.channel.Channel v20, v25, v8;
+io.netty.handler.codec.http2.Http2MultiplexCodec v0;
+io.netty.handler.codec.http2.Http2Connection v10;
+io.netty.handler.codec.http2.Http2MultiplexCodec$Http2MultiplexCodecStreamChannel v15, v17, v18;
+io.netty.channel.ChannelHandler v13, v16, v19;
+v0 := @this: io.netty.handler.codec.http2.Http2MultiplexCodec;
+v1 := @parameter0: io.netty.channel.ChannelHandlerContext;
+v2 := @parameter1: io.netty.handler.codec.http2.Http2FrameCodec$DefaultHttp2FrameStream;
+v3 = <io.netty.handler.codec.http2.Http2MultiplexCodec$2: int[] $SwitchMap$io$netty$handler$codec$http2$Http2Stream$State>;
+v4 = virtualinvoke v2.<io.netty.handler.codec.http2.Http2FrameCodec$DefaultHttp2FrameStream: io.netty.handler.codec.http2.Http2Stream$State state()>();
+v5 = virtualinvoke v4.<io.netty.handler.codec.http2.Http2Stream$State: int ordinal()>();
+v6 = v3[v5];
+tableswitch(v6)
+{
+case 1: goto label1;
+case 2: goto label2;
+case 3: goto label2;
+case 4: goto label7;
+default: goto label8;
+};
+label1:
+v7 = virtualinvoke v2.<io.netty.handler.codec.http2.Http2FrameCodec$DefaultHttp2FrameStream: int id()>();
+if v7 != 1 goto label8;
+label2:
+v8 = v2.<io.netty.handler.codec.http2.Http2FrameCodec$DefaultHttp2FrameStream: io.netty.channel.Channel attachment>;
+if v8 != null goto label8;
+v9 = virtualinvoke v2.<io.netty.handler.codec.http2.Http2FrameCodec$DefaultHttp2FrameStream: int id()>();
+if v9 != 1 goto label4;
+v10 = virtualinvoke v0.<io.netty.handler.codec.http2.Http2MultiplexCodec: io.netty.handler.codec.http2.Http2Connection connection()>();
+v11 = interfaceinvoke v10.<io.netty.handler.codec.http2.Http2Connection: boolean isServer()>();
+if v11 != 0 goto label4;
+v12 = <io.netty.handler.codec.http2.Http2MultiplexCodec: boolean $assertionsDisabled>;
+if v12 != 0 goto label3;
+v13 = v0.<io.netty.handler.codec.http2.Http2MultiplexCodec: io.netty.channel.ChannelHandler upgradeStreamHandler>;
+if v13 != null goto label3;
+v14 = new java.lang.AssertionError;
+specialinvoke v14.<java.lang.AssertionError: void <init>()>();
+throw v14;
+label3:
+v15 = new io.netty.handler.codec.http2.Http2MultiplexCodec$Http2MultiplexCodecStreamChannel;
+v16 = v0.<io.netty.handler.codec.http2.Http2MultiplexCodec: io.netty.channel.ChannelHandler upgradeStreamHandler>;
+specialinvoke v15.<io.netty.handler.codec.http2.Http2MultiplexCodec$Http2MultiplexCodecStreamChannel: void <init>(io.netty.handler.codec.http2.Http2MultiplexCodec,io.netty.handler.codec.http2.Http2FrameCodec$DefaultHttp2FrameStream,io.netty.channel.ChannelHandler)>(v0, v2, v16);
+v17 = v15;
+virtualinvoke v15.<io.netty.handler.codec.http2.Http2MultiplexCodec$Http2MultiplexCodecStreamChannel: void closeOutbound()>();
+goto label5;
+label4:
+v18 = new io.netty.handler.codec.http2.Http2MultiplexCodec$Http2MultiplexCodecStreamChannel;
+v19 = v0.<io.netty.handler.codec.http2.Http2MultiplexCodec: io.netty.channel.ChannelHandler inboundStreamHandler>;
+specialinvoke v18.<io.netty.handler.codec.http2.Http2MultiplexCodec$Http2MultiplexCodecStreamChannel: void <init>(io.netty.handler.codec.http2.Http2MultiplexCodec,io.netty.handler.codec.http2.Http2FrameCodec$DefaultHttp2FrameStream,io.netty.channel.ChannelHandler)>(v0, v2, v19);
+v17 = v18;
+label5:
+v20 = interfaceinvoke v1.<io.netty.channel.ChannelHandlerContext: io.netty.channel.Channel channel()>();
+v21 = interfaceinvoke v20.<io.netty.channel.Channel: io.netty.channel.EventLoop eventLoop()>();
+v22 = interfaceinvoke v21.<io.netty.channel.EventLoop: io.netty.channel.ChannelFuture register(io.netty.channel.Channel)>(v17);
+v23 = interfaceinvoke v22.<io.netty.channel.ChannelFuture: boolean isDone()>();
+if v23 == 0 goto label6;
+staticinvoke <io.netty.handler.codec.http2.Http2MultiplexHandler: void registerDone(io.netty.channel.ChannelFuture)>(v22);
+goto label8;
+label6:
+v24 = <io.netty.handler.codec.http2.Http2MultiplexHandler: io.netty.channel.ChannelFutureListener CHILD_CHANNEL_REGISTRATION_LISTENER>;
+interfaceinvoke v22.<io.netty.channel.ChannelFuture: io.netty.channel.ChannelFuture addListener(io.netty.util.concurrent.GenericFutureListener)>(v24);
+goto label8;
+label7:
+v25 = v2.<io.netty.handler.codec.http2.Http2FrameCodec$DefaultHttp2FrameStream: io.netty.channel.Channel attachment>;
+if v25 == null goto label8;
+virtualinvoke v25.<io.netty.handler.codec.http2.AbstractHttp2StreamChannel: void streamClosed()>();
+label8:
+return;
+}
+final io.netty.handler.codec.http2.Http2StreamChannel newOutboundStream()
+{
+io.netty.handler.codec.http2.Http2MultiplexCodec v0;
+io.netty.handler.codec.http2.Http2MultiplexCodec$Http2MultiplexCodecStreamChannel v1;
+io.netty.handler.codec.http2.Http2FrameCodec$DefaultHttp2FrameStream v2;
+v0 := @this: io.netty.handler.codec.http2.Http2MultiplexCodec;
+v1 = new io.netty.handler.codec.http2.Http2MultiplexCodec$Http2MultiplexCodecStreamChannel;
+v2 = virtualinvoke v0.<io.netty.handler.codec.http2.Http2MultiplexCodec: io.netty.handler.codec.http2.Http2FrameCodec$DefaultHttp2FrameStream newStream()>();
+specialinvoke v1.<io.netty.handler.codec.http2.Http2MultiplexCodec$Http2MultiplexCodecStreamChannel: void <init>(io.netty.handler.codec.http2.Http2MultiplexCodec,io.netty.handler.codec.http2.Http2FrameCodec$DefaultHttp2FrameStream,io.netty.channel.ChannelHandler)>(v0, v2, null);
+return v1;
+}
+final void onHttp2FrameStreamException(io.netty.channel.ChannelHandlerContext, io.netty.handler.codec.http2.Http2FrameStreamException)
+{
+java.lang.Throwable v6, v8;
+io.netty.handler.codec.http2.Http2FrameStreamException v2;
+io.netty.channel.ChannelPipeline v5;
+io.netty.channel.Channel v4;
+io.netty.handler.codec.http2.Http2MultiplexCodec v0;
+io.netty.channel.ChannelHandlerContext v1;
+io.netty.handler.codec.http2.Http2Error v7, v9;
+io.netty.handler.codec.http2.Http2FrameStream v3;
+v0 := @this: io.netty.handler.codec.http2.Http2MultiplexCodec;
+v1 := @parameter0: io.netty.channel.ChannelHandlerContext;
+v2 := @parameter1: io.netty.handler.codec.http2.Http2FrameStreamException;
+v3 = virtualinvoke v2.<io.netty.handler.codec.http2.Http2FrameStreamException: io.netty.handler.codec.http2.Http2FrameStream stream()>();
+v4 = v3.<io.netty.handler.codec.http2.Http2FrameCodec$DefaultHttp2FrameStream: io.netty.channel.Channel attachment>;
+label1:
+v5 = virtualinvoke v4.<io.netty.handler.codec.http2.AbstractHttp2StreamChannel: io.netty.channel.ChannelPipeline pipeline()>();
+v6 = virtualinvoke v2.<io.netty.handler.codec.http2.Http2FrameStreamException: java.lang.Throwable getCause()>();
+interfaceinvoke v5.<io.netty.channel.ChannelPipeline: io.netty.channel.ChannelPipeline fireExceptionCaught(java.lang.Throwable)>(v6);
+label2:
+v7 = virtualinvoke v2.<io.netty.handler.codec.http2.Http2FrameStreamException: io.netty.handler.codec.http2.Http2Error error()>();
+virtualinvoke v4.<io.netty.handler.codec.http2.AbstractHttp2StreamChannel: void closeWithError(io.netty.handler.codec.http2.Http2Error)>(v7);
+goto label4;
+label3:
+v8 := @caughtexception;
+v9 = virtualinvoke v2.<io.netty.handler.codec.http2.Http2FrameStreamException: io.netty.handler.codec.http2.Http2Error error()>();
+virtualinvoke v4.<io.netty.handler.codec.http2.AbstractHttp2StreamChannel: void closeWithError(io.netty.handler.codec.http2.Http2Error)>(v9);
+throw v8;
+label4:
+return;
+catch java.lang.Throwable from label1 to label2 with label3;
+}
+private void onHttp2GoAwayFrame(io.netty.channel.ChannelHandlerContext, io.netty.handler.codec.http2.Http2GoAwayFrame)
+{
+io.netty.handler.codec.http2.Http2MultiplexCodec v0;
+io.netty.channel.ChannelHandlerContext v1;
+io.netty.handler.codec.http2.Http2Exception v5;
+int v3;
+io.netty.handler.codec.http2.Http2MultiplexCodec$1 v4;
+io.netty.handler.codec.http2.Http2GoAwayFrame v2;
+v0 := @this: io.netty.handler.codec.http2.Http2MultiplexCodec;
+v1 := @parameter0: io.netty.channel.ChannelHandlerContext;
+v2 := @parameter1: io.netty.handler.codec.http2.Http2GoAwayFrame;
+v3 = interfaceinvoke v2.<io.netty.handler.codec.http2.Http2GoAwayFrame: int lastStreamId()>();
+if v3 != 2147483647 goto label1;
+return;
+label1:
+v4 = new io.netty.handler.codec.http2.Http2MultiplexCodec$1;
+specialinvoke v4.<io.netty.handler.codec.http2.Http2MultiplexCodec$1: void <init>(io.netty.handler.codec.http2.Http2MultiplexCodec,io.netty.handler.codec.http2.Http2GoAwayFrame)>(v0, v2);
+virtualinvoke v0.<io.netty.handler.codec.http2.Http2MultiplexCodec: void forEachActiveStream(io.netty.handler.codec.http2.Http2FrameStreamVisitor)>(v4);
+label2:
+goto label4;
+label3:
+v5 := @caughtexception;
+interfaceinvoke v1.<io.netty.channel.ChannelHandlerContext: io.netty.channel.ChannelHandlerContext fireExceptionCaught(java.lang.Throwable)>(v5);
+interfaceinvoke v1.<io.netty.channel.ChannelHandlerContext: io.netty.channel.ChannelFuture close()>();
+label4:
+return;
+catch io.netty.handler.codec.http2.Http2Exception from label1 to label2 with label3;
+}
+public final void channelReadComplete(io.netty.channel.ChannelHandlerContext) throws java.lang.Exception
+{
+io.netty.handler.codec.http2.Http2MultiplexCodec v0;
+io.netty.channel.ChannelHandlerContext v1;
+v0 := @this: io.netty.handler.codec.http2.Http2MultiplexCodec;
+v1 := @parameter0: io.netty.channel.ChannelHandlerContext;
+specialinvoke v0.<io.netty.handler.codec.http2.Http2MultiplexCodec: void processPendingReadCompleteQueue()>();
+virtualinvoke v0.<io.netty.handler.codec.http2.Http2MultiplexCodec: void channelReadComplete0(io.netty.channel.ChannelHandlerContext)>(v1);
+return;
+}
+private void processPendingReadCompleteQueue()
+{
+java.lang.Throwable v5;
+io.netty.handler.codec.http2.Http2MultiplexCodec v0;
+io.netty.channel.ChannelHandlerContext v4, v7;
+java.lang.Object v2;
+java.util.Queue v1, v3, v6;
+v0 := @this: io.netty.handler.codec.http2.Http2MultiplexCodec;
+v0.<io.netty.handler.codec.http2.Http2MultiplexCodec: boolean parentReadInProgress> = 1;
+label1:
+v1 = v0.<io.netty.handler.codec.http2.Http2MultiplexCodec: java.util.Queue readCompletePendingQueue>;
+v2 = interfaceinvoke v1.<java.util.Queue: java.lang.Object poll()>();
+if v2 == null goto label2;
+virtualinvoke v2.<io.netty.handler.codec.http2.AbstractHttp2StreamChannel: void fireChildReadComplete()>();
+goto label1;
+label2:
+v0.<io.netty.handler.codec.http2.Http2MultiplexCodec: boolean parentReadInProgress> = 0;
+v3 = v0.<io.netty.handler.codec.http2.Http2MultiplexCodec: java.util.Queue readCompletePendingQueue>;
+interfaceinvoke v3.<java.util.Queue: void clear()>();
+v4 = v0.<io.netty.handler.codec.http2.Http2MultiplexCodec: io.netty.channel.ChannelHandlerContext ctx>;
+virtualinvoke v0.<io.netty.handler.codec.http2.Http2MultiplexCodec: void flush0(io.netty.channel.ChannelHandlerContext)>(v4);
+goto label4;
+label3:
+v5 := @caughtexception;
+v0.<io.netty.handler.codec.http2.Http2MultiplexCodec: boolean parentReadInProgress> = 0;
+v6 = v0.<io.netty.handler.codec.http2.Http2MultiplexCodec: java.util.Queue readCompletePendingQueue>;
+interfaceinvoke v6.<java.util.Queue: void clear()>();
+v7 = v0.<io.netty.handler.codec.http2.Http2MultiplexCodec: io.netty.channel.ChannelHandlerContext ctx>;
+virtualinvoke v0.<io.netty.handler.codec.http2.Http2MultiplexCodec: void flush0(io.netty.channel.ChannelHandlerContext)>(v7);
+throw v5;
+label4:
+return;
+catch java.lang.Throwable from label1 to label2 with label3;
+}
+public final void channelRead(io.netty.channel.ChannelHandlerContext, java.lang.Object) throws java.lang.Exception
+{
+io.netty.handler.codec.http2.Http2MultiplexCodec v0;
+io.netty.channel.ChannelHandlerContext v1;
+java.lang.Object v2;
+v0 := @this: io.netty.handler.codec.http2.Http2MultiplexCodec;
+v1 := @parameter0: io.netty.channel.ChannelHandlerContext;
+v2 := @parameter1: java.lang.Object;
+v0.<io.netty.handler.codec.http2.Http2MultiplexCodec: boolean parentReadInProgress> = 1;
+specialinvoke v0.<io.netty.handler.codec.http2.Http2FrameCodec: void channelRead(io.netty.channel.ChannelHandlerContext,java.lang.Object)>(v1, v2);
+return;
+}
+public final void channelWritabilityChanged(io.netty.channel.ChannelHandlerContext) throws java.lang.Exception
+{
+io.netty.channel.Channel v2;
+io.netty.handler.codec.http2.Http2MultiplexCodec v0;
+io.netty.channel.ChannelHandlerContext v1;
+io.netty.handler.codec.http2.Http2FrameStreamVisitor v4;
+boolean v3;
+v0 := @this: io.netty.handler.codec.http2.Http2MultiplexCodec;
+v1 := @parameter0: io.netty.channel.ChannelHandlerContext;
+v2 = interfaceinvoke v1.<io.netty.channel.ChannelHandlerContext: io.netty.channel.Channel channel()>();
+v3 = interfaceinvoke v2.<io.netty.channel.Channel: boolean isWritable()>();
+if v3 == 0 goto label1;
+v4 = <io.netty.handler.codec.http2.AbstractHttp2StreamChannel: io.netty.handler.codec.http2.Http2FrameStreamVisitor WRITABLE_VISITOR>;
+virtualinvoke v0.<io.netty.handler.codec.http2.Http2MultiplexCodec: void forEachActiveStream(io.netty.handler.codec.http2.Http2FrameStreamVisitor)>(v4);
+label1:
+specialinvoke v0.<io.netty.handler.codec.http2.Http2FrameCodec: void channelWritabilityChanged(io.netty.channel.ChannelHandlerContext)>(v1);
+return;
+}
+final void flush0(io.netty.channel.ChannelHandlerContext)
+{
+io.netty.handler.codec.http2.Http2MultiplexCodec v0;
+io.netty.channel.ChannelHandlerContext v1;
+v0 := @this: io.netty.handler.codec.http2.Http2MultiplexCodec;
+v1 := @parameter0: io.netty.channel.ChannelHandlerContext;
+virtualinvoke v0.<io.netty.handler.codec.http2.Http2MultiplexCodec: void flush(io.netty.channel.ChannelHandlerContext)>(v1);
+return;
+}
+static void <clinit>()
+{
+java.lang.Class v0;
+boolean v1, v2;
+v0 = class "Lio/netty/handler/codec/http2/Http2MultiplexCodec;";
+v1 = virtualinvoke v0.<java.lang.Class: boolean desiredAssertionStatus()>();
+if v1 != 0 goto label1;
+v2 = 1;
+goto label2;
+label1:
+v2 = 0;
+label2:
+<io.netty.handler.codec.http2.Http2MultiplexCodec: boolean $assertionsDisabled> = v2;
+return;
+}
+}

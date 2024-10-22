@@ -1,0 +1,1259 @@
+public abstract class io.netty.handler.codec.http.HttpObjectEncoder extends io.netty.handler.codec.MessageToMessageEncoder
+{
+static final int CRLF_SHORT;
+private static final int ZERO_CRLF_MEDIUM;
+private static final byte[] ZERO_CRLF_CRLF;
+private static final io.netty.buffer.ByteBuf CRLF_BUF;
+private static final io.netty.buffer.ByteBuf ZERO_CRLF_CRLF_BUF;
+private static final float HEADERS_WEIGHT_NEW;
+private static final float HEADERS_WEIGHT_HISTORICAL;
+private static final float TRAILERS_WEIGHT_NEW;
+private static final float TRAILERS_WEIGHT_HISTORICAL;
+private static final int ST_INIT;
+private static final int ST_CONTENT_NON_CHUNK;
+private static final int ST_CONTENT_CHUNK;
+private static final int ST_CONTENT_ALWAYS_EMPTY;
+private int state;
+private float headersEncodedSizeAccumulator;
+private float trailersEncodedSizeAccumulator;
+private final java.util.List out;
+static final boolean $assertionsDisabled;
+public void <init>()
+{
+io.netty.handler.codec.http.HttpObjectEncoder v0;
+java.util.ArrayList v1;
+v0 := @this: io.netty.handler.codec.http.HttpObjectEncoder;
+specialinvoke v0.<io.netty.handler.codec.MessageToMessageEncoder: void <init>()>();
+v0.<io.netty.handler.codec.http.HttpObjectEncoder: int state> = 0;
+v0.<io.netty.handler.codec.http.HttpObjectEncoder: float headersEncodedSizeAccumulator> = 256.0F;
+v0.<io.netty.handler.codec.http.HttpObjectEncoder: float trailersEncodedSizeAccumulator> = 256.0F;
+v1 = new java.util.ArrayList;
+specialinvoke v1.<java.util.ArrayList: void <init>()>();
+v0.<io.netty.handler.codec.http.HttpObjectEncoder: java.util.List out> = v1;
+return;
+}
+private static boolean checkContentState(int)
+{
+int v0;
+boolean v1;
+v0 := @parameter0: int;
+if v0 == 2 goto label1;
+if v0 == 1 goto label1;
+if v0 != 3 goto label2;
+label1:
+v1 = 1;
+goto label3;
+label2:
+v1 = 0;
+label3:
+return v1;
+}
+public void write(io.netty.channel.ChannelHandlerContext, java.lang.Object, io.netty.channel.ChannelPromise) throws java.lang.Exception
+{
+java.lang.Throwable v13;
+io.netty.handler.codec.EncoderException v12, v14, v8;
+io.netty.channel.ChannelHandlerContext v1;
+java.util.List v11, v5, v6;
+io.netty.channel.ChannelPromise v3;
+io.netty.handler.codec.http.HttpObjectEncoder v0;
+java.lang.Object v2;
+java.lang.String v10, v9;
+boolean v4, v7;
+v0 := @this: io.netty.handler.codec.http.HttpObjectEncoder;
+v1 := @parameter0: io.netty.channel.ChannelHandlerContext;
+v2 := @parameter1: java.lang.Object;
+v3 := @parameter2: io.netty.channel.ChannelPromise;
+label1:
+v4 = virtualinvoke v0.<io.netty.handler.codec.http.HttpObjectEncoder: boolean acceptOutboundMessage(java.lang.Object)>(v2);
+if v4 == 0 goto label2;
+v5 = v0.<io.netty.handler.codec.http.HttpObjectEncoder: java.util.List out>;
+virtualinvoke v0.<io.netty.handler.codec.http.HttpObjectEncoder: void encode(io.netty.channel.ChannelHandlerContext,java.lang.Object,java.util.List)>(v1, v2, v5);
+v6 = v0.<io.netty.handler.codec.http.HttpObjectEncoder: java.util.List out>;
+v7 = interfaceinvoke v6.<java.util.List: boolean isEmpty()>();
+if v7 == 0 goto label3;
+v8 = new io.netty.handler.codec.EncoderException;
+v9 = staticinvoke <io.netty.util.internal.StringUtil: java.lang.String simpleClassName(java.lang.Object)>(v0);
+v10 = dynamicinvoke "makeConcatWithConstants" <java.lang.String (java.lang.String)>(v9) <java.lang.invoke.StringConcatFactory: java.lang.invoke.CallSite makeConcatWithConstants(java.lang.invoke.MethodHandles$Lookup,java.lang.String,java.lang.invoke.MethodType,java.lang.String,java.lang.Object[])>("\u0001 must produce at least one message.");
+specialinvoke v8.<io.netty.handler.codec.EncoderException: void <init>(java.lang.String)>(v10);
+throw v8;
+label2:
+interfaceinvoke v1.<io.netty.channel.ChannelHandlerContext: io.netty.channel.ChannelFuture write(java.lang.Object,io.netty.channel.ChannelPromise)>(v2, v3);
+label3:
+v11 = v0.<io.netty.handler.codec.http.HttpObjectEncoder: java.util.List out>;
+staticinvoke <io.netty.handler.codec.http.HttpObjectEncoder: void writeOutList(io.netty.channel.ChannelHandlerContext,java.util.List,io.netty.channel.ChannelPromise)>(v1, v11, v3);
+goto label6;
+label4:
+v12 := @caughtexception;
+throw v12;
+label5:
+v13 := @caughtexception;
+v14 = new io.netty.handler.codec.EncoderException;
+specialinvoke v14.<io.netty.handler.codec.EncoderException: void <init>(java.lang.Throwable)>(v13);
+throw v14;
+label6:
+return;
+catch io.netty.handler.codec.EncoderException from label1 to label3 with label4;
+catch java.lang.Throwable from label1 to label3 with label5;
+}
+private static void writeOutList(io.netty.channel.ChannelHandlerContext, java.util.List, io.netty.channel.ChannelPromise)
+{
+java.lang.Throwable v6;
+io.netty.channel.ChannelHandlerContext v0;
+java.util.List v1;
+io.netty.channel.ChannelPromise v2, v5;
+int v3;
+java.lang.Object v4;
+v0 := @parameter0: io.netty.channel.ChannelHandlerContext;
+v1 := @parameter1: java.util.List;
+v2 := @parameter2: io.netty.channel.ChannelPromise;
+v3 = interfaceinvoke v1.<java.util.List: int size()>();
+label1:
+if v3 != 1 goto label2;
+v4 = interfaceinvoke v1.<java.util.List: java.lang.Object get(int)>(0);
+interfaceinvoke v0.<io.netty.channel.ChannelHandlerContext: io.netty.channel.ChannelFuture write(java.lang.Object,io.netty.channel.ChannelPromise)>(v4, v2);
+goto label4;
+label2:
+if v3 <= 1 goto label4;
+v5 = interfaceinvoke v0.<io.netty.channel.ChannelHandlerContext: io.netty.channel.ChannelPromise voidPromise()>();
+if v2 != v5 goto label3;
+staticinvoke <io.netty.handler.codec.http.HttpObjectEncoder: void writeVoidPromise(io.netty.channel.ChannelHandlerContext,java.util.List)>(v0, v1);
+goto label4;
+label3:
+staticinvoke <io.netty.handler.codec.http.HttpObjectEncoder: void writePromiseCombiner(io.netty.channel.ChannelHandlerContext,java.util.List,io.netty.channel.ChannelPromise)>(v0, v1, v2);
+label4:
+interfaceinvoke v1.<java.util.List: void clear()>();
+goto label6;
+label5:
+v6 := @caughtexception;
+interfaceinvoke v1.<java.util.List: void clear()>();
+throw v6;
+label6:
+return;
+catch java.lang.Throwable from label1 to label4 with label5;
+}
+private static void writeVoidPromise(io.netty.channel.ChannelHandlerContext, java.util.List)
+{
+io.netty.channel.ChannelHandlerContext v0;
+java.util.List v1;
+io.netty.channel.ChannelPromise v2;
+int v3, v4;
+java.lang.Object v5;
+v0 := @parameter0: io.netty.channel.ChannelHandlerContext;
+v1 := @parameter1: java.util.List;
+v2 = interfaceinvoke v0.<io.netty.channel.ChannelHandlerContext: io.netty.channel.ChannelPromise voidPromise()>();
+v3 = 0;
+label1:
+v4 = interfaceinvoke v1.<java.util.List: int size()>();
+if v3 >= v4 goto label2;
+v5 = interfaceinvoke v1.<java.util.List: java.lang.Object get(int)>(v3);
+interfaceinvoke v0.<io.netty.channel.ChannelHandlerContext: io.netty.channel.ChannelFuture write(java.lang.Object,io.netty.channel.ChannelPromise)>(v5, v2);
+v3 = v3 + 1;
+goto label1;
+label2:
+return;
+}
+private static void writePromiseCombiner(io.netty.channel.ChannelHandlerContext, java.util.List, io.netty.channel.ChannelPromise)
+{
+io.netty.util.concurrent.EventExecutor v4;
+io.netty.util.concurrent.PromiseCombiner v3;
+io.netty.channel.ChannelFuture v8;
+io.netty.channel.ChannelHandlerContext v0;
+java.util.List v1;
+io.netty.channel.ChannelPromise v2;
+int v5, v6;
+java.lang.Object v7;
+v0 := @parameter0: io.netty.channel.ChannelHandlerContext;
+v1 := @parameter1: java.util.List;
+v2 := @parameter2: io.netty.channel.ChannelPromise;
+v3 = new io.netty.util.concurrent.PromiseCombiner;
+v4 = interfaceinvoke v0.<io.netty.channel.ChannelHandlerContext: io.netty.util.concurrent.EventExecutor executor()>();
+specialinvoke v3.<io.netty.util.concurrent.PromiseCombiner: void <init>(io.netty.util.concurrent.EventExecutor)>(v4);
+v5 = 0;
+label1:
+v6 = interfaceinvoke v1.<java.util.List: int size()>();
+if v5 >= v6 goto label2;
+v7 = interfaceinvoke v1.<java.util.List: java.lang.Object get(int)>(v5);
+v8 = interfaceinvoke v0.<io.netty.channel.ChannelHandlerContext: io.netty.channel.ChannelFuture write(java.lang.Object)>(v7);
+virtualinvoke v3.<io.netty.util.concurrent.PromiseCombiner: void add(io.netty.util.concurrent.Future)>(v8);
+v5 = v5 + 1;
+goto label1;
+label2:
+virtualinvoke v3.<io.netty.util.concurrent.PromiseCombiner: void finish(io.netty.util.concurrent.Promise)>(v2);
+return;
+}
+protected void encode(io.netty.channel.ChannelHandlerContext, java.lang.Object, java.util.List) throws java.lang.Exception
+{
+io.netty.channel.ChannelHandlerContext v1;
+java.util.List v3;
+io.netty.buffer.ByteBuf v4, v5;
+io.netty.handler.codec.http.HttpObjectEncoder v0;
+java.lang.Object v2;
+boolean v6, v7, v8, v9;
+v0 := @this: io.netty.handler.codec.http.HttpObjectEncoder;
+v1 := @parameter0: io.netty.channel.ChannelHandlerContext;
+v2 := @parameter1: java.lang.Object;
+v3 := @parameter2: java.util.List;
+v4 = <io.netty.buffer.Unpooled: io.netty.buffer.ByteBuf EMPTY_BUFFER>;
+if v2 != v4 goto label1;
+v5 = <io.netty.buffer.Unpooled: io.netty.buffer.ByteBuf EMPTY_BUFFER>;
+interfaceinvoke v3.<java.util.List: boolean add(java.lang.Object)>(v5);
+return;
+label1:
+v6 = v2 instanceof io.netty.handler.codec.http.FullHttpMessage;
+if v6 == 0 goto label2;
+specialinvoke v0.<io.netty.handler.codec.http.HttpObjectEncoder: void encodeFullHttpMessage(io.netty.channel.ChannelHandlerContext,java.lang.Object,java.util.List)>(v1, v2, v3);
+return;
+label2:
+v7 = v2 instanceof io.netty.handler.codec.http.HttpMessage;
+if v7 == 0 goto label5;
+v8 = v2 instanceof io.netty.handler.codec.http.LastHttpContent;
+if v8 == 0 goto label3;
+specialinvoke v0.<io.netty.handler.codec.http.HttpObjectEncoder: void encodeHttpMessageLastContent(io.netty.channel.ChannelHandlerContext,io.netty.handler.codec.http.HttpMessage,java.util.List)>(v1, v2, v3);
+goto label6;
+label3:
+v9 = v2 instanceof io.netty.handler.codec.http.HttpContent;
+if v9 == 0 goto label4;
+specialinvoke v0.<io.netty.handler.codec.http.HttpObjectEncoder: void encodeHttpMessageNotLastContent(io.netty.channel.ChannelHandlerContext,io.netty.handler.codec.http.HttpMessage,java.util.List)>(v1, v2, v3);
+goto label6;
+label4:
+specialinvoke v0.<io.netty.handler.codec.http.HttpObjectEncoder: void encodeJustHttpMessage(io.netty.channel.ChannelHandlerContext,io.netty.handler.codec.http.HttpMessage,java.util.List)>(v1, v2, v3);
+goto label6;
+label5:
+specialinvoke v0.<io.netty.handler.codec.http.HttpObjectEncoder: void encodeNotHttpMessageContentTypes(io.netty.channel.ChannelHandlerContext,java.lang.Object,java.util.List)>(v1, v2, v3);
+label6:
+return;
+}
+private void encodeJustHttpMessage(io.netty.channel.ChannelHandlerContext, io.netty.handler.codec.http.HttpMessage, java.util.List) throws java.lang.Exception
+{
+java.lang.Throwable v14;
+io.netty.handler.codec.http.HttpMessage v2;
+java.lang.AssertionError v13, v6;
+io.netty.channel.ChannelHandlerContext v1;
+java.util.List v3;
+io.netty.buffer.ByteBuf v9;
+io.netty.handler.codec.http.HttpObjectEncoder v0;
+int v11, v7, v8;
+boolean v10, v12, v4, v5;
+v0 := @this: io.netty.handler.codec.http.HttpObjectEncoder;
+v1 := @parameter0: io.netty.channel.ChannelHandlerContext;
+v2 := @parameter1: io.netty.handler.codec.http.HttpMessage;
+v3 := @parameter2: java.util.List;
+v4 = <io.netty.handler.codec.http.HttpObjectEncoder: boolean $assertionsDisabled>;
+if v4 != 0 goto label1;
+v5 = v2 instanceof io.netty.handler.codec.http.HttpContent;
+if v5 == 0 goto label1;
+v6 = new java.lang.AssertionError;
+specialinvoke v6.<java.lang.AssertionError: void <init>()>();
+throw v6;
+label1:
+v7 = v0.<io.netty.handler.codec.http.HttpObjectEncoder: int state>;
+if v7 == 0 goto label2;
+v8 = v0.<io.netty.handler.codec.http.HttpObjectEncoder: int state>;
+staticinvoke <io.netty.handler.codec.http.HttpObjectEncoder: void throwUnexpectedMessageTypeEx(java.lang.Object,int)>(v2, v8);
+label2:
+v9 = specialinvoke v0.<io.netty.handler.codec.http.HttpObjectEncoder: io.netty.buffer.ByteBuf encodeInitHttpMessage(io.netty.channel.ChannelHandlerContext,io.netty.handler.codec.http.HttpMessage)>(v1, v2);
+v10 = <io.netty.handler.codec.http.HttpObjectEncoder: boolean $assertionsDisabled>;
+if v10 != 0 goto label3;
+v11 = v0.<io.netty.handler.codec.http.HttpObjectEncoder: int state>;
+v12 = staticinvoke <io.netty.handler.codec.http.HttpObjectEncoder: boolean checkContentState(int)>(v11);
+if v12 != 0 goto label3;
+v13 = new java.lang.AssertionError;
+specialinvoke v13.<java.lang.AssertionError: void <init>()>();
+throw v13;
+label3:
+interfaceinvoke v3.<java.util.List: boolean add(java.lang.Object)>(v9);
+label4:
+staticinvoke <io.netty.util.ReferenceCountUtil: boolean release(java.lang.Object)>(v2);
+goto label6;
+label5:
+v14 := @caughtexception;
+staticinvoke <io.netty.util.ReferenceCountUtil: boolean release(java.lang.Object)>(v2);
+throw v14;
+label6:
+return;
+catch java.lang.Throwable from label1 to label4 with label5;
+}
+private void encodeByteBufHttpContent(int, io.netty.channel.ChannelHandlerContext, io.netty.buffer.ByteBuf, io.netty.buffer.ByteBuf, io.netty.handler.codec.http.HttpHeaders, java.util.List)
+{
+io.netty.handler.codec.http.HttpHeaders v5;
+java.lang.Error v8;
+io.netty.channel.ChannelHandlerContext v2;
+java.util.List v6;
+io.netty.buffer.ByteBuf v3, v4;
+io.netty.handler.codec.http.HttpObjectEncoder v0;
+int v1;
+boolean v7;
+v0 := @this: io.netty.handler.codec.http.HttpObjectEncoder;
+v1 := @parameter0: int;
+v2 := @parameter1: io.netty.channel.ChannelHandlerContext;
+v3 := @parameter2: io.netty.buffer.ByteBuf;
+v4 := @parameter3: io.netty.buffer.ByteBuf;
+v5 := @parameter4: io.netty.handler.codec.http.HttpHeaders;
+v6 := @parameter5: java.util.List;
+tableswitch(v1)
+{
+case 1: goto label1;
+case 2: goto label3;
+case 3: goto label2;
+default: goto label4;
+};
+label1:
+v7 = staticinvoke <io.netty.handler.codec.http.HttpObjectEncoder: boolean encodeContentNonChunk(java.util.List,io.netty.buffer.ByteBuf,io.netty.buffer.ByteBuf)>(v6, v3, v4);
+if v7 != 0 goto label5;
+label2:
+interfaceinvoke v6.<java.util.List: boolean add(java.lang.Object)>(v3);
+goto label5;
+label3:
+interfaceinvoke v6.<java.util.List: boolean add(java.lang.Object)>(v3);
+specialinvoke v0.<io.netty.handler.codec.http.HttpObjectEncoder: void encodeChunkedHttpContent(io.netty.channel.ChannelHandlerContext,io.netty.buffer.ByteBuf,io.netty.handler.codec.http.HttpHeaders,java.util.List)>(v2, v4, v5, v6);
+goto label5;
+label4:
+v8 = new java.lang.Error;
+specialinvoke v8.<java.lang.Error: void <init>()>();
+throw v8;
+label5:
+return;
+}
+private void encodeHttpMessageNotLastContent(io.netty.channel.ChannelHandlerContext, io.netty.handler.codec.http.HttpMessage, java.util.List) throws java.lang.Exception
+{
+java.lang.Throwable v19;
+io.netty.handler.codec.http.HttpMessage v2;
+java.lang.AssertionError v16, v6, v9;
+io.netty.channel.ChannelHandlerContext v1;
+io.netty.buffer.ByteBuf v12, v18;
+int v10, v11, v14, v17;
+boolean v13, v15, v4, v5, v7, v8;
+java.util.List v3;
+io.netty.handler.codec.http.HttpObjectEncoder v0;
+v0 := @this: io.netty.handler.codec.http.HttpObjectEncoder;
+v1 := @parameter0: io.netty.channel.ChannelHandlerContext;
+v2 := @parameter1: io.netty.handler.codec.http.HttpMessage;
+v3 := @parameter2: java.util.List;
+v4 = <io.netty.handler.codec.http.HttpObjectEncoder: boolean $assertionsDisabled>;
+if v4 != 0 goto label1;
+v5 = v2 instanceof io.netty.handler.codec.http.HttpContent;
+if v5 != 0 goto label1;
+v6 = new java.lang.AssertionError;
+specialinvoke v6.<java.lang.AssertionError: void <init>()>();
+throw v6;
+label1:
+v7 = <io.netty.handler.codec.http.HttpObjectEncoder: boolean $assertionsDisabled>;
+if v7 != 0 goto label2;
+v8 = v2 instanceof io.netty.handler.codec.http.LastHttpContent;
+if v8 == 0 goto label2;
+v9 = new java.lang.AssertionError;
+specialinvoke v9.<java.lang.AssertionError: void <init>()>();
+throw v9;
+label2:
+v10 = v0.<io.netty.handler.codec.http.HttpObjectEncoder: int state>;
+if v10 == 0 goto label3;
+v11 = v0.<io.netty.handler.codec.http.HttpObjectEncoder: int state>;
+staticinvoke <io.netty.handler.codec.http.HttpObjectEncoder: void throwUnexpectedMessageTypeEx(java.lang.Object,int)>(v2, v11);
+label3:
+v12 = specialinvoke v0.<io.netty.handler.codec.http.HttpObjectEncoder: io.netty.buffer.ByteBuf encodeInitHttpMessage(io.netty.channel.ChannelHandlerContext,io.netty.handler.codec.http.HttpMessage)>(v1, v2);
+v13 = <io.netty.handler.codec.http.HttpObjectEncoder: boolean $assertionsDisabled>;
+if v13 != 0 goto label4;
+v14 = v0.<io.netty.handler.codec.http.HttpObjectEncoder: int state>;
+v15 = staticinvoke <io.netty.handler.codec.http.HttpObjectEncoder: boolean checkContentState(int)>(v14);
+if v15 != 0 goto label4;
+v16 = new java.lang.AssertionError;
+specialinvoke v16.<java.lang.AssertionError: void <init>()>();
+throw v16;
+label4:
+v17 = v0.<io.netty.handler.codec.http.HttpObjectEncoder: int state>;
+v18 = interfaceinvoke v2.<io.netty.handler.codec.http.HttpContent: io.netty.buffer.ByteBuf content()>();
+specialinvoke v0.<io.netty.handler.codec.http.HttpObjectEncoder: void encodeByteBufHttpContent(int,io.netty.channel.ChannelHandlerContext,io.netty.buffer.ByteBuf,io.netty.buffer.ByteBuf,io.netty.handler.codec.http.HttpHeaders,java.util.List)>(v17, v1, v12, v18, null, v3);
+label5:
+interfaceinvoke v2.<io.netty.handler.codec.http.HttpContent: boolean release()>();
+goto label7;
+label6:
+v19 := @caughtexception;
+interfaceinvoke v2.<io.netty.handler.codec.http.HttpContent: boolean release()>();
+throw v19;
+label7:
+return;
+catch java.lang.Throwable from label2 to label5 with label6;
+}
+private void encodeHttpMessageLastContent(io.netty.channel.ChannelHandlerContext, io.netty.handler.codec.http.HttpMessage, java.util.List) throws java.lang.Exception
+{
+java.lang.Throwable v17;
+io.netty.handler.codec.http.HttpHeaders v16;
+io.netty.handler.codec.http.HttpMessage v2;
+java.lang.AssertionError v13, v6;
+io.netty.channel.ChannelHandlerContext v1;
+io.netty.buffer.ByteBuf v15, v9;
+int v11, v14, v7, v8;
+boolean v10, v12, v4, v5;
+java.util.List v3;
+io.netty.handler.codec.http.HttpObjectEncoder v0;
+v0 := @this: io.netty.handler.codec.http.HttpObjectEncoder;
+v1 := @parameter0: io.netty.channel.ChannelHandlerContext;
+v2 := @parameter1: io.netty.handler.codec.http.HttpMessage;
+v3 := @parameter2: java.util.List;
+v4 = <io.netty.handler.codec.http.HttpObjectEncoder: boolean $assertionsDisabled>;
+if v4 != 0 goto label1;
+v5 = v2 instanceof io.netty.handler.codec.http.LastHttpContent;
+if v5 != 0 goto label1;
+v6 = new java.lang.AssertionError;
+specialinvoke v6.<java.lang.AssertionError: void <init>()>();
+throw v6;
+label1:
+v7 = v0.<io.netty.handler.codec.http.HttpObjectEncoder: int state>;
+if v7 == 0 goto label2;
+v8 = v0.<io.netty.handler.codec.http.HttpObjectEncoder: int state>;
+staticinvoke <io.netty.handler.codec.http.HttpObjectEncoder: void throwUnexpectedMessageTypeEx(java.lang.Object,int)>(v2, v8);
+label2:
+v9 = specialinvoke v0.<io.netty.handler.codec.http.HttpObjectEncoder: io.netty.buffer.ByteBuf encodeInitHttpMessage(io.netty.channel.ChannelHandlerContext,io.netty.handler.codec.http.HttpMessage)>(v1, v2);
+v10 = <io.netty.handler.codec.http.HttpObjectEncoder: boolean $assertionsDisabled>;
+if v10 != 0 goto label3;
+v11 = v0.<io.netty.handler.codec.http.HttpObjectEncoder: int state>;
+v12 = staticinvoke <io.netty.handler.codec.http.HttpObjectEncoder: boolean checkContentState(int)>(v11);
+if v12 != 0 goto label3;
+v13 = new java.lang.AssertionError;
+specialinvoke v13.<java.lang.AssertionError: void <init>()>();
+throw v13;
+label3:
+v14 = v0.<io.netty.handler.codec.http.HttpObjectEncoder: int state>;
+v15 = interfaceinvoke v2.<io.netty.handler.codec.http.LastHttpContent: io.netty.buffer.ByteBuf content()>();
+v16 = interfaceinvoke v2.<io.netty.handler.codec.http.LastHttpContent: io.netty.handler.codec.http.HttpHeaders trailingHeaders()>();
+specialinvoke v0.<io.netty.handler.codec.http.HttpObjectEncoder: void encodeByteBufHttpContent(int,io.netty.channel.ChannelHandlerContext,io.netty.buffer.ByteBuf,io.netty.buffer.ByteBuf,io.netty.handler.codec.http.HttpHeaders,java.util.List)>(v14, v1, v9, v15, v16, v3);
+v0.<io.netty.handler.codec.http.HttpObjectEncoder: int state> = 0;
+label4:
+interfaceinvoke v2.<io.netty.handler.codec.http.LastHttpContent: boolean release()>();
+goto label6;
+label5:
+v17 := @caughtexception;
+interfaceinvoke v2.<io.netty.handler.codec.http.LastHttpContent: boolean release()>();
+throw v17;
+label6:
+return;
+catch java.lang.Throwable from label1 to label4 with label5;
+}
+private void encodeNotHttpMessageContentTypes(io.netty.channel.ChannelHandlerContext, java.lang.Object, java.util.List)
+{
+java.lang.Throwable v10, v19;
+java.lang.AssertionError v6;
+io.netty.handler.codec.http.LastHttpContent v11;
+io.netty.channel.ChannelHandlerContext v1;
+int v12, v13, v18, v7;
+boolean v14, v15, v16, v17, v4, v5, v8, v9;
+java.util.List v3;
+io.netty.handler.codec.http.HttpObjectEncoder v0;
+java.lang.Object v2;
+v0 := @this: io.netty.handler.codec.http.HttpObjectEncoder;
+v1 := @parameter0: io.netty.channel.ChannelHandlerContext;
+v2 := @parameter1: java.lang.Object;
+v3 := @parameter2: java.util.List;
+v4 = <io.netty.handler.codec.http.HttpObjectEncoder: boolean $assertionsDisabled>;
+if v4 != 0 goto label01;
+v5 = v2 instanceof io.netty.handler.codec.http.HttpMessage;
+if v5 == 0 goto label01;
+v6 = new java.lang.AssertionError;
+specialinvoke v6.<java.lang.AssertionError: void <init>()>();
+throw v6;
+label01:
+v7 = v0.<io.netty.handler.codec.http.HttpObjectEncoder: int state>;
+if v7 != 0 goto label07;
+label02:
+v8 = v2 instanceof io.netty.buffer.ByteBuf;
+if v8 == 0 goto label04;
+v9 = staticinvoke <io.netty.handler.codec.http.HttpObjectEncoder: boolean bypassEncoderIfEmpty(io.netty.buffer.ByteBuf,java.util.List)>(v2, v3);
+if v9 == 0 goto label04;
+label03:
+staticinvoke <io.netty.util.ReferenceCountUtil: boolean release(java.lang.Object)>(v2);
+return;
+label04:
+staticinvoke <io.netty.handler.codec.http.HttpObjectEncoder: void throwUnexpectedMessageTypeEx(java.lang.Object,int)>(v2, 0);
+label05:
+staticinvoke <io.netty.util.ReferenceCountUtil: boolean release(java.lang.Object)>(v2);
+goto label07;
+label06:
+v10 := @caughtexception;
+staticinvoke <io.netty.util.ReferenceCountUtil: boolean release(java.lang.Object)>(v2);
+throw v10;
+label07:
+v11 = <io.netty.handler.codec.http.LastHttpContent: io.netty.handler.codec.http.LastHttpContent EMPTY_LAST_CONTENT>;
+if v2 != v11 goto label08;
+v12 = v0.<io.netty.handler.codec.http.HttpObjectEncoder: int state>;
+v13 = staticinvoke <io.netty.handler.codec.http.HttpObjectEncoder: int encodeEmptyLastHttpContent(int,java.util.List)>(v12, v3);
+v0.<io.netty.handler.codec.http.HttpObjectEncoder: int state> = v13;
+return;
+label08:
+v14 = v2 instanceof io.netty.handler.codec.http.LastHttpContent;
+if v14 == 0 goto label09;
+specialinvoke v0.<io.netty.handler.codec.http.HttpObjectEncoder: void encodeLastHttpContent(io.netty.channel.ChannelHandlerContext,io.netty.handler.codec.http.LastHttpContent,java.util.List)>(v1, v2, v3);
+return;
+label09:
+v15 = v2 instanceof io.netty.handler.codec.http.HttpContent;
+if v15 == 0 goto label10;
+specialinvoke v0.<io.netty.handler.codec.http.HttpObjectEncoder: void encodeHttpContent(io.netty.channel.ChannelHandlerContext,io.netty.handler.codec.http.HttpContent,java.util.List)>(v1, v2, v3);
+return;
+label10:
+v16 = v2 instanceof io.netty.buffer.ByteBuf;
+if v16 == 0 goto label11;
+specialinvoke v0.<io.netty.handler.codec.http.HttpObjectEncoder: void encodeByteBufContent(io.netty.channel.ChannelHandlerContext,io.netty.buffer.ByteBuf,java.util.List)>(v1, v2, v3);
+return;
+label11:
+v17 = v2 instanceof io.netty.channel.FileRegion;
+if v17 == 0 goto label12;
+specialinvoke v0.<io.netty.handler.codec.http.HttpObjectEncoder: void encodeFileRegionContent(io.netty.channel.ChannelHandlerContext,io.netty.channel.FileRegion,java.util.List)>(v1, v2, v3);
+return;
+label12:
+v18 = v0.<io.netty.handler.codec.http.HttpObjectEncoder: int state>;
+staticinvoke <io.netty.handler.codec.http.HttpObjectEncoder: void throwUnexpectedMessageTypeEx(java.lang.Object,int)>(v2, v18);
+label13:
+staticinvoke <io.netty.util.ReferenceCountUtil: boolean release(java.lang.Object)>(v2);
+goto label15;
+label14:
+v19 := @caughtexception;
+staticinvoke <io.netty.util.ReferenceCountUtil: boolean release(java.lang.Object)>(v2);
+throw v19;
+label15:
+return;
+catch java.lang.Throwable from label02 to label03 with label06;
+catch java.lang.Throwable from label04 to label05 with label06;
+catch java.lang.Throwable from label12 to label13 with label14;
+}
+private void encodeFullHttpMessage(io.netty.channel.ChannelHandlerContext, java.lang.Object, java.util.List) throws java.lang.Exception
+{
+java.lang.Throwable v26;
+io.netty.handler.codec.http.HttpHeaders v17, v25;
+io.netty.buffer.ByteBufAllocator v9;
+java.lang.AssertionError v6;
+io.netty.channel.ChannelHandlerContext v1;
+byte v13, v15;
+io.netty.buffer.ByteBuf v11, v24;
+int v18, v19, v7, v8;
+boolean v12, v14, v16, v4, v5;
+java.util.List v3;
+io.netty.handler.codec.http.HttpObjectEncoder v0;
+float v10, v20, v21, v22, v23;
+java.lang.Object v2;
+v0 := @this: io.netty.handler.codec.http.HttpObjectEncoder;
+v1 := @parameter0: io.netty.channel.ChannelHandlerContext;
+v2 := @parameter1: java.lang.Object;
+v3 := @parameter2: java.util.List;
+v4 = <io.netty.handler.codec.http.HttpObjectEncoder: boolean $assertionsDisabled>;
+if v4 != 0 goto label01;
+v5 = v2 instanceof io.netty.handler.codec.http.FullHttpMessage;
+if v5 != 0 goto label01;
+v6 = new java.lang.AssertionError;
+specialinvoke v6.<java.lang.AssertionError: void <init>()>();
+throw v6;
+label01:
+v7 = v0.<io.netty.handler.codec.http.HttpObjectEncoder: int state>;
+if v7 == 0 goto label02;
+v8 = v0.<io.netty.handler.codec.http.HttpObjectEncoder: int state>;
+staticinvoke <io.netty.handler.codec.http.HttpObjectEncoder: void throwUnexpectedMessageTypeEx(java.lang.Object,int)>(v2, v8);
+label02:
+v9 = interfaceinvoke v1.<io.netty.channel.ChannelHandlerContext: io.netty.buffer.ByteBufAllocator alloc()>();
+v10 = v0.<io.netty.handler.codec.http.HttpObjectEncoder: float headersEncodedSizeAccumulator>;
+v11 = interfaceinvoke v9.<io.netty.buffer.ByteBufAllocator: io.netty.buffer.ByteBuf buffer(int)>(v10);
+virtualinvoke v0.<io.netty.handler.codec.http.HttpObjectEncoder: void encodeInitialLine(io.netty.buffer.ByteBuf,io.netty.handler.codec.http.HttpMessage)>(v11, v2);
+v12 = virtualinvoke v0.<io.netty.handler.codec.http.HttpObjectEncoder: boolean isContentAlwaysEmpty(io.netty.handler.codec.http.HttpMessage)>(v2);
+if v12 == 0 goto label03;
+v13 = 3;
+goto label05;
+label03:
+v14 = staticinvoke <io.netty.handler.codec.http.HttpUtil: boolean isTransferEncodingChunked(io.netty.handler.codec.http.HttpMessage)>(v2);
+if v14 == 0 goto label04;
+v13 = 2;
+goto label05;
+label04:
+v13 = 1;
+label05:
+v15 = v13;
+if v13 != 3 goto label06;
+v16 = 1;
+goto label07;
+label06:
+v16 = 0;
+label07:
+virtualinvoke v0.<io.netty.handler.codec.http.HttpObjectEncoder: void sanitizeHeadersBeforeEncode(io.netty.handler.codec.http.HttpMessage,boolean)>(v2, v16);
+v17 = interfaceinvoke v2.<io.netty.handler.codec.http.HttpMessage: io.netty.handler.codec.http.HttpHeaders headers()>();
+virtualinvoke v0.<io.netty.handler.codec.http.HttpObjectEncoder: void encodeHeaders(io.netty.handler.codec.http.HttpHeaders,io.netty.buffer.ByteBuf)>(v17, v11);
+staticinvoke <io.netty.buffer.ByteBufUtil: io.netty.buffer.ByteBuf writeShortBE(io.netty.buffer.ByteBuf,int)>(v11, 3338);
+v18 = virtualinvoke v11.<io.netty.buffer.ByteBuf: int readableBytes()>();
+v19 = staticinvoke <io.netty.handler.codec.http.HttpObjectEncoder: int padSizeForAccumulation(int)>(v18);
+v20 = 0.2F * v19;
+v21 = v0.<io.netty.handler.codec.http.HttpObjectEncoder: float headersEncodedSizeAccumulator>;
+v22 = 0.8F * v21;
+v23 = v20 + v22;
+v0.<io.netty.handler.codec.http.HttpObjectEncoder: float headersEncodedSizeAccumulator> = v23;
+v24 = interfaceinvoke v2.<io.netty.handler.codec.http.FullHttpMessage: io.netty.buffer.ByteBuf content()>();
+v25 = interfaceinvoke v2.<io.netty.handler.codec.http.FullHttpMessage: io.netty.handler.codec.http.HttpHeaders trailingHeaders()>();
+specialinvoke v0.<io.netty.handler.codec.http.HttpObjectEncoder: void encodeByteBufHttpContent(int,io.netty.channel.ChannelHandlerContext,io.netty.buffer.ByteBuf,io.netty.buffer.ByteBuf,io.netty.handler.codec.http.HttpHeaders,java.util.List)>(v15, v1, v11, v24, v25, v3);
+label08:
+interfaceinvoke v2.<io.netty.handler.codec.http.FullHttpMessage: boolean release()>();
+goto label10;
+label09:
+v26 := @caughtexception;
+interfaceinvoke v2.<io.netty.handler.codec.http.FullHttpMessage: boolean release()>();
+throw v26;
+label10:
+return;
+catch java.lang.Throwable from label01 to label08 with label09;
+}
+private static boolean encodeContentNonChunk(java.util.List, io.netty.buffer.ByteBuf, io.netty.buffer.ByteBuf)
+{
+java.util.List v0;
+io.netty.buffer.ByteBuf v1, v2, v5;
+int v3, v4;
+v0 := @parameter0: java.util.List;
+v1 := @parameter1: io.netty.buffer.ByteBuf;
+v2 := @parameter2: io.netty.buffer.ByteBuf;
+v3 = virtualinvoke v2.<io.netty.buffer.ByteBuf: int readableBytes()>();
+if v3 <= 0 goto label3;
+v4 = virtualinvoke v1.<io.netty.buffer.ByteBuf: int writableBytes()>();
+if v4 < v3 goto label1;
+virtualinvoke v1.<io.netty.buffer.ByteBuf: io.netty.buffer.ByteBuf writeBytes(io.netty.buffer.ByteBuf)>(v2);
+interfaceinvoke v0.<java.util.List: boolean add(java.lang.Object)>(v1);
+goto label2;
+label1:
+interfaceinvoke v0.<java.util.List: boolean add(java.lang.Object)>(v1);
+v5 = virtualinvoke v2.<io.netty.buffer.ByteBuf: io.netty.buffer.ByteBuf retain()>();
+interfaceinvoke v0.<java.util.List: boolean add(java.lang.Object)>(v5);
+label2:
+return 1;
+label3:
+return 0;
+}
+private static void throwUnexpectedMessageTypeEx(java.lang.Object, int)
+{
+java.lang.IllegalStateException v2;
+int v1;
+java.lang.Object v0;
+java.lang.String v3, v4;
+v0 := @parameter0: java.lang.Object;
+v1 := @parameter1: int;
+v2 = new java.lang.IllegalStateException;
+v3 = staticinvoke <io.netty.util.internal.StringUtil: java.lang.String simpleClassName(java.lang.Object)>(v0);
+v4 = dynamicinvoke "makeConcatWithConstants" <java.lang.String (java.lang.String,int)>(v3, v1) <java.lang.invoke.StringConcatFactory: java.lang.invoke.CallSite makeConcatWithConstants(java.lang.invoke.MethodHandles$Lookup,java.lang.String,java.lang.invoke.MethodType,java.lang.String,java.lang.Object[])>("unexpected message type: \u0001, state: \u0001");
+specialinvoke v2.<java.lang.IllegalStateException: void <init>(java.lang.String)>(v4);
+throw v2;
+}
+private void encodeFileRegionContent(io.netty.channel.ChannelHandlerContext, io.netty.channel.FileRegion, java.util.List)
+{
+java.lang.Throwable v13;
+java.lang.Error v12;
+long v8;
+java.lang.AssertionError v6;
+io.netty.channel.ChannelHandlerContext v1;
+java.util.List v3;
+byte v9;
+io.netty.buffer.ByteBuf v11;
+io.netty.handler.codec.http.HttpObjectEncoder v0;
+int v5, v7;
+io.netty.channel.FileRegion v10, v2;
+boolean v4;
+v0 := @this: io.netty.handler.codec.http.HttpObjectEncoder;
+v1 := @parameter0: io.netty.channel.ChannelHandlerContext;
+v2 := @parameter1: io.netty.channel.FileRegion;
+v3 := @parameter2: java.util.List;
+label1:
+v4 = <io.netty.handler.codec.http.HttpObjectEncoder: boolean $assertionsDisabled>;
+if v4 != 0 goto label2;
+v5 = v0.<io.netty.handler.codec.http.HttpObjectEncoder: int state>;
+if v5 != 0 goto label2;
+v6 = new java.lang.AssertionError;
+specialinvoke v6.<java.lang.AssertionError: void <init>()>();
+throw v6;
+label2:
+v7 = v0.<io.netty.handler.codec.http.HttpObjectEncoder: int state>;
+tableswitch(v7)
+{
+case 1: goto label3;
+case 2: goto label5;
+case 3: goto label4;
+default: goto label6;
+};
+label3:
+v8 = interfaceinvoke v2.<io.netty.channel.FileRegion: long count()>();
+v9 = v8 cmp 0L;
+if v9 <= 0 goto label4;
+v10 = interfaceinvoke v2.<io.netty.channel.FileRegion: io.netty.channel.FileRegion retain()>();
+interfaceinvoke v3.<java.util.List: boolean add(java.lang.Object)>(v10);
+goto label7;
+label4:
+v11 = <io.netty.buffer.Unpooled: io.netty.buffer.ByteBuf EMPTY_BUFFER>;
+interfaceinvoke v3.<java.util.List: boolean add(java.lang.Object)>(v11);
+goto label7;
+label5:
+staticinvoke <io.netty.handler.codec.http.HttpObjectEncoder: void encodedChunkedFileRegionContent(io.netty.channel.ChannelHandlerContext,io.netty.channel.FileRegion,java.util.List)>(v1, v2, v3);
+goto label7;
+label6:
+v12 = new java.lang.Error;
+specialinvoke v12.<java.lang.Error: void <init>()>();
+throw v12;
+label7:
+interfaceinvoke v2.<io.netty.channel.FileRegion: boolean release()>();
+goto label9;
+label8:
+v13 := @caughtexception;
+interfaceinvoke v2.<io.netty.channel.FileRegion: boolean release()>();
+throw v13;
+label9:
+return;
+catch java.lang.Throwable from label1 to label7 with label8;
+}
+private static boolean bypassEncoderIfEmpty(io.netty.buffer.ByteBuf, java.util.List)
+{
+java.util.List v1;
+io.netty.buffer.ByteBuf v0, v3;
+boolean v2;
+v0 := @parameter0: io.netty.buffer.ByteBuf;
+v1 := @parameter1: java.util.List;
+v2 = virtualinvoke v0.<io.netty.buffer.ByteBuf: boolean isReadable()>();
+if v2 != 0 goto label1;
+v3 = virtualinvoke v0.<io.netty.buffer.ByteBuf: io.netty.buffer.ByteBuf retain()>();
+interfaceinvoke v1.<java.util.List: boolean add(java.lang.Object)>(v3);
+return 1;
+label1:
+return 0;
+}
+private void encodeByteBufContent(io.netty.channel.ChannelHandlerContext, io.netty.buffer.ByteBuf, java.util.List)
+{
+java.lang.Throwable v9;
+java.lang.AssertionError v6;
+io.netty.channel.ChannelHandlerContext v1;
+java.util.List v3;
+io.netty.buffer.ByteBuf v2;
+io.netty.handler.codec.http.HttpObjectEncoder v0;
+int v5, v8;
+boolean v4, v7;
+v0 := @this: io.netty.handler.codec.http.HttpObjectEncoder;
+v1 := @parameter0: io.netty.channel.ChannelHandlerContext;
+v2 := @parameter1: io.netty.buffer.ByteBuf;
+v3 := @parameter2: java.util.List;
+label1:
+v4 = <io.netty.handler.codec.http.HttpObjectEncoder: boolean $assertionsDisabled>;
+if v4 != 0 goto label2;
+v5 = v0.<io.netty.handler.codec.http.HttpObjectEncoder: int state>;
+if v5 != 0 goto label2;
+v6 = new java.lang.AssertionError;
+specialinvoke v6.<java.lang.AssertionError: void <init>()>();
+throw v6;
+label2:
+v7 = staticinvoke <io.netty.handler.codec.http.HttpObjectEncoder: boolean bypassEncoderIfEmpty(io.netty.buffer.ByteBuf,java.util.List)>(v2, v3);
+if v7 == 0 goto label4;
+label3:
+virtualinvoke v2.<io.netty.buffer.ByteBuf: boolean release()>();
+return;
+label4:
+v8 = v0.<io.netty.handler.codec.http.HttpObjectEncoder: int state>;
+specialinvoke v0.<io.netty.handler.codec.http.HttpObjectEncoder: void encodeByteBufAndTrailers(int,io.netty.channel.ChannelHandlerContext,java.util.List,io.netty.buffer.ByteBuf,io.netty.handler.codec.http.HttpHeaders)>(v8, v1, v3, v2, null);
+label5:
+virtualinvoke v2.<io.netty.buffer.ByteBuf: boolean release()>();
+goto label7;
+label6:
+v9 := @caughtexception;
+virtualinvoke v2.<io.netty.buffer.ByteBuf: boolean release()>();
+throw v9;
+label7:
+return;
+catch java.lang.Throwable from label1 to label3 with label6;
+catch java.lang.Throwable from label4 to label5 with label6;
+}
+private static int encodeEmptyLastHttpContent(int, java.util.List)
+{
+java.lang.Error v7;
+java.lang.AssertionError v3;
+java.util.List v1;
+io.netty.buffer.ByteBuf v4, v5, v6;
+int v0;
+boolean v2;
+v0 := @parameter0: int;
+v1 := @parameter1: java.util.List;
+v2 = <io.netty.handler.codec.http.HttpObjectEncoder: boolean $assertionsDisabled>;
+if v2 != 0 goto label1;
+if v0 != 0 goto label1;
+v3 = new java.lang.AssertionError;
+specialinvoke v3.<java.lang.AssertionError: void <init>()>();
+throw v3;
+label1:
+tableswitch(v0)
+{
+case 1: goto label2;
+case 2: goto label3;
+case 3: goto label2;
+default: goto label4;
+};
+label2:
+v4 = <io.netty.buffer.Unpooled: io.netty.buffer.ByteBuf EMPTY_BUFFER>;
+interfaceinvoke v1.<java.util.List: boolean add(java.lang.Object)>(v4);
+goto label5;
+label3:
+v5 = <io.netty.handler.codec.http.HttpObjectEncoder: io.netty.buffer.ByteBuf ZERO_CRLF_CRLF_BUF>;
+v6 = virtualinvoke v5.<io.netty.buffer.ByteBuf: io.netty.buffer.ByteBuf duplicate()>();
+interfaceinvoke v1.<java.util.List: boolean add(java.lang.Object)>(v6);
+goto label5;
+label4:
+v7 = new java.lang.Error;
+specialinvoke v7.<java.lang.Error: void <init>()>();
+throw v7;
+label5:
+return 0;
+}
+private void encodeLastHttpContent(io.netty.channel.ChannelHandlerContext, io.netty.handler.codec.http.LastHttpContent, java.util.List)
+{
+java.lang.Throwable v13;
+io.netty.handler.codec.http.HttpHeaders v12;
+java.lang.AssertionError v6, v9;
+io.netty.handler.codec.http.LastHttpContent v2;
+io.netty.channel.ChannelHandlerContext v1;
+java.util.List v3;
+io.netty.buffer.ByteBuf v11;
+io.netty.handler.codec.http.HttpObjectEncoder v0;
+int v10, v5;
+boolean v4, v7, v8;
+v0 := @this: io.netty.handler.codec.http.HttpObjectEncoder;
+v1 := @parameter0: io.netty.channel.ChannelHandlerContext;
+v2 := @parameter1: io.netty.handler.codec.http.LastHttpContent;
+v3 := @parameter2: java.util.List;
+v4 = <io.netty.handler.codec.http.HttpObjectEncoder: boolean $assertionsDisabled>;
+if v4 != 0 goto label1;
+v5 = v0.<io.netty.handler.codec.http.HttpObjectEncoder: int state>;
+if v5 != 0 goto label1;
+v6 = new java.lang.AssertionError;
+specialinvoke v6.<java.lang.AssertionError: void <init>()>();
+throw v6;
+label1:
+v7 = <io.netty.handler.codec.http.HttpObjectEncoder: boolean $assertionsDisabled>;
+if v7 != 0 goto label2;
+v8 = v2 instanceof io.netty.handler.codec.http.HttpMessage;
+if v8 == 0 goto label2;
+v9 = new java.lang.AssertionError;
+specialinvoke v9.<java.lang.AssertionError: void <init>()>();
+throw v9;
+label2:
+v10 = v0.<io.netty.handler.codec.http.HttpObjectEncoder: int state>;
+v11 = interfaceinvoke v2.<io.netty.handler.codec.http.LastHttpContent: io.netty.buffer.ByteBuf content()>();
+v12 = interfaceinvoke v2.<io.netty.handler.codec.http.LastHttpContent: io.netty.handler.codec.http.HttpHeaders trailingHeaders()>();
+specialinvoke v0.<io.netty.handler.codec.http.HttpObjectEncoder: void encodeByteBufAndTrailers(int,io.netty.channel.ChannelHandlerContext,java.util.List,io.netty.buffer.ByteBuf,io.netty.handler.codec.http.HttpHeaders)>(v10, v1, v3, v11, v12);
+v0.<io.netty.handler.codec.http.HttpObjectEncoder: int state> = 0;
+label3:
+interfaceinvoke v2.<io.netty.handler.codec.http.LastHttpContent: boolean release()>();
+goto label5;
+label4:
+v13 := @caughtexception;
+interfaceinvoke v2.<io.netty.handler.codec.http.LastHttpContent: boolean release()>();
+throw v13;
+label5:
+return;
+catch java.lang.Throwable from label2 to label3 with label4;
+}
+private void encodeHttpContent(io.netty.channel.ChannelHandlerContext, io.netty.handler.codec.http.HttpContent, java.util.List)
+{
+java.lang.Throwable v15;
+java.lang.AssertionError v12, v6, v9;
+io.netty.channel.ChannelHandlerContext v1;
+io.netty.buffer.ByteBuf v14;
+int v13, v5;
+boolean v10, v11, v4, v7, v8;
+io.netty.handler.codec.http.HttpContent v2;
+java.util.List v3;
+io.netty.handler.codec.http.HttpObjectEncoder v0;
+v0 := @this: io.netty.handler.codec.http.HttpObjectEncoder;
+v1 := @parameter0: io.netty.channel.ChannelHandlerContext;
+v2 := @parameter1: io.netty.handler.codec.http.HttpContent;
+v3 := @parameter2: java.util.List;
+v4 = <io.netty.handler.codec.http.HttpObjectEncoder: boolean $assertionsDisabled>;
+if v4 != 0 goto label1;
+v5 = v0.<io.netty.handler.codec.http.HttpObjectEncoder: int state>;
+if v5 != 0 goto label1;
+v6 = new java.lang.AssertionError;
+specialinvoke v6.<java.lang.AssertionError: void <init>()>();
+throw v6;
+label1:
+v7 = <io.netty.handler.codec.http.HttpObjectEncoder: boolean $assertionsDisabled>;
+if v7 != 0 goto label2;
+v8 = v2 instanceof io.netty.handler.codec.http.HttpMessage;
+if v8 == 0 goto label2;
+v9 = new java.lang.AssertionError;
+specialinvoke v9.<java.lang.AssertionError: void <init>()>();
+throw v9;
+label2:
+v10 = <io.netty.handler.codec.http.HttpObjectEncoder: boolean $assertionsDisabled>;
+if v10 != 0 goto label3;
+v11 = v2 instanceof io.netty.handler.codec.http.LastHttpContent;
+if v11 == 0 goto label3;
+v12 = new java.lang.AssertionError;
+specialinvoke v12.<java.lang.AssertionError: void <init>()>();
+throw v12;
+label3:
+v13 = v0.<io.netty.handler.codec.http.HttpObjectEncoder: int state>;
+v14 = interfaceinvoke v2.<io.netty.handler.codec.http.HttpContent: io.netty.buffer.ByteBuf content()>();
+specialinvoke v0.<io.netty.handler.codec.http.HttpObjectEncoder: void encodeByteBufAndTrailers(int,io.netty.channel.ChannelHandlerContext,java.util.List,io.netty.buffer.ByteBuf,io.netty.handler.codec.http.HttpHeaders)>(v13, v1, v3, v14, null);
+label4:
+interfaceinvoke v2.<io.netty.handler.codec.http.HttpContent: boolean release()>();
+goto label6;
+label5:
+v15 := @caughtexception;
+interfaceinvoke v2.<io.netty.handler.codec.http.HttpContent: boolean release()>();
+throw v15;
+label6:
+return;
+catch java.lang.Throwable from label3 to label4 with label5;
+}
+private void encodeByteBufAndTrailers(int, io.netty.channel.ChannelHandlerContext, java.util.List, io.netty.buffer.ByteBuf, io.netty.handler.codec.http.HttpHeaders)
+{
+io.netty.handler.codec.http.HttpHeaders v5;
+java.lang.Error v9;
+io.netty.channel.ChannelHandlerContext v2;
+java.util.List v3;
+io.netty.buffer.ByteBuf v4, v7, v8;
+io.netty.handler.codec.http.HttpObjectEncoder v0;
+int v1;
+boolean v6;
+v0 := @this: io.netty.handler.codec.http.HttpObjectEncoder;
+v1 := @parameter0: int;
+v2 := @parameter1: io.netty.channel.ChannelHandlerContext;
+v3 := @parameter2: java.util.List;
+v4 := @parameter3: io.netty.buffer.ByteBuf;
+v5 := @parameter4: io.netty.handler.codec.http.HttpHeaders;
+tableswitch(v1)
+{
+case 1: goto label1;
+case 2: goto label3;
+case 3: goto label2;
+default: goto label4;
+};
+label1:
+v6 = virtualinvoke v4.<io.netty.buffer.ByteBuf: boolean isReadable()>();
+if v6 == 0 goto label2;
+v7 = virtualinvoke v4.<io.netty.buffer.ByteBuf: io.netty.buffer.ByteBuf retain()>();
+interfaceinvoke v3.<java.util.List: boolean add(java.lang.Object)>(v7);
+goto label5;
+label2:
+v8 = <io.netty.buffer.Unpooled: io.netty.buffer.ByteBuf EMPTY_BUFFER>;
+interfaceinvoke v3.<java.util.List: boolean add(java.lang.Object)>(v8);
+goto label5;
+label3:
+specialinvoke v0.<io.netty.handler.codec.http.HttpObjectEncoder: void encodeChunkedHttpContent(io.netty.channel.ChannelHandlerContext,io.netty.buffer.ByteBuf,io.netty.handler.codec.http.HttpHeaders,java.util.List)>(v2, v4, v5, v3);
+goto label5;
+label4:
+v9 = new java.lang.Error;
+specialinvoke v9.<java.lang.Error: void <init>()>();
+throw v9;
+label5:
+return;
+}
+private void encodeChunkedHttpContent(io.netty.channel.ChannelHandlerContext, io.netty.buffer.ByteBuf, io.netty.handler.codec.http.HttpHeaders, java.util.List)
+{
+io.netty.handler.codec.http.HttpHeaders v3;
+io.netty.channel.ChannelHandlerContext v1;
+java.util.List v4;
+io.netty.buffer.ByteBuf v2, v6, v7, v8, v9;
+io.netty.handler.codec.http.HttpObjectEncoder v0;
+int v5;
+v0 := @this: io.netty.handler.codec.http.HttpObjectEncoder;
+v1 := @parameter0: io.netty.channel.ChannelHandlerContext;
+v2 := @parameter1: io.netty.buffer.ByteBuf;
+v3 := @parameter2: io.netty.handler.codec.http.HttpHeaders;
+v4 := @parameter3: java.util.List;
+v5 = virtualinvoke v2.<io.netty.buffer.ByteBuf: int readableBytes()>();
+if v5 <= 0 goto label1;
+staticinvoke <io.netty.handler.codec.http.HttpObjectEncoder: void addEncodedLengthHex(io.netty.channel.ChannelHandlerContext,long,java.util.List)>(v1, v5, v4);
+v6 = virtualinvoke v2.<io.netty.buffer.ByteBuf: io.netty.buffer.ByteBuf retain()>();
+interfaceinvoke v4.<java.util.List: boolean add(java.lang.Object)>(v6);
+v7 = <io.netty.handler.codec.http.HttpObjectEncoder: io.netty.buffer.ByteBuf CRLF_BUF>;
+v8 = virtualinvoke v7.<io.netty.buffer.ByteBuf: io.netty.buffer.ByteBuf duplicate()>();
+interfaceinvoke v4.<java.util.List: boolean add(java.lang.Object)>(v8);
+label1:
+if v3 == null goto label2;
+specialinvoke v0.<io.netty.handler.codec.http.HttpObjectEncoder: void encodeTrailingHeaders(io.netty.channel.ChannelHandlerContext,io.netty.handler.codec.http.HttpHeaders,java.util.List)>(v1, v3, v4);
+goto label3;
+label2:
+if v5 != 0 goto label3;
+v9 = virtualinvoke v2.<io.netty.buffer.ByteBuf: io.netty.buffer.ByteBuf retain()>();
+interfaceinvoke v4.<java.util.List: boolean add(java.lang.Object)>(v9);
+label3:
+return;
+}
+private void encodeTrailingHeaders(io.netty.channel.ChannelHandlerContext, io.netty.handler.codec.http.HttpHeaders, java.util.List)
+{
+io.netty.handler.codec.http.HttpHeaders v2;
+io.netty.buffer.ByteBufAllocator v7;
+io.netty.channel.ChannelHandlerContext v1;
+io.netty.buffer.ByteBuf v5, v6, v9;
+int v10, v11;
+boolean v4;
+java.util.List v3;
+io.netty.handler.codec.http.HttpObjectEncoder v0;
+float v12, v13, v14, v15, v8;
+v0 := @this: io.netty.handler.codec.http.HttpObjectEncoder;
+v1 := @parameter0: io.netty.channel.ChannelHandlerContext;
+v2 := @parameter1: io.netty.handler.codec.http.HttpHeaders;
+v3 := @parameter2: java.util.List;
+v4 = virtualinvoke v2.<io.netty.handler.codec.http.HttpHeaders: boolean isEmpty()>();
+if v4 == 0 goto label1;
+v5 = <io.netty.handler.codec.http.HttpObjectEncoder: io.netty.buffer.ByteBuf ZERO_CRLF_CRLF_BUF>;
+v6 = virtualinvoke v5.<io.netty.buffer.ByteBuf: io.netty.buffer.ByteBuf duplicate()>();
+interfaceinvoke v3.<java.util.List: boolean add(java.lang.Object)>(v6);
+goto label2;
+label1:
+v7 = interfaceinvoke v1.<io.netty.channel.ChannelHandlerContext: io.netty.buffer.ByteBufAllocator alloc()>();
+v8 = v0.<io.netty.handler.codec.http.HttpObjectEncoder: float trailersEncodedSizeAccumulator>;
+v9 = interfaceinvoke v7.<io.netty.buffer.ByteBufAllocator: io.netty.buffer.ByteBuf buffer(int)>(v8);
+staticinvoke <io.netty.buffer.ByteBufUtil: io.netty.buffer.ByteBuf writeMediumBE(io.netty.buffer.ByteBuf,int)>(v9, 3149066);
+virtualinvoke v0.<io.netty.handler.codec.http.HttpObjectEncoder: void encodeHeaders(io.netty.handler.codec.http.HttpHeaders,io.netty.buffer.ByteBuf)>(v2, v9);
+staticinvoke <io.netty.buffer.ByteBufUtil: io.netty.buffer.ByteBuf writeShortBE(io.netty.buffer.ByteBuf,int)>(v9, 3338);
+v10 = virtualinvoke v9.<io.netty.buffer.ByteBuf: int readableBytes()>();
+v11 = staticinvoke <io.netty.handler.codec.http.HttpObjectEncoder: int padSizeForAccumulation(int)>(v10);
+v12 = 0.2F * v11;
+v13 = v0.<io.netty.handler.codec.http.HttpObjectEncoder: float trailersEncodedSizeAccumulator>;
+v14 = 0.8F * v13;
+v15 = v12 + v14;
+v0.<io.netty.handler.codec.http.HttpObjectEncoder: float trailersEncodedSizeAccumulator> = v15;
+interfaceinvoke v3.<java.util.List: boolean add(java.lang.Object)>(v9);
+label2:
+return;
+}
+private io.netty.buffer.ByteBuf encodeInitHttpMessage(io.netty.channel.ChannelHandlerContext, io.netty.handler.codec.http.HttpMessage) throws java.lang.Exception
+{
+io.netty.handler.codec.http.HttpHeaders v14;
+io.netty.buffer.ByteBufAllocator v6;
+io.netty.handler.codec.http.HttpMessage v2;
+java.lang.AssertionError v5;
+io.netty.channel.ChannelHandlerContext v1;
+byte v10;
+io.netty.buffer.ByteBuf v8;
+int v12, v15, v16, v4;
+boolean v11, v13, v3, v9;
+io.netty.handler.codec.http.HttpObjectEncoder v0;
+float v17, v18, v19, v20, v7;
+v0 := @this: io.netty.handler.codec.http.HttpObjectEncoder;
+v1 := @parameter0: io.netty.channel.ChannelHandlerContext;
+v2 := @parameter1: io.netty.handler.codec.http.HttpMessage;
+v3 = <io.netty.handler.codec.http.HttpObjectEncoder: boolean $assertionsDisabled>;
+if v3 != 0 goto label1;
+v4 = v0.<io.netty.handler.codec.http.HttpObjectEncoder: int state>;
+if v4 == 0 goto label1;
+v5 = new java.lang.AssertionError;
+specialinvoke v5.<java.lang.AssertionError: void <init>()>();
+throw v5;
+label1:
+v6 = interfaceinvoke v1.<io.netty.channel.ChannelHandlerContext: io.netty.buffer.ByteBufAllocator alloc()>();
+v7 = v0.<io.netty.handler.codec.http.HttpObjectEncoder: float headersEncodedSizeAccumulator>;
+v8 = interfaceinvoke v6.<io.netty.buffer.ByteBufAllocator: io.netty.buffer.ByteBuf buffer(int)>(v7);
+virtualinvoke v0.<io.netty.handler.codec.http.HttpObjectEncoder: void encodeInitialLine(io.netty.buffer.ByteBuf,io.netty.handler.codec.http.HttpMessage)>(v8, v2);
+v9 = virtualinvoke v0.<io.netty.handler.codec.http.HttpObjectEncoder: boolean isContentAlwaysEmpty(io.netty.handler.codec.http.HttpMessage)>(v2);
+if v9 == 0 goto label2;
+v10 = 3;
+goto label4;
+label2:
+v11 = staticinvoke <io.netty.handler.codec.http.HttpUtil: boolean isTransferEncodingChunked(io.netty.handler.codec.http.HttpMessage)>(v2);
+if v11 == 0 goto label3;
+v10 = 2;
+goto label4;
+label3:
+v10 = 1;
+label4:
+v0.<io.netty.handler.codec.http.HttpObjectEncoder: int state> = v10;
+v12 = v0.<io.netty.handler.codec.http.HttpObjectEncoder: int state>;
+if v12 != 3 goto label5;
+v13 = 1;
+goto label6;
+label5:
+v13 = 0;
+label6:
+virtualinvoke v0.<io.netty.handler.codec.http.HttpObjectEncoder: void sanitizeHeadersBeforeEncode(io.netty.handler.codec.http.HttpMessage,boolean)>(v2, v13);
+v14 = interfaceinvoke v2.<io.netty.handler.codec.http.HttpMessage: io.netty.handler.codec.http.HttpHeaders headers()>();
+virtualinvoke v0.<io.netty.handler.codec.http.HttpObjectEncoder: void encodeHeaders(io.netty.handler.codec.http.HttpHeaders,io.netty.buffer.ByteBuf)>(v14, v8);
+staticinvoke <io.netty.buffer.ByteBufUtil: io.netty.buffer.ByteBuf writeShortBE(io.netty.buffer.ByteBuf,int)>(v8, 3338);
+v15 = virtualinvoke v8.<io.netty.buffer.ByteBuf: int readableBytes()>();
+v16 = staticinvoke <io.netty.handler.codec.http.HttpObjectEncoder: int padSizeForAccumulation(int)>(v15);
+v17 = 0.2F * v16;
+v18 = v0.<io.netty.handler.codec.http.HttpObjectEncoder: float headersEncodedSizeAccumulator>;
+v19 = 0.8F * v18;
+v20 = v17 + v19;
+v0.<io.netty.handler.codec.http.HttpObjectEncoder: float headersEncodedSizeAccumulator> = v20;
+return v8;
+}
+protected void encodeHeaders(io.netty.handler.codec.http.HttpHeaders, io.netty.buffer.ByteBuf)
+{
+io.netty.handler.codec.http.HttpHeaders v1;
+java.util.Iterator v3;
+io.netty.buffer.ByteBuf v2;
+io.netty.handler.codec.http.HttpObjectEncoder v0;
+java.lang.Object v5, v6, v7;
+boolean v4;
+v0 := @this: io.netty.handler.codec.http.HttpObjectEncoder;
+v1 := @parameter0: io.netty.handler.codec.http.HttpHeaders;
+v2 := @parameter1: io.netty.buffer.ByteBuf;
+v3 = virtualinvoke v1.<io.netty.handler.codec.http.HttpHeaders: java.util.Iterator iteratorCharSequence()>();
+label1:
+v4 = interfaceinvoke v3.<java.util.Iterator: boolean hasNext()>();
+if v4 == 0 goto label2;
+v5 = interfaceinvoke v3.<java.util.Iterator: java.lang.Object next()>();
+v6 = interfaceinvoke v5.<java.util.Map$Entry: java.lang.Object getKey()>();
+v7 = interfaceinvoke v5.<java.util.Map$Entry: java.lang.Object getValue()>();
+staticinvoke <io.netty.handler.codec.http.HttpHeadersEncoder: void encoderHeader(java.lang.CharSequence,java.lang.CharSequence,io.netty.buffer.ByteBuf)>(v6, v7, v2);
+goto label1;
+label2:
+return;
+}
+private static void encodedChunkedFileRegionContent(io.netty.channel.ChannelHandlerContext, io.netty.channel.FileRegion, java.util.List)
+{
+long v3;
+io.netty.channel.ChannelHandlerContext v0;
+java.util.List v2;
+byte v4, v8;
+io.netty.buffer.ByteBuf v6, v7;
+io.netty.channel.FileRegion v1, v5, v9;
+v0 := @parameter0: io.netty.channel.ChannelHandlerContext;
+v1 := @parameter1: io.netty.channel.FileRegion;
+v2 := @parameter2: java.util.List;
+v3 = interfaceinvoke v1.<io.netty.channel.FileRegion: long count()>();
+v4 = v3 cmp 0L;
+if v4 <= 0 goto label1;
+staticinvoke <io.netty.handler.codec.http.HttpObjectEncoder: void addEncodedLengthHex(io.netty.channel.ChannelHandlerContext,long,java.util.List)>(v0, v3, v2);
+v5 = interfaceinvoke v1.<io.netty.channel.FileRegion: io.netty.channel.FileRegion retain()>();
+interfaceinvoke v2.<java.util.List: boolean add(java.lang.Object)>(v5);
+v6 = <io.netty.handler.codec.http.HttpObjectEncoder: io.netty.buffer.ByteBuf CRLF_BUF>;
+v7 = virtualinvoke v6.<io.netty.buffer.ByteBuf: io.netty.buffer.ByteBuf duplicate()>();
+interfaceinvoke v2.<java.util.List: boolean add(java.lang.Object)>(v7);
+goto label2;
+label1:
+v8 = v3 cmp 0L;
+if v8 != 0 goto label2;
+v9 = interfaceinvoke v1.<io.netty.channel.FileRegion: io.netty.channel.FileRegion retain()>();
+interfaceinvoke v2.<java.util.List: boolean add(java.lang.Object)>(v9);
+label2:
+return;
+}
+private static void addEncodedLengthHex(io.netty.channel.ChannelHandlerContext, long, java.util.List)
+{
+io.netty.buffer.ByteBufAllocator v4;
+long v1;
+io.netty.channel.ChannelHandlerContext v0;
+java.util.List v2;
+io.netty.buffer.ByteBuf v7;
+java.nio.charset.Charset v8;
+int v5, v6;
+java.lang.String v3;
+v0 := @parameter0: io.netty.channel.ChannelHandlerContext;
+v1 := @parameter1: long;
+v2 := @parameter2: java.util.List;
+v3 = staticinvoke <java.lang.Long: java.lang.String toHexString(long)>(v1);
+v4 = interfaceinvoke v0.<io.netty.channel.ChannelHandlerContext: io.netty.buffer.ByteBufAllocator alloc()>();
+v5 = virtualinvoke v3.<java.lang.String: int length()>();
+v6 = v5 + 2;
+v7 = interfaceinvoke v4.<io.netty.buffer.ByteBufAllocator: io.netty.buffer.ByteBuf buffer(int)>(v6);
+v8 = <io.netty.util.CharsetUtil: java.nio.charset.Charset US_ASCII>;
+virtualinvoke v7.<io.netty.buffer.ByteBuf: int writeCharSequence(java.lang.CharSequence,java.nio.charset.Charset)>(v3, v8);
+staticinvoke <io.netty.buffer.ByteBufUtil: io.netty.buffer.ByteBuf writeShortBE(io.netty.buffer.ByteBuf,int)>(v7, 3338);
+interfaceinvoke v2.<java.util.List: boolean add(java.lang.Object)>(v7);
+return;
+}
+protected void sanitizeHeadersBeforeEncode(io.netty.handler.codec.http.HttpMessage, boolean)
+{
+boolean v2;
+io.netty.handler.codec.http.HttpMessage v1;
+io.netty.handler.codec.http.HttpObjectEncoder v0;
+v0 := @this: io.netty.handler.codec.http.HttpObjectEncoder;
+v1 := @parameter0: io.netty.handler.codec.http.HttpMessage;
+v2 := @parameter1: boolean;
+return;
+}
+protected boolean isContentAlwaysEmpty(io.netty.handler.codec.http.HttpMessage)
+{
+io.netty.handler.codec.http.HttpMessage v1;
+io.netty.handler.codec.http.HttpObjectEncoder v0;
+v0 := @this: io.netty.handler.codec.http.HttpObjectEncoder;
+v1 := @parameter0: io.netty.handler.codec.http.HttpMessage;
+return 0;
+}
+public boolean acceptOutboundMessage(java.lang.Object) throws java.lang.Exception
+{
+io.netty.handler.codec.http.LastHttpContent v3;
+io.netty.buffer.ByteBuf v2;
+io.netty.handler.codec.http.HttpObjectEncoder v0;
+java.lang.Object v1;
+boolean v10, v4, v5, v6, v7, v8, v9;
+v0 := @this: io.netty.handler.codec.http.HttpObjectEncoder;
+v1 := @parameter0: java.lang.Object;
+v2 = <io.netty.buffer.Unpooled: io.netty.buffer.ByteBuf EMPTY_BUFFER>;
+if v1 == v2 goto label1;
+v3 = <io.netty.handler.codec.http.LastHttpContent: io.netty.handler.codec.http.LastHttpContent EMPTY_LAST_CONTENT>;
+if v1 == v3 goto label1;
+v4 = v1 instanceof io.netty.handler.codec.http.FullHttpMessage;
+if v4 != 0 goto label1;
+v5 = v1 instanceof io.netty.handler.codec.http.HttpMessage;
+if v5 != 0 goto label1;
+v6 = v1 instanceof io.netty.handler.codec.http.LastHttpContent;
+if v6 != 0 goto label1;
+v7 = v1 instanceof io.netty.handler.codec.http.HttpContent;
+if v7 != 0 goto label1;
+v8 = v1 instanceof io.netty.buffer.ByteBuf;
+if v8 != 0 goto label1;
+v9 = v1 instanceof io.netty.channel.FileRegion;
+if v9 == 0 goto label2;
+label1:
+v10 = 1;
+goto label3;
+label2:
+v10 = 0;
+label3:
+return v10;
+}
+private static int padSizeForAccumulation(int)
+{
+int v0, v1, v2;
+v0 := @parameter0: int;
+v1 = v0 << 2;
+v2 = v1 / 3;
+return v2;
+}
+protected static void encodeAscii(java.lang.String, io.netty.buffer.ByteBuf)
+{
+java.lang.String v0;
+io.netty.buffer.ByteBuf v1;
+java.nio.charset.Charset v2;
+v0 := @parameter0: java.lang.String;
+v1 := @parameter1: io.netty.buffer.ByteBuf;
+v2 = <io.netty.util.CharsetUtil: java.nio.charset.Charset US_ASCII>;
+virtualinvoke v1.<io.netty.buffer.ByteBuf: int writeCharSequence(java.lang.CharSequence,java.nio.charset.Charset)>(v0, v2);
+return;
+}
+protected abstract void encodeInitialLine(io.netty.buffer.ByteBuf, io.netty.handler.codec.http.HttpMessage) throws java.lang.Exception;
+static void <clinit>()
+{
+byte[] v12, v3, v9;
+io.netty.buffer.ByteBuf v11, v13, v14, v15, v4, v5, v6, v7, v8;
+int v10;
+boolean v1, v2;
+java.lang.Class v0;
+v0 = class "Lio/netty/handler/codec/http/HttpObjectEncoder;";
+v1 = virtualinvoke v0.<java.lang.Class: boolean desiredAssertionStatus()>();
+if v1 != 0 goto label1;
+v2 = 1;
+goto label2;
+label1:
+v2 = 0;
+label2:
+<io.netty.handler.codec.http.HttpObjectEncoder: boolean $assertionsDisabled> = v2;
+v3 = newarray (byte)[5];
+v3[0] = 48;
+v3[1] = 13;
+v3[2] = 10;
+v3[3] = 13;
+v3[4] = 10;
+<io.netty.handler.codec.http.HttpObjectEncoder: byte[] ZERO_CRLF_CRLF> = v3;
+v4 = staticinvoke <io.netty.buffer.Unpooled: io.netty.buffer.ByteBuf directBuffer(int)>(2);
+v5 = virtualinvoke v4.<io.netty.buffer.ByteBuf: io.netty.buffer.ByteBuf writeByte(int)>(13);
+v6 = virtualinvoke v5.<io.netty.buffer.ByteBuf: io.netty.buffer.ByteBuf writeByte(int)>(10);
+v7 = staticinvoke <io.netty.buffer.Unpooled: io.netty.buffer.ByteBuf unreleasableBuffer(io.netty.buffer.ByteBuf)>(v6);
+v8 = virtualinvoke v7.<io.netty.buffer.ByteBuf: io.netty.buffer.ByteBuf asReadOnly()>();
+<io.netty.handler.codec.http.HttpObjectEncoder: io.netty.buffer.ByteBuf CRLF_BUF> = v8;
+v9 = <io.netty.handler.codec.http.HttpObjectEncoder: byte[] ZERO_CRLF_CRLF>;
+v10 = lengthof v9;
+v11 = staticinvoke <io.netty.buffer.Unpooled: io.netty.buffer.ByteBuf directBuffer(int)>(v10);
+v12 = <io.netty.handler.codec.http.HttpObjectEncoder: byte[] ZERO_CRLF_CRLF>;
+v13 = virtualinvoke v11.<io.netty.buffer.ByteBuf: io.netty.buffer.ByteBuf writeBytes(byte[])>(v12);
+v14 = staticinvoke <io.netty.buffer.Unpooled: io.netty.buffer.ByteBuf unreleasableBuffer(io.netty.buffer.ByteBuf)>(v13);
+v15 = virtualinvoke v14.<io.netty.buffer.ByteBuf: io.netty.buffer.ByteBuf asReadOnly()>();
+<io.netty.handler.codec.http.HttpObjectEncoder: io.netty.buffer.ByteBuf ZERO_CRLF_CRLF_BUF> = v15;
+return;
+}
+}

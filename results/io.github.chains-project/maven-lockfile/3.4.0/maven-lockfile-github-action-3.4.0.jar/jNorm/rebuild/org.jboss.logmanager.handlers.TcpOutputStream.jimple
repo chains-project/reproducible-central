@@ -1,0 +1,478 @@
+public class org.jboss.logmanager.handlers.TcpOutputStream extends java.io.OutputStream implements org.jboss.logmanager.handlers.FlushableCloseable
+{
+private static final long retryTimeout;
+private static final long maxRetryTimeout;
+private static final int maxErrors;
+protected final java.lang.Object outputLock;
+private final org.jboss.logmanager.handlers.ClientSocketFactory socketFactory;
+private final java.util.Deque errors;
+private java.lang.Thread reconnectThread;
+private boolean blockOnReconnect;
+private java.net.Socket socket;
+private boolean connected;
+public void <init>(java.net.InetAddress, int) throws java.io.IOException
+{
+java.net.InetAddress v1;
+javax.net.SocketFactory v3;
+int v2;
+org.jboss.logmanager.handlers.TcpOutputStream v0;
+v0 := @this: org.jboss.logmanager.handlers.TcpOutputStream;
+v1 := @parameter0: java.net.InetAddress;
+v2 := @parameter1: int;
+v3 = staticinvoke <javax.net.SocketFactory: javax.net.SocketFactory getDefault()>();
+specialinvoke v0.<org.jboss.logmanager.handlers.TcpOutputStream: void <init>(javax.net.SocketFactory,java.net.InetAddress,int)>(v3, v1, v2);
+return;
+}
+public void <init>(java.net.InetAddress, int, boolean) throws java.io.IOException
+{
+java.net.InetAddress v1;
+javax.net.SocketFactory v4;
+int v2;
+org.jboss.logmanager.handlers.TcpOutputStream v0;
+boolean v3;
+v0 := @this: org.jboss.logmanager.handlers.TcpOutputStream;
+v1 := @parameter0: java.net.InetAddress;
+v2 := @parameter1: int;
+v3 := @parameter2: boolean;
+v4 = staticinvoke <javax.net.SocketFactory: javax.net.SocketFactory getDefault()>();
+specialinvoke v0.<org.jboss.logmanager.handlers.TcpOutputStream: void <init>(javax.net.SocketFactory,java.net.InetAddress,int,boolean)>(v4, v1, v2, v3);
+return;
+}
+protected void <init>(java.net.Socket)
+{
+java.net.Socket v1;
+java.lang.Object v2;
+java.util.ArrayDeque v3;
+org.jboss.logmanager.handlers.TcpOutputStream v0;
+v0 := @this: org.jboss.logmanager.handlers.TcpOutputStream;
+v1 := @parameter0: java.net.Socket;
+specialinvoke v0.<java.io.OutputStream: void <init>()>();
+v2 = new java.lang.Object;
+specialinvoke v2.<java.lang.Object: void <init>()>();
+v0.<org.jboss.logmanager.handlers.TcpOutputStream: java.lang.Object outputLock> = v2;
+v3 = new java.util.ArrayDeque;
+specialinvoke v3.<java.util.ArrayDeque: void <init>(int)>(10);
+v0.<org.jboss.logmanager.handlers.TcpOutputStream: java.util.Deque errors> = v3;
+v0.<org.jboss.logmanager.handlers.TcpOutputStream: org.jboss.logmanager.handlers.ClientSocketFactory socketFactory> = null;
+v0.<org.jboss.logmanager.handlers.TcpOutputStream: java.net.Socket socket> = v1;
+v0.<org.jboss.logmanager.handlers.TcpOutputStream: java.lang.Thread reconnectThread> = null;
+v0.<org.jboss.logmanager.handlers.TcpOutputStream: boolean connected> = 1;
+return;
+}
+protected void <init>(javax.net.SocketFactory, java.net.InetAddress, int) throws java.io.IOException
+{
+java.net.InetAddress v2;
+javax.net.SocketFactory v1;
+int v3;
+org.jboss.logmanager.handlers.TcpOutputStream v0;
+v0 := @this: org.jboss.logmanager.handlers.TcpOutputStream;
+v1 := @parameter0: javax.net.SocketFactory;
+v2 := @parameter1: java.net.InetAddress;
+v3 := @parameter2: int;
+specialinvoke v0.<org.jboss.logmanager.handlers.TcpOutputStream: void <init>(javax.net.SocketFactory,java.net.InetAddress,int,boolean)>(v1, v2, v3, 0);
+return;
+}
+protected void <init>(javax.net.SocketFactory, java.net.InetAddress, int, boolean) throws java.io.IOException
+{
+java.net.InetAddress v2;
+javax.net.SocketFactory v1;
+org.jboss.logmanager.handlers.ClientSocketFactory v5;
+int v3;
+org.jboss.logmanager.handlers.TcpOutputStream v0;
+boolean v4;
+v0 := @this: org.jboss.logmanager.handlers.TcpOutputStream;
+v1 := @parameter0: javax.net.SocketFactory;
+v2 := @parameter1: java.net.InetAddress;
+v3 := @parameter2: int;
+v4 := @parameter3: boolean;
+v5 = staticinvoke <org.jboss.logmanager.handlers.ClientSocketFactory: org.jboss.logmanager.handlers.ClientSocketFactory of(javax.net.SocketFactory,java.net.InetAddress,int)>(v1, v2, v3);
+specialinvoke v0.<org.jboss.logmanager.handlers.TcpOutputStream: void <init>(org.jboss.logmanager.handlers.ClientSocketFactory,boolean)>(v5, v4);
+return;
+}
+public void <init>(org.jboss.logmanager.handlers.ClientSocketFactory, boolean)
+{
+java.net.Socket v6;
+java.io.IOException v7;
+org.jboss.logmanager.handlers.TcpOutputStream v0;
+org.jboss.logmanager.handlers.ClientSocketFactory v1, v5;
+java.lang.Object v3;
+java.util.ArrayDeque v4;
+boolean v2;
+v0 := @this: org.jboss.logmanager.handlers.TcpOutputStream;
+v1 := @parameter0: org.jboss.logmanager.handlers.ClientSocketFactory;
+v2 := @parameter1: boolean;
+specialinvoke v0.<java.io.OutputStream: void <init>()>();
+v3 = new java.lang.Object;
+specialinvoke v3.<java.lang.Object: void <init>()>();
+v0.<org.jboss.logmanager.handlers.TcpOutputStream: java.lang.Object outputLock> = v3;
+v4 = new java.util.ArrayDeque;
+specialinvoke v4.<java.util.ArrayDeque: void <init>(int)>(10);
+v0.<org.jboss.logmanager.handlers.TcpOutputStream: java.util.Deque errors> = v4;
+v0.<org.jboss.logmanager.handlers.TcpOutputStream: org.jboss.logmanager.handlers.ClientSocketFactory socketFactory> = v1;
+v0.<org.jboss.logmanager.handlers.TcpOutputStream: boolean blockOnReconnect> = v2;
+label1:
+v5 = v0.<org.jboss.logmanager.handlers.TcpOutputStream: org.jboss.logmanager.handlers.ClientSocketFactory socketFactory>;
+v6 = interfaceinvoke v5.<org.jboss.logmanager.handlers.ClientSocketFactory: java.net.Socket createSocket()>();
+v0.<org.jboss.logmanager.handlers.TcpOutputStream: java.net.Socket socket> = v6;
+v0.<org.jboss.logmanager.handlers.TcpOutputStream: boolean connected> = 1;
+label2:
+goto label4;
+label3:
+v7 := @caughtexception;
+v0.<org.jboss.logmanager.handlers.TcpOutputStream: boolean connected> = 0;
+label4:
+return;
+catch java.io.IOException from label1 to label2 with label3;
+}
+public void write(int) throws java.io.IOException
+{
+int v1;
+byte[] v2;
+org.jboss.logmanager.handlers.TcpOutputStream v0;
+v0 := @this: org.jboss.logmanager.handlers.TcpOutputStream;
+v1 := @parameter0: int;
+v2 = newarray (byte)[1];
+v2[0] = v1;
+virtualinvoke v0.<org.jboss.logmanager.handlers.TcpOutputStream: void write(byte[],int,int)>(v2, 0, 1);
+return;
+}
+public void write(byte[]) throws java.io.IOException
+{
+int v2;
+byte[] v1;
+org.jboss.logmanager.handlers.TcpOutputStream v0;
+v0 := @this: org.jboss.logmanager.handlers.TcpOutputStream;
+v1 := @parameter0: byte[];
+v2 = lengthof v1;
+virtualinvoke v0.<org.jboss.logmanager.handlers.TcpOutputStream: void write(byte[],int,int)>(v1, 0, v2);
+return;
+}
+public void write(byte[], int, int) throws java.io.IOException
+{
+java.lang.Throwable v15;
+byte[] v1;
+java.net.Socket v10, v6;
+org.jboss.logmanager.handlers.TcpOutputStream v0;
+java.net.SocketException v8;
+java.lang.Thread v11, v13, v14;
+int v2, v3;
+boolean v12, v5, v9;
+java.io.OutputStream v7;
+java.lang.Object v4;
+v0 := @this: org.jboss.logmanager.handlers.TcpOutputStream;
+v1 := @parameter0: byte[];
+v2 := @parameter1: int;
+v3 := @parameter2: int;
+v4 = v0.<org.jboss.logmanager.handlers.TcpOutputStream: java.lang.Object outputLock>;
+entermonitor v4;
+label1:
+specialinvoke v0.<org.jboss.logmanager.handlers.TcpOutputStream: void checkReconnect()>();
+v5 = v0.<org.jboss.logmanager.handlers.TcpOutputStream: boolean connected>;
+if v5 == 0 goto label6;
+v6 = v0.<org.jboss.logmanager.handlers.TcpOutputStream: java.net.Socket socket>;
+v7 = virtualinvoke v6.<java.net.Socket: java.io.OutputStream getOutputStream()>();
+virtualinvoke v7.<java.io.OutputStream: void write(byte[],int,int)>(v1, v2, v3);
+label2:
+goto label6;
+label3:
+v8 := @caughtexception;
+v9 = specialinvoke v0.<org.jboss.logmanager.handlers.TcpOutputStream: boolean isReconnectAllowed()>();
+if v9 == 0 goto label5;
+v10 = v0.<org.jboss.logmanager.handlers.TcpOutputStream: java.net.Socket socket>;
+staticinvoke <org.jboss.logmanager.handlers.TcpOutputStream: void safeClose(java.io.Closeable)>(v10);
+v0.<org.jboss.logmanager.handlers.TcpOutputStream: boolean connected> = 0;
+specialinvoke v0.<org.jboss.logmanager.handlers.TcpOutputStream: void addError(java.lang.Exception)>(v8);
+v11 = specialinvoke v0.<org.jboss.logmanager.handlers.TcpOutputStream: java.lang.Thread createThread()>();
+v0.<org.jboss.logmanager.handlers.TcpOutputStream: java.lang.Thread reconnectThread> = v11;
+v12 = v0.<org.jboss.logmanager.handlers.TcpOutputStream: boolean blockOnReconnect>;
+if v12 == 0 goto label4;
+v13 = v0.<org.jboss.logmanager.handlers.TcpOutputStream: java.lang.Thread reconnectThread>;
+virtualinvoke v13.<java.lang.Thread: void run()>();
+virtualinvoke v0.<org.jboss.logmanager.handlers.TcpOutputStream: void write(byte[],int,int)>(v1, v2, v3);
+goto label6;
+label4:
+v14 = v0.<org.jboss.logmanager.handlers.TcpOutputStream: java.lang.Thread reconnectThread>;
+virtualinvoke v14.<java.lang.Thread: void start()>();
+goto label6;
+label5:
+throw v8;
+label6:
+exitmonitor v4;
+label7:
+goto label9;
+label8:
+v15 := @caughtexception;
+exitmonitor v4;
+throw v15;
+label9:
+return;
+catch java.net.SocketException from label1 to label2 with label3;
+catch java.lang.Throwable from label1 to label7 with label8;
+}
+public void flush() throws java.io.IOException
+{
+java.io.OutputStream v4;
+java.lang.Throwable v8;
+java.net.Socket v2, v3, v7;
+org.jboss.logmanager.handlers.TcpOutputStream v0;
+java.net.SocketException v5;
+java.lang.Object v1;
+boolean v6;
+v0 := @this: org.jboss.logmanager.handlers.TcpOutputStream;
+v1 = v0.<org.jboss.logmanager.handlers.TcpOutputStream: java.lang.Object outputLock>;
+entermonitor v1;
+label1:
+v2 = v0.<org.jboss.logmanager.handlers.TcpOutputStream: java.net.Socket socket>;
+if v2 == null goto label5;
+v3 = v0.<org.jboss.logmanager.handlers.TcpOutputStream: java.net.Socket socket>;
+v4 = virtualinvoke v3.<java.net.Socket: java.io.OutputStream getOutputStream()>();
+virtualinvoke v4.<java.io.OutputStream: void flush()>();
+label2:
+goto label5;
+label3:
+v5 := @caughtexception;
+v6 = specialinvoke v0.<org.jboss.logmanager.handlers.TcpOutputStream: boolean isReconnectAllowed()>();
+if v6 == 0 goto label4;
+v7 = v0.<org.jboss.logmanager.handlers.TcpOutputStream: java.net.Socket socket>;
+staticinvoke <org.jboss.logmanager.handlers.TcpOutputStream: void safeClose(java.io.Closeable)>(v7);
+v0.<org.jboss.logmanager.handlers.TcpOutputStream: boolean connected> = 0;
+specialinvoke v0.<org.jboss.logmanager.handlers.TcpOutputStream: void addError(java.lang.Exception)>(v5);
+goto label5;
+label4:
+throw v5;
+label5:
+exitmonitor v1;
+label6:
+goto label8;
+label7:
+v8 := @caughtexception;
+exitmonitor v1;
+throw v8;
+label8:
+return;
+catch java.net.SocketException from label1 to label2 with label3;
+catch java.lang.Throwable from label1 to label6 with label7;
+}
+public void close() throws java.io.IOException
+{
+java.lang.Throwable v6;
+java.net.Socket v4, v5;
+java.lang.Thread v2, v3;
+java.lang.Object v1;
+org.jboss.logmanager.handlers.TcpOutputStream v0;
+v0 := @this: org.jboss.logmanager.handlers.TcpOutputStream;
+v1 = v0.<org.jboss.logmanager.handlers.TcpOutputStream: java.lang.Object outputLock>;
+entermonitor v1;
+label1:
+v2 = v0.<org.jboss.logmanager.handlers.TcpOutputStream: java.lang.Thread reconnectThread>;
+if v2 == null goto label2;
+v3 = v0.<org.jboss.logmanager.handlers.TcpOutputStream: java.lang.Thread reconnectThread>;
+virtualinvoke v3.<java.lang.Thread: void interrupt()>();
+label2:
+v4 = v0.<org.jboss.logmanager.handlers.TcpOutputStream: java.net.Socket socket>;
+if v4 == null goto label3;
+v5 = v0.<org.jboss.logmanager.handlers.TcpOutputStream: java.net.Socket socket>;
+virtualinvoke v5.<java.net.Socket: void close()>();
+label3:
+exitmonitor v1;
+label4:
+goto label6;
+label5:
+v6 := @caughtexception;
+exitmonitor v1;
+throw v6;
+label6:
+return;
+catch java.lang.Throwable from label1 to label4 with label5;
+}
+public boolean isBlockOnReconnect()
+{
+java.lang.Throwable v3;
+java.lang.Object v1;
+org.jboss.logmanager.handlers.TcpOutputStream v0;
+boolean v2;
+v0 := @this: org.jboss.logmanager.handlers.TcpOutputStream;
+v1 = v0.<org.jboss.logmanager.handlers.TcpOutputStream: java.lang.Object outputLock>;
+entermonitor v1;
+label1:
+v2 = v0.<org.jboss.logmanager.handlers.TcpOutputStream: boolean blockOnReconnect>;
+exitmonitor v1;
+label2:
+return v2;
+label3:
+v3 := @caughtexception;
+exitmonitor v1;
+throw v3;
+catch java.lang.Throwable from label1 to label2 with label3;
+}
+public void setBlockOnReconnect(boolean)
+{
+java.lang.Throwable v3;
+java.lang.Object v2;
+org.jboss.logmanager.handlers.TcpOutputStream v0;
+boolean v1;
+v0 := @this: org.jboss.logmanager.handlers.TcpOutputStream;
+v1 := @parameter0: boolean;
+v2 = v0.<org.jboss.logmanager.handlers.TcpOutputStream: java.lang.Object outputLock>;
+entermonitor v2;
+label1:
+v0.<org.jboss.logmanager.handlers.TcpOutputStream: boolean blockOnReconnect> = v1;
+exitmonitor v2;
+label2:
+goto label4;
+label3:
+v3 := @caughtexception;
+exitmonitor v2;
+throw v3;
+label4:
+return;
+catch java.lang.Throwable from label1 to label2 with label3;
+}
+public boolean isConnected()
+{
+java.lang.Throwable v3;
+java.lang.Object v1;
+org.jboss.logmanager.handlers.TcpOutputStream v0;
+boolean v2;
+v0 := @this: org.jboss.logmanager.handlers.TcpOutputStream;
+v1 = v0.<org.jboss.logmanager.handlers.TcpOutputStream: java.lang.Object outputLock>;
+entermonitor v1;
+label1:
+v2 = v0.<org.jboss.logmanager.handlers.TcpOutputStream: boolean connected>;
+exitmonitor v1;
+label2:
+return v2;
+label3:
+v3 := @caughtexception;
+exitmonitor v1;
+throw v3;
+catch java.lang.Throwable from label1 to label2 with label3;
+}
+public java.util.Collection getErrors()
+{
+java.lang.Throwable v7;
+java.util.Deque v1, v2, v5, v6;
+org.jboss.logmanager.handlers.TcpOutputStream v0;
+java.util.ArrayList v4;
+java.util.List v8;
+boolean v3;
+v0 := @this: org.jboss.logmanager.handlers.TcpOutputStream;
+v1 = v0.<org.jboss.logmanager.handlers.TcpOutputStream: java.util.Deque errors>;
+entermonitor v1;
+label1:
+v2 = v0.<org.jboss.logmanager.handlers.TcpOutputStream: java.util.Deque errors>;
+v3 = interfaceinvoke v2.<java.util.Deque: boolean isEmpty()>();
+if v3 != 0 goto label3;
+v4 = new java.util.ArrayList;
+v5 = v0.<org.jboss.logmanager.handlers.TcpOutputStream: java.util.Deque errors>;
+specialinvoke v4.<java.util.ArrayList: void <init>(java.util.Collection)>(v5);
+v6 = v0.<org.jboss.logmanager.handlers.TcpOutputStream: java.util.Deque errors>;
+interfaceinvoke v6.<java.util.Deque: void clear()>();
+exitmonitor v1;
+label2:
+return v4;
+label3:
+exitmonitor v1;
+label4:
+goto label6;
+label5:
+v7 := @caughtexception;
+exitmonitor v1;
+throw v7;
+label6:
+v8 = staticinvoke <java.util.Collections: java.util.List emptyList()>();
+return v8;
+catch java.lang.Throwable from label1 to label2 with label5;
+catch java.lang.Throwable from label3 to label4 with label5;
+}
+private void addError(java.lang.Exception)
+{
+java.lang.Throwable v6;
+int v4;
+java.util.Deque v2, v3, v5;
+org.jboss.logmanager.handlers.TcpOutputStream v0;
+java.lang.Exception v1;
+v0 := @this: org.jboss.logmanager.handlers.TcpOutputStream;
+v1 := @parameter0: java.lang.Exception;
+v2 = v0.<org.jboss.logmanager.handlers.TcpOutputStream: java.util.Deque errors>;
+entermonitor v2;
+label1:
+v3 = v0.<org.jboss.logmanager.handlers.TcpOutputStream: java.util.Deque errors>;
+v4 = interfaceinvoke v3.<java.util.Deque: int size()>();
+if v4 >= 10 goto label2;
+v5 = v0.<org.jboss.logmanager.handlers.TcpOutputStream: java.util.Deque errors>;
+interfaceinvoke v5.<java.util.Deque: void addLast(java.lang.Object)>(v1);
+label2:
+exitmonitor v2;
+label3:
+goto label5;
+label4:
+v6 := @caughtexception;
+exitmonitor v2;
+throw v6;
+label5:
+return;
+catch java.lang.Throwable from label1 to label3 with label4;
+}
+private boolean isReconnectAllowed()
+{
+org.jboss.logmanager.handlers.ClientSocketFactory v1;
+java.lang.Thread v2;
+org.jboss.logmanager.handlers.TcpOutputStream v0;
+boolean v3;
+v0 := @this: org.jboss.logmanager.handlers.TcpOutputStream;
+v1 = v0.<org.jboss.logmanager.handlers.TcpOutputStream: org.jboss.logmanager.handlers.ClientSocketFactory socketFactory>;
+if v1 == null goto label1;
+v2 = v0.<org.jboss.logmanager.handlers.TcpOutputStream: java.lang.Thread reconnectThread>;
+if v2 != null goto label1;
+v3 = 1;
+goto label2;
+label1:
+v3 = 0;
+label2:
+return v3;
+}
+private void checkReconnect()
+{
+java.lang.Thread v3, v5, v6;
+org.jboss.logmanager.handlers.TcpOutputStream v0;
+boolean v1, v2, v4;
+v0 := @this: org.jboss.logmanager.handlers.TcpOutputStream;
+v1 = v0.<org.jboss.logmanager.handlers.TcpOutputStream: boolean connected>;
+if v1 != 0 goto label2;
+v2 = specialinvoke v0.<org.jboss.logmanager.handlers.TcpOutputStream: boolean isReconnectAllowed()>();
+if v2 == 0 goto label2;
+v3 = specialinvoke v0.<org.jboss.logmanager.handlers.TcpOutputStream: java.lang.Thread createThread()>();
+v0.<org.jboss.logmanager.handlers.TcpOutputStream: java.lang.Thread reconnectThread> = v3;
+v4 = v0.<org.jboss.logmanager.handlers.TcpOutputStream: boolean blockOnReconnect>;
+if v4 == 0 goto label1;
+v5 = v0.<org.jboss.logmanager.handlers.TcpOutputStream: java.lang.Thread reconnectThread>;
+virtualinvoke v5.<java.lang.Thread: void run()>();
+goto label2;
+label1:
+v6 = v0.<org.jboss.logmanager.handlers.TcpOutputStream: java.lang.Thread reconnectThread>;
+virtualinvoke v6.<java.lang.Thread: void start()>();
+label2:
+return;
+}
+private java.lang.Thread createThread()
+{
+org.jboss.logmanager.handlers.TcpOutputStream$RetryConnector v2;
+org.jboss.logmanager.handlers.TcpOutputStream v0;
+java.lang.Thread v1;
+v0 := @this: org.jboss.logmanager.handlers.TcpOutputStream;
+v1 = new java.lang.Thread;
+v2 = new org.jboss.logmanager.handlers.TcpOutputStream$RetryConnector;
+specialinvoke v2.<org.jboss.logmanager.handlers.TcpOutputStream$RetryConnector: void <init>(org.jboss.logmanager.handlers.TcpOutputStream)>(v0);
+specialinvoke v1.<java.lang.Thread: void <init>(java.lang.Runnable)>(v2);
+virtualinvoke v1.<java.lang.Thread: void setDaemon(boolean)>(1);
+virtualinvoke v1.<java.lang.Thread: void setName(java.lang.String)>("LogManager Socket Reconnect Thread");
+return v1;
+}
+private static void safeClose(java.io.Closeable)
+{
+java.io.Closeable v0;
+v0 := @parameter0: java.io.Closeable;
+return;
+}
+}

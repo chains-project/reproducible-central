@@ -1,0 +1,285 @@
+public class io.vertx.core.net.impl.pkcs1.PrivateKeyParser extends java.lang.Object
+{
+private static final byte[] OID_RSA_PUBLIC_KEY;
+private static final byte[] OID_EC_PUBLIC_KEY;
+public void <init>()
+{
+io.vertx.core.net.impl.pkcs1.PrivateKeyParser v0;
+v0 := @this: io.vertx.core.net.impl.pkcs1.PrivateKeyParser;
+specialinvoke v0.<java.lang.Object: void <init>()>();
+return;
+}
+private static java.lang.String oidToString(byte[])
+{
+byte[] v0;
+short v3;
+byte v10, v11, v15, v16, v2;
+int v12, v14, v17, v4, v7, v8, v9;
+java.lang.String v20;
+java.lang.IllegalArgumentException v13;
+java.lang.StringBuilder v1, v18, v19, v5, v6;
+v0 := @parameter0: byte[];
+v1 = new java.lang.StringBuilder;
+specialinvoke v1.<java.lang.StringBuilder: void <init>()>();
+v2 = v0[0];
+v3 = v2 & 255;
+v4 = v3 / 40;
+v5 = virtualinvoke v1.<java.lang.StringBuilder: java.lang.StringBuilder append(int)>(v4);
+v6 = virtualinvoke v5.<java.lang.StringBuilder: java.lang.StringBuilder append(java.lang.String)>(".");
+v7 = v3 % 40;
+virtualinvoke v6.<java.lang.StringBuilder: java.lang.StringBuilder append(int)>(v7);
+v8 = 1;
+label1:
+v9 = lengthof v0;
+if v8 >= v9 goto label5;
+v10 = v0[v8];
+if v10 >= 0 goto label3;
+v11 = v10 & 127;
+v8 = v8 + 1;
+v12 = lengthof v0;
+if v8 != v12 goto label2;
+v13 = new java.lang.IllegalArgumentException;
+specialinvoke v13.<java.lang.IllegalArgumentException: void <init>(java.lang.String)>("Invalid OID");
+throw v13;
+label2:
+v14 = v11 << 7;
+v15 = v0[v8];
+v16 = v15 & 127;
+v17 = v14 | v16;
+v18 = virtualinvoke v1.<java.lang.StringBuilder: java.lang.StringBuilder append(java.lang.String)>(".");
+virtualinvoke v18.<java.lang.StringBuilder: java.lang.StringBuilder append(int)>(v17);
+goto label4;
+label3:
+v19 = virtualinvoke v1.<java.lang.StringBuilder: java.lang.StringBuilder append(java.lang.String)>(".");
+virtualinvoke v19.<java.lang.StringBuilder: java.lang.StringBuilder append(int)>(v10);
+label4:
+v8 = v8 + 1;
+goto label1;
+label5:
+v20 = virtualinvoke v1.<java.lang.StringBuilder: java.lang.String toString()>();
+return v20;
+}
+private static java.security.spec.ECParameterSpec getECParameterSpec(java.lang.String) throws io.vertx.core.VertxException
+{
+io.vertx.core.VertxException v7;
+java.security.KeyPairGenerator v1;
+java.security.KeyPair v3;
+java.security.PublicKey v4;
+java.security.spec.ECParameterSpec v5;
+java.security.GeneralSecurityException v6;
+java.security.spec.ECGenParameterSpec v2;
+java.lang.String v0;
+v0 := @parameter0: java.lang.String;
+label1:
+v1 = staticinvoke <java.security.KeyPairGenerator: java.security.KeyPairGenerator getInstance(java.lang.String)>("EC");
+v2 = new java.security.spec.ECGenParameterSpec;
+specialinvoke v2.<java.security.spec.ECGenParameterSpec: void <init>(java.lang.String)>(v0);
+virtualinvoke v1.<java.security.KeyPairGenerator: void initialize(java.security.spec.AlgorithmParameterSpec)>(v2);
+v3 = virtualinvoke v1.<java.security.KeyPairGenerator: java.security.KeyPair generateKeyPair()>();
+v4 = virtualinvoke v3.<java.security.KeyPair: java.security.PublicKey getPublic()>();
+v5 = interfaceinvoke v4.<java.security.interfaces.ECPublicKey: java.security.spec.ECParameterSpec getParams()>();
+label2:
+return v5;
+label3:
+v6 := @caughtexception;
+v7 = new io.vertx.core.VertxException;
+specialinvoke v7.<io.vertx.core.VertxException: void <init>(java.lang.String,java.lang.Throwable)>("Cannot determine EC parameter spec for curve name/OID", v6);
+throw v7;
+catch java.security.GeneralSecurityException from label1 to label2 with label3;
+}
+public static java.lang.String getPKCS8EncodedKeyAlgorithm(byte[])
+{
+io.vertx.core.VertxException v14, v22, v4, v9;
+byte[] v0, v17, v18, v20;
+int v10, v13, v3, v8;
+java.math.BigInteger v7;
+java.lang.String v11;
+boolean v19, v21;
+io.vertx.core.net.impl.pkcs1.PrivateKeyParser$DerParser v1, v15, v5;
+io.vertx.core.net.impl.pkcs1.PrivateKeyParser$Asn1Object v12, v16, v2, v6;
+v0 := @parameter0: byte[];
+v1 = new io.vertx.core.net.impl.pkcs1.PrivateKeyParser$DerParser;
+specialinvoke v1.<io.vertx.core.net.impl.pkcs1.PrivateKeyParser$DerParser: void <init>(byte[])>(v0);
+v2 = virtualinvoke v1.<io.vertx.core.net.impl.pkcs1.PrivateKeyParser$DerParser: io.vertx.core.net.impl.pkcs1.PrivateKeyParser$Asn1Object read()>();
+v3 = virtualinvoke v2.<io.vertx.core.net.impl.pkcs1.PrivateKeyParser$Asn1Object: int getType()>();
+if v3 == 16 goto label1;
+v4 = new io.vertx.core.VertxException;
+specialinvoke v4.<io.vertx.core.VertxException: void <init>(java.lang.String)>("Invalid PKCS8 encoding: not a sequence");
+throw v4;
+label1:
+v5 = virtualinvoke v2.<io.vertx.core.net.impl.pkcs1.PrivateKeyParser$Asn1Object: io.vertx.core.net.impl.pkcs1.PrivateKeyParser$DerParser getParser()>();
+v6 = virtualinvoke v5.<io.vertx.core.net.impl.pkcs1.PrivateKeyParser$DerParser: io.vertx.core.net.impl.pkcs1.PrivateKeyParser$Asn1Object read()>();
+v7 = virtualinvoke v6.<io.vertx.core.net.impl.pkcs1.PrivateKeyParser$Asn1Object: java.math.BigInteger getInteger()>();
+v8 = virtualinvoke v7.<java.math.BigInteger: int intValue()>();
+if v8 == 0 goto label2;
+v9 = new io.vertx.core.VertxException;
+v10 = virtualinvoke v7.<java.math.BigInteger: int intValue()>();
+v11 = dynamicinvoke "makeConcatWithConstants" <java.lang.String (int)>(v10) <java.lang.invoke.StringConcatFactory: java.lang.invoke.CallSite makeConcatWithConstants(java.lang.invoke.MethodHandles$Lookup,java.lang.String,java.lang.invoke.MethodType,java.lang.String,java.lang.Object[])>("Unsupported version, expected 0 but found \u0001");
+specialinvoke v9.<io.vertx.core.VertxException: void <init>(java.lang.String)>(v11);
+throw v9;
+label2:
+v12 = virtualinvoke v5.<io.vertx.core.net.impl.pkcs1.PrivateKeyParser$DerParser: io.vertx.core.net.impl.pkcs1.PrivateKeyParser$Asn1Object read()>();
+v13 = virtualinvoke v12.<io.vertx.core.net.impl.pkcs1.PrivateKeyParser$Asn1Object: int getType()>();
+if v13 == 16 goto label3;
+v14 = new io.vertx.core.VertxException;
+specialinvoke v14.<io.vertx.core.VertxException: void <init>(java.lang.String)>("Invalid PKCS8 encoding: could not read Algorithm Identifier");
+throw v14;
+label3:
+v15 = virtualinvoke v12.<io.vertx.core.net.impl.pkcs1.PrivateKeyParser$Asn1Object: io.vertx.core.net.impl.pkcs1.PrivateKeyParser$DerParser getParser()>();
+v16 = virtualinvoke v15.<io.vertx.core.net.impl.pkcs1.PrivateKeyParser$DerParser: io.vertx.core.net.impl.pkcs1.PrivateKeyParser$Asn1Object read()>();
+v17 = virtualinvoke v16.<io.vertx.core.net.impl.pkcs1.PrivateKeyParser$Asn1Object: byte[] getObjectIdentifier()>();
+v18 = <io.vertx.core.net.impl.pkcs1.PrivateKeyParser: byte[] OID_RSA_PUBLIC_KEY>;
+v19 = staticinvoke <java.util.Arrays: boolean equals(byte[],byte[])>(v18, v17);
+if v19 == 0 goto label4;
+return "RSA";
+label4:
+v20 = <io.vertx.core.net.impl.pkcs1.PrivateKeyParser: byte[] OID_EC_PUBLIC_KEY>;
+v21 = staticinvoke <java.util.Arrays: boolean equals(byte[],byte[])>(v20, v17);
+if v21 == 0 goto label5;
+return "EC";
+label5:
+v22 = new io.vertx.core.VertxException;
+specialinvoke v22.<io.vertx.core.VertxException: void <init>(java.lang.String)>("Unsupported algorithm identifier");
+throw v22;
+}
+public static java.security.spec.ECPrivateKeySpec getECKeySpec(byte[]) throws io.vertx.core.VertxException
+{
+io.vertx.core.VertxException v15, v27, v4, v8;
+byte[] v0, v22, v32;
+java.lang.Integer v11, v19, v30;
+java.math.BigInteger v13, v17, v36;
+io.vertx.core.net.impl.pkcs1.PrivateKeyParser$DerParser v1, v24, v5;
+java.lang.Object[] v16, v28, v9;
+java.security.spec.ECPrivateKeySpec v35;
+int v10, v14, v18, v26, v29, v3, v7;
+java.lang.String v12, v20, v31, v33;
+java.security.spec.ECParameterSpec v34;
+io.vertx.core.net.impl.pkcs1.PrivateKeyParser$Asn1Object v2, v21, v23, v25, v6;
+v0 := @parameter0: byte[];
+v1 = new io.vertx.core.net.impl.pkcs1.PrivateKeyParser$DerParser;
+specialinvoke v1.<io.vertx.core.net.impl.pkcs1.PrivateKeyParser$DerParser: void <init>(byte[])>(v0);
+v2 = virtualinvoke v1.<io.vertx.core.net.impl.pkcs1.PrivateKeyParser$DerParser: io.vertx.core.net.impl.pkcs1.PrivateKeyParser$Asn1Object read()>();
+v3 = virtualinvoke v2.<io.vertx.core.net.impl.pkcs1.PrivateKeyParser$Asn1Object: int getType()>();
+if v3 == 16 goto label1;
+v4 = new io.vertx.core.VertxException;
+specialinvoke v4.<io.vertx.core.VertxException: void <init>(java.lang.String)>("Invalid DER: not a sequence");
+throw v4;
+label1:
+v5 = virtualinvoke v2.<io.vertx.core.net.impl.pkcs1.PrivateKeyParser$Asn1Object: io.vertx.core.net.impl.pkcs1.PrivateKeyParser$DerParser getParser()>();
+v6 = virtualinvoke v5.<io.vertx.core.net.impl.pkcs1.PrivateKeyParser$DerParser: io.vertx.core.net.impl.pkcs1.PrivateKeyParser$Asn1Object read()>();
+v7 = virtualinvoke v6.<io.vertx.core.net.impl.pkcs1.PrivateKeyParser$Asn1Object: int getType()>();
+if v7 == 2 goto label2;
+v8 = new io.vertx.core.VertxException;
+v9 = newarray (java.lang.Object)[1];
+v10 = virtualinvoke v6.<io.vertx.core.net.impl.pkcs1.PrivateKeyParser$Asn1Object: int getType()>();
+v11 = staticinvoke <java.lang.Integer: java.lang.Integer valueOf(int)>(v10);
+v9[0] = v11;
+v12 = staticinvoke <java.lang.String: java.lang.String format(java.lang.String,java.lang.Object[])>("Invalid DER: \'version\' field must be of type INTEGER (2) but found type `%d`", v9);
+specialinvoke v8.<io.vertx.core.VertxException: void <init>(java.lang.String)>(v12);
+throw v8;
+label2:
+v13 = virtualinvoke v6.<io.vertx.core.net.impl.pkcs1.PrivateKeyParser$Asn1Object: java.math.BigInteger getInteger()>();
+v14 = virtualinvoke v13.<java.math.BigInteger: int intValue()>();
+if v14 == 1 goto label3;
+v15 = new io.vertx.core.VertxException;
+v16 = newarray (java.lang.Object)[1];
+v17 = virtualinvoke v6.<io.vertx.core.net.impl.pkcs1.PrivateKeyParser$Asn1Object: java.math.BigInteger getInteger()>();
+v18 = virtualinvoke v17.<java.math.BigInteger: int intValue()>();
+v19 = staticinvoke <java.lang.Integer: java.lang.Integer valueOf(int)>(v18);
+v16[0] = v19;
+v20 = staticinvoke <java.lang.String: java.lang.String format(java.lang.String,java.lang.Object[])>("Invalid DER: expected \'version\' field to have value \'1\' but found \'%d\'", v16);
+specialinvoke v15.<io.vertx.core.VertxException: void <init>(java.lang.String)>(v20);
+throw v15;
+label3:
+v21 = virtualinvoke v5.<io.vertx.core.net.impl.pkcs1.PrivateKeyParser$DerParser: io.vertx.core.net.impl.pkcs1.PrivateKeyParser$Asn1Object read()>();
+v22 = virtualinvoke v21.<io.vertx.core.net.impl.pkcs1.PrivateKeyParser$Asn1Object: byte[] getValue()>();
+v23 = virtualinvoke v5.<io.vertx.core.net.impl.pkcs1.PrivateKeyParser$DerParser: io.vertx.core.net.impl.pkcs1.PrivateKeyParser$Asn1Object read()>();
+v24 = virtualinvoke v23.<io.vertx.core.net.impl.pkcs1.PrivateKeyParser$Asn1Object: io.vertx.core.net.impl.pkcs1.PrivateKeyParser$DerParser getParser()>();
+v25 = virtualinvoke v24.<io.vertx.core.net.impl.pkcs1.PrivateKeyParser$DerParser: io.vertx.core.net.impl.pkcs1.PrivateKeyParser$Asn1Object read()>();
+v26 = virtualinvoke v25.<io.vertx.core.net.impl.pkcs1.PrivateKeyParser$Asn1Object: int getType()>();
+if v26 == 6 goto label4;
+v27 = new io.vertx.core.VertxException;
+v28 = newarray (java.lang.Object)[1];
+v29 = virtualinvoke v25.<io.vertx.core.net.impl.pkcs1.PrivateKeyParser$Asn1Object: int getType()>();
+v30 = staticinvoke <java.lang.Integer: java.lang.Integer valueOf(int)>(v29);
+v28[0] = v30;
+v31 = staticinvoke <java.lang.String: java.lang.String format(java.lang.String,java.lang.Object[])>("Invalid DER: expected to find an OBJECT_IDENTIFIER (6) in \'parameters\' but found type \'%d\'", v28);
+specialinvoke v27.<io.vertx.core.VertxException: void <init>(java.lang.String)>(v31);
+throw v27;
+label4:
+v32 = virtualinvoke v25.<io.vertx.core.net.impl.pkcs1.PrivateKeyParser$Asn1Object: byte[] getValue()>();
+v33 = staticinvoke <io.vertx.core.net.impl.pkcs1.PrivateKeyParser: java.lang.String oidToString(byte[])>(v32);
+v34 = staticinvoke <io.vertx.core.net.impl.pkcs1.PrivateKeyParser: java.security.spec.ECParameterSpec getECParameterSpec(java.lang.String)>(v33);
+v35 = new java.security.spec.ECPrivateKeySpec;
+v36 = new java.math.BigInteger;
+specialinvoke v36.<java.math.BigInteger: void <init>(int,byte[])>(1, v22);
+specialinvoke v35.<java.security.spec.ECPrivateKeySpec: void <init>(java.math.BigInteger,java.security.spec.ECParameterSpec)>(v36, v34);
+return v35;
+}
+public static java.security.spec.RSAPrivateCrtKeySpec getRSAKeySpec(byte[]) throws io.vertx.core.VertxException
+{
+io.vertx.core.VertxException v4;
+byte[] v0;
+java.security.spec.RSAPrivateCrtKeySpec v22;
+int v3;
+java.math.BigInteger v11, v13, v15, v17, v19, v21, v7, v9;
+io.vertx.core.net.impl.pkcs1.PrivateKeyParser$DerParser v1, v5;
+io.vertx.core.net.impl.pkcs1.PrivateKeyParser$Asn1Object v10, v12, v14, v16, v18, v2, v20, v6, v8;
+v0 := @parameter0: byte[];
+v1 = new io.vertx.core.net.impl.pkcs1.PrivateKeyParser$DerParser;
+specialinvoke v1.<io.vertx.core.net.impl.pkcs1.PrivateKeyParser$DerParser: void <init>(byte[])>(v0);
+v2 = virtualinvoke v1.<io.vertx.core.net.impl.pkcs1.PrivateKeyParser$DerParser: io.vertx.core.net.impl.pkcs1.PrivateKeyParser$Asn1Object read()>();
+v3 = virtualinvoke v2.<io.vertx.core.net.impl.pkcs1.PrivateKeyParser$Asn1Object: int getType()>();
+if v3 == 16 goto label1;
+v4 = new io.vertx.core.VertxException;
+specialinvoke v4.<io.vertx.core.VertxException: void <init>(java.lang.String)>("Invalid DER: not a sequence");
+throw v4;
+label1:
+v5 = virtualinvoke v2.<io.vertx.core.net.impl.pkcs1.PrivateKeyParser$Asn1Object: io.vertx.core.net.impl.pkcs1.PrivateKeyParser$DerParser getParser()>();
+virtualinvoke v5.<io.vertx.core.net.impl.pkcs1.PrivateKeyParser$DerParser: io.vertx.core.net.impl.pkcs1.PrivateKeyParser$Asn1Object read()>();
+v6 = virtualinvoke v5.<io.vertx.core.net.impl.pkcs1.PrivateKeyParser$DerParser: io.vertx.core.net.impl.pkcs1.PrivateKeyParser$Asn1Object read()>();
+v7 = virtualinvoke v6.<io.vertx.core.net.impl.pkcs1.PrivateKeyParser$Asn1Object: java.math.BigInteger getInteger()>();
+v8 = virtualinvoke v5.<io.vertx.core.net.impl.pkcs1.PrivateKeyParser$DerParser: io.vertx.core.net.impl.pkcs1.PrivateKeyParser$Asn1Object read()>();
+v9 = virtualinvoke v8.<io.vertx.core.net.impl.pkcs1.PrivateKeyParser$Asn1Object: java.math.BigInteger getInteger()>();
+v10 = virtualinvoke v5.<io.vertx.core.net.impl.pkcs1.PrivateKeyParser$DerParser: io.vertx.core.net.impl.pkcs1.PrivateKeyParser$Asn1Object read()>();
+v11 = virtualinvoke v10.<io.vertx.core.net.impl.pkcs1.PrivateKeyParser$Asn1Object: java.math.BigInteger getInteger()>();
+v12 = virtualinvoke v5.<io.vertx.core.net.impl.pkcs1.PrivateKeyParser$DerParser: io.vertx.core.net.impl.pkcs1.PrivateKeyParser$Asn1Object read()>();
+v13 = virtualinvoke v12.<io.vertx.core.net.impl.pkcs1.PrivateKeyParser$Asn1Object: java.math.BigInteger getInteger()>();
+v14 = virtualinvoke v5.<io.vertx.core.net.impl.pkcs1.PrivateKeyParser$DerParser: io.vertx.core.net.impl.pkcs1.PrivateKeyParser$Asn1Object read()>();
+v15 = virtualinvoke v14.<io.vertx.core.net.impl.pkcs1.PrivateKeyParser$Asn1Object: java.math.BigInteger getInteger()>();
+v16 = virtualinvoke v5.<io.vertx.core.net.impl.pkcs1.PrivateKeyParser$DerParser: io.vertx.core.net.impl.pkcs1.PrivateKeyParser$Asn1Object read()>();
+v17 = virtualinvoke v16.<io.vertx.core.net.impl.pkcs1.PrivateKeyParser$Asn1Object: java.math.BigInteger getInteger()>();
+v18 = virtualinvoke v5.<io.vertx.core.net.impl.pkcs1.PrivateKeyParser$DerParser: io.vertx.core.net.impl.pkcs1.PrivateKeyParser$Asn1Object read()>();
+v19 = virtualinvoke v18.<io.vertx.core.net.impl.pkcs1.PrivateKeyParser$Asn1Object: java.math.BigInteger getInteger()>();
+v20 = virtualinvoke v5.<io.vertx.core.net.impl.pkcs1.PrivateKeyParser$DerParser: io.vertx.core.net.impl.pkcs1.PrivateKeyParser$Asn1Object read()>();
+v21 = virtualinvoke v20.<io.vertx.core.net.impl.pkcs1.PrivateKeyParser$Asn1Object: java.math.BigInteger getInteger()>();
+v22 = new java.security.spec.RSAPrivateCrtKeySpec;
+specialinvoke v22.<java.security.spec.RSAPrivateCrtKeySpec: void <init>(java.math.BigInteger,java.math.BigInteger,java.math.BigInteger,java.math.BigInteger,java.math.BigInteger,java.math.BigInteger,java.math.BigInteger,java.math.BigInteger)>(v7, v9, v11, v13, v15, v17, v19, v21);
+return v22;
+}
+static void <clinit>()
+{
+byte[] v0, v1;
+v0 = newarray (byte)[9];
+v0[0] = 42;
+v0[1] = -122;
+v0[2] = 72;
+v0[3] = -122;
+v0[4] = -9;
+v0[5] = 13;
+v0[6] = 1;
+v0[7] = 1;
+v0[8] = 1;
+<io.vertx.core.net.impl.pkcs1.PrivateKeyParser: byte[] OID_RSA_PUBLIC_KEY> = v0;
+v1 = newarray (byte)[7];
+v1[0] = 42;
+v1[1] = -122;
+v1[2] = 72;
+v1[3] = -50;
+v1[4] = 61;
+v1[5] = 2;
+v1[6] = 1;
+<io.vertx.core.net.impl.pkcs1.PrivateKeyParser: byte[] OID_EC_PUBLIC_KEY> = v1;
+return;
+}
+}

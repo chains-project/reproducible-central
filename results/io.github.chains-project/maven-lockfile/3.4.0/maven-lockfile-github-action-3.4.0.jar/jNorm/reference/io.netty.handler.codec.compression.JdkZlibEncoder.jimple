@@ -1,0 +1,519 @@
+public class io.netty.handler.codec.compression.JdkZlibEncoder extends io.netty.handler.codec.compression.ZlibEncoder
+{
+private static final io.netty.util.internal.logging.InternalLogger logger;
+private static final int MAX_INITIAL_OUTPUT_BUFFER_SIZE;
+private static final int MAX_INPUT_BUFFER_SIZE;
+private final io.netty.handler.codec.compression.ZlibWrapper wrapper;
+private final java.util.zip.Deflater deflater;
+private volatile boolean finished;
+private volatile io.netty.channel.ChannelHandlerContext ctx;
+private final java.util.zip.CRC32 crc;
+private static final byte[] gzipHeader;
+private boolean writeHeader;
+public void <init>()
+{
+io.netty.handler.codec.compression.JdkZlibEncoder v0;
+v0 := @this: io.netty.handler.codec.compression.JdkZlibEncoder;
+specialinvoke v0.<io.netty.handler.codec.compression.JdkZlibEncoder: void <init>(int)>(6);
+return;
+}
+public void <init>(int)
+{
+int v1;
+io.netty.handler.codec.compression.JdkZlibEncoder v0;
+io.netty.handler.codec.compression.ZlibWrapper v2;
+v0 := @this: io.netty.handler.codec.compression.JdkZlibEncoder;
+v1 := @parameter0: int;
+v2 = <io.netty.handler.codec.compression.ZlibWrapper: io.netty.handler.codec.compression.ZlibWrapper ZLIB>;
+specialinvoke v0.<io.netty.handler.codec.compression.JdkZlibEncoder: void <init>(io.netty.handler.codec.compression.ZlibWrapper,int)>(v2, v1);
+return;
+}
+public void <init>(io.netty.handler.codec.compression.ZlibWrapper)
+{
+io.netty.handler.codec.compression.JdkZlibEncoder v0;
+io.netty.handler.codec.compression.ZlibWrapper v1;
+v0 := @this: io.netty.handler.codec.compression.JdkZlibEncoder;
+v1 := @parameter0: io.netty.handler.codec.compression.ZlibWrapper;
+specialinvoke v0.<io.netty.handler.codec.compression.JdkZlibEncoder: void <init>(io.netty.handler.codec.compression.ZlibWrapper,int)>(v1, 6);
+return;
+}
+public void <init>(io.netty.handler.codec.compression.ZlibWrapper, int)
+{
+io.netty.handler.codec.compression.ZlibWrapper v1, v4, v6, v9;
+java.util.zip.Deflater v8;
+java.lang.IllegalArgumentException v5;
+int v2;
+java.util.zip.CRC32 v3;
+io.netty.handler.codec.compression.JdkZlibEncoder v0;
+java.lang.String v7;
+boolean v10;
+v0 := @this: io.netty.handler.codec.compression.JdkZlibEncoder;
+v1 := @parameter0: io.netty.handler.codec.compression.ZlibWrapper;
+v2 := @parameter1: int;
+specialinvoke v0.<io.netty.handler.codec.compression.ZlibEncoder: void <init>()>();
+v3 = new java.util.zip.CRC32;
+specialinvoke v3.<java.util.zip.CRC32: void <init>()>();
+v0.<io.netty.handler.codec.compression.JdkZlibEncoder: java.util.zip.CRC32 crc> = v3;
+v0.<io.netty.handler.codec.compression.JdkZlibEncoder: boolean writeHeader> = 1;
+staticinvoke <io.netty.util.internal.ObjectUtil: int checkInRange(int,int,int,java.lang.String)>(v2, 0, 9, "compressionLevel");
+staticinvoke <io.netty.util.internal.ObjectUtil: java.lang.Object checkNotNull(java.lang.Object,java.lang.String)>(v1, "wrapper");
+v4 = <io.netty.handler.codec.compression.ZlibWrapper: io.netty.handler.codec.compression.ZlibWrapper ZLIB_OR_NONE>;
+if v1 != v4 goto label1;
+v5 = new java.lang.IllegalArgumentException;
+v6 = <io.netty.handler.codec.compression.ZlibWrapper: io.netty.handler.codec.compression.ZlibWrapper ZLIB_OR_NONE>;
+v7 = dynamicinvoke "makeConcatWithConstants" <java.lang.String (io.netty.handler.codec.compression.ZlibWrapper)>(v6) <java.lang.invoke.StringConcatFactory: java.lang.invoke.CallSite makeConcatWithConstants(java.lang.invoke.MethodHandles$Lookup,java.lang.String,java.lang.invoke.MethodType,java.lang.String,java.lang.Object[])>("wrapper \'\u0001\' is not allowed for compression.");
+specialinvoke v5.<java.lang.IllegalArgumentException: void <init>(java.lang.String)>(v7);
+throw v5;
+label1:
+v0.<io.netty.handler.codec.compression.JdkZlibEncoder: io.netty.handler.codec.compression.ZlibWrapper wrapper> = v1;
+v8 = new java.util.zip.Deflater;
+v9 = <io.netty.handler.codec.compression.ZlibWrapper: io.netty.handler.codec.compression.ZlibWrapper ZLIB>;
+if v1 == v9 goto label2;
+v10 = 1;
+goto label3;
+label2:
+v10 = 0;
+label3:
+specialinvoke v8.<java.util.zip.Deflater: void <init>(int,boolean)>(v2, v10);
+v0.<io.netty.handler.codec.compression.JdkZlibEncoder: java.util.zip.Deflater deflater> = v8;
+return;
+}
+public void <init>(byte[])
+{
+byte[] v1;
+io.netty.handler.codec.compression.JdkZlibEncoder v0;
+v0 := @this: io.netty.handler.codec.compression.JdkZlibEncoder;
+v1 := @parameter0: byte[];
+specialinvoke v0.<io.netty.handler.codec.compression.JdkZlibEncoder: void <init>(int,byte[])>(6, v1);
+return;
+}
+public void <init>(int, byte[])
+{
+byte[] v2;
+int v1;
+java.util.zip.CRC32 v3;
+io.netty.handler.codec.compression.JdkZlibEncoder v0;
+io.netty.handler.codec.compression.ZlibWrapper v4;
+java.util.zip.Deflater v5, v6;
+v0 := @this: io.netty.handler.codec.compression.JdkZlibEncoder;
+v1 := @parameter0: int;
+v2 := @parameter1: byte[];
+specialinvoke v0.<io.netty.handler.codec.compression.ZlibEncoder: void <init>()>();
+v3 = new java.util.zip.CRC32;
+specialinvoke v3.<java.util.zip.CRC32: void <init>()>();
+v0.<io.netty.handler.codec.compression.JdkZlibEncoder: java.util.zip.CRC32 crc> = v3;
+v0.<io.netty.handler.codec.compression.JdkZlibEncoder: boolean writeHeader> = 1;
+staticinvoke <io.netty.util.internal.ObjectUtil: int checkInRange(int,int,int,java.lang.String)>(v1, 0, 9, "compressionLevel");
+staticinvoke <io.netty.util.internal.ObjectUtil: java.lang.Object checkNotNull(java.lang.Object,java.lang.String)>(v2, "dictionary");
+v4 = <io.netty.handler.codec.compression.ZlibWrapper: io.netty.handler.codec.compression.ZlibWrapper ZLIB>;
+v0.<io.netty.handler.codec.compression.JdkZlibEncoder: io.netty.handler.codec.compression.ZlibWrapper wrapper> = v4;
+v5 = new java.util.zip.Deflater;
+specialinvoke v5.<java.util.zip.Deflater: void <init>(int)>(v1);
+v0.<io.netty.handler.codec.compression.JdkZlibEncoder: java.util.zip.Deflater deflater> = v5;
+v6 = v0.<io.netty.handler.codec.compression.JdkZlibEncoder: java.util.zip.Deflater deflater>;
+virtualinvoke v6.<java.util.zip.Deflater: void setDictionary(byte[])>(v2);
+return;
+}
+public io.netty.channel.ChannelFuture close()
+{
+io.netty.channel.ChannelHandlerContext v1;
+io.netty.channel.ChannelPromise v2;
+io.netty.handler.codec.compression.JdkZlibEncoder v0;
+io.netty.channel.ChannelFuture v3;
+v0 := @this: io.netty.handler.codec.compression.JdkZlibEncoder;
+v1 = specialinvoke v0.<io.netty.handler.codec.compression.JdkZlibEncoder: io.netty.channel.ChannelHandlerContext ctx()>();
+v2 = interfaceinvoke v1.<io.netty.channel.ChannelHandlerContext: io.netty.channel.ChannelPromise newPromise()>();
+v3 = virtualinvoke v0.<io.netty.handler.codec.compression.JdkZlibEncoder: io.netty.channel.ChannelFuture close(io.netty.channel.ChannelPromise)>(v2);
+return v3;
+}
+public io.netty.channel.ChannelFuture close(io.netty.channel.ChannelPromise)
+{
+io.netty.util.concurrent.EventExecutor v3;
+io.netty.channel.ChannelFuture v5;
+io.netty.channel.ChannelHandlerContext v2;
+io.netty.channel.ChannelPromise v1, v6;
+io.netty.handler.codec.compression.JdkZlibEncoder v0;
+io.netty.handler.codec.compression.JdkZlibEncoder$1 v7;
+boolean v4;
+v0 := @this: io.netty.handler.codec.compression.JdkZlibEncoder;
+v1 := @parameter0: io.netty.channel.ChannelPromise;
+v2 = specialinvoke v0.<io.netty.handler.codec.compression.JdkZlibEncoder: io.netty.channel.ChannelHandlerContext ctx()>();
+v3 = interfaceinvoke v2.<io.netty.channel.ChannelHandlerContext: io.netty.util.concurrent.EventExecutor executor()>();
+v4 = interfaceinvoke v3.<io.netty.util.concurrent.EventExecutor: boolean inEventLoop()>();
+if v4 == 0 goto label1;
+v5 = specialinvoke v0.<io.netty.handler.codec.compression.JdkZlibEncoder: io.netty.channel.ChannelFuture finishEncode(io.netty.channel.ChannelHandlerContext,io.netty.channel.ChannelPromise)>(v2, v1);
+return v5;
+label1:
+v6 = interfaceinvoke v2.<io.netty.channel.ChannelHandlerContext: io.netty.channel.ChannelPromise newPromise()>();
+v7 = new io.netty.handler.codec.compression.JdkZlibEncoder$1;
+specialinvoke v7.<io.netty.handler.codec.compression.JdkZlibEncoder$1: void <init>(io.netty.handler.codec.compression.JdkZlibEncoder,io.netty.channel.ChannelPromise,io.netty.channel.ChannelPromise)>(v0, v6, v1);
+interfaceinvoke v3.<io.netty.util.concurrent.EventExecutor: void execute(java.lang.Runnable)>(v7);
+return v6;
+}
+private io.netty.channel.ChannelHandlerContext ctx()
+{
+io.netty.channel.ChannelHandlerContext v1;
+java.lang.IllegalStateException v2;
+io.netty.handler.codec.compression.JdkZlibEncoder v0;
+v0 := @this: io.netty.handler.codec.compression.JdkZlibEncoder;
+v1 = v0.<io.netty.handler.codec.compression.JdkZlibEncoder: io.netty.channel.ChannelHandlerContext ctx>;
+if v1 != null goto label1;
+v2 = new java.lang.IllegalStateException;
+specialinvoke v2.<java.lang.IllegalStateException: void <init>(java.lang.String)>("not added to a pipeline");
+throw v2;
+label1:
+return v1;
+}
+public boolean isClosed()
+{
+io.netty.handler.codec.compression.JdkZlibEncoder v0;
+boolean v1;
+v0 := @this: io.netty.handler.codec.compression.JdkZlibEncoder;
+v1 = v0.<io.netty.handler.codec.compression.JdkZlibEncoder: boolean finished>;
+return v1;
+}
+protected void encode(io.netty.channel.ChannelHandlerContext, io.netty.buffer.ByteBuf, io.netty.buffer.ByteBuf) throws java.lang.Exception
+{
+java.lang.Throwable v15;
+byte[] v17;
+io.netty.buffer.ByteBufAllocator v9;
+io.netty.channel.ChannelHandlerContext v1;
+io.netty.buffer.ByteBuf v10, v2, v3;
+int v12, v13, v14, v5, v7, v8;
+io.netty.handler.codec.compression.JdkZlibEncoder v0;
+boolean v11, v4, v6;
+java.util.zip.Deflater v16;
+v0 := @this: io.netty.handler.codec.compression.JdkZlibEncoder;
+v1 := @parameter0: io.netty.channel.ChannelHandlerContext;
+v2 := @parameter1: io.netty.buffer.ByteBuf;
+v3 := @parameter2: io.netty.buffer.ByteBuf;
+v4 = v0.<io.netty.handler.codec.compression.JdkZlibEncoder: boolean finished>;
+if v4 == 0 goto label1;
+virtualinvoke v3.<io.netty.buffer.ByteBuf: io.netty.buffer.ByteBuf writeBytes(io.netty.buffer.ByteBuf)>(v2);
+return;
+label1:
+v5 = virtualinvoke v2.<io.netty.buffer.ByteBuf: int readableBytes()>();
+if v5 != 0 goto label2;
+return;
+label2:
+v6 = virtualinvoke v2.<io.netty.buffer.ByteBuf: boolean hasArray()>();
+if v6 == 0 goto label3;
+specialinvoke v0.<io.netty.handler.codec.compression.JdkZlibEncoder: void encodeSome(io.netty.buffer.ByteBuf,io.netty.buffer.ByteBuf)>(v2, v3);
+goto label7;
+label3:
+v7 = <io.netty.handler.codec.compression.JdkZlibEncoder: int MAX_INPUT_BUFFER_SIZE>;
+v8 = staticinvoke <java.lang.Math: int min(int,int)>(v5, v7);
+v9 = interfaceinvoke v1.<io.netty.channel.ChannelHandlerContext: io.netty.buffer.ByteBufAllocator alloc()>();
+v10 = interfaceinvoke v9.<io.netty.buffer.ByteBufAllocator: io.netty.buffer.ByteBuf heapBuffer(int,int)>(v8, v8);
+label4:
+v11 = virtualinvoke v2.<io.netty.buffer.ByteBuf: boolean isReadable()>();
+if v11 == 0 goto label5;
+v12 = virtualinvoke v10.<io.netty.buffer.ByteBuf: int writableBytes()>();
+v13 = virtualinvoke v2.<io.netty.buffer.ByteBuf: int readableBytes()>();
+v14 = staticinvoke <java.lang.Math: int min(int,int)>(v12, v13);
+virtualinvoke v2.<io.netty.buffer.ByteBuf: io.netty.buffer.ByteBuf readBytes(io.netty.buffer.ByteBuf,int)>(v10, v14);
+specialinvoke v0.<io.netty.handler.codec.compression.JdkZlibEncoder: void encodeSome(io.netty.buffer.ByteBuf,io.netty.buffer.ByteBuf)>(v10, v3);
+virtualinvoke v10.<io.netty.buffer.ByteBuf: io.netty.buffer.ByteBuf clear()>();
+goto label4;
+label5:
+virtualinvoke v10.<io.netty.buffer.ByteBuf: boolean release()>();
+goto label7;
+label6:
+v15 := @caughtexception;
+virtualinvoke v10.<io.netty.buffer.ByteBuf: boolean release()>();
+throw v15;
+label7:
+v16 = v0.<io.netty.handler.codec.compression.JdkZlibEncoder: java.util.zip.Deflater deflater>;
+v17 = <io.netty.util.internal.EmptyArrays: byte[] EMPTY_BYTES>;
+virtualinvoke v16.<java.util.zip.Deflater: void setInput(byte[])>(v17);
+return;
+catch java.lang.Throwable from label4 to label5 with label6;
+}
+private void encodeSome(io.netty.buffer.ByteBuf, io.netty.buffer.ByteBuf)
+{
+byte[] v10, v3;
+io.netty.buffer.ByteBuf v1, v2;
+int v11, v17, v4, v5, v6;
+io.netty.handler.codec.compression.JdkZlibEncoder v0;
+boolean v16, v19, v7;
+io.netty.handler.codec.compression.ZlibWrapper v12, v13, v8, v9;
+java.util.zip.Deflater v15, v18;
+java.util.zip.CRC32 v14;
+v0 := @this: io.netty.handler.codec.compression.JdkZlibEncoder;
+v1 := @parameter0: io.netty.buffer.ByteBuf;
+v2 := @parameter1: io.netty.buffer.ByteBuf;
+v3 = virtualinvoke v1.<io.netty.buffer.ByteBuf: byte[] array()>();
+v4 = virtualinvoke v1.<io.netty.buffer.ByteBuf: int arrayOffset()>();
+v5 = virtualinvoke v1.<io.netty.buffer.ByteBuf: int readerIndex()>();
+v6 = v4 + v5;
+v7 = v0.<io.netty.handler.codec.compression.JdkZlibEncoder: boolean writeHeader>;
+if v7 == 0 goto label1;
+v0.<io.netty.handler.codec.compression.JdkZlibEncoder: boolean writeHeader> = 0;
+v8 = v0.<io.netty.handler.codec.compression.JdkZlibEncoder: io.netty.handler.codec.compression.ZlibWrapper wrapper>;
+v9 = <io.netty.handler.codec.compression.ZlibWrapper: io.netty.handler.codec.compression.ZlibWrapper GZIP>;
+if v8 != v9 goto label1;
+v10 = <io.netty.handler.codec.compression.JdkZlibEncoder: byte[] gzipHeader>;
+virtualinvoke v2.<io.netty.buffer.ByteBuf: io.netty.buffer.ByteBuf writeBytes(byte[])>(v10);
+label1:
+v11 = virtualinvoke v1.<io.netty.buffer.ByteBuf: int readableBytes()>();
+v12 = v0.<io.netty.handler.codec.compression.JdkZlibEncoder: io.netty.handler.codec.compression.ZlibWrapper wrapper>;
+v13 = <io.netty.handler.codec.compression.ZlibWrapper: io.netty.handler.codec.compression.ZlibWrapper GZIP>;
+if v12 != v13 goto label2;
+v14 = v0.<io.netty.handler.codec.compression.JdkZlibEncoder: java.util.zip.CRC32 crc>;
+virtualinvoke v14.<java.util.zip.CRC32: void update(byte[],int,int)>(v3, v6, v11);
+label2:
+v15 = v0.<io.netty.handler.codec.compression.JdkZlibEncoder: java.util.zip.Deflater deflater>;
+virtualinvoke v15.<java.util.zip.Deflater: void setInput(byte[],int,int)>(v3, v6, v11);
+label3:
+specialinvoke v0.<io.netty.handler.codec.compression.JdkZlibEncoder: void deflate(io.netty.buffer.ByteBuf)>(v2);
+v16 = virtualinvoke v2.<io.netty.buffer.ByteBuf: boolean isWritable()>();
+if v16 != 0 goto label4;
+v17 = virtualinvoke v2.<io.netty.buffer.ByteBuf: int writerIndex()>();
+virtualinvoke v2.<io.netty.buffer.ByteBuf: io.netty.buffer.ByteBuf ensureWritable(int)>(v17);
+goto label3;
+label4:
+v18 = v0.<io.netty.handler.codec.compression.JdkZlibEncoder: java.util.zip.Deflater deflater>;
+v19 = virtualinvoke v18.<java.util.zip.Deflater: boolean needsInput()>();
+if v19 == 0 goto label3;
+virtualinvoke v1.<io.netty.buffer.ByteBuf: io.netty.buffer.ByteBuf skipBytes(int)>(v11);
+return;
+}
+protected final io.netty.buffer.ByteBuf allocateBuffer(io.netty.channel.ChannelHandlerContext, io.netty.buffer.ByteBuf, boolean) throws java.lang.Exception
+{
+byte[] v13;
+io.netty.buffer.ByteBufAllocator v16, v19;
+io.netty.channel.ChannelHandlerContext v1;
+io.netty.buffer.ByteBuf v18, v2, v20;
+int[] v9;
+int v11, v12, v14, v15, v17, v4, v7;
+io.netty.handler.codec.compression.JdkZlibEncoder v0;
+boolean v3, v8;
+double v5, v6;
+io.netty.handler.codec.compression.ZlibWrapper v10;
+v0 := @this: io.netty.handler.codec.compression.JdkZlibEncoder;
+v1 := @parameter0: io.netty.channel.ChannelHandlerContext;
+v2 := @parameter1: io.netty.buffer.ByteBuf;
+v3 := @parameter2: boolean;
+v4 = virtualinvoke v2.<io.netty.buffer.ByteBuf: int readableBytes()>();
+v5 = v4 * 1.001;
+v6 = staticinvoke <java.lang.Math: double ceil(double)>(v5);
+v7 = v6 + 12;
+v8 = v0.<io.netty.handler.codec.compression.JdkZlibEncoder: boolean writeHeader>;
+if v8 == 0 goto label3;
+v9 = <io.netty.handler.codec.compression.JdkZlibEncoder$2: int[] $SwitchMap$io$netty$handler$codec$compression$ZlibWrapper>;
+v10 = v0.<io.netty.handler.codec.compression.JdkZlibEncoder: io.netty.handler.codec.compression.ZlibWrapper wrapper>;
+v11 = virtualinvoke v10.<io.netty.handler.codec.compression.ZlibWrapper: int ordinal()>();
+v12 = v9[v11];
+lookupswitch(v12)
+{
+case 1: goto label1;
+case 2: goto label2;
+default: goto label3;
+};
+label1:
+v13 = <io.netty.handler.codec.compression.JdkZlibEncoder: byte[] gzipHeader>;
+v14 = lengthof v13;
+v7 = v7 + v14;
+goto label3;
+label2:
+v7 = v7 + 2;
+label3:
+if v7 < 0 goto label4;
+v15 = <io.netty.handler.codec.compression.JdkZlibEncoder: int MAX_INITIAL_OUTPUT_BUFFER_SIZE>;
+if v7 <= v15 goto label5;
+label4:
+v16 = interfaceinvoke v1.<io.netty.channel.ChannelHandlerContext: io.netty.buffer.ByteBufAllocator alloc()>();
+v17 = <io.netty.handler.codec.compression.JdkZlibEncoder: int MAX_INITIAL_OUTPUT_BUFFER_SIZE>;
+v18 = interfaceinvoke v16.<io.netty.buffer.ByteBufAllocator: io.netty.buffer.ByteBuf heapBuffer(int)>(v17);
+return v18;
+label5:
+v19 = interfaceinvoke v1.<io.netty.channel.ChannelHandlerContext: io.netty.buffer.ByteBufAllocator alloc()>();
+v20 = interfaceinvoke v19.<io.netty.buffer.ByteBufAllocator: io.netty.buffer.ByteBuf heapBuffer(int)>(v7);
+return v20;
+}
+public void close(io.netty.channel.ChannelHandlerContext, io.netty.channel.ChannelPromise) throws java.lang.Exception
+{
+io.netty.channel.ChannelHandlerContext v1;
+io.netty.channel.ChannelPromise v2, v3;
+io.netty.handler.codec.compression.JdkZlibEncoder v0;
+io.netty.channel.ChannelFuture v4;
+v0 := @this: io.netty.handler.codec.compression.JdkZlibEncoder;
+v1 := @parameter0: io.netty.channel.ChannelHandlerContext;
+v2 := @parameter1: io.netty.channel.ChannelPromise;
+v3 = interfaceinvoke v1.<io.netty.channel.ChannelHandlerContext: io.netty.channel.ChannelPromise newPromise()>();
+v4 = specialinvoke v0.<io.netty.handler.codec.compression.JdkZlibEncoder: io.netty.channel.ChannelFuture finishEncode(io.netty.channel.ChannelHandlerContext,io.netty.channel.ChannelPromise)>(v1, v3);
+staticinvoke <io.netty.handler.codec.compression.EncoderUtil: void closeAfterFinishEncode(io.netty.channel.ChannelHandlerContext,io.netty.channel.ChannelFuture,io.netty.channel.ChannelPromise)>(v1, v4, v2);
+return;
+}
+private io.netty.channel.ChannelFuture finishEncode(io.netty.channel.ChannelHandlerContext, io.netty.channel.ChannelPromise)
+{
+byte[] v9;
+io.netty.buffer.ByteBufAllocator v14, v4;
+long v18;
+io.netty.channel.ChannelHandlerContext v1;
+io.netty.buffer.ByteBuf v5;
+io.netty.channel.ChannelPromise v2;
+int v20, v21, v22, v23, v24, v25, v26;
+io.netty.handler.codec.compression.JdkZlibEncoder v0;
+boolean v12, v13, v3, v6;
+io.netty.handler.codec.compression.ZlibWrapper v15, v16, v7, v8;
+java.util.zip.Deflater v10, v11, v19, v27;
+io.netty.channel.ChannelFuture v28;
+java.util.zip.CRC32 v17;
+v0 := @this: io.netty.handler.codec.compression.JdkZlibEncoder;
+v1 := @parameter0: io.netty.channel.ChannelHandlerContext;
+v2 := @parameter1: io.netty.channel.ChannelPromise;
+v3 = v0.<io.netty.handler.codec.compression.JdkZlibEncoder: boolean finished>;
+if v3 == 0 goto label1;
+interfaceinvoke v2.<io.netty.channel.ChannelPromise: io.netty.channel.ChannelPromise setSuccess()>();
+return v2;
+label1:
+v0.<io.netty.handler.codec.compression.JdkZlibEncoder: boolean finished> = 1;
+v4 = interfaceinvoke v1.<io.netty.channel.ChannelHandlerContext: io.netty.buffer.ByteBufAllocator alloc()>();
+v5 = interfaceinvoke v4.<io.netty.buffer.ByteBufAllocator: io.netty.buffer.ByteBuf heapBuffer()>();
+v6 = v0.<io.netty.handler.codec.compression.JdkZlibEncoder: boolean writeHeader>;
+if v6 == 0 goto label2;
+v7 = v0.<io.netty.handler.codec.compression.JdkZlibEncoder: io.netty.handler.codec.compression.ZlibWrapper wrapper>;
+v8 = <io.netty.handler.codec.compression.ZlibWrapper: io.netty.handler.codec.compression.ZlibWrapper GZIP>;
+if v7 != v8 goto label2;
+v0.<io.netty.handler.codec.compression.JdkZlibEncoder: boolean writeHeader> = 0;
+v9 = <io.netty.handler.codec.compression.JdkZlibEncoder: byte[] gzipHeader>;
+virtualinvoke v5.<io.netty.buffer.ByteBuf: io.netty.buffer.ByteBuf writeBytes(byte[])>(v9);
+label2:
+v10 = v0.<io.netty.handler.codec.compression.JdkZlibEncoder: java.util.zip.Deflater deflater>;
+virtualinvoke v10.<java.util.zip.Deflater: void finish()>();
+label3:
+v11 = v0.<io.netty.handler.codec.compression.JdkZlibEncoder: java.util.zip.Deflater deflater>;
+v12 = virtualinvoke v11.<java.util.zip.Deflater: boolean finished()>();
+if v12 != 0 goto label4;
+specialinvoke v0.<io.netty.handler.codec.compression.JdkZlibEncoder: void deflate(io.netty.buffer.ByteBuf)>(v5);
+v13 = virtualinvoke v5.<io.netty.buffer.ByteBuf: boolean isWritable()>();
+if v13 != 0 goto label3;
+interfaceinvoke v1.<io.netty.channel.ChannelHandlerContext: io.netty.channel.ChannelFuture write(java.lang.Object)>(v5);
+v14 = interfaceinvoke v1.<io.netty.channel.ChannelHandlerContext: io.netty.buffer.ByteBufAllocator alloc()>();
+v5 = interfaceinvoke v14.<io.netty.buffer.ByteBufAllocator: io.netty.buffer.ByteBuf heapBuffer()>();
+goto label3;
+label4:
+v15 = v0.<io.netty.handler.codec.compression.JdkZlibEncoder: io.netty.handler.codec.compression.ZlibWrapper wrapper>;
+v16 = <io.netty.handler.codec.compression.ZlibWrapper: io.netty.handler.codec.compression.ZlibWrapper GZIP>;
+if v15 != v16 goto label5;
+v17 = v0.<io.netty.handler.codec.compression.JdkZlibEncoder: java.util.zip.CRC32 crc>;
+v18 = virtualinvoke v17.<java.util.zip.CRC32: long getValue()>();
+v19 = v0.<io.netty.handler.codec.compression.JdkZlibEncoder: java.util.zip.Deflater deflater>;
+v20 = virtualinvoke v19.<java.util.zip.Deflater: int getTotalIn()>();
+virtualinvoke v5.<io.netty.buffer.ByteBuf: io.netty.buffer.ByteBuf writeByte(int)>(v18);
+v21 = v18 >>> 8;
+virtualinvoke v5.<io.netty.buffer.ByteBuf: io.netty.buffer.ByteBuf writeByte(int)>(v21);
+v22 = v18 >>> 16;
+virtualinvoke v5.<io.netty.buffer.ByteBuf: io.netty.buffer.ByteBuf writeByte(int)>(v22);
+v23 = v18 >>> 24;
+virtualinvoke v5.<io.netty.buffer.ByteBuf: io.netty.buffer.ByteBuf writeByte(int)>(v23);
+virtualinvoke v5.<io.netty.buffer.ByteBuf: io.netty.buffer.ByteBuf writeByte(int)>(v20);
+v24 = v20 >>> 8;
+virtualinvoke v5.<io.netty.buffer.ByteBuf: io.netty.buffer.ByteBuf writeByte(int)>(v24);
+v25 = v20 >>> 16;
+virtualinvoke v5.<io.netty.buffer.ByteBuf: io.netty.buffer.ByteBuf writeByte(int)>(v25);
+v26 = v20 >>> 24;
+virtualinvoke v5.<io.netty.buffer.ByteBuf: io.netty.buffer.ByteBuf writeByte(int)>(v26);
+label5:
+v27 = v0.<io.netty.handler.codec.compression.JdkZlibEncoder: java.util.zip.Deflater deflater>;
+virtualinvoke v27.<java.util.zip.Deflater: void end()>();
+v28 = interfaceinvoke v1.<io.netty.channel.ChannelHandlerContext: io.netty.channel.ChannelFuture writeAndFlush(java.lang.Object,io.netty.channel.ChannelPromise)>(v5, v2);
+return v28;
+}
+private void deflate(io.netty.buffer.ByteBuf)
+{
+byte[] v5;
+java.util.zip.Deflater v4;
+io.netty.buffer.ByteBuf v1;
+int v10, v2, v3, v6, v7, v8, v9;
+io.netty.handler.codec.compression.JdkZlibEncoder v0;
+v0 := @this: io.netty.handler.codec.compression.JdkZlibEncoder;
+v1 := @parameter0: io.netty.buffer.ByteBuf;
+v2 = staticinvoke <io.netty.util.internal.PlatformDependent: int javaVersion()>();
+if v2 >= 7 goto label1;
+specialinvoke v0.<io.netty.handler.codec.compression.JdkZlibEncoder: void deflateJdk6(io.netty.buffer.ByteBuf)>(v1);
+label1:
+v3 = virtualinvoke v1.<io.netty.buffer.ByteBuf: int writerIndex()>();
+v4 = v0.<io.netty.handler.codec.compression.JdkZlibEncoder: java.util.zip.Deflater deflater>;
+v5 = virtualinvoke v1.<io.netty.buffer.ByteBuf: byte[] array()>();
+v6 = virtualinvoke v1.<io.netty.buffer.ByteBuf: int arrayOffset()>();
+v7 = v6 + v3;
+v8 = virtualinvoke v1.<io.netty.buffer.ByteBuf: int writableBytes()>();
+v9 = virtualinvoke v4.<java.util.zip.Deflater: int deflate(byte[],int,int,int)>(v5, v7, v8, 2);
+v10 = v3 + v9;
+virtualinvoke v1.<io.netty.buffer.ByteBuf: io.netty.buffer.ByteBuf writerIndex(int)>(v10);
+if v9 > 0 goto label1;
+return;
+}
+private void deflateJdk6(io.netty.buffer.ByteBuf)
+{
+byte[] v4;
+java.util.zip.Deflater v3;
+io.netty.buffer.ByteBuf v1;
+int v2, v5, v6, v7, v8, v9;
+io.netty.handler.codec.compression.JdkZlibEncoder v0;
+v0 := @this: io.netty.handler.codec.compression.JdkZlibEncoder;
+v1 := @parameter0: io.netty.buffer.ByteBuf;
+label1:
+v2 = virtualinvoke v1.<io.netty.buffer.ByteBuf: int writerIndex()>();
+v3 = v0.<io.netty.handler.codec.compression.JdkZlibEncoder: java.util.zip.Deflater deflater>;
+v4 = virtualinvoke v1.<io.netty.buffer.ByteBuf: byte[] array()>();
+v5 = virtualinvoke v1.<io.netty.buffer.ByteBuf: int arrayOffset()>();
+v6 = v5 + v2;
+v7 = virtualinvoke v1.<io.netty.buffer.ByteBuf: int writableBytes()>();
+v8 = virtualinvoke v3.<java.util.zip.Deflater: int deflate(byte[],int,int)>(v4, v6, v7);
+v9 = v2 + v8;
+virtualinvoke v1.<io.netty.buffer.ByteBuf: io.netty.buffer.ByteBuf writerIndex(int)>(v9);
+if v8 > 0 goto label1;
+return;
+}
+public void handlerAdded(io.netty.channel.ChannelHandlerContext) throws java.lang.Exception
+{
+io.netty.channel.ChannelHandlerContext v1;
+io.netty.handler.codec.compression.JdkZlibEncoder v0;
+v0 := @this: io.netty.handler.codec.compression.JdkZlibEncoder;
+v1 := @parameter0: io.netty.channel.ChannelHandlerContext;
+v0.<io.netty.handler.codec.compression.JdkZlibEncoder: io.netty.channel.ChannelHandlerContext ctx> = v1;
+return;
+}
+static void <clinit>()
+{
+byte[] v1;
+java.lang.Integer v11, v8;
+io.netty.util.internal.logging.InternalLogger v0, v4, v6, v9;
+int v10, v2, v3, v7;
+boolean v5;
+v0 = staticinvoke <io.netty.util.internal.logging.InternalLoggerFactory: io.netty.util.internal.logging.InternalLogger getInstance(java.lang.Class)>(class "Lio/netty/handler/codec/compression/JdkZlibEncoder;");
+<io.netty.handler.codec.compression.JdkZlibEncoder: io.netty.util.internal.logging.InternalLogger logger> = v0;
+v1 = newarray (byte)[10];
+v1[0] = 31;
+v1[1] = -117;
+v1[2] = 8;
+v1[3] = 0;
+v1[4] = 0;
+v1[5] = 0;
+v1[6] = 0;
+v1[7] = 0;
+v1[8] = 0;
+v1[9] = 0;
+<io.netty.handler.codec.compression.JdkZlibEncoder: byte[] gzipHeader> = v1;
+v2 = staticinvoke <io.netty.util.internal.SystemPropertyUtil: int getInt(java.lang.String,int)>("io.netty.jdkzlib.encoder.maxInitialOutputBufferSize", 65536);
+<io.netty.handler.codec.compression.JdkZlibEncoder: int MAX_INITIAL_OUTPUT_BUFFER_SIZE> = v2;
+v3 = staticinvoke <io.netty.util.internal.SystemPropertyUtil: int getInt(java.lang.String,int)>("io.netty.jdkzlib.encoder.maxInputBufferSize", 65536);
+<io.netty.handler.codec.compression.JdkZlibEncoder: int MAX_INPUT_BUFFER_SIZE> = v3;
+v4 = <io.netty.handler.codec.compression.JdkZlibEncoder: io.netty.util.internal.logging.InternalLogger logger>;
+v5 = interfaceinvoke v4.<io.netty.util.internal.logging.InternalLogger: boolean isDebugEnabled()>();
+if v5 == 0 goto label1;
+v6 = <io.netty.handler.codec.compression.JdkZlibEncoder: io.netty.util.internal.logging.InternalLogger logger>;
+v7 = <io.netty.handler.codec.compression.JdkZlibEncoder: int MAX_INITIAL_OUTPUT_BUFFER_SIZE>;
+v8 = staticinvoke <java.lang.Integer: java.lang.Integer valueOf(int)>(v7);
+interfaceinvoke v6.<io.netty.util.internal.logging.InternalLogger: void debug(java.lang.String,java.lang.Object)>("-Dio.netty.jdkzlib.encoder.maxInitialOutputBufferSize={}", v8);
+v9 = <io.netty.handler.codec.compression.JdkZlibEncoder: io.netty.util.internal.logging.InternalLogger logger>;
+v10 = <io.netty.handler.codec.compression.JdkZlibEncoder: int MAX_INPUT_BUFFER_SIZE>;
+v11 = staticinvoke <java.lang.Integer: java.lang.Integer valueOf(int)>(v10);
+interfaceinvoke v9.<io.netty.util.internal.logging.InternalLogger: void debug(java.lang.String,java.lang.Object)>("-Dio.netty.jdkzlib.encoder.maxInputBufferSize={}", v11);
+label1:
+return;
+}
+}

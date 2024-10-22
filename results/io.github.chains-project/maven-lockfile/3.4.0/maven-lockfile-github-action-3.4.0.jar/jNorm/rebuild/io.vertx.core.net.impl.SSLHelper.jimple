@@ -1,0 +1,238 @@
+public class io.vertx.core.net.impl.SSLHelper extends java.lang.Object
+{
+static final java.util.EnumMap CLIENT_AUTH_MAPPING;
+private final boolean ssl;
+private final boolean sni;
+private final boolean trustAll;
+private final io.vertx.core.http.ClientAuth clientAuth;
+private final boolean client;
+private final boolean useAlpn;
+private final java.lang.String endpointIdentificationAlgorithm;
+private final io.vertx.core.net.SSLEngineOptions sslEngineOptions;
+private final java.util.List applicationProtocols;
+private javax.net.ssl.KeyManagerFactory keyManagerFactory;
+private javax.net.ssl.TrustManagerFactory trustManagerFactory;
+private java.util.function.Function keyManagerFactoryMapper;
+private java.util.function.Function trustManagerMapper;
+private java.util.List crls;
+public static io.vertx.core.net.SSLEngineOptions resolveEngineOptions(io.vertx.core.net.SSLEngineOptions, boolean)
+{
+io.vertx.core.VertxException v13, v16, v9;
+java.lang.Throwable v10;
+io.vertx.core.net.OpenSSLEngineOptions v5;
+io.vertx.core.net.JdkSSLEngineOptions v3, v6;
+boolean v1, v11, v12, v14, v15, v2, v4, v7, v8;
+io.vertx.core.net.SSLEngineOptions v0;
+v0 := @parameter0: io.vertx.core.net.SSLEngineOptions;
+v1 := @parameter1: boolean;
+if v0 != null goto label3;
+if v1 == 0 goto label2;
+v2 = staticinvoke <io.vertx.core.net.JdkSSLEngineOptions: boolean isAlpnAvailable()>();
+if v2 == 0 goto label1;
+v3 = new io.vertx.core.net.JdkSSLEngineOptions;
+specialinvoke v3.<io.vertx.core.net.JdkSSLEngineOptions: void <init>()>();
+v0 = v3;
+goto label2;
+label1:
+v4 = staticinvoke <io.vertx.core.net.OpenSSLEngineOptions: boolean isAlpnAvailable()>();
+if v4 == 0 goto label2;
+v5 = new io.vertx.core.net.OpenSSLEngineOptions;
+specialinvoke v5.<io.vertx.core.net.OpenSSLEngineOptions: void <init>()>();
+v0 = v5;
+label2:
+if v0 != null goto label3;
+v6 = new io.vertx.core.net.JdkSSLEngineOptions;
+specialinvoke v6.<io.vertx.core.net.JdkSSLEngineOptions: void <init>()>();
+v0 = v6;
+goto label5;
+label3:
+v7 = v0 instanceof io.vertx.core.net.OpenSSLEngineOptions;
+if v7 == 0 goto label5;
+v8 = staticinvoke <io.netty.handler.ssl.OpenSsl: boolean isAvailable()>();
+if v8 != 0 goto label5;
+v9 = new io.vertx.core.VertxException;
+specialinvoke v9.<io.vertx.core.VertxException: void <init>(java.lang.String)>("OpenSSL is not available");
+v10 = staticinvoke <io.netty.handler.ssl.OpenSsl: java.lang.Throwable unavailabilityCause()>();
+if v10 == null goto label4;
+virtualinvoke v9.<io.vertx.core.VertxException: java.lang.Throwable initCause(java.lang.Throwable)>(v10);
+label4:
+throw v9;
+label5:
+if v1 == 0 goto label7;
+v11 = v0 instanceof io.vertx.core.net.JdkSSLEngineOptions;
+if v11 == 0 goto label6;
+v12 = staticinvoke <io.vertx.core.net.JdkSSLEngineOptions: boolean isAlpnAvailable()>();
+if v12 != 0 goto label6;
+v13 = new io.vertx.core.VertxException;
+specialinvoke v13.<io.vertx.core.VertxException: void <init>(java.lang.String)>("ALPN not available for JDK SSL/TLS engine");
+throw v13;
+label6:
+v14 = v0 instanceof io.vertx.core.net.OpenSSLEngineOptions;
+if v14 == 0 goto label7;
+v15 = staticinvoke <io.vertx.core.net.OpenSSLEngineOptions: boolean isAlpnAvailable()>();
+if v15 != 0 goto label7;
+v16 = new io.vertx.core.VertxException;
+specialinvoke v16.<io.vertx.core.VertxException: void <init>(java.lang.String)>("ALPN is not available for OpenSSL SSL/TLS engine");
+throw v16;
+label7:
+return v0;
+}
+public void <init>(io.vertx.core.net.TCPSSLOptions, java.util.List)
+{
+java.lang.String v13;
+boolean v10, v12, v14, v15, v16, v4, v5, v6, v7, v8, v9;
+io.vertx.core.net.TCPSSLOptions v1;
+io.vertx.core.net.SSLEngineOptions v3;
+io.vertx.core.net.impl.SSLHelper v0;
+java.util.List v2;
+io.vertx.core.http.ClientAuth v11;
+v0 := @this: io.vertx.core.net.impl.SSLHelper;
+v1 := @parameter0: io.vertx.core.net.TCPSSLOptions;
+v2 := @parameter1: java.util.List;
+specialinvoke v0.<java.lang.Object: void <init>()>();
+v3 = virtualinvoke v1.<io.vertx.core.net.TCPSSLOptions: io.vertx.core.net.SSLEngineOptions getSslEngineOptions()>();
+v0.<io.vertx.core.net.impl.SSLHelper: io.vertx.core.net.SSLEngineOptions sslEngineOptions> = v3;
+v4 = virtualinvoke v1.<io.vertx.core.net.TCPSSLOptions: boolean isSsl()>();
+v0.<io.vertx.core.net.impl.SSLHelper: boolean ssl> = v4;
+v5 = virtualinvoke v1.<io.vertx.core.net.TCPSSLOptions: boolean isUseAlpn()>();
+v0.<io.vertx.core.net.impl.SSLHelper: boolean useAlpn> = v5;
+v6 = v1 instanceof io.vertx.core.net.ClientOptionsBase;
+v0.<io.vertx.core.net.impl.SSLHelper: boolean client> = v6;
+v7 = v1 instanceof io.vertx.core.net.ClientOptionsBase;
+if v7 == 0 goto label1;
+v8 = virtualinvoke v1.<io.vertx.core.net.ClientOptionsBase: boolean isTrustAll()>();
+if v8 == 0 goto label1;
+v9 = 1;
+goto label2;
+label1:
+v9 = 0;
+label2:
+v0.<io.vertx.core.net.impl.SSLHelper: boolean trustAll> = v9;
+v10 = v1 instanceof io.vertx.core.net.NetServerOptions;
+if v10 == 0 goto label3;
+v11 = virtualinvoke v1.<io.vertx.core.net.NetServerOptions: io.vertx.core.http.ClientAuth getClientAuth()>();
+goto label4;
+label3:
+v11 = <io.vertx.core.http.ClientAuth: io.vertx.core.http.ClientAuth NONE>;
+label4:
+v0.<io.vertx.core.net.impl.SSLHelper: io.vertx.core.http.ClientAuth clientAuth> = v11;
+v12 = v1 instanceof io.vertx.core.net.NetClientOptions;
+if v12 == 0 goto label5;
+v13 = virtualinvoke v1.<io.vertx.core.net.NetClientOptions: java.lang.String getHostnameVerificationAlgorithm()>();
+goto label6;
+label5:
+v13 = "";
+label6:
+v0.<io.vertx.core.net.impl.SSLHelper: java.lang.String endpointIdentificationAlgorithm> = v13;
+v14 = v1 instanceof io.vertx.core.net.NetServerOptions;
+if v14 == 0 goto label7;
+v15 = virtualinvoke v1.<io.vertx.core.net.NetServerOptions: boolean isSni()>();
+if v15 == 0 goto label7;
+v16 = 1;
+goto label8;
+label7:
+v16 = 0;
+label8:
+v0.<io.vertx.core.net.impl.SSLHelper: boolean sni> = v16;
+v0.<io.vertx.core.net.impl.SSLHelper: java.util.List applicationProtocols> = v2;
+return;
+}
+public io.vertx.core.Future buildContextProvider(io.vertx.core.net.SSLOptions, io.vertx.core.impl.ContextInternal)
+{
+io.vertx.core.net.SSLOptions v1, v3;
+io.vertx.core.impl.ContextInternal v2;
+io.vertx.core.Future v4, v6;
+java.util.function.Function v5;
+io.vertx.core.net.impl.SSLHelper v0;
+v0 := @this: io.vertx.core.net.impl.SSLHelper;
+v1 := @parameter0: io.vertx.core.net.SSLOptions;
+v2 := @parameter1: io.vertx.core.impl.ContextInternal;
+v3 = new io.vertx.core.net.SSLOptions;
+specialinvoke v3.<io.vertx.core.net.SSLOptions: void <init>(io.vertx.core.net.SSLOptions)>(v1);
+v4 = specialinvoke v0.<io.vertx.core.net.impl.SSLHelper: io.vertx.core.Future build(io.vertx.core.net.SSLOptions,io.vertx.core.impl.ContextInternal)>(v3, v2);
+v5 = staticinvoke <io.vertx.core.net.impl.SSLHelper$sslContextProvider__1383: java.util.function.Function bootstrap$()>();
+v6 = interfaceinvoke v4.<io.vertx.core.Future: io.vertx.core.Future map(java.util.function.Function)>(v5);
+return v6;
+}
+public io.vertx.core.Future buildChannelProvider(io.vertx.core.net.SSLOptions, io.vertx.core.impl.ContextInternal)
+{
+io.vertx.core.net.SSLOptions v1, v3;
+io.vertx.core.impl.ContextInternal v2;
+io.vertx.core.Future v4, v6;
+java.util.function.Function v5;
+io.vertx.core.net.impl.SSLHelper v0;
+v0 := @this: io.vertx.core.net.impl.SSLHelper;
+v1 := @parameter0: io.vertx.core.net.SSLOptions;
+v2 := @parameter1: io.vertx.core.impl.ContextInternal;
+v3 = new io.vertx.core.net.SSLOptions;
+specialinvoke v3.<io.vertx.core.net.SSLOptions: void <init>(io.vertx.core.net.SSLOptions)>(v1);
+v4 = specialinvoke v0.<io.vertx.core.net.impl.SSLHelper: io.vertx.core.Future build(io.vertx.core.net.SSLOptions,io.vertx.core.impl.ContextInternal)>(v3, v2);
+v5 = staticinvoke <io.vertx.core.net.impl.SSLHelper$lambda_buildChannelProvider_0__1384: java.util.function.Function bootstrap$(io.vertx.core.net.impl.SSLHelper,io.vertx.core.impl.ContextInternal)>(v0, v2);
+v6 = interfaceinvoke v4.<io.vertx.core.Future: io.vertx.core.Future map(java.util.function.Function)>(v5);
+return v6;
+}
+private io.vertx.core.Future build(io.vertx.core.net.SSLOptions, io.vertx.core.impl.ContextInternal)
+{
+io.vertx.core.Promise v7;
+io.vertx.core.impl.ContextInternal v2;
+io.vertx.core.Future v10, v12, v8;
+io.vertx.core.net.impl.SSLHelper$EngineConfig v13;
+java.util.function.Function v11;
+java.util.function.Supplier v14;
+io.vertx.core.net.impl.SSLHelper v0;
+io.vertx.core.net.TrustOptions v4;
+io.vertx.core.net.SSLOptions v1;
+io.vertx.core.net.KeyCertOptions v3;
+io.vertx.core.Handler v9;
+boolean v5, v6;
+v0 := @this: io.vertx.core.net.impl.SSLHelper;
+v1 := @parameter0: io.vertx.core.net.SSLOptions;
+v2 := @parameter1: io.vertx.core.impl.ContextInternal;
+v3 = virtualinvoke v1.<io.vertx.core.net.SSLOptions: io.vertx.core.net.KeyCertOptions getKeyCertOptions()>();
+v4 = virtualinvoke v1.<io.vertx.core.net.SSLOptions: io.vertx.core.net.TrustOptions getTrustOptions()>();
+if v3 != null goto label1;
+if v4 != null goto label1;
+v5 = v0.<io.vertx.core.net.impl.SSLHelper: boolean trustAll>;
+if v5 != 0 goto label1;
+v6 = v0.<io.vertx.core.net.impl.SSLHelper: boolean ssl>;
+if v6 == 0 goto label2;
+label1:
+v7 = staticinvoke <io.vertx.core.Promise: io.vertx.core.Promise promise()>();
+v8 = interfaceinvoke v7.<io.vertx.core.Promise: io.vertx.core.Future future()>();
+v9 = staticinvoke <io.vertx.core.net.impl.SSLHelper$lambda_build_2__1385: io.vertx.core.Handler bootstrap$(io.vertx.core.net.impl.SSLHelper,io.vertx.core.net.SSLOptions,io.vertx.core.impl.ContextInternal)>(v0, v1, v2);
+v10 = interfaceinvoke v2.<io.vertx.core.impl.ContextInternal: io.vertx.core.Future executeBlockingInternal(io.vertx.core.Handler)>(v9);
+v11 = staticinvoke <io.vertx.core.net.impl.SSLHelper$lambda_build_4__1386: java.util.function.Function bootstrap$(io.vertx.core.net.impl.SSLHelper,io.vertx.core.impl.ContextInternal,io.vertx.core.net.SSLOptions)>(v0, v2, v1);
+v12 = interfaceinvoke v10.<io.vertx.core.Future: io.vertx.core.Future compose(java.util.function.Function)>(v11);
+interfaceinvoke v12.<io.vertx.core.Future: io.vertx.core.Future onComplete(io.vertx.core.Handler)>(v7);
+goto label3;
+label2:
+v13 = new io.vertx.core.net.impl.SSLHelper$EngineConfig;
+v14 = staticinvoke <io.vertx.core.net.impl.SSLHelper$lambda_build_5__1387: java.util.function.Supplier bootstrap$()>();
+specialinvoke v13.<io.vertx.core.net.impl.SSLHelper$EngineConfig: void <init>(io.vertx.core.net.impl.SSLHelper,io.vertx.core.net.SSLOptions,java.util.function.Supplier,boolean)>(v0, v1, v14, 0);
+v8 = staticinvoke <io.vertx.core.Future: io.vertx.core.Future succeededFuture(java.lang.Object)>(v13);
+label3:
+return v8;
+}
+static void <clinit>()
+{
+java.util.EnumMap v0, v1, v4, v7;
+io.netty.handler.ssl.ClientAuth v3, v6, v9;
+io.vertx.core.http.ClientAuth v2, v5, v8;
+v0 = new java.util.EnumMap;
+specialinvoke v0.<java.util.EnumMap: void <init>(java.lang.Class)>(class "Lio/vertx/core/http/ClientAuth;");
+<io.vertx.core.net.impl.SSLHelper: java.util.EnumMap CLIENT_AUTH_MAPPING> = v0;
+v1 = <io.vertx.core.net.impl.SSLHelper: java.util.EnumMap CLIENT_AUTH_MAPPING>;
+v2 = <io.vertx.core.http.ClientAuth: io.vertx.core.http.ClientAuth REQUIRED>;
+v3 = <io.netty.handler.ssl.ClientAuth: io.netty.handler.ssl.ClientAuth REQUIRE>;
+virtualinvoke v1.<java.util.EnumMap: java.lang.Object put(java.lang.Enum,java.lang.Object)>(v2, v3);
+v4 = <io.vertx.core.net.impl.SSLHelper: java.util.EnumMap CLIENT_AUTH_MAPPING>;
+v5 = <io.vertx.core.http.ClientAuth: io.vertx.core.http.ClientAuth REQUEST>;
+v6 = <io.netty.handler.ssl.ClientAuth: io.netty.handler.ssl.ClientAuth OPTIONAL>;
+virtualinvoke v4.<java.util.EnumMap: java.lang.Object put(java.lang.Enum,java.lang.Object)>(v5, v6);
+v7 = <io.vertx.core.net.impl.SSLHelper: java.util.EnumMap CLIENT_AUTH_MAPPING>;
+v8 = <io.vertx.core.http.ClientAuth: io.vertx.core.http.ClientAuth NONE>;
+v9 = <io.netty.handler.ssl.ClientAuth: io.netty.handler.ssl.ClientAuth NONE>;
+virtualinvoke v7.<java.util.EnumMap: java.lang.Object put(java.lang.Enum,java.lang.Object)>(v8, v9);
+return;
+}
+}

@@ -1,0 +1,358 @@
+class io.vertx.core.impl.DeploymentManager$DeploymentImpl extends java.lang.Object implements io.vertx.core.impl.Deployment
+{
+private static final int ST_DEPLOYED;
+private static final int ST_UNDEPLOYING;
+private static final int ST_UNDEPLOYED;
+private final io.vertx.core.impl.Deployment parent;
+private final java.lang.String deploymentID;
+private final io.vertx.core.json.JsonObject conf;
+private final java.lang.String verticleIdentifier;
+private final java.util.List verticles;
+private final java.util.Set children;
+private final io.vertx.core.DeploymentOptions options;
+private io.vertx.core.Handler undeployHandler;
+private int status;
+private volatile boolean child;
+final io.vertx.core.impl.DeploymentManager this$0;
+private void <init>(io.vertx.core.impl.DeploymentManager, io.vertx.core.impl.Deployment, java.lang.String, java.lang.String, io.vertx.core.DeploymentOptions)
+{
+io.vertx.core.impl.DeploymentManager$DeploymentImpl v0;
+io.vertx.core.impl.ConcurrentHashSet v7;
+io.vertx.core.impl.Deployment v2;
+io.vertx.core.DeploymentOptions v5;
+io.vertx.core.impl.DeploymentManager v1;
+io.vertx.core.json.JsonObject v10, v8, v9;
+java.lang.String v3, v4;
+java.util.concurrent.CopyOnWriteArrayList v6;
+v0 := @this: io.vertx.core.impl.DeploymentManager$DeploymentImpl;
+v1 := @parameter0: io.vertx.core.impl.DeploymentManager;
+v2 := @parameter1: io.vertx.core.impl.Deployment;
+v3 := @parameter2: java.lang.String;
+v4 := @parameter3: java.lang.String;
+v5 := @parameter4: io.vertx.core.DeploymentOptions;
+v0.<io.vertx.core.impl.DeploymentManager$DeploymentImpl: io.vertx.core.impl.DeploymentManager this$0> = v1;
+specialinvoke v0.<java.lang.Object: void <init>()>();
+v6 = new java.util.concurrent.CopyOnWriteArrayList;
+specialinvoke v6.<java.util.concurrent.CopyOnWriteArrayList: void <init>()>();
+v0.<io.vertx.core.impl.DeploymentManager$DeploymentImpl: java.util.List verticles> = v6;
+v7 = new io.vertx.core.impl.ConcurrentHashSet;
+specialinvoke v7.<io.vertx.core.impl.ConcurrentHashSet: void <init>()>();
+v0.<io.vertx.core.impl.DeploymentManager$DeploymentImpl: java.util.Set children> = v7;
+v0.<io.vertx.core.impl.DeploymentManager$DeploymentImpl: int status> = 0;
+v0.<io.vertx.core.impl.DeploymentManager$DeploymentImpl: io.vertx.core.impl.Deployment parent> = v2;
+v0.<io.vertx.core.impl.DeploymentManager$DeploymentImpl: java.lang.String deploymentID> = v3;
+v8 = virtualinvoke v5.<io.vertx.core.DeploymentOptions: io.vertx.core.json.JsonObject getConfig()>();
+if v8 == null goto label1;
+v9 = virtualinvoke v5.<io.vertx.core.DeploymentOptions: io.vertx.core.json.JsonObject getConfig()>();
+v10 = virtualinvoke v9.<io.vertx.core.json.JsonObject: io.vertx.core.json.JsonObject copy()>();
+goto label2;
+label1:
+v10 = new io.vertx.core.json.JsonObject;
+specialinvoke v10.<io.vertx.core.json.JsonObject: void <init>()>();
+label2:
+v0.<io.vertx.core.impl.DeploymentManager$DeploymentImpl: io.vertx.core.json.JsonObject conf> = v10;
+v0.<io.vertx.core.impl.DeploymentManager$DeploymentImpl: java.lang.String verticleIdentifier> = v4;
+v0.<io.vertx.core.impl.DeploymentManager$DeploymentImpl: io.vertx.core.DeploymentOptions options> = v5;
+return;
+}
+public void addVerticle(io.vertx.core.impl.DeploymentManager$VerticleHolder)
+{
+io.vertx.core.impl.DeploymentManager$DeploymentImpl v0;
+java.util.List v2;
+io.vertx.core.impl.DeploymentManager$VerticleHolder v1;
+v0 := @this: io.vertx.core.impl.DeploymentManager$DeploymentImpl;
+v1 := @parameter0: io.vertx.core.impl.DeploymentManager$VerticleHolder;
+v2 = v0.<io.vertx.core.impl.DeploymentManager$DeploymentImpl: java.util.List verticles>;
+interfaceinvoke v2.<java.util.List: boolean add(java.lang.Object)>(v1);
+return;
+}
+private synchronized void rollback(io.vertx.core.impl.ContextInternal, io.vertx.core.Handler, io.vertx.core.impl.ContextBase, io.vertx.core.impl.DeploymentManager$VerticleHolder, java.lang.Throwable)
+{
+io.vertx.core.impl.DeploymentManager$DeploymentImpl v0;
+java.lang.Throwable v5;
+io.vertx.core.impl.ContextInternal v1;
+io.vertx.core.Future v7;
+io.vertx.core.impl.ContextBase v3;
+int v6;
+io.vertx.core.Handler v2, v8;
+io.vertx.core.impl.DeploymentManager$VerticleHolder v4;
+v0 := @this: io.vertx.core.impl.DeploymentManager$DeploymentImpl;
+v1 := @parameter0: io.vertx.core.impl.ContextInternal;
+v2 := @parameter1: io.vertx.core.Handler;
+v3 := @parameter2: io.vertx.core.impl.ContextBase;
+v4 := @parameter3: io.vertx.core.impl.DeploymentManager$VerticleHolder;
+v5 := @parameter4: java.lang.Throwable;
+v6 = v0.<io.vertx.core.impl.DeploymentManager$DeploymentImpl: int status>;
+if v6 != 0 goto label1;
+v0.<io.vertx.core.impl.DeploymentManager$DeploymentImpl: int status> = 1;
+v7 = specialinvoke v0.<io.vertx.core.impl.DeploymentManager$DeploymentImpl: io.vertx.core.Future doUndeployChildren(io.vertx.core.impl.ContextInternal)>(v1);
+v8 = staticinvoke <io.vertx.core.impl.DeploymentManager$DeploymentImpl$lambda_rollback_1__1465: io.vertx.core.Handler bootstrap$(io.vertx.core.impl.DeploymentManager$DeploymentImpl,io.vertx.core.impl.ContextBase,java.lang.Throwable,io.vertx.core.impl.ContextInternal,io.vertx.core.Handler,io.vertx.core.impl.DeploymentManager$VerticleHolder)>(v0, v3, v5, v1, v2, v4);
+interfaceinvoke v7.<io.vertx.core.Future: io.vertx.core.Future onComplete(io.vertx.core.Handler)>(v8);
+label1:
+return;
+}
+private synchronized io.vertx.core.Future doUndeployChildren(io.vertx.core.impl.ContextInternal)
+{
+io.vertx.core.impl.ContextInternal v1;
+java.util.ArrayList v4;
+java.util.HashSet v5;
+io.vertx.core.CompositeFuture v14;
+boolean v3, v8;
+io.vertx.core.impl.DeploymentManager$DeploymentImpl v0;
+java.util.Iterator v7;
+io.vertx.core.Promise v10;
+java.util.Set v2, v6;
+io.vertx.core.Future v11, v12, v15, v16;
+java.lang.Object v9;
+io.vertx.core.Handler v13;
+v0 := @this: io.vertx.core.impl.DeploymentManager$DeploymentImpl;
+v1 := @parameter0: io.vertx.core.impl.ContextInternal;
+v2 = v0.<io.vertx.core.impl.DeploymentManager$DeploymentImpl: java.util.Set children>;
+v3 = interfaceinvoke v2.<java.util.Set: boolean isEmpty()>();
+if v3 != 0 goto label3;
+v4 = new java.util.ArrayList;
+specialinvoke v4.<java.util.ArrayList: void <init>()>();
+v5 = new java.util.HashSet;
+v6 = v0.<io.vertx.core.impl.DeploymentManager$DeploymentImpl: java.util.Set children>;
+specialinvoke v5.<java.util.HashSet: void <init>(java.util.Collection)>(v6);
+v7 = virtualinvoke v5.<java.util.HashSet: java.util.Iterator iterator()>();
+label1:
+v8 = interfaceinvoke v7.<java.util.Iterator: boolean hasNext()>();
+if v8 == 0 goto label2;
+v9 = interfaceinvoke v7.<java.util.Iterator: java.lang.Object next()>();
+v10 = staticinvoke <io.vertx.core.Promise: io.vertx.core.Promise promise()>();
+v11 = interfaceinvoke v10.<io.vertx.core.Promise: io.vertx.core.Future future()>();
+interfaceinvoke v4.<java.util.List: boolean add(java.lang.Object)>(v11);
+v12 = interfaceinvoke v9.<io.vertx.core.impl.Deployment: io.vertx.core.Future doUndeploy(io.vertx.core.impl.ContextInternal)>(v1);
+v13 = staticinvoke <io.vertx.core.impl.DeploymentManager$DeploymentImpl$lambda_doUndeployChildren_2__1466: io.vertx.core.Handler bootstrap$(io.vertx.core.impl.DeploymentManager$DeploymentImpl,io.vertx.core.impl.Deployment,io.vertx.core.Promise)>(v0, v9, v10);
+interfaceinvoke v12.<io.vertx.core.Future: io.vertx.core.Future onComplete(io.vertx.core.Handler)>(v13);
+goto label1;
+label2:
+v14 = staticinvoke <io.vertx.core.CompositeFuture: io.vertx.core.CompositeFuture all(java.util.List)>(v4);
+v15 = interfaceinvoke v14.<io.vertx.core.CompositeFuture: io.vertx.core.Future mapEmpty()>();
+return v15;
+label3:
+v16 = staticinvoke <io.vertx.core.Future: io.vertx.core.Future succeededFuture()>();
+return v16;
+}
+public synchronized io.vertx.core.Future doUndeploy(io.vertx.core.impl.ContextInternal)
+{
+java.lang.IllegalStateException v3;
+io.vertx.core.impl.ContextInternal v1;
+java.util.function.Function v26, v27, v8;
+java.util.ArrayList v10;
+io.vertx.core.CompositeFuture v22;
+int v2;
+boolean v15, v6;
+io.vertx.core.impl.DeploymentManager$DeploymentImpl v0;
+io.vertx.core.impl.future.PromiseInternal v21;
+java.util.Iterator v14;
+io.vertx.core.Promise v18;
+java.util.Set v5;
+io.vertx.core.Future v19, v23, v24, v28, v4, v7, v9;
+java.util.List v13;
+io.vertx.core.impl.ContextBase v17;
+io.vertx.core.impl.Deployment v11, v12;
+java.lang.Object v16;
+io.vertx.core.Handler v20, v25;
+v0 := @this: io.vertx.core.impl.DeploymentManager$DeploymentImpl;
+v1 := @parameter0: io.vertx.core.impl.ContextInternal;
+v2 = v0.<io.vertx.core.impl.DeploymentManager$DeploymentImpl: int status>;
+if v2 != 2 goto label1;
+v3 = new java.lang.IllegalStateException;
+specialinvoke v3.<java.lang.IllegalStateException: void <init>(java.lang.String)>("Already undeployed");
+v4 = staticinvoke <io.vertx.core.Future: io.vertx.core.Future failedFuture(java.lang.Throwable)>(v3);
+return v4;
+label1:
+v5 = v0.<io.vertx.core.impl.DeploymentManager$DeploymentImpl: java.util.Set children>;
+v6 = interfaceinvoke v5.<java.util.Set: boolean isEmpty()>();
+if v6 != 0 goto label2;
+v0.<io.vertx.core.impl.DeploymentManager$DeploymentImpl: int status> = 1;
+v7 = specialinvoke v0.<io.vertx.core.impl.DeploymentManager$DeploymentImpl: io.vertx.core.Future doUndeployChildren(io.vertx.core.impl.ContextInternal)>(v1);
+v8 = staticinvoke <io.vertx.core.impl.DeploymentManager$DeploymentImpl$lambda_doUndeploy_3__1470: java.util.function.Function bootstrap$(io.vertx.core.impl.DeploymentManager$DeploymentImpl,io.vertx.core.impl.ContextInternal)>(v0, v1);
+v9 = interfaceinvoke v7.<io.vertx.core.Future: io.vertx.core.Future compose(java.util.function.Function)>(v8);
+return v9;
+label2:
+v0.<io.vertx.core.impl.DeploymentManager$DeploymentImpl: int status> = 2;
+v10 = new java.util.ArrayList;
+specialinvoke v10.<java.util.ArrayList: void <init>()>();
+v11 = v0.<io.vertx.core.impl.DeploymentManager$DeploymentImpl: io.vertx.core.impl.Deployment parent>;
+if v11 == null goto label3;
+v12 = v0.<io.vertx.core.impl.DeploymentManager$DeploymentImpl: io.vertx.core.impl.Deployment parent>;
+interfaceinvoke v12.<io.vertx.core.impl.Deployment: void removeChild(io.vertx.core.impl.Deployment)>(v0);
+label3:
+v13 = v0.<io.vertx.core.impl.DeploymentManager$DeploymentImpl: java.util.List verticles>;
+v14 = interfaceinvoke v13.<java.util.List: java.util.Iterator iterator()>();
+label4:
+v15 = interfaceinvoke v14.<java.util.Iterator: boolean hasNext()>();
+if v15 == 0 goto label5;
+v16 = interfaceinvoke v14.<java.util.Iterator: java.lang.Object next()>();
+v17 = v16.<io.vertx.core.impl.DeploymentManager$VerticleHolder: io.vertx.core.impl.ContextBase context>;
+v18 = staticinvoke <io.vertx.core.Promise: io.vertx.core.Promise promise()>();
+v19 = interfaceinvoke v18.<io.vertx.core.Promise: io.vertx.core.Future future()>();
+interfaceinvoke v10.<java.util.List: boolean add(java.lang.Object)>(v19);
+v20 = staticinvoke <io.vertx.core.impl.DeploymentManager$DeploymentImpl$lambda_doUndeploy_6__1469: io.vertx.core.Handler bootstrap$(io.vertx.core.impl.DeploymentManager$DeploymentImpl,io.vertx.core.impl.ContextInternal,io.vertx.core.impl.DeploymentManager$VerticleHolder,io.vertx.core.Promise)>(v0, v1, v16, v18);
+virtualinvoke v17.<io.vertx.core.impl.ContextBase: void runOnContext(io.vertx.core.Handler)>(v20);
+goto label4;
+label5:
+v21 = interfaceinvoke v1.<io.vertx.core.impl.ContextInternal: io.vertx.core.impl.future.PromiseInternal promise()>();
+v22 = staticinvoke <io.vertx.core.CompositeFuture: io.vertx.core.CompositeFuture all(java.util.List)>(v10);
+v23 = interfaceinvoke v22.<io.vertx.core.CompositeFuture: io.vertx.core.Future mapEmpty()>();
+interfaceinvoke v23.<io.vertx.core.Future: io.vertx.core.Future onComplete(io.vertx.core.Handler)>(v21);
+v24 = interfaceinvoke v21.<io.vertx.core.Promise: io.vertx.core.Future future()>();
+v25 = v0.<io.vertx.core.impl.DeploymentManager$DeploymentImpl: io.vertx.core.Handler undeployHandler>;
+if v25 == null goto label6;
+v0.<io.vertx.core.impl.DeploymentManager$DeploymentImpl: io.vertx.core.Handler undeployHandler> = null;
+v26 = staticinvoke <io.vertx.core.impl.DeploymentManager$DeploymentImpl$lambda_doUndeploy_7__1467: java.util.function.Function bootstrap$(io.vertx.core.Handler)>(v25);
+v27 = staticinvoke <io.vertx.core.impl.DeploymentManager$DeploymentImpl$lambda_doUndeploy_8__1468: java.util.function.Function bootstrap$(io.vertx.core.Handler)>(v25);
+v28 = interfaceinvoke v24.<io.vertx.core.Future: io.vertx.core.Future compose(java.util.function.Function,java.util.function.Function)>(v26, v27);
+return v28;
+label6:
+return v24;
+}
+public java.lang.String verticleIdentifier()
+{
+io.vertx.core.impl.DeploymentManager$DeploymentImpl v0;
+java.lang.String v1;
+v0 := @this: io.vertx.core.impl.DeploymentManager$DeploymentImpl;
+v1 = v0.<io.vertx.core.impl.DeploymentManager$DeploymentImpl: java.lang.String verticleIdentifier>;
+return v1;
+}
+public io.vertx.core.DeploymentOptions deploymentOptions()
+{
+io.vertx.core.impl.DeploymentManager$DeploymentImpl v0;
+io.vertx.core.DeploymentOptions v1;
+v0 := @this: io.vertx.core.impl.DeploymentManager$DeploymentImpl;
+v1 = v0.<io.vertx.core.impl.DeploymentManager$DeploymentImpl: io.vertx.core.DeploymentOptions options>;
+return v1;
+}
+public io.vertx.core.json.JsonObject config()
+{
+io.vertx.core.impl.DeploymentManager$DeploymentImpl v0;
+io.vertx.core.json.JsonObject v1;
+v0 := @this: io.vertx.core.impl.DeploymentManager$DeploymentImpl;
+v1 = v0.<io.vertx.core.impl.DeploymentManager$DeploymentImpl: io.vertx.core.json.JsonObject conf>;
+return v1;
+}
+public synchronized boolean addChild(io.vertx.core.impl.Deployment)
+{
+io.vertx.core.impl.DeploymentManager$DeploymentImpl v0;
+io.vertx.core.impl.Deployment v1;
+int v2;
+java.util.Set v3;
+v0 := @this: io.vertx.core.impl.DeploymentManager$DeploymentImpl;
+v1 := @parameter0: io.vertx.core.impl.Deployment;
+v2 = v0.<io.vertx.core.impl.DeploymentManager$DeploymentImpl: int status>;
+if v2 != 0 goto label1;
+v3 = v0.<io.vertx.core.impl.DeploymentManager$DeploymentImpl: java.util.Set children>;
+interfaceinvoke v3.<java.util.Set: boolean add(java.lang.Object)>(v1);
+return 1;
+label1:
+return 0;
+}
+public void removeChild(io.vertx.core.impl.Deployment)
+{
+io.vertx.core.impl.DeploymentManager$DeploymentImpl v0;
+java.util.Set v2;
+io.vertx.core.impl.Deployment v1;
+v0 := @this: io.vertx.core.impl.DeploymentManager$DeploymentImpl;
+v1 := @parameter0: io.vertx.core.impl.Deployment;
+v2 = v0.<io.vertx.core.impl.DeploymentManager$DeploymentImpl: java.util.Set children>;
+interfaceinvoke v2.<java.util.Set: boolean remove(java.lang.Object)>(v1);
+return;
+}
+public java.util.Set getContexts()
+{
+io.vertx.core.impl.DeploymentManager$DeploymentImpl v0;
+java.util.HashSet v1;
+java.util.List v2;
+io.vertx.core.impl.ContextBase v6;
+java.util.Iterator v3;
+java.lang.Object v5;
+boolean v4;
+v0 := @this: io.vertx.core.impl.DeploymentManager$DeploymentImpl;
+v1 = new java.util.HashSet;
+specialinvoke v1.<java.util.HashSet: void <init>()>();
+v2 = v0.<io.vertx.core.impl.DeploymentManager$DeploymentImpl: java.util.List verticles>;
+v3 = interfaceinvoke v2.<java.util.List: java.util.Iterator iterator()>();
+label1:
+v4 = interfaceinvoke v3.<java.util.Iterator: boolean hasNext()>();
+if v4 == 0 goto label2;
+v5 = interfaceinvoke v3.<java.util.Iterator: java.lang.Object next()>();
+v6 = v5.<io.vertx.core.impl.DeploymentManager$VerticleHolder: io.vertx.core.impl.ContextBase context>;
+interfaceinvoke v1.<java.util.Set: boolean add(java.lang.Object)>(v6);
+goto label1;
+label2:
+return v1;
+}
+public java.util.Set getVerticles()
+{
+io.vertx.core.impl.DeploymentManager$DeploymentImpl v0;
+java.util.HashSet v1;
+java.util.List v2;
+java.util.Iterator v3;
+java.lang.Object v5;
+io.vertx.core.Verticle v6;
+boolean v4;
+v0 := @this: io.vertx.core.impl.DeploymentManager$DeploymentImpl;
+v1 = new java.util.HashSet;
+specialinvoke v1.<java.util.HashSet: void <init>()>();
+v2 = v0.<io.vertx.core.impl.DeploymentManager$DeploymentImpl: java.util.List verticles>;
+v3 = interfaceinvoke v2.<java.util.List: java.util.Iterator iterator()>();
+label1:
+v4 = interfaceinvoke v3.<java.util.Iterator: boolean hasNext()>();
+if v4 == 0 goto label2;
+v5 = interfaceinvoke v3.<java.util.Iterator: java.lang.Object next()>();
+v6 = v5.<io.vertx.core.impl.DeploymentManager$VerticleHolder: io.vertx.core.Verticle verticle>;
+interfaceinvoke v1.<java.util.Set: boolean add(java.lang.Object)>(v6);
+goto label1;
+label2:
+return v1;
+}
+public void undeployHandler(io.vertx.core.Handler)
+{
+io.vertx.core.impl.DeploymentManager$DeploymentImpl v0;
+java.lang.Throwable v3;
+int v2;
+io.vertx.core.Handler v1;
+v0 := @this: io.vertx.core.impl.DeploymentManager$DeploymentImpl;
+v1 := @parameter0: io.vertx.core.Handler;
+entermonitor v0;
+label1:
+v2 = v0.<io.vertx.core.impl.DeploymentManager$DeploymentImpl: int status>;
+if v2 == 2 goto label3;
+v0.<io.vertx.core.impl.DeploymentManager$DeploymentImpl: io.vertx.core.Handler undeployHandler> = v1;
+exitmonitor v0;
+label2:
+return;
+label3:
+exitmonitor v0;
+label4:
+goto label6;
+label5:
+v3 := @caughtexception;
+exitmonitor v0;
+throw v3;
+label6:
+interfaceinvoke v1.<io.vertx.core.Handler: void handle(java.lang.Object)>(null);
+return;
+catch java.lang.Throwable from label1 to label2 with label5;
+catch java.lang.Throwable from label3 to label4 with label5;
+}
+public boolean isChild()
+{
+io.vertx.core.impl.DeploymentManager$DeploymentImpl v0;
+boolean v1;
+v0 := @this: io.vertx.core.impl.DeploymentManager$DeploymentImpl;
+v1 = v0.<io.vertx.core.impl.DeploymentManager$DeploymentImpl: boolean child>;
+return v1;
+}
+public java.lang.String deploymentID()
+{
+io.vertx.core.impl.DeploymentManager$DeploymentImpl v0;
+java.lang.String v1;
+v0 := @this: io.vertx.core.impl.DeploymentManager$DeploymentImpl;
+v1 = v0.<io.vertx.core.impl.DeploymentManager$DeploymentImpl: java.lang.String deploymentID>;
+return v1;
+}
+}

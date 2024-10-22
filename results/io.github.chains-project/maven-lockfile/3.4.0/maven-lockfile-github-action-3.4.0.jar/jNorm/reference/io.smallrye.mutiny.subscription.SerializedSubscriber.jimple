@@ -1,0 +1,358 @@
+public final class io.smallrye.mutiny.subscription.SerializedSubscriber extends java.lang.Object implements java.util.concurrent.Flow$Subscription, io.smallrye.mutiny.subscription.MultiSubscriber, io.smallrye.mutiny.subscription.ContextSupport
+{
+private final java.util.concurrent.Flow$Subscriber downstream;
+private boolean emitting;
+private boolean missed;
+private volatile boolean done;
+private volatile boolean cancelled;
+private io.smallrye.mutiny.subscription.SerializedSubscriber$LinkedArrayNode head;
+private io.smallrye.mutiny.subscription.SerializedSubscriber$LinkedArrayNode tail;
+private java.lang.Throwable failure;
+private final java.util.concurrent.atomic.AtomicReference upstream;
+public void <init>(java.util.concurrent.Flow$Subscriber)
+{
+java.util.concurrent.Flow$Subscriber v1;
+java.util.concurrent.atomic.AtomicReference v2;
+io.smallrye.mutiny.subscription.SerializedSubscriber v0;
+v0 := @this: io.smallrye.mutiny.subscription.SerializedSubscriber;
+v1 := @parameter0: java.util.concurrent.Flow$Subscriber;
+specialinvoke v0.<java.lang.Object: void <init>()>();
+v2 = new java.util.concurrent.atomic.AtomicReference;
+specialinvoke v2.<java.util.concurrent.atomic.AtomicReference: void <init>()>();
+v0.<io.smallrye.mutiny.subscription.SerializedSubscriber: java.util.concurrent.atomic.AtomicReference upstream> = v2;
+v0.<io.smallrye.mutiny.subscription.SerializedSubscriber: java.util.concurrent.Flow$Subscriber downstream> = v1;
+return;
+}
+public void onSubscribe(java.util.concurrent.Flow$Subscription)
+{
+java.lang.IllegalStateException v5;
+java.util.concurrent.Flow$Subscriber v4;
+io.smallrye.mutiny.subscription.SerializedSubscriber v0;
+java.util.concurrent.atomic.AtomicReference v2;
+boolean v3;
+java.util.concurrent.Flow$Subscription v1;
+v0 := @this: io.smallrye.mutiny.subscription.SerializedSubscriber;
+v1 := @parameter0: java.util.concurrent.Flow$Subscription;
+v2 = v0.<io.smallrye.mutiny.subscription.SerializedSubscriber: java.util.concurrent.atomic.AtomicReference upstream>;
+v3 = virtualinvoke v2.<java.util.concurrent.atomic.AtomicReference: boolean compareAndSet(java.lang.Object,java.lang.Object)>(null, v1);
+if v3 == 0 goto label1;
+v4 = v0.<io.smallrye.mutiny.subscription.SerializedSubscriber: java.util.concurrent.Flow$Subscriber downstream>;
+interfaceinvoke v4.<java.util.concurrent.Flow$Subscriber: void onSubscribe(java.util.concurrent.Flow$Subscription)>(v0);
+goto label2;
+label1:
+interfaceinvoke v1.<java.util.concurrent.Flow$Subscription: void cancel()>();
+v5 = new java.lang.IllegalStateException;
+specialinvoke v5.<java.lang.IllegalStateException: void <init>(java.lang.String)>("Subscription already set");
+staticinvoke <io.smallrye.mutiny.infrastructure.Infrastructure: void handleDroppedException(java.lang.Throwable)>(v5);
+label2:
+return;
+}
+public void onItem(java.lang.Object)
+{
+java.lang.Throwable v7;
+io.smallrye.mutiny.subscription.SerializedSubscriber v0;
+java.util.concurrent.Flow$Subscriber v8, v9;
+java.lang.Object v1;
+boolean v2, v3, v4, v5, v6;
+v0 := @this: io.smallrye.mutiny.subscription.SerializedSubscriber;
+v1 := @parameter0: java.lang.Object;
+virtualinvoke v1.<java.lang.Object: java.lang.Class getClass()>();
+v2 = v0.<io.smallrye.mutiny.subscription.SerializedSubscriber: boolean cancelled>;
+if v2 != 0 goto label01;
+v3 = v0.<io.smallrye.mutiny.subscription.SerializedSubscriber: boolean done>;
+if v3 == 0 goto label02;
+label01:
+return;
+label02:
+entermonitor v0;
+label03:
+v4 = v0.<io.smallrye.mutiny.subscription.SerializedSubscriber: boolean cancelled>;
+if v4 != 0 goto label04;
+v5 = v0.<io.smallrye.mutiny.subscription.SerializedSubscriber: boolean done>;
+if v5 == 0 goto label06;
+label04:
+exitmonitor v0;
+label05:
+return;
+label06:
+v6 = v0.<io.smallrye.mutiny.subscription.SerializedSubscriber: boolean emitting>;
+if v6 == 0 goto label08;
+virtualinvoke v0.<io.smallrye.mutiny.subscription.SerializedSubscriber: void serAdd(java.lang.Object)>(v1);
+v0.<io.smallrye.mutiny.subscription.SerializedSubscriber: boolean missed> = 1;
+exitmonitor v0;
+label07:
+return;
+label08:
+v0.<io.smallrye.mutiny.subscription.SerializedSubscriber: boolean emitting> = 1;
+exitmonitor v0;
+label09:
+goto label11;
+label10:
+v7 := @caughtexception;
+exitmonitor v0;
+throw v7;
+label11:
+v8 = v0.<io.smallrye.mutiny.subscription.SerializedSubscriber: java.util.concurrent.Flow$Subscriber downstream>;
+interfaceinvoke v8.<java.util.concurrent.Flow$Subscriber: void onNext(java.lang.Object)>(v1);
+v9 = v0.<io.smallrye.mutiny.subscription.SerializedSubscriber: java.util.concurrent.Flow$Subscriber downstream>;
+virtualinvoke v0.<io.smallrye.mutiny.subscription.SerializedSubscriber: void serializedDrainLoop(java.util.concurrent.Flow$Subscriber)>(v9);
+return;
+catch java.lang.Throwable from label03 to label05 with label10;
+catch java.lang.Throwable from label06 to label07 with label10;
+catch java.lang.Throwable from label08 to label09 with label10;
+}
+public void onFailure(java.lang.Throwable)
+{
+java.lang.Throwable v1, v7;
+io.smallrye.mutiny.subscription.SerializedSubscriber v0;
+java.util.concurrent.Flow$Subscriber v8;
+boolean v2, v3, v4, v5, v6;
+v0 := @this: io.smallrye.mutiny.subscription.SerializedSubscriber;
+v1 := @parameter0: java.lang.Throwable;
+v2 = v0.<io.smallrye.mutiny.subscription.SerializedSubscriber: boolean cancelled>;
+if v2 != 0 goto label01;
+v3 = v0.<io.smallrye.mutiny.subscription.SerializedSubscriber: boolean done>;
+if v3 == 0 goto label02;
+label01:
+staticinvoke <io.smallrye.mutiny.infrastructure.Infrastructure: void handleDroppedException(java.lang.Throwable)>(v1);
+return;
+label02:
+entermonitor v0;
+label03:
+v4 = v0.<io.smallrye.mutiny.subscription.SerializedSubscriber: boolean cancelled>;
+if v4 != 0 goto label04;
+v5 = v0.<io.smallrye.mutiny.subscription.SerializedSubscriber: boolean done>;
+if v5 == 0 goto label06;
+label04:
+staticinvoke <io.smallrye.mutiny.infrastructure.Infrastructure: void handleDroppedException(java.lang.Throwable)>(v1);
+exitmonitor v0;
+label05:
+return;
+label06:
+v0.<io.smallrye.mutiny.subscription.SerializedSubscriber: boolean done> = 1;
+v0.<io.smallrye.mutiny.subscription.SerializedSubscriber: java.lang.Throwable failure> = v1;
+v6 = v0.<io.smallrye.mutiny.subscription.SerializedSubscriber: boolean emitting>;
+if v6 == 0 goto label08;
+v0.<io.smallrye.mutiny.subscription.SerializedSubscriber: boolean missed> = 1;
+exitmonitor v0;
+label07:
+return;
+label08:
+exitmonitor v0;
+label09:
+goto label11;
+label10:
+v7 := @caughtexception;
+exitmonitor v0;
+throw v7;
+label11:
+v8 = v0.<io.smallrye.mutiny.subscription.SerializedSubscriber: java.util.concurrent.Flow$Subscriber downstream>;
+interfaceinvoke v8.<java.util.concurrent.Flow$Subscriber: void onError(java.lang.Throwable)>(v1);
+return;
+catch java.lang.Throwable from label03 to label05 with label10;
+catch java.lang.Throwable from label06 to label07 with label10;
+catch java.lang.Throwable from label08 to label09 with label10;
+}
+public void onCompletion()
+{
+java.lang.Throwable v6;
+io.smallrye.mutiny.subscription.SerializedSubscriber v0;
+java.util.concurrent.Flow$Subscriber v7;
+boolean v1, v2, v3, v4, v5;
+v0 := @this: io.smallrye.mutiny.subscription.SerializedSubscriber;
+v1 = v0.<io.smallrye.mutiny.subscription.SerializedSubscriber: boolean cancelled>;
+if v1 != 0 goto label01;
+v2 = v0.<io.smallrye.mutiny.subscription.SerializedSubscriber: boolean done>;
+if v2 == 0 goto label02;
+label01:
+return;
+label02:
+entermonitor v0;
+label03:
+v3 = v0.<io.smallrye.mutiny.subscription.SerializedSubscriber: boolean cancelled>;
+if v3 != 0 goto label04;
+v4 = v0.<io.smallrye.mutiny.subscription.SerializedSubscriber: boolean done>;
+if v4 == 0 goto label06;
+label04:
+exitmonitor v0;
+label05:
+return;
+label06:
+v0.<io.smallrye.mutiny.subscription.SerializedSubscriber: boolean done> = 1;
+v5 = v0.<io.smallrye.mutiny.subscription.SerializedSubscriber: boolean emitting>;
+if v5 == 0 goto label08;
+v0.<io.smallrye.mutiny.subscription.SerializedSubscriber: boolean missed> = 1;
+exitmonitor v0;
+label07:
+return;
+label08:
+exitmonitor v0;
+label09:
+goto label11;
+label10:
+v6 := @caughtexception;
+exitmonitor v0;
+throw v6;
+label11:
+v7 = v0.<io.smallrye.mutiny.subscription.SerializedSubscriber: java.util.concurrent.Flow$Subscriber downstream>;
+interfaceinvoke v7.<java.util.concurrent.Flow$Subscriber: void onComplete()>();
+return;
+catch java.lang.Throwable from label03 to label05 with label10;
+catch java.lang.Throwable from label06 to label07 with label10;
+catch java.lang.Throwable from label08 to label09 with label10;
+}
+public void request(long)
+{
+io.smallrye.mutiny.subscription.SerializedSubscriber v0;
+java.lang.Object v3;
+long v1;
+java.util.concurrent.atomic.AtomicReference v2;
+v0 := @this: io.smallrye.mutiny.subscription.SerializedSubscriber;
+v1 := @parameter0: long;
+v2 = v0.<io.smallrye.mutiny.subscription.SerializedSubscriber: java.util.concurrent.atomic.AtomicReference upstream>;
+v3 = virtualinvoke v2.<java.util.concurrent.atomic.AtomicReference: java.lang.Object get()>();
+interfaceinvoke v3.<java.util.concurrent.Flow$Subscription: void request(long)>(v1);
+return;
+}
+public void cancel()
+{
+java.lang.Object v2;
+java.util.concurrent.atomic.AtomicReference v1;
+io.smallrye.mutiny.subscription.SerializedSubscriber v0;
+v0 := @this: io.smallrye.mutiny.subscription.SerializedSubscriber;
+v0.<io.smallrye.mutiny.subscription.SerializedSubscriber: boolean cancelled> = 1;
+v1 = v0.<io.smallrye.mutiny.subscription.SerializedSubscriber: java.util.concurrent.atomic.AtomicReference upstream>;
+v2 = virtualinvoke v1.<java.util.concurrent.atomic.AtomicReference: java.lang.Object get()>();
+interfaceinvoke v2.<java.util.concurrent.Flow$Subscription: void cancel()>();
+return;
+}
+void serAdd(java.lang.Object)
+{
+io.smallrye.mutiny.subscription.SerializedSubscriber$LinkedArrayNode v2, v3, v5;
+java.lang.Object[] v6;
+io.smallrye.mutiny.subscription.SerializedSubscriber v0;
+int v4, v7, v8;
+java.lang.Object v1;
+v0 := @this: io.smallrye.mutiny.subscription.SerializedSubscriber;
+v1 := @parameter0: java.lang.Object;
+v2 = v0.<io.smallrye.mutiny.subscription.SerializedSubscriber: io.smallrye.mutiny.subscription.SerializedSubscriber$LinkedArrayNode tail>;
+if v2 != null goto label1;
+v3 = new io.smallrye.mutiny.subscription.SerializedSubscriber$LinkedArrayNode;
+specialinvoke v3.<io.smallrye.mutiny.subscription.SerializedSubscriber$LinkedArrayNode: void <init>(java.lang.Object)>(v1);
+v0.<io.smallrye.mutiny.subscription.SerializedSubscriber: io.smallrye.mutiny.subscription.SerializedSubscriber$LinkedArrayNode head> = v3;
+v0.<io.smallrye.mutiny.subscription.SerializedSubscriber: io.smallrye.mutiny.subscription.SerializedSubscriber$LinkedArrayNode tail> = v3;
+goto label3;
+label1:
+v4 = v2.<io.smallrye.mutiny.subscription.SerializedSubscriber$LinkedArrayNode: int count>;
+if v4 != 16 goto label2;
+v5 = new io.smallrye.mutiny.subscription.SerializedSubscriber$LinkedArrayNode;
+specialinvoke v5.<io.smallrye.mutiny.subscription.SerializedSubscriber$LinkedArrayNode: void <init>(java.lang.Object)>(v1);
+v2.<io.smallrye.mutiny.subscription.SerializedSubscriber$LinkedArrayNode: io.smallrye.mutiny.subscription.SerializedSubscriber$LinkedArrayNode next> = v5;
+v0.<io.smallrye.mutiny.subscription.SerializedSubscriber: io.smallrye.mutiny.subscription.SerializedSubscriber$LinkedArrayNode tail> = v5;
+goto label3;
+label2:
+v6 = v2.<io.smallrye.mutiny.subscription.SerializedSubscriber$LinkedArrayNode: java.lang.Object[] array>;
+v7 = v2.<io.smallrye.mutiny.subscription.SerializedSubscriber$LinkedArrayNode: int count>;
+v8 = v7 + 1;
+v2.<io.smallrye.mutiny.subscription.SerializedSubscriber$LinkedArrayNode: int count> = v8;
+v6[v7] = v1;
+label3:
+return;
+}
+void serializedDrainLoop(java.util.concurrent.Flow$Subscriber)
+{
+java.lang.Throwable v6, v8;
+io.smallrye.mutiny.subscription.SerializedSubscriber$LinkedArrayNode v7;
+java.lang.Object[] v9;
+io.smallrye.mutiny.subscription.SerializedSubscriber v0;
+java.util.concurrent.Flow$Subscriber v1;
+int v10, v11;
+java.lang.Object v13;
+boolean v12, v14, v2, v3, v4, v5;
+v0 := @this: io.smallrye.mutiny.subscription.SerializedSubscriber;
+v1 := @parameter0: java.util.concurrent.Flow$Subscriber;
+label01:
+v2 = v0.<io.smallrye.mutiny.subscription.SerializedSubscriber: boolean cancelled>;
+if v2 == 0 goto label02;
+return;
+label02:
+entermonitor v0;
+label03:
+v3 = v0.<io.smallrye.mutiny.subscription.SerializedSubscriber: boolean cancelled>;
+if v3 == 0 goto label05;
+exitmonitor v0;
+label04:
+return;
+label05:
+v4 = v0.<io.smallrye.mutiny.subscription.SerializedSubscriber: boolean missed>;
+if v4 != 0 goto label07;
+v0.<io.smallrye.mutiny.subscription.SerializedSubscriber: boolean emitting> = 0;
+exitmonitor v0;
+label06:
+return;
+label07:
+v0.<io.smallrye.mutiny.subscription.SerializedSubscriber: boolean missed> = 0;
+v5 = v0.<io.smallrye.mutiny.subscription.SerializedSubscriber: boolean done>;
+v6 = v0.<io.smallrye.mutiny.subscription.SerializedSubscriber: java.lang.Throwable failure>;
+v7 = v0.<io.smallrye.mutiny.subscription.SerializedSubscriber: io.smallrye.mutiny.subscription.SerializedSubscriber$LinkedArrayNode head>;
+v0.<io.smallrye.mutiny.subscription.SerializedSubscriber: io.smallrye.mutiny.subscription.SerializedSubscriber$LinkedArrayNode head> = null;
+v0.<io.smallrye.mutiny.subscription.SerializedSubscriber: io.smallrye.mutiny.subscription.SerializedSubscriber$LinkedArrayNode tail> = null;
+exitmonitor v0;
+label08:
+goto label10;
+label09:
+v8 := @caughtexception;
+exitmonitor v0;
+throw v8;
+label10:
+if v7 == null goto label14;
+v9 = v7.<io.smallrye.mutiny.subscription.SerializedSubscriber$LinkedArrayNode: java.lang.Object[] array>;
+v10 = v7.<io.smallrye.mutiny.subscription.SerializedSubscriber$LinkedArrayNode: int count>;
+v11 = 0;
+label11:
+if v11 >= v10 goto label13;
+v12 = v0.<io.smallrye.mutiny.subscription.SerializedSubscriber: boolean cancelled>;
+if v12 == 0 goto label12;
+return;
+label12:
+v13 = v9[v11];
+interfaceinvoke v1.<java.util.concurrent.Flow$Subscriber: void onNext(java.lang.Object)>(v13);
+v11 = v11 + 1;
+goto label11;
+label13:
+v7 = v7.<io.smallrye.mutiny.subscription.SerializedSubscriber$LinkedArrayNode: io.smallrye.mutiny.subscription.SerializedSubscriber$LinkedArrayNode next>;
+goto label10;
+label14:
+v14 = v0.<io.smallrye.mutiny.subscription.SerializedSubscriber: boolean cancelled>;
+if v14 == 0 goto label15;
+return;
+label15:
+if v6 == null goto label16;
+interfaceinvoke v1.<java.util.concurrent.Flow$Subscriber: void onError(java.lang.Throwable)>(v6);
+return;
+label16:
+if v5 == 0 goto label01;
+interfaceinvoke v1.<java.util.concurrent.Flow$Subscriber: void onComplete()>();
+return;
+catch java.lang.Throwable from label03 to label04 with label09;
+catch java.lang.Throwable from label05 to label06 with label09;
+catch java.lang.Throwable from label07 to label08 with label09;
+}
+public io.smallrye.mutiny.Context context()
+{
+java.util.concurrent.Flow$Subscriber v1, v3;
+io.smallrye.mutiny.subscription.SerializedSubscriber v0;
+io.smallrye.mutiny.Context v4, v5;
+boolean v2;
+v0 := @this: io.smallrye.mutiny.subscription.SerializedSubscriber;
+v1 = v0.<io.smallrye.mutiny.subscription.SerializedSubscriber: java.util.concurrent.Flow$Subscriber downstream>;
+v2 = v1 instanceof io.smallrye.mutiny.subscription.ContextSupport;
+if v2 == 0 goto label1;
+v3 = v0.<io.smallrye.mutiny.subscription.SerializedSubscriber: java.util.concurrent.Flow$Subscriber downstream>;
+v4 = interfaceinvoke v3.<io.smallrye.mutiny.subscription.ContextSupport: io.smallrye.mutiny.Context context()>();
+return v4;
+label1:
+v5 = staticinvoke <io.smallrye.mutiny.Context: io.smallrye.mutiny.Context empty()>();
+return v5;
+}
+}

@@ -1,0 +1,1079 @@
+public final class io.netty.channel.ChannelOutboundBuffer extends java.lang.Object
+{
+static final int CHANNEL_OUTBOUND_BUFFER_ENTRY_OVERHEAD;
+private static final io.netty.util.internal.logging.InternalLogger logger;
+private static final io.netty.util.concurrent.FastThreadLocal NIO_BUFFERS;
+private final io.netty.channel.Channel channel;
+private io.netty.channel.ChannelOutboundBuffer$Entry flushedEntry;
+private io.netty.channel.ChannelOutboundBuffer$Entry unflushedEntry;
+private io.netty.channel.ChannelOutboundBuffer$Entry tailEntry;
+private int flushed;
+private int nioBufferCount;
+private long nioBufferSize;
+private boolean inFail;
+private static final java.util.concurrent.atomic.AtomicLongFieldUpdater TOTAL_PENDING_SIZE_UPDATER;
+private volatile long totalPendingSize;
+private static final java.util.concurrent.atomic.AtomicIntegerFieldUpdater UNWRITABLE_UPDATER;
+private volatile int unwritable;
+private volatile java.lang.Runnable fireChannelWritabilityChangedTask;
+static final boolean $assertionsDisabled;
+void <init>(io.netty.channel.AbstractChannel)
+{
+io.netty.channel.ChannelOutboundBuffer v0;
+io.netty.channel.AbstractChannel v1;
+v0 := @this: io.netty.channel.ChannelOutboundBuffer;
+v1 := @parameter0: io.netty.channel.AbstractChannel;
+specialinvoke v0.<java.lang.Object: void <init>()>();
+v0.<io.netty.channel.ChannelOutboundBuffer: io.netty.channel.Channel channel> = v1;
+return;
+}
+public void addMessage(java.lang.Object, int, io.netty.channel.ChannelPromise)
+{
+long v4;
+io.netty.channel.ChannelOutboundBuffer v0;
+io.netty.channel.ChannelPromise v3;
+int v2, v9;
+java.lang.Object v1;
+io.netty.channel.ChannelOutboundBuffer$Entry v5, v6, v7, v8;
+v0 := @this: io.netty.channel.ChannelOutboundBuffer;
+v1 := @parameter0: java.lang.Object;
+v2 := @parameter1: int;
+v3 := @parameter2: io.netty.channel.ChannelPromise;
+v4 = staticinvoke <io.netty.channel.ChannelOutboundBuffer: long total(java.lang.Object)>(v1);
+v5 = staticinvoke <io.netty.channel.ChannelOutboundBuffer$Entry: io.netty.channel.ChannelOutboundBuffer$Entry newInstance(java.lang.Object,int,long,io.netty.channel.ChannelPromise)>(v1, v2, v4, v3);
+v6 = v0.<io.netty.channel.ChannelOutboundBuffer: io.netty.channel.ChannelOutboundBuffer$Entry tailEntry>;
+if v6 != null goto label1;
+v0.<io.netty.channel.ChannelOutboundBuffer: io.netty.channel.ChannelOutboundBuffer$Entry flushedEntry> = null;
+goto label2;
+label1:
+v7 = v0.<io.netty.channel.ChannelOutboundBuffer: io.netty.channel.ChannelOutboundBuffer$Entry tailEntry>;
+v7.<io.netty.channel.ChannelOutboundBuffer$Entry: io.netty.channel.ChannelOutboundBuffer$Entry next> = v5;
+label2:
+v0.<io.netty.channel.ChannelOutboundBuffer: io.netty.channel.ChannelOutboundBuffer$Entry tailEntry> = v5;
+v8 = v0.<io.netty.channel.ChannelOutboundBuffer: io.netty.channel.ChannelOutboundBuffer$Entry unflushedEntry>;
+if v8 != null goto label3;
+v0.<io.netty.channel.ChannelOutboundBuffer: io.netty.channel.ChannelOutboundBuffer$Entry unflushedEntry> = v5;
+label3:
+v9 = v5.<io.netty.channel.ChannelOutboundBuffer$Entry: int pendingSize>;
+specialinvoke v0.<io.netty.channel.ChannelOutboundBuffer: void incrementPendingOutboundBytes(long,boolean)>(v9, 0);
+return;
+}
+public void addFlush()
+{
+io.netty.channel.ChannelOutboundBuffer v0;
+io.netty.channel.ChannelPromise v5;
+int v3, v4, v7;
+io.netty.channel.ChannelOutboundBuffer$Entry v1, v2;
+boolean v6;
+v0 := @this: io.netty.channel.ChannelOutboundBuffer;
+v1 = v0.<io.netty.channel.ChannelOutboundBuffer: io.netty.channel.ChannelOutboundBuffer$Entry unflushedEntry>;
+if v1 == null goto label3;
+v2 = v0.<io.netty.channel.ChannelOutboundBuffer: io.netty.channel.ChannelOutboundBuffer$Entry flushedEntry>;
+if v2 != null goto label1;
+v0.<io.netty.channel.ChannelOutboundBuffer: io.netty.channel.ChannelOutboundBuffer$Entry flushedEntry> = v1;
+label1:
+v3 = v0.<io.netty.channel.ChannelOutboundBuffer: int flushed>;
+v4 = v3 + 1;
+v0.<io.netty.channel.ChannelOutboundBuffer: int flushed> = v4;
+v5 = v1.<io.netty.channel.ChannelOutboundBuffer$Entry: io.netty.channel.ChannelPromise promise>;
+v6 = interfaceinvoke v5.<io.netty.channel.ChannelPromise: boolean setUncancellable()>();
+if v6 != 0 goto label2;
+v7 = virtualinvoke v1.<io.netty.channel.ChannelOutboundBuffer$Entry: int cancel()>();
+specialinvoke v0.<io.netty.channel.ChannelOutboundBuffer: void decrementPendingOutboundBytes(long,boolean,boolean)>(v7, 0, 1);
+label2:
+v1 = v1.<io.netty.channel.ChannelOutboundBuffer$Entry: io.netty.channel.ChannelOutboundBuffer$Entry next>;
+if v1 != null goto label1;
+v0.<io.netty.channel.ChannelOutboundBuffer: io.netty.channel.ChannelOutboundBuffer$Entry unflushedEntry> = null;
+label3:
+return;
+}
+void incrementPendingOutboundBytes(long)
+{
+io.netty.channel.ChannelOutboundBuffer v0;
+long v1;
+v0 := @this: io.netty.channel.ChannelOutboundBuffer;
+v1 := @parameter0: long;
+specialinvoke v0.<io.netty.channel.ChannelOutboundBuffer: void incrementPendingOutboundBytes(long,boolean)>(v1, 1);
+return;
+}
+private void incrementPendingOutboundBytes(long, boolean)
+{
+java.util.concurrent.atomic.AtomicLongFieldUpdater v4;
+long v1, v5;
+io.netty.channel.Channel v6;
+io.netty.channel.ChannelOutboundBuffer v0;
+byte v3, v9;
+io.netty.channel.ChannelConfig v7;
+int v8;
+boolean v2;
+v0 := @this: io.netty.channel.ChannelOutboundBuffer;
+v1 := @parameter0: long;
+v2 := @parameter1: boolean;
+v3 = v1 cmp 0L;
+if v3 != 0 goto label1;
+return;
+label1:
+v4 = <io.netty.channel.ChannelOutboundBuffer: java.util.concurrent.atomic.AtomicLongFieldUpdater TOTAL_PENDING_SIZE_UPDATER>;
+v5 = virtualinvoke v4.<java.util.concurrent.atomic.AtomicLongFieldUpdater: long addAndGet(java.lang.Object,long)>(v0, v1);
+v6 = v0.<io.netty.channel.ChannelOutboundBuffer: io.netty.channel.Channel channel>;
+v7 = interfaceinvoke v6.<io.netty.channel.Channel: io.netty.channel.ChannelConfig config()>();
+v8 = interfaceinvoke v7.<io.netty.channel.ChannelConfig: int getWriteBufferHighWaterMark()>();
+v9 = v5 cmp v8;
+if v9 <= 0 goto label2;
+specialinvoke v0.<io.netty.channel.ChannelOutboundBuffer: void setUnwritable(boolean)>(v2);
+label2:
+return;
+}
+void decrementPendingOutboundBytes(long)
+{
+io.netty.channel.ChannelOutboundBuffer v0;
+long v1;
+v0 := @this: io.netty.channel.ChannelOutboundBuffer;
+v1 := @parameter0: long;
+specialinvoke v0.<io.netty.channel.ChannelOutboundBuffer: void decrementPendingOutboundBytes(long,boolean,boolean)>(v1, 1, 1);
+return;
+}
+private void decrementPendingOutboundBytes(long, boolean, boolean)
+{
+java.util.concurrent.atomic.AtomicLongFieldUpdater v5;
+long v1, v6, v7;
+io.netty.channel.Channel v8;
+io.netty.channel.ChannelOutboundBuffer v0;
+byte v11, v4;
+io.netty.channel.ChannelConfig v9;
+int v10;
+boolean v2, v3;
+v0 := @this: io.netty.channel.ChannelOutboundBuffer;
+v1 := @parameter0: long;
+v2 := @parameter1: boolean;
+v3 := @parameter2: boolean;
+v4 = v1 cmp 0L;
+if v4 != 0 goto label1;
+return;
+label1:
+v5 = <io.netty.channel.ChannelOutboundBuffer: java.util.concurrent.atomic.AtomicLongFieldUpdater TOTAL_PENDING_SIZE_UPDATER>;
+v6 = neg v1;
+v7 = virtualinvoke v5.<java.util.concurrent.atomic.AtomicLongFieldUpdater: long addAndGet(java.lang.Object,long)>(v0, v6);
+if v3 == 0 goto label2;
+v8 = v0.<io.netty.channel.ChannelOutboundBuffer: io.netty.channel.Channel channel>;
+v9 = interfaceinvoke v8.<io.netty.channel.Channel: io.netty.channel.ChannelConfig config()>();
+v10 = interfaceinvoke v9.<io.netty.channel.ChannelConfig: int getWriteBufferLowWaterMark()>();
+v11 = v7 cmp v10;
+if v11 >= 0 goto label2;
+specialinvoke v0.<io.netty.channel.ChannelOutboundBuffer: void setWritable(boolean)>(v2);
+label2:
+return;
+}
+private static long total(java.lang.Object)
+{
+long v4;
+io.netty.buffer.ByteBuf v6;
+int v2, v7;
+java.lang.Object v0;
+boolean v1, v3, v5;
+v0 := @parameter0: java.lang.Object;
+v1 = v0 instanceof io.netty.buffer.ByteBuf;
+if v1 == 0 goto label1;
+v2 = virtualinvoke v0.<io.netty.buffer.ByteBuf: int readableBytes()>();
+return v2;
+label1:
+v3 = v0 instanceof io.netty.channel.FileRegion;
+if v3 == 0 goto label2;
+v4 = interfaceinvoke v0.<io.netty.channel.FileRegion: long count()>();
+return v4;
+label2:
+v5 = v0 instanceof io.netty.buffer.ByteBufHolder;
+if v5 == 0 goto label3;
+v6 = interfaceinvoke v0.<io.netty.buffer.ByteBufHolder: io.netty.buffer.ByteBuf content()>();
+v7 = virtualinvoke v6.<io.netty.buffer.ByteBuf: int readableBytes()>();
+return v7;
+label3:
+return -1L;
+}
+public java.lang.Object current()
+{
+io.netty.channel.ChannelOutboundBuffer v0;
+java.lang.Object v2;
+io.netty.channel.ChannelOutboundBuffer$Entry v1;
+v0 := @this: io.netty.channel.ChannelOutboundBuffer;
+v1 = v0.<io.netty.channel.ChannelOutboundBuffer: io.netty.channel.ChannelOutboundBuffer$Entry flushedEntry>;
+if v1 != null goto label1;
+return null;
+label1:
+v2 = v1.<io.netty.channel.ChannelOutboundBuffer$Entry: java.lang.Object msg>;
+return v2;
+}
+public long currentProgress()
+{
+io.netty.channel.ChannelOutboundBuffer v0;
+long v2;
+io.netty.channel.ChannelOutboundBuffer$Entry v1;
+v0 := @this: io.netty.channel.ChannelOutboundBuffer;
+v1 = v0.<io.netty.channel.ChannelOutboundBuffer: io.netty.channel.ChannelOutboundBuffer$Entry flushedEntry>;
+if v1 != null goto label1;
+return 0L;
+label1:
+v2 = v1.<io.netty.channel.ChannelOutboundBuffer$Entry: long progress>;
+return v2;
+}
+public void progress(long)
+{
+long v1, v12, v14, v6, v7;
+java.lang.AssertionError v4, v9;
+io.netty.channel.ChannelOutboundBuffer v0;
+io.netty.channel.ChannelPromise v5;
+java.lang.Class v10;
+io.netty.channel.ChannelOutboundBuffer$Entry v2;
+boolean v11, v13, v3, v8;
+v0 := @this: io.netty.channel.ChannelOutboundBuffer;
+v1 := @parameter0: long;
+v2 = v0.<io.netty.channel.ChannelOutboundBuffer: io.netty.channel.ChannelOutboundBuffer$Entry flushedEntry>;
+v3 = <io.netty.channel.ChannelOutboundBuffer: boolean $assertionsDisabled>;
+if v3 != 0 goto label1;
+if v2 != null goto label1;
+v4 = new java.lang.AssertionError;
+specialinvoke v4.<java.lang.AssertionError: void <init>()>();
+throw v4;
+label1:
+v5 = v2.<io.netty.channel.ChannelOutboundBuffer$Entry: io.netty.channel.ChannelPromise promise>;
+v6 = v2.<io.netty.channel.ChannelOutboundBuffer$Entry: long progress>;
+v7 = v6 + v1;
+v2.<io.netty.channel.ChannelOutboundBuffer$Entry: long progress> = v7;
+v8 = <io.netty.channel.ChannelOutboundBuffer: boolean $assertionsDisabled>;
+if v8 != 0 goto label2;
+if v5 != null goto label2;
+v9 = new java.lang.AssertionError;
+specialinvoke v9.<java.lang.AssertionError: void <init>()>();
+throw v9;
+label2:
+v10 = virtualinvoke v5.<java.lang.Object: java.lang.Class getClass()>();
+if v10 != class "Lio/netty/channel/VoidChannelPromise;" goto label3;
+return;
+label3:
+v11 = v5 instanceof io.netty.channel.DefaultChannelProgressivePromise;
+if v11 == 0 goto label4;
+v12 = v2.<io.netty.channel.ChannelOutboundBuffer$Entry: long total>;
+virtualinvoke v5.<io.netty.channel.DefaultChannelProgressivePromise: boolean tryProgress(long,long)>(v7, v12);
+goto label5;
+label4:
+v13 = v5 instanceof io.netty.channel.ChannelProgressivePromise;
+if v13 == 0 goto label5;
+v14 = v2.<io.netty.channel.ChannelOutboundBuffer$Entry: long total>;
+interfaceinvoke v5.<io.netty.channel.ChannelProgressivePromise: boolean tryProgress(long,long)>(v7, v14);
+label5:
+return;
+}
+public boolean remove()
+{
+io.netty.channel.ChannelOutboundBuffer v0;
+io.netty.channel.ChannelPromise v3;
+int v4;
+java.lang.Object v2;
+io.netty.channel.ChannelOutboundBuffer$Entry v1;
+boolean v5;
+v0 := @this: io.netty.channel.ChannelOutboundBuffer;
+v1 = v0.<io.netty.channel.ChannelOutboundBuffer: io.netty.channel.ChannelOutboundBuffer$Entry flushedEntry>;
+if v1 != null goto label1;
+specialinvoke v0.<io.netty.channel.ChannelOutboundBuffer: void clearNioBuffers()>();
+return 0;
+label1:
+v2 = v1.<io.netty.channel.ChannelOutboundBuffer$Entry: java.lang.Object msg>;
+v3 = v1.<io.netty.channel.ChannelOutboundBuffer$Entry: io.netty.channel.ChannelPromise promise>;
+v4 = v1.<io.netty.channel.ChannelOutboundBuffer$Entry: int pendingSize>;
+specialinvoke v0.<io.netty.channel.ChannelOutboundBuffer: void removeEntry(io.netty.channel.ChannelOutboundBuffer$Entry)>(v1);
+v5 = v1.<io.netty.channel.ChannelOutboundBuffer$Entry: boolean cancelled>;
+if v5 != 0 goto label2;
+staticinvoke <io.netty.util.ReferenceCountUtil: void safeRelease(java.lang.Object)>(v2);
+staticinvoke <io.netty.channel.ChannelOutboundBuffer: void safeSuccess(io.netty.channel.ChannelPromise)>(v3);
+specialinvoke v0.<io.netty.channel.ChannelOutboundBuffer: void decrementPendingOutboundBytes(long,boolean,boolean)>(v4, 0, 1);
+label2:
+virtualinvoke v1.<io.netty.channel.ChannelOutboundBuffer$Entry: void unguardedRecycle()>();
+return 1;
+}
+public boolean remove(java.lang.Throwable)
+{
+io.netty.channel.ChannelOutboundBuffer v0;
+java.lang.Throwable v1;
+boolean v2;
+v0 := @this: io.netty.channel.ChannelOutboundBuffer;
+v1 := @parameter0: java.lang.Throwable;
+v2 = specialinvoke v0.<io.netty.channel.ChannelOutboundBuffer: boolean remove0(java.lang.Throwable,boolean)>(v1, 1);
+return v2;
+}
+private boolean remove0(java.lang.Throwable, boolean)
+{
+java.lang.Throwable v1;
+io.netty.channel.ChannelOutboundBuffer v0;
+io.netty.channel.ChannelPromise v5;
+int v6;
+java.lang.Object v4;
+io.netty.channel.ChannelOutboundBuffer$Entry v3;
+boolean v2, v7;
+v0 := @this: io.netty.channel.ChannelOutboundBuffer;
+v1 := @parameter0: java.lang.Throwable;
+v2 := @parameter1: boolean;
+v3 = v0.<io.netty.channel.ChannelOutboundBuffer: io.netty.channel.ChannelOutboundBuffer$Entry flushedEntry>;
+if v3 != null goto label1;
+specialinvoke v0.<io.netty.channel.ChannelOutboundBuffer: void clearNioBuffers()>();
+return 0;
+label1:
+v4 = v3.<io.netty.channel.ChannelOutboundBuffer$Entry: java.lang.Object msg>;
+v5 = v3.<io.netty.channel.ChannelOutboundBuffer$Entry: io.netty.channel.ChannelPromise promise>;
+v6 = v3.<io.netty.channel.ChannelOutboundBuffer$Entry: int pendingSize>;
+specialinvoke v0.<io.netty.channel.ChannelOutboundBuffer: void removeEntry(io.netty.channel.ChannelOutboundBuffer$Entry)>(v3);
+v7 = v3.<io.netty.channel.ChannelOutboundBuffer$Entry: boolean cancelled>;
+if v7 != 0 goto label2;
+staticinvoke <io.netty.util.ReferenceCountUtil: void safeRelease(java.lang.Object)>(v4);
+staticinvoke <io.netty.channel.ChannelOutboundBuffer: void safeFail(io.netty.channel.ChannelPromise,java.lang.Throwable)>(v5, v1);
+specialinvoke v0.<io.netty.channel.ChannelOutboundBuffer: void decrementPendingOutboundBytes(long,boolean,boolean)>(v6, 0, v2);
+label2:
+virtualinvoke v3.<io.netty.channel.ChannelOutboundBuffer$Entry: void unguardedRecycle()>();
+return 1;
+}
+private void removeEntry(io.netty.channel.ChannelOutboundBuffer$Entry)
+{
+io.netty.channel.ChannelOutboundBuffer v0;
+int v2, v3;
+io.netty.channel.ChannelOutboundBuffer$Entry v1, v4, v5;
+v0 := @this: io.netty.channel.ChannelOutboundBuffer;
+v1 := @parameter0: io.netty.channel.ChannelOutboundBuffer$Entry;
+v2 = v0.<io.netty.channel.ChannelOutboundBuffer: int flushed>;
+v3 = v2 - 1;
+v0.<io.netty.channel.ChannelOutboundBuffer: int flushed> = v3;
+if v3 != 0 goto label1;
+v0.<io.netty.channel.ChannelOutboundBuffer: io.netty.channel.ChannelOutboundBuffer$Entry flushedEntry> = null;
+v4 = v0.<io.netty.channel.ChannelOutboundBuffer: io.netty.channel.ChannelOutboundBuffer$Entry tailEntry>;
+if v1 != v4 goto label2;
+v0.<io.netty.channel.ChannelOutboundBuffer: io.netty.channel.ChannelOutboundBuffer$Entry tailEntry> = null;
+v0.<io.netty.channel.ChannelOutboundBuffer: io.netty.channel.ChannelOutboundBuffer$Entry unflushedEntry> = null;
+goto label2;
+label1:
+v5 = v1.<io.netty.channel.ChannelOutboundBuffer$Entry: io.netty.channel.ChannelOutboundBuffer$Entry next>;
+v0.<io.netty.channel.ChannelOutboundBuffer: io.netty.channel.ChannelOutboundBuffer$Entry flushedEntry> = v5;
+label2:
+return;
+}
+public void removeBytes(long)
+{
+long v1;
+java.lang.AssertionError v6;
+io.netty.channel.ChannelOutboundBuffer v0;
+byte v10, v11, v12, v5;
+int v13, v7, v8, v9;
+java.lang.Object v2;
+boolean v3, v4;
+v0 := @this: io.netty.channel.ChannelOutboundBuffer;
+v1 := @parameter0: long;
+label1:
+v2 = virtualinvoke v0.<io.netty.channel.ChannelOutboundBuffer: java.lang.Object current()>();
+v3 = v2 instanceof io.netty.buffer.ByteBuf;
+if v3 != 0 goto label2;
+v4 = <io.netty.channel.ChannelOutboundBuffer: boolean $assertionsDisabled>;
+if v4 != 0 goto label5;
+v5 = v1 cmp 0L;
+if v5 == 0 goto label5;
+v6 = new java.lang.AssertionError;
+specialinvoke v6.<java.lang.AssertionError: void <init>()>();
+throw v6;
+label2:
+v7 = virtualinvoke v2.<io.netty.buffer.ByteBuf: int readerIndex()>();
+v8 = virtualinvoke v2.<io.netty.buffer.ByteBuf: int writerIndex()>();
+v9 = v8 - v7;
+v10 = v9 cmp v1;
+if v10 > 0 goto label4;
+v11 = v1 cmp 0L;
+if v11 == 0 goto label3;
+virtualinvoke v0.<io.netty.channel.ChannelOutboundBuffer: void progress(long)>(v9);
+v1 = v1 - v9;
+label3:
+virtualinvoke v0.<io.netty.channel.ChannelOutboundBuffer: boolean remove()>();
+goto label1;
+label4:
+v12 = v1 cmp 0L;
+if v12 == 0 goto label5;
+v13 = v7 + v1;
+virtualinvoke v2.<io.netty.buffer.ByteBuf: io.netty.buffer.ByteBuf readerIndex(int)>(v13);
+virtualinvoke v0.<io.netty.channel.ChannelOutboundBuffer: void progress(long)>(v1);
+label5:
+specialinvoke v0.<io.netty.channel.ChannelOutboundBuffer: void clearNioBuffers()>();
+return;
+}
+private void clearNioBuffers()
+{
+io.netty.channel.ChannelOutboundBuffer v0;
+io.netty.util.concurrent.FastThreadLocal v2;
+int v1;
+java.lang.Object v3;
+v0 := @this: io.netty.channel.ChannelOutboundBuffer;
+v1 = v0.<io.netty.channel.ChannelOutboundBuffer: int nioBufferCount>;
+if v1 <= 0 goto label1;
+v0.<io.netty.channel.ChannelOutboundBuffer: int nioBufferCount> = 0;
+v2 = <io.netty.channel.ChannelOutboundBuffer: io.netty.util.concurrent.FastThreadLocal NIO_BUFFERS>;
+v3 = virtualinvoke v2.<io.netty.util.concurrent.FastThreadLocal: java.lang.Object get()>();
+staticinvoke <java.util.Arrays: void fill(java.lang.Object[],int,int,java.lang.Object)>(v3, 0, v1, null);
+label1:
+return;
+}
+public java.nio.ByteBuffer[] nioBuffers()
+{
+io.netty.channel.ChannelOutboundBuffer v0;
+java.nio.ByteBuffer[] v1;
+v0 := @this: io.netty.channel.ChannelOutboundBuffer;
+v1 = virtualinvoke v0.<io.netty.channel.ChannelOutboundBuffer: java.nio.ByteBuffer[] nioBuffers(int,long)>(2147483647, 2147483647L);
+return v1;
+}
+public java.nio.ByteBuffer[] nioBuffers(int, long)
+{
+java.nio.ByteBuffer v31, v32;
+byte v23, v6;
+boolean v14, v16, v17, v3, v5;
+io.netty.channel.ChannelOutboundBuffer v0;
+io.netty.channel.ChannelOutboundBuffer$Entry v13;
+io.netty.util.internal.InternalThreadLocalMap v10;
+long v2, v22, v8;
+java.lang.AssertionError v4, v7;
+io.netty.util.concurrent.FastThreadLocal v11, v30;
+int v1, v19, v20, v21, v24, v25, v26, v27, v28, v29, v33, v9;
+java.lang.Object v12, v15, v18;
+v0 := @this: io.netty.channel.ChannelOutboundBuffer;
+v1 := @parameter0: int;
+v2 := @parameter1: long;
+v3 = <io.netty.channel.ChannelOutboundBuffer: boolean $assertionsDisabled>;
+if v3 != 0 goto label01;
+if v1 > 0 goto label01;
+v4 = new java.lang.AssertionError;
+specialinvoke v4.<java.lang.AssertionError: void <init>()>();
+throw v4;
+label01:
+v5 = <io.netty.channel.ChannelOutboundBuffer: boolean $assertionsDisabled>;
+if v5 != 0 goto label02;
+v6 = v2 cmp 0L;
+if v6 > 0 goto label02;
+v7 = new java.lang.AssertionError;
+specialinvoke v7.<java.lang.AssertionError: void <init>()>();
+throw v7;
+label02:
+v8 = 0L;
+v9 = 0;
+v10 = staticinvoke <io.netty.util.internal.InternalThreadLocalMap: io.netty.util.internal.InternalThreadLocalMap get()>();
+v11 = <io.netty.channel.ChannelOutboundBuffer: io.netty.util.concurrent.FastThreadLocal NIO_BUFFERS>;
+v12 = virtualinvoke v11.<io.netty.util.concurrent.FastThreadLocal: java.lang.Object get(io.netty.util.internal.InternalThreadLocalMap)>(v10);
+v13 = v0.<io.netty.channel.ChannelOutboundBuffer: io.netty.channel.ChannelOutboundBuffer$Entry flushedEntry>;
+label03:
+v14 = specialinvoke v0.<io.netty.channel.ChannelOutboundBuffer: boolean isFlushedEntry(io.netty.channel.ChannelOutboundBuffer$Entry)>(v13);
+if v14 == 0 goto label11;
+v15 = v13.<io.netty.channel.ChannelOutboundBuffer$Entry: java.lang.Object msg>;
+v16 = v15 instanceof io.netty.buffer.ByteBuf;
+if v16 == 0 goto label11;
+v17 = v13.<io.netty.channel.ChannelOutboundBuffer$Entry: boolean cancelled>;
+if v17 != 0 goto label10;
+v18 = v13.<io.netty.channel.ChannelOutboundBuffer$Entry: java.lang.Object msg>;
+v19 = virtualinvoke v18.<io.netty.buffer.ByteBuf: int readerIndex()>();
+v20 = virtualinvoke v18.<io.netty.buffer.ByteBuf: int writerIndex()>();
+v21 = v20 - v19;
+if v21 <= 0 goto label10;
+v22 = v2 - v21;
+v23 = v22 cmp v8;
+if v23 >= 0 goto label04;
+if v9 != 0 goto label11;
+label04:
+v8 = v8 + v21;
+v24 = v13.<io.netty.channel.ChannelOutboundBuffer$Entry: int count>;
+v25 = (int) -1;
+if v24 != v25 goto label05;
+v26 = virtualinvoke v18.<io.netty.buffer.ByteBuf: int nioBufferCount()>();
+v24 = v26;
+v13.<io.netty.channel.ChannelOutboundBuffer$Entry: int count> = v26;
+label05:
+v27 = v9 + v24;
+v28 = staticinvoke <java.lang.Math: int min(int,int)>(v1, v27);
+v29 = lengthof v12;
+if v28 <= v29 goto label06;
+v12 = staticinvoke <io.netty.channel.ChannelOutboundBuffer: java.nio.ByteBuffer[] expandNioBufferArray(java.nio.ByteBuffer[],int,int)>(v12, v28, v9);
+v30 = <io.netty.channel.ChannelOutboundBuffer: io.netty.util.concurrent.FastThreadLocal NIO_BUFFERS>;
+virtualinvoke v30.<io.netty.util.concurrent.FastThreadLocal: void set(io.netty.util.internal.InternalThreadLocalMap,java.lang.Object)>(v10, v12);
+label06:
+if v24 != 1 goto label08;
+v31 = v13.<io.netty.channel.ChannelOutboundBuffer$Entry: java.nio.ByteBuffer buf>;
+if v31 != null goto label07;
+v32 = virtualinvoke v18.<io.netty.buffer.ByteBuf: java.nio.ByteBuffer internalNioBuffer(int,int)>(v19, v21);
+v31 = v32;
+v13.<io.netty.channel.ChannelOutboundBuffer$Entry: java.nio.ByteBuffer buf> = v32;
+label07:
+v33 = v9;
+v9 = v9 + 1;
+v12[v33] = v31;
+goto label09;
+label08:
+v9 = staticinvoke <io.netty.channel.ChannelOutboundBuffer: int nioBuffers(io.netty.channel.ChannelOutboundBuffer$Entry,io.netty.buffer.ByteBuf,java.nio.ByteBuffer[],int,int)>(v13, v18, v12, v9, v1);
+label09:
+if v9 >= v1 goto label11;
+label10:
+v13 = v13.<io.netty.channel.ChannelOutboundBuffer$Entry: io.netty.channel.ChannelOutboundBuffer$Entry next>;
+goto label03;
+label11:
+v0.<io.netty.channel.ChannelOutboundBuffer: int nioBufferCount> = v9;
+v0.<io.netty.channel.ChannelOutboundBuffer: long nioBufferSize> = v8;
+return v12;
+}
+private static int nioBuffers(io.netty.channel.ChannelOutboundBuffer$Entry, io.netty.buffer.ByteBuf, java.nio.ByteBuffer[], int, int)
+{
+java.nio.ByteBuffer[] v2, v5, v6;
+java.nio.ByteBuffer v9;
+io.netty.buffer.ByteBuf v1;
+int v11, v3, v4, v7, v8;
+io.netty.channel.ChannelOutboundBuffer$Entry v0;
+boolean v10;
+v0 := @parameter0: io.netty.channel.ChannelOutboundBuffer$Entry;
+v1 := @parameter1: io.netty.buffer.ByteBuf;
+v2 := @parameter2: java.nio.ByteBuffer[];
+v3 := @parameter3: int;
+v4 := @parameter4: int;
+v5 = v0.<io.netty.channel.ChannelOutboundBuffer$Entry: java.nio.ByteBuffer[] bufs>;
+if v5 != null goto label1;
+v6 = virtualinvoke v1.<io.netty.buffer.ByteBuf: java.nio.ByteBuffer[] nioBuffers()>();
+v5 = v6;
+v0.<io.netty.channel.ChannelOutboundBuffer$Entry: java.nio.ByteBuffer[] bufs> = v6;
+label1:
+v7 = 0;
+label2:
+v8 = lengthof v5;
+if v7 >= v8 goto label4;
+if v3 >= v4 goto label4;
+v9 = v5[v7];
+if v9 == null goto label4;
+v10 = virtualinvoke v9.<java.nio.ByteBuffer: boolean hasRemaining()>();
+if v10 == 0 goto label3;
+v11 = v3;
+v3 = v3 + 1;
+v2[v11] = v9;
+label3:
+v7 = v7 + 1;
+goto label2;
+label4:
+return v3;
+}
+private static java.nio.ByteBuffer[] expandNioBufferArray(java.nio.ByteBuffer[], int, int)
+{
+java.lang.IllegalStateException v4;
+java.nio.ByteBuffer[] v0, v5;
+int v1, v2, v3;
+v0 := @parameter0: java.nio.ByteBuffer[];
+v1 := @parameter1: int;
+v2 := @parameter2: int;
+v3 = lengthof v0;
+label1:
+v3 = v3 << 1;
+if v3 >= 0 goto label2;
+v4 = new java.lang.IllegalStateException;
+specialinvoke v4.<java.lang.IllegalStateException: void <init>()>();
+throw v4;
+label2:
+if v1 > v3 goto label1;
+v5 = newarray (java.nio.ByteBuffer)[v3];
+staticinvoke <java.lang.System: void arraycopy(java.lang.Object,int,java.lang.Object,int,int)>(v0, 0, v5, 0, v2);
+return v5;
+}
+public int nioBufferCount()
+{
+int v1;
+io.netty.channel.ChannelOutboundBuffer v0;
+v0 := @this: io.netty.channel.ChannelOutboundBuffer;
+v1 = v0.<io.netty.channel.ChannelOutboundBuffer: int nioBufferCount>;
+return v1;
+}
+public long nioBufferSize()
+{
+io.netty.channel.ChannelOutboundBuffer v0;
+long v1;
+v0 := @this: io.netty.channel.ChannelOutboundBuffer;
+v1 = v0.<io.netty.channel.ChannelOutboundBuffer: long nioBufferSize>;
+return v1;
+}
+public boolean isWritable()
+{
+int v1;
+io.netty.channel.ChannelOutboundBuffer v0;
+boolean v2;
+v0 := @this: io.netty.channel.ChannelOutboundBuffer;
+v1 = v0.<io.netty.channel.ChannelOutboundBuffer: int unwritable>;
+if v1 != 0 goto label1;
+v2 = 1;
+goto label2;
+label1:
+v2 = 0;
+label2:
+return v2;
+}
+public boolean getUserDefinedWritability(int)
+{
+io.netty.channel.ChannelOutboundBuffer v0;
+int v1, v2, v3, v4;
+boolean v5;
+v0 := @this: io.netty.channel.ChannelOutboundBuffer;
+v1 := @parameter0: int;
+v2 = v0.<io.netty.channel.ChannelOutboundBuffer: int unwritable>;
+v3 = staticinvoke <io.netty.channel.ChannelOutboundBuffer: int writabilityMask(int)>(v1);
+v4 = v2 & v3;
+if v4 != 0 goto label1;
+v5 = 1;
+goto label2;
+label1:
+v5 = 0;
+label2:
+return v5;
+}
+public void setUserDefinedWritability(int, boolean)
+{
+int v1;
+io.netty.channel.ChannelOutboundBuffer v0;
+boolean v2;
+v0 := @this: io.netty.channel.ChannelOutboundBuffer;
+v1 := @parameter0: int;
+v2 := @parameter1: boolean;
+if v2 == 0 goto label1;
+specialinvoke v0.<io.netty.channel.ChannelOutboundBuffer: void setUserDefinedWritability(int)>(v1);
+goto label2;
+label1:
+specialinvoke v0.<io.netty.channel.ChannelOutboundBuffer: void clearUserDefinedWritability(int)>(v1);
+label2:
+return;
+}
+private void setUserDefinedWritability(int)
+{
+java.util.concurrent.atomic.AtomicIntegerFieldUpdater v7;
+io.netty.channel.ChannelOutboundBuffer v0;
+int v1, v2, v3, v4, v5, v6;
+boolean v8;
+v0 := @this: io.netty.channel.ChannelOutboundBuffer;
+v1 := @parameter0: int;
+v2 = staticinvoke <io.netty.channel.ChannelOutboundBuffer: int writabilityMask(int)>(v1);
+v3 = (int) -1;
+v4 = v2 ^ v3;
+label1:
+v5 = v0.<io.netty.channel.ChannelOutboundBuffer: int unwritable>;
+v6 = v5 & v4;
+v7 = <io.netty.channel.ChannelOutboundBuffer: java.util.concurrent.atomic.AtomicIntegerFieldUpdater UNWRITABLE_UPDATER>;
+v8 = virtualinvoke v7.<java.util.concurrent.atomic.AtomicIntegerFieldUpdater: boolean compareAndSet(java.lang.Object,int,int)>(v0, v5, v6);
+if v8 == 0 goto label1;
+if v5 == 0 goto label2;
+if v6 != 0 goto label2;
+specialinvoke v0.<io.netty.channel.ChannelOutboundBuffer: void fireChannelWritabilityChanged(boolean)>(1);
+label2:
+return;
+}
+private void clearUserDefinedWritability(int)
+{
+io.netty.channel.ChannelOutboundBuffer v0;
+java.util.concurrent.atomic.AtomicIntegerFieldUpdater v5;
+int v1, v2, v3, v4;
+boolean v6;
+v0 := @this: io.netty.channel.ChannelOutboundBuffer;
+v1 := @parameter0: int;
+v2 = staticinvoke <io.netty.channel.ChannelOutboundBuffer: int writabilityMask(int)>(v1);
+label1:
+v3 = v0.<io.netty.channel.ChannelOutboundBuffer: int unwritable>;
+v4 = v3 | v2;
+v5 = <io.netty.channel.ChannelOutboundBuffer: java.util.concurrent.atomic.AtomicIntegerFieldUpdater UNWRITABLE_UPDATER>;
+v6 = virtualinvoke v5.<java.util.concurrent.atomic.AtomicIntegerFieldUpdater: boolean compareAndSet(java.lang.Object,int,int)>(v0, v3, v4);
+if v6 == 0 goto label1;
+if v3 != 0 goto label2;
+if v4 == 0 goto label2;
+specialinvoke v0.<io.netty.channel.ChannelOutboundBuffer: void fireChannelWritabilityChanged(boolean)>(1);
+label2:
+return;
+}
+private static int writabilityMask(int)
+{
+int v0, v3;
+java.lang.String v2;
+java.lang.IllegalArgumentException v1;
+v0 := @parameter0: int;
+if v0 < 1 goto label1;
+if v0 <= 31 goto label2;
+label1:
+v1 = new java.lang.IllegalArgumentException;
+v2 = dynamicinvoke "makeConcatWithConstants" <java.lang.String (int)>(v0) <java.lang.invoke.StringConcatFactory: java.lang.invoke.CallSite makeConcatWithConstants(java.lang.invoke.MethodHandles$Lookup,java.lang.String,java.lang.invoke.MethodType,java.lang.String,java.lang.Object[])>("index: \u0001 (expected: 1~31)");
+specialinvoke v1.<java.lang.IllegalArgumentException: void <init>(java.lang.String)>(v2);
+throw v1;
+label2:
+v3 = 1 << v0;
+return v3;
+}
+private void setWritable(boolean)
+{
+io.netty.channel.ChannelOutboundBuffer v0;
+java.util.concurrent.atomic.AtomicIntegerFieldUpdater v5;
+int v2, v3, v4;
+boolean v1, v6;
+v0 := @this: io.netty.channel.ChannelOutboundBuffer;
+v1 := @parameter0: boolean;
+label1:
+v2 = v0.<io.netty.channel.ChannelOutboundBuffer: int unwritable>;
+v3 = (int) -2;
+v4 = v2 & v3;
+v5 = <io.netty.channel.ChannelOutboundBuffer: java.util.concurrent.atomic.AtomicIntegerFieldUpdater UNWRITABLE_UPDATER>;
+v6 = virtualinvoke v5.<java.util.concurrent.atomic.AtomicIntegerFieldUpdater: boolean compareAndSet(java.lang.Object,int,int)>(v0, v2, v4);
+if v6 == 0 goto label1;
+if v2 == 0 goto label2;
+if v4 != 0 goto label2;
+specialinvoke v0.<io.netty.channel.ChannelOutboundBuffer: void fireChannelWritabilityChanged(boolean)>(v1);
+label2:
+return;
+}
+private void setUnwritable(boolean)
+{
+io.netty.channel.ChannelOutboundBuffer v0;
+java.util.concurrent.atomic.AtomicIntegerFieldUpdater v4;
+int v2, v3;
+boolean v1, v5;
+v0 := @this: io.netty.channel.ChannelOutboundBuffer;
+v1 := @parameter0: boolean;
+label1:
+v2 = v0.<io.netty.channel.ChannelOutboundBuffer: int unwritable>;
+v3 = v2 | 1;
+v4 = <io.netty.channel.ChannelOutboundBuffer: java.util.concurrent.atomic.AtomicIntegerFieldUpdater UNWRITABLE_UPDATER>;
+v5 = virtualinvoke v4.<java.util.concurrent.atomic.AtomicIntegerFieldUpdater: boolean compareAndSet(java.lang.Object,int,int)>(v0, v2, v3);
+if v5 == 0 goto label1;
+if v2 != 0 goto label2;
+specialinvoke v0.<io.netty.channel.ChannelOutboundBuffer: void fireChannelWritabilityChanged(boolean)>(v1);
+label2:
+return;
+}
+private void fireChannelWritabilityChanged(boolean)
+{
+io.netty.channel.ChannelPipeline v3;
+io.netty.channel.EventLoop v7;
+java.lang.Runnable v4;
+io.netty.channel.Channel v2, v6;
+io.netty.channel.ChannelOutboundBuffer v0;
+io.netty.channel.ChannelOutboundBuffer$2 v5;
+boolean v1;
+v0 := @this: io.netty.channel.ChannelOutboundBuffer;
+v1 := @parameter0: boolean;
+v2 = v0.<io.netty.channel.ChannelOutboundBuffer: io.netty.channel.Channel channel>;
+v3 = interfaceinvoke v2.<io.netty.channel.Channel: io.netty.channel.ChannelPipeline pipeline()>();
+if v1 == 0 goto label2;
+v4 = v0.<io.netty.channel.ChannelOutboundBuffer: java.lang.Runnable fireChannelWritabilityChangedTask>;
+if v4 != null goto label1;
+v5 = new io.netty.channel.ChannelOutboundBuffer$2;
+specialinvoke v5.<io.netty.channel.ChannelOutboundBuffer$2: void <init>(io.netty.channel.ChannelOutboundBuffer,io.netty.channel.ChannelPipeline)>(v0, v3);
+v4 = v5;
+v0.<io.netty.channel.ChannelOutboundBuffer: java.lang.Runnable fireChannelWritabilityChangedTask> = v5;
+label1:
+v6 = v0.<io.netty.channel.ChannelOutboundBuffer: io.netty.channel.Channel channel>;
+v7 = interfaceinvoke v6.<io.netty.channel.Channel: io.netty.channel.EventLoop eventLoop()>();
+interfaceinvoke v7.<io.netty.channel.EventLoop: void execute(java.lang.Runnable)>(v4);
+goto label3;
+label2:
+interfaceinvoke v3.<io.netty.channel.ChannelPipeline: io.netty.channel.ChannelPipeline fireChannelWritabilityChanged()>();
+label3:
+return;
+}
+public int size()
+{
+int v1;
+io.netty.channel.ChannelOutboundBuffer v0;
+v0 := @this: io.netty.channel.ChannelOutboundBuffer;
+v1 = v0.<io.netty.channel.ChannelOutboundBuffer: int flushed>;
+return v1;
+}
+public boolean isEmpty()
+{
+int v1;
+io.netty.channel.ChannelOutboundBuffer v0;
+boolean v2;
+v0 := @this: io.netty.channel.ChannelOutboundBuffer;
+v1 = v0.<io.netty.channel.ChannelOutboundBuffer: int flushed>;
+if v1 != 0 goto label1;
+v2 = 1;
+goto label2;
+label1:
+v2 = 0;
+label2:
+return v2;
+}
+void failFlushed(java.lang.Throwable, boolean)
+{
+io.netty.channel.ChannelOutboundBuffer v0;
+java.lang.Throwable v1, v5;
+boolean v2, v3, v4;
+v0 := @this: io.netty.channel.ChannelOutboundBuffer;
+v1 := @parameter0: java.lang.Throwable;
+v2 := @parameter1: boolean;
+v3 = v0.<io.netty.channel.ChannelOutboundBuffer: boolean inFail>;
+if v3 == 0 goto label1;
+return;
+label1:
+v0.<io.netty.channel.ChannelOutboundBuffer: boolean inFail> = 1;
+label2:
+v4 = specialinvoke v0.<io.netty.channel.ChannelOutboundBuffer: boolean remove0(java.lang.Throwable,boolean)>(v1, v2);
+if v4 != 0 goto label2;
+label3:
+v0.<io.netty.channel.ChannelOutboundBuffer: boolean inFail> = 0;
+goto label5;
+label4:
+v5 := @caughtexception;
+v0.<io.netty.channel.ChannelOutboundBuffer: boolean inFail> = 0;
+throw v5;
+label5:
+return;
+catch java.lang.Throwable from label1 to label3 with label4;
+}
+void close(java.lang.Throwable, boolean)
+{
+java.lang.Throwable v1, v19;
+java.lang.IllegalStateException v11, v9;
+io.netty.channel.ChannelPromise v18;
+int v13, v15;
+boolean v10, v16, v2, v3, v8;
+io.netty.channel.ChannelOutboundBuffer$3 v6;
+java.util.concurrent.atomic.AtomicLongFieldUpdater v14;
+io.netty.channel.EventLoop v5;
+io.netty.channel.Channel v4, v7;
+io.netty.channel.ChannelOutboundBuffer v0;
+java.lang.Object v17;
+io.netty.channel.ChannelOutboundBuffer$Entry v12;
+v0 := @this: io.netty.channel.ChannelOutboundBuffer;
+v1 := @parameter0: java.lang.Throwable;
+v2 := @parameter1: boolean;
+v3 = v0.<io.netty.channel.ChannelOutboundBuffer: boolean inFail>;
+if v3 == 0 goto label1;
+v4 = v0.<io.netty.channel.ChannelOutboundBuffer: io.netty.channel.Channel channel>;
+v5 = interfaceinvoke v4.<io.netty.channel.Channel: io.netty.channel.EventLoop eventLoop()>();
+v6 = new io.netty.channel.ChannelOutboundBuffer$3;
+specialinvoke v6.<io.netty.channel.ChannelOutboundBuffer$3: void <init>(io.netty.channel.ChannelOutboundBuffer,java.lang.Throwable,boolean)>(v0, v1, v2);
+interfaceinvoke v5.<io.netty.channel.EventLoop: void execute(java.lang.Runnable)>(v6);
+return;
+label1:
+v0.<io.netty.channel.ChannelOutboundBuffer: boolean inFail> = 1;
+if v2 != 0 goto label2;
+v7 = v0.<io.netty.channel.ChannelOutboundBuffer: io.netty.channel.Channel channel>;
+v8 = interfaceinvoke v7.<io.netty.channel.Channel: boolean isOpen()>();
+if v8 == 0 goto label2;
+v9 = new java.lang.IllegalStateException;
+specialinvoke v9.<java.lang.IllegalStateException: void <init>(java.lang.String)>("close() must be invoked after the channel is closed.");
+throw v9;
+label2:
+v10 = virtualinvoke v0.<io.netty.channel.ChannelOutboundBuffer: boolean isEmpty()>();
+if v10 != 0 goto label3;
+v11 = new java.lang.IllegalStateException;
+specialinvoke v11.<java.lang.IllegalStateException: void <init>(java.lang.String)>("close() must be invoked after all flushed writes are handled.");
+throw v11;
+label3:
+v12 = v0.<io.netty.channel.ChannelOutboundBuffer: io.netty.channel.ChannelOutboundBuffer$Entry unflushedEntry>;
+label4:
+if v12 == null goto label6;
+v13 = v12.<io.netty.channel.ChannelOutboundBuffer$Entry: int pendingSize>;
+v14 = <io.netty.channel.ChannelOutboundBuffer: java.util.concurrent.atomic.AtomicLongFieldUpdater TOTAL_PENDING_SIZE_UPDATER>;
+v15 = neg v13;
+virtualinvoke v14.<java.util.concurrent.atomic.AtomicLongFieldUpdater: long addAndGet(java.lang.Object,long)>(v0, v15);
+v16 = v12.<io.netty.channel.ChannelOutboundBuffer$Entry: boolean cancelled>;
+if v16 != 0 goto label5;
+v17 = v12.<io.netty.channel.ChannelOutboundBuffer$Entry: java.lang.Object msg>;
+staticinvoke <io.netty.util.ReferenceCountUtil: void safeRelease(java.lang.Object)>(v17);
+v18 = v12.<io.netty.channel.ChannelOutboundBuffer$Entry: io.netty.channel.ChannelPromise promise>;
+staticinvoke <io.netty.channel.ChannelOutboundBuffer: void safeFail(io.netty.channel.ChannelPromise,java.lang.Throwable)>(v18, v1);
+label5:
+v12 = virtualinvoke v12.<io.netty.channel.ChannelOutboundBuffer$Entry: io.netty.channel.ChannelOutboundBuffer$Entry unguardedRecycleAndGetNext()>();
+goto label4;
+label6:
+v0.<io.netty.channel.ChannelOutboundBuffer: boolean inFail> = 0;
+goto label8;
+label7:
+v19 := @caughtexception;
+v0.<io.netty.channel.ChannelOutboundBuffer: boolean inFail> = 0;
+throw v19;
+label8:
+specialinvoke v0.<io.netty.channel.ChannelOutboundBuffer: void clearNioBuffers()>();
+return;
+catch java.lang.Throwable from label3 to label6 with label7;
+}
+void close(java.nio.channels.ClosedChannelException)
+{
+io.netty.channel.ChannelOutboundBuffer v0;
+java.nio.channels.ClosedChannelException v1;
+v0 := @this: io.netty.channel.ChannelOutboundBuffer;
+v1 := @parameter0: java.nio.channels.ClosedChannelException;
+virtualinvoke v0.<io.netty.channel.ChannelOutboundBuffer: void close(java.lang.Throwable,boolean)>(v1, 0);
+return;
+}
+private static void safeSuccess(io.netty.channel.ChannelPromise)
+{
+io.netty.channel.ChannelPromise v0;
+boolean v1;
+io.netty.util.internal.logging.InternalLogger v2;
+v0 := @parameter0: io.netty.channel.ChannelPromise;
+v1 = v0 instanceof io.netty.channel.VoidChannelPromise;
+if v1 == 0 goto label1;
+v2 = null;
+goto label2;
+label1:
+v2 = <io.netty.channel.ChannelOutboundBuffer: io.netty.util.internal.logging.InternalLogger logger>;
+label2:
+staticinvoke <io.netty.util.internal.PromiseNotificationUtil: void trySuccess(io.netty.util.concurrent.Promise,java.lang.Object,io.netty.util.internal.logging.InternalLogger)>(v0, null, v2);
+return;
+}
+private static void safeFail(io.netty.channel.ChannelPromise, java.lang.Throwable)
+{
+java.lang.Throwable v1;
+io.netty.channel.ChannelPromise v0;
+io.netty.util.internal.logging.InternalLogger v3;
+boolean v2;
+v0 := @parameter0: io.netty.channel.ChannelPromise;
+v1 := @parameter1: java.lang.Throwable;
+v2 = v0 instanceof io.netty.channel.VoidChannelPromise;
+if v2 == 0 goto label1;
+v3 = null;
+goto label2;
+label1:
+v3 = <io.netty.channel.ChannelOutboundBuffer: io.netty.util.internal.logging.InternalLogger logger>;
+label2:
+staticinvoke <io.netty.util.internal.PromiseNotificationUtil: void tryFailure(io.netty.util.concurrent.Promise,java.lang.Throwable,io.netty.util.internal.logging.InternalLogger)>(v0, v1, v3);
+return;
+}
+public void recycle()
+{
+io.netty.channel.ChannelOutboundBuffer v0;
+v0 := @this: io.netty.channel.ChannelOutboundBuffer;
+return;
+}
+public long totalPendingWriteBytes()
+{
+io.netty.channel.ChannelOutboundBuffer v0;
+long v1;
+v0 := @this: io.netty.channel.ChannelOutboundBuffer;
+v1 = v0.<io.netty.channel.ChannelOutboundBuffer: long totalPendingSize>;
+return v1;
+}
+public long bytesBeforeUnwritable()
+{
+long v4, v5, v8;
+io.netty.channel.Channel v1;
+io.netty.channel.ChannelOutboundBuffer v0;
+byte v6;
+io.netty.channel.ChannelConfig v2;
+int v3;
+boolean v7;
+v0 := @this: io.netty.channel.ChannelOutboundBuffer;
+v1 = v0.<io.netty.channel.ChannelOutboundBuffer: io.netty.channel.Channel channel>;
+v2 = interfaceinvoke v1.<io.netty.channel.Channel: io.netty.channel.ChannelConfig config()>();
+v3 = interfaceinvoke v2.<io.netty.channel.ChannelConfig: int getWriteBufferHighWaterMark()>();
+v4 = v0.<io.netty.channel.ChannelOutboundBuffer: long totalPendingSize>;
+v5 = v3 - v4;
+v6 = v5 cmp 0L;
+if v6 <= 0 goto label3;
+v7 = virtualinvoke v0.<io.netty.channel.ChannelOutboundBuffer: boolean isWritable()>();
+if v7 == 0 goto label1;
+v8 = v5;
+goto label2;
+label1:
+v8 = 0L;
+label2:
+return v8;
+label3:
+return 0L;
+}
+public long bytesBeforeWritable()
+{
+long v1, v5, v8;
+io.netty.channel.Channel v2;
+io.netty.channel.ChannelOutboundBuffer v0;
+byte v6;
+io.netty.channel.ChannelConfig v3;
+int v4;
+boolean v7;
+v0 := @this: io.netty.channel.ChannelOutboundBuffer;
+v1 = v0.<io.netty.channel.ChannelOutboundBuffer: long totalPendingSize>;
+v2 = v0.<io.netty.channel.ChannelOutboundBuffer: io.netty.channel.Channel channel>;
+v3 = interfaceinvoke v2.<io.netty.channel.Channel: io.netty.channel.ChannelConfig config()>();
+v4 = interfaceinvoke v3.<io.netty.channel.ChannelConfig: int getWriteBufferLowWaterMark()>();
+v5 = v1 - v4;
+v6 = v5 cmp 0L;
+if v6 <= 0 goto label3;
+v7 = virtualinvoke v0.<io.netty.channel.ChannelOutboundBuffer: boolean isWritable()>();
+if v7 == 0 goto label1;
+v8 = 0L;
+goto label2;
+label1:
+v8 = v5;
+label2:
+return v8;
+label3:
+return 0L;
+}
+public void forEachFlushedMessage(io.netty.channel.ChannelOutboundBuffer$MessageProcessor) throws java.lang.Exception
+{
+io.netty.channel.ChannelOutboundBuffer v0;
+io.netty.channel.ChannelOutboundBuffer$MessageProcessor v1;
+java.lang.Object v4;
+io.netty.channel.ChannelOutboundBuffer$Entry v2;
+boolean v3, v5, v6;
+v0 := @this: io.netty.channel.ChannelOutboundBuffer;
+v1 := @parameter0: io.netty.channel.ChannelOutboundBuffer$MessageProcessor;
+staticinvoke <io.netty.util.internal.ObjectUtil: java.lang.Object checkNotNull(java.lang.Object,java.lang.String)>(v1, "processor");
+v2 = v0.<io.netty.channel.ChannelOutboundBuffer: io.netty.channel.ChannelOutboundBuffer$Entry flushedEntry>;
+if v2 != null goto label1;
+return;
+label1:
+v3 = v2.<io.netty.channel.ChannelOutboundBuffer$Entry: boolean cancelled>;
+if v3 != 0 goto label2;
+v4 = v2.<io.netty.channel.ChannelOutboundBuffer$Entry: java.lang.Object msg>;
+v5 = interfaceinvoke v1.<io.netty.channel.ChannelOutboundBuffer$MessageProcessor: boolean processMessage(java.lang.Object)>(v4);
+if v5 != 0 goto label2;
+return;
+label2:
+v2 = v2.<io.netty.channel.ChannelOutboundBuffer$Entry: io.netty.channel.ChannelOutboundBuffer$Entry next>;
+v6 = specialinvoke v0.<io.netty.channel.ChannelOutboundBuffer: boolean isFlushedEntry(io.netty.channel.ChannelOutboundBuffer$Entry)>(v2);
+if v6 != 0 goto label1;
+return;
+}
+private boolean isFlushedEntry(io.netty.channel.ChannelOutboundBuffer$Entry)
+{
+io.netty.channel.ChannelOutboundBuffer v0;
+io.netty.channel.ChannelOutboundBuffer$Entry v1, v2;
+boolean v3;
+v0 := @this: io.netty.channel.ChannelOutboundBuffer;
+v1 := @parameter0: io.netty.channel.ChannelOutboundBuffer$Entry;
+if v1 == null goto label1;
+v2 = v0.<io.netty.channel.ChannelOutboundBuffer: io.netty.channel.ChannelOutboundBuffer$Entry unflushedEntry>;
+if v1 == v2 goto label1;
+v3 = 1;
+goto label2;
+label1:
+v3 = 0;
+label2:
+return v3;
+}
+static void <clinit>()
+{
+java.util.concurrent.atomic.AtomicIntegerFieldUpdater v7;
+java.util.concurrent.atomic.AtomicLongFieldUpdater v6;
+io.netty.util.internal.logging.InternalLogger v4;
+int v3;
+java.lang.Class v0;
+io.netty.channel.ChannelOutboundBuffer$1 v5;
+boolean v1, v2;
+v0 = class "Lio/netty/channel/ChannelOutboundBuffer;";
+v1 = virtualinvoke v0.<java.lang.Class: boolean desiredAssertionStatus()>();
+if v1 != 0 goto label1;
+v2 = 1;
+goto label2;
+label1:
+v2 = 0;
+label2:
+<io.netty.channel.ChannelOutboundBuffer: boolean $assertionsDisabled> = v2;
+v3 = staticinvoke <io.netty.util.internal.SystemPropertyUtil: int getInt(java.lang.String,int)>("io.netty.transport.outboundBufferEntrySizeOverhead", 96);
+<io.netty.channel.ChannelOutboundBuffer: int CHANNEL_OUTBOUND_BUFFER_ENTRY_OVERHEAD> = v3;
+v4 = staticinvoke <io.netty.util.internal.logging.InternalLoggerFactory: io.netty.util.internal.logging.InternalLogger getInstance(java.lang.Class)>(class "Lio/netty/channel/ChannelOutboundBuffer;");
+<io.netty.channel.ChannelOutboundBuffer: io.netty.util.internal.logging.InternalLogger logger> = v4;
+v5 = new io.netty.channel.ChannelOutboundBuffer$1;
+specialinvoke v5.<io.netty.channel.ChannelOutboundBuffer$1: void <init>()>();
+<io.netty.channel.ChannelOutboundBuffer: io.netty.util.concurrent.FastThreadLocal NIO_BUFFERS> = v5;
+v6 = staticinvoke <java.util.concurrent.atomic.AtomicLongFieldUpdater: java.util.concurrent.atomic.AtomicLongFieldUpdater newUpdater(java.lang.Class,java.lang.String)>(class "Lio/netty/channel/ChannelOutboundBuffer;", "totalPendingSize");
+<io.netty.channel.ChannelOutboundBuffer: java.util.concurrent.atomic.AtomicLongFieldUpdater TOTAL_PENDING_SIZE_UPDATER> = v6;
+v7 = staticinvoke <java.util.concurrent.atomic.AtomicIntegerFieldUpdater: java.util.concurrent.atomic.AtomicIntegerFieldUpdater newUpdater(java.lang.Class,java.lang.String)>(class "Lio/netty/channel/ChannelOutboundBuffer;", "unwritable");
+<io.netty.channel.ChannelOutboundBuffer: java.util.concurrent.atomic.AtomicIntegerFieldUpdater UNWRITABLE_UPDATER> = v7;
+return;
+}
+}

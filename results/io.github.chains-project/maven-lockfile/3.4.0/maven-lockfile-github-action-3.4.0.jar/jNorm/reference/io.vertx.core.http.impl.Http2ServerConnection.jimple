@@ -1,0 +1,367 @@
+public class io.vertx.core.http.impl.Http2ServerConnection extends io.vertx.core.http.impl.Http2ConnectionBase implements io.vertx.core.http.impl.HttpServerConnection
+{
+final io.vertx.core.http.HttpServerOptions options;
+private final java.lang.String serverOrigin;
+private final io.vertx.core.spi.metrics.HttpServerMetrics metrics;
+private final java.util.function.Function encodingDetector;
+private final java.util.function.Supplier streamContextSupplier;
+io.vertx.core.Handler requestHandler;
+private int concurrentStreams;
+private final java.util.ArrayDeque pendingPushes;
+private io.vertx.core.http.impl.VertxHttp2Stream upgraded;
+void <init>(io.vertx.core.impl.EventLoopContext, java.util.function.Supplier, java.lang.String, io.vertx.core.http.impl.VertxHttp2ConnectionHandler, java.util.function.Function, io.vertx.core.http.HttpServerOptions, io.vertx.core.spi.metrics.HttpServerMetrics)
+{
+io.vertx.core.http.impl.Http2ServerConnection v0;
+io.vertx.core.http.impl.VertxHttp2ConnectionHandler v4;
+java.util.function.Function v5;
+java.util.function.Supplier v2;
+io.vertx.core.impl.EventLoopContext v1;
+io.vertx.core.spi.metrics.HttpServerMetrics v7;
+io.vertx.core.http.HttpServerOptions v6;
+java.lang.String v3;
+java.util.ArrayDeque v8;
+v0 := @this: io.vertx.core.http.impl.Http2ServerConnection;
+v1 := @parameter0: io.vertx.core.impl.EventLoopContext;
+v2 := @parameter1: java.util.function.Supplier;
+v3 := @parameter2: java.lang.String;
+v4 := @parameter3: io.vertx.core.http.impl.VertxHttp2ConnectionHandler;
+v5 := @parameter4: java.util.function.Function;
+v6 := @parameter5: io.vertx.core.http.HttpServerOptions;
+v7 := @parameter6: io.vertx.core.spi.metrics.HttpServerMetrics;
+specialinvoke v0.<io.vertx.core.http.impl.Http2ConnectionBase: void <init>(io.vertx.core.impl.EventLoopContext,io.vertx.core.http.impl.VertxHttp2ConnectionHandler)>(v1, v4);
+v8 = new java.util.ArrayDeque;
+specialinvoke v8.<java.util.ArrayDeque: void <init>(int)>(8);
+v0.<io.vertx.core.http.impl.Http2ServerConnection: java.util.ArrayDeque pendingPushes> = v8;
+v0.<io.vertx.core.http.impl.Http2ServerConnection: io.vertx.core.http.HttpServerOptions options> = v6;
+v0.<io.vertx.core.http.impl.Http2ServerConnection: java.lang.String serverOrigin> = v3;
+v0.<io.vertx.core.http.impl.Http2ServerConnection: java.util.function.Function encodingDetector> = v5;
+v0.<io.vertx.core.http.impl.Http2ServerConnection: java.util.function.Supplier streamContextSupplier> = v2;
+v0.<io.vertx.core.http.impl.Http2ServerConnection: io.vertx.core.spi.metrics.HttpServerMetrics metrics> = v7;
+return;
+}
+public io.vertx.core.http.impl.HttpServerConnection handler(io.vertx.core.Handler)
+{
+io.vertx.core.http.impl.Http2ServerConnection v0;
+io.vertx.core.Handler v1;
+v0 := @this: io.vertx.core.http.impl.Http2ServerConnection;
+v1 := @parameter0: io.vertx.core.Handler;
+v0.<io.vertx.core.http.impl.Http2ServerConnection: io.vertx.core.Handler requestHandler> = v1;
+return v0;
+}
+public io.vertx.core.http.impl.HttpServerConnection invalidRequestHandler(io.vertx.core.Handler)
+{
+io.vertx.core.http.impl.Http2ServerConnection v0;
+io.vertx.core.Handler v1;
+v0 := @this: io.vertx.core.http.impl.Http2ServerConnection;
+v1 := @parameter0: io.vertx.core.Handler;
+return v0;
+}
+public io.vertx.core.spi.metrics.HttpServerMetrics metrics()
+{
+io.vertx.core.http.impl.Http2ServerConnection v0;
+io.vertx.core.spi.metrics.HttpServerMetrics v1;
+v0 := @this: io.vertx.core.http.impl.Http2ServerConnection;
+v1 = v0.<io.vertx.core.http.impl.Http2ServerConnection: io.vertx.core.spi.metrics.HttpServerMetrics metrics>;
+return v1;
+}
+private static boolean isMalformedRequest(io.netty.handler.codec.http2.Http2Headers)
+{
+java.net.URISyntaxException v17;
+int v12;
+java.lang.String v16, v18, v3;
+java.net.URI v14;
+boolean v4;
+java.lang.CharSequence v1, v10, v11, v13, v15, v2, v5, v6, v7, v8, v9;
+io.netty.handler.codec.http2.Http2Headers v0;
+v0 := @parameter0: io.netty.handler.codec.http2.Http2Headers;
+v1 = interfaceinvoke v0.<io.netty.handler.codec.http2.Http2Headers: java.lang.CharSequence method()>();
+if v1 != null goto label01;
+return 1;
+label01:
+v2 = interfaceinvoke v0.<io.netty.handler.codec.http2.Http2Headers: java.lang.CharSequence method()>();
+v3 = virtualinvoke v2.<java.lang.Object: java.lang.String toString()>();
+v4 = virtualinvoke v3.<java.lang.String: boolean equals(java.lang.Object)>("CONNECT");
+if v4 == 0 goto label03;
+v5 = interfaceinvoke v0.<io.netty.handler.codec.http2.Http2Headers: java.lang.CharSequence scheme()>();
+if v5 != null goto label02;
+v6 = interfaceinvoke v0.<io.netty.handler.codec.http2.Http2Headers: java.lang.CharSequence path()>();
+if v6 != null goto label02;
+v7 = interfaceinvoke v0.<io.netty.handler.codec.http2.Http2Headers: java.lang.CharSequence authority()>();
+if v7 != null goto label05;
+label02:
+return 1;
+label03:
+v8 = interfaceinvoke v0.<io.netty.handler.codec.http2.Http2Headers: java.lang.CharSequence method()>();
+if v8 == null goto label04;
+v9 = interfaceinvoke v0.<io.netty.handler.codec.http2.Http2Headers: java.lang.CharSequence scheme()>();
+if v9 == null goto label04;
+v10 = interfaceinvoke v0.<io.netty.handler.codec.http2.Http2Headers: java.lang.CharSequence path()>();
+if v10 == null goto label04;
+v11 = interfaceinvoke v0.<io.netty.handler.codec.http2.Http2Headers: java.lang.CharSequence path()>();
+v12 = interfaceinvoke v11.<java.lang.CharSequence: int length()>();
+if v12 != 0 goto label05;
+label04:
+return 1;
+label05:
+v13 = interfaceinvoke v0.<io.netty.handler.codec.http2.Http2Headers: java.lang.CharSequence authority()>();
+if v13 == null goto label10;
+label06:
+v14 = new java.net.URI;
+v15 = interfaceinvoke v0.<io.netty.handler.codec.http2.Http2Headers: java.lang.CharSequence authority()>();
+v16 = virtualinvoke v15.<java.lang.Object: java.lang.String toString()>();
+specialinvoke v14.<java.net.URI: void <init>(java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String)>(null, v16, null, null, null);
+label07:
+goto label09;
+label08:
+v17 := @caughtexception;
+return 1;
+label09:
+v18 = virtualinvoke v14.<java.net.URI: java.lang.String getRawUserInfo()>();
+if v18 == null goto label10;
+return 1;
+label10:
+return 0;
+catch java.net.URISyntaxException from label06 to label07 with label08;
+}
+java.lang.String determineContentEncoding(io.netty.handler.codec.http2.Http2Headers)
+{
+io.vertx.core.http.impl.Http2ServerConnection v0;
+io.netty.util.AsciiString v2, v4;
+java.util.function.Function v7, v8;
+io.netty.handler.codec.http2.Http2Headers v1;
+java.lang.Object v3, v5, v9;
+java.lang.String v6;
+v0 := @this: io.vertx.core.http.impl.Http2ServerConnection;
+v1 := @parameter0: io.netty.handler.codec.http2.Http2Headers;
+v2 = <io.netty.handler.codec.http.HttpHeaderNames: io.netty.util.AsciiString ACCEPT_ENCODING>;
+v3 = interfaceinvoke v1.<io.netty.handler.codec.http2.Http2Headers: java.lang.Object get(java.lang.Object)>(v2);
+if v3 == null goto label1;
+v4 = <io.netty.handler.codec.http.HttpHeaderNames: io.netty.util.AsciiString ACCEPT_ENCODING>;
+v5 = interfaceinvoke v1.<io.netty.handler.codec.http2.Http2Headers: java.lang.Object get(java.lang.Object)>(v4);
+v6 = virtualinvoke v5.<java.lang.Object: java.lang.String toString()>();
+goto label2;
+label1:
+v6 = null;
+label2:
+if v6 == null goto label3;
+v7 = v0.<io.vertx.core.http.impl.Http2ServerConnection: java.util.function.Function encodingDetector>;
+if v7 == null goto label3;
+v8 = v0.<io.vertx.core.http.impl.Http2ServerConnection: java.util.function.Function encodingDetector>;
+v9 = interfaceinvoke v8.<java.util.function.Function: java.lang.Object apply(java.lang.Object)>(v6);
+return v9;
+label3:
+return null;
+}
+private io.vertx.core.http.impl.Http2ServerStream createStream(int, io.netty.handler.codec.http2.Http2Headers, boolean)
+{
+io.vertx.core.http.impl.Http2ServerRequest v16;
+java.util.function.Supplier v11;
+io.vertx.core.http.impl.Http2ServerStream v10;
+int v1;
+io.netty.handler.codec.http2.Http2Stream v6;
+java.lang.String v13, v17, v9;
+io.vertx.core.tracing.TracingPolicy v15;
+boolean v20, v3, v8;
+io.vertx.core.http.impl.Http2ServerConnection v0;
+io.vertx.core.http.impl.VertxHttp2ConnectionHandler v4;
+io.netty.handler.codec.http2.Http2Connection v5;
+io.netty.handler.codec.http2.Http2Headers v2;
+io.vertx.core.http.HttpMethod v18, v19;
+io.vertx.core.http.HttpServerOptions v14, v7;
+java.lang.Object v12;
+v0 := @this: io.vertx.core.http.impl.Http2ServerConnection;
+v1 := @parameter0: int;
+v2 := @parameter1: io.netty.handler.codec.http2.Http2Headers;
+v3 := @parameter2: boolean;
+v4 = v0.<io.vertx.core.http.impl.Http2ServerConnection: io.vertx.core.http.impl.VertxHttp2ConnectionHandler handler>;
+v5 = virtualinvoke v4.<io.vertx.core.http.impl.VertxHttp2ConnectionHandler: io.netty.handler.codec.http2.Http2Connection connection()>();
+v6 = interfaceinvoke v5.<io.netty.handler.codec.http2.Http2Connection: io.netty.handler.codec.http2.Http2Stream stream(int)>(v1);
+v7 = v0.<io.vertx.core.http.impl.Http2ServerConnection: io.vertx.core.http.HttpServerOptions options>;
+v8 = virtualinvoke v7.<io.vertx.core.http.HttpServerOptions: boolean isCompressionSupported()>();
+if v8 == 0 goto label1;
+v9 = virtualinvoke v0.<io.vertx.core.http.impl.Http2ServerConnection: java.lang.String determineContentEncoding(io.netty.handler.codec.http2.Http2Headers)>(v2);
+goto label2;
+label1:
+v9 = null;
+label2:
+v10 = new io.vertx.core.http.impl.Http2ServerStream;
+v11 = v0.<io.vertx.core.http.impl.Http2ServerConnection: java.util.function.Supplier streamContextSupplier>;
+v12 = interfaceinvoke v11.<java.util.function.Supplier: java.lang.Object get()>();
+v13 = v0.<io.vertx.core.http.impl.Http2ServerConnection: java.lang.String serverOrigin>;
+v14 = v0.<io.vertx.core.http.impl.Http2ServerConnection: io.vertx.core.http.HttpServerOptions options>;
+v15 = virtualinvoke v14.<io.vertx.core.http.HttpServerOptions: io.vertx.core.tracing.TracingPolicy getTracingPolicy()>();
+specialinvoke v10.<io.vertx.core.http.impl.Http2ServerStream: void <init>(io.vertx.core.http.impl.Http2ServerConnection,io.vertx.core.impl.ContextInternal,io.netty.handler.codec.http2.Http2Headers,java.lang.String,io.vertx.core.tracing.TracingPolicy,boolean)>(v0, v12, v2, v13, v15, v3);
+v16 = new io.vertx.core.http.impl.Http2ServerRequest;
+v17 = v0.<io.vertx.core.http.impl.Http2ServerConnection: java.lang.String serverOrigin>;
+specialinvoke v16.<io.vertx.core.http.impl.Http2ServerRequest: void <init>(io.vertx.core.http.impl.Http2ServerStream,java.lang.String,io.netty.handler.codec.http2.Http2Headers,java.lang.String)>(v10, v17, v2, v9);
+v10.<io.vertx.core.http.impl.Http2ServerStream: io.vertx.core.http.impl.Http2ServerStreamHandler request> = v16;
+v18 = virtualinvoke v16.<io.vertx.core.http.impl.Http2ServerRequest: io.vertx.core.http.HttpMethod method()>();
+v19 = <io.vertx.core.http.HttpMethod: io.vertx.core.http.HttpMethod CONNECT>;
+if v18 != v19 goto label3;
+v20 = 1;
+goto label4;
+label3:
+v20 = 0;
+label4:
+v10.<io.vertx.core.http.impl.Http2ServerStream: boolean isConnect> = v20;
+virtualinvoke v10.<io.vertx.core.http.impl.Http2ServerStream: void init(io.netty.handler.codec.http2.Http2Stream)>(v6);
+return v10;
+}
+io.vertx.core.http.impl.VertxHttp2Stream stream(int)
+{
+io.vertx.core.http.impl.Http2ServerConnection v0;
+io.vertx.core.http.impl.VertxHttp2ConnectionHandler v3;
+int v1;
+io.vertx.core.http.impl.VertxHttp2Stream v2, v5;
+boolean v4;
+v0 := @this: io.vertx.core.http.impl.Http2ServerConnection;
+v1 := @parameter0: int;
+v2 = specialinvoke v0.<io.vertx.core.http.impl.Http2ConnectionBase: io.vertx.core.http.impl.VertxHttp2Stream stream(int)>(v1);
+if v2 != null goto label1;
+if v1 != 1 goto label1;
+v3 = v0.<io.vertx.core.http.impl.Http2ServerConnection: io.vertx.core.http.impl.VertxHttp2ConnectionHandler handler>;
+v4 = v3.<io.vertx.core.http.impl.VertxHttp2ConnectionHandler: boolean upgraded>;
+if v4 == 0 goto label1;
+v5 = v0.<io.vertx.core.http.impl.Http2ServerConnection: io.vertx.core.http.impl.VertxHttp2Stream upgraded>;
+return v5;
+label1:
+return v2;
+}
+protected synchronized void onHeadersRead(int, io.netty.handler.codec.http2.Http2Headers, io.vertx.core.http.StreamPriority, boolean)
+{
+io.vertx.core.http.impl.Http2ServerConnection v0;
+io.vertx.core.http.impl.VertxHttp2ConnectionHandler v10, v7;
+io.vertx.core.http.StreamPriority v3;
+long v9;
+io.netty.handler.codec.http2.Http2Headers v2;
+int v1;
+io.netty.handler.codec.http2.Http2Error v8;
+io.vertx.core.http.impl.VertxHttp2Stream v5;
+boolean v11, v4, v6;
+v0 := @this: io.vertx.core.http.impl.Http2ServerConnection;
+v1 := @parameter0: int;
+v2 := @parameter1: io.netty.handler.codec.http2.Http2Headers;
+v3 := @parameter2: io.vertx.core.http.StreamPriority;
+v4 := @parameter3: boolean;
+v5 = virtualinvoke v0.<io.vertx.core.http.impl.Http2ServerConnection: io.vertx.core.http.impl.VertxHttp2Stream stream(int)>(v1);
+if v5 != null goto label4;
+v6 = staticinvoke <io.vertx.core.http.impl.Http2ServerConnection: boolean isMalformedRequest(io.netty.handler.codec.http2.Http2Headers)>(v2);
+if v6 == 0 goto label1;
+v7 = v0.<io.vertx.core.http.impl.Http2ServerConnection: io.vertx.core.http.impl.VertxHttp2ConnectionHandler handler>;
+v8 = <io.netty.handler.codec.http2.Http2Error: io.netty.handler.codec.http2.Http2Error PROTOCOL_ERROR>;
+v9 = virtualinvoke v8.<io.netty.handler.codec.http2.Http2Error: long code()>();
+virtualinvoke v7.<io.vertx.core.http.impl.VertxHttp2ConnectionHandler: void writeReset(int,long)>(v1, v9);
+return;
+label1:
+if v1 != 1 goto label2;
+v10 = v0.<io.vertx.core.http.impl.Http2ServerConnection: io.vertx.core.http.impl.VertxHttp2ConnectionHandler handler>;
+v11 = v10.<io.vertx.core.http.impl.VertxHttp2ConnectionHandler: boolean upgraded>;
+if v11 == 0 goto label2;
+v5 = specialinvoke v0.<io.vertx.core.http.impl.Http2ServerConnection: io.vertx.core.http.impl.Http2ServerStream createStream(int,io.netty.handler.codec.http2.Http2Headers,boolean)>(v1, v2, 1);
+v0.<io.vertx.core.http.impl.Http2ServerConnection: io.vertx.core.http.impl.VertxHttp2Stream upgraded> = v5;
+goto label3;
+label2:
+v5 = specialinvoke v0.<io.vertx.core.http.impl.Http2ServerConnection: io.vertx.core.http.impl.Http2ServerStream createStream(int,io.netty.handler.codec.http2.Http2Headers,boolean)>(v1, v2, v4);
+label3:
+virtualinvoke v5.<io.vertx.core.http.impl.VertxHttp2Stream: void onHeaders(io.netty.handler.codec.http2.Http2Headers,io.vertx.core.http.StreamPriority)>(v2, v3);
+label4:
+if v4 == 0 goto label5;
+virtualinvoke v5.<io.vertx.core.http.impl.VertxHttp2Stream: void onEnd()>();
+label5:
+return;
+}
+void sendPush(int, java.lang.String, io.vertx.core.http.HttpMethod, io.vertx.core.MultiMap, java.lang.String, io.vertx.core.http.StreamPriority, io.vertx.core.Promise)
+{
+io.vertx.core.http.impl.Http2ServerConnection v0;
+io.vertx.core.http.StreamPriority v6;
+io.vertx.core.Promise v7;
+io.vertx.core.MultiMap v4;
+io.vertx.core.impl.ContextInternal v8;
+io.netty.channel.EventLoop v9;
+java.lang.Runnable v11;
+io.vertx.core.http.HttpMethod v3;
+int v1;
+java.lang.String v2, v5;
+boolean v10;
+v0 := @this: io.vertx.core.http.impl.Http2ServerConnection;
+v1 := @parameter0: int;
+v2 := @parameter1: java.lang.String;
+v3 := @parameter2: io.vertx.core.http.HttpMethod;
+v4 := @parameter3: io.vertx.core.MultiMap;
+v5 := @parameter4: java.lang.String;
+v6 := @parameter5: io.vertx.core.http.StreamPriority;
+v7 := @parameter6: io.vertx.core.Promise;
+v8 = v0.<io.vertx.core.http.impl.Http2ServerConnection: io.vertx.core.impl.ContextInternal context>;
+v9 = interfaceinvoke v8.<io.vertx.core.impl.ContextInternal: io.netty.channel.EventLoop nettyEventLoop()>();
+v10 = interfaceinvoke v9.<io.netty.channel.EventLoop: boolean inEventLoop()>();
+if v10 == 0 goto label1;
+specialinvoke v0.<io.vertx.core.http.impl.Http2ServerConnection: void doSendPush(int,java.lang.String,io.vertx.core.http.HttpMethod,io.vertx.core.MultiMap,java.lang.String,io.vertx.core.http.StreamPriority,io.vertx.core.Promise)>(v1, v2, v3, v4, v5, v6, v7);
+goto label2;
+label1:
+v11 = staticinvoke <io.vertx.core.http.impl.Http2ServerConnection$lambda_sendPush_0__960: java.lang.Runnable bootstrap$(io.vertx.core.http.impl.Http2ServerConnection,int,java.lang.String,io.vertx.core.http.HttpMethod,io.vertx.core.MultiMap,java.lang.String,io.vertx.core.http.StreamPriority,io.vertx.core.Promise)>(v0, v1, v2, v3, v4, v5, v6, v7);
+interfaceinvoke v9.<io.netty.channel.EventLoop: void execute(java.lang.Runnable)>(v11);
+label2:
+return;
+}
+private synchronized void doSendPush(int, java.lang.String, io.vertx.core.http.HttpMethod, io.vertx.core.MultiMap, java.lang.String, io.vertx.core.http.StreamPriority, io.vertx.core.Promise)
+{
+io.vertx.core.MultiMap v4;
+int v1;
+java.lang.String v11, v2, v5, v9;
+boolean v10;
+io.vertx.core.http.impl.Http2ServerConnection v0;
+io.vertx.core.http.impl.VertxHttp2ConnectionHandler v13;
+io.netty.util.concurrent.FutureListener v15;
+io.vertx.core.http.StreamPriority v6;
+io.vertx.core.Promise v7;
+java.util.function.Consumer v12;
+io.vertx.core.http.HttpMethod v3;
+io.netty.util.concurrent.Future v14;
+io.netty.handler.codec.http2.DefaultHttp2Headers v8;
+v0 := @this: io.vertx.core.http.impl.Http2ServerConnection;
+v1 := @parameter0: int;
+v2 := @parameter1: java.lang.String;
+v3 := @parameter2: io.vertx.core.http.HttpMethod;
+v4 := @parameter3: io.vertx.core.MultiMap;
+v5 := @parameter4: java.lang.String;
+v6 := @parameter5: io.vertx.core.http.StreamPriority;
+v7 := @parameter6: io.vertx.core.Promise;
+v8 = new io.netty.handler.codec.http2.DefaultHttp2Headers;
+specialinvoke v8.<io.netty.handler.codec.http2.DefaultHttp2Headers: void <init>()>();
+v9 = virtualinvoke v3.<io.vertx.core.http.HttpMethod: java.lang.String name()>();
+interfaceinvoke v8.<io.netty.handler.codec.http2.Http2Headers: io.netty.handler.codec.http2.Http2Headers method(java.lang.CharSequence)>(v9);
+interfaceinvoke v8.<io.netty.handler.codec.http2.Http2Headers: io.netty.handler.codec.http2.Http2Headers path(java.lang.CharSequence)>(v5);
+v10 = virtualinvoke v0.<io.vertx.core.http.impl.Http2ServerConnection: boolean isSsl()>();
+if v10 == 0 goto label1;
+v11 = "https";
+goto label2;
+label1:
+v11 = "http";
+label2:
+interfaceinvoke v8.<io.netty.handler.codec.http2.Http2Headers: io.netty.handler.codec.http2.Http2Headers scheme(java.lang.CharSequence)>(v11);
+if v2 == null goto label3;
+interfaceinvoke v8.<io.netty.handler.codec.http2.Http2Headers: io.netty.handler.codec.http2.Http2Headers authority(java.lang.CharSequence)>(v2);
+label3:
+if v4 == null goto label4;
+v12 = staticinvoke <io.vertx.core.http.impl.Http2ServerConnection$lambda_doSendPush_1__962: java.util.function.Consumer bootstrap$(io.netty.handler.codec.http2.Http2Headers)>(v8);
+interfaceinvoke v4.<io.vertx.core.MultiMap: void forEach(java.util.function.Consumer)>(v12);
+label4:
+v13 = v0.<io.vertx.core.http.impl.Http2ServerConnection: io.vertx.core.http.impl.VertxHttp2ConnectionHandler handler>;
+v14 = virtualinvoke v13.<io.vertx.core.http.impl.VertxHttp2ConnectionHandler: io.netty.util.concurrent.Future writePushPromise(int,io.netty.handler.codec.http2.Http2Headers)>(v1, v8);
+v15 = staticinvoke <io.vertx.core.http.impl.Http2ServerConnection$lambda_doSendPush_2__961: io.netty.util.concurrent.FutureListener bootstrap$(io.vertx.core.http.impl.Http2ServerConnection,io.netty.handler.codec.http2.Http2Headers,io.vertx.core.http.HttpMethod,java.lang.String,io.vertx.core.Promise,io.vertx.core.http.StreamPriority)>(v0, v8, v3, v5, v7, v6);
+interfaceinvoke v14.<io.netty.util.concurrent.Future: io.netty.util.concurrent.Future addListener(io.netty.util.concurrent.GenericFutureListener)>(v15);
+return;
+}
+protected void updateSettings(io.netty.handler.codec.http2.Http2Settings, io.vertx.core.Handler)
+{
+io.netty.handler.codec.http2.Http2Settings v1;
+io.vertx.core.http.impl.Http2ServerConnection v0;
+io.vertx.core.Handler v2;
+v0 := @this: io.vertx.core.http.impl.Http2ServerConnection;
+v1 := @parameter0: io.netty.handler.codec.http2.Http2Settings;
+v2 := @parameter1: io.vertx.core.Handler;
+virtualinvoke v1.<io.netty.handler.codec.http2.Http2Settings: java.lang.Object remove(char)>(2);
+specialinvoke v0.<io.vertx.core.http.impl.Http2ConnectionBase: void updateSettings(io.netty.handler.codec.http2.Http2Settings,io.vertx.core.Handler)>(v1, v2);
+return;
+}
+}

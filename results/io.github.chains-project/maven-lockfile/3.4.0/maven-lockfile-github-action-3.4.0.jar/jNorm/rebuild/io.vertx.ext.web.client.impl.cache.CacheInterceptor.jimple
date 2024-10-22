@@ -1,0 +1,415 @@
+public class io.vertx.ext.web.client.impl.cache.CacheInterceptor extends java.lang.Object implements io.vertx.core.Handler
+{
+private static final java.lang.String IS_CACHE_DISPATCH;
+private static final java.lang.String RESPONSE_TO_REVALIDATE;
+private static final java.lang.String IS_CACHE_REVALIDATION;
+private final io.vertx.ext.web.client.spi.CacheStore publicCacheStore;
+private final io.vertx.ext.web.client.CachingWebClientOptions options;
+private final java.util.Map variationsRegistry;
+public void <init>(io.vertx.ext.web.client.spi.CacheStore, io.vertx.ext.web.client.CachingWebClientOptions)
+{
+io.vertx.ext.web.client.CachingWebClientOptions v2;
+io.vertx.ext.web.client.impl.cache.CacheInterceptor v0;
+java.util.concurrent.ConcurrentHashMap v3;
+io.vertx.ext.web.client.spi.CacheStore v1;
+v0 := @this: io.vertx.ext.web.client.impl.cache.CacheInterceptor;
+v1 := @parameter0: io.vertx.ext.web.client.spi.CacheStore;
+v2 := @parameter1: io.vertx.ext.web.client.CachingWebClientOptions;
+specialinvoke v0.<java.lang.Object: void <init>()>();
+v0.<io.vertx.ext.web.client.impl.cache.CacheInterceptor: io.vertx.ext.web.client.spi.CacheStore publicCacheStore> = v1;
+v0.<io.vertx.ext.web.client.impl.cache.CacheInterceptor: io.vertx.ext.web.client.CachingWebClientOptions options> = v2;
+v3 = new java.util.concurrent.ConcurrentHashMap;
+specialinvoke v3.<java.util.concurrent.ConcurrentHashMap: void <init>()>();
+v0.<io.vertx.ext.web.client.impl.cache.CacheInterceptor: java.util.Map variationsRegistry> = v3;
+return;
+}
+public void handle(io.vertx.ext.web.client.impl.HttpContext)
+{
+io.vertx.core.Future v8;
+io.vertx.ext.web.client.impl.ClientPhase v11, v5;
+int[] v10, v4;
+io.vertx.ext.web.client.impl.cache.CacheInterceptor v0;
+int v12, v13, v6, v7;
+java.lang.Boolean v3;
+java.lang.Object v2;
+io.vertx.core.Handler v9;
+io.vertx.ext.web.client.impl.HttpContext v1;
+v0 := @this: io.vertx.ext.web.client.impl.cache.CacheInterceptor;
+v1 := @parameter0: io.vertx.ext.web.client.impl.HttpContext;
+v2 = virtualinvoke v1.<io.vertx.ext.web.client.impl.HttpContext: java.lang.Object get(java.lang.String)>("cache.revalidation");
+v3 = <java.lang.Boolean: java.lang.Boolean TRUE>;
+if v2 != v3 goto label3;
+v4 = <io.vertx.ext.web.client.impl.cache.CacheInterceptor$1: int[] $SwitchMap$io$vertx$ext$web$client$impl$ClientPhase>;
+v5 = virtualinvoke v1.<io.vertx.ext.web.client.impl.HttpContext: io.vertx.ext.web.client.impl.ClientPhase phase()>();
+v6 = virtualinvoke v5.<io.vertx.ext.web.client.impl.ClientPhase: int ordinal()>();
+v7 = v4[v6];
+lookupswitch(v7)
+{
+case 1: goto label1;
+default: goto label2;
+};
+label1:
+v8 = specialinvoke v0.<io.vertx.ext.web.client.impl.cache.CacheInterceptor: io.vertx.core.Future processResponse(io.vertx.ext.web.client.impl.HttpContext,io.vertx.ext.web.client.impl.cache.CachedHttpResponse)>(v1, null);
+v9 = staticinvoke <io.vertx.ext.web.client.impl.cache.CacheInterceptor$lambda_handle_0__837: io.vertx.core.Handler bootstrap$()>();
+interfaceinvoke v8.<io.vertx.core.Future: io.vertx.core.Future onComplete(io.vertx.core.Handler)>(v9);
+goto label7;
+label2:
+virtualinvoke v1.<io.vertx.ext.web.client.impl.HttpContext: void next()>();
+goto label7;
+label3:
+v10 = <io.vertx.ext.web.client.impl.cache.CacheInterceptor$1: int[] $SwitchMap$io$vertx$ext$web$client$impl$ClientPhase>;
+v11 = virtualinvoke v1.<io.vertx.ext.web.client.impl.HttpContext: io.vertx.ext.web.client.impl.ClientPhase phase()>();
+v12 = virtualinvoke v11.<io.vertx.ext.web.client.impl.ClientPhase: int ordinal()>();
+v13 = v10[v12];
+lookupswitch(v13)
+{
+case 1: goto label5;
+case 2: goto label4;
+default: goto label6;
+};
+label4:
+specialinvoke v0.<io.vertx.ext.web.client.impl.cache.CacheInterceptor: void handleCreateRequest(io.vertx.ext.web.client.impl.HttpContext)>(v1);
+goto label7;
+label5:
+specialinvoke v0.<io.vertx.ext.web.client.impl.cache.CacheInterceptor: void handleDispatchResponse(io.vertx.ext.web.client.impl.HttpContext)>(v1);
+goto label7;
+label6:
+virtualinvoke v1.<io.vertx.ext.web.client.impl.HttpContext: void next()>();
+label7:
+return;
+}
+private void handleCreateRequest(io.vertx.ext.web.client.impl.HttpContext)
+{
+io.vertx.ext.web.client.CachingWebClientOptions v3;
+io.vertx.ext.web.client.impl.cache.CacheKey v9;
+io.vertx.core.http.RequestOptions v2;
+java.util.function.Function v17;
+io.vertx.ext.web.client.impl.cache.Vary v7;
+boolean v6;
+io.vertx.core.Promise v8;
+java.util.Set v4;
+io.vertx.core.Future v12, v15, v16, v18;
+io.vertx.ext.web.client.impl.cache.CacheInterceptor v0;
+io.vertx.core.http.HttpMethod v5;
+io.vertx.ext.web.client.spi.CacheStore v10, v11, v14;
+io.vertx.core.Handler v13, v19;
+io.vertx.ext.web.client.impl.HttpContext v1;
+v0 := @this: io.vertx.ext.web.client.impl.cache.CacheInterceptor;
+v1 := @parameter0: io.vertx.ext.web.client.impl.HttpContext;
+v2 = virtualinvoke v1.<io.vertx.ext.web.client.impl.HttpContext: io.vertx.core.http.RequestOptions requestOptions()>();
+v3 = v0.<io.vertx.ext.web.client.impl.cache.CacheInterceptor: io.vertx.ext.web.client.CachingWebClientOptions options>;
+v4 = virtualinvoke v3.<io.vertx.ext.web.client.CachingWebClientOptions: java.util.Set getCachedMethods()>();
+v5 = virtualinvoke v2.<io.vertx.core.http.RequestOptions: io.vertx.core.http.HttpMethod getMethod()>();
+v6 = interfaceinvoke v4.<java.util.Set: boolean contains(java.lang.Object)>(v5);
+if v6 == 0 goto label1;
+v7 = specialinvoke v0.<io.vertx.ext.web.client.impl.cache.CacheInterceptor: io.vertx.ext.web.client.impl.cache.Vary selectVariation(io.vertx.core.http.RequestOptions)>(v2);
+if v7 != null goto label2;
+label1:
+virtualinvoke v1.<io.vertx.ext.web.client.impl.HttpContext: void next()>();
+return;
+label2:
+v8 = staticinvoke <io.vertx.core.Promise: io.vertx.core.Promise promise()>();
+v9 = new io.vertx.ext.web.client.impl.cache.CacheKey;
+specialinvoke v9.<io.vertx.ext.web.client.impl.cache.CacheKey: void <init>(io.vertx.core.http.RequestOptions,io.vertx.ext.web.client.impl.cache.Vary)>(v2, v7);
+v10 = virtualinvoke v1.<io.vertx.ext.web.client.impl.HttpContext: io.vertx.ext.web.client.spi.CacheStore privateCacheStore()>();
+if v10 == null goto label3;
+v11 = virtualinvoke v1.<io.vertx.ext.web.client.impl.HttpContext: io.vertx.ext.web.client.spi.CacheStore privateCacheStore()>();
+v12 = interfaceinvoke v11.<io.vertx.ext.web.client.spi.CacheStore: io.vertx.core.Future get(io.vertx.ext.web.client.impl.cache.CacheKey)>(v9);
+v13 = staticinvoke <io.vertx.ext.web.client.impl.cache.CacheInterceptor$lambda_handleCreateRequest_1__840: io.vertx.core.Handler bootstrap$(io.vertx.ext.web.client.impl.cache.CacheInterceptor,io.vertx.ext.web.client.impl.cache.CacheKey,io.vertx.core.Promise)>(v0, v9, v8);
+interfaceinvoke v12.<io.vertx.core.Future: io.vertx.core.Future onSuccess(io.vertx.core.Handler)>(v13);
+goto label4;
+label3:
+v14 = v0.<io.vertx.ext.web.client.impl.cache.CacheInterceptor: io.vertx.ext.web.client.spi.CacheStore publicCacheStore>;
+v15 = interfaceinvoke v14.<io.vertx.ext.web.client.spi.CacheStore: io.vertx.core.Future get(io.vertx.ext.web.client.impl.cache.CacheKey)>(v9);
+interfaceinvoke v15.<io.vertx.core.Future: io.vertx.core.Future onComplete(io.vertx.core.Handler)>(v8);
+label4:
+v16 = interfaceinvoke v8.<io.vertx.core.Promise: io.vertx.core.Future future()>();
+v17 = staticinvoke <io.vertx.ext.web.client.impl.cache.CacheInterceptor$lambda_handleCreateRequest_2__838: java.util.function.Function bootstrap$(io.vertx.ext.web.client.impl.cache.CacheInterceptor,io.vertx.ext.web.client.impl.HttpContext)>(v0, v1);
+v18 = interfaceinvoke v16.<io.vertx.core.Future: io.vertx.core.Future map(java.util.function.Function)>(v17);
+v19 = staticinvoke <io.vertx.ext.web.client.impl.cache.CacheInterceptor$lambda_handleCreateRequest_3__839: io.vertx.core.Handler bootstrap$(io.vertx.ext.web.client.impl.HttpContext)>(v1);
+interfaceinvoke v18.<io.vertx.core.Future: io.vertx.core.Future onComplete(io.vertx.core.Handler)>(v19);
+return;
+}
+private void handleDispatchResponse(io.vertx.ext.web.client.impl.HttpContext)
+{
+io.vertx.core.Future v5, v7;
+io.vertx.ext.web.client.impl.cache.CacheInterceptor v0;
+java.lang.Boolean v3;
+java.lang.Object v2, v4;
+io.vertx.core.Handler v6, v8;
+io.vertx.ext.web.client.impl.HttpContext v1;
+v0 := @this: io.vertx.ext.web.client.impl.cache.CacheInterceptor;
+v1 := @parameter0: io.vertx.ext.web.client.impl.HttpContext;
+v2 = virtualinvoke v1.<io.vertx.ext.web.client.impl.HttpContext: java.lang.Object get(java.lang.String)>("cache.dispatch");
+v3 = <java.lang.Boolean: java.lang.Boolean TRUE>;
+if v2 != v3 goto label1;
+virtualinvoke v1.<io.vertx.ext.web.client.impl.HttpContext: void next()>();
+return;
+label1:
+v4 = virtualinvoke v1.<io.vertx.ext.web.client.impl.HttpContext: java.lang.Object get(java.lang.String)>("cache.response_to_revalidate");
+if v4 == null goto label2;
+v5 = specialinvoke v0.<io.vertx.ext.web.client.impl.cache.CacheInterceptor: io.vertx.core.Future processRevalidationResponse(io.vertx.ext.web.client.impl.HttpContext,io.vertx.ext.web.client.impl.cache.CachedHttpResponse)>(v1, v4);
+v6 = staticinvoke <io.vertx.ext.web.client.impl.cache.CacheInterceptor$lambda_handleDispatchResponse_4__842: io.vertx.core.Handler bootstrap$(io.vertx.ext.web.client.impl.HttpContext)>(v1);
+interfaceinvoke v5.<io.vertx.core.Future: io.vertx.core.Future onComplete(io.vertx.core.Handler)>(v6);
+goto label3;
+label2:
+v7 = specialinvoke v0.<io.vertx.ext.web.client.impl.cache.CacheInterceptor: io.vertx.core.Future processResponse(io.vertx.ext.web.client.impl.HttpContext,io.vertx.ext.web.client.impl.cache.CachedHttpResponse)>(v1, null);
+v8 = staticinvoke <io.vertx.ext.web.client.impl.cache.CacheInterceptor$lambda_handleDispatchResponse_5__841: io.vertx.core.Handler bootstrap$(io.vertx.ext.web.client.impl.HttpContext)>(v1);
+interfaceinvoke v7.<io.vertx.core.Future: io.vertx.core.Future onComplete(io.vertx.core.Handler)>(v8);
+label3:
+return;
+}
+private io.vertx.ext.web.client.impl.cache.Vary selectVariation(io.vertx.core.http.RequestOptions)
+{
+java.util.Iterator v6;
+java.util.Set v4;
+io.vertx.core.http.RequestOptions v1;
+io.vertx.ext.web.client.impl.cache.CacheInterceptor v0;
+java.util.Map v3;
+io.vertx.ext.web.client.impl.cache.CacheVariationsKey v2;
+java.lang.Object v5, v8;
+boolean v7, v9;
+v0 := @this: io.vertx.ext.web.client.impl.cache.CacheInterceptor;
+v1 := @parameter0: io.vertx.core.http.RequestOptions;
+v2 = new io.vertx.ext.web.client.impl.cache.CacheVariationsKey;
+specialinvoke v2.<io.vertx.ext.web.client.impl.cache.CacheVariationsKey: void <init>(io.vertx.core.http.RequestOptions)>(v1);
+v3 = v0.<io.vertx.ext.web.client.impl.cache.CacheInterceptor: java.util.Map variationsRegistry>;
+v4 = staticinvoke <java.util.Collections: java.util.Set emptySet()>();
+v5 = interfaceinvoke v3.<java.util.Map: java.lang.Object getOrDefault(java.lang.Object,java.lang.Object)>(v2, v4);
+v6 = interfaceinvoke v5.<java.util.Set: java.util.Iterator iterator()>();
+label1:
+v7 = interfaceinvoke v6.<java.util.Iterator: boolean hasNext()>();
+if v7 == 0 goto label2;
+v8 = interfaceinvoke v6.<java.util.Iterator: java.lang.Object next()>();
+v9 = virtualinvoke v8.<io.vertx.ext.web.client.impl.cache.Vary: boolean matchesRequest(io.vertx.core.http.RequestOptions)>(v1);
+if v9 == 0 goto label1;
+return v8;
+label2:
+return null;
+}
+private io.vertx.core.Future processResponse(io.vertx.ext.web.client.impl.HttpContext, io.vertx.ext.web.client.impl.cache.CachedHttpResponse)
+{
+io.vertx.ext.web.client.CachingWebClientOptions v4;
+io.vertx.ext.web.client.HttpResponse v12, v3;
+java.util.Set v5;
+io.vertx.core.Future v10, v13, v14, v9;
+java.lang.Integer v7;
+io.vertx.ext.web.client.impl.cache.CacheInterceptor v0;
+int v6;
+io.vertx.ext.web.client.impl.cache.CachedHttpResponse v2;
+boolean v11, v8;
+io.vertx.ext.web.client.impl.HttpContext v1;
+v0 := @this: io.vertx.ext.web.client.impl.cache.CacheInterceptor;
+v1 := @parameter0: io.vertx.ext.web.client.impl.HttpContext;
+v2 := @parameter1: io.vertx.ext.web.client.impl.cache.CachedHttpResponse;
+v3 = virtualinvoke v1.<io.vertx.ext.web.client.impl.HttpContext: io.vertx.ext.web.client.HttpResponse response()>();
+v4 = v0.<io.vertx.ext.web.client.impl.cache.CacheInterceptor: io.vertx.ext.web.client.CachingWebClientOptions options>;
+v5 = virtualinvoke v4.<io.vertx.ext.web.client.CachingWebClientOptions: java.util.Set getCachedStatusCodes()>();
+v6 = interfaceinvoke v3.<io.vertx.ext.web.client.HttpResponse: int statusCode()>();
+v7 = staticinvoke <java.lang.Integer: java.lang.Integer valueOf(int)>(v6);
+v8 = interfaceinvoke v5.<java.util.Set: boolean contains(java.lang.Object)>(v7);
+if v8 == 0 goto label1;
+v9 = specialinvoke v0.<io.vertx.ext.web.client.impl.cache.CacheInterceptor: io.vertx.core.Future cacheResponse(io.vertx.ext.web.client.impl.HttpContext,io.vertx.ext.web.client.HttpResponse)>(v1, v3);
+v10 = interfaceinvoke v9.<io.vertx.core.Future: io.vertx.core.Future map(java.lang.Object)>(v3);
+return v10;
+label1:
+if v2 == null goto label2;
+v11 = virtualinvoke v2.<io.vertx.ext.web.client.impl.cache.CachedHttpResponse: boolean useStaleIfError()>();
+if v11 == 0 goto label2;
+v12 = virtualinvoke v2.<io.vertx.ext.web.client.impl.cache.CachedHttpResponse: io.vertx.ext.web.client.HttpResponse rehydrate()>();
+v13 = staticinvoke <io.vertx.core.Future: io.vertx.core.Future succeededFuture(java.lang.Object)>(v12);
+return v13;
+label2:
+v14 = staticinvoke <io.vertx.core.Future: io.vertx.core.Future succeededFuture(java.lang.Object)>(v3);
+return v14;
+}
+private java.util.Optional respondFromCache(io.vertx.ext.web.client.impl.HttpContext, io.vertx.ext.web.client.impl.cache.CachedHttpResponse)
+{
+io.vertx.ext.web.client.HttpResponse v4;
+io.vertx.core.MultiMap v5;
+long v7;
+java.lang.Boolean v16;
+java.lang.String v18, v8;
+boolean v10, v12, v14;
+java.lang.CharSequence v6;
+io.vertx.ext.web.client.HttpRequest v17;
+io.vertx.ext.web.client.impl.cache.CacheInterceptor v0;
+java.util.Optional v11, v13, v20, v21, v3;
+io.vertx.ext.web.client.impl.cache.CachedHttpResponse v2;
+java.lang.Object v19;
+io.vertx.ext.web.client.impl.cache.CacheControl v9;
+io.vertx.ext.web.client.impl.HttpContext v1, v15;
+v0 := @this: io.vertx.ext.web.client.impl.cache.CacheInterceptor;
+v1 := @parameter0: io.vertx.ext.web.client.impl.HttpContext;
+v2 := @parameter1: io.vertx.ext.web.client.impl.cache.CachedHttpResponse;
+if v2 != null goto label1;
+v3 = staticinvoke <java.util.Optional: java.util.Optional empty()>();
+return v3;
+label1:
+v4 = virtualinvoke v2.<io.vertx.ext.web.client.impl.cache.CachedHttpResponse: io.vertx.ext.web.client.HttpResponse rehydrate()>();
+v5 = interfaceinvoke v4.<io.vertx.ext.web.client.HttpResponse: io.vertx.core.MultiMap headers()>();
+v6 = <io.vertx.core.http.HttpHeaders: java.lang.CharSequence AGE>;
+v7 = virtualinvoke v2.<io.vertx.ext.web.client.impl.cache.CachedHttpResponse: long age()>();
+v8 = staticinvoke <java.lang.Long: java.lang.String toString(long)>(v7);
+interfaceinvoke v5.<io.vertx.core.MultiMap: io.vertx.core.MultiMap set(java.lang.CharSequence,java.lang.CharSequence)>(v6, v8);
+v9 = virtualinvoke v2.<io.vertx.ext.web.client.impl.cache.CachedHttpResponse: io.vertx.ext.web.client.impl.cache.CacheControl getCacheControl()>();
+v10 = virtualinvoke v9.<io.vertx.ext.web.client.impl.cache.CacheControl: boolean noCache()>();
+if v10 == 0 goto label2;
+specialinvoke v0.<io.vertx.ext.web.client.impl.cache.CacheInterceptor: void markForRevalidation(io.vertx.ext.web.client.impl.HttpContext,io.vertx.ext.web.client.impl.cache.CachedHttpResponse)>(v1, v2);
+v11 = staticinvoke <java.util.Optional: java.util.Optional empty()>();
+return v11;
+label2:
+v12 = virtualinvoke v2.<io.vertx.ext.web.client.impl.cache.CachedHttpResponse: boolean isFresh()>();
+if v12 == 0 goto label3;
+v13 = staticinvoke <java.util.Optional: java.util.Optional of(java.lang.Object)>(v4);
+return v13;
+label3:
+v14 = virtualinvoke v2.<io.vertx.ext.web.client.impl.cache.CachedHttpResponse: boolean useStaleWhileRevalidate()>();
+if v14 == 0 goto label4;
+v15 = virtualinvoke v1.<io.vertx.ext.web.client.impl.HttpContext: io.vertx.ext.web.client.impl.HttpContext duplicate()>();
+v16 = staticinvoke <java.lang.Boolean: java.lang.Boolean valueOf(boolean)>(1);
+virtualinvoke v15.<io.vertx.ext.web.client.impl.HttpContext: io.vertx.ext.web.client.impl.HttpContext set(java.lang.String,java.lang.Object)>("cache.revalidation", v16);
+v17 = virtualinvoke v1.<io.vertx.ext.web.client.impl.HttpContext: io.vertx.ext.web.client.HttpRequest request()>();
+v18 = virtualinvoke v1.<io.vertx.ext.web.client.impl.HttpContext: java.lang.String contentType()>();
+v19 = virtualinvoke v1.<io.vertx.ext.web.client.impl.HttpContext: java.lang.Object body()>();
+virtualinvoke v15.<io.vertx.ext.web.client.impl.HttpContext: void prepareRequest(io.vertx.ext.web.client.HttpRequest,java.lang.String,java.lang.Object)>(v17, v18, v19);
+v20 = staticinvoke <java.util.Optional: java.util.Optional of(java.lang.Object)>(v4);
+return v20;
+label4:
+specialinvoke v0.<io.vertx.ext.web.client.impl.cache.CacheInterceptor: void markForRevalidation(io.vertx.ext.web.client.impl.HttpContext,io.vertx.ext.web.client.impl.cache.CachedHttpResponse)>(v1, v2);
+v21 = staticinvoke <java.util.Optional: java.util.Optional empty()>();
+return v21;
+}
+private void markForRevalidation(io.vertx.ext.web.client.impl.HttpContext, io.vertx.ext.web.client.impl.cache.CachedHttpResponse)
+{
+java.lang.CharSequence v6;
+io.vertx.ext.web.client.impl.cache.CacheInterceptor v0;
+io.vertx.core.http.RequestOptions v5;
+io.vertx.ext.web.client.impl.cache.CachedHttpResponse v2;
+java.lang.String v4;
+io.vertx.ext.web.client.impl.cache.CacheControl v3;
+io.vertx.ext.web.client.impl.HttpContext v1;
+v0 := @this: io.vertx.ext.web.client.impl.cache.CacheInterceptor;
+v1 := @parameter0: io.vertx.ext.web.client.impl.HttpContext;
+v2 := @parameter1: io.vertx.ext.web.client.impl.cache.CachedHttpResponse;
+v3 = virtualinvoke v2.<io.vertx.ext.web.client.impl.cache.CachedHttpResponse: io.vertx.ext.web.client.impl.cache.CacheControl getCacheControl()>();
+v4 = virtualinvoke v3.<io.vertx.ext.web.client.impl.cache.CacheControl: java.lang.String getEtag()>();
+if v4 == null goto label1;
+v5 = virtualinvoke v1.<io.vertx.ext.web.client.impl.HttpContext: io.vertx.core.http.RequestOptions requestOptions()>();
+v6 = <io.vertx.core.http.HttpHeaders: java.lang.CharSequence IF_NONE_MATCH>;
+virtualinvoke v5.<io.vertx.core.http.RequestOptions: io.vertx.core.http.RequestOptions putHeader(java.lang.CharSequence,java.lang.CharSequence)>(v6, v4);
+label1:
+virtualinvoke v1.<io.vertx.ext.web.client.impl.HttpContext: io.vertx.ext.web.client.impl.HttpContext set(java.lang.String,java.lang.Object)>("cache.response_to_revalidate", v2);
+return;
+}
+private io.vertx.core.Future processRevalidationResponse(io.vertx.ext.web.client.impl.HttpContext, io.vertx.ext.web.client.impl.cache.CachedHttpResponse)
+{
+io.vertx.ext.web.client.HttpResponse v3, v5;
+io.vertx.core.Future v6, v7;
+io.vertx.ext.web.client.impl.cache.CacheInterceptor v0;
+int v4;
+io.vertx.ext.web.client.impl.cache.CachedHttpResponse v2;
+io.vertx.ext.web.client.impl.HttpContext v1;
+v0 := @this: io.vertx.ext.web.client.impl.cache.CacheInterceptor;
+v1 := @parameter0: io.vertx.ext.web.client.impl.HttpContext;
+v2 := @parameter1: io.vertx.ext.web.client.impl.cache.CachedHttpResponse;
+v3 = virtualinvoke v1.<io.vertx.ext.web.client.impl.HttpContext: io.vertx.ext.web.client.HttpResponse response()>();
+v4 = interfaceinvoke v3.<io.vertx.ext.web.client.HttpResponse: int statusCode()>();
+if v4 != 304 goto label1;
+v5 = virtualinvoke v2.<io.vertx.ext.web.client.impl.cache.CachedHttpResponse: io.vertx.ext.web.client.HttpResponse rehydrate()>();
+v6 = specialinvoke v0.<io.vertx.ext.web.client.impl.cache.CacheInterceptor: io.vertx.core.Future cacheResponse(io.vertx.ext.web.client.impl.HttpContext,io.vertx.ext.web.client.HttpResponse)>(v1, v5);
+return v6;
+label1:
+v7 = specialinvoke v0.<io.vertx.ext.web.client.impl.cache.CacheInterceptor: io.vertx.core.Future processResponse(io.vertx.ext.web.client.impl.HttpContext,io.vertx.ext.web.client.impl.cache.CachedHttpResponse)>(v1, v2);
+return v7;
+}
+private io.vertx.core.Future cacheResponse(io.vertx.ext.web.client.impl.HttpContext, io.vertx.ext.web.client.HttpResponse)
+{
+io.vertx.ext.web.client.CachingWebClientOptions v12;
+io.vertx.ext.web.client.HttpResponse v2;
+io.vertx.core.MultiMap v18, v19, v4;
+io.vertx.ext.web.client.impl.cache.CacheKey v20;
+io.vertx.core.http.RequestOptions v16, v21;
+io.vertx.ext.web.client.impl.cache.Vary v17;
+boolean v11, v13, v23, v6, v8;
+io.vertx.core.Future v10, v14, v25, v26, v28, v29, v7;
+io.vertx.ext.web.client.HttpRequest v3;
+io.vertx.ext.web.client.impl.cache.CacheInterceptor v0;
+io.vertx.ext.web.client.impl.cache.CacheVariationsKey v15;
+io.vertx.ext.web.client.impl.cache.CachedHttpResponse v22;
+io.vertx.ext.web.client.spi.CacheStore v24, v27, v9;
+io.vertx.ext.web.client.impl.cache.CacheControl v5;
+io.vertx.ext.web.client.impl.HttpContext v1;
+v0 := @this: io.vertx.ext.web.client.impl.cache.CacheInterceptor;
+v1 := @parameter0: io.vertx.ext.web.client.impl.HttpContext;
+v2 := @parameter1: io.vertx.ext.web.client.HttpResponse;
+v3 = virtualinvoke v1.<io.vertx.ext.web.client.impl.HttpContext: io.vertx.ext.web.client.HttpRequest request()>();
+v4 = interfaceinvoke v2.<io.vertx.ext.web.client.HttpResponse: io.vertx.core.MultiMap headers()>();
+v5 = staticinvoke <io.vertx.ext.web.client.impl.cache.CacheControl: io.vertx.ext.web.client.impl.cache.CacheControl parse(io.vertx.core.MultiMap)>(v4);
+v6 = virtualinvoke v5.<io.vertx.ext.web.client.impl.cache.CacheControl: boolean isCacheable()>();
+if v6 != 0 goto label1;
+v7 = staticinvoke <io.vertx.core.Future: io.vertx.core.Future succeededFuture(java.lang.Object)>(v2);
+return v7;
+label1:
+v8 = virtualinvoke v5.<io.vertx.ext.web.client.impl.cache.CacheControl: boolean isPrivate()>();
+if v8 == 0 goto label2;
+v9 = virtualinvoke v1.<io.vertx.ext.web.client.impl.HttpContext: io.vertx.ext.web.client.spi.CacheStore privateCacheStore()>();
+if v9 != null goto label2;
+v10 = staticinvoke <io.vertx.core.Future: io.vertx.core.Future succeededFuture(java.lang.Object)>(v2);
+return v10;
+label2:
+v11 = virtualinvoke v5.<io.vertx.ext.web.client.impl.cache.CacheControl: boolean isVarying()>();
+if v11 == 0 goto label3;
+v12 = v0.<io.vertx.ext.web.client.impl.cache.CacheInterceptor: io.vertx.ext.web.client.CachingWebClientOptions options>;
+v13 = virtualinvoke v12.<io.vertx.ext.web.client.CachingWebClientOptions: boolean isVaryCachingEnabled()>();
+if v13 != 0 goto label3;
+v14 = staticinvoke <io.vertx.core.Future: io.vertx.core.Future succeededFuture(java.lang.Object)>(v2);
+return v14;
+label3:
+v15 = new io.vertx.ext.web.client.impl.cache.CacheVariationsKey;
+v16 = virtualinvoke v1.<io.vertx.ext.web.client.impl.HttpContext: io.vertx.core.http.RequestOptions requestOptions()>();
+specialinvoke v15.<io.vertx.ext.web.client.impl.cache.CacheVariationsKey: void <init>(io.vertx.core.http.RequestOptions)>(v16);
+v17 = new io.vertx.ext.web.client.impl.cache.Vary;
+v18 = interfaceinvoke v3.<io.vertx.ext.web.client.HttpRequest: io.vertx.core.MultiMap headers()>();
+v19 = interfaceinvoke v2.<io.vertx.ext.web.client.HttpResponse: io.vertx.core.MultiMap headers()>();
+specialinvoke v17.<io.vertx.ext.web.client.impl.cache.Vary: void <init>(io.vertx.core.MultiMap,io.vertx.core.MultiMap)>(v18, v19);
+specialinvoke v0.<io.vertx.ext.web.client.impl.cache.CacheInterceptor: void registerVariation(io.vertx.ext.web.client.impl.cache.CacheVariationsKey,io.vertx.ext.web.client.impl.cache.Vary)>(v15, v17);
+v20 = new io.vertx.ext.web.client.impl.cache.CacheKey;
+v21 = virtualinvoke v1.<io.vertx.ext.web.client.impl.HttpContext: io.vertx.core.http.RequestOptions requestOptions()>();
+specialinvoke v20.<io.vertx.ext.web.client.impl.cache.CacheKey: void <init>(io.vertx.core.http.RequestOptions,io.vertx.ext.web.client.impl.cache.Vary)>(v21, v17);
+v22 = staticinvoke <io.vertx.ext.web.client.impl.cache.CachedHttpResponse: io.vertx.ext.web.client.impl.cache.CachedHttpResponse wrap(io.vertx.ext.web.client.HttpResponse,io.vertx.ext.web.client.impl.cache.CacheControl)>(v2, v5);
+v23 = virtualinvoke v5.<io.vertx.ext.web.client.impl.cache.CacheControl: boolean isPrivate()>();
+if v23 == 0 goto label4;
+v24 = virtualinvoke v1.<io.vertx.ext.web.client.impl.HttpContext: io.vertx.ext.web.client.spi.CacheStore privateCacheStore()>();
+v25 = interfaceinvoke v24.<io.vertx.ext.web.client.spi.CacheStore: io.vertx.core.Future set(io.vertx.ext.web.client.impl.cache.CacheKey,io.vertx.ext.web.client.impl.cache.CachedHttpResponse)>(v20, v22);
+v26 = interfaceinvoke v25.<io.vertx.core.Future: io.vertx.core.Future map(java.lang.Object)>(v2);
+return v26;
+label4:
+v27 = v0.<io.vertx.ext.web.client.impl.cache.CacheInterceptor: io.vertx.ext.web.client.spi.CacheStore publicCacheStore>;
+v28 = interfaceinvoke v27.<io.vertx.ext.web.client.spi.CacheStore: io.vertx.core.Future set(io.vertx.ext.web.client.impl.cache.CacheKey,io.vertx.ext.web.client.impl.cache.CachedHttpResponse)>(v20, v22);
+v29 = interfaceinvoke v28.<io.vertx.core.Future: io.vertx.core.Future map(java.lang.Object)>(v2);
+return v29;
+}
+private void registerVariation(io.vertx.ext.web.client.impl.cache.CacheVariationsKey, io.vertx.ext.web.client.impl.cache.Vary)
+{
+java.util.Set v4;
+java.util.HashSet v6;
+io.vertx.ext.web.client.impl.cache.Vary v2;
+io.vertx.ext.web.client.impl.cache.CacheInterceptor v0;
+java.util.Map v3, v7;
+io.vertx.ext.web.client.impl.cache.CacheVariationsKey v1;
+java.lang.Object v5;
+v0 := @this: io.vertx.ext.web.client.impl.cache.CacheInterceptor;
+v1 := @parameter0: io.vertx.ext.web.client.impl.cache.CacheVariationsKey;
+v2 := @parameter1: io.vertx.ext.web.client.impl.cache.Vary;
+v3 = v0.<io.vertx.ext.web.client.impl.cache.CacheInterceptor: java.util.Map variationsRegistry>;
+v4 = staticinvoke <java.util.Collections: java.util.Set emptySet()>();
+v5 = interfaceinvoke v3.<java.util.Map: java.lang.Object getOrDefault(java.lang.Object,java.lang.Object)>(v1, v4);
+v6 = new java.util.HashSet;
+specialinvoke v6.<java.util.HashSet: void <init>(java.util.Collection)>(v5);
+interfaceinvoke v6.<java.util.Set: boolean add(java.lang.Object)>(v2);
+v7 = v0.<io.vertx.ext.web.client.impl.cache.CacheInterceptor: java.util.Map variationsRegistry>;
+interfaceinvoke v7.<java.util.Map: java.lang.Object put(java.lang.Object,java.lang.Object)>(v1, v6);
+return;
+}
+}

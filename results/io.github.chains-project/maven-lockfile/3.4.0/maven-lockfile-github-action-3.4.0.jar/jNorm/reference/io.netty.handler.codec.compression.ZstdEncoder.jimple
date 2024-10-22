@@ -1,0 +1,238 @@
+public final class io.netty.handler.codec.compression.ZstdEncoder extends io.netty.handler.codec.MessageToByteEncoder
+{
+private final int blockSize;
+private final int compressionLevel;
+private final int maxEncodeSize;
+private io.netty.buffer.ByteBuf buffer;
+public void <init>()
+{
+io.netty.handler.codec.compression.ZstdEncoder v0;
+v0 := @this: io.netty.handler.codec.compression.ZstdEncoder;
+specialinvoke v0.<io.netty.handler.codec.compression.ZstdEncoder: void <init>(int,int,int)>(3, 65536, 33554432);
+return;
+}
+public void <init>(int)
+{
+int v1;
+io.netty.handler.codec.compression.ZstdEncoder v0;
+v0 := @this: io.netty.handler.codec.compression.ZstdEncoder;
+v1 := @parameter0: int;
+specialinvoke v0.<io.netty.handler.codec.compression.ZstdEncoder: void <init>(int,int,int)>(v1, 65536, 33554432);
+return;
+}
+public void <init>(int, int)
+{
+int v1, v2;
+io.netty.handler.codec.compression.ZstdEncoder v0;
+v0 := @this: io.netty.handler.codec.compression.ZstdEncoder;
+v1 := @parameter0: int;
+v2 := @parameter1: int;
+specialinvoke v0.<io.netty.handler.codec.compression.ZstdEncoder: void <init>(int,int,int)>(3, v1, v2);
+return;
+}
+public void <init>(int, int, int)
+{
+io.netty.handler.codec.compression.ZstdEncoder v0;
+int v1, v2, v3, v4, v5, v6;
+v0 := @this: io.netty.handler.codec.compression.ZstdEncoder;
+v1 := @parameter0: int;
+v2 := @parameter1: int;
+v3 := @parameter2: int;
+specialinvoke v0.<io.netty.handler.codec.MessageToByteEncoder: void <init>(boolean)>(1);
+v4 = staticinvoke <io.netty.util.internal.ObjectUtil: int checkInRange(int,int,int,java.lang.String)>(v1, 0, 22, "compressionLevel");
+v0.<io.netty.handler.codec.compression.ZstdEncoder: int compressionLevel> = v4;
+v5 = staticinvoke <io.netty.util.internal.ObjectUtil: int checkPositive(int,java.lang.String)>(v2, "blockSize");
+v0.<io.netty.handler.codec.compression.ZstdEncoder: int blockSize> = v5;
+v6 = staticinvoke <io.netty.util.internal.ObjectUtil: int checkPositive(int,java.lang.String)>(v3, "maxEncodeSize");
+v0.<io.netty.handler.codec.compression.ZstdEncoder: int maxEncodeSize> = v6;
+return;
+}
+protected io.netty.buffer.ByteBuf allocateBuffer(io.netty.channel.ChannelHandlerContext, io.netty.buffer.ByteBuf, boolean)
+{
+java.lang.IllegalStateException v5;
+io.netty.handler.codec.EncoderException v10, v18;
+io.netty.buffer.ByteBufAllocator v21;
+long v11, v14;
+io.netty.channel.ChannelHandlerContext v1;
+byte v16, v17;
+io.netty.buffer.ByteBuf v2, v22, v4, v7;
+int v12, v13, v15, v19, v6, v8, v9;
+java.lang.String v20;
+boolean v3;
+io.netty.handler.codec.compression.ZstdEncoder v0;
+v0 := @this: io.netty.handler.codec.compression.ZstdEncoder;
+v1 := @parameter0: io.netty.channel.ChannelHandlerContext;
+v2 := @parameter1: io.netty.buffer.ByteBuf;
+v3 := @parameter2: boolean;
+v4 = v0.<io.netty.handler.codec.compression.ZstdEncoder: io.netty.buffer.ByteBuf buffer>;
+if v4 != null goto label1;
+v5 = new java.lang.IllegalStateException;
+specialinvoke v5.<java.lang.IllegalStateException: void <init>(java.lang.String)>("not added to a pipeline,or has been removed,buffer is null");
+throw v5;
+label1:
+v6 = virtualinvoke v2.<io.netty.buffer.ByteBuf: int readableBytes()>();
+v7 = v0.<io.netty.handler.codec.compression.ZstdEncoder: io.netty.buffer.ByteBuf buffer>;
+v8 = virtualinvoke v7.<io.netty.buffer.ByteBuf: int readableBytes()>();
+v9 = v6 + v8;
+if v9 >= 0 goto label2;
+v10 = new io.netty.handler.codec.EncoderException;
+specialinvoke v10.<io.netty.handler.codec.EncoderException: void <init>(java.lang.String)>("too much data to allocate a buffer for compression");
+throw v10;
+label2:
+v11 = 0L;
+label3:
+if v9 <= 0 goto label4;
+v12 = v0.<io.netty.handler.codec.compression.ZstdEncoder: int blockSize>;
+v13 = staticinvoke <java.lang.Math: int min(int,int)>(v12, v9);
+v9 = v9 - v13;
+v14 = staticinvoke <com.github.luben.zstd.Zstd: long compressBound(long)>(v13);
+v11 = v11 + v14;
+goto label3;
+label4:
+v15 = v0.<io.netty.handler.codec.compression.ZstdEncoder: int maxEncodeSize>;
+v16 = v11 cmp v15;
+if v16 > 0 goto label5;
+v17 = 0L cmp v11;
+if v17 <= 0 goto label6;
+label5:
+v18 = new io.netty.handler.codec.EncoderException;
+v19 = v0.<io.netty.handler.codec.compression.ZstdEncoder: int maxEncodeSize>;
+v20 = dynamicinvoke "makeConcatWithConstants" <java.lang.String (long,int)>(v11, v19) <java.lang.invoke.StringConcatFactory: java.lang.invoke.CallSite makeConcatWithConstants(java.lang.invoke.MethodHandles$Lookup,java.lang.String,java.lang.invoke.MethodType,java.lang.String,java.lang.Object[])>("requested encode buffer size (\u0001 bytes) exceeds the maximum allowable size (\u0001 bytes)");
+specialinvoke v18.<io.netty.handler.codec.EncoderException: void <init>(java.lang.String)>(v20);
+throw v18;
+label6:
+v21 = interfaceinvoke v1.<io.netty.channel.ChannelHandlerContext: io.netty.buffer.ByteBufAllocator alloc()>();
+v22 = interfaceinvoke v21.<io.netty.buffer.ByteBufAllocator: io.netty.buffer.ByteBuf directBuffer(int)>(v11);
+return v22;
+}
+protected void encode(io.netty.channel.ChannelHandlerContext, io.netty.buffer.ByteBuf, io.netty.buffer.ByteBuf)
+{
+java.lang.IllegalStateException v5;
+io.netty.channel.ChannelHandlerContext v1;
+io.netty.handler.codec.compression.ZstdEncoder v0;
+io.netty.buffer.ByteBuf v2, v3, v4, v6;
+int v7, v8, v9;
+boolean v10;
+v0 := @this: io.netty.handler.codec.compression.ZstdEncoder;
+v1 := @parameter0: io.netty.channel.ChannelHandlerContext;
+v2 := @parameter1: io.netty.buffer.ByteBuf;
+v3 := @parameter2: io.netty.buffer.ByteBuf;
+v4 = v0.<io.netty.handler.codec.compression.ZstdEncoder: io.netty.buffer.ByteBuf buffer>;
+if v4 != null goto label1;
+v5 = new java.lang.IllegalStateException;
+specialinvoke v5.<java.lang.IllegalStateException: void <init>(java.lang.String)>("not added to a pipeline,or has been removed,buffer is null");
+throw v5;
+label1:
+v6 = v0.<io.netty.handler.codec.compression.ZstdEncoder: io.netty.buffer.ByteBuf buffer>;
+label2:
+v7 = virtualinvoke v2.<io.netty.buffer.ByteBuf: int readableBytes()>();
+if v7 <= 0 goto label3;
+v8 = virtualinvoke v6.<io.netty.buffer.ByteBuf: int writableBytes()>();
+v9 = staticinvoke <java.lang.Math: int min(int,int)>(v7, v8);
+virtualinvoke v2.<io.netty.buffer.ByteBuf: io.netty.buffer.ByteBuf readBytes(io.netty.buffer.ByteBuf,int)>(v6, v9);
+v10 = virtualinvoke v6.<io.netty.buffer.ByteBuf: boolean isWritable()>();
+if v10 != 0 goto label2;
+specialinvoke v0.<io.netty.handler.codec.compression.ZstdEncoder: void flushBufferedData(io.netty.buffer.ByteBuf)>(v3);
+goto label2;
+label3:
+return;
+}
+private void flushBufferedData(io.netty.buffer.ByteBuf)
+{
+io.netty.handler.codec.compression.CompressionException v15;
+long v4;
+java.nio.ByteBuffer v11, v7;
+io.netty.buffer.ByteBuf v1, v17, v2, v8, v9;
+int v10, v12, v13, v16, v3, v5, v6;
+java.lang.Exception v14;
+io.netty.handler.codec.compression.ZstdEncoder v0;
+v0 := @this: io.netty.handler.codec.compression.ZstdEncoder;
+v1 := @parameter0: io.netty.buffer.ByteBuf;
+v2 = v0.<io.netty.handler.codec.compression.ZstdEncoder: io.netty.buffer.ByteBuf buffer>;
+v3 = virtualinvoke v2.<io.netty.buffer.ByteBuf: int readableBytes()>();
+if v3 != 0 goto label1;
+return;
+label1:
+v4 = staticinvoke <com.github.luben.zstd.Zstd: long compressBound(long)>(v3);
+virtualinvoke v1.<io.netty.buffer.ByteBuf: io.netty.buffer.ByteBuf ensureWritable(int)>(v4);
+v5 = virtualinvoke v1.<io.netty.buffer.ByteBuf: int writerIndex()>();
+label2:
+v6 = virtualinvoke v1.<io.netty.buffer.ByteBuf: int writableBytes()>();
+v7 = virtualinvoke v1.<io.netty.buffer.ByteBuf: java.nio.ByteBuffer internalNioBuffer(int,int)>(v5, v6);
+v8 = v0.<io.netty.handler.codec.compression.ZstdEncoder: io.netty.buffer.ByteBuf buffer>;
+v9 = v0.<io.netty.handler.codec.compression.ZstdEncoder: io.netty.buffer.ByteBuf buffer>;
+v10 = virtualinvoke v9.<io.netty.buffer.ByteBuf: int readerIndex()>();
+v11 = virtualinvoke v8.<io.netty.buffer.ByteBuf: java.nio.ByteBuffer internalNioBuffer(int,int)>(v10, v3);
+v12 = v0.<io.netty.handler.codec.compression.ZstdEncoder: int compressionLevel>;
+v13 = staticinvoke <com.github.luben.zstd.Zstd: int compress(java.nio.ByteBuffer,java.nio.ByteBuffer,int)>(v7, v11, v12);
+label3:
+goto label5;
+label4:
+v14 := @caughtexception;
+v15 = new io.netty.handler.codec.compression.CompressionException;
+specialinvoke v15.<io.netty.handler.codec.compression.CompressionException: void <init>(java.lang.Throwable)>(v14);
+throw v15;
+label5:
+v16 = v5 + v13;
+virtualinvoke v1.<io.netty.buffer.ByteBuf: io.netty.buffer.ByteBuf writerIndex(int)>(v16);
+v17 = v0.<io.netty.handler.codec.compression.ZstdEncoder: io.netty.buffer.ByteBuf buffer>;
+virtualinvoke v17.<io.netty.buffer.ByteBuf: io.netty.buffer.ByteBuf clear()>();
+return;
+catch java.lang.Exception from label2 to label3 with label4;
+}
+public void flush(io.netty.channel.ChannelHandlerContext)
+{
+io.netty.channel.ChannelHandlerContext v1;
+io.netty.handler.codec.compression.ZstdEncoder v0;
+io.netty.buffer.ByteBuf v2, v3, v5, v7;
+boolean v4, v6;
+v0 := @this: io.netty.handler.codec.compression.ZstdEncoder;
+v1 := @parameter0: io.netty.channel.ChannelHandlerContext;
+v2 = v0.<io.netty.handler.codec.compression.ZstdEncoder: io.netty.buffer.ByteBuf buffer>;
+if v2 == null goto label1;
+v3 = v0.<io.netty.handler.codec.compression.ZstdEncoder: io.netty.buffer.ByteBuf buffer>;
+v4 = virtualinvoke v3.<io.netty.buffer.ByteBuf: boolean isReadable()>();
+if v4 == 0 goto label1;
+v5 = <io.netty.buffer.Unpooled: io.netty.buffer.ByteBuf EMPTY_BUFFER>;
+v6 = virtualinvoke v0.<io.netty.handler.codec.compression.ZstdEncoder: boolean isPreferDirect()>();
+v7 = virtualinvoke v0.<io.netty.handler.codec.compression.ZstdEncoder: io.netty.buffer.ByteBuf allocateBuffer(io.netty.channel.ChannelHandlerContext,io.netty.buffer.ByteBuf,boolean)>(v1, v5, v6);
+specialinvoke v0.<io.netty.handler.codec.compression.ZstdEncoder: void flushBufferedData(io.netty.buffer.ByteBuf)>(v7);
+interfaceinvoke v1.<io.netty.channel.ChannelHandlerContext: io.netty.channel.ChannelFuture write(java.lang.Object)>(v7);
+label1:
+interfaceinvoke v1.<io.netty.channel.ChannelHandlerContext: io.netty.channel.ChannelHandlerContext flush()>();
+return;
+}
+public void handlerAdded(io.netty.channel.ChannelHandlerContext)
+{
+io.netty.channel.ChannelHandlerContext v1;
+io.netty.handler.codec.compression.ZstdEncoder v0;
+io.netty.buffer.ByteBuf v4, v5;
+io.netty.buffer.ByteBufAllocator v2;
+int v3;
+v0 := @this: io.netty.handler.codec.compression.ZstdEncoder;
+v1 := @parameter0: io.netty.channel.ChannelHandlerContext;
+v2 = interfaceinvoke v1.<io.netty.channel.ChannelHandlerContext: io.netty.buffer.ByteBufAllocator alloc()>();
+v3 = v0.<io.netty.handler.codec.compression.ZstdEncoder: int blockSize>;
+v4 = interfaceinvoke v2.<io.netty.buffer.ByteBufAllocator: io.netty.buffer.ByteBuf directBuffer(int)>(v3);
+v0.<io.netty.handler.codec.compression.ZstdEncoder: io.netty.buffer.ByteBuf buffer> = v4;
+v5 = v0.<io.netty.handler.codec.compression.ZstdEncoder: io.netty.buffer.ByteBuf buffer>;
+virtualinvoke v5.<io.netty.buffer.ByteBuf: io.netty.buffer.ByteBuf clear()>();
+return;
+}
+public void handlerRemoved(io.netty.channel.ChannelHandlerContext) throws java.lang.Exception
+{
+io.netty.channel.ChannelHandlerContext v1;
+io.netty.handler.codec.compression.ZstdEncoder v0;
+io.netty.buffer.ByteBuf v2, v3;
+v0 := @this: io.netty.handler.codec.compression.ZstdEncoder;
+v1 := @parameter0: io.netty.channel.ChannelHandlerContext;
+specialinvoke v0.<io.netty.handler.codec.MessageToByteEncoder: void handlerRemoved(io.netty.channel.ChannelHandlerContext)>(v1);
+v2 = v0.<io.netty.handler.codec.compression.ZstdEncoder: io.netty.buffer.ByteBuf buffer>;
+if v2 == null goto label1;
+v3 = v0.<io.netty.handler.codec.compression.ZstdEncoder: io.netty.buffer.ByteBuf buffer>;
+virtualinvoke v3.<io.netty.buffer.ByteBuf: boolean release()>();
+v0.<io.netty.handler.codec.compression.ZstdEncoder: io.netty.buffer.ByteBuf buffer> = null;
+label1:
+return;
+}
+}

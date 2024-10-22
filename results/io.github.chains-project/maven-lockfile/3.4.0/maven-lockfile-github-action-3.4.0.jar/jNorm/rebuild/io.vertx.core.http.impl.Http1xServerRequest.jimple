@@ -1,0 +1,1425 @@
+public class io.vertx.core.http.impl.Http1xServerRequest extends io.vertx.core.http.impl.HttpServerRequestInternal implements io.vertx.core.spi.observability.HttpRequest
+{
+private static final io.vertx.core.impl.logging.Logger log;
+private final io.vertx.core.http.impl.Http1xServerConnection conn;
+final io.vertx.core.impl.ContextInternal context;
+private io.netty.handler.codec.http.HttpRequest request;
+private io.vertx.core.http.HttpVersion version;
+private io.vertx.core.http.HttpMethod method;
+private java.lang.String uri;
+private java.lang.String path;
+private java.lang.String query;
+io.vertx.core.http.impl.Http1xServerRequest next;
+java.lang.Object metric;
+java.lang.Object trace;
+private io.vertx.core.http.impl.Http1xServerResponse response;
+private java.nio.charset.Charset paramsCharset;
+private io.vertx.core.MultiMap params;
+private io.vertx.core.MultiMap headers;
+private java.lang.String absoluteURI;
+private io.vertx.core.http.impl.HttpEventHandler eventHandler;
+private io.vertx.core.Handler uploadHandler;
+private io.vertx.core.MultiMap attributes;
+private io.netty.handler.codec.http.multipart.HttpPostRequestDecoder decoder;
+private boolean ended;
+private long bytesRead;
+private io.vertx.core.streams.impl.InboundBuffer pending;
+void <init>(io.vertx.core.http.impl.Http1xServerConnection, io.netty.handler.codec.http.HttpRequest, io.vertx.core.impl.ContextInternal)
+{
+io.netty.handler.codec.http.HttpRequest v2;
+io.vertx.core.http.impl.Http1xServerRequest v0;
+java.nio.charset.Charset v4;
+io.vertx.core.impl.ContextInternal v3;
+io.vertx.core.http.impl.Http1xServerConnection v1;
+v0 := @this: io.vertx.core.http.impl.Http1xServerRequest;
+v1 := @parameter0: io.vertx.core.http.impl.Http1xServerConnection;
+v2 := @parameter1: io.netty.handler.codec.http.HttpRequest;
+v3 := @parameter2: io.vertx.core.impl.ContextInternal;
+specialinvoke v0.<io.vertx.core.http.impl.HttpServerRequestInternal: void <init>()>();
+v4 = <java.nio.charset.StandardCharsets: java.nio.charset.Charset UTF_8>;
+v0.<io.vertx.core.http.impl.Http1xServerRequest: java.nio.charset.Charset paramsCharset> = v4;
+v0.<io.vertx.core.http.impl.Http1xServerRequest: io.vertx.core.http.impl.Http1xServerConnection conn> = v1;
+v0.<io.vertx.core.http.impl.Http1xServerRequest: io.vertx.core.impl.ContextInternal context> = v3;
+v0.<io.vertx.core.http.impl.Http1xServerRequest: io.netty.handler.codec.http.HttpRequest request> = v2;
+return;
+}
+private io.vertx.core.http.impl.HttpEventHandler eventHandler(boolean)
+{
+io.vertx.core.http.impl.Http1xServerRequest v0;
+io.vertx.core.http.impl.HttpEventHandler v2, v3, v5;
+io.vertx.core.impl.ContextInternal v4;
+boolean v1;
+v0 := @this: io.vertx.core.http.impl.Http1xServerRequest;
+v1 := @parameter0: boolean;
+v2 = v0.<io.vertx.core.http.impl.Http1xServerRequest: io.vertx.core.http.impl.HttpEventHandler eventHandler>;
+if v2 != null goto label1;
+if v1 == 0 goto label1;
+v3 = new io.vertx.core.http.impl.HttpEventHandler;
+v4 = v0.<io.vertx.core.http.impl.Http1xServerRequest: io.vertx.core.impl.ContextInternal context>;
+specialinvoke v3.<io.vertx.core.http.impl.HttpEventHandler: void <init>(io.vertx.core.impl.ContextInternal)>(v4);
+v0.<io.vertx.core.http.impl.Http1xServerRequest: io.vertx.core.http.impl.HttpEventHandler eventHandler> = v3;
+label1:
+v5 = v0.<io.vertx.core.http.impl.Http1xServerRequest: io.vertx.core.http.impl.HttpEventHandler eventHandler>;
+return v5;
+}
+io.netty.handler.codec.http.HttpRequest nettyRequest()
+{
+java.lang.Throwable v3;
+io.netty.handler.codec.http.HttpRequest v2;
+io.vertx.core.http.impl.Http1xServerRequest v0;
+io.vertx.core.http.impl.Http1xServerConnection v1;
+v0 := @this: io.vertx.core.http.impl.Http1xServerRequest;
+v1 = v0.<io.vertx.core.http.impl.Http1xServerRequest: io.vertx.core.http.impl.Http1xServerConnection conn>;
+entermonitor v1;
+label1:
+v2 = v0.<io.vertx.core.http.impl.Http1xServerRequest: io.netty.handler.codec.http.HttpRequest request>;
+exitmonitor v1;
+label2:
+return v2;
+label3:
+v3 := @caughtexception;
+exitmonitor v1;
+throw v3;
+catch java.lang.Throwable from label1 to label2 with label3;
+}
+void setRequest(io.netty.handler.codec.http.HttpRequest)
+{
+java.lang.Throwable v3;
+io.netty.handler.codec.http.HttpRequest v1;
+io.vertx.core.http.impl.Http1xServerRequest v0;
+io.vertx.core.http.impl.Http1xServerConnection v2;
+v0 := @this: io.vertx.core.http.impl.Http1xServerRequest;
+v1 := @parameter0: io.netty.handler.codec.http.HttpRequest;
+v2 = v0.<io.vertx.core.http.impl.Http1xServerRequest: io.vertx.core.http.impl.Http1xServerConnection conn>;
+entermonitor v2;
+label1:
+v0.<io.vertx.core.http.impl.Http1xServerRequest: io.netty.handler.codec.http.HttpRequest request> = v1;
+exitmonitor v2;
+label2:
+goto label4;
+label3:
+v3 := @caughtexception;
+exitmonitor v2;
+throw v3;
+label4:
+return;
+catch java.lang.Throwable from label1 to label2 with label3;
+}
+private io.vertx.core.streams.impl.InboundBuffer pendingQueue()
+{
+io.vertx.core.streams.impl.InboundBuffer v1, v2, v4, v6, v8;
+io.vertx.core.impl.ContextInternal v3;
+io.vertx.core.http.impl.Http1xServerRequest v0;
+io.vertx.core.Handler v5, v7;
+v0 := @this: io.vertx.core.http.impl.Http1xServerRequest;
+v1 = v0.<io.vertx.core.http.impl.Http1xServerRequest: io.vertx.core.streams.impl.InboundBuffer pending>;
+if v1 != null goto label1;
+v2 = new io.vertx.core.streams.impl.InboundBuffer;
+v3 = v0.<io.vertx.core.http.impl.Http1xServerRequest: io.vertx.core.impl.ContextInternal context>;
+specialinvoke v2.<io.vertx.core.streams.impl.InboundBuffer: void <init>(io.vertx.core.Context,long)>(v3, 8L);
+v0.<io.vertx.core.http.impl.Http1xServerRequest: io.vertx.core.streams.impl.InboundBuffer pending> = v2;
+v4 = v0.<io.vertx.core.http.impl.Http1xServerRequest: io.vertx.core.streams.impl.InboundBuffer pending>;
+v5 = staticinvoke <io.vertx.core.http.impl.Http1xServerRequest$lambda_pendingQueue_0__1155: io.vertx.core.Handler bootstrap$(io.vertx.core.http.impl.Http1xServerRequest)>(v0);
+virtualinvoke v4.<io.vertx.core.streams.impl.InboundBuffer: io.vertx.core.streams.impl.InboundBuffer drainHandler(io.vertx.core.Handler)>(v5);
+v6 = v0.<io.vertx.core.http.impl.Http1xServerRequest: io.vertx.core.streams.impl.InboundBuffer pending>;
+v7 = staticinvoke <io.vertx.core.http.impl.Http1xServerRequest$lambda_pendingQueue_1__1156: io.vertx.core.Handler bootstrap$(io.vertx.core.http.impl.Http1xServerRequest)>(v0);
+virtualinvoke v6.<io.vertx.core.streams.impl.InboundBuffer: io.vertx.core.streams.impl.InboundBuffer handler(io.vertx.core.Handler)>(v7);
+label1:
+v8 = v0.<io.vertx.core.http.impl.Http1xServerRequest: io.vertx.core.streams.impl.InboundBuffer pending>;
+return v8;
+}
+void handleContent(io.vertx.core.buffer.Buffer)
+{
+java.lang.Throwable v4;
+io.vertx.core.streams.impl.InboundBuffer v3;
+io.vertx.core.impl.ContextInternal v7;
+io.vertx.core.http.impl.Http1xServerConnection v2, v6;
+io.vertx.core.http.impl.Http1xServerRequest v0;
+io.vertx.core.buffer.Buffer v1;
+io.vertx.core.Handler v8;
+boolean v5;
+v0 := @this: io.vertx.core.http.impl.Http1xServerRequest;
+v1 := @parameter0: io.vertx.core.buffer.Buffer;
+v2 = v0.<io.vertx.core.http.impl.Http1xServerRequest: io.vertx.core.http.impl.Http1xServerConnection conn>;
+entermonitor v2;
+label1:
+v3 = v0.<io.vertx.core.http.impl.Http1xServerRequest: io.vertx.core.streams.impl.InboundBuffer pending>;
+exitmonitor v2;
+label2:
+goto label4;
+label3:
+v4 := @caughtexception;
+exitmonitor v2;
+throw v4;
+label4:
+if v3 == null goto label5;
+v5 = virtualinvoke v3.<io.vertx.core.streams.impl.InboundBuffer: boolean write(java.lang.Object)>(v1);
+if v5 != 0 goto label6;
+v6 = v0.<io.vertx.core.http.impl.Http1xServerRequest: io.vertx.core.http.impl.Http1xServerConnection conn>;
+virtualinvoke v6.<io.vertx.core.http.impl.Http1xServerConnection: void doPause()>();
+goto label6;
+label5:
+v7 = v0.<io.vertx.core.http.impl.Http1xServerRequest: io.vertx.core.impl.ContextInternal context>;
+v8 = staticinvoke <io.vertx.core.http.impl.Http1xServerRequest$onData__1157: io.vertx.core.Handler bootstrap$(io.vertx.core.http.impl.Http1xServerRequest)>(v0);
+interfaceinvoke v7.<io.vertx.core.impl.ContextInternal: void execute(java.lang.Object,io.vertx.core.Handler)>(v1, v8);
+label6:
+return;
+catch java.lang.Throwable from label1 to label2 with label3;
+}
+void handleBegin(boolean)
+{
+io.netty.handler.codec.http.HttpRequest v8;
+io.vertx.core.Vertx v5;
+io.vertx.core.impl.ContextInternal v6;
+io.vertx.core.http.impl.Http1xServerConnection v10, v4, v7;
+io.vertx.core.http.impl.Http1xServerResponse v3;
+io.vertx.core.http.impl.Http1xServerRequest v0;
+java.lang.Object v9;
+boolean v1, v11, v2;
+v0 := @this: io.vertx.core.http.impl.Http1xServerRequest;
+v1 := @parameter0: boolean;
+v2 = <io.vertx.core.spi.metrics.Metrics: boolean METRICS_ENABLED>;
+if v2 == 0 goto label1;
+specialinvoke v0.<io.vertx.core.http.impl.Http1xServerRequest: void reportRequestBegin()>();
+label1:
+v3 = new io.vertx.core.http.impl.Http1xServerResponse;
+v4 = v0.<io.vertx.core.http.impl.Http1xServerRequest: io.vertx.core.http.impl.Http1xServerConnection conn>;
+v5 = virtualinvoke v4.<io.vertx.core.http.impl.Http1xServerConnection: io.vertx.core.Vertx vertx()>();
+v6 = v0.<io.vertx.core.http.impl.Http1xServerRequest: io.vertx.core.impl.ContextInternal context>;
+v7 = v0.<io.vertx.core.http.impl.Http1xServerRequest: io.vertx.core.http.impl.Http1xServerConnection conn>;
+v8 = v0.<io.vertx.core.http.impl.Http1xServerRequest: io.netty.handler.codec.http.HttpRequest request>;
+v9 = v0.<io.vertx.core.http.impl.Http1xServerRequest: java.lang.Object metric>;
+specialinvoke v3.<io.vertx.core.http.impl.Http1xServerResponse: void <init>(io.vertx.core.impl.VertxInternal,io.vertx.core.impl.ContextInternal,io.vertx.core.http.impl.Http1xServerConnection,io.netty.handler.codec.http.HttpRequest,java.lang.Object,boolean)>(v5, v6, v7, v8, v9, v1);
+v0.<io.vertx.core.http.impl.Http1xServerRequest: io.vertx.core.http.impl.Http1xServerResponse response> = v3;
+v10 = v0.<io.vertx.core.http.impl.Http1xServerRequest: io.vertx.core.http.impl.Http1xServerConnection conn>;
+v11 = v10.<io.vertx.core.http.impl.Http1xServerConnection: boolean handle100ContinueAutomatically>;
+if v11 == 0 goto label2;
+specialinvoke v0.<io.vertx.core.http.impl.Http1xServerRequest: void check100()>();
+label2:
+return;
+}
+void enqueue(io.vertx.core.http.impl.Http1xServerRequest)
+{
+io.vertx.core.http.impl.Http1xServerRequest v0, v1, v2, v3;
+v0 := @this: io.vertx.core.http.impl.Http1xServerRequest;
+v1 := @parameter0: io.vertx.core.http.impl.Http1xServerRequest;
+v2 = v0;
+label1:
+v3 = v2.<io.vertx.core.http.impl.Http1xServerRequest: io.vertx.core.http.impl.Http1xServerRequest next>;
+if v3 == null goto label2;
+v2 = v2.<io.vertx.core.http.impl.Http1xServerRequest: io.vertx.core.http.impl.Http1xServerRequest next>;
+goto label1;
+label2:
+v2.<io.vertx.core.http.impl.Http1xServerRequest: io.vertx.core.http.impl.Http1xServerRequest next> = v1;
+return;
+}
+io.vertx.core.http.impl.Http1xServerRequest next()
+{
+io.vertx.core.http.impl.Http1xServerRequest v0, v1;
+v0 := @this: io.vertx.core.http.impl.Http1xServerRequest;
+v1 = v0.<io.vertx.core.http.impl.Http1xServerRequest: io.vertx.core.http.impl.Http1xServerRequest next>;
+return v1;
+}
+private void check100()
+{
+io.netty.handler.codec.http.HttpRequest v1;
+io.vertx.core.http.impl.Http1xServerRequest v0;
+io.vertx.core.http.impl.Http1xServerConnection v3;
+boolean v2;
+v0 := @this: io.vertx.core.http.impl.Http1xServerRequest;
+v1 = v0.<io.vertx.core.http.impl.Http1xServerRequest: io.netty.handler.codec.http.HttpRequest request>;
+v2 = staticinvoke <io.netty.handler.codec.http.HttpUtil: boolean is100ContinueExpected(io.netty.handler.codec.http.HttpMessage)>(v1);
+if v2 == 0 goto label1;
+v3 = v0.<io.vertx.core.http.impl.Http1xServerRequest: io.vertx.core.http.impl.Http1xServerConnection conn>;
+virtualinvoke v3.<io.vertx.core.http.impl.Http1xServerConnection: void write100Continue()>();
+label1:
+return;
+}
+public java.lang.Object metric()
+{
+java.lang.Object v1;
+io.vertx.core.http.impl.Http1xServerRequest v0;
+v0 := @this: io.vertx.core.http.impl.Http1xServerRequest;
+v1 = v0.<io.vertx.core.http.impl.Http1xServerRequest: java.lang.Object metric>;
+return v1;
+}
+java.lang.Object trace()
+{
+java.lang.Object v1;
+io.vertx.core.http.impl.Http1xServerRequest v0;
+v0 := @this: io.vertx.core.http.impl.Http1xServerRequest;
+v1 = v0.<io.vertx.core.http.impl.Http1xServerRequest: java.lang.Object trace>;
+return v1;
+}
+public io.vertx.core.Context context()
+{
+io.vertx.core.impl.ContextInternal v1;
+io.vertx.core.http.impl.Http1xServerRequest v0;
+v0 := @this: io.vertx.core.http.impl.Http1xServerRequest;
+v1 = v0.<io.vertx.core.http.impl.Http1xServerRequest: io.vertx.core.impl.ContextInternal context>;
+return v1;
+}
+public int id()
+{
+io.vertx.core.http.impl.Http1xServerRequest v0;
+v0 := @this: io.vertx.core.http.impl.Http1xServerRequest;
+return 0;
+}
+public io.vertx.core.http.HttpVersion version()
+{
+io.netty.handler.codec.http.HttpVersion v3, v4, v6;
+io.netty.handler.codec.http.HttpRequest v2;
+io.vertx.core.http.impl.Http1xServerRequest v0;
+io.vertx.core.http.HttpVersion v1, v5, v7, v8;
+v0 := @this: io.vertx.core.http.impl.Http1xServerRequest;
+v1 = v0.<io.vertx.core.http.impl.Http1xServerRequest: io.vertx.core.http.HttpVersion version>;
+if v1 != null goto label2;
+v2 = v0.<io.vertx.core.http.impl.Http1xServerRequest: io.netty.handler.codec.http.HttpRequest request>;
+v3 = interfaceinvoke v2.<io.netty.handler.codec.http.HttpRequest: io.netty.handler.codec.http.HttpVersion protocolVersion()>();
+v4 = <io.netty.handler.codec.http.HttpVersion: io.netty.handler.codec.http.HttpVersion HTTP_1_0>;
+if v3 != v4 goto label1;
+v5 = <io.vertx.core.http.HttpVersion: io.vertx.core.http.HttpVersion HTTP_1_0>;
+v0.<io.vertx.core.http.impl.Http1xServerRequest: io.vertx.core.http.HttpVersion version> = v5;
+goto label2;
+label1:
+v6 = <io.netty.handler.codec.http.HttpVersion: io.netty.handler.codec.http.HttpVersion HTTP_1_1>;
+if v3 != v6 goto label2;
+v7 = <io.vertx.core.http.HttpVersion: io.vertx.core.http.HttpVersion HTTP_1_1>;
+v0.<io.vertx.core.http.impl.Http1xServerRequest: io.vertx.core.http.HttpVersion version> = v7;
+label2:
+v8 = v0.<io.vertx.core.http.impl.Http1xServerRequest: io.vertx.core.http.HttpVersion version>;
+return v8;
+}
+public io.vertx.core.http.HttpMethod method()
+{
+io.netty.handler.codec.http.HttpRequest v2;
+io.vertx.core.http.impl.Http1xServerRequest v0;
+io.vertx.core.http.HttpMethod v1, v4, v5;
+io.netty.handler.codec.http.HttpMethod v3;
+v0 := @this: io.vertx.core.http.impl.Http1xServerRequest;
+v1 = v0.<io.vertx.core.http.impl.Http1xServerRequest: io.vertx.core.http.HttpMethod method>;
+if v1 != null goto label1;
+v2 = v0.<io.vertx.core.http.impl.Http1xServerRequest: io.netty.handler.codec.http.HttpRequest request>;
+v3 = interfaceinvoke v2.<io.netty.handler.codec.http.HttpRequest: io.netty.handler.codec.http.HttpMethod method()>();
+v4 = staticinvoke <io.vertx.core.http.HttpMethod: io.vertx.core.http.HttpMethod fromNetty(io.netty.handler.codec.http.HttpMethod)>(v3);
+v0.<io.vertx.core.http.impl.Http1xServerRequest: io.vertx.core.http.HttpMethod method> = v4;
+label1:
+v5 = v0.<io.vertx.core.http.impl.Http1xServerRequest: io.vertx.core.http.HttpMethod method>;
+return v5;
+}
+public java.lang.String uri()
+{
+io.netty.handler.codec.http.HttpRequest v2;
+io.vertx.core.http.impl.Http1xServerRequest v0;
+java.lang.String v1, v3, v4;
+v0 := @this: io.vertx.core.http.impl.Http1xServerRequest;
+v1 = v0.<io.vertx.core.http.impl.Http1xServerRequest: java.lang.String uri>;
+if v1 != null goto label1;
+v2 = v0.<io.vertx.core.http.impl.Http1xServerRequest: io.netty.handler.codec.http.HttpRequest request>;
+v3 = interfaceinvoke v2.<io.netty.handler.codec.http.HttpRequest: java.lang.String uri()>();
+v0.<io.vertx.core.http.impl.Http1xServerRequest: java.lang.String uri> = v3;
+label1:
+v4 = v0.<io.vertx.core.http.impl.Http1xServerRequest: java.lang.String uri>;
+return v4;
+}
+public java.lang.String path()
+{
+io.vertx.core.http.impl.Http1xServerRequest v0;
+java.lang.String v1, v2, v3, v4;
+v0 := @this: io.vertx.core.http.impl.Http1xServerRequest;
+v1 = v0.<io.vertx.core.http.impl.Http1xServerRequest: java.lang.String path>;
+if v1 != null goto label1;
+v2 = virtualinvoke v0.<io.vertx.core.http.impl.Http1xServerRequest: java.lang.String uri()>();
+v3 = staticinvoke <io.vertx.core.http.impl.HttpUtils: java.lang.String parsePath(java.lang.String)>(v2);
+v0.<io.vertx.core.http.impl.Http1xServerRequest: java.lang.String path> = v3;
+label1:
+v4 = v0.<io.vertx.core.http.impl.Http1xServerRequest: java.lang.String path>;
+return v4;
+}
+public java.lang.String query()
+{
+io.vertx.core.http.impl.Http1xServerRequest v0;
+java.lang.String v1, v2, v3, v4;
+v0 := @this: io.vertx.core.http.impl.Http1xServerRequest;
+v1 = v0.<io.vertx.core.http.impl.Http1xServerRequest: java.lang.String query>;
+if v1 != null goto label1;
+v2 = virtualinvoke v0.<io.vertx.core.http.impl.Http1xServerRequest: java.lang.String uri()>();
+v3 = staticinvoke <io.vertx.core.http.impl.HttpUtils: java.lang.String parseQuery(java.lang.String)>(v2);
+v0.<io.vertx.core.http.impl.Http1xServerRequest: java.lang.String query> = v3;
+label1:
+v4 = v0.<io.vertx.core.http.impl.Http1xServerRequest: java.lang.String query>;
+return v4;
+}
+public java.lang.String host()
+{
+io.netty.util.AsciiString v1;
+io.vertx.core.http.impl.Http1xServerRequest v0;
+java.lang.String v2;
+v0 := @this: io.vertx.core.http.impl.Http1xServerRequest;
+v1 = <io.netty.handler.codec.http.HttpHeaderNames: io.netty.util.AsciiString HOST>;
+v2 = virtualinvoke v0.<io.vertx.core.http.impl.Http1xServerRequest: java.lang.String getHeader(java.lang.CharSequence)>(v1);
+return v2;
+}
+public long bytesRead()
+{
+java.lang.Throwable v3;
+io.vertx.core.http.impl.Http1xServerRequest v0;
+long v2;
+io.vertx.core.http.impl.Http1xServerConnection v1;
+v0 := @this: io.vertx.core.http.impl.Http1xServerRequest;
+v1 = v0.<io.vertx.core.http.impl.Http1xServerRequest: io.vertx.core.http.impl.Http1xServerConnection conn>;
+entermonitor v1;
+label1:
+v2 = v0.<io.vertx.core.http.impl.Http1xServerRequest: long bytesRead>;
+exitmonitor v1;
+label2:
+return v2;
+label3:
+v3 := @caughtexception;
+exitmonitor v1;
+throw v3;
+catch java.lang.Throwable from label1 to label2 with label3;
+}
+public io.vertx.core.http.impl.Http1xServerResponse response()
+{
+io.vertx.core.http.impl.Http1xServerResponse v1;
+io.vertx.core.http.impl.Http1xServerRequest v0;
+v0 := @this: io.vertx.core.http.impl.Http1xServerRequest;
+v1 = v0.<io.vertx.core.http.impl.Http1xServerRequest: io.vertx.core.http.impl.Http1xServerResponse response>;
+return v1;
+}
+public io.vertx.core.MultiMap headers()
+{
+io.vertx.core.http.impl.headers.HeadersAdaptor v5;
+io.netty.handler.codec.http.HttpHeaders v3;
+io.netty.handler.codec.http.HttpRequest v2;
+io.vertx.core.http.impl.Http1xServerRequest v0;
+io.vertx.core.MultiMap v1, v6;
+boolean v4;
+v0 := @this: io.vertx.core.http.impl.Http1xServerRequest;
+v1 = v0.<io.vertx.core.http.impl.Http1xServerRequest: io.vertx.core.MultiMap headers>;
+if v1 != null goto label2;
+v2 = v0.<io.vertx.core.http.impl.Http1xServerRequest: io.netty.handler.codec.http.HttpRequest request>;
+v3 = interfaceinvoke v2.<io.netty.handler.codec.http.HttpRequest: io.netty.handler.codec.http.HttpHeaders headers()>();
+v4 = v3 instanceof io.vertx.core.MultiMap;
+if v4 == 0 goto label1;
+v0.<io.vertx.core.http.impl.Http1xServerRequest: io.vertx.core.MultiMap headers> = v3;
+goto label2;
+label1:
+v5 = new io.vertx.core.http.impl.headers.HeadersAdaptor;
+specialinvoke v5.<io.vertx.core.http.impl.headers.HeadersAdaptor: void <init>(io.netty.handler.codec.http.HttpHeaders)>(v3);
+v0.<io.vertx.core.http.impl.Http1xServerRequest: io.vertx.core.MultiMap headers> = v5;
+label2:
+v6 = v0.<io.vertx.core.http.impl.Http1xServerRequest: io.vertx.core.MultiMap headers>;
+return v6;
+}
+public io.vertx.core.http.HttpServerRequest setParamsCharset(java.lang.String)
+{
+io.vertx.core.http.impl.Http1xServerRequest v0;
+java.nio.charset.Charset v2, v3, v4;
+java.lang.String v1;
+boolean v5;
+v0 := @this: io.vertx.core.http.impl.Http1xServerRequest;
+v1 := @parameter0: java.lang.String;
+staticinvoke <java.util.Objects: java.lang.Object requireNonNull(java.lang.Object,java.lang.String)>(v1, "Charset must not be null");
+v2 = v0.<io.vertx.core.http.impl.Http1xServerRequest: java.nio.charset.Charset paramsCharset>;
+v3 = staticinvoke <java.nio.charset.Charset: java.nio.charset.Charset forName(java.lang.String)>(v1);
+v0.<io.vertx.core.http.impl.Http1xServerRequest: java.nio.charset.Charset paramsCharset> = v3;
+v4 = v0.<io.vertx.core.http.impl.Http1xServerRequest: java.nio.charset.Charset paramsCharset>;
+v5 = virtualinvoke v4.<java.nio.charset.Charset: boolean equals(java.lang.Object)>(v2);
+if v5 != 0 goto label1;
+v0.<io.vertx.core.http.impl.Http1xServerRequest: io.vertx.core.MultiMap params> = null;
+label1:
+return v0;
+}
+public java.lang.String getParamsCharset()
+{
+io.vertx.core.http.impl.Http1xServerRequest v0;
+java.lang.String v2;
+java.nio.charset.Charset v1;
+v0 := @this: io.vertx.core.http.impl.Http1xServerRequest;
+v1 = v0.<io.vertx.core.http.impl.Http1xServerRequest: java.nio.charset.Charset paramsCharset>;
+v2 = virtualinvoke v1.<java.nio.charset.Charset: java.lang.String name()>();
+return v2;
+}
+public io.vertx.core.MultiMap params()
+{
+io.vertx.core.http.impl.Http1xServerRequest v0;
+java.nio.charset.Charset v3;
+io.vertx.core.MultiMap v1, v4, v5;
+java.lang.String v2;
+v0 := @this: io.vertx.core.http.impl.Http1xServerRequest;
+v1 = v0.<io.vertx.core.http.impl.Http1xServerRequest: io.vertx.core.MultiMap params>;
+if v1 != null goto label1;
+v2 = virtualinvoke v0.<io.vertx.core.http.impl.Http1xServerRequest: java.lang.String uri()>();
+v3 = v0.<io.vertx.core.http.impl.Http1xServerRequest: java.nio.charset.Charset paramsCharset>;
+v4 = staticinvoke <io.vertx.core.http.impl.HttpUtils: io.vertx.core.MultiMap params(java.lang.String,java.nio.charset.Charset)>(v2, v3);
+v0.<io.vertx.core.http.impl.Http1xServerRequest: io.vertx.core.MultiMap params> = v4;
+label1:
+v5 = v0.<io.vertx.core.http.impl.Http1xServerRequest: io.vertx.core.MultiMap params>;
+return v5;
+}
+public io.vertx.core.http.HttpServerRequest handler(io.vertx.core.Handler)
+{
+java.lang.Throwable v5;
+io.vertx.core.http.impl.Http1xServerRequest v0;
+io.vertx.core.http.impl.HttpEventHandler v4;
+io.vertx.core.http.impl.Http1xServerConnection v2;
+io.vertx.core.Handler v1;
+boolean v3;
+v0 := @this: io.vertx.core.http.impl.Http1xServerRequest;
+v1 := @parameter0: io.vertx.core.Handler;
+v2 = v0.<io.vertx.core.http.impl.Http1xServerRequest: io.vertx.core.http.impl.Http1xServerConnection conn>;
+entermonitor v2;
+label1:
+if v1 == null goto label2;
+specialinvoke v0.<io.vertx.core.http.impl.Http1xServerRequest: void checkEnded()>();
+if v1 == null goto label2;
+v3 = 1;
+goto label3;
+label2:
+v3 = 0;
+label3:
+v4 = specialinvoke v0.<io.vertx.core.http.impl.Http1xServerRequest: io.vertx.core.http.impl.HttpEventHandler eventHandler(boolean)>(v3);
+if v4 == null goto label4;
+virtualinvoke v4.<io.vertx.core.http.impl.HttpEventHandler: void chunkHandler(io.vertx.core.Handler)>(v1);
+label4:
+exitmonitor v2;
+label5:
+return v0;
+label6:
+v5 := @caughtexception;
+exitmonitor v2;
+throw v5;
+catch java.lang.Throwable from label1 to label5 with label6;
+}
+public io.vertx.core.http.HttpServerRequest exceptionHandler(io.vertx.core.Handler)
+{
+java.lang.Throwable v5;
+io.vertx.core.http.impl.Http1xServerRequest v0;
+io.vertx.core.http.impl.HttpEventHandler v4;
+io.vertx.core.http.impl.Http1xServerConnection v2;
+io.vertx.core.Handler v1;
+boolean v3;
+v0 := @this: io.vertx.core.http.impl.Http1xServerRequest;
+v1 := @parameter0: io.vertx.core.Handler;
+v2 = v0.<io.vertx.core.http.impl.Http1xServerRequest: io.vertx.core.http.impl.Http1xServerConnection conn>;
+entermonitor v2;
+label1:
+if v1 == null goto label2;
+v3 = 1;
+goto label3;
+label2:
+v3 = 0;
+label3:
+v4 = specialinvoke v0.<io.vertx.core.http.impl.Http1xServerRequest: io.vertx.core.http.impl.HttpEventHandler eventHandler(boolean)>(v3);
+if v4 == null goto label4;
+virtualinvoke v4.<io.vertx.core.http.impl.HttpEventHandler: void exceptionHandler(io.vertx.core.Handler)>(v1);
+label4:
+exitmonitor v2;
+label5:
+return v0;
+label6:
+v5 := @caughtexception;
+exitmonitor v2;
+throw v5;
+catch java.lang.Throwable from label1 to label5 with label6;
+}
+public io.vertx.core.http.HttpServerRequest pause()
+{
+java.lang.Throwable v3;
+io.vertx.core.http.impl.Http1xServerRequest v0;
+io.vertx.core.streams.impl.InboundBuffer v2;
+io.vertx.core.http.impl.Http1xServerConnection v1;
+v0 := @this: io.vertx.core.http.impl.Http1xServerRequest;
+v1 = v0.<io.vertx.core.http.impl.Http1xServerRequest: io.vertx.core.http.impl.Http1xServerConnection conn>;
+entermonitor v1;
+label1:
+v2 = specialinvoke v0.<io.vertx.core.http.impl.Http1xServerRequest: io.vertx.core.streams.impl.InboundBuffer pendingQueue()>();
+virtualinvoke v2.<io.vertx.core.streams.impl.InboundBuffer: io.vertx.core.streams.impl.InboundBuffer pause()>();
+exitmonitor v1;
+label2:
+return v0;
+label3:
+v3 := @caughtexception;
+exitmonitor v1;
+throw v3;
+catch java.lang.Throwable from label1 to label2 with label3;
+}
+public io.vertx.core.http.HttpServerRequest fetch(long)
+{
+java.lang.Throwable v4;
+io.vertx.core.http.impl.Http1xServerRequest v0;
+io.vertx.core.streams.impl.InboundBuffer v3;
+long v1;
+io.vertx.core.http.impl.Http1xServerConnection v2;
+v0 := @this: io.vertx.core.http.impl.Http1xServerRequest;
+v1 := @parameter0: long;
+v2 = v0.<io.vertx.core.http.impl.Http1xServerRequest: io.vertx.core.http.impl.Http1xServerConnection conn>;
+entermonitor v2;
+label1:
+v3 = specialinvoke v0.<io.vertx.core.http.impl.Http1xServerRequest: io.vertx.core.streams.impl.InboundBuffer pendingQueue()>();
+virtualinvoke v3.<io.vertx.core.streams.impl.InboundBuffer: boolean fetch(long)>(v1);
+exitmonitor v2;
+label2:
+return v0;
+label3:
+v4 := @caughtexception;
+exitmonitor v2;
+throw v4;
+catch java.lang.Throwable from label1 to label2 with label3;
+}
+public io.vertx.core.http.HttpServerRequest resume()
+{
+io.vertx.core.http.HttpServerRequest v1;
+io.vertx.core.http.impl.Http1xServerRequest v0;
+v0 := @this: io.vertx.core.http.impl.Http1xServerRequest;
+v1 = virtualinvoke v0.<io.vertx.core.http.impl.Http1xServerRequest: io.vertx.core.http.HttpServerRequest fetch(long)>(9223372036854775807L);
+return v1;
+}
+public io.vertx.core.http.HttpServerRequest endHandler(io.vertx.core.Handler)
+{
+java.lang.Throwable v5;
+io.vertx.core.http.impl.Http1xServerRequest v0;
+io.vertx.core.http.impl.HttpEventHandler v4;
+io.vertx.core.http.impl.Http1xServerConnection v2;
+io.vertx.core.Handler v1;
+boolean v3;
+v0 := @this: io.vertx.core.http.impl.Http1xServerRequest;
+v1 := @parameter0: io.vertx.core.Handler;
+v2 = v0.<io.vertx.core.http.impl.Http1xServerRequest: io.vertx.core.http.impl.Http1xServerConnection conn>;
+entermonitor v2;
+label1:
+if v1 == null goto label2;
+specialinvoke v0.<io.vertx.core.http.impl.Http1xServerRequest: void checkEnded()>();
+if v1 == null goto label2;
+v3 = 1;
+goto label3;
+label2:
+v3 = 0;
+label3:
+v4 = specialinvoke v0.<io.vertx.core.http.impl.Http1xServerRequest: io.vertx.core.http.impl.HttpEventHandler eventHandler(boolean)>(v3);
+if v4 == null goto label4;
+virtualinvoke v4.<io.vertx.core.http.impl.HttpEventHandler: void endHandler(io.vertx.core.Handler)>(v1);
+label4:
+exitmonitor v2;
+label5:
+return v0;
+label6:
+v5 := @caughtexception;
+exitmonitor v2;
+throw v5;
+catch java.lang.Throwable from label1 to label5 with label6;
+}
+public java.lang.String scheme()
+{
+io.vertx.core.http.impl.Http1xServerRequest v0;
+java.lang.String v2;
+boolean v1;
+v0 := @this: io.vertx.core.http.impl.Http1xServerRequest;
+v1 = virtualinvoke v0.<io.vertx.core.http.impl.Http1xServerRequest: boolean isSSL()>();
+if v1 == 0 goto label1;
+v2 = "https";
+goto label2;
+label1:
+v2 = "http";
+label2:
+return v2;
+}
+public java.lang.String absoluteURI()
+{
+io.vertx.core.impl.logging.Logger v6;
+java.net.URISyntaxException v5;
+io.vertx.core.http.impl.Http1xServerConnection v2;
+io.vertx.core.http.impl.Http1xServerRequest v0;
+java.lang.String v1, v3, v4, v7;
+v0 := @this: io.vertx.core.http.impl.Http1xServerRequest;
+v1 = v0.<io.vertx.core.http.impl.Http1xServerRequest: java.lang.String absoluteURI>;
+if v1 != null goto label4;
+label1:
+v2 = v0.<io.vertx.core.http.impl.Http1xServerRequest: io.vertx.core.http.impl.Http1xServerConnection conn>;
+v3 = virtualinvoke v2.<io.vertx.core.http.impl.Http1xServerConnection: java.lang.String getServerOrigin()>();
+v4 = staticinvoke <io.vertx.core.http.impl.HttpUtils: java.lang.String absoluteURI(java.lang.String,io.vertx.core.http.HttpServerRequest)>(v3, v0);
+v0.<io.vertx.core.http.impl.Http1xServerRequest: java.lang.String absoluteURI> = v4;
+label2:
+goto label4;
+label3:
+v5 := @caughtexception;
+v6 = <io.vertx.core.http.impl.Http1xServerRequest: io.vertx.core.impl.logging.Logger log>;
+interfaceinvoke v6.<io.vertx.core.impl.logging.Logger: void error(java.lang.Object,java.lang.Throwable)>("Failed to create abs uri", v5);
+label4:
+v7 = v0.<io.vertx.core.http.impl.Http1xServerRequest: java.lang.String absoluteURI>;
+return v7;
+catch java.net.URISyntaxException from label1 to label2 with label3;
+}
+public io.vertx.core.net.SocketAddress remoteAddress()
+{
+io.vertx.core.http.impl.Http1xServerConnection v1;
+io.vertx.core.http.impl.Http1xServerRequest v0;
+io.vertx.core.net.SocketAddress v2;
+v0 := @this: io.vertx.core.http.impl.Http1xServerRequest;
+v1 = v0.<io.vertx.core.http.impl.Http1xServerRequest: io.vertx.core.http.impl.Http1xServerConnection conn>;
+v2 = virtualinvoke v1.<io.vertx.core.http.impl.Http1xServerConnection: io.vertx.core.net.SocketAddress remoteAddress()>();
+return v2;
+}
+public javax.security.cert.X509Certificate[] peerCertificateChain() throws javax.net.ssl.SSLPeerUnverifiedException
+{
+javax.security.cert.X509Certificate[] v2;
+io.vertx.core.http.impl.Http1xServerConnection v1;
+io.vertx.core.http.impl.Http1xServerRequest v0;
+v0 := @this: io.vertx.core.http.impl.Http1xServerRequest;
+v1 = v0.<io.vertx.core.http.impl.Http1xServerRequest: io.vertx.core.http.impl.Http1xServerConnection conn>;
+v2 = virtualinvoke v1.<io.vertx.core.http.impl.Http1xServerConnection: javax.security.cert.X509Certificate[] peerCertificateChain()>();
+return v2;
+}
+public io.vertx.core.Future toNetSocket()
+{
+io.vertx.core.http.impl.Http1xServerResponse v1;
+io.vertx.core.http.impl.Http1xServerRequest v0;
+io.vertx.core.http.HttpMethod v2;
+io.vertx.core.MultiMap v3;
+io.vertx.core.Future v4;
+v0 := @this: io.vertx.core.http.impl.Http1xServerRequest;
+v1 = v0.<io.vertx.core.http.impl.Http1xServerRequest: io.vertx.core.http.impl.Http1xServerResponse response>;
+v2 = virtualinvoke v0.<io.vertx.core.http.impl.Http1xServerRequest: io.vertx.core.http.HttpMethod method()>();
+v3 = virtualinvoke v0.<io.vertx.core.http.impl.Http1xServerRequest: io.vertx.core.MultiMap headers()>();
+v4 = virtualinvoke v1.<io.vertx.core.http.impl.Http1xServerResponse: io.vertx.core.Future netSocket(io.vertx.core.http.HttpMethod,io.vertx.core.MultiMap)>(v2, v3);
+return v4;
+}
+public io.vertx.core.http.HttpServerRequest uploadHandler(io.vertx.core.Handler)
+{
+java.lang.Throwable v3;
+io.vertx.core.http.impl.Http1xServerRequest v0;
+io.vertx.core.http.impl.Http1xServerConnection v2;
+io.vertx.core.Handler v1;
+v0 := @this: io.vertx.core.http.impl.Http1xServerRequest;
+v1 := @parameter0: io.vertx.core.Handler;
+v2 = v0.<io.vertx.core.http.impl.Http1xServerRequest: io.vertx.core.http.impl.Http1xServerConnection conn>;
+entermonitor v2;
+label1:
+if v1 == null goto label2;
+specialinvoke v0.<io.vertx.core.http.impl.Http1xServerRequest: void checkEnded()>();
+label2:
+v0.<io.vertx.core.http.impl.Http1xServerRequest: io.vertx.core.Handler uploadHandler> = v1;
+exitmonitor v2;
+label3:
+return v0;
+label4:
+v3 := @caughtexception;
+exitmonitor v2;
+throw v3;
+catch java.lang.Throwable from label1 to label3 with label4;
+}
+public io.vertx.core.MultiMap formAttributes()
+{
+io.vertx.core.MultiMap v1;
+io.vertx.core.http.impl.Http1xServerRequest v0;
+v0 := @this: io.vertx.core.http.impl.Http1xServerRequest;
+v1 = specialinvoke v0.<io.vertx.core.http.impl.Http1xServerRequest: io.vertx.core.MultiMap attributes()>();
+return v1;
+}
+public java.lang.String getFormAttribute(java.lang.String)
+{
+io.vertx.core.http.impl.Http1xServerRequest v0;
+io.vertx.core.MultiMap v2;
+java.lang.String v1, v3;
+v0 := @this: io.vertx.core.http.impl.Http1xServerRequest;
+v1 := @parameter0: java.lang.String;
+v2 = virtualinvoke v0.<io.vertx.core.http.impl.Http1xServerRequest: io.vertx.core.MultiMap formAttributes()>();
+v3 = interfaceinvoke v2.<io.vertx.core.MultiMap: java.lang.String get(java.lang.String)>(v1);
+return v3;
+}
+public io.vertx.core.Future toWebSocket()
+{
+io.vertx.core.http.impl.Http1xServerRequest v0;
+io.vertx.core.Future v1, v3;
+java.util.function.Function v2;
+v0 := @this: io.vertx.core.http.impl.Http1xServerRequest;
+v1 = virtualinvoke v0.<io.vertx.core.http.impl.Http1xServerRequest: io.vertx.core.Future webSocket()>();
+v2 = staticinvoke <io.vertx.core.http.impl.Http1xServerRequest$lambda_toWebSocket_2__1158: java.util.function.Function bootstrap$()>();
+v3 = interfaceinvoke v1.<io.vertx.core.Future: io.vertx.core.Future map(java.util.function.Function)>(v2);
+return v3;
+}
+io.vertx.core.Future webSocket()
+{
+io.vertx.core.http.impl.Http1xServerRequest v0;
+io.vertx.core.impl.future.PromiseInternal v2;
+io.vertx.core.impl.ContextInternal v1;
+io.vertx.core.Future v3;
+v0 := @this: io.vertx.core.http.impl.Http1xServerRequest;
+v1 = v0.<io.vertx.core.http.impl.Http1xServerRequest: io.vertx.core.impl.ContextInternal context>;
+v2 = interfaceinvoke v1.<io.vertx.core.impl.ContextInternal: io.vertx.core.impl.future.PromiseInternal promise()>();
+specialinvoke v0.<io.vertx.core.http.impl.Http1xServerRequest: void webSocket(io.vertx.core.impl.future.PromiseInternal)>(v2);
+v3 = interfaceinvoke v2.<io.vertx.core.impl.future.PromiseInternal: io.vertx.core.Future future()>();
+return v3;
+}
+private void webSocket(io.vertx.core.impl.future.PromiseInternal)
+{
+io.vertx.core.http.impl.Http1xServerRequest v0;
+io.vertx.core.impl.future.PromiseInternal v1;
+io.vertx.core.buffer.Buffer v2;
+boolean[] v3;
+io.vertx.core.Handler v4, v5, v6;
+v0 := @this: io.vertx.core.http.impl.Http1xServerRequest;
+v1 := @parameter0: io.vertx.core.impl.future.PromiseInternal;
+v2 = staticinvoke <io.vertx.core.buffer.Buffer: io.vertx.core.buffer.Buffer buffer()>();
+v3 = newarray (boolean)[1];
+v4 = staticinvoke <io.vertx.core.http.impl.Http1xServerRequest$lambda_webSocket_3__1159: io.vertx.core.Handler bootstrap$(io.vertx.core.http.impl.Http1xServerRequest,boolean[],io.vertx.core.buffer.Buffer)>(v0, v3, v2);
+virtualinvoke v0.<io.vertx.core.http.impl.Http1xServerRequest: io.vertx.core.http.HttpServerRequest handler(io.vertx.core.Handler)>(v4);
+virtualinvoke v1.<java.lang.Object: java.lang.Class getClass()>();
+v5 = staticinvoke <io.vertx.core.http.impl.Http1xServerRequest$tryFail__1160: io.vertx.core.Handler bootstrap$(io.vertx.core.impl.future.PromiseInternal)>(v1);
+virtualinvoke v0.<io.vertx.core.http.impl.Http1xServerRequest: io.vertx.core.http.HttpServerRequest exceptionHandler(io.vertx.core.Handler)>(v5);
+v6 = staticinvoke <io.vertx.core.http.impl.Http1xServerRequest$lambda_webSocket_4__1161: io.vertx.core.Handler bootstrap$(io.vertx.core.http.impl.Http1xServerRequest,boolean[],io.vertx.core.buffer.Buffer,io.vertx.core.impl.future.PromiseInternal)>(v0, v3, v2, v1);
+virtualinvoke v0.<io.vertx.core.http.impl.Http1xServerRequest: io.vertx.core.http.HttpServerRequest endHandler(io.vertx.core.Handler)>(v6);
+virtualinvoke v0.<io.vertx.core.http.impl.Http1xServerRequest: io.vertx.core.http.HttpServerRequest resume()>();
+return;
+}
+public io.vertx.core.http.HttpServerRequest setExpectMultipart(boolean)
+{
+java.lang.Throwable v23;
+java.lang.IllegalStateException v10, v14, v8;
+io.netty.handler.codec.http.HttpHeaders v5;
+io.netty.util.AsciiString v6;
+io.vertx.core.impl.ContextInternal v16;
+java.util.function.Supplier v17;
+io.vertx.core.http.impl.Http1xServerRequest v0;
+int v20;
+java.lang.String v7;
+boolean v1, v13, v9;
+io.netty.handler.codec.http.HttpRequest v11, v22, v4;
+io.vertx.core.http.impl.NettyFileUploadDataFactory v15;
+io.netty.handler.codec.http.HttpMethod v12;
+io.vertx.core.http.impl.Http1xServerConnection v18, v2;
+io.vertx.core.http.HttpServerOptions v19;
+io.netty.handler.codec.http.multipart.HttpPostRequestDecoder v21, v3;
+v0 := @this: io.vertx.core.http.impl.Http1xServerRequest;
+v1 := @parameter0: boolean;
+v2 = v0.<io.vertx.core.http.impl.Http1xServerRequest: io.vertx.core.http.impl.Http1xServerConnection conn>;
+entermonitor v2;
+label1:
+specialinvoke v0.<io.vertx.core.http.impl.Http1xServerRequest: void checkEnded()>();
+if v1 == 0 goto label5;
+v3 = v0.<io.vertx.core.http.impl.Http1xServerRequest: io.netty.handler.codec.http.multipart.HttpPostRequestDecoder decoder>;
+if v3 != null goto label6;
+v4 = v0.<io.vertx.core.http.impl.Http1xServerRequest: io.netty.handler.codec.http.HttpRequest request>;
+v5 = interfaceinvoke v4.<io.netty.handler.codec.http.HttpRequest: io.netty.handler.codec.http.HttpHeaders headers()>();
+v6 = <io.netty.handler.codec.http.HttpHeaderNames: io.netty.util.AsciiString CONTENT_TYPE>;
+v7 = virtualinvoke v5.<io.netty.handler.codec.http.HttpHeaders: java.lang.String get(java.lang.CharSequence)>(v6);
+if v7 != null goto label2;
+v8 = new java.lang.IllegalStateException;
+specialinvoke v8.<java.lang.IllegalStateException: void <init>(java.lang.String)>("Request must have a content-type header to decode a multipart request");
+throw v8;
+label2:
+v9 = staticinvoke <io.vertx.core.http.impl.HttpUtils: boolean isValidMultipartContentType(java.lang.String)>(v7);
+if v9 != 0 goto label3;
+v10 = new java.lang.IllegalStateException;
+specialinvoke v10.<java.lang.IllegalStateException: void <init>(java.lang.String)>("Request must have a valid content-type header to decode a multipart request");
+throw v10;
+label3:
+v11 = v0.<io.vertx.core.http.impl.Http1xServerRequest: io.netty.handler.codec.http.HttpRequest request>;
+v12 = interfaceinvoke v11.<io.netty.handler.codec.http.HttpRequest: io.netty.handler.codec.http.HttpMethod method()>();
+v13 = staticinvoke <io.vertx.core.http.impl.HttpUtils: boolean isValidMultipartMethod(io.netty.handler.codec.http.HttpMethod)>(v12);
+if v13 != 0 goto label4;
+v14 = new java.lang.IllegalStateException;
+specialinvoke v14.<java.lang.IllegalStateException: void <init>(java.lang.String)>("Request method must be one of POST, PUT, PATCH or DELETE to decode a multipart request");
+throw v14;
+label4:
+v15 = new io.vertx.core.http.impl.NettyFileUploadDataFactory;
+v16 = v0.<io.vertx.core.http.impl.Http1xServerRequest: io.vertx.core.impl.ContextInternal context>;
+v17 = staticinvoke <io.vertx.core.http.impl.Http1xServerRequest$lambda_setExpectMultipart_5__1162: java.util.function.Supplier bootstrap$(io.vertx.core.http.impl.Http1xServerRequest)>(v0);
+specialinvoke v15.<io.vertx.core.http.impl.NettyFileUploadDataFactory: void <init>(io.vertx.core.impl.ContextInternal,io.vertx.core.http.HttpServerRequest,java.util.function.Supplier)>(v16, v0, v17);
+v18 = v0.<io.vertx.core.http.impl.Http1xServerRequest: io.vertx.core.http.impl.Http1xServerConnection conn>;
+v19 = v18.<io.vertx.core.http.impl.Http1xServerConnection: io.vertx.core.http.HttpServerOptions options>;
+v20 = virtualinvoke v19.<io.vertx.core.http.HttpServerOptions: int getMaxFormAttributeSize()>();
+virtualinvoke v15.<io.vertx.core.http.impl.NettyFileUploadDataFactory: void setMaxLimit(long)>(v20);
+v21 = new io.netty.handler.codec.http.multipart.HttpPostRequestDecoder;
+v22 = v0.<io.vertx.core.http.impl.Http1xServerRequest: io.netty.handler.codec.http.HttpRequest request>;
+specialinvoke v21.<io.netty.handler.codec.http.multipart.HttpPostRequestDecoder: void <init>(io.netty.handler.codec.http.multipart.HttpDataFactory,io.netty.handler.codec.http.HttpRequest)>(v15, v22);
+v0.<io.vertx.core.http.impl.Http1xServerRequest: io.netty.handler.codec.http.multipart.HttpPostRequestDecoder decoder> = v21;
+goto label6;
+label5:
+v0.<io.vertx.core.http.impl.Http1xServerRequest: io.netty.handler.codec.http.multipart.HttpPostRequestDecoder decoder> = null;
+label6:
+exitmonitor v2;
+label7:
+return v0;
+label8:
+v23 := @caughtexception;
+exitmonitor v2;
+throw v23;
+catch java.lang.Throwable from label1 to label7 with label8;
+}
+public boolean isExpectMultipart()
+{
+java.lang.Throwable v4;
+io.vertx.core.http.impl.Http1xServerRequest v0;
+io.vertx.core.http.impl.Http1xServerConnection v1;
+io.netty.handler.codec.http.multipart.HttpPostRequestDecoder v2;
+boolean v3;
+v0 := @this: io.vertx.core.http.impl.Http1xServerRequest;
+v1 = v0.<io.vertx.core.http.impl.Http1xServerRequest: io.vertx.core.http.impl.Http1xServerConnection conn>;
+entermonitor v1;
+label1:
+v2 = v0.<io.vertx.core.http.impl.Http1xServerRequest: io.netty.handler.codec.http.multipart.HttpPostRequestDecoder decoder>;
+if v2 == null goto label2;
+v3 = 1;
+goto label3;
+label2:
+v3 = 0;
+label3:
+exitmonitor v1;
+label4:
+return v3;
+label5:
+v4 := @caughtexception;
+exitmonitor v1;
+throw v4;
+catch java.lang.Throwable from label1 to label4 with label5;
+}
+public boolean isEnded()
+{
+java.lang.Throwable v9;
+io.vertx.core.streams.impl.InboundBuffer v3, v4, v6;
+io.vertx.core.http.impl.Http1xServerConnection v1;
+io.vertx.core.http.impl.Http1xServerRequest v0;
+boolean v2, v5, v7, v8;
+v0 := @this: io.vertx.core.http.impl.Http1xServerRequest;
+v1 = v0.<io.vertx.core.http.impl.Http1xServerRequest: io.vertx.core.http.impl.Http1xServerConnection conn>;
+entermonitor v1;
+label1:
+v2 = v0.<io.vertx.core.http.impl.Http1xServerRequest: boolean ended>;
+if v2 == 0 goto label3;
+v3 = v0.<io.vertx.core.http.impl.Http1xServerRequest: io.vertx.core.streams.impl.InboundBuffer pending>;
+if v3 == null goto label2;
+v4 = v0.<io.vertx.core.http.impl.Http1xServerRequest: io.vertx.core.streams.impl.InboundBuffer pending>;
+v5 = virtualinvoke v4.<io.vertx.core.streams.impl.InboundBuffer: boolean isPaused()>();
+if v5 != 0 goto label3;
+v6 = v0.<io.vertx.core.http.impl.Http1xServerRequest: io.vertx.core.streams.impl.InboundBuffer pending>;
+v7 = virtualinvoke v6.<io.vertx.core.streams.impl.InboundBuffer: boolean isEmpty()>();
+if v7 == 0 goto label3;
+label2:
+v8 = 1;
+goto label4;
+label3:
+v8 = 0;
+label4:
+exitmonitor v1;
+label5:
+return v8;
+label6:
+v9 := @caughtexception;
+exitmonitor v1;
+throw v9;
+catch java.lang.Throwable from label1 to label5 with label6;
+}
+public io.vertx.core.http.HttpServerRequest customFrameHandler(io.vertx.core.Handler)
+{
+io.vertx.core.http.impl.Http1xServerRequest v0;
+io.vertx.core.Handler v1;
+v0 := @this: io.vertx.core.http.impl.Http1xServerRequest;
+v1 := @parameter0: io.vertx.core.Handler;
+return v0;
+}
+public io.vertx.core.http.HttpConnection connection()
+{
+io.vertx.core.http.impl.Http1xServerConnection v1;
+io.vertx.core.http.impl.Http1xServerRequest v0;
+v0 := @this: io.vertx.core.http.impl.Http1xServerRequest;
+v1 = v0.<io.vertx.core.http.impl.Http1xServerRequest: io.vertx.core.http.impl.Http1xServerConnection conn>;
+return v1;
+}
+public synchronized io.vertx.core.Future body()
+{
+io.vertx.core.http.impl.HttpEventHandler v1;
+io.vertx.core.http.impl.Http1xServerRequest v0;
+io.vertx.core.Future v2;
+v0 := @this: io.vertx.core.http.impl.Http1xServerRequest;
+specialinvoke v0.<io.vertx.core.http.impl.Http1xServerRequest: void checkEnded()>();
+v1 = specialinvoke v0.<io.vertx.core.http.impl.Http1xServerRequest: io.vertx.core.http.impl.HttpEventHandler eventHandler(boolean)>(1);
+v2 = virtualinvoke v1.<io.vertx.core.http.impl.HttpEventHandler: io.vertx.core.Future body()>();
+return v2;
+}
+public synchronized io.vertx.core.Future end()
+{
+io.vertx.core.http.impl.HttpEventHandler v1;
+io.vertx.core.http.impl.Http1xServerRequest v0;
+io.vertx.core.Future v2;
+v0 := @this: io.vertx.core.http.impl.Http1xServerRequest;
+specialinvoke v0.<io.vertx.core.http.impl.Http1xServerRequest: void checkEnded()>();
+v1 = specialinvoke v0.<io.vertx.core.http.impl.Http1xServerRequest: io.vertx.core.http.impl.HttpEventHandler eventHandler(boolean)>(1);
+v2 = virtualinvoke v1.<io.vertx.core.http.impl.HttpEventHandler: io.vertx.core.Future end()>();
+return v2;
+}
+public void onData(io.vertx.core.buffer.Buffer)
+{
+java.lang.Throwable v12;
+io.vertx.core.http.impl.HttpEventHandler v11, v13;
+long v3, v5;
+io.vertx.core.http.impl.Http1xServerConnection v2;
+io.netty.handler.codec.http.multipart.HttpPostRequestDecoder$ErrorDataDecoderException v10;
+io.netty.handler.codec.http.DefaultHttpContent v8;
+io.vertx.core.http.impl.Http1xServerRequest v0;
+io.netty.buffer.ByteBuf v9;
+io.vertx.core.buffer.Buffer v1;
+int v4;
+io.netty.handler.codec.http.multipart.HttpPostRequestDecoder v6, v7;
+v0 := @this: io.vertx.core.http.impl.Http1xServerRequest;
+v1 := @parameter0: io.vertx.core.buffer.Buffer;
+v2 = v0.<io.vertx.core.http.impl.Http1xServerRequest: io.vertx.core.http.impl.Http1xServerConnection conn>;
+entermonitor v2;
+label1:
+v3 = v0.<io.vertx.core.http.impl.Http1xServerRequest: long bytesRead>;
+v4 = interfaceinvoke v1.<io.vertx.core.buffer.Buffer: int length()>();
+v5 = v3 + v4;
+v0.<io.vertx.core.http.impl.Http1xServerRequest: long bytesRead> = v5;
+v6 = v0.<io.vertx.core.http.impl.Http1xServerRequest: io.netty.handler.codec.http.multipart.HttpPostRequestDecoder decoder>;
+if v6 == null goto label5;
+label2:
+v7 = v0.<io.vertx.core.http.impl.Http1xServerRequest: io.netty.handler.codec.http.multipart.HttpPostRequestDecoder decoder>;
+v8 = new io.netty.handler.codec.http.DefaultHttpContent;
+v9 = interfaceinvoke v1.<io.vertx.core.buffer.Buffer: io.netty.buffer.ByteBuf getByteBuf()>();
+specialinvoke v8.<io.netty.handler.codec.http.DefaultHttpContent: void <init>(io.netty.buffer.ByteBuf)>(v9);
+virtualinvoke v7.<io.netty.handler.codec.http.multipart.HttpPostRequestDecoder: io.netty.handler.codec.http.multipart.InterfaceHttpPostRequestDecoder offer(io.netty.handler.codec.http.HttpContent)>(v8);
+label3:
+goto label5;
+label4:
+v10 := @caughtexception;
+virtualinvoke v0.<io.vertx.core.http.impl.Http1xServerRequest: void handleException(java.lang.Throwable)>(v10);
+label5:
+v11 = v0.<io.vertx.core.http.impl.Http1xServerRequest: io.vertx.core.http.impl.HttpEventHandler eventHandler>;
+exitmonitor v2;
+label6:
+goto label8;
+label7:
+v12 := @caughtexception;
+exitmonitor v2;
+throw v12;
+label8:
+if v11 == null goto label9;
+v13 = v0.<io.vertx.core.http.impl.Http1xServerRequest: io.vertx.core.http.impl.HttpEventHandler eventHandler>;
+virtualinvoke v13.<io.vertx.core.http.impl.HttpEventHandler: void handleChunk(io.vertx.core.buffer.Buffer)>(v1);
+label9:
+return;
+catch io.netty.handler.codec.http.multipart.HttpPostRequestDecoder$ErrorDataDecoderException from label2 to label3 with label4;
+catch java.lang.Throwable from label1 to label6 with label7;
+}
+void handleEnd()
+{
+java.lang.Throwable v3;
+io.vertx.core.http.impl.Http1xServerRequest v0;
+io.vertx.core.streams.impl.InboundBuffer v2;
+java.lang.Object v4;
+io.vertx.core.http.impl.Http1xServerConnection v1;
+v0 := @this: io.vertx.core.http.impl.Http1xServerRequest;
+v1 = v0.<io.vertx.core.http.impl.Http1xServerRequest: io.vertx.core.http.impl.Http1xServerConnection conn>;
+entermonitor v1;
+label1:
+v0.<io.vertx.core.http.impl.Http1xServerRequest: boolean ended> = 1;
+v2 = v0.<io.vertx.core.http.impl.Http1xServerRequest: io.vertx.core.streams.impl.InboundBuffer pending>;
+exitmonitor v1;
+label2:
+goto label4;
+label3:
+v3 := @caughtexception;
+exitmonitor v1;
+throw v3;
+label4:
+if v2 == null goto label5;
+v4 = <io.vertx.core.streams.impl.InboundBuffer: java.lang.Object END_SENTINEL>;
+virtualinvoke v2.<io.vertx.core.streams.impl.InboundBuffer: boolean write(java.lang.Object)>(v4);
+goto label6;
+label5:
+specialinvoke v0.<io.vertx.core.http.impl.Http1xServerRequest: void onEnd()>();
+label6:
+return;
+catch java.lang.Throwable from label1 to label2 with label3;
+}
+private void onEnd()
+{
+java.lang.Throwable v5;
+io.vertx.core.http.impl.Http1xServerRequest v0;
+io.vertx.core.http.impl.HttpEventHandler v4;
+io.vertx.core.http.impl.Http1xServerConnection v2;
+io.netty.handler.codec.http.multipart.HttpPostRequestDecoder v3;
+boolean v1;
+v0 := @this: io.vertx.core.http.impl.Http1xServerRequest;
+v1 = <io.vertx.core.spi.metrics.Metrics: boolean METRICS_ENABLED>;
+if v1 == 0 goto label1;
+specialinvoke v0.<io.vertx.core.http.impl.Http1xServerRequest: void reportRequestComplete()>();
+label1:
+v2 = v0.<io.vertx.core.http.impl.Http1xServerRequest: io.vertx.core.http.impl.Http1xServerConnection conn>;
+entermonitor v2;
+label2:
+v3 = v0.<io.vertx.core.http.impl.Http1xServerRequest: io.netty.handler.codec.http.multipart.HttpPostRequestDecoder decoder>;
+if v3 == null goto label3;
+specialinvoke v0.<io.vertx.core.http.impl.Http1xServerRequest: void endDecode()>();
+label3:
+v4 = v0.<io.vertx.core.http.impl.Http1xServerRequest: io.vertx.core.http.impl.HttpEventHandler eventHandler>;
+exitmonitor v2;
+label4:
+goto label6;
+label5:
+v5 := @caughtexception;
+exitmonitor v2;
+throw v5;
+label6:
+if v4 == null goto label7;
+virtualinvoke v4.<io.vertx.core.http.impl.HttpEventHandler: void handleEnd()>();
+label7:
+return;
+catch java.lang.Throwable from label2 to label4 with label5;
+}
+private void reportRequestComplete()
+{
+io.vertx.core.http.impl.Http1xServerRequest v0;
+io.vertx.core.spi.metrics.HttpServerMetrics v2;
+java.lang.Object v3;
+long v4;
+io.vertx.core.http.impl.Http1xServerConnection v1, v5;
+v0 := @this: io.vertx.core.http.impl.Http1xServerRequest;
+v1 = v0.<io.vertx.core.http.impl.Http1xServerRequest: io.vertx.core.http.impl.Http1xServerConnection conn>;
+v2 = v1.<io.vertx.core.http.impl.Http1xServerConnection: io.vertx.core.spi.metrics.HttpServerMetrics metrics>;
+if v2 == null goto label1;
+v3 = v0.<io.vertx.core.http.impl.Http1xServerRequest: java.lang.Object metric>;
+v4 = v0.<io.vertx.core.http.impl.Http1xServerRequest: long bytesRead>;
+interfaceinvoke v2.<io.vertx.core.spi.metrics.HttpServerMetrics: void requestEnd(java.lang.Object,io.vertx.core.spi.observability.HttpRequest,long)>(v3, v0, v4);
+v5 = v0.<io.vertx.core.http.impl.Http1xServerRequest: io.vertx.core.http.impl.Http1xServerConnection conn>;
+virtualinvoke v5.<io.vertx.core.http.impl.Http1xServerConnection: void flushBytesRead()>();
+label1:
+return;
+}
+private void reportRequestBegin()
+{
+io.netty.handler.codec.http.HttpHeaders v16;
+io.vertx.core.impl.ContextInternal v6, v8;
+io.vertx.core.http.impl.Http1xServerRequest v0;
+io.vertx.core.spi.metrics.HttpServerMetrics v2;
+io.vertx.core.spi.tracing.SpanKind v9;
+java.lang.String v14;
+io.vertx.core.tracing.TracingPolicy v11;
+io.netty.handler.codec.http.HttpRequest v12, v15;
+io.vertx.core.spi.tracing.TagExtractor v17;
+io.netty.handler.codec.http.HttpMethod v13;
+io.vertx.core.spi.tracing.VertxTracer v7;
+io.vertx.core.http.impl.Http1xServerConnection v1, v10, v3;
+java.lang.Object v18, v4, v5;
+v0 := @this: io.vertx.core.http.impl.Http1xServerRequest;
+v1 = v0.<io.vertx.core.http.impl.Http1xServerRequest: io.vertx.core.http.impl.Http1xServerConnection conn>;
+v2 = v1.<io.vertx.core.http.impl.Http1xServerConnection: io.vertx.core.spi.metrics.HttpServerMetrics metrics>;
+if v2 == null goto label1;
+v3 = v0.<io.vertx.core.http.impl.Http1xServerRequest: io.vertx.core.http.impl.Http1xServerConnection conn>;
+v4 = virtualinvoke v3.<io.vertx.core.http.impl.Http1xServerConnection: java.lang.Object metric()>();
+v5 = interfaceinvoke v2.<io.vertx.core.spi.metrics.HttpServerMetrics: java.lang.Object requestBegin(java.lang.Object,io.vertx.core.spi.observability.HttpRequest)>(v4, v0);
+v0.<io.vertx.core.http.impl.Http1xServerRequest: java.lang.Object metric> = v5;
+label1:
+v6 = v0.<io.vertx.core.http.impl.Http1xServerRequest: io.vertx.core.impl.ContextInternal context>;
+v7 = interfaceinvoke v6.<io.vertx.core.impl.ContextInternal: io.vertx.core.spi.tracing.VertxTracer tracer()>();
+if v7 == null goto label2;
+v8 = v0.<io.vertx.core.http.impl.Http1xServerRequest: io.vertx.core.impl.ContextInternal context>;
+v9 = <io.vertx.core.spi.tracing.SpanKind: io.vertx.core.spi.tracing.SpanKind RPC>;
+v10 = v0.<io.vertx.core.http.impl.Http1xServerRequest: io.vertx.core.http.impl.Http1xServerConnection conn>;
+v11 = virtualinvoke v10.<io.vertx.core.http.impl.Http1xServerConnection: io.vertx.core.tracing.TracingPolicy tracingPolicy()>();
+v12 = v0.<io.vertx.core.http.impl.Http1xServerRequest: io.netty.handler.codec.http.HttpRequest request>;
+v13 = interfaceinvoke v12.<io.netty.handler.codec.http.HttpRequest: io.netty.handler.codec.http.HttpMethod method()>();
+v14 = virtualinvoke v13.<io.netty.handler.codec.http.HttpMethod: java.lang.String name()>();
+v15 = v0.<io.vertx.core.http.impl.Http1xServerRequest: io.netty.handler.codec.http.HttpRequest request>;
+v16 = interfaceinvoke v15.<io.netty.handler.codec.http.HttpRequest: io.netty.handler.codec.http.HttpHeaders headers()>();
+v17 = <io.vertx.core.http.impl.HttpUtils: io.vertx.core.spi.tracing.TagExtractor SERVER_REQUEST_TAG_EXTRACTOR>;
+v18 = interfaceinvoke v7.<io.vertx.core.spi.tracing.VertxTracer: java.lang.Object receiveRequest(io.vertx.core.Context,io.vertx.core.spi.tracing.SpanKind,io.vertx.core.tracing.TracingPolicy,java.lang.Object,java.lang.String,java.lang.Iterable,io.vertx.core.spi.tracing.TagExtractor)>(v8, v9, v11, v0, v14, v16, v17);
+v0.<io.vertx.core.http.impl.Http1xServerRequest: java.lang.Object trace> = v18;
+label2:
+return;
+}
+private void endDecode()
+{
+java.lang.Throwable v12, v18;
+io.vertx.core.MultiMap v8;
+io.netty.handler.codec.http.LastHttpContent v2;
+io.vertx.core.http.impl.Http1xServerRequest v0;
+io.netty.handler.codec.http.multipart.HttpPostRequestDecoder$EndOfDataDecoderException v16;
+java.lang.String v10, v9;
+boolean v4, v7;
+io.netty.handler.codec.http.multipart.InterfaceHttpData v6;
+io.netty.handler.codec.http.multipart.HttpPostRequestDecoder$ErrorDataDecoderException v14;
+java.lang.Exception v11;
+io.netty.handler.codec.http.multipart.HttpPostRequestDecoder v1, v13, v15, v17, v19, v3, v5;
+v0 := @this: io.vertx.core.http.impl.Http1xServerRequest;
+label01:
+v1 = v0.<io.vertx.core.http.impl.Http1xServerRequest: io.netty.handler.codec.http.multipart.HttpPostRequestDecoder decoder>;
+v2 = <io.netty.handler.codec.http.LastHttpContent: io.netty.handler.codec.http.LastHttpContent EMPTY_LAST_CONTENT>;
+virtualinvoke v1.<io.netty.handler.codec.http.multipart.HttpPostRequestDecoder: io.netty.handler.codec.http.multipart.InterfaceHttpPostRequestDecoder offer(io.netty.handler.codec.http.HttpContent)>(v2);
+label02:
+v3 = v0.<io.vertx.core.http.impl.Http1xServerRequest: io.netty.handler.codec.http.multipart.HttpPostRequestDecoder decoder>;
+v4 = virtualinvoke v3.<io.netty.handler.codec.http.multipart.HttpPostRequestDecoder: boolean hasNext()>();
+if v4 == 0 goto label08;
+v5 = v0.<io.vertx.core.http.impl.Http1xServerRequest: io.netty.handler.codec.http.multipart.HttpPostRequestDecoder decoder>;
+v6 = virtualinvoke v5.<io.netty.handler.codec.http.multipart.HttpPostRequestDecoder: io.netty.handler.codec.http.multipart.InterfaceHttpData next()>();
+v7 = v6 instanceof io.netty.handler.codec.http.multipart.Attribute;
+if v7 == 0 goto label02;
+label03:
+v8 = specialinvoke v0.<io.vertx.core.http.impl.Http1xServerRequest: io.vertx.core.MultiMap attributes()>();
+v9 = interfaceinvoke v6.<io.netty.handler.codec.http.multipart.Attribute: java.lang.String getName()>();
+v10 = interfaceinvoke v6.<io.netty.handler.codec.http.multipart.Attribute: java.lang.String getValue()>();
+interfaceinvoke v8.<io.vertx.core.MultiMap: io.vertx.core.MultiMap add(java.lang.String,java.lang.String)>(v9, v10);
+label04:
+interfaceinvoke v6.<io.netty.handler.codec.http.multipart.Attribute: boolean release()>();
+goto label02;
+label05:
+v11 := @caughtexception;
+virtualinvoke v0.<io.vertx.core.http.impl.Http1xServerRequest: void handleException(java.lang.Throwable)>(v11);
+label06:
+interfaceinvoke v6.<io.netty.handler.codec.http.multipart.Attribute: boolean release()>();
+goto label02;
+label07:
+v12 := @caughtexception;
+interfaceinvoke v6.<io.netty.handler.codec.http.multipart.Attribute: boolean release()>();
+throw v12;
+label08:
+v13 = v0.<io.vertx.core.http.impl.Http1xServerRequest: io.netty.handler.codec.http.multipart.HttpPostRequestDecoder decoder>;
+virtualinvoke v13.<io.netty.handler.codec.http.multipart.HttpPostRequestDecoder: void destroy()>();
+goto label13;
+label09:
+v14 := @caughtexception;
+virtualinvoke v0.<io.vertx.core.http.impl.Http1xServerRequest: void handleException(java.lang.Throwable)>(v14);
+label10:
+v15 = v0.<io.vertx.core.http.impl.Http1xServerRequest: io.netty.handler.codec.http.multipart.HttpPostRequestDecoder decoder>;
+virtualinvoke v15.<io.netty.handler.codec.http.multipart.HttpPostRequestDecoder: void destroy()>();
+goto label13;
+label11:
+v16 := @caughtexception;
+v17 = v0.<io.vertx.core.http.impl.Http1xServerRequest: io.netty.handler.codec.http.multipart.HttpPostRequestDecoder decoder>;
+virtualinvoke v17.<io.netty.handler.codec.http.multipart.HttpPostRequestDecoder: void destroy()>();
+goto label13;
+label12:
+v18 := @caughtexception;
+v19 = v0.<io.vertx.core.http.impl.Http1xServerRequest: io.netty.handler.codec.http.multipart.HttpPostRequestDecoder decoder>;
+virtualinvoke v19.<io.netty.handler.codec.http.multipart.HttpPostRequestDecoder: void destroy()>();
+throw v18;
+label13:
+return;
+catch java.lang.Exception from label03 to label04 with label05;
+catch java.lang.Throwable from label03 to label04 with label07;
+catch java.lang.Throwable from label05 to label06 with label07;
+catch io.netty.handler.codec.http.multipart.HttpPostRequestDecoder$ErrorDataDecoderException from label01 to label08 with label09;
+catch io.netty.handler.codec.http.multipart.HttpPostRequestDecoder$EndOfDataDecoderException from label01 to label08 with label11;
+catch java.lang.Throwable from label01 to label08 with label12;
+catch java.lang.Throwable from label09 to label10 with label12;
+}
+void handleException(java.lang.Throwable)
+{
+java.lang.Throwable v1, v12;
+io.vertx.core.http.impl.HttpEventHandler v2;
+io.vertx.core.http.impl.Http1xServerConnection v5;
+io.netty.handler.codec.http.multipart.InterfaceHttpData v4;
+io.vertx.core.http.impl.Http1xServerResponse v3, v9;
+io.vertx.core.http.impl.Http1xServerRequest v0;
+io.netty.handler.codec.http.multipart.HttpPostRequestDecoder v7, v8;
+boolean v10, v11, v13, v6;
+v0 := @this: io.vertx.core.http.impl.Http1xServerRequest;
+v1 := @parameter0: java.lang.Throwable;
+v2 = null;
+v3 = null;
+v4 = null;
+v5 = v0.<io.vertx.core.http.impl.Http1xServerRequest: io.vertx.core.http.impl.Http1xServerConnection conn>;
+entermonitor v5;
+label01:
+v6 = virtualinvoke v0.<io.vertx.core.http.impl.Http1xServerRequest: boolean isEnded()>();
+if v6 != 0 goto label02;
+v2 = v0.<io.vertx.core.http.impl.Http1xServerRequest: io.vertx.core.http.impl.HttpEventHandler eventHandler>;
+v7 = v0.<io.vertx.core.http.impl.Http1xServerRequest: io.netty.handler.codec.http.multipart.HttpPostRequestDecoder decoder>;
+if v7 == null goto label02;
+v8 = v0.<io.vertx.core.http.impl.Http1xServerRequest: io.netty.handler.codec.http.multipart.HttpPostRequestDecoder decoder>;
+v4 = virtualinvoke v8.<io.netty.handler.codec.http.multipart.HttpPostRequestDecoder: io.netty.handler.codec.http.multipart.InterfaceHttpData currentPartialHttpData()>();
+label02:
+v9 = v0.<io.vertx.core.http.impl.Http1xServerRequest: io.vertx.core.http.impl.Http1xServerResponse response>;
+v10 = virtualinvoke v9.<io.vertx.core.http.impl.Http1xServerResponse: boolean ended()>();
+if v10 != 0 goto label04;
+v11 = <io.vertx.core.spi.metrics.Metrics: boolean METRICS_ENABLED>;
+if v11 == 0 goto label03;
+specialinvoke v0.<io.vertx.core.http.impl.Http1xServerRequest: void reportRequestReset(java.lang.Throwable)>(v1);
+label03:
+v3 = v0.<io.vertx.core.http.impl.Http1xServerRequest: io.vertx.core.http.impl.Http1xServerResponse response>;
+label04:
+exitmonitor v5;
+label05:
+goto label07;
+label06:
+v12 := @caughtexception;
+exitmonitor v5;
+throw v12;
+label07:
+if v3 == null goto label08;
+virtualinvoke v3.<io.vertx.core.http.impl.Http1xServerResponse: void handleException(java.lang.Throwable)>(v1);
+label08:
+v13 = v4 instanceof io.vertx.core.http.impl.NettyFileUpload;
+if v13 == 0 goto label09;
+virtualinvoke v4.<io.vertx.core.http.impl.NettyFileUpload: void handleException(java.lang.Throwable)>(v1);
+label09:
+if v2 == null goto label10;
+virtualinvoke v2.<io.vertx.core.http.impl.HttpEventHandler: void handleException(java.lang.Throwable)>(v1);
+label10:
+return;
+catch java.lang.Throwable from label01 to label05 with label06;
+}
+private void reportRequestReset(java.lang.Throwable)
+{
+java.lang.Throwable v1;
+io.vertx.core.spi.tracing.TagExtractor v11;
+io.vertx.core.impl.ContextInternal v7, v9;
+io.vertx.core.spi.tracing.VertxTracer v8;
+io.vertx.core.http.impl.Http1xServerConnection v2, v4;
+io.vertx.core.http.impl.Http1xServerRequest v0;
+io.vertx.core.spi.metrics.HttpServerMetrics v3, v5;
+java.lang.Object v10, v6;
+v0 := @this: io.vertx.core.http.impl.Http1xServerRequest;
+v1 := @parameter0: java.lang.Throwable;
+v2 = v0.<io.vertx.core.http.impl.Http1xServerRequest: io.vertx.core.http.impl.Http1xServerConnection conn>;
+v3 = v2.<io.vertx.core.http.impl.Http1xServerConnection: io.vertx.core.spi.metrics.HttpServerMetrics metrics>;
+if v3 == null goto label1;
+v4 = v0.<io.vertx.core.http.impl.Http1xServerRequest: io.vertx.core.http.impl.Http1xServerConnection conn>;
+v5 = v4.<io.vertx.core.http.impl.Http1xServerConnection: io.vertx.core.spi.metrics.HttpServerMetrics metrics>;
+v6 = v0.<io.vertx.core.http.impl.Http1xServerRequest: java.lang.Object metric>;
+interfaceinvoke v5.<io.vertx.core.spi.metrics.HttpServerMetrics: void requestReset(java.lang.Object)>(v6);
+label1:
+v7 = v0.<io.vertx.core.http.impl.Http1xServerRequest: io.vertx.core.impl.ContextInternal context>;
+v8 = interfaceinvoke v7.<io.vertx.core.impl.ContextInternal: io.vertx.core.spi.tracing.VertxTracer tracer()>();
+if v8 == null goto label2;
+v9 = v0.<io.vertx.core.http.impl.Http1xServerRequest: io.vertx.core.impl.ContextInternal context>;
+v10 = v0.<io.vertx.core.http.impl.Http1xServerRequest: java.lang.Object trace>;
+v11 = staticinvoke <io.vertx.core.spi.tracing.TagExtractor: io.vertx.core.spi.tracing.TagExtractor empty()>();
+interfaceinvoke v8.<io.vertx.core.spi.tracing.VertxTracer: void sendResponse(io.vertx.core.Context,java.lang.Object,java.lang.Object,java.lang.Throwable,io.vertx.core.spi.tracing.TagExtractor)>(v9, null, v10, v1, v11);
+label2:
+return;
+}
+private void checkEnded()
+{
+java.lang.IllegalStateException v2;
+io.vertx.core.http.impl.Http1xServerRequest v0;
+boolean v1;
+v0 := @this: io.vertx.core.http.impl.Http1xServerRequest;
+v1 = virtualinvoke v0.<io.vertx.core.http.impl.Http1xServerRequest: boolean isEnded()>();
+if v1 == 0 goto label1;
+v2 = new java.lang.IllegalStateException;
+specialinvoke v2.<java.lang.IllegalStateException: void <init>(java.lang.String)>("Request has already been read");
+throw v2;
+label1:
+return;
+}
+private io.vertx.core.MultiMap attributes()
+{
+io.vertx.core.http.impl.Http1xServerRequest v0;
+io.vertx.core.MultiMap v1, v2, v3;
+v0 := @this: io.vertx.core.http.impl.Http1xServerRequest;
+v1 = v0.<io.vertx.core.http.impl.Http1xServerRequest: io.vertx.core.MultiMap attributes>;
+if v1 != null goto label1;
+v2 = staticinvoke <io.vertx.core.MultiMap: io.vertx.core.MultiMap caseInsensitiveMultiMap()>();
+v0.<io.vertx.core.http.impl.Http1xServerRequest: io.vertx.core.MultiMap attributes> = v2;
+label1:
+v3 = v0.<io.vertx.core.http.impl.Http1xServerRequest: io.vertx.core.MultiMap attributes>;
+return v3;
+}
+public io.vertx.core.http.HttpServerRequest streamPriorityHandler(io.vertx.core.Handler)
+{
+io.vertx.core.http.impl.Http1xServerRequest v0;
+io.vertx.core.Handler v1;
+v0 := @this: io.vertx.core.http.impl.Http1xServerRequest;
+v1 := @parameter0: io.vertx.core.Handler;
+return v0;
+}
+public io.netty.handler.codec.DecoderResult decoderResult()
+{
+io.netty.handler.codec.DecoderResult v2;
+io.netty.handler.codec.http.HttpRequest v1;
+io.vertx.core.http.impl.Http1xServerRequest v0;
+v0 := @this: io.vertx.core.http.impl.Http1xServerRequest;
+v1 = v0.<io.vertx.core.http.impl.Http1xServerRequest: io.netty.handler.codec.http.HttpRequest request>;
+v2 = interfaceinvoke v1.<io.netty.handler.codec.http.HttpRequest: io.netty.handler.codec.DecoderResult decoderResult()>();
+return v2;
+}
+public java.util.Set cookies()
+{
+io.vertx.core.http.impl.Http1xServerResponse v1;
+io.vertx.core.http.impl.Http1xServerRequest v0;
+io.vertx.core.http.impl.CookieJar v2;
+v0 := @this: io.vertx.core.http.impl.Http1xServerRequest;
+v1 = v0.<io.vertx.core.http.impl.Http1xServerRequest: io.vertx.core.http.impl.Http1xServerResponse response>;
+v2 = virtualinvoke v1.<io.vertx.core.http.impl.Http1xServerResponse: io.vertx.core.http.impl.CookieJar cookies()>();
+return v2;
+}
+public java.util.Set cookies(java.lang.String)
+{
+io.vertx.core.http.impl.Http1xServerResponse v2;
+io.vertx.core.http.impl.Http1xServerRequest v0;
+io.vertx.core.http.impl.CookieJar v3, v4;
+java.lang.String v1;
+v0 := @this: io.vertx.core.http.impl.Http1xServerRequest;
+v1 := @parameter0: java.lang.String;
+v2 = v0.<io.vertx.core.http.impl.Http1xServerRequest: io.vertx.core.http.impl.Http1xServerResponse response>;
+v3 = virtualinvoke v2.<io.vertx.core.http.impl.Http1xServerResponse: io.vertx.core.http.impl.CookieJar cookies()>();
+v4 = virtualinvoke v3.<io.vertx.core.http.impl.CookieJar: io.vertx.core.http.impl.CookieJar getAll(java.lang.String)>(v1);
+return v4;
+}
+public io.vertx.core.http.Cookie getCookie(java.lang.String)
+{
+io.vertx.core.http.impl.Http1xServerResponse v2;
+io.vertx.core.http.impl.Http1xServerRequest v0;
+io.vertx.core.http.impl.CookieJar v3;
+java.lang.String v1;
+io.vertx.core.http.impl.ServerCookie v4;
+v0 := @this: io.vertx.core.http.impl.Http1xServerRequest;
+v1 := @parameter0: java.lang.String;
+v2 = v0.<io.vertx.core.http.impl.Http1xServerRequest: io.vertx.core.http.impl.Http1xServerResponse response>;
+v3 = virtualinvoke v2.<io.vertx.core.http.impl.Http1xServerResponse: io.vertx.core.http.impl.CookieJar cookies()>();
+v4 = virtualinvoke v3.<io.vertx.core.http.impl.CookieJar: io.vertx.core.http.impl.ServerCookie get(java.lang.String)>(v1);
+return v4;
+}
+public io.vertx.core.http.Cookie getCookie(java.lang.String, java.lang.String, java.lang.String)
+{
+io.vertx.core.http.impl.Http1xServerResponse v4;
+io.vertx.core.http.impl.Http1xServerRequest v0;
+io.vertx.core.http.impl.CookieJar v5;
+java.lang.String v1, v2, v3;
+io.vertx.core.http.impl.ServerCookie v6;
+v0 := @this: io.vertx.core.http.impl.Http1xServerRequest;
+v1 := @parameter0: java.lang.String;
+v2 := @parameter1: java.lang.String;
+v3 := @parameter2: java.lang.String;
+v4 = v0.<io.vertx.core.http.impl.Http1xServerRequest: io.vertx.core.http.impl.Http1xServerResponse response>;
+v5 = virtualinvoke v4.<io.vertx.core.http.impl.Http1xServerResponse: io.vertx.core.http.impl.CookieJar cookies()>();
+v6 = virtualinvoke v5.<io.vertx.core.http.impl.CookieJar: io.vertx.core.http.impl.ServerCookie get(java.lang.String,java.lang.String,java.lang.String)>(v1, v2, v3);
+return v6;
+}
+public io.vertx.core.http.HttpServerRequest routed(java.lang.String)
+{
+io.vertx.core.http.impl.Http1xServerConnection v5, v7;
+io.vertx.core.http.impl.Http1xServerResponse v3;
+io.vertx.core.http.impl.Http1xServerRequest v0;
+io.vertx.core.spi.metrics.HttpServerMetrics v6, v8;
+java.lang.Object v9;
+java.lang.String v1;
+boolean v2, v4;
+v0 := @this: io.vertx.core.http.impl.Http1xServerRequest;
+v1 := @parameter0: java.lang.String;
+v2 = <io.vertx.core.spi.metrics.Metrics: boolean METRICS_ENABLED>;
+if v2 == 0 goto label1;
+v3 = v0.<io.vertx.core.http.impl.Http1xServerRequest: io.vertx.core.http.impl.Http1xServerResponse response>;
+v4 = virtualinvoke v3.<io.vertx.core.http.impl.Http1xServerResponse: boolean ended()>();
+if v4 != 0 goto label1;
+v5 = v0.<io.vertx.core.http.impl.Http1xServerRequest: io.vertx.core.http.impl.Http1xServerConnection conn>;
+v6 = v5.<io.vertx.core.http.impl.Http1xServerConnection: io.vertx.core.spi.metrics.HttpServerMetrics metrics>;
+if v6 == null goto label1;
+v7 = v0.<io.vertx.core.http.impl.Http1xServerRequest: io.vertx.core.http.impl.Http1xServerConnection conn>;
+v8 = v7.<io.vertx.core.http.impl.Http1xServerConnection: io.vertx.core.spi.metrics.HttpServerMetrics metrics>;
+v9 = v0.<io.vertx.core.http.impl.Http1xServerRequest: java.lang.Object metric>;
+interfaceinvoke v8.<io.vertx.core.spi.metrics.HttpServerMetrics: void requestRouted(java.lang.Object,java.lang.String)>(v9, v1);
+label1:
+return v0;
+}
+static void <clinit>()
+{
+io.vertx.core.impl.logging.Logger v0;
+v0 = staticinvoke <io.vertx.core.impl.logging.LoggerFactory: io.vertx.core.impl.logging.Logger getLogger(java.lang.Class)>(class "Lio/vertx/core/http/impl/Http1xServerRequest;");
+<io.vertx.core.http.impl.Http1xServerRequest: io.vertx.core.impl.logging.Logger log> = v0;
+return;
+}
+}

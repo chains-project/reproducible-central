@@ -1,0 +1,187 @@
+abstract class io.quarkus.arc.impl.AbstractInstanceHandle extends java.lang.Object implements io.quarkus.arc.InstanceHandle
+{
+private static final org.jboss.logging.Logger LOGGER;
+private static final java.util.concurrent.atomic.AtomicIntegerFieldUpdater DESTROYED_UPDATER;
+private final io.quarkus.arc.InjectableBean bean;
+private final jakarta.enterprise.context.spi.CreationalContext creationalContext;
+private final jakarta.enterprise.context.spi.CreationalContext parentCreationalContext;
+private final java.util.function.Consumer destroyLogic;
+private volatile int destroyed;
+void <init>(io.quarkus.arc.InjectableBean, jakarta.enterprise.context.spi.CreationalContext, jakarta.enterprise.context.spi.CreationalContext, java.util.function.Consumer)
+{
+java.util.function.Consumer v4;
+io.quarkus.arc.InjectableBean v1;
+io.quarkus.arc.impl.AbstractInstanceHandle v0;
+jakarta.enterprise.context.spi.CreationalContext v2, v3;
+v0 := @this: io.quarkus.arc.impl.AbstractInstanceHandle;
+v1 := @parameter0: io.quarkus.arc.InjectableBean;
+v2 := @parameter1: jakarta.enterprise.context.spi.CreationalContext;
+v3 := @parameter2: jakarta.enterprise.context.spi.CreationalContext;
+v4 := @parameter3: java.util.function.Consumer;
+specialinvoke v0.<java.lang.Object: void <init>()>();
+v0.<io.quarkus.arc.impl.AbstractInstanceHandle: io.quarkus.arc.InjectableBean bean> = v1;
+v0.<io.quarkus.arc.impl.AbstractInstanceHandle: jakarta.enterprise.context.spi.CreationalContext creationalContext> = v2;
+v0.<io.quarkus.arc.impl.AbstractInstanceHandle: jakarta.enterprise.context.spi.CreationalContext parentCreationalContext> = v3;
+v0.<io.quarkus.arc.impl.AbstractInstanceHandle: java.util.function.Consumer destroyLogic> = v4;
+return;
+}
+public java.lang.Object get()
+{
+java.lang.IllegalStateException v2;
+int v1;
+io.quarkus.arc.impl.AbstractInstanceHandle v0;
+java.lang.Object v3;
+v0 := @this: io.quarkus.arc.impl.AbstractInstanceHandle;
+v1 = v0.<io.quarkus.arc.impl.AbstractInstanceHandle: int destroyed>;
+if v1 == 0 goto label1;
+v2 = new java.lang.IllegalStateException;
+specialinvoke v2.<java.lang.IllegalStateException: void <init>(java.lang.String)>("Instance already destroyed");
+throw v2;
+label1:
+v3 = virtualinvoke v0.<io.quarkus.arc.impl.AbstractInstanceHandle: java.lang.Object instanceInternal()>();
+return v3;
+}
+public io.quarkus.arc.InjectableBean getBean()
+{
+io.quarkus.arc.InjectableBean v1;
+io.quarkus.arc.impl.AbstractInstanceHandle v0;
+v0 := @this: io.quarkus.arc.impl.AbstractInstanceHandle;
+v1 = v0.<io.quarkus.arc.impl.AbstractInstanceHandle: io.quarkus.arc.InjectableBean bean>;
+return v1;
+}
+protected abstract boolean isInstanceCreated();
+protected abstract java.lang.Object instanceInternal();
+public void destroy()
+{
+java.util.concurrent.atomic.AtomicIntegerFieldUpdater v2;
+io.quarkus.arc.InjectableContext v13;
+io.quarkus.arc.ArcContainer v10;
+io.quarkus.arc.impl.AbstractInstanceHandle v0;
+java.lang.String v18;
+boolean v1, v3, v9;
+io.quarkus.arc.InjectableBean v11, v15, v16, v19, v7;
+java.util.function.Consumer v4, v5;
+jakarta.enterprise.context.ContextNotActiveException v14;
+java.lang.Class v12, v17, v8;
+java.lang.Object v6;
+v0 := @this: io.quarkus.arc.impl.AbstractInstanceHandle;
+v1 = virtualinvoke v0.<io.quarkus.arc.impl.AbstractInstanceHandle: boolean isInstanceCreated()>();
+if v1 == 0 goto label4;
+v2 = <io.quarkus.arc.impl.AbstractInstanceHandle: java.util.concurrent.atomic.AtomicIntegerFieldUpdater DESTROYED_UPDATER>;
+v3 = virtualinvoke v2.<java.util.concurrent.atomic.AtomicIntegerFieldUpdater: boolean compareAndSet(java.lang.Object,int,int)>(v0, 0, 1);
+if v3 == 0 goto label4;
+v4 = v0.<io.quarkus.arc.impl.AbstractInstanceHandle: java.util.function.Consumer destroyLogic>;
+if v4 == null goto label1;
+v5 = v0.<io.quarkus.arc.impl.AbstractInstanceHandle: java.util.function.Consumer destroyLogic>;
+v6 = virtualinvoke v0.<io.quarkus.arc.impl.AbstractInstanceHandle: java.lang.Object instanceInternal()>();
+interfaceinvoke v5.<java.util.function.Consumer: void accept(java.lang.Object)>(v6);
+goto label4;
+label1:
+v7 = v0.<io.quarkus.arc.impl.AbstractInstanceHandle: io.quarkus.arc.InjectableBean bean>;
+v8 = interfaceinvoke v7.<io.quarkus.arc.InjectableBean: java.lang.Class getScope()>();
+v9 = virtualinvoke v8.<java.lang.Object: boolean equals(java.lang.Object)>(class "Ljakarta/enterprise/context/Dependent;");
+if v9 == 0 goto label2;
+virtualinvoke v0.<io.quarkus.arc.impl.AbstractInstanceHandle: void destroyInternal()>();
+goto label4;
+label2:
+v10 = staticinvoke <io.quarkus.arc.Arc: io.quarkus.arc.ArcContainer container()>();
+v11 = v0.<io.quarkus.arc.impl.AbstractInstanceHandle: io.quarkus.arc.InjectableBean bean>;
+v12 = interfaceinvoke v11.<io.quarkus.arc.InjectableBean: java.lang.Class getScope()>();
+v13 = interfaceinvoke v10.<io.quarkus.arc.ArcContainer: io.quarkus.arc.InjectableContext getActiveContext(java.lang.Class)>(v12);
+if v13 != null goto label3;
+v14 = new jakarta.enterprise.context.ContextNotActiveException;
+v15 = v0.<io.quarkus.arc.impl.AbstractInstanceHandle: io.quarkus.arc.InjectableBean bean>;
+v16 = v0.<io.quarkus.arc.impl.AbstractInstanceHandle: io.quarkus.arc.InjectableBean bean>;
+v17 = interfaceinvoke v16.<io.quarkus.arc.InjectableBean: java.lang.Class getScope()>();
+v18 = dynamicinvoke "makeConcatWithConstants" <java.lang.String (io.quarkus.arc.InjectableBean,java.lang.Class)>(v15, v17) <java.lang.invoke.StringConcatFactory: java.lang.invoke.CallSite makeConcatWithConstants(java.lang.invoke.MethodHandles$Lookup,java.lang.String,java.lang.invoke.MethodType,java.lang.String,java.lang.Object[])>("Cannot destroy instance of \u0001 - no active context found for: \u0001");
+specialinvoke v14.<jakarta.enterprise.context.ContextNotActiveException: void <init>(java.lang.String)>(v18);
+throw v14;
+label3:
+v19 = v0.<io.quarkus.arc.impl.AbstractInstanceHandle: io.quarkus.arc.InjectableBean bean>;
+interfaceinvoke v13.<io.quarkus.arc.InjectableContext: void destroy(jakarta.enterprise.context.spi.Contextual)>(v19);
+label4:
+return;
+}
+protected void destroyInternal()
+{
+java.lang.Throwable v6;
+org.jboss.logging.Logger v13, v7, v9;
+io.quarkus.arc.impl.AbstractInstanceHandle v0;
+java.lang.String v12, v14, v17;
+boolean v8;
+io.quarkus.arc.InjectableBean v10, v15, v3;
+jakarta.enterprise.context.spi.CreationalContext v1, v2, v5;
+java.lang.Class v11, v16;
+java.lang.Object v4;
+v0 := @this: io.quarkus.arc.impl.AbstractInstanceHandle;
+v1 = v0.<io.quarkus.arc.impl.AbstractInstanceHandle: jakarta.enterprise.context.spi.CreationalContext parentCreationalContext>;
+if v1 == null goto label1;
+v2 = v0.<io.quarkus.arc.impl.AbstractInstanceHandle: jakarta.enterprise.context.spi.CreationalContext parentCreationalContext>;
+interfaceinvoke v2.<jakarta.enterprise.context.spi.CreationalContext: void release()>();
+goto label5;
+label1:
+v3 = v0.<io.quarkus.arc.impl.AbstractInstanceHandle: io.quarkus.arc.InjectableBean bean>;
+v4 = virtualinvoke v0.<io.quarkus.arc.impl.AbstractInstanceHandle: java.lang.Object instanceInternal()>();
+v5 = v0.<io.quarkus.arc.impl.AbstractInstanceHandle: jakarta.enterprise.context.spi.CreationalContext creationalContext>;
+interfaceinvoke v3.<io.quarkus.arc.InjectableBean: void destroy(java.lang.Object,jakarta.enterprise.context.spi.CreationalContext)>(v4, v5);
+label2:
+goto label5;
+label3:
+v6 := @caughtexception;
+v7 = <io.quarkus.arc.impl.AbstractInstanceHandle: org.jboss.logging.Logger LOGGER>;
+v8 = virtualinvoke v7.<org.jboss.logging.Logger: boolean isDebugEnabled()>();
+if v8 == 0 goto label4;
+v9 = <io.quarkus.arc.impl.AbstractInstanceHandle: org.jboss.logging.Logger LOGGER>;
+v10 = v0.<io.quarkus.arc.impl.AbstractInstanceHandle: io.quarkus.arc.InjectableBean bean>;
+v11 = virtualinvoke v10.<java.lang.Object: java.lang.Class getClass()>();
+v12 = virtualinvoke v11.<java.lang.Class: java.lang.String getName()>();
+virtualinvoke v9.<org.jboss.logging.Logger: void errorf(java.lang.Throwable,java.lang.String,java.lang.Object)>(v6, "Error occurred while destroying instance of bean [%s]", v12);
+goto label5;
+label4:
+v13 = <io.quarkus.arc.impl.AbstractInstanceHandle: org.jboss.logging.Logger LOGGER>;
+v14 = dynamicinvoke "makeConcatWithConstants" <java.lang.String (java.lang.String)>("Error occurred while destroying instance of bean [%s]") <java.lang.invoke.StringConcatFactory: java.lang.invoke.CallSite makeConcatWithConstants(java.lang.invoke.MethodHandles$Lookup,java.lang.String,java.lang.invoke.MethodType,java.lang.String,java.lang.Object[])>("\u0001: %s");
+v15 = v0.<io.quarkus.arc.impl.AbstractInstanceHandle: io.quarkus.arc.InjectableBean bean>;
+v16 = virtualinvoke v15.<java.lang.Object: java.lang.Class getClass()>();
+v17 = virtualinvoke v16.<java.lang.Class: java.lang.String getName()>();
+virtualinvoke v13.<org.jboss.logging.Logger: void errorf(java.lang.String,java.lang.Object,java.lang.Object)>(v14, v17, v6);
+label5:
+return;
+catch java.lang.Throwable from label1 to label2 with label3;
+}
+public java.lang.String toString()
+{
+int v4;
+io.quarkus.arc.InjectableBean v3;
+io.quarkus.arc.impl.AbstractInstanceHandle v0;
+java.lang.Class v1;
+java.lang.String v2, v6;
+boolean v5;
+v0 := @this: io.quarkus.arc.impl.AbstractInstanceHandle;
+v1 = virtualinvoke v0.<java.lang.Object: java.lang.Class getClass()>();
+v2 = virtualinvoke v1.<java.lang.Class: java.lang.String getSimpleName()>();
+v3 = v0.<io.quarkus.arc.impl.AbstractInstanceHandle: io.quarkus.arc.InjectableBean bean>;
+v4 = v0.<io.quarkus.arc.impl.AbstractInstanceHandle: int destroyed>;
+if v4 == 0 goto label1;
+v5 = 1;
+goto label2;
+label1:
+v5 = 0;
+label2:
+v6 = dynamicinvoke "makeConcatWithConstants" <java.lang.String (java.lang.String,io.quarkus.arc.InjectableBean,boolean)>(v2, v3, v5) <java.lang.invoke.StringConcatFactory: java.lang.invoke.CallSite makeConcatWithConstants(java.lang.invoke.MethodHandles$Lookup,java.lang.String,java.lang.invoke.MethodType,java.lang.String,java.lang.Object[])>("\u0001 [bean=\u0001, destroyed=\u0001]");
+return v6;
+}
+static void <clinit>()
+{
+java.util.concurrent.atomic.AtomicIntegerFieldUpdater v3;
+org.jboss.logging.Logger v2;
+java.lang.Class v0;
+java.lang.String v1;
+v0 = class "Lio/quarkus/arc/impl/AbstractInstanceHandle;";
+v1 = virtualinvoke v0.<java.lang.Class: java.lang.String getName()>();
+v2 = staticinvoke <org.jboss.logging.Logger: org.jboss.logging.Logger getLogger(java.lang.String)>(v1);
+<io.quarkus.arc.impl.AbstractInstanceHandle: org.jboss.logging.Logger LOGGER> = v2;
+v3 = staticinvoke <java.util.concurrent.atomic.AtomicIntegerFieldUpdater: java.util.concurrent.atomic.AtomicIntegerFieldUpdater newUpdater(java.lang.Class,java.lang.String)>(class "Lio/quarkus/arc/impl/AbstractInstanceHandle;", "destroyed");
+<io.quarkus.arc.impl.AbstractInstanceHandle: java.util.concurrent.atomic.AtomicIntegerFieldUpdater DESTROYED_UPDATER> = v3;
+return;
+}
+}

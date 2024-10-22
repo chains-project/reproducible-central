@@ -1,0 +1,449 @@
+public final class io.smallrye.stork.Stork extends java.lang.Object implements io.smallrye.stork.api.StorkServiceRegistry
+{
+public static final java.lang.String STORK;
+public static final java.lang.String STORK_REGISTRAR;
+private static final org.slf4j.Logger LOGGER;
+private final java.util.Map services;
+private final java.util.Map serviceRegistrars;
+private final io.smallrye.stork.spi.StorkInfrastructure infrastructure;
+private static final java.util.concurrent.atomic.AtomicReference REFERENCE;
+public io.smallrye.stork.api.Service getService(java.lang.String)
+{
+io.smallrye.stork.api.NoSuchServiceDefinitionException v4;
+io.smallrye.stork.Stork v0;
+java.util.Map v2;
+java.lang.Object v3;
+java.lang.String v1;
+v0 := @this: io.smallrye.stork.Stork;
+v1 := @parameter0: java.lang.String;
+v2 = v0.<io.smallrye.stork.Stork: java.util.Map services>;
+v3 = interfaceinvoke v2.<java.util.Map: java.lang.Object get(java.lang.Object)>(v1);
+if v3 != null goto label1;
+v4 = new io.smallrye.stork.api.NoSuchServiceDefinitionException;
+specialinvoke v4.<io.smallrye.stork.api.NoSuchServiceDefinitionException: void <init>(java.lang.String)>(v1);
+throw v4;
+label1:
+return v3;
+}
+public java.util.Optional getServiceOptional(java.lang.String)
+{
+io.smallrye.stork.Stork v0;
+java.util.Map v2;
+java.util.Optional v4;
+java.lang.Object v3;
+java.lang.String v1;
+v0 := @this: io.smallrye.stork.Stork;
+v1 := @parameter0: java.lang.String;
+v2 = v0.<io.smallrye.stork.Stork: java.util.Map services>;
+v3 = interfaceinvoke v2.<java.util.Map: java.lang.Object get(java.lang.Object)>(v1);
+v4 = staticinvoke <java.util.Optional: java.util.Optional ofNullable(java.lang.Object)>(v3);
+return v4;
+}
+public java.util.Map getServices()
+{
+io.smallrye.stork.Stork v0;
+java.util.Map v1, v2;
+v0 := @this: io.smallrye.stork.Stork;
+v1 = v0.<io.smallrye.stork.Stork: java.util.Map services>;
+v2 = staticinvoke <java.util.Collections: java.util.Map unmodifiableMap(java.util.Map)>(v1);
+return v2;
+}
+public io.smallrye.stork.Stork defineIfAbsent(java.lang.String, io.smallrye.stork.api.ServiceDefinition)
+{
+io.smallrye.stork.api.ServiceDefinition v2;
+io.smallrye.stork.api.config.ServiceConfig v3;
+io.smallrye.stork.Stork v0;
+io.smallrye.stork.api.Service v4;
+java.util.Map v5;
+java.lang.String v1;
+io.smallrye.stork.api.ServiceDiscovery v6;
+v0 := @this: io.smallrye.stork.Stork;
+v1 := @parameter0: java.lang.String;
+v2 := @parameter1: io.smallrye.stork.api.ServiceDefinition;
+staticinvoke <io.smallrye.mutiny.helpers.ParameterValidation: java.lang.Object nonNull(java.lang.Object,java.lang.String)>(v1, "name");
+staticinvoke <io.smallrye.mutiny.helpers.ParameterValidation: java.lang.Object nonNull(java.lang.Object,java.lang.String)>(v2, "definition");
+v3 = specialinvoke v0.<io.smallrye.stork.Stork: io.smallrye.stork.api.config.ServiceConfig toServiceConfig(java.lang.String,io.smallrye.stork.api.ServiceDefinition)>(v1, v2);
+v4 = specialinvoke v0.<io.smallrye.stork.Stork: io.smallrye.stork.api.Service createService(io.smallrye.stork.api.config.ServiceConfig)>(v3);
+v5 = v0.<io.smallrye.stork.Stork: java.util.Map services>;
+interfaceinvoke v5.<java.util.Map: java.lang.Object putIfAbsent(java.lang.Object,java.lang.Object)>(v1, v4);
+v6 = virtualinvoke v4.<io.smallrye.stork.api.Service: io.smallrye.stork.api.ServiceDiscovery getServiceDiscovery()>();
+interfaceinvoke v6.<io.smallrye.stork.api.ServiceDiscovery: void initialize(io.smallrye.stork.api.StorkServiceRegistry)>(v0);
+return v0;
+}
+private io.smallrye.stork.api.config.ServiceConfig toServiceConfig(java.lang.String, io.smallrye.stork.api.ServiceDefinition)
+{
+io.smallrye.stork.spi.config.SimpleServiceConfig v9;
+io.smallrye.stork.spi.config.SimpleServiceConfig$Builder v3, v4, v6, v8;
+io.smallrye.stork.api.ServiceDefinition v2;
+io.smallrye.stork.Stork v0;
+java.lang.String v1;
+io.smallrye.stork.api.config.ConfigWithType v5, v7;
+v0 := @this: io.smallrye.stork.Stork;
+v1 := @parameter0: java.lang.String;
+v2 := @parameter1: io.smallrye.stork.api.ServiceDefinition;
+v3 = new io.smallrye.stork.spi.config.SimpleServiceConfig$Builder;
+specialinvoke v3.<io.smallrye.stork.spi.config.SimpleServiceConfig$Builder: void <init>()>();
+v4 = virtualinvoke v3.<io.smallrye.stork.spi.config.SimpleServiceConfig$Builder: io.smallrye.stork.spi.config.SimpleServiceConfig$Builder setServiceName(java.lang.String)>(v1);
+v5 = virtualinvoke v2.<io.smallrye.stork.api.ServiceDefinition: io.smallrye.stork.api.config.ConfigWithType getLoadBalancer()>();
+v6 = virtualinvoke v4.<io.smallrye.stork.spi.config.SimpleServiceConfig$Builder: io.smallrye.stork.spi.config.SimpleServiceConfig$Builder setLoadBalancer(io.smallrye.stork.api.config.ConfigWithType)>(v5);
+v7 = virtualinvoke v2.<io.smallrye.stork.api.ServiceDefinition: io.smallrye.stork.api.config.ConfigWithType getServiceDiscovery()>();
+v8 = virtualinvoke v6.<io.smallrye.stork.spi.config.SimpleServiceConfig$Builder: io.smallrye.stork.spi.config.SimpleServiceConfig$Builder setServiceDiscovery(io.smallrye.stork.api.config.ConfigWithType)>(v7);
+v9 = virtualinvoke v8.<io.smallrye.stork.spi.config.SimpleServiceConfig$Builder: io.smallrye.stork.spi.config.SimpleServiceConfig build()>();
+return v9;
+}
+public void <init>(io.smallrye.stork.spi.StorkInfrastructure)
+{
+io.smallrye.stork.api.Service v12;
+io.smallrye.stork.api.ServiceDiscovery v20;
+io.smallrye.stork.spi.config.ConfigProvider v7;
+io.smallrye.stork.Stork v0;
+java.util.Map v13, v15, v25, v4, v5, v6;
+java.lang.String v14, v26;
+boolean v10, v18, v23;
+java.util.Iterator v17, v22, v9;
+io.smallrye.stork.spi.StorkInfrastructure v1;
+java.util.Collection v16;
+java.util.concurrent.ConcurrentHashMap v2, v3;
+io.smallrye.stork.api.ServiceRegistrar v27;
+java.util.List v21, v8;
+java.lang.Object v11, v19, v24;
+v0 := @this: io.smallrye.stork.Stork;
+v1 := @parameter0: io.smallrye.stork.spi.StorkInfrastructure;
+specialinvoke v0.<java.lang.Object: void <init>()>();
+v2 = new java.util.concurrent.ConcurrentHashMap;
+specialinvoke v2.<java.util.concurrent.ConcurrentHashMap: void <init>()>();
+v0.<io.smallrye.stork.Stork: java.util.Map services> = v2;
+v3 = new java.util.concurrent.ConcurrentHashMap;
+specialinvoke v3.<java.util.concurrent.ConcurrentHashMap: void <init>()>();
+v0.<io.smallrye.stork.Stork: java.util.Map serviceRegistrars> = v3;
+v0.<io.smallrye.stork.Stork: io.smallrye.stork.spi.StorkInfrastructure infrastructure> = v1;
+v4 = specialinvoke v0.<io.smallrye.stork.Stork: java.util.Map loadFromServiceLoader(java.lang.Class)>(class "Lio/smallrye/stork/spi/internal/LoadBalancerLoader;");
+v5 = specialinvoke v0.<io.smallrye.stork.Stork: java.util.Map loadFromServiceLoader(java.lang.Class)>(class "Lio/smallrye/stork/spi/internal/ServiceDiscoveryLoader;");
+v6 = specialinvoke v0.<io.smallrye.stork.Stork: java.util.Map loadFromServiceLoader(java.lang.Class)>(class "Lio/smallrye/stork/spi/internal/ServiceRegistrarLoader;");
+specialinvoke v0.<io.smallrye.stork.Stork: void extendWithCdiLoaders(java.util.Map,java.util.Map,java.util.Map)>(v5, v4, v6);
+v7 = staticinvoke <io.smallrye.stork.Stork: io.smallrye.stork.spi.config.ConfigProvider lookForConfigProvider()>();
+if v7 == null goto label6;
+v8 = interfaceinvoke v7.<io.smallrye.stork.spi.config.ConfigProvider: java.util.List getConfigs()>();
+v9 = interfaceinvoke v8.<java.util.List: java.util.Iterator iterator()>();
+label1:
+v10 = interfaceinvoke v9.<java.util.Iterator: boolean hasNext()>();
+if v10 == 0 goto label2;
+v11 = interfaceinvoke v9.<java.util.Iterator: java.lang.Object next()>();
+v12 = specialinvoke v0.<io.smallrye.stork.Stork: io.smallrye.stork.api.Service createService(java.util.Map,java.util.Map,io.smallrye.stork.api.config.ServiceConfig)>(v4, v5, v11);
+v13 = v0.<io.smallrye.stork.Stork: java.util.Map services>;
+v14 = interfaceinvoke v11.<io.smallrye.stork.api.config.ServiceConfig: java.lang.String serviceName()>();
+interfaceinvoke v13.<java.util.Map: java.lang.Object put(java.lang.Object,java.lang.Object)>(v14, v12);
+goto label1;
+label2:
+v15 = v0.<io.smallrye.stork.Stork: java.util.Map services>;
+v16 = interfaceinvoke v15.<java.util.Map: java.util.Collection values()>();
+v17 = interfaceinvoke v16.<java.util.Collection: java.util.Iterator iterator()>();
+label3:
+v18 = interfaceinvoke v17.<java.util.Iterator: boolean hasNext()>();
+if v18 == 0 goto label4;
+v19 = interfaceinvoke v17.<java.util.Iterator: java.lang.Object next()>();
+v20 = virtualinvoke v19.<io.smallrye.stork.api.Service: io.smallrye.stork.api.ServiceDiscovery getServiceDiscovery()>();
+interfaceinvoke v20.<io.smallrye.stork.api.ServiceDiscovery: void initialize(io.smallrye.stork.api.StorkServiceRegistry)>(v0);
+goto label3;
+label4:
+v21 = interfaceinvoke v7.<io.smallrye.stork.spi.config.ConfigProvider: java.util.List getRegistrarConfigs()>();
+v22 = interfaceinvoke v21.<java.util.List: java.util.Iterator iterator()>();
+label5:
+v23 = interfaceinvoke v22.<java.util.Iterator: boolean hasNext()>();
+if v23 == 0 goto label6;
+v24 = interfaceinvoke v22.<java.util.Iterator: java.lang.Object next()>();
+v25 = v0.<io.smallrye.stork.Stork: java.util.Map serviceRegistrars>;
+v26 = interfaceinvoke v24.<io.smallrye.stork.api.config.ServiceRegistrarConfig: java.lang.String name()>();
+v27 = specialinvoke v0.<io.smallrye.stork.Stork: io.smallrye.stork.api.ServiceRegistrar createServiceRegistrar(io.smallrye.stork.api.config.ServiceRegistrarConfig,java.util.Map)>(v24, v6);
+interfaceinvoke v25.<java.util.Map: java.lang.Object put(java.lang.Object,java.lang.Object)>(v26, v27);
+goto label5;
+label6:
+return;
+}
+private void extendWithCdiLoaders(java.util.Map, java.util.Map, java.util.Map)
+{
+java.lang.IllegalStateException v5;
+jakarta.enterprise.inject.spi.CDI v4;
+java.lang.'annotation'.Annotation[] v10, v6, v8;
+jakarta.enterprise.inject.Instance v11, v7, v9;
+java.util.function.Consumer v12, v13, v14;
+io.smallrye.stork.Stork v0;
+java.util.Map v1, v2, v3;
+v0 := @this: io.smallrye.stork.Stork;
+v1 := @parameter0: java.util.Map;
+v2 := @parameter1: java.util.Map;
+v3 := @parameter2: java.util.Map;
+label1:
+v4 = staticinvoke <jakarta.enterprise.inject.spi.CDI: jakarta.enterprise.inject.spi.CDI current()>();
+label2:
+goto label4;
+label3:
+v5 := @caughtexception;
+return;
+label4:
+v6 = newarray (java.lang.'annotation'.Annotation)[0];
+v7 = virtualinvoke v4.<jakarta.enterprise.inject.spi.CDI: jakarta.enterprise.inject.Instance select(java.lang.Class,java.lang.'annotation'.Annotation[])>(class "Lio/smallrye/stork/spi/internal/ServiceDiscoveryLoader;", v6);
+v8 = newarray (java.lang.'annotation'.Annotation)[0];
+v9 = virtualinvoke v4.<jakarta.enterprise.inject.spi.CDI: jakarta.enterprise.inject.Instance select(java.lang.Class,java.lang.'annotation'.Annotation[])>(class "Lio/smallrye/stork/spi/internal/LoadBalancerLoader;", v8);
+v10 = newarray (java.lang.'annotation'.Annotation)[0];
+v11 = virtualinvoke v4.<jakarta.enterprise.inject.spi.CDI: jakarta.enterprise.inject.Instance select(java.lang.Class,java.lang.'annotation'.Annotation[])>(class "Lio/smallrye/stork/spi/internal/ServiceRegistrarLoader;", v10);
+v12 = staticinvoke <io.smallrye.stork.Stork$lambda_extendWithCdiLoaders_0__596: java.util.function.Consumer bootstrap$(java.util.Map)>(v1);
+interfaceinvoke v7.<jakarta.enterprise.inject.Instance: void forEach(java.util.function.Consumer)>(v12);
+v13 = staticinvoke <io.smallrye.stork.Stork$lambda_extendWithCdiLoaders_1__597: java.util.function.Consumer bootstrap$(java.util.Map)>(v2);
+interfaceinvoke v9.<jakarta.enterprise.inject.Instance: void forEach(java.util.function.Consumer)>(v13);
+v14 = staticinvoke <io.smallrye.stork.Stork$lambda_extendWithCdiLoaders_2__598: java.util.function.Consumer bootstrap$(java.util.Map)>(v3);
+interfaceinvoke v11.<jakarta.enterprise.inject.Instance: void forEach(java.util.function.Consumer)>(v14);
+return;
+catch java.lang.IllegalStateException from label1 to label2 with label3;
+}
+private static io.smallrye.stork.spi.config.ConfigProvider lookForConfigProvider()
+{
+java.lang.IllegalStateException v12;
+jakarta.enterprise.inject.spi.CDI v6;
+java.lang.'annotation'.Annotation[] v7;
+jakarta.enterprise.inject.Instance v8;
+java.util.function.Function v2;
+java.util.stream.Collector v10, v4;
+java.util.function.ToIntFunction v14;
+java.util.ServiceLoader v0;
+java.util.stream.Stream v1, v13, v3, v9;
+java.util.Optional v16;
+java.lang.Object v11, v17, v5;
+java.util.Comparator v15;
+v0 = staticinvoke <java.util.ServiceLoader: java.util.ServiceLoader load(java.lang.Class)>(class "Lio/smallrye/stork/spi/config/ConfigProvider;");
+v1 = virtualinvoke v0.<java.util.ServiceLoader: java.util.stream.Stream stream()>();
+v2 = staticinvoke <io.smallrye.stork.Stork$get__599: java.util.function.Function bootstrap$()>();
+v3 = interfaceinvoke v1.<java.util.stream.Stream: java.util.stream.Stream map(java.util.function.Function)>(v2);
+v4 = staticinvoke <java.util.stream.Collectors: java.util.stream.Collector toList()>();
+v5 = interfaceinvoke v3.<java.util.stream.Stream: java.lang.Object collect(java.util.stream.Collector)>(v4);
+label1:
+v6 = staticinvoke <jakarta.enterprise.inject.spi.CDI: jakarta.enterprise.inject.spi.CDI current()>();
+v7 = newarray (java.lang.'annotation'.Annotation)[0];
+v8 = virtualinvoke v6.<jakarta.enterprise.inject.spi.CDI: jakarta.enterprise.inject.Instance select(java.lang.Class,java.lang.'annotation'.Annotation[])>(class "Lio/smallrye/stork/spi/config/ConfigProvider;", v7);
+v9 = interfaceinvoke v8.<jakarta.enterprise.inject.Instance: java.util.stream.Stream stream()>();
+v10 = staticinvoke <java.util.stream.Collectors: java.util.stream.Collector toList()>();
+v11 = interfaceinvoke v9.<java.util.stream.Stream: java.lang.Object collect(java.util.stream.Collector)>(v10);
+interfaceinvoke v5.<java.util.List: boolean addAll(java.util.Collection)>(v11);
+label2:
+goto label4;
+label3:
+v12 := @caughtexception;
+label4:
+v13 = interfaceinvoke v5.<java.util.List: java.util.stream.Stream stream()>();
+v14 = staticinvoke <io.smallrye.stork.Stork$priority__600: java.util.function.ToIntFunction bootstrap$()>();
+v15 = staticinvoke <java.util.Comparator: java.util.Comparator comparingInt(java.util.function.ToIntFunction)>(v14);
+v16 = interfaceinvoke v13.<java.util.stream.Stream: java.util.Optional max(java.util.Comparator)>(v15);
+v17 = virtualinvoke v16.<java.util.Optional: java.lang.Object orElse(java.lang.Object)>(null);
+return v17;
+catch java.lang.IllegalStateException from label1 to label2 with label3;
+}
+private io.smallrye.stork.api.ServiceRegistrar createServiceRegistrar(io.smallrye.stork.api.config.ServiceRegistrarConfig, java.util.Map)
+{
+io.smallrye.stork.spi.StorkInfrastructure v8;
+io.smallrye.stork.api.ServiceRegistrar v9;
+java.lang.IllegalArgumentException v5;
+io.smallrye.stork.Stork v0;
+java.util.Map v2;
+java.lang.Object v4;
+java.lang.String v3, v6, v7;
+io.smallrye.stork.api.config.ServiceRegistrarConfig v1;
+v0 := @this: io.smallrye.stork.Stork;
+v1 := @parameter0: io.smallrye.stork.api.config.ServiceRegistrarConfig;
+v2 := @parameter1: java.util.Map;
+v3 = interfaceinvoke v1.<io.smallrye.stork.api.config.ServiceRegistrarConfig: java.lang.String type()>();
+v4 = interfaceinvoke v2.<java.util.Map: java.lang.Object get(java.lang.Object)>(v3);
+if v4 != null goto label1;
+v5 = new java.lang.IllegalArgumentException;
+v6 = interfaceinvoke v1.<io.smallrye.stork.api.config.ServiceRegistrarConfig: java.lang.String type()>();
+v7 = dynamicinvoke "makeConcatWithConstants" <java.lang.String (java.lang.String)>(v6) <java.lang.invoke.StringConcatFactory: java.lang.invoke.CallSite makeConcatWithConstants(java.lang.invoke.MethodHandles$Lookup,java.lang.String,java.lang.invoke.MethodType,java.lang.String,java.lang.Object[])>("No service registrar found for type \u0001");
+specialinvoke v5.<java.lang.IllegalArgumentException: void <init>(java.lang.String)>(v7);
+throw v5;
+label1:
+v8 = v0.<io.smallrye.stork.Stork: io.smallrye.stork.spi.StorkInfrastructure infrastructure>;
+v9 = interfaceinvoke v4.<io.smallrye.stork.spi.internal.ServiceRegistrarLoader: io.smallrye.stork.api.ServiceRegistrar createServiceRegistrar(io.smallrye.stork.api.config.ServiceRegistrarConfig,io.smallrye.stork.spi.StorkInfrastructure)>(v1, v8);
+return v9;
+}
+private io.smallrye.stork.api.Service createService(io.smallrye.stork.api.config.ServiceConfig)
+{
+io.smallrye.stork.api.config.ServiceConfig v1;
+io.smallrye.stork.Stork v0;
+io.smallrye.stork.api.Service v4;
+java.util.Map v2, v3;
+v0 := @this: io.smallrye.stork.Stork;
+v1 := @parameter0: io.smallrye.stork.api.config.ServiceConfig;
+v2 = specialinvoke v0.<io.smallrye.stork.Stork: java.util.Map loadFromServiceLoader(java.lang.Class)>(class "Lio/smallrye/stork/spi/internal/LoadBalancerLoader;");
+v3 = specialinvoke v0.<io.smallrye.stork.Stork: java.util.Map loadFromServiceLoader(java.lang.Class)>(class "Lio/smallrye/stork/spi/internal/ServiceDiscoveryLoader;");
+v4 = specialinvoke v0.<io.smallrye.stork.Stork: io.smallrye.stork.api.Service createService(java.util.Map,java.util.Map,io.smallrye.stork.api.config.ServiceConfig)>(v2, v3, v1);
+return v4;
+}
+private io.smallrye.stork.api.Service createService(java.util.Map, java.util.Map, io.smallrye.stork.api.config.ServiceConfig)
+{
+io.smallrye.stork.api.config.ServiceConfig v3;
+io.smallrye.stork.api.Service v31;
+io.smallrye.stork.spi.config.SimpleServiceConfig$SimpleServiceDiscoveryConfig v19;
+java.util.Map v1, v18, v2;
+boolean v15, v33;
+io.smallrye.stork.api.LoadBalancer v26;
+java.util.HashMap v17;
+io.smallrye.stork.api.ServiceDiscovery v22;
+io.smallrye.stork.Stork v0;
+java.lang.String v10, v11, v14, v20, v27, v30, v32, v6, v7, v8;
+io.smallrye.stork.api.config.ConfigWithType v23, v4;
+org.slf4j.Logger v16, v24;
+io.smallrye.stork.spi.StorkInfrastructure v21;
+java.lang.IllegalArgumentException v13, v29, v5, v9;
+io.smallrye.stork.impl.RoundRobinLoadBalancer v25;
+java.lang.Object v12, v28;
+v0 := @this: io.smallrye.stork.Stork;
+v1 := @parameter0: java.util.Map;
+v2 := @parameter1: java.util.Map;
+v3 := @parameter2: io.smallrye.stork.api.config.ServiceConfig;
+v4 = interfaceinvoke v3.<io.smallrye.stork.api.config.ServiceConfig: io.smallrye.stork.api.config.ConfigWithType serviceDiscovery()>();
+if v4 != null goto label1;
+v5 = new java.lang.IllegalArgumentException;
+v6 = interfaceinvoke v3.<io.smallrye.stork.api.config.ServiceConfig: java.lang.String serviceName()>();
+v7 = dynamicinvoke "makeConcatWithConstants" <java.lang.String (java.lang.String)>(v6) <java.lang.invoke.StringConcatFactory: java.lang.invoke.CallSite makeConcatWithConstants(java.lang.invoke.MethodHandles$Lookup,java.lang.String,java.lang.invoke.MethodType,java.lang.String,java.lang.Object[])>("No service discovery defined for service \u0001");
+specialinvoke v5.<java.lang.IllegalArgumentException: void <init>(java.lang.String)>(v7);
+throw v5;
+label1:
+v8 = interfaceinvoke v4.<io.smallrye.stork.api.config.ConfigWithType: java.lang.String type()>();
+if v8 != null goto label2;
+v9 = new java.lang.IllegalArgumentException;
+v10 = interfaceinvoke v3.<io.smallrye.stork.api.config.ServiceConfig: java.lang.String serviceName()>();
+v11 = dynamicinvoke "makeConcatWithConstants" <java.lang.String (java.lang.String)>(v10) <java.lang.invoke.StringConcatFactory: java.lang.invoke.CallSite makeConcatWithConstants(java.lang.invoke.MethodHandles$Lookup,java.lang.String,java.lang.invoke.MethodType,java.lang.String,java.lang.Object[])>("Service discovery type not defined for service \u0001");
+specialinvoke v9.<java.lang.IllegalArgumentException: void <init>(java.lang.String)>(v11);
+throw v9;
+label2:
+v12 = interfaceinvoke v2.<java.util.Map: java.lang.Object get(java.lang.Object)>(v8);
+if v12 != null goto label3;
+v13 = new java.lang.IllegalArgumentException;
+v14 = dynamicinvoke "makeConcatWithConstants" <java.lang.String (java.lang.String)>(v8) <java.lang.invoke.StringConcatFactory: java.lang.invoke.CallSite makeConcatWithConstants(java.lang.invoke.MethodHandles$Lookup,java.lang.String,java.lang.invoke.MethodType,java.lang.String,java.lang.Object[])>("ServiceDiscoveryProvider not found for type \u0001");
+specialinvoke v13.<java.lang.IllegalArgumentException: void <init>(java.lang.String)>(v14);
+throw v13;
+label3:
+v15 = interfaceinvoke v3.<io.smallrye.stork.api.config.ServiceConfig: boolean secure()>();
+if v15 == 0 goto label4;
+v16 = <io.smallrye.stork.Stork: org.slf4j.Logger LOGGER>;
+interfaceinvoke v16.<org.slf4j.Logger: void warn(java.lang.String)>("The \'secure\' attribute is deprecated, use the \'secure\' service discovery attribute instead");
+v17 = new java.util.HashMap;
+v18 = interfaceinvoke v4.<io.smallrye.stork.api.config.ConfigWithType: java.util.Map parameters()>();
+specialinvoke v17.<java.util.HashMap: void <init>(java.util.Map)>(v18);
+interfaceinvoke v17.<java.util.Map: java.lang.Object put(java.lang.Object,java.lang.Object)>("secure", "true");
+v19 = new io.smallrye.stork.spi.config.SimpleServiceConfig$SimpleServiceDiscoveryConfig;
+specialinvoke v19.<io.smallrye.stork.spi.config.SimpleServiceConfig$SimpleServiceDiscoveryConfig: void <init>(java.lang.String,java.util.Map)>(v8, v17);
+v4 = v19;
+label4:
+v20 = interfaceinvoke v3.<io.smallrye.stork.api.config.ServiceConfig: java.lang.String serviceName()>();
+v21 = v0.<io.smallrye.stork.Stork: io.smallrye.stork.spi.StorkInfrastructure infrastructure>;
+v22 = interfaceinvoke v12.<io.smallrye.stork.spi.internal.ServiceDiscoveryLoader: io.smallrye.stork.api.ServiceDiscovery createServiceDiscovery(io.smallrye.stork.api.config.ConfigWithType,java.lang.String,io.smallrye.stork.api.config.ServiceConfig,io.smallrye.stork.spi.StorkInfrastructure)>(v4, v20, v3, v21);
+v23 = interfaceinvoke v3.<io.smallrye.stork.api.config.ServiceConfig: io.smallrye.stork.api.config.ConfigWithType loadBalancer()>();
+if v23 != null goto label5;
+v24 = <io.smallrye.stork.Stork: org.slf4j.Logger LOGGER>;
+interfaceinvoke v24.<org.slf4j.Logger: void debug(java.lang.String,java.lang.Object,java.lang.Object)>("No load balancer configured for type {}, using {}", v8, "round-robin");
+v25 = new io.smallrye.stork.impl.RoundRobinLoadBalancer;
+specialinvoke v25.<io.smallrye.stork.impl.RoundRobinLoadBalancer: void <init>()>();
+v26 = v25;
+goto label7;
+label5:
+v27 = interfaceinvoke v23.<io.smallrye.stork.api.config.ConfigWithType: java.lang.String type()>();
+v28 = interfaceinvoke v1.<java.util.Map: java.lang.Object get(java.lang.Object)>(v27);
+if v28 != null goto label6;
+v29 = new java.lang.IllegalArgumentException;
+v30 = dynamicinvoke "makeConcatWithConstants" <java.lang.String (java.lang.String)>(v27) <java.lang.invoke.StringConcatFactory: java.lang.invoke.CallSite makeConcatWithConstants(java.lang.invoke.MethodHandles$Lookup,java.lang.String,java.lang.invoke.MethodType,java.lang.String,java.lang.Object[])>("No LoadBalancerProvider for type \u0001");
+specialinvoke v29.<java.lang.IllegalArgumentException: void <init>(java.lang.String)>(v30);
+throw v29;
+label6:
+v26 = interfaceinvoke v28.<io.smallrye.stork.spi.internal.LoadBalancerLoader: io.smallrye.stork.api.LoadBalancer createLoadBalancer(io.smallrye.stork.api.config.ConfigWithType,io.smallrye.stork.api.ServiceDiscovery)>(v23, v22);
+label7:
+v31 = new io.smallrye.stork.api.Service;
+v32 = interfaceinvoke v3.<io.smallrye.stork.api.config.ServiceConfig: java.lang.String serviceName()>();
+v33 = interfaceinvoke v26.<io.smallrye.stork.api.LoadBalancer: boolean requiresStrictRecording()>();
+specialinvoke v31.<io.smallrye.stork.api.Service: void <init>(java.lang.String,io.smallrye.stork.api.LoadBalancer,io.smallrye.stork.api.ServiceDiscovery,boolean)>(v32, v26, v22, v33);
+return v31;
+}
+private java.util.Map loadFromServiceLoader(java.lang.Class)
+{
+java.util.ServiceLoader v2;
+java.util.function.Function v4, v6, v7;
+java.util.stream.Stream v3, v5;
+io.smallrye.stork.Stork v0;
+java.lang.Class v1;
+java.lang.Object v9;
+java.util.stream.Collector v8;
+v0 := @this: io.smallrye.stork.Stork;
+v1 := @parameter0: java.lang.Class;
+v2 = staticinvoke <java.util.ServiceLoader: java.util.ServiceLoader load(java.lang.Class)>(v1);
+v3 = virtualinvoke v2.<java.util.ServiceLoader: java.util.stream.Stream stream()>();
+v4 = staticinvoke <io.smallrye.stork.Stork$get__601: java.util.function.Function bootstrap$()>();
+v5 = interfaceinvoke v3.<java.util.stream.Stream: java.util.stream.Stream map(java.util.function.Function)>(v4);
+v6 = staticinvoke <io.smallrye.stork.Stork$type__602: java.util.function.Function bootstrap$()>();
+v7 = staticinvoke <java.util.function.Function: java.util.function.Function identity()>();
+v8 = staticinvoke <java.util.stream.Collectors: java.util.stream.Collector toMap(java.util.function.Function,java.util.function.Function)>(v6, v7);
+v9 = interfaceinvoke v5.<java.util.stream.Stream: java.lang.Object collect(java.util.stream.Collector)>(v8);
+return v9;
+}
+public static io.smallrye.stork.Stork getInstance()
+{
+java.lang.Object v1;
+java.util.concurrent.atomic.AtomicReference v0;
+v0 = <io.smallrye.stork.Stork: java.util.concurrent.atomic.AtomicReference REFERENCE>;
+v1 = virtualinvoke v0.<java.util.concurrent.atomic.AtomicReference: java.lang.Object get()>();
+return v1;
+}
+public static void shutdown()
+{
+java.util.concurrent.atomic.AtomicReference v0;
+v0 = <io.smallrye.stork.Stork: java.util.concurrent.atomic.AtomicReference REFERENCE>;
+virtualinvoke v0.<java.util.concurrent.atomic.AtomicReference: void set(java.lang.Object)>(null);
+return;
+}
+public static void initialize(io.smallrye.stork.spi.StorkInfrastructure)
+{
+java.util.concurrent.atomic.AtomicReference v1;
+io.smallrye.stork.Stork v2;
+io.smallrye.stork.spi.StorkInfrastructure v0;
+v0 := @parameter0: io.smallrye.stork.spi.StorkInfrastructure;
+v1 = <io.smallrye.stork.Stork: java.util.concurrent.atomic.AtomicReference REFERENCE>;
+v2 = new io.smallrye.stork.Stork;
+specialinvoke v2.<io.smallrye.stork.Stork: void <init>(io.smallrye.stork.spi.StorkInfrastructure)>(v0);
+virtualinvoke v1.<java.util.concurrent.atomic.AtomicReference: boolean compareAndSet(java.lang.Object,java.lang.Object)>(null, v2);
+return;
+}
+public static void initialize()
+{
+io.smallrye.stork.integration.DefaultStorkInfrastructure v0;
+v0 = new io.smallrye.stork.integration.DefaultStorkInfrastructure;
+specialinvoke v0.<io.smallrye.stork.integration.DefaultStorkInfrastructure: void <init>()>();
+staticinvoke <io.smallrye.stork.Stork: void initialize(io.smallrye.stork.spi.StorkInfrastructure)>(v0);
+return;
+}
+public io.smallrye.stork.api.ServiceRegistrar getServiceRegistrar(java.lang.String)
+{
+io.smallrye.stork.Stork v0;
+java.util.Map v2;
+java.lang.Object v3;
+java.lang.String v1;
+io.smallrye.stork.api.NoSuchServiceRegistrarException v4;
+v0 := @this: io.smallrye.stork.Stork;
+v1 := @parameter0: java.lang.String;
+v2 = v0.<io.smallrye.stork.Stork: java.util.Map serviceRegistrars>;
+v3 = interfaceinvoke v2.<java.util.Map: java.lang.Object get(java.lang.Object)>(v1);
+if v3 != null goto label1;
+v4 = new io.smallrye.stork.api.NoSuchServiceRegistrarException;
+specialinvoke v4.<io.smallrye.stork.api.NoSuchServiceRegistrarException: void <init>(java.lang.String)>(v1);
+throw v4;
+label1:
+return v3;
+}
+static void <clinit>()
+{
+org.slf4j.Logger v0;
+java.util.concurrent.atomic.AtomicReference v1;
+v0 = staticinvoke <org.slf4j.LoggerFactory: org.slf4j.Logger getLogger(java.lang.Class)>(class "Lio/smallrye/stork/Stork;");
+<io.smallrye.stork.Stork: org.slf4j.Logger LOGGER> = v0;
+v1 = new java.util.concurrent.atomic.AtomicReference;
+specialinvoke v1.<java.util.concurrent.atomic.AtomicReference: void <init>()>();
+<io.smallrye.stork.Stork: java.util.concurrent.atomic.AtomicReference REFERENCE> = v1;
+return;
+}
+}

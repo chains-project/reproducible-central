@@ -1,0 +1,964 @@
+public class io.netty.handler.codec.http.multipart.HttpPostStandardRequestDecoder extends java.lang.Object implements io.netty.handler.codec.http.multipart.InterfaceHttpPostRequestDecoder
+{
+private final io.netty.handler.codec.http.multipart.HttpDataFactory factory;
+private final io.netty.handler.codec.http.HttpRequest request;
+private final java.nio.charset.Charset charset;
+private boolean isLastChunk;
+private final java.util.List bodyListHttpData;
+private final java.util.Map bodyMapHttpData;
+private io.netty.buffer.ByteBuf undecodedChunk;
+private int bodyListHttpDataRank;
+private io.netty.handler.codec.http.multipart.HttpPostRequestDecoder$MultiPartStatus currentStatus;
+private io.netty.handler.codec.http.multipart.Attribute currentAttribute;
+private boolean destroyed;
+private int discardThreshold;
+public void <init>(io.netty.handler.codec.http.HttpRequest)
+{
+io.netty.handler.codec.http.HttpRequest v1;
+java.nio.charset.Charset v3;
+io.netty.handler.codec.http.multipart.HttpPostStandardRequestDecoder v0;
+io.netty.handler.codec.http.multipart.DefaultHttpDataFactory v2;
+v0 := @this: io.netty.handler.codec.http.multipart.HttpPostStandardRequestDecoder;
+v1 := @parameter0: io.netty.handler.codec.http.HttpRequest;
+v2 = new io.netty.handler.codec.http.multipart.DefaultHttpDataFactory;
+specialinvoke v2.<io.netty.handler.codec.http.multipart.DefaultHttpDataFactory: void <init>(long)>(16384L);
+v3 = <io.netty.handler.codec.http.HttpConstants: java.nio.charset.Charset DEFAULT_CHARSET>;
+specialinvoke v0.<io.netty.handler.codec.http.multipart.HttpPostStandardRequestDecoder: void <init>(io.netty.handler.codec.http.multipart.HttpDataFactory,io.netty.handler.codec.http.HttpRequest,java.nio.charset.Charset)>(v2, v1, v3);
+return;
+}
+public void <init>(io.netty.handler.codec.http.multipart.HttpDataFactory, io.netty.handler.codec.http.HttpRequest)
+{
+io.netty.handler.codec.http.HttpRequest v2;
+java.nio.charset.Charset v3;
+io.netty.handler.codec.http.multipart.HttpPostStandardRequestDecoder v0;
+io.netty.handler.codec.http.multipart.HttpDataFactory v1;
+v0 := @this: io.netty.handler.codec.http.multipart.HttpPostStandardRequestDecoder;
+v1 := @parameter0: io.netty.handler.codec.http.multipart.HttpDataFactory;
+v2 := @parameter1: io.netty.handler.codec.http.HttpRequest;
+v3 = <io.netty.handler.codec.http.HttpConstants: java.nio.charset.Charset DEFAULT_CHARSET>;
+specialinvoke v0.<io.netty.handler.codec.http.multipart.HttpPostStandardRequestDecoder: void <init>(io.netty.handler.codec.http.multipart.HttpDataFactory,io.netty.handler.codec.http.HttpRequest,java.nio.charset.Charset)>(v1, v2, v3);
+return;
+}
+public void <init>(io.netty.handler.codec.http.multipart.HttpDataFactory, io.netty.handler.codec.http.HttpRequest, java.nio.charset.Charset)
+{
+java.lang.Throwable v12;
+io.netty.handler.codec.http.multipart.HttpPostRequestDecoder$MultiPartStatus v7;
+io.netty.handler.codec.http.HttpRequest v2;
+io.netty.handler.codec.http.multipart.CaseIgnoringComparator v6;
+java.util.ArrayList v4;
+java.nio.charset.Charset v3;
+java.util.TreeMap v5;
+io.netty.handler.codec.http.multipart.HttpPostStandardRequestDecoder v0;
+java.lang.Object v10, v8, v9;
+io.netty.handler.codec.http.multipart.HttpDataFactory v1;
+boolean v11;
+v0 := @this: io.netty.handler.codec.http.multipart.HttpPostStandardRequestDecoder;
+v1 := @parameter0: io.netty.handler.codec.http.multipart.HttpDataFactory;
+v2 := @parameter1: io.netty.handler.codec.http.HttpRequest;
+v3 := @parameter2: java.nio.charset.Charset;
+specialinvoke v0.<java.lang.Object: void <init>()>();
+v4 = new java.util.ArrayList;
+specialinvoke v4.<java.util.ArrayList: void <init>()>();
+v0.<io.netty.handler.codec.http.multipart.HttpPostStandardRequestDecoder: java.util.List bodyListHttpData> = v4;
+v5 = new java.util.TreeMap;
+v6 = <io.netty.handler.codec.http.multipart.CaseIgnoringComparator: io.netty.handler.codec.http.multipart.CaseIgnoringComparator INSTANCE>;
+specialinvoke v5.<java.util.TreeMap: void <init>(java.util.Comparator)>(v6);
+v0.<io.netty.handler.codec.http.multipart.HttpPostStandardRequestDecoder: java.util.Map bodyMapHttpData> = v5;
+v7 = <io.netty.handler.codec.http.multipart.HttpPostRequestDecoder$MultiPartStatus: io.netty.handler.codec.http.multipart.HttpPostRequestDecoder$MultiPartStatus NOTSTARTED>;
+v0.<io.netty.handler.codec.http.multipart.HttpPostStandardRequestDecoder: io.netty.handler.codec.http.multipart.HttpPostRequestDecoder$MultiPartStatus currentStatus> = v7;
+v0.<io.netty.handler.codec.http.multipart.HttpPostStandardRequestDecoder: int discardThreshold> = 10485760;
+v8 = staticinvoke <io.netty.util.internal.ObjectUtil: java.lang.Object checkNotNull(java.lang.Object,java.lang.String)>(v2, "request");
+v0.<io.netty.handler.codec.http.multipart.HttpPostStandardRequestDecoder: io.netty.handler.codec.http.HttpRequest request> = v8;
+v9 = staticinvoke <io.netty.util.internal.ObjectUtil: java.lang.Object checkNotNull(java.lang.Object,java.lang.String)>(v3, "charset");
+v0.<io.netty.handler.codec.http.multipart.HttpPostStandardRequestDecoder: java.nio.charset.Charset charset> = v9;
+v10 = staticinvoke <io.netty.util.internal.ObjectUtil: java.lang.Object checkNotNull(java.lang.Object,java.lang.String)>(v1, "factory");
+v0.<io.netty.handler.codec.http.multipart.HttpPostStandardRequestDecoder: io.netty.handler.codec.http.multipart.HttpDataFactory factory> = v10;
+label1:
+v11 = v2 instanceof io.netty.handler.codec.http.HttpContent;
+if v11 == 0 goto label2;
+virtualinvoke v0.<io.netty.handler.codec.http.multipart.HttpPostStandardRequestDecoder: io.netty.handler.codec.http.multipart.HttpPostStandardRequestDecoder offer(io.netty.handler.codec.http.HttpContent)>(v2);
+goto label5;
+label2:
+specialinvoke v0.<io.netty.handler.codec.http.multipart.HttpPostStandardRequestDecoder: void parseBody()>();
+label3:
+goto label5;
+label4:
+v12 := @caughtexception;
+virtualinvoke v0.<io.netty.handler.codec.http.multipart.HttpPostStandardRequestDecoder: void destroy()>();
+staticinvoke <io.netty.util.internal.PlatformDependent: void throwException(java.lang.Throwable)>(v12);
+label5:
+return;
+catch java.lang.Throwable from label1 to label3 with label4;
+}
+private void checkDestroyed()
+{
+java.lang.IllegalStateException v2;
+io.netty.handler.codec.http.multipart.HttpPostStandardRequestDecoder v0;
+java.lang.Class v3;
+java.lang.String v4, v5;
+boolean v1;
+v0 := @this: io.netty.handler.codec.http.multipart.HttpPostStandardRequestDecoder;
+v1 = v0.<io.netty.handler.codec.http.multipart.HttpPostStandardRequestDecoder: boolean destroyed>;
+if v1 == 0 goto label1;
+v2 = new java.lang.IllegalStateException;
+v3 = class "Lio/netty/handler/codec/http/multipart/HttpPostStandardRequestDecoder;";
+v4 = virtualinvoke v3.<java.lang.Class: java.lang.String getSimpleName()>();
+v5 = dynamicinvoke "makeConcatWithConstants" <java.lang.String (java.lang.String)>(v4) <java.lang.invoke.StringConcatFactory: java.lang.invoke.CallSite makeConcatWithConstants(java.lang.invoke.MethodHandles$Lookup,java.lang.String,java.lang.invoke.MethodType,java.lang.String,java.lang.Object[])>("\u0001 was destroyed already");
+specialinvoke v2.<java.lang.IllegalStateException: void <init>(java.lang.String)>(v5);
+throw v2;
+label1:
+return;
+}
+public boolean isMultipart()
+{
+io.netty.handler.codec.http.multipart.HttpPostStandardRequestDecoder v0;
+v0 := @this: io.netty.handler.codec.http.multipart.HttpPostStandardRequestDecoder;
+specialinvoke v0.<io.netty.handler.codec.http.multipart.HttpPostStandardRequestDecoder: void checkDestroyed()>();
+return 0;
+}
+public void setDiscardThreshold(int)
+{
+int v1, v2;
+io.netty.handler.codec.http.multipart.HttpPostStandardRequestDecoder v0;
+v0 := @this: io.netty.handler.codec.http.multipart.HttpPostStandardRequestDecoder;
+v1 := @parameter0: int;
+v2 = staticinvoke <io.netty.util.internal.ObjectUtil: int checkPositiveOrZero(int,java.lang.String)>(v1, "discardThreshold");
+v0.<io.netty.handler.codec.http.multipart.HttpPostStandardRequestDecoder: int discardThreshold> = v2;
+return;
+}
+public int getDiscardThreshold()
+{
+int v1;
+io.netty.handler.codec.http.multipart.HttpPostStandardRequestDecoder v0;
+v0 := @this: io.netty.handler.codec.http.multipart.HttpPostStandardRequestDecoder;
+v1 = v0.<io.netty.handler.codec.http.multipart.HttpPostStandardRequestDecoder: int discardThreshold>;
+return v1;
+}
+public java.util.List getBodyHttpDatas()
+{
+java.util.List v3;
+io.netty.handler.codec.http.multipart.HttpPostRequestDecoder$NotEnoughDataDecoderException v2;
+io.netty.handler.codec.http.multipart.HttpPostStandardRequestDecoder v0;
+boolean v1;
+v0 := @this: io.netty.handler.codec.http.multipart.HttpPostStandardRequestDecoder;
+specialinvoke v0.<io.netty.handler.codec.http.multipart.HttpPostStandardRequestDecoder: void checkDestroyed()>();
+v1 = v0.<io.netty.handler.codec.http.multipart.HttpPostStandardRequestDecoder: boolean isLastChunk>;
+if v1 != 0 goto label1;
+v2 = new io.netty.handler.codec.http.multipart.HttpPostRequestDecoder$NotEnoughDataDecoderException;
+specialinvoke v2.<io.netty.handler.codec.http.multipart.HttpPostRequestDecoder$NotEnoughDataDecoderException: void <init>()>();
+throw v2;
+label1:
+v3 = v0.<io.netty.handler.codec.http.multipart.HttpPostStandardRequestDecoder: java.util.List bodyListHttpData>;
+return v3;
+}
+public java.util.List getBodyHttpDatas(java.lang.String)
+{
+io.netty.handler.codec.http.multipart.HttpPostRequestDecoder$NotEnoughDataDecoderException v3;
+io.netty.handler.codec.http.multipart.HttpPostStandardRequestDecoder v0;
+java.util.Map v4;
+java.lang.Object v5;
+java.lang.String v1;
+boolean v2;
+v0 := @this: io.netty.handler.codec.http.multipart.HttpPostStandardRequestDecoder;
+v1 := @parameter0: java.lang.String;
+specialinvoke v0.<io.netty.handler.codec.http.multipart.HttpPostStandardRequestDecoder: void checkDestroyed()>();
+v2 = v0.<io.netty.handler.codec.http.multipart.HttpPostStandardRequestDecoder: boolean isLastChunk>;
+if v2 != 0 goto label1;
+v3 = new io.netty.handler.codec.http.multipart.HttpPostRequestDecoder$NotEnoughDataDecoderException;
+specialinvoke v3.<io.netty.handler.codec.http.multipart.HttpPostRequestDecoder$NotEnoughDataDecoderException: void <init>()>();
+throw v3;
+label1:
+v4 = v0.<io.netty.handler.codec.http.multipart.HttpPostStandardRequestDecoder: java.util.Map bodyMapHttpData>;
+v5 = interfaceinvoke v4.<java.util.Map: java.lang.Object get(java.lang.Object)>(v1);
+return v5;
+}
+public io.netty.handler.codec.http.multipart.InterfaceHttpData getBodyHttpData(java.lang.String)
+{
+io.netty.handler.codec.http.multipart.HttpPostRequestDecoder$NotEnoughDataDecoderException v3;
+io.netty.handler.codec.http.multipart.HttpPostStandardRequestDecoder v0;
+java.util.Map v4;
+java.lang.Object v5, v6;
+java.lang.String v1;
+boolean v2;
+v0 := @this: io.netty.handler.codec.http.multipart.HttpPostStandardRequestDecoder;
+v1 := @parameter0: java.lang.String;
+specialinvoke v0.<io.netty.handler.codec.http.multipart.HttpPostStandardRequestDecoder: void checkDestroyed()>();
+v2 = v0.<io.netty.handler.codec.http.multipart.HttpPostStandardRequestDecoder: boolean isLastChunk>;
+if v2 != 0 goto label1;
+v3 = new io.netty.handler.codec.http.multipart.HttpPostRequestDecoder$NotEnoughDataDecoderException;
+specialinvoke v3.<io.netty.handler.codec.http.multipart.HttpPostRequestDecoder$NotEnoughDataDecoderException: void <init>()>();
+throw v3;
+label1:
+v4 = v0.<io.netty.handler.codec.http.multipart.HttpPostStandardRequestDecoder: java.util.Map bodyMapHttpData>;
+v5 = interfaceinvoke v4.<java.util.Map: java.lang.Object get(java.lang.Object)>(v1);
+if v5 == null goto label2;
+v6 = interfaceinvoke v5.<java.util.List: java.lang.Object get(int)>(0);
+return v6;
+label2:
+return null;
+}
+public io.netty.handler.codec.http.multipart.HttpPostStandardRequestDecoder offer(io.netty.handler.codec.http.HttpContent)
+{
+io.netty.buffer.ByteBufAllocator v18, v5;
+io.netty.buffer.ByteBuf v10, v11, v14, v16, v17, v19, v21, v22, v23, v3, v4, v7, v8, v9;
+int v12, v13, v15, v20, v6;
+boolean v2;
+io.netty.handler.codec.http.HttpContent v1;
+io.netty.handler.codec.http.multipart.HttpPostStandardRequestDecoder v0;
+v0 := @this: io.netty.handler.codec.http.multipart.HttpPostStandardRequestDecoder;
+v1 := @parameter0: io.netty.handler.codec.http.HttpContent;
+specialinvoke v0.<io.netty.handler.codec.http.multipart.HttpPostStandardRequestDecoder: void checkDestroyed()>();
+v2 = v1 instanceof io.netty.handler.codec.http.LastHttpContent;
+if v2 == 0 goto label1;
+v0.<io.netty.handler.codec.http.multipart.HttpPostStandardRequestDecoder: boolean isLastChunk> = 1;
+label1:
+v3 = interfaceinvoke v1.<io.netty.handler.codec.http.HttpContent: io.netty.buffer.ByteBuf content()>();
+v4 = v0.<io.netty.handler.codec.http.multipart.HttpPostStandardRequestDecoder: io.netty.buffer.ByteBuf undecodedChunk>;
+if v4 != null goto label2;
+v5 = virtualinvoke v3.<io.netty.buffer.ByteBuf: io.netty.buffer.ByteBufAllocator alloc()>();
+v6 = virtualinvoke v3.<io.netty.buffer.ByteBuf: int readableBytes()>();
+v7 = interfaceinvoke v5.<io.netty.buffer.ByteBufAllocator: io.netty.buffer.ByteBuf buffer(int)>(v6);
+v8 = virtualinvoke v7.<io.netty.buffer.ByteBuf: io.netty.buffer.ByteBuf writeBytes(io.netty.buffer.ByteBuf)>(v3);
+v0.<io.netty.handler.codec.http.multipart.HttpPostStandardRequestDecoder: io.netty.buffer.ByteBuf undecodedChunk> = v8;
+goto label3;
+label2:
+v9 = v0.<io.netty.handler.codec.http.multipart.HttpPostStandardRequestDecoder: io.netty.buffer.ByteBuf undecodedChunk>;
+virtualinvoke v9.<io.netty.buffer.ByteBuf: io.netty.buffer.ByteBuf writeBytes(io.netty.buffer.ByteBuf)>(v3);
+label3:
+specialinvoke v0.<io.netty.handler.codec.http.multipart.HttpPostStandardRequestDecoder: void parseBody()>();
+v10 = v0.<io.netty.handler.codec.http.multipart.HttpPostStandardRequestDecoder: io.netty.buffer.ByteBuf undecodedChunk>;
+if v10 == null goto label5;
+v11 = v0.<io.netty.handler.codec.http.multipart.HttpPostStandardRequestDecoder: io.netty.buffer.ByteBuf undecodedChunk>;
+v12 = virtualinvoke v11.<io.netty.buffer.ByteBuf: int writerIndex()>();
+v13 = v0.<io.netty.handler.codec.http.multipart.HttpPostStandardRequestDecoder: int discardThreshold>;
+if v12 <= v13 goto label5;
+v14 = v0.<io.netty.handler.codec.http.multipart.HttpPostStandardRequestDecoder: io.netty.buffer.ByteBuf undecodedChunk>;
+v15 = virtualinvoke v14.<io.netty.buffer.ByteBuf: int refCnt()>();
+if v15 != 1 goto label4;
+v16 = v0.<io.netty.handler.codec.http.multipart.HttpPostStandardRequestDecoder: io.netty.buffer.ByteBuf undecodedChunk>;
+virtualinvoke v16.<io.netty.buffer.ByteBuf: io.netty.buffer.ByteBuf discardReadBytes()>();
+goto label5;
+label4:
+v17 = v0.<io.netty.handler.codec.http.multipart.HttpPostStandardRequestDecoder: io.netty.buffer.ByteBuf undecodedChunk>;
+v18 = virtualinvoke v17.<io.netty.buffer.ByteBuf: io.netty.buffer.ByteBufAllocator alloc()>();
+v19 = v0.<io.netty.handler.codec.http.multipart.HttpPostStandardRequestDecoder: io.netty.buffer.ByteBuf undecodedChunk>;
+v20 = virtualinvoke v19.<io.netty.buffer.ByteBuf: int readableBytes()>();
+v21 = interfaceinvoke v18.<io.netty.buffer.ByteBufAllocator: io.netty.buffer.ByteBuf buffer(int)>(v20);
+v22 = v0.<io.netty.handler.codec.http.multipart.HttpPostStandardRequestDecoder: io.netty.buffer.ByteBuf undecodedChunk>;
+virtualinvoke v21.<io.netty.buffer.ByteBuf: io.netty.buffer.ByteBuf writeBytes(io.netty.buffer.ByteBuf)>(v22);
+v23 = v0.<io.netty.handler.codec.http.multipart.HttpPostStandardRequestDecoder: io.netty.buffer.ByteBuf undecodedChunk>;
+virtualinvoke v23.<io.netty.buffer.ByteBuf: boolean release()>();
+v0.<io.netty.handler.codec.http.multipart.HttpPostStandardRequestDecoder: io.netty.buffer.ByteBuf undecodedChunk> = v21;
+label5:
+return v0;
+}
+public boolean hasNext()
+{
+io.netty.handler.codec.http.multipart.HttpPostRequestDecoder$MultiPartStatus v1, v2;
+java.util.List v10, v4, v7;
+io.netty.handler.codec.http.multipart.HttpPostStandardRequestDecoder v0;
+int v11, v3, v5, v9;
+io.netty.handler.codec.http.multipart.HttpPostRequestDecoder$EndOfDataDecoderException v6;
+boolean v12, v8;
+v0 := @this: io.netty.handler.codec.http.multipart.HttpPostStandardRequestDecoder;
+specialinvoke v0.<io.netty.handler.codec.http.multipart.HttpPostStandardRequestDecoder: void checkDestroyed()>();
+v1 = v0.<io.netty.handler.codec.http.multipart.HttpPostStandardRequestDecoder: io.netty.handler.codec.http.multipart.HttpPostRequestDecoder$MultiPartStatus currentStatus>;
+v2 = <io.netty.handler.codec.http.multipart.HttpPostRequestDecoder$MultiPartStatus: io.netty.handler.codec.http.multipart.HttpPostRequestDecoder$MultiPartStatus EPILOGUE>;
+if v1 != v2 goto label1;
+v3 = v0.<io.netty.handler.codec.http.multipart.HttpPostStandardRequestDecoder: int bodyListHttpDataRank>;
+v4 = v0.<io.netty.handler.codec.http.multipart.HttpPostStandardRequestDecoder: java.util.List bodyListHttpData>;
+v5 = interfaceinvoke v4.<java.util.List: int size()>();
+if v3 < v5 goto label1;
+v6 = new io.netty.handler.codec.http.multipart.HttpPostRequestDecoder$EndOfDataDecoderException;
+specialinvoke v6.<io.netty.handler.codec.http.multipart.HttpPostRequestDecoder$EndOfDataDecoderException: void <init>()>();
+throw v6;
+label1:
+v7 = v0.<io.netty.handler.codec.http.multipart.HttpPostStandardRequestDecoder: java.util.List bodyListHttpData>;
+v8 = interfaceinvoke v7.<java.util.List: boolean isEmpty()>();
+if v8 != 0 goto label2;
+v9 = v0.<io.netty.handler.codec.http.multipart.HttpPostStandardRequestDecoder: int bodyListHttpDataRank>;
+v10 = v0.<io.netty.handler.codec.http.multipart.HttpPostStandardRequestDecoder: java.util.List bodyListHttpData>;
+v11 = interfaceinvoke v10.<java.util.List: int size()>();
+if v9 >= v11 goto label2;
+v12 = 1;
+goto label3;
+label2:
+v12 = 0;
+label3:
+return v12;
+}
+public io.netty.handler.codec.http.multipart.InterfaceHttpData next()
+{
+java.util.List v2;
+io.netty.handler.codec.http.multipart.HttpPostStandardRequestDecoder v0;
+int v3, v4;
+java.lang.Object v5;
+boolean v1;
+v0 := @this: io.netty.handler.codec.http.multipart.HttpPostStandardRequestDecoder;
+specialinvoke v0.<io.netty.handler.codec.http.multipart.HttpPostStandardRequestDecoder: void checkDestroyed()>();
+v1 = virtualinvoke v0.<io.netty.handler.codec.http.multipart.HttpPostStandardRequestDecoder: boolean hasNext()>();
+if v1 == 0 goto label1;
+v2 = v0.<io.netty.handler.codec.http.multipart.HttpPostStandardRequestDecoder: java.util.List bodyListHttpData>;
+v3 = v0.<io.netty.handler.codec.http.multipart.HttpPostStandardRequestDecoder: int bodyListHttpDataRank>;
+v4 = v3 + 1;
+v0.<io.netty.handler.codec.http.multipart.HttpPostStandardRequestDecoder: int bodyListHttpDataRank> = v4;
+v5 = interfaceinvoke v2.<java.util.List: java.lang.Object get(int)>(v3);
+return v5;
+label1:
+return null;
+}
+public io.netty.handler.codec.http.multipart.InterfaceHttpData currentPartialHttpData()
+{
+io.netty.handler.codec.http.multipart.Attribute v1;
+io.netty.handler.codec.http.multipart.HttpPostStandardRequestDecoder v0;
+v0 := @this: io.netty.handler.codec.http.multipart.HttpPostStandardRequestDecoder;
+v1 = v0.<io.netty.handler.codec.http.multipart.HttpPostStandardRequestDecoder: io.netty.handler.codec.http.multipart.Attribute currentAttribute>;
+return v1;
+}
+private void parseBody()
+{
+io.netty.handler.codec.http.multipart.HttpPostRequestDecoder$MultiPartStatus v1, v2, v3, v4, v6;
+io.netty.handler.codec.http.multipart.HttpPostStandardRequestDecoder v0;
+boolean v5;
+v0 := @this: io.netty.handler.codec.http.multipart.HttpPostStandardRequestDecoder;
+v1 = v0.<io.netty.handler.codec.http.multipart.HttpPostStandardRequestDecoder: io.netty.handler.codec.http.multipart.HttpPostRequestDecoder$MultiPartStatus currentStatus>;
+v2 = <io.netty.handler.codec.http.multipart.HttpPostRequestDecoder$MultiPartStatus: io.netty.handler.codec.http.multipart.HttpPostRequestDecoder$MultiPartStatus PREEPILOGUE>;
+if v1 == v2 goto label1;
+v3 = v0.<io.netty.handler.codec.http.multipart.HttpPostStandardRequestDecoder: io.netty.handler.codec.http.multipart.HttpPostRequestDecoder$MultiPartStatus currentStatus>;
+v4 = <io.netty.handler.codec.http.multipart.HttpPostRequestDecoder$MultiPartStatus: io.netty.handler.codec.http.multipart.HttpPostRequestDecoder$MultiPartStatus EPILOGUE>;
+if v3 != v4 goto label3;
+label1:
+v5 = v0.<io.netty.handler.codec.http.multipart.HttpPostStandardRequestDecoder: boolean isLastChunk>;
+if v5 == 0 goto label2;
+v6 = <io.netty.handler.codec.http.multipart.HttpPostRequestDecoder$MultiPartStatus: io.netty.handler.codec.http.multipart.HttpPostRequestDecoder$MultiPartStatus EPILOGUE>;
+v0.<io.netty.handler.codec.http.multipart.HttpPostStandardRequestDecoder: io.netty.handler.codec.http.multipart.HttpPostRequestDecoder$MultiPartStatus currentStatus> = v6;
+label2:
+return;
+label3:
+specialinvoke v0.<io.netty.handler.codec.http.multipart.HttpPostStandardRequestDecoder: void parseBodyAttributes()>();
+return;
+}
+protected void addHttpData(io.netty.handler.codec.http.multipart.InterfaceHttpData)
+{
+io.netty.handler.codec.http.multipart.InterfaceHttpData v1;
+java.util.ArrayList v5;
+java.util.List v8;
+io.netty.handler.codec.http.multipart.HttpPostStandardRequestDecoder v0;
+java.util.Map v2, v6;
+java.lang.Object v4;
+java.lang.String v3, v7;
+v0 := @this: io.netty.handler.codec.http.multipart.HttpPostStandardRequestDecoder;
+v1 := @parameter0: io.netty.handler.codec.http.multipart.InterfaceHttpData;
+if v1 != null goto label1;
+return;
+label1:
+v2 = v0.<io.netty.handler.codec.http.multipart.HttpPostStandardRequestDecoder: java.util.Map bodyMapHttpData>;
+v3 = interfaceinvoke v1.<io.netty.handler.codec.http.multipart.InterfaceHttpData: java.lang.String getName()>();
+v4 = interfaceinvoke v2.<java.util.Map: java.lang.Object get(java.lang.Object)>(v3);
+if v4 != null goto label2;
+v5 = new java.util.ArrayList;
+specialinvoke v5.<java.util.ArrayList: void <init>(int)>(1);
+v4 = v5;
+v6 = v0.<io.netty.handler.codec.http.multipart.HttpPostStandardRequestDecoder: java.util.Map bodyMapHttpData>;
+v7 = interfaceinvoke v1.<io.netty.handler.codec.http.multipart.InterfaceHttpData: java.lang.String getName()>();
+interfaceinvoke v6.<java.util.Map: java.lang.Object put(java.lang.Object,java.lang.Object)>(v7, v5);
+label2:
+interfaceinvoke v4.<java.util.List: boolean add(java.lang.Object)>(v1);
+v8 = v0.<io.netty.handler.codec.http.multipart.HttpPostStandardRequestDecoder: java.util.List bodyListHttpData>;
+interfaceinvoke v8.<java.util.List: boolean add(java.lang.Object)>(v1);
+return;
+}
+private void parseBodyAttributesStandard()
+{
+io.netty.handler.codec.http.HttpRequest v24, v36;
+io.netty.handler.codec.http.multipart.HttpPostStandardRequestDecoder v0;
+java.lang.String v20, v22, v31, v33;
+java.io.IOException v78;
+int[] v11;
+io.netty.handler.codec.http.multipart.HttpDataFactory v23, v35;
+boolean v34, v46, v59, v65, v7, v9;
+io.netty.handler.codec.http.multipart.Attribute v25, v37, v38, v39, v60, v64, v68, v71;
+io.netty.buffer.ByteBuf v1, v10, v17, v28, v42, v44, v45, v47, v50, v52, v56, v58, v61, v63, v66, v72, v74, v75, v77, v79, v8, v82;
+java.nio.charset.Charset v19, v21, v30, v32;
+int v13, v14, v16, v18, v2, v27, v29, v3, v41, v43, v49, v51, v55, v57, v62, v73;
+io.netty.handler.codec.http.multipart.HttpPostRequestDecoder$MultiPartStatus v12, v15, v26, v4, v40, v48, v5, v54, v6, v67, v69, v70;
+char v84, v85;
+java.lang.IllegalArgumentException v81;
+io.netty.handler.codec.http.multipart.HttpPostRequestDecoder$ErrorDataDecoderException v53, v76, v80, v83;
+v0 := @this: io.netty.handler.codec.http.multipart.HttpPostStandardRequestDecoder;
+v1 = v0.<io.netty.handler.codec.http.multipart.HttpPostStandardRequestDecoder: io.netty.buffer.ByteBuf undecodedChunk>;
+v2 = virtualinvoke v1.<io.netty.buffer.ByteBuf: int readerIndex()>();
+v3 = v2;
+v4 = v0.<io.netty.handler.codec.http.multipart.HttpPostStandardRequestDecoder: io.netty.handler.codec.http.multipart.HttpPostRequestDecoder$MultiPartStatus currentStatus>;
+v5 = <io.netty.handler.codec.http.multipart.HttpPostRequestDecoder$MultiPartStatus: io.netty.handler.codec.http.multipart.HttpPostRequestDecoder$MultiPartStatus NOTSTARTED>;
+if v4 != v5 goto label01;
+v6 = <io.netty.handler.codec.http.multipart.HttpPostRequestDecoder$MultiPartStatus: io.netty.handler.codec.http.multipart.HttpPostRequestDecoder$MultiPartStatus DISPOSITION>;
+v0.<io.netty.handler.codec.http.multipart.HttpPostStandardRequestDecoder: io.netty.handler.codec.http.multipart.HttpPostRequestDecoder$MultiPartStatus currentStatus> = v6;
+label01:
+v7 = 1;
+label02:
+v8 = v0.<io.netty.handler.codec.http.multipart.HttpPostStandardRequestDecoder: io.netty.buffer.ByteBuf undecodedChunk>;
+v9 = virtualinvoke v8.<io.netty.buffer.ByteBuf: boolean isReadable()>();
+if v9 == 0 goto label12;
+if v7 == 0 goto label12;
+v10 = v0.<io.netty.handler.codec.http.multipart.HttpPostStandardRequestDecoder: io.netty.buffer.ByteBuf undecodedChunk>;
+virtualinvoke v10.<io.netty.buffer.ByteBuf: short readUnsignedByte()>();
+v3 = v3 + 1;
+v11 = <io.netty.handler.codec.http.multipart.HttpPostStandardRequestDecoder$1: int[] $SwitchMap$io$netty$handler$codec$http$multipart$HttpPostRequestDecoder$MultiPartStatus>;
+v12 = v0.<io.netty.handler.codec.http.multipart.HttpPostStandardRequestDecoder: io.netty.handler.codec.http.multipart.HttpPostRequestDecoder$MultiPartStatus currentStatus>;
+v13 = virtualinvoke v12.<io.netty.handler.codec.http.multipart.HttpPostRequestDecoder$MultiPartStatus: int ordinal()>();
+v14 = v11[v13];
+lookupswitch(v14)
+{
+case 1: goto label03;
+case 2: goto label06;
+default: goto label11;
+};
+label03:
+if v84 != 61 goto label04;
+v15 = <io.netty.handler.codec.http.multipart.HttpPostRequestDecoder$MultiPartStatus: io.netty.handler.codec.http.multipart.HttpPostRequestDecoder$MultiPartStatus FIELD>;
+v0.<io.netty.handler.codec.http.multipart.HttpPostStandardRequestDecoder: io.netty.handler.codec.http.multipart.HttpPostRequestDecoder$MultiPartStatus currentStatus> = v15;
+v16 = v3 - 1;
+v17 = v0.<io.netty.handler.codec.http.multipart.HttpPostStandardRequestDecoder: io.netty.buffer.ByteBuf undecodedChunk>;
+v18 = v16 - v2;
+v19 = v0.<io.netty.handler.codec.http.multipart.HttpPostStandardRequestDecoder: java.nio.charset.Charset charset>;
+v20 = virtualinvoke v17.<io.netty.buffer.ByteBuf: java.lang.String toString(int,int,java.nio.charset.Charset)>(v2, v18, v19);
+v21 = v0.<io.netty.handler.codec.http.multipart.HttpPostStandardRequestDecoder: java.nio.charset.Charset charset>;
+v22 = staticinvoke <io.netty.handler.codec.http.multipart.HttpPostStandardRequestDecoder: java.lang.String decodeAttribute(java.lang.String,java.nio.charset.Charset)>(v20, v21);
+v23 = v0.<io.netty.handler.codec.http.multipart.HttpPostStandardRequestDecoder: io.netty.handler.codec.http.multipart.HttpDataFactory factory>;
+v24 = v0.<io.netty.handler.codec.http.multipart.HttpPostStandardRequestDecoder: io.netty.handler.codec.http.HttpRequest request>;
+v25 = interfaceinvoke v23.<io.netty.handler.codec.http.multipart.HttpDataFactory: io.netty.handler.codec.http.multipart.Attribute createAttribute(io.netty.handler.codec.http.HttpRequest,java.lang.String)>(v24, v22);
+v0.<io.netty.handler.codec.http.multipart.HttpPostStandardRequestDecoder: io.netty.handler.codec.http.multipart.Attribute currentAttribute> = v25;
+v2 = v3;
+goto label02;
+label04:
+if v84 != 38 goto label02;
+v26 = <io.netty.handler.codec.http.multipart.HttpPostRequestDecoder$MultiPartStatus: io.netty.handler.codec.http.multipart.HttpPostRequestDecoder$MultiPartStatus DISPOSITION>;
+v0.<io.netty.handler.codec.http.multipart.HttpPostStandardRequestDecoder: io.netty.handler.codec.http.multipart.HttpPostRequestDecoder$MultiPartStatus currentStatus> = v26;
+v27 = v3 - 1;
+v28 = v0.<io.netty.handler.codec.http.multipart.HttpPostStandardRequestDecoder: io.netty.buffer.ByteBuf undecodedChunk>;
+v29 = v27 - v2;
+v30 = v0.<io.netty.handler.codec.http.multipart.HttpPostStandardRequestDecoder: java.nio.charset.Charset charset>;
+v31 = virtualinvoke v28.<io.netty.buffer.ByteBuf: java.lang.String toString(int,int,java.nio.charset.Charset)>(v2, v29, v30);
+v32 = v0.<io.netty.handler.codec.http.multipart.HttpPostStandardRequestDecoder: java.nio.charset.Charset charset>;
+v33 = staticinvoke <io.netty.handler.codec.http.multipart.HttpPostStandardRequestDecoder: java.lang.String decodeAttribute(java.lang.String,java.nio.charset.Charset)>(v31, v32);
+v34 = virtualinvoke v33.<java.lang.String: boolean isEmpty()>();
+if v34 != 0 goto label05;
+v35 = v0.<io.netty.handler.codec.http.multipart.HttpPostStandardRequestDecoder: io.netty.handler.codec.http.multipart.HttpDataFactory factory>;
+v36 = v0.<io.netty.handler.codec.http.multipart.HttpPostStandardRequestDecoder: io.netty.handler.codec.http.HttpRequest request>;
+v37 = interfaceinvoke v35.<io.netty.handler.codec.http.multipart.HttpDataFactory: io.netty.handler.codec.http.multipart.Attribute createAttribute(io.netty.handler.codec.http.HttpRequest,java.lang.String)>(v36, v33);
+v0.<io.netty.handler.codec.http.multipart.HttpPostStandardRequestDecoder: io.netty.handler.codec.http.multipart.Attribute currentAttribute> = v37;
+v38 = v0.<io.netty.handler.codec.http.multipart.HttpPostStandardRequestDecoder: io.netty.handler.codec.http.multipart.Attribute currentAttribute>;
+interfaceinvoke v38.<io.netty.handler.codec.http.multipart.Attribute: void setValue(java.lang.String)>("");
+v39 = v0.<io.netty.handler.codec.http.multipart.HttpPostStandardRequestDecoder: io.netty.handler.codec.http.multipart.Attribute currentAttribute>;
+virtualinvoke v0.<io.netty.handler.codec.http.multipart.HttpPostStandardRequestDecoder: void addHttpData(io.netty.handler.codec.http.multipart.InterfaceHttpData)>(v39);
+label05:
+v0.<io.netty.handler.codec.http.multipart.HttpPostStandardRequestDecoder: io.netty.handler.codec.http.multipart.Attribute currentAttribute> = null;
+v2 = v3;
+v7 = 1;
+goto label02;
+label06:
+if v84 != 38 goto label07;
+v40 = <io.netty.handler.codec.http.multipart.HttpPostRequestDecoder$MultiPartStatus: io.netty.handler.codec.http.multipart.HttpPostRequestDecoder$MultiPartStatus DISPOSITION>;
+v0.<io.netty.handler.codec.http.multipart.HttpPostStandardRequestDecoder: io.netty.handler.codec.http.multipart.HttpPostRequestDecoder$MultiPartStatus currentStatus> = v40;
+v41 = v3 - 1;
+v42 = v0.<io.netty.handler.codec.http.multipart.HttpPostStandardRequestDecoder: io.netty.buffer.ByteBuf undecodedChunk>;
+v43 = v41 - v2;
+v44 = virtualinvoke v42.<io.netty.buffer.ByteBuf: io.netty.buffer.ByteBuf retainedSlice(int,int)>(v2, v43);
+specialinvoke v0.<io.netty.handler.codec.http.multipart.HttpPostStandardRequestDecoder: void setFinalBuffer(io.netty.buffer.ByteBuf)>(v44);
+v2 = v3;
+v7 = 1;
+goto label02;
+label07:
+if v84 != 13 goto label10;
+v45 = v0.<io.netty.handler.codec.http.multipart.HttpPostStandardRequestDecoder: io.netty.buffer.ByteBuf undecodedChunk>;
+v46 = virtualinvoke v45.<io.netty.buffer.ByteBuf: boolean isReadable()>();
+if v46 == 0 goto label09;
+v47 = v0.<io.netty.handler.codec.http.multipart.HttpPostStandardRequestDecoder: io.netty.buffer.ByteBuf undecodedChunk>;
+virtualinvoke v47.<io.netty.buffer.ByteBuf: short readUnsignedByte()>();
+v3 = v3 + 1;
+if v85 != 10 goto label08;
+v48 = <io.netty.handler.codec.http.multipart.HttpPostRequestDecoder$MultiPartStatus: io.netty.handler.codec.http.multipart.HttpPostRequestDecoder$MultiPartStatus PREEPILOGUE>;
+v0.<io.netty.handler.codec.http.multipart.HttpPostStandardRequestDecoder: io.netty.handler.codec.http.multipart.HttpPostRequestDecoder$MultiPartStatus currentStatus> = v48;
+v49 = v3 - 2;
+v50 = v0.<io.netty.handler.codec.http.multipart.HttpPostStandardRequestDecoder: io.netty.buffer.ByteBuf undecodedChunk>;
+v51 = v49 - v2;
+v52 = virtualinvoke v50.<io.netty.buffer.ByteBuf: io.netty.buffer.ByteBuf retainedSlice(int,int)>(v2, v51);
+specialinvoke v0.<io.netty.handler.codec.http.multipart.HttpPostStandardRequestDecoder: void setFinalBuffer(io.netty.buffer.ByteBuf)>(v52);
+v2 = v3;
+v7 = 0;
+goto label02;
+label08:
+v53 = new io.netty.handler.codec.http.multipart.HttpPostRequestDecoder$ErrorDataDecoderException;
+specialinvoke v53.<io.netty.handler.codec.http.multipart.HttpPostRequestDecoder$ErrorDataDecoderException: void <init>(java.lang.String)>("Bad end of line");
+throw v53;
+label09:
+v3 = v3 - 1;
+goto label02;
+label10:
+if v84 != 10 goto label02;
+v54 = <io.netty.handler.codec.http.multipart.HttpPostRequestDecoder$MultiPartStatus: io.netty.handler.codec.http.multipart.HttpPostRequestDecoder$MultiPartStatus PREEPILOGUE>;
+v0.<io.netty.handler.codec.http.multipart.HttpPostStandardRequestDecoder: io.netty.handler.codec.http.multipart.HttpPostRequestDecoder$MultiPartStatus currentStatus> = v54;
+v55 = v3 - 1;
+v56 = v0.<io.netty.handler.codec.http.multipart.HttpPostStandardRequestDecoder: io.netty.buffer.ByteBuf undecodedChunk>;
+v57 = v55 - v2;
+v58 = virtualinvoke v56.<io.netty.buffer.ByteBuf: io.netty.buffer.ByteBuf retainedSlice(int,int)>(v2, v57);
+specialinvoke v0.<io.netty.handler.codec.http.multipart.HttpPostStandardRequestDecoder: void setFinalBuffer(io.netty.buffer.ByteBuf)>(v58);
+v2 = v3;
+v7 = 0;
+goto label02;
+label11:
+v7 = 0;
+goto label02;
+label12:
+v59 = v0.<io.netty.handler.codec.http.multipart.HttpPostStandardRequestDecoder: boolean isLastChunk>;
+if v59 == 0 goto label15;
+v60 = v0.<io.netty.handler.codec.http.multipart.HttpPostStandardRequestDecoder: io.netty.handler.codec.http.multipart.Attribute currentAttribute>;
+if v60 == null goto label15;
+if v3 <= v2 goto label13;
+v61 = v0.<io.netty.handler.codec.http.multipart.HttpPostStandardRequestDecoder: io.netty.buffer.ByteBuf undecodedChunk>;
+v62 = v3 - v2;
+v63 = virtualinvoke v61.<io.netty.buffer.ByteBuf: io.netty.buffer.ByteBuf retainedSlice(int,int)>(v2, v62);
+specialinvoke v0.<io.netty.handler.codec.http.multipart.HttpPostStandardRequestDecoder: void setFinalBuffer(io.netty.buffer.ByteBuf)>(v63);
+goto label14;
+label13:
+v64 = v0.<io.netty.handler.codec.http.multipart.HttpPostStandardRequestDecoder: io.netty.handler.codec.http.multipart.Attribute currentAttribute>;
+v65 = interfaceinvoke v64.<io.netty.handler.codec.http.multipart.Attribute: boolean isCompleted()>();
+if v65 != 0 goto label14;
+v66 = <io.netty.buffer.Unpooled: io.netty.buffer.ByteBuf EMPTY_BUFFER>;
+specialinvoke v0.<io.netty.handler.codec.http.multipart.HttpPostStandardRequestDecoder: void setFinalBuffer(io.netty.buffer.ByteBuf)>(v66);
+label14:
+v2 = v3;
+v67 = <io.netty.handler.codec.http.multipart.HttpPostRequestDecoder$MultiPartStatus: io.netty.handler.codec.http.multipart.HttpPostRequestDecoder$MultiPartStatus EPILOGUE>;
+v0.<io.netty.handler.codec.http.multipart.HttpPostStandardRequestDecoder: io.netty.handler.codec.http.multipart.HttpPostRequestDecoder$MultiPartStatus currentStatus> = v67;
+goto label16;
+label15:
+if v7 == 0 goto label16;
+v68 = v0.<io.netty.handler.codec.http.multipart.HttpPostStandardRequestDecoder: io.netty.handler.codec.http.multipart.Attribute currentAttribute>;
+if v68 == null goto label16;
+v69 = v0.<io.netty.handler.codec.http.multipart.HttpPostStandardRequestDecoder: io.netty.handler.codec.http.multipart.HttpPostRequestDecoder$MultiPartStatus currentStatus>;
+v70 = <io.netty.handler.codec.http.multipart.HttpPostRequestDecoder$MultiPartStatus: io.netty.handler.codec.http.multipart.HttpPostRequestDecoder$MultiPartStatus FIELD>;
+if v69 != v70 goto label16;
+v71 = v0.<io.netty.handler.codec.http.multipart.HttpPostStandardRequestDecoder: io.netty.handler.codec.http.multipart.Attribute currentAttribute>;
+v72 = v0.<io.netty.handler.codec.http.multipart.HttpPostStandardRequestDecoder: io.netty.buffer.ByteBuf undecodedChunk>;
+v73 = v3 - v2;
+v74 = virtualinvoke v72.<io.netty.buffer.ByteBuf: io.netty.buffer.ByteBuf retainedSlice(int,int)>(v2, v73);
+interfaceinvoke v71.<io.netty.handler.codec.http.multipart.Attribute: void addContent(io.netty.buffer.ByteBuf,boolean)>(v74, 0);
+v2 = v3;
+label16:
+v75 = v0.<io.netty.handler.codec.http.multipart.HttpPostStandardRequestDecoder: io.netty.buffer.ByteBuf undecodedChunk>;
+virtualinvoke v75.<io.netty.buffer.ByteBuf: io.netty.buffer.ByteBuf readerIndex(int)>(v2);
+label17:
+goto label21;
+label18:
+v76 := @caughtexception;
+v77 = v0.<io.netty.handler.codec.http.multipart.HttpPostStandardRequestDecoder: io.netty.buffer.ByteBuf undecodedChunk>;
+virtualinvoke v77.<io.netty.buffer.ByteBuf: io.netty.buffer.ByteBuf readerIndex(int)>(v2);
+throw v76;
+label19:
+v78 := @caughtexception;
+v79 = v0.<io.netty.handler.codec.http.multipart.HttpPostStandardRequestDecoder: io.netty.buffer.ByteBuf undecodedChunk>;
+virtualinvoke v79.<io.netty.buffer.ByteBuf: io.netty.buffer.ByteBuf readerIndex(int)>(v2);
+v80 = new io.netty.handler.codec.http.multipart.HttpPostRequestDecoder$ErrorDataDecoderException;
+specialinvoke v80.<io.netty.handler.codec.http.multipart.HttpPostRequestDecoder$ErrorDataDecoderException: void <init>(java.lang.Throwable)>(v78);
+throw v80;
+label20:
+v81 := @caughtexception;
+v82 = v0.<io.netty.handler.codec.http.multipart.HttpPostStandardRequestDecoder: io.netty.buffer.ByteBuf undecodedChunk>;
+virtualinvoke v82.<io.netty.buffer.ByteBuf: io.netty.buffer.ByteBuf readerIndex(int)>(v2);
+v83 = new io.netty.handler.codec.http.multipart.HttpPostRequestDecoder$ErrorDataDecoderException;
+specialinvoke v83.<io.netty.handler.codec.http.multipart.HttpPostRequestDecoder$ErrorDataDecoderException: void <init>(java.lang.Throwable)>(v81);
+throw v83;
+label21:
+return;
+catch io.netty.handler.codec.http.multipart.HttpPostRequestDecoder$ErrorDataDecoderException from label02 to label17 with label18;
+catch java.io.IOException from label02 to label17 with label19;
+catch java.lang.IllegalArgumentException from label02 to label17 with label20;
+}
+private void parseBodyAttributes()
+{
+byte[] v15, v55;
+byte v18, v58;
+io.netty.handler.codec.http.HttpRequest v32, v44;
+io.netty.handler.codec.http.multipart.HttpPostStandardRequestDecoder v0;
+java.lang.String v28, v30, v39, v41;
+java.io.IOException v90;
+int[] v19;
+io.netty.handler.codec.http.multipart.HttpDataFactory v31, v43;
+boolean v12, v3, v42, v71, v77;
+io.netty.handler.codec.http.multipart.Attribute v33, v45, v46, v47, v72, v76, v80, v83;
+io.netty.buffer.ByteBuf v1, v2, v25, v36, v5, v50, v52, v6, v61, v63, v68, v70, v73, v75, v78, v84, v86, v87, v89, v91, v94;
+java.nio.charset.Charset v27, v29, v38, v40;
+int v13, v14, v16, v17, v21, v22, v24, v26, v35, v37, v49, v51, v53, v54, v56, v57, v60, v62, v65, v67, v69, v7, v74, v8, v85;
+io.netty.handler.codec.http.multipart.HttpPostRequestDecoder$MultiPartStatus v10, v11, v20, v23, v34, v48, v59, v66, v79, v81, v82, v9;
+char v96, v97;
+java.lang.IllegalArgumentException v93;
+io.netty.handler.codec.http.multipart.HttpPostRequestDecoder$ErrorDataDecoderException v64, v88, v92, v95;
+io.netty.handler.codec.http.multipart.HttpPostBodyUtil$SeekAheadOptimize v4;
+v0 := @this: io.netty.handler.codec.http.multipart.HttpPostStandardRequestDecoder;
+v1 = v0.<io.netty.handler.codec.http.multipart.HttpPostStandardRequestDecoder: io.netty.buffer.ByteBuf undecodedChunk>;
+if v1 != null goto label01;
+return;
+label01:
+v2 = v0.<io.netty.handler.codec.http.multipart.HttpPostStandardRequestDecoder: io.netty.buffer.ByteBuf undecodedChunk>;
+v3 = virtualinvoke v2.<io.netty.buffer.ByteBuf: boolean hasArray()>();
+if v3 != 0 goto label02;
+specialinvoke v0.<io.netty.handler.codec.http.multipart.HttpPostStandardRequestDecoder: void parseBodyAttributesStandard()>();
+return;
+label02:
+v4 = new io.netty.handler.codec.http.multipart.HttpPostBodyUtil$SeekAheadOptimize;
+v5 = v0.<io.netty.handler.codec.http.multipart.HttpPostStandardRequestDecoder: io.netty.buffer.ByteBuf undecodedChunk>;
+specialinvoke v4.<io.netty.handler.codec.http.multipart.HttpPostBodyUtil$SeekAheadOptimize: void <init>(io.netty.buffer.ByteBuf)>(v5);
+v6 = v0.<io.netty.handler.codec.http.multipart.HttpPostStandardRequestDecoder: io.netty.buffer.ByteBuf undecodedChunk>;
+v7 = virtualinvoke v6.<io.netty.buffer.ByteBuf: int readerIndex()>();
+v8 = v7;
+v9 = v0.<io.netty.handler.codec.http.multipart.HttpPostStandardRequestDecoder: io.netty.handler.codec.http.multipart.HttpPostRequestDecoder$MultiPartStatus currentStatus>;
+v10 = <io.netty.handler.codec.http.multipart.HttpPostRequestDecoder$MultiPartStatus: io.netty.handler.codec.http.multipart.HttpPostRequestDecoder$MultiPartStatus NOTSTARTED>;
+if v9 != v10 goto label03;
+v11 = <io.netty.handler.codec.http.multipart.HttpPostRequestDecoder$MultiPartStatus: io.netty.handler.codec.http.multipart.HttpPostRequestDecoder$MultiPartStatus DISPOSITION>;
+v0.<io.netty.handler.codec.http.multipart.HttpPostStandardRequestDecoder: io.netty.handler.codec.http.multipart.HttpPostRequestDecoder$MultiPartStatus currentStatus> = v11;
+label03:
+v12 = 1;
+label04:
+v13 = v4.<io.netty.handler.codec.http.multipart.HttpPostBodyUtil$SeekAheadOptimize: int pos>;
+v14 = v4.<io.netty.handler.codec.http.multipart.HttpPostBodyUtil$SeekAheadOptimize: int limit>;
+if v13 >= v14 goto label14;
+v15 = v4.<io.netty.handler.codec.http.multipart.HttpPostBodyUtil$SeekAheadOptimize: byte[] bytes>;
+v16 = v4.<io.netty.handler.codec.http.multipart.HttpPostBodyUtil$SeekAheadOptimize: int pos>;
+v17 = v16 + 1;
+v4.<io.netty.handler.codec.http.multipart.HttpPostBodyUtil$SeekAheadOptimize: int pos> = v17;
+v18 = v15[v16];
+v8 = v8 + 1;
+v19 = <io.netty.handler.codec.http.multipart.HttpPostStandardRequestDecoder$1: int[] $SwitchMap$io$netty$handler$codec$http$multipart$HttpPostRequestDecoder$MultiPartStatus>;
+v20 = v0.<io.netty.handler.codec.http.multipart.HttpPostStandardRequestDecoder: io.netty.handler.codec.http.multipart.HttpPostRequestDecoder$MultiPartStatus currentStatus>;
+v21 = virtualinvoke v20.<io.netty.handler.codec.http.multipart.HttpPostRequestDecoder$MultiPartStatus: int ordinal()>();
+v22 = v19[v21];
+lookupswitch(v22)
+{
+case 1: goto label05;
+case 2: goto label08;
+default: goto label13;
+};
+label05:
+if v96 != 61 goto label06;
+v23 = <io.netty.handler.codec.http.multipart.HttpPostRequestDecoder$MultiPartStatus: io.netty.handler.codec.http.multipart.HttpPostRequestDecoder$MultiPartStatus FIELD>;
+v0.<io.netty.handler.codec.http.multipart.HttpPostStandardRequestDecoder: io.netty.handler.codec.http.multipart.HttpPostRequestDecoder$MultiPartStatus currentStatus> = v23;
+v24 = v8 - 1;
+v25 = v0.<io.netty.handler.codec.http.multipart.HttpPostStandardRequestDecoder: io.netty.buffer.ByteBuf undecodedChunk>;
+v26 = v24 - v7;
+v27 = v0.<io.netty.handler.codec.http.multipart.HttpPostStandardRequestDecoder: java.nio.charset.Charset charset>;
+v28 = virtualinvoke v25.<io.netty.buffer.ByteBuf: java.lang.String toString(int,int,java.nio.charset.Charset)>(v7, v26, v27);
+v29 = v0.<io.netty.handler.codec.http.multipart.HttpPostStandardRequestDecoder: java.nio.charset.Charset charset>;
+v30 = staticinvoke <io.netty.handler.codec.http.multipart.HttpPostStandardRequestDecoder: java.lang.String decodeAttribute(java.lang.String,java.nio.charset.Charset)>(v28, v29);
+v31 = v0.<io.netty.handler.codec.http.multipart.HttpPostStandardRequestDecoder: io.netty.handler.codec.http.multipart.HttpDataFactory factory>;
+v32 = v0.<io.netty.handler.codec.http.multipart.HttpPostStandardRequestDecoder: io.netty.handler.codec.http.HttpRequest request>;
+v33 = interfaceinvoke v31.<io.netty.handler.codec.http.multipart.HttpDataFactory: io.netty.handler.codec.http.multipart.Attribute createAttribute(io.netty.handler.codec.http.HttpRequest,java.lang.String)>(v32, v30);
+v0.<io.netty.handler.codec.http.multipart.HttpPostStandardRequestDecoder: io.netty.handler.codec.http.multipart.Attribute currentAttribute> = v33;
+v7 = v8;
+goto label04;
+label06:
+if v96 != 38 goto label04;
+v34 = <io.netty.handler.codec.http.multipart.HttpPostRequestDecoder$MultiPartStatus: io.netty.handler.codec.http.multipart.HttpPostRequestDecoder$MultiPartStatus DISPOSITION>;
+v0.<io.netty.handler.codec.http.multipart.HttpPostStandardRequestDecoder: io.netty.handler.codec.http.multipart.HttpPostRequestDecoder$MultiPartStatus currentStatus> = v34;
+v35 = v8 - 1;
+v36 = v0.<io.netty.handler.codec.http.multipart.HttpPostStandardRequestDecoder: io.netty.buffer.ByteBuf undecodedChunk>;
+v37 = v35 - v7;
+v38 = v0.<io.netty.handler.codec.http.multipart.HttpPostStandardRequestDecoder: java.nio.charset.Charset charset>;
+v39 = virtualinvoke v36.<io.netty.buffer.ByteBuf: java.lang.String toString(int,int,java.nio.charset.Charset)>(v7, v37, v38);
+v40 = v0.<io.netty.handler.codec.http.multipart.HttpPostStandardRequestDecoder: java.nio.charset.Charset charset>;
+v41 = staticinvoke <io.netty.handler.codec.http.multipart.HttpPostStandardRequestDecoder: java.lang.String decodeAttribute(java.lang.String,java.nio.charset.Charset)>(v39, v40);
+v42 = virtualinvoke v41.<java.lang.String: boolean isEmpty()>();
+if v42 != 0 goto label07;
+v43 = v0.<io.netty.handler.codec.http.multipart.HttpPostStandardRequestDecoder: io.netty.handler.codec.http.multipart.HttpDataFactory factory>;
+v44 = v0.<io.netty.handler.codec.http.multipart.HttpPostStandardRequestDecoder: io.netty.handler.codec.http.HttpRequest request>;
+v45 = interfaceinvoke v43.<io.netty.handler.codec.http.multipart.HttpDataFactory: io.netty.handler.codec.http.multipart.Attribute createAttribute(io.netty.handler.codec.http.HttpRequest,java.lang.String)>(v44, v41);
+v0.<io.netty.handler.codec.http.multipart.HttpPostStandardRequestDecoder: io.netty.handler.codec.http.multipart.Attribute currentAttribute> = v45;
+v46 = v0.<io.netty.handler.codec.http.multipart.HttpPostStandardRequestDecoder: io.netty.handler.codec.http.multipart.Attribute currentAttribute>;
+interfaceinvoke v46.<io.netty.handler.codec.http.multipart.Attribute: void setValue(java.lang.String)>("");
+v47 = v0.<io.netty.handler.codec.http.multipart.HttpPostStandardRequestDecoder: io.netty.handler.codec.http.multipart.Attribute currentAttribute>;
+virtualinvoke v0.<io.netty.handler.codec.http.multipart.HttpPostStandardRequestDecoder: void addHttpData(io.netty.handler.codec.http.multipart.InterfaceHttpData)>(v47);
+label07:
+v0.<io.netty.handler.codec.http.multipart.HttpPostStandardRequestDecoder: io.netty.handler.codec.http.multipart.Attribute currentAttribute> = null;
+v7 = v8;
+v12 = 1;
+goto label04;
+label08:
+if v96 != 38 goto label09;
+v48 = <io.netty.handler.codec.http.multipart.HttpPostRequestDecoder$MultiPartStatus: io.netty.handler.codec.http.multipart.HttpPostRequestDecoder$MultiPartStatus DISPOSITION>;
+v0.<io.netty.handler.codec.http.multipart.HttpPostStandardRequestDecoder: io.netty.handler.codec.http.multipart.HttpPostRequestDecoder$MultiPartStatus currentStatus> = v48;
+v49 = v8 - 1;
+v50 = v0.<io.netty.handler.codec.http.multipart.HttpPostStandardRequestDecoder: io.netty.buffer.ByteBuf undecodedChunk>;
+v51 = v49 - v7;
+v52 = virtualinvoke v50.<io.netty.buffer.ByteBuf: io.netty.buffer.ByteBuf retainedSlice(int,int)>(v7, v51);
+specialinvoke v0.<io.netty.handler.codec.http.multipart.HttpPostStandardRequestDecoder: void setFinalBuffer(io.netty.buffer.ByteBuf)>(v52);
+v7 = v8;
+v12 = 1;
+goto label04;
+label09:
+if v96 != 13 goto label12;
+v53 = v4.<io.netty.handler.codec.http.multipart.HttpPostBodyUtil$SeekAheadOptimize: int pos>;
+v54 = v4.<io.netty.handler.codec.http.multipart.HttpPostBodyUtil$SeekAheadOptimize: int limit>;
+if v53 >= v54 goto label11;
+v55 = v4.<io.netty.handler.codec.http.multipart.HttpPostBodyUtil$SeekAheadOptimize: byte[] bytes>;
+v56 = v4.<io.netty.handler.codec.http.multipart.HttpPostBodyUtil$SeekAheadOptimize: int pos>;
+v57 = v56 + 1;
+v4.<io.netty.handler.codec.http.multipart.HttpPostBodyUtil$SeekAheadOptimize: int pos> = v57;
+v58 = v55[v56];
+v8 = v8 + 1;
+if v97 != 10 goto label10;
+v59 = <io.netty.handler.codec.http.multipart.HttpPostRequestDecoder$MultiPartStatus: io.netty.handler.codec.http.multipart.HttpPostRequestDecoder$MultiPartStatus PREEPILOGUE>;
+v0.<io.netty.handler.codec.http.multipart.HttpPostStandardRequestDecoder: io.netty.handler.codec.http.multipart.HttpPostRequestDecoder$MultiPartStatus currentStatus> = v59;
+v60 = v8 - 2;
+virtualinvoke v4.<io.netty.handler.codec.http.multipart.HttpPostBodyUtil$SeekAheadOptimize: void setReadPosition(int)>(0);
+v61 = v0.<io.netty.handler.codec.http.multipart.HttpPostStandardRequestDecoder: io.netty.buffer.ByteBuf undecodedChunk>;
+v62 = v60 - v7;
+v63 = virtualinvoke v61.<io.netty.buffer.ByteBuf: io.netty.buffer.ByteBuf retainedSlice(int,int)>(v7, v62);
+specialinvoke v0.<io.netty.handler.codec.http.multipart.HttpPostStandardRequestDecoder: void setFinalBuffer(io.netty.buffer.ByteBuf)>(v63);
+v7 = v8;
+v12 = 0;
+goto label14;
+label10:
+virtualinvoke v4.<io.netty.handler.codec.http.multipart.HttpPostBodyUtil$SeekAheadOptimize: void setReadPosition(int)>(0);
+v64 = new io.netty.handler.codec.http.multipart.HttpPostRequestDecoder$ErrorDataDecoderException;
+specialinvoke v64.<io.netty.handler.codec.http.multipart.HttpPostRequestDecoder$ErrorDataDecoderException: void <init>(java.lang.String)>("Bad end of line");
+throw v64;
+label11:
+v65 = v4.<io.netty.handler.codec.http.multipart.HttpPostBodyUtil$SeekAheadOptimize: int limit>;
+if v65 <= 0 goto label04;
+v8 = v8 - 1;
+goto label04;
+label12:
+if v96 != 10 goto label04;
+v66 = <io.netty.handler.codec.http.multipart.HttpPostRequestDecoder$MultiPartStatus: io.netty.handler.codec.http.multipart.HttpPostRequestDecoder$MultiPartStatus PREEPILOGUE>;
+v0.<io.netty.handler.codec.http.multipart.HttpPostStandardRequestDecoder: io.netty.handler.codec.http.multipart.HttpPostRequestDecoder$MultiPartStatus currentStatus> = v66;
+v67 = v8 - 1;
+virtualinvoke v4.<io.netty.handler.codec.http.multipart.HttpPostBodyUtil$SeekAheadOptimize: void setReadPosition(int)>(0);
+v68 = v0.<io.netty.handler.codec.http.multipart.HttpPostStandardRequestDecoder: io.netty.buffer.ByteBuf undecodedChunk>;
+v69 = v67 - v7;
+v70 = virtualinvoke v68.<io.netty.buffer.ByteBuf: io.netty.buffer.ByteBuf retainedSlice(int,int)>(v7, v69);
+specialinvoke v0.<io.netty.handler.codec.http.multipart.HttpPostStandardRequestDecoder: void setFinalBuffer(io.netty.buffer.ByteBuf)>(v70);
+v7 = v8;
+v12 = 0;
+goto label14;
+label13:
+virtualinvoke v4.<io.netty.handler.codec.http.multipart.HttpPostBodyUtil$SeekAheadOptimize: void setReadPosition(int)>(0);
+v12 = 0;
+label14:
+v71 = v0.<io.netty.handler.codec.http.multipart.HttpPostStandardRequestDecoder: boolean isLastChunk>;
+if v71 == 0 goto label17;
+v72 = v0.<io.netty.handler.codec.http.multipart.HttpPostStandardRequestDecoder: io.netty.handler.codec.http.multipart.Attribute currentAttribute>;
+if v72 == null goto label17;
+if v8 <= v7 goto label15;
+v73 = v0.<io.netty.handler.codec.http.multipart.HttpPostStandardRequestDecoder: io.netty.buffer.ByteBuf undecodedChunk>;
+v74 = v8 - v7;
+v75 = virtualinvoke v73.<io.netty.buffer.ByteBuf: io.netty.buffer.ByteBuf retainedSlice(int,int)>(v7, v74);
+specialinvoke v0.<io.netty.handler.codec.http.multipart.HttpPostStandardRequestDecoder: void setFinalBuffer(io.netty.buffer.ByteBuf)>(v75);
+goto label16;
+label15:
+v76 = v0.<io.netty.handler.codec.http.multipart.HttpPostStandardRequestDecoder: io.netty.handler.codec.http.multipart.Attribute currentAttribute>;
+v77 = interfaceinvoke v76.<io.netty.handler.codec.http.multipart.Attribute: boolean isCompleted()>();
+if v77 != 0 goto label16;
+v78 = <io.netty.buffer.Unpooled: io.netty.buffer.ByteBuf EMPTY_BUFFER>;
+specialinvoke v0.<io.netty.handler.codec.http.multipart.HttpPostStandardRequestDecoder: void setFinalBuffer(io.netty.buffer.ByteBuf)>(v78);
+label16:
+v7 = v8;
+v79 = <io.netty.handler.codec.http.multipart.HttpPostRequestDecoder$MultiPartStatus: io.netty.handler.codec.http.multipart.HttpPostRequestDecoder$MultiPartStatus EPILOGUE>;
+v0.<io.netty.handler.codec.http.multipart.HttpPostStandardRequestDecoder: io.netty.handler.codec.http.multipart.HttpPostRequestDecoder$MultiPartStatus currentStatus> = v79;
+goto label18;
+label17:
+if v12 == 0 goto label18;
+v80 = v0.<io.netty.handler.codec.http.multipart.HttpPostStandardRequestDecoder: io.netty.handler.codec.http.multipart.Attribute currentAttribute>;
+if v80 == null goto label18;
+v81 = v0.<io.netty.handler.codec.http.multipart.HttpPostStandardRequestDecoder: io.netty.handler.codec.http.multipart.HttpPostRequestDecoder$MultiPartStatus currentStatus>;
+v82 = <io.netty.handler.codec.http.multipart.HttpPostRequestDecoder$MultiPartStatus: io.netty.handler.codec.http.multipart.HttpPostRequestDecoder$MultiPartStatus FIELD>;
+if v81 != v82 goto label18;
+v83 = v0.<io.netty.handler.codec.http.multipart.HttpPostStandardRequestDecoder: io.netty.handler.codec.http.multipart.Attribute currentAttribute>;
+v84 = v0.<io.netty.handler.codec.http.multipart.HttpPostStandardRequestDecoder: io.netty.buffer.ByteBuf undecodedChunk>;
+v85 = v8 - v7;
+v86 = virtualinvoke v84.<io.netty.buffer.ByteBuf: io.netty.buffer.ByteBuf retainedSlice(int,int)>(v7, v85);
+interfaceinvoke v83.<io.netty.handler.codec.http.multipart.Attribute: void addContent(io.netty.buffer.ByteBuf,boolean)>(v86, 0);
+v7 = v8;
+label18:
+v87 = v0.<io.netty.handler.codec.http.multipart.HttpPostStandardRequestDecoder: io.netty.buffer.ByteBuf undecodedChunk>;
+virtualinvoke v87.<io.netty.buffer.ByteBuf: io.netty.buffer.ByteBuf readerIndex(int)>(v7);
+label19:
+goto label23;
+label20:
+v88 := @caughtexception;
+v89 = v0.<io.netty.handler.codec.http.multipart.HttpPostStandardRequestDecoder: io.netty.buffer.ByteBuf undecodedChunk>;
+virtualinvoke v89.<io.netty.buffer.ByteBuf: io.netty.buffer.ByteBuf readerIndex(int)>(v7);
+throw v88;
+label21:
+v90 := @caughtexception;
+v91 = v0.<io.netty.handler.codec.http.multipart.HttpPostStandardRequestDecoder: io.netty.buffer.ByteBuf undecodedChunk>;
+virtualinvoke v91.<io.netty.buffer.ByteBuf: io.netty.buffer.ByteBuf readerIndex(int)>(v7);
+v92 = new io.netty.handler.codec.http.multipart.HttpPostRequestDecoder$ErrorDataDecoderException;
+specialinvoke v92.<io.netty.handler.codec.http.multipart.HttpPostRequestDecoder$ErrorDataDecoderException: void <init>(java.lang.Throwable)>(v90);
+throw v92;
+label22:
+v93 := @caughtexception;
+v94 = v0.<io.netty.handler.codec.http.multipart.HttpPostStandardRequestDecoder: io.netty.buffer.ByteBuf undecodedChunk>;
+virtualinvoke v94.<io.netty.buffer.ByteBuf: io.netty.buffer.ByteBuf readerIndex(int)>(v7);
+v95 = new io.netty.handler.codec.http.multipart.HttpPostRequestDecoder$ErrorDataDecoderException;
+specialinvoke v95.<io.netty.handler.codec.http.multipart.HttpPostRequestDecoder$ErrorDataDecoderException: void <init>(java.lang.Throwable)>(v93);
+throw v95;
+label23:
+return;
+catch io.netty.handler.codec.http.multipart.HttpPostRequestDecoder$ErrorDataDecoderException from label04 to label19 with label20;
+catch java.io.IOException from label04 to label19 with label21;
+catch java.lang.IllegalArgumentException from label04 to label19 with label22;
+}
+private void setFinalBuffer(io.netty.buffer.ByteBuf) throws java.io.IOException
+{
+io.netty.handler.codec.http.multipart.Attribute v2, v3, v7, v8;
+io.netty.buffer.ByteBuf v1, v4, v6;
+java.nio.charset.Charset v5;
+io.netty.handler.codec.http.multipart.HttpPostStandardRequestDecoder v0;
+v0 := @this: io.netty.handler.codec.http.multipart.HttpPostStandardRequestDecoder;
+v1 := @parameter0: io.netty.buffer.ByteBuf;
+v2 = v0.<io.netty.handler.codec.http.multipart.HttpPostStandardRequestDecoder: io.netty.handler.codec.http.multipart.Attribute currentAttribute>;
+interfaceinvoke v2.<io.netty.handler.codec.http.multipart.Attribute: void addContent(io.netty.buffer.ByteBuf,boolean)>(v1, 1);
+v3 = v0.<io.netty.handler.codec.http.multipart.HttpPostStandardRequestDecoder: io.netty.handler.codec.http.multipart.Attribute currentAttribute>;
+v4 = interfaceinvoke v3.<io.netty.handler.codec.http.multipart.Attribute: io.netty.buffer.ByteBuf getByteBuf()>();
+v5 = v0.<io.netty.handler.codec.http.multipart.HttpPostStandardRequestDecoder: java.nio.charset.Charset charset>;
+v6 = staticinvoke <io.netty.handler.codec.http.multipart.HttpPostStandardRequestDecoder: io.netty.buffer.ByteBuf decodeAttribute(io.netty.buffer.ByteBuf,java.nio.charset.Charset)>(v4, v5);
+if v6 == null goto label1;
+v7 = v0.<io.netty.handler.codec.http.multipart.HttpPostStandardRequestDecoder: io.netty.handler.codec.http.multipart.Attribute currentAttribute>;
+interfaceinvoke v7.<io.netty.handler.codec.http.multipart.Attribute: void setContent(io.netty.buffer.ByteBuf)>(v6);
+label1:
+v8 = v0.<io.netty.handler.codec.http.multipart.HttpPostStandardRequestDecoder: io.netty.handler.codec.http.multipart.Attribute currentAttribute>;
+virtualinvoke v0.<io.netty.handler.codec.http.multipart.HttpPostStandardRequestDecoder: void addHttpData(io.netty.handler.codec.http.multipart.InterfaceHttpData)>(v8);
+v0.<io.netty.handler.codec.http.multipart.HttpPostStandardRequestDecoder: io.netty.handler.codec.http.multipart.Attribute currentAttribute> = null;
+return;
+}
+private static java.lang.String decodeAttribute(java.lang.String, java.nio.charset.Charset)
+{
+java.nio.charset.Charset v1;
+java.lang.String v0, v2, v5;
+java.lang.IllegalArgumentException v3;
+io.netty.handler.codec.http.multipart.HttpPostRequestDecoder$ErrorDataDecoderException v4;
+v0 := @parameter0: java.lang.String;
+v1 := @parameter1: java.nio.charset.Charset;
+label1:
+v2 = staticinvoke <io.netty.handler.codec.http.QueryStringDecoder: java.lang.String decodeComponent(java.lang.String,java.nio.charset.Charset)>(v0, v1);
+label2:
+return v2;
+label3:
+v3 := @caughtexception;
+v4 = new io.netty.handler.codec.http.multipart.HttpPostRequestDecoder$ErrorDataDecoderException;
+v5 = dynamicinvoke "makeConcatWithConstants" <java.lang.String (java.lang.String)>(v0) <java.lang.invoke.StringConcatFactory: java.lang.invoke.CallSite makeConcatWithConstants(java.lang.invoke.MethodHandles$Lookup,java.lang.String,java.lang.invoke.MethodType,java.lang.String,java.lang.Object[])>("Bad string: \'\u0001\'");
+specialinvoke v4.<io.netty.handler.codec.http.multipart.HttpPostRequestDecoder$ErrorDataDecoderException: void <init>(java.lang.String,java.lang.Throwable)>(v5, v3);
+throw v4;
+catch java.lang.IllegalArgumentException from label1 to label2 with label3;
+}
+private static io.netty.buffer.ByteBuf decodeAttribute(io.netty.buffer.ByteBuf, java.nio.charset.Charset)
+{
+java.lang.Object[] v17;
+io.netty.buffer.ByteBufAllocator v5;
+java.lang.Integer v18;
+io.netty.buffer.ByteBuf v0, v7;
+java.nio.charset.Charset v1;
+int v10, v11, v12, v13, v14, v15, v3, v4, v6, v9;
+java.lang.String v19, v20;
+io.netty.handler.codec.http.multipart.HttpPostStandardRequestDecoder$UrlEncodedDetector v2;
+io.netty.handler.codec.http.multipart.HttpPostRequestDecoder$ErrorDataDecoderException v16;
+io.netty.handler.codec.http.multipart.HttpPostStandardRequestDecoder$UrlDecoder v8;
+v0 := @parameter0: io.netty.buffer.ByteBuf;
+v1 := @parameter1: java.nio.charset.Charset;
+v2 = new io.netty.handler.codec.http.multipart.HttpPostStandardRequestDecoder$UrlEncodedDetector;
+specialinvoke v2.<io.netty.handler.codec.http.multipart.HttpPostStandardRequestDecoder$UrlEncodedDetector: void <init>()>();
+v3 = virtualinvoke v0.<io.netty.buffer.ByteBuf: int forEachByte(io.netty.util.ByteProcessor)>(v2);
+v4 = (int) -1;
+if v3 != v4 goto label1;
+return null;
+label1:
+v5 = virtualinvoke v0.<io.netty.buffer.ByteBuf: io.netty.buffer.ByteBufAllocator alloc()>();
+v6 = virtualinvoke v0.<io.netty.buffer.ByteBuf: int readableBytes()>();
+v7 = interfaceinvoke v5.<io.netty.buffer.ByteBufAllocator: io.netty.buffer.ByteBuf buffer(int)>(v6);
+v8 = new io.netty.handler.codec.http.multipart.HttpPostStandardRequestDecoder$UrlDecoder;
+specialinvoke v8.<io.netty.handler.codec.http.multipart.HttpPostStandardRequestDecoder$UrlDecoder: void <init>(io.netty.buffer.ByteBuf)>(v7);
+v9 = virtualinvoke v0.<io.netty.buffer.ByteBuf: int forEachByte(io.netty.util.ByteProcessor)>(v8);
+v10 = v8.<io.netty.handler.codec.http.multipart.HttpPostStandardRequestDecoder$UrlDecoder: int nextEscapedIdx>;
+if v10 == 0 goto label3;
+v11 = (int) -1;
+if v9 != v11 goto label2;
+v12 = virtualinvoke v0.<io.netty.buffer.ByteBuf: int readableBytes()>();
+v9 = v12 - 1;
+label2:
+v13 = v8.<io.netty.handler.codec.http.multipart.HttpPostStandardRequestDecoder$UrlDecoder: int nextEscapedIdx>;
+v14 = v13 - 1;
+v15 = v9 - v14;
+virtualinvoke v7.<io.netty.buffer.ByteBuf: boolean release()>();
+v16 = new io.netty.handler.codec.http.multipart.HttpPostRequestDecoder$ErrorDataDecoderException;
+v17 = newarray (java.lang.Object)[2];
+v18 = staticinvoke <java.lang.Integer: java.lang.Integer valueOf(int)>(v15);
+v17[0] = v18;
+v19 = virtualinvoke v0.<io.netty.buffer.ByteBuf: java.lang.String toString(java.nio.charset.Charset)>(v1);
+v17[1] = v19;
+v20 = staticinvoke <java.lang.String: java.lang.String format(java.lang.String,java.lang.Object[])>("Invalid hex byte at index \'%d\' in string: \'%s\'", v17);
+specialinvoke v16.<io.netty.handler.codec.http.multipart.HttpPostRequestDecoder$ErrorDataDecoderException: void <init>(java.lang.String)>(v20);
+throw v16;
+label3:
+return v7;
+}
+public void destroy()
+{
+java.util.Iterator v2;
+java.util.List v1;
+io.netty.buffer.ByteBuf v6, v7, v9;
+io.netty.handler.codec.http.multipart.HttpPostStandardRequestDecoder v0;
+int v5, v8;
+java.lang.Object v4;
+boolean v3;
+v0 := @this: io.netty.handler.codec.http.multipart.HttpPostStandardRequestDecoder;
+virtualinvoke v0.<io.netty.handler.codec.http.multipart.HttpPostStandardRequestDecoder: void cleanFiles()>();
+v1 = v0.<io.netty.handler.codec.http.multipart.HttpPostStandardRequestDecoder: java.util.List bodyListHttpData>;
+v2 = interfaceinvoke v1.<java.util.List: java.util.Iterator iterator()>();
+label1:
+v3 = interfaceinvoke v2.<java.util.Iterator: boolean hasNext()>();
+if v3 == 0 goto label2;
+v4 = interfaceinvoke v2.<java.util.Iterator: java.lang.Object next()>();
+v5 = interfaceinvoke v4.<io.netty.handler.codec.http.multipart.InterfaceHttpData: int refCnt()>();
+if v5 <= 0 goto label1;
+interfaceinvoke v4.<io.netty.handler.codec.http.multipart.InterfaceHttpData: boolean release()>();
+goto label1;
+label2:
+v0.<io.netty.handler.codec.http.multipart.HttpPostStandardRequestDecoder: boolean destroyed> = 1;
+v6 = v0.<io.netty.handler.codec.http.multipart.HttpPostStandardRequestDecoder: io.netty.buffer.ByteBuf undecodedChunk>;
+if v6 == null goto label3;
+v7 = v0.<io.netty.handler.codec.http.multipart.HttpPostStandardRequestDecoder: io.netty.buffer.ByteBuf undecodedChunk>;
+v8 = virtualinvoke v7.<io.netty.buffer.ByteBuf: int refCnt()>();
+if v8 <= 0 goto label3;
+v9 = v0.<io.netty.handler.codec.http.multipart.HttpPostStandardRequestDecoder: io.netty.buffer.ByteBuf undecodedChunk>;
+virtualinvoke v9.<io.netty.buffer.ByteBuf: boolean release()>();
+v0.<io.netty.handler.codec.http.multipart.HttpPostStandardRequestDecoder: io.netty.buffer.ByteBuf undecodedChunk> = null;
+label3:
+return;
+}
+public void cleanFiles()
+{
+io.netty.handler.codec.http.HttpRequest v2;
+io.netty.handler.codec.http.multipart.HttpDataFactory v1;
+io.netty.handler.codec.http.multipart.HttpPostStandardRequestDecoder v0;
+v0 := @this: io.netty.handler.codec.http.multipart.HttpPostStandardRequestDecoder;
+specialinvoke v0.<io.netty.handler.codec.http.multipart.HttpPostStandardRequestDecoder: void checkDestroyed()>();
+v1 = v0.<io.netty.handler.codec.http.multipart.HttpPostStandardRequestDecoder: io.netty.handler.codec.http.multipart.HttpDataFactory factory>;
+v2 = v0.<io.netty.handler.codec.http.multipart.HttpPostStandardRequestDecoder: io.netty.handler.codec.http.HttpRequest request>;
+interfaceinvoke v1.<io.netty.handler.codec.http.multipart.HttpDataFactory: void cleanRequestHttpData(io.netty.handler.codec.http.HttpRequest)>(v2);
+return;
+}
+public void removeHttpDataFromClean(io.netty.handler.codec.http.multipart.InterfaceHttpData)
+{
+io.netty.handler.codec.http.HttpRequest v3;
+io.netty.handler.codec.http.multipart.HttpPostStandardRequestDecoder v0;
+io.netty.handler.codec.http.multipart.HttpDataFactory v2;
+io.netty.handler.codec.http.multipart.InterfaceHttpData v1;
+v0 := @this: io.netty.handler.codec.http.multipart.HttpPostStandardRequestDecoder;
+v1 := @parameter0: io.netty.handler.codec.http.multipart.InterfaceHttpData;
+specialinvoke v0.<io.netty.handler.codec.http.multipart.HttpPostStandardRequestDecoder: void checkDestroyed()>();
+v2 = v0.<io.netty.handler.codec.http.multipart.HttpPostStandardRequestDecoder: io.netty.handler.codec.http.multipart.HttpDataFactory factory>;
+v3 = v0.<io.netty.handler.codec.http.multipart.HttpPostStandardRequestDecoder: io.netty.handler.codec.http.HttpRequest request>;
+interfaceinvoke v2.<io.netty.handler.codec.http.multipart.HttpDataFactory: void removeHttpDataFromClean(io.netty.handler.codec.http.HttpRequest,io.netty.handler.codec.http.multipart.InterfaceHttpData)>(v3, v1);
+return;
+}
+}

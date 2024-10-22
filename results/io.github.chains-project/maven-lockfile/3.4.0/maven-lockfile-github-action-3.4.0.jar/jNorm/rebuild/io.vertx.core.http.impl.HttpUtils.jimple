@@ -1,0 +1,1402 @@
+public final class io.vertx.core.http.impl.HttpUtils extends java.lang.Object
+{
+static final io.vertx.core.http.HttpClosedException CONNECTION_CLOSED_EXCEPTION;
+static final io.vertx.core.http.HttpClosedException STREAM_CLOSED_EXCEPTION;
+static final int SC_SWITCHING_PROTOCOLS;
+static final int SC_BAD_GATEWAY;
+static final io.vertx.core.spi.tracing.TagExtractor SERVER_REQUEST_TAG_EXTRACTOR;
+static final io.vertx.core.spi.tracing.TagExtractor SERVER_RESPONSE_TAG_EXTRACTOR;
+static final io.vertx.core.spi.tracing.TagExtractor CLIENT_HTTP_REQUEST_TAG_EXTRACTOR;
+static final io.vertx.core.spi.tracing.TagExtractor CLIENT_RESPONSE_TAG_EXTRACTOR;
+static final io.vertx.core.http.StreamPriority DEFAULT_STREAM_PRIORITY;
+private static final io.netty.util.AsciiString TIMEOUT_EQ;
+private static final java.util.function.Consumer HEADER_VALUE_VALIDATOR;
+private static final int HIGHEST_INVALID_VALUE_CHAR_MASK;
+private static final boolean[] VALID_H_NAME_ASCII_CHARS;
+private void <init>()
+{
+io.vertx.core.http.impl.HttpUtils v0;
+v0 := @this: io.vertx.core.http.impl.HttpUtils;
+specialinvoke v0.<java.lang.Object: void <init>()>();
+return;
+}
+private static int indexOfSlash(java.lang.CharSequence, int)
+{
+java.lang.CharSequence v0;
+int v1, v2, v3, v5;
+char v4;
+v0 := @parameter0: java.lang.CharSequence;
+v1 := @parameter1: int;
+v2 = v1;
+label1:
+v3 = interfaceinvoke v0.<java.lang.CharSequence: int length()>();
+if v2 >= v3 goto label3;
+v4 = interfaceinvoke v0.<java.lang.CharSequence: char charAt(int)>(v2);
+if v4 != 47 goto label2;
+return v2;
+label2:
+v2 = v2 + 1;
+goto label1;
+label3:
+v5 = (int) -1;
+return v5;
+}
+private static boolean matches(java.lang.CharSequence, int, java.lang.String)
+{
+java.lang.CharSequence v0;
+int v1;
+java.lang.String v2;
+boolean v3;
+v0 := @parameter0: java.lang.CharSequence;
+v1 := @parameter1: int;
+v2 := @parameter2: java.lang.String;
+v3 = staticinvoke <io.vertx.core.http.impl.HttpUtils: boolean matches(java.lang.CharSequence,int,java.lang.String,boolean)>(v0, v1, v2, 0);
+return v3;
+}
+private static boolean matches(java.lang.CharSequence, int, java.lang.String, boolean)
+{
+java.lang.CharSequence v0;
+char v13, v14;
+int v1, v10, v11, v12, v4, v5, v6, v7, v8, v9;
+java.lang.String v2;
+boolean v3;
+v0 := @parameter0: java.lang.CharSequence;
+v1 := @parameter1: int;
+v2 := @parameter2: java.lang.String;
+v3 := @parameter3: boolean;
+if v3 == 0 goto label1;
+v4 = interfaceinvoke v0.<java.lang.CharSequence: int length()>();
+v5 = v4 - v1;
+v6 = virtualinvoke v2.<java.lang.String: int length()>();
+if v5 == v6 goto label1;
+return 0;
+label1:
+v7 = interfaceinvoke v0.<java.lang.CharSequence: int length()>();
+v8 = v7 - v1;
+v9 = virtualinvoke v2.<java.lang.String: int length()>();
+if v8 < v9 goto label5;
+v10 = 0;
+label2:
+v11 = virtualinvoke v2.<java.lang.String: int length()>();
+if v10 >= v11 goto label4;
+v12 = v1 + v10;
+v13 = interfaceinvoke v0.<java.lang.CharSequence: char charAt(int)>(v12);
+v14 = virtualinvoke v2.<java.lang.String: char charAt(int)>(v10);
+if v13 == v14 goto label3;
+return 0;
+label3:
+v10 = v10 + 1;
+goto label2;
+label4:
+return 1;
+label5:
+return 0;
+}
+public static java.lang.String normalizePath(java.lang.String)
+{
+char v8;
+int v2, v3, v4, v5, v6, v7;
+java.lang.String v0, v10, v9;
+boolean v1;
+v0 := @parameter0: java.lang.String;
+if v0 != null goto label1;
+return null;
+label1:
+v1 = virtualinvoke v0.<java.lang.String: boolean isEmpty()>();
+if v1 == 0 goto label2;
+return "/";
+label2:
+v2 = virtualinvoke v0.<java.lang.String: int indexOf(int)>(37);
+v3 = (int) -1;
+if v2 != v3 goto label4;
+v4 = virtualinvoke v0.<java.lang.String: int indexOf(int)>(46);
+v5 = (int) -1;
+if v4 != v5 goto label4;
+v6 = virtualinvoke v0.<java.lang.String: int indexOf(java.lang.String)>("//");
+v7 = (int) -1;
+if v6 != v7 goto label4;
+v8 = virtualinvoke v0.<java.lang.String: char charAt(int)>(0);
+if v8 != 47 goto label3;
+return v0;
+label3:
+v9 = dynamicinvoke "makeConcatWithConstants" <java.lang.String (java.lang.String)>(v0) <java.lang.invoke.StringConcatFactory: java.lang.invoke.CallSite makeConcatWithConstants(java.lang.invoke.MethodHandles$Lookup,java.lang.String,java.lang.invoke.MethodType,java.lang.String,java.lang.Object[])>("/\u0001");
+return v9;
+label4:
+v10 = staticinvoke <io.vertx.core.http.impl.HttpUtils: java.lang.String normalizePathSlow(java.lang.String,int)>(v0, v2);
+return v10;
+}
+private static java.lang.String normalizePathSlow(java.lang.String, int)
+{
+char v2;
+int v1, v10, v4, v5, v7, v9;
+java.lang.StringBuilder v3, v6, v8;
+java.lang.String v0, v11;
+v0 := @parameter0: java.lang.String;
+v1 := @parameter1: int;
+v2 = virtualinvoke v0.<java.lang.String: char charAt(int)>(0);
+if v2 == 47 goto label1;
+v3 = new java.lang.StringBuilder;
+v4 = virtualinvoke v0.<java.lang.String: int length()>();
+v5 = v4 + 1;
+specialinvoke v3.<java.lang.StringBuilder: void <init>(int)>(v5);
+v6 = v3;
+virtualinvoke v3.<java.lang.StringBuilder: java.lang.StringBuilder append(char)>(47);
+v7 = (int) -1;
+if v1 == v7 goto label2;
+v1 = v1 + 1;
+goto label2;
+label1:
+v8 = new java.lang.StringBuilder;
+v9 = virtualinvoke v0.<java.lang.String: int length()>();
+specialinvoke v8.<java.lang.StringBuilder: void <init>(int)>(v9);
+v6 = v8;
+label2:
+virtualinvoke v6.<java.lang.StringBuilder: java.lang.StringBuilder append(java.lang.String)>(v0);
+v10 = (int) -1;
+if v1 == v10 goto label3;
+staticinvoke <io.vertx.core.http.impl.HttpUtils: void decodeUnreservedChars(java.lang.StringBuilder,int)>(v6, v1);
+label3:
+v11 = staticinvoke <io.vertx.core.http.impl.HttpUtils: java.lang.String removeDots(java.lang.CharSequence)>(v6);
+return v11;
+}
+private static void decodeUnreservedChars(java.lang.StringBuilder, int)
+{
+int v1, v2;
+char v3;
+java.lang.StringBuilder v0;
+v0 := @parameter0: java.lang.StringBuilder;
+v1 := @parameter1: int;
+label1:
+v2 = virtualinvoke v0.<java.lang.StringBuilder: int length()>();
+if v1 >= v2 goto label3;
+v3 = virtualinvoke v0.<java.lang.StringBuilder: char charAt(int)>(v1);
+if v3 != 37 goto label2;
+staticinvoke <io.vertx.core.http.impl.HttpUtils: void decodeUnreserved(java.lang.StringBuilder,int)>(v0, v1);
+label2:
+v1 = v1 + 1;
+goto label1;
+label3:
+return;
+}
+private static void decodeUnreserved(java.lang.StringBuilder, int)
+{
+int v1, v13, v14, v2, v3, v4, v5, v7;
+java.lang.String v12, v16, v6, v9;
+java.lang.NumberFormatException v10;
+java.lang.IllegalArgumentException v11, v15, v8;
+java.lang.StringBuilder v0;
+v0 := @parameter0: java.lang.StringBuilder;
+v1 := @parameter1: int;
+v2 = v1 + 3;
+v3 = virtualinvoke v0.<java.lang.StringBuilder: int length()>();
+if v2 > v3 goto label8;
+v4 = v1 + 1;
+v5 = v1 + 3;
+v6 = virtualinvoke v0.<java.lang.StringBuilder: java.lang.String substring(int,int)>(v4, v5);
+label1:
+v7 = staticinvoke <java.lang.Integer: int parseInt(java.lang.String,int)>(v6, 16);
+if v7 >= 0 goto label3;
+v8 = new java.lang.IllegalArgumentException;
+v9 = dynamicinvoke "makeConcatWithConstants" <java.lang.String (java.lang.String)>(v6) <java.lang.invoke.StringConcatFactory: java.lang.invoke.CallSite makeConcatWithConstants(java.lang.invoke.MethodHandles$Lookup,java.lang.String,java.lang.invoke.MethodType,java.lang.String,java.lang.Object[])>("Invalid escape sequence: %\u0001");
+specialinvoke v8.<java.lang.IllegalArgumentException: void <init>(java.lang.String)>(v9);
+throw v8;
+label2:
+v10 := @caughtexception;
+v11 = new java.lang.IllegalArgumentException;
+v12 = dynamicinvoke "makeConcatWithConstants" <java.lang.String (java.lang.String)>(v6) <java.lang.invoke.StringConcatFactory: java.lang.invoke.CallSite makeConcatWithConstants(java.lang.invoke.MethodHandles$Lookup,java.lang.String,java.lang.invoke.MethodType,java.lang.String,java.lang.Object[])>("Invalid escape sequence: %\u0001");
+specialinvoke v11.<java.lang.IllegalArgumentException: void <init>(java.lang.String)>(v12);
+throw v11;
+label3:
+if v7 < 65 goto label4;
+if v7 <= 90 goto label7;
+label4:
+if v7 < 97 goto label5;
+if v7 <= 122 goto label7;
+label5:
+if v7 < 48 goto label6;
+if v7 <= 57 goto label7;
+label6:
+if v7 == 45 goto label7;
+if v7 == 46 goto label7;
+if v7 == 95 goto label7;
+if v7 != 126 goto label9;
+label7:
+virtualinvoke v0.<java.lang.StringBuilder: void setCharAt(int,char)>(v1, v7);
+v13 = v1 + 1;
+v14 = v1 + 3;
+virtualinvoke v0.<java.lang.StringBuilder: java.lang.StringBuilder delete(int,int)>(v13, v14);
+goto label9;
+label8:
+v15 = new java.lang.IllegalArgumentException;
+v16 = dynamicinvoke "makeConcatWithConstants" <java.lang.String (int)>(v1) <java.lang.invoke.StringConcatFactory: java.lang.invoke.CallSite makeConcatWithConstants(java.lang.invoke.MethodHandles$Lookup,java.lang.String,java.lang.invoke.MethodType,java.lang.String,java.lang.Object[])>("Invalid position for escape character: \u0001");
+specialinvoke v15.<java.lang.IllegalArgumentException: void <init>(java.lang.String)>(v16);
+throw v15;
+label9:
+return;
+catch java.lang.NumberFormatException from label1 to label2 with label2;
+}
+public static java.lang.String removeDots(java.lang.CharSequence)
+{
+int v10, v11, v12, v14, v15, v16, v2, v20, v21, v22, v24, v25, v26, v3, v4;
+java.lang.String v27;
+boolean v13, v17, v18, v5, v6, v7, v8, v9;
+java.lang.CharSequence v0;
+char v19, v23;
+java.lang.StringBuilder v1;
+v0 := @parameter0: java.lang.CharSequence;
+if v0 != null goto label01;
+return null;
+label01:
+v1 = new java.lang.StringBuilder;
+v2 = interfaceinvoke v0.<java.lang.CharSequence: int length()>();
+specialinvoke v1.<java.lang.StringBuilder: void <init>(int)>(v2);
+v3 = 0;
+label02:
+v4 = interfaceinvoke v0.<java.lang.CharSequence: int length()>();
+if v3 >= v4 goto label12;
+v5 = staticinvoke <io.vertx.core.http.impl.HttpUtils: boolean matches(java.lang.CharSequence,int,java.lang.String)>(v0, v3, "./");
+if v5 == 0 goto label03;
+v3 = v3 + 2;
+goto label02;
+label03:
+v6 = staticinvoke <io.vertx.core.http.impl.HttpUtils: boolean matches(java.lang.CharSequence,int,java.lang.String)>(v0, v3, "../");
+if v6 == 0 goto label04;
+v3 = v3 + 3;
+goto label02;
+label04:
+v7 = staticinvoke <io.vertx.core.http.impl.HttpUtils: boolean matches(java.lang.CharSequence,int,java.lang.String)>(v0, v3, "/./");
+if v7 == 0 goto label05;
+v3 = v3 + 2;
+goto label02;
+label05:
+v8 = staticinvoke <io.vertx.core.http.impl.HttpUtils: boolean matches(java.lang.CharSequence,int,java.lang.String,boolean)>(v0, v3, "/.", 1);
+if v8 == 0 goto label06;
+v0 = "/";
+v3 = 0;
+goto label02;
+label06:
+v9 = staticinvoke <io.vertx.core.http.impl.HttpUtils: boolean matches(java.lang.CharSequence,int,java.lang.String)>(v0, v3, "/../");
+if v9 == 0 goto label07;
+v3 = v3 + 3;
+v10 = virtualinvoke v1.<java.lang.StringBuilder: int lastIndexOf(java.lang.String)>("/");
+v11 = (int) -1;
+if v10 == v11 goto label02;
+v12 = virtualinvoke v1.<java.lang.StringBuilder: int length()>();
+virtualinvoke v1.<java.lang.StringBuilder: java.lang.StringBuilder delete(int,int)>(v10, v12);
+goto label02;
+label07:
+v13 = staticinvoke <io.vertx.core.http.impl.HttpUtils: boolean matches(java.lang.CharSequence,int,java.lang.String,boolean)>(v0, v3, "/..", 1);
+if v13 == 0 goto label08;
+v0 = "/";
+v3 = 0;
+v14 = virtualinvoke v1.<java.lang.StringBuilder: int lastIndexOf(java.lang.String)>("/");
+v15 = (int) -1;
+if v14 == v15 goto label02;
+v16 = virtualinvoke v1.<java.lang.StringBuilder: int length()>();
+virtualinvoke v1.<java.lang.StringBuilder: java.lang.StringBuilder delete(int,int)>(v14, v16);
+goto label02;
+label08:
+v17 = staticinvoke <io.vertx.core.http.impl.HttpUtils: boolean matches(java.lang.CharSequence,int,java.lang.String,boolean)>(v0, v3, ".", 1);
+if v17 != 0 goto label12;
+v18 = staticinvoke <io.vertx.core.http.impl.HttpUtils: boolean matches(java.lang.CharSequence,int,java.lang.String,boolean)>(v0, v3, "..", 1);
+if v18 != 0 goto label12;
+v19 = interfaceinvoke v0.<java.lang.CharSequence: char charAt(int)>(v3);
+if v19 != 47 goto label10;
+v3 = v3 + 1;
+v20 = virtualinvoke v1.<java.lang.StringBuilder: int length()>();
+if v20 == 0 goto label09;
+v21 = virtualinvoke v1.<java.lang.StringBuilder: int length()>();
+v22 = v21 - 1;
+v23 = virtualinvoke v1.<java.lang.StringBuilder: char charAt(int)>(v22);
+if v23 == 47 goto label10;
+label09:
+virtualinvoke v1.<java.lang.StringBuilder: java.lang.StringBuilder append(char)>(47);
+label10:
+v24 = staticinvoke <io.vertx.core.http.impl.HttpUtils: int indexOfSlash(java.lang.CharSequence,int)>(v0, v3);
+v25 = (int) -1;
+if v24 == v25 goto label11;
+virtualinvoke v1.<java.lang.StringBuilder: java.lang.StringBuilder append(java.lang.CharSequence,int,int)>(v0, v3, v24);
+v3 = v24;
+goto label02;
+label11:
+v26 = interfaceinvoke v0.<java.lang.CharSequence: int length()>();
+virtualinvoke v1.<java.lang.StringBuilder: java.lang.StringBuilder append(java.lang.CharSequence,int,int)>(v0, v3, v26);
+label12:
+v27 = virtualinvoke v1.<java.lang.StringBuilder: java.lang.String toString()>();
+return v27;
+}
+public static java.net.URI resolveURIReference(java.lang.String, java.lang.String) throws java.net.URISyntaxException
+{
+java.lang.String v0, v1;
+java.net.URI v2, v3;
+v0 := @parameter0: java.lang.String;
+v1 := @parameter1: java.lang.String;
+v2 = staticinvoke <java.net.URI: java.net.URI create(java.lang.String)>(v0);
+v3 = staticinvoke <io.vertx.core.http.impl.HttpUtils: java.net.URI resolveURIReference(java.net.URI,java.lang.String)>(v2, v1);
+return v3;
+}
+public static java.net.URI resolveURIReference(java.net.URI, java.lang.String) throws java.net.URISyntaxException
+{
+int v11, v18, v21, v22, v23;
+java.lang.String v1, v10, v12, v13, v15, v16, v17, v19, v20, v24, v25, v27, v3, v4, v5, v6, v7, v8, v9;
+java.net.URI v0, v2, v26;
+boolean v14;
+v0 := @parameter0: java.net.URI;
+v1 := @parameter1: java.lang.String;
+v2 = staticinvoke <java.net.URI: java.net.URI create(java.lang.String)>(v1);
+v3 = virtualinvoke v2.<java.net.URI: java.lang.String getScheme()>();
+if v3 == null goto label01;
+v4 = virtualinvoke v2.<java.net.URI: java.lang.String getScheme()>();
+v5 = virtualinvoke v2.<java.net.URI: java.lang.String getAuthority()>();
+v6 = virtualinvoke v2.<java.net.URI: java.lang.String getRawPath()>();
+v7 = staticinvoke <io.vertx.core.http.impl.HttpUtils: java.lang.String removeDots(java.lang.CharSequence)>(v6);
+v8 = virtualinvoke v2.<java.net.URI: java.lang.String getRawQuery()>();
+goto label12;
+label01:
+v9 = virtualinvoke v2.<java.net.URI: java.lang.String getAuthority()>();
+if v9 == null goto label02;
+v5 = virtualinvoke v2.<java.net.URI: java.lang.String getAuthority()>();
+v7 = virtualinvoke v2.<java.net.URI: java.lang.String getRawPath()>();
+v8 = virtualinvoke v2.<java.net.URI: java.lang.String getRawQuery()>();
+goto label11;
+label02:
+v10 = virtualinvoke v2.<java.net.URI: java.lang.String getRawPath()>();
+v11 = virtualinvoke v10.<java.lang.String: int length()>();
+if v11 != 0 goto label04;
+v7 = virtualinvoke v0.<java.net.URI: java.lang.String getRawPath()>();
+v12 = virtualinvoke v2.<java.net.URI: java.lang.String getRawQuery()>();
+if v12 == null goto label03;
+v8 = virtualinvoke v2.<java.net.URI: java.lang.String getRawQuery()>();
+goto label10;
+label03:
+v8 = virtualinvoke v0.<java.net.URI: java.lang.String getRawQuery()>();
+goto label10;
+label04:
+v13 = virtualinvoke v2.<java.net.URI: java.lang.String getRawPath()>();
+v14 = virtualinvoke v13.<java.lang.String: boolean startsWith(java.lang.String)>("/");
+if v14 == 0 goto label05;
+v15 = virtualinvoke v2.<java.net.URI: java.lang.String getRawPath()>();
+v7 = staticinvoke <io.vertx.core.http.impl.HttpUtils: java.lang.String removeDots(java.lang.CharSequence)>(v15);
+goto label09;
+label05:
+v16 = virtualinvoke v0.<java.net.URI: java.lang.String getRawPath()>();
+v17 = virtualinvoke v0.<java.net.URI: java.lang.String getAuthority()>();
+if v17 == null goto label06;
+v18 = virtualinvoke v16.<java.lang.String: int length()>();
+if v18 != 0 goto label06;
+v19 = virtualinvoke v2.<java.net.URI: java.lang.String getRawPath()>();
+v20 = dynamicinvoke "makeConcatWithConstants" <java.lang.String (java.lang.String)>(v19) <java.lang.invoke.StringConcatFactory: java.lang.invoke.CallSite makeConcatWithConstants(java.lang.invoke.MethodHandles$Lookup,java.lang.String,java.lang.invoke.MethodType,java.lang.String,java.lang.Object[])>("/\u0001");
+goto label08;
+label06:
+v21 = virtualinvoke v16.<java.lang.String: int lastIndexOf(int)>(47);
+v22 = (int) -1;
+if v21 <= v22 goto label07;
+v23 = v21 + 1;
+v24 = virtualinvoke v16.<java.lang.String: java.lang.String substring(int,int)>(0, v23);
+v25 = virtualinvoke v2.<java.net.URI: java.lang.String getRawPath()>();
+v20 = dynamicinvoke "makeConcatWithConstants" <java.lang.String (java.lang.String,java.lang.String)>(v24, v25) <java.lang.invoke.StringConcatFactory: java.lang.invoke.CallSite makeConcatWithConstants(java.lang.invoke.MethodHandles$Lookup,java.lang.String,java.lang.invoke.MethodType,java.lang.String,java.lang.Object[])>("\u0001\u0001");
+goto label08;
+label07:
+v20 = virtualinvoke v2.<java.net.URI: java.lang.String getRawPath()>();
+label08:
+v7 = staticinvoke <io.vertx.core.http.impl.HttpUtils: java.lang.String removeDots(java.lang.CharSequence)>(v20);
+label09:
+v8 = virtualinvoke v2.<java.net.URI: java.lang.String getRawQuery()>();
+label10:
+v5 = virtualinvoke v0.<java.net.URI: java.lang.String getAuthority()>();
+label11:
+v4 = virtualinvoke v0.<java.net.URI: java.lang.String getScheme()>();
+label12:
+v26 = new java.net.URI;
+v27 = virtualinvoke v2.<java.net.URI: java.lang.String getFragment()>();
+specialinvoke v26.<java.net.URI: void <init>(java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String)>(v4, v5, v7, v8, v27);
+return v26;
+}
+static java.lang.String parsePath(java.lang.String)
+{
+char v2;
+int v1, v3, v4, v5, v6, v7, v8, v9;
+java.lang.String v0, v10;
+v0 := @parameter0: java.lang.String;
+v1 = virtualinvoke v0.<java.lang.String: int length()>();
+if v1 != 0 goto label1;
+return "";
+label1:
+v2 = virtualinvoke v0.<java.lang.String: char charAt(int)>(0);
+if v2 != 47 goto label2;
+v3 = 0;
+goto label4;
+label2:
+v4 = virtualinvoke v0.<java.lang.String: int indexOf(java.lang.String)>("://");
+v5 = (int) -1;
+if v4 != v5 goto label3;
+v3 = 0;
+goto label4;
+label3:
+v6 = v4 + 3;
+v3 = virtualinvoke v0.<java.lang.String: int indexOf(int,int)>(47, v6);
+v7 = (int) -1;
+if v3 != v7 goto label4;
+return "/";
+label4:
+v8 = virtualinvoke v0.<java.lang.String: int indexOf(int,int)>(63, v3);
+v9 = (int) -1;
+if v8 != v9 goto label5;
+v8 = virtualinvoke v0.<java.lang.String: int length()>();
+if v3 != 0 goto label5;
+return v0;
+label5:
+v10 = virtualinvoke v0.<java.lang.String: java.lang.String substring(int,int)>(v3, v8);
+return v10;
+}
+static java.lang.String parseQuery(java.lang.String)
+{
+int v1, v2, v3;
+java.lang.String v0, v4;
+v0 := @parameter0: java.lang.String;
+v1 = virtualinvoke v0.<java.lang.String: int indexOf(int)>(63);
+v2 = (int) -1;
+if v1 != v2 goto label1;
+return null;
+label1:
+v3 = v1 + 1;
+v4 = virtualinvoke v0.<java.lang.String: java.lang.String substring(int)>(v3);
+return v4;
+}
+static java.lang.String absoluteURI(java.lang.String, io.vertx.core.http.HttpServerRequest) throws java.net.URISyntaxException
+{
+io.vertx.core.http.HttpServerRequest v1;
+java.lang.String v0, v3, v4, v7, v8, v9;
+java.net.URI v2;
+boolean v5, v6;
+v0 := @parameter0: java.lang.String;
+v1 := @parameter1: io.vertx.core.http.HttpServerRequest;
+v2 = new java.net.URI;
+v3 = interfaceinvoke v1.<io.vertx.core.http.HttpServerRequest: java.lang.String uri()>();
+specialinvoke v2.<java.net.URI: void <init>(java.lang.String)>(v3);
+v4 = virtualinvoke v2.<java.net.URI: java.lang.String getScheme()>();
+if v4 == null goto label2;
+v5 = virtualinvoke v4.<java.lang.String: boolean equals(java.lang.Object)>("http");
+if v5 != 0 goto label1;
+v6 = virtualinvoke v4.<java.lang.String: boolean equals(java.lang.Object)>("https");
+if v6 == 0 goto label2;
+label1:
+v7 = virtualinvoke v2.<java.net.URI: java.lang.String toString()>();
+goto label4;
+label2:
+v8 = interfaceinvoke v1.<io.vertx.core.http.HttpServerRequest: java.lang.String host()>();
+if v8 == null goto label3;
+v9 = interfaceinvoke v1.<io.vertx.core.http.HttpServerRequest: java.lang.String scheme()>();
+v7 = dynamicinvoke "makeConcatWithConstants" <java.lang.String (java.lang.String,java.lang.String,java.net.URI)>(v9, v8, v2) <java.lang.invoke.StringConcatFactory: java.lang.invoke.CallSite makeConcatWithConstants(java.lang.invoke.MethodHandles$Lookup,java.lang.String,java.lang.invoke.MethodType,java.lang.String,java.lang.Object[])>("\u0001://\u0001\u0001");
+goto label4;
+label3:
+v7 = dynamicinvoke "makeConcatWithConstants" <java.lang.String (java.lang.String,java.net.URI)>(v0, v2) <java.lang.invoke.StringConcatFactory: java.lang.invoke.CallSite makeConcatWithConstants(java.lang.invoke.MethodHandles$Lookup,java.lang.String,java.lang.invoke.MethodType,java.lang.String,java.lang.Object[])>("\u0001\u0001");
+label4:
+return v7;
+}
+static io.vertx.core.MultiMap params(java.lang.String, java.nio.charset.Charset)
+{
+java.util.Iterator v7;
+io.vertx.core.MultiMap v4;
+java.util.Set v6;
+java.nio.charset.Charset v1;
+java.util.Map v3;
+io.netty.handler.codec.http.QueryStringDecoder v2;
+java.lang.Object v10, v11, v9;
+java.lang.String v0;
+boolean v5, v8;
+v0 := @parameter0: java.lang.String;
+v1 := @parameter1: java.nio.charset.Charset;
+v2 = new io.netty.handler.codec.http.QueryStringDecoder;
+specialinvoke v2.<io.netty.handler.codec.http.QueryStringDecoder: void <init>(java.lang.String,java.nio.charset.Charset)>(v0, v1);
+v3 = virtualinvoke v2.<io.netty.handler.codec.http.QueryStringDecoder: java.util.Map parameters()>();
+v4 = staticinvoke <io.vertx.core.MultiMap: io.vertx.core.MultiMap caseInsensitiveMultiMap()>();
+v5 = interfaceinvoke v3.<java.util.Map: boolean isEmpty()>();
+if v5 != 0 goto label2;
+v6 = interfaceinvoke v3.<java.util.Map: java.util.Set entrySet()>();
+v7 = interfaceinvoke v6.<java.util.Set: java.util.Iterator iterator()>();
+label1:
+v8 = interfaceinvoke v7.<java.util.Iterator: boolean hasNext()>();
+if v8 == 0 goto label2;
+v9 = interfaceinvoke v7.<java.util.Iterator: java.lang.Object next()>();
+v10 = interfaceinvoke v9.<java.util.Map$Entry: java.lang.Object getKey()>();
+v11 = interfaceinvoke v9.<java.util.Map$Entry: java.lang.Object getValue()>();
+interfaceinvoke v4.<io.vertx.core.MultiMap: io.vertx.core.MultiMap add(java.lang.String,java.lang.Iterable)>(v10, v11);
+goto label1;
+label2:
+return v4;
+}
+public static void fromVertxInitialSettings(boolean, io.vertx.core.http.Http2Settings, io.netty.handler.codec.http2.Http2Settings)
+{
+long v12, v14, v17, v19, v5, v7;
+io.vertx.core.http.Http2Settings v1;
+byte v13, v18, v6;
+java.lang.Long v8;
+java.util.Map v20;
+int v10, v11, v15, v16, v9;
+java.util.function.BiConsumer v21;
+boolean v0, v3, v4;
+io.netty.handler.codec.http2.Http2Settings v2;
+v0 := @parameter0: boolean;
+v1 := @parameter1: io.vertx.core.http.Http2Settings;
+v2 := @parameter2: io.netty.handler.codec.http2.Http2Settings;
+if v1 == null goto label7;
+if v0 != 0 goto label1;
+v3 = virtualinvoke v1.<io.vertx.core.http.Http2Settings: boolean isPushEnabled()>();
+if v3 == 1 goto label1;
+v4 = virtualinvoke v1.<io.vertx.core.http.Http2Settings: boolean isPushEnabled()>();
+virtualinvoke v2.<io.netty.handler.codec.http2.Http2Settings: io.netty.handler.codec.http2.Http2Settings pushEnabled(boolean)>(v4);
+label1:
+v5 = virtualinvoke v1.<io.vertx.core.http.Http2Settings: long getHeaderTableSize()>();
+v6 = v5 cmp 4096L;
+if v6 == 0 goto label2;
+v7 = virtualinvoke v1.<io.vertx.core.http.Http2Settings: long getHeaderTableSize()>();
+v8 = staticinvoke <java.lang.Long: java.lang.Long valueOf(long)>(v7);
+virtualinvoke v2.<io.netty.handler.codec.http2.Http2Settings: java.lang.Long put(char,java.lang.Long)>(1, v8);
+label2:
+v9 = virtualinvoke v1.<io.vertx.core.http.Http2Settings: int getInitialWindowSize()>();
+v10 = (int) 65535;
+if v9 == v10 goto label3;
+v11 = virtualinvoke v1.<io.vertx.core.http.Http2Settings: int getInitialWindowSize()>();
+virtualinvoke v2.<io.netty.handler.codec.http2.Http2Settings: io.netty.handler.codec.http2.Http2Settings initialWindowSize(int)>(v11);
+label3:
+v12 = virtualinvoke v1.<io.vertx.core.http.Http2Settings: long getMaxConcurrentStreams()>();
+v13 = v12 cmp 4294967295L;
+if v13 == 0 goto label4;
+v14 = virtualinvoke v1.<io.vertx.core.http.Http2Settings: long getMaxConcurrentStreams()>();
+virtualinvoke v2.<io.netty.handler.codec.http2.Http2Settings: io.netty.handler.codec.http2.Http2Settings maxConcurrentStreams(long)>(v14);
+label4:
+v15 = virtualinvoke v1.<io.vertx.core.http.Http2Settings: int getMaxFrameSize()>();
+if v15 == 16384 goto label5;
+v16 = virtualinvoke v1.<io.vertx.core.http.Http2Settings: int getMaxFrameSize()>();
+virtualinvoke v2.<io.netty.handler.codec.http2.Http2Settings: io.netty.handler.codec.http2.Http2Settings maxFrameSize(int)>(v16);
+label5:
+v17 = virtualinvoke v1.<io.vertx.core.http.Http2Settings: long getMaxHeaderListSize()>();
+v18 = v17 cmp 8192L;
+if v18 == 0 goto label6;
+v19 = virtualinvoke v1.<io.vertx.core.http.Http2Settings: long getMaxHeaderListSize()>();
+virtualinvoke v2.<io.netty.handler.codec.http2.Http2Settings: io.netty.handler.codec.http2.Http2Settings maxHeaderListSize(long)>(v19);
+label6:
+v20 = virtualinvoke v1.<io.vertx.core.http.Http2Settings: java.util.Map getExtraSettings()>();
+if v20 == null goto label7;
+v21 = staticinvoke <io.vertx.core.http.impl.HttpUtils$lambda_fromVertxInitialSettings_0__1058: java.util.function.BiConsumer bootstrap$(io.netty.handler.codec.http2.Http2Settings)>(v2);
+interfaceinvoke v20.<java.util.Map: void forEach(java.util.function.BiConsumer)>(v21);
+label7:
+return;
+}
+public static io.netty.handler.codec.http2.Http2Settings fromVertxSettings(io.vertx.core.http.Http2Settings)
+{
+long v5, v6, v7;
+io.vertx.core.http.Http2Settings v0;
+io.netty.handler.codec.http2.Http2Settings v1;
+java.util.Map v8, v9;
+int v3, v4;
+java.util.function.BiConsumer v10;
+boolean v2;
+v0 := @parameter0: io.vertx.core.http.Http2Settings;
+v1 = new io.netty.handler.codec.http2.Http2Settings;
+specialinvoke v1.<io.netty.handler.codec.http2.Http2Settings: void <init>()>();
+v2 = virtualinvoke v0.<io.vertx.core.http.Http2Settings: boolean isPushEnabled()>();
+virtualinvoke v1.<io.netty.handler.codec.http2.Http2Settings: io.netty.handler.codec.http2.Http2Settings pushEnabled(boolean)>(v2);
+v3 = virtualinvoke v0.<io.vertx.core.http.Http2Settings: int getMaxFrameSize()>();
+virtualinvoke v1.<io.netty.handler.codec.http2.Http2Settings: io.netty.handler.codec.http2.Http2Settings maxFrameSize(int)>(v3);
+v4 = virtualinvoke v0.<io.vertx.core.http.Http2Settings: int getInitialWindowSize()>();
+virtualinvoke v1.<io.netty.handler.codec.http2.Http2Settings: io.netty.handler.codec.http2.Http2Settings initialWindowSize(int)>(v4);
+v5 = virtualinvoke v0.<io.vertx.core.http.Http2Settings: long getHeaderTableSize()>();
+virtualinvoke v1.<io.netty.handler.codec.http2.Http2Settings: io.netty.handler.codec.http2.Http2Settings headerTableSize(long)>(v5);
+v6 = virtualinvoke v0.<io.vertx.core.http.Http2Settings: long getMaxConcurrentStreams()>();
+virtualinvoke v1.<io.netty.handler.codec.http2.Http2Settings: io.netty.handler.codec.http2.Http2Settings maxConcurrentStreams(long)>(v6);
+v7 = virtualinvoke v0.<io.vertx.core.http.Http2Settings: long getMaxHeaderListSize()>();
+virtualinvoke v1.<io.netty.handler.codec.http2.Http2Settings: io.netty.handler.codec.http2.Http2Settings maxHeaderListSize(long)>(v7);
+v8 = virtualinvoke v0.<io.vertx.core.http.Http2Settings: java.util.Map getExtraSettings()>();
+if v8 == null goto label1;
+v9 = virtualinvoke v0.<io.vertx.core.http.Http2Settings: java.util.Map getExtraSettings()>();
+v10 = staticinvoke <io.vertx.core.http.impl.HttpUtils$lambda_fromVertxSettings_1__1059: java.util.function.BiConsumer bootstrap$(io.netty.handler.codec.http2.Http2Settings)>(v1);
+interfaceinvoke v9.<java.util.Map: void forEach(java.util.function.BiConsumer)>(v10);
+label1:
+return v1;
+}
+public static io.vertx.core.http.Http2Settings toVertxSettings(io.netty.handler.codec.http2.Http2Settings)
+{
+long v13, v5, v7;
+io.vertx.core.http.Http2Settings v1;
+java.lang.Integer v10, v8;
+io.netty.handler.codec.http2.Http2Settings v0;
+java.lang.Long v12, v4, v6;
+int v11, v9;
+java.util.function.BiConsumer v14;
+java.lang.Boolean v2;
+boolean v3;
+v0 := @parameter0: io.netty.handler.codec.http2.Http2Settings;
+v1 = new io.vertx.core.http.Http2Settings;
+specialinvoke v1.<io.vertx.core.http.Http2Settings: void <init>()>();
+v2 = virtualinvoke v0.<io.netty.handler.codec.http2.Http2Settings: java.lang.Boolean pushEnabled()>();
+if v2 == null goto label1;
+v3 = virtualinvoke v2.<java.lang.Boolean: boolean booleanValue()>();
+virtualinvoke v1.<io.vertx.core.http.Http2Settings: io.vertx.core.http.Http2Settings setPushEnabled(boolean)>(v3);
+label1:
+v4 = virtualinvoke v0.<io.netty.handler.codec.http2.Http2Settings: java.lang.Long maxConcurrentStreams()>();
+if v4 == null goto label2;
+v5 = virtualinvoke v4.<java.lang.Long: long longValue()>();
+virtualinvoke v1.<io.vertx.core.http.Http2Settings: io.vertx.core.http.Http2Settings setMaxConcurrentStreams(long)>(v5);
+label2:
+v6 = virtualinvoke v0.<io.netty.handler.codec.http2.Http2Settings: java.lang.Long maxHeaderListSize()>();
+if v6 == null goto label3;
+v7 = virtualinvoke v6.<java.lang.Long: long longValue()>();
+virtualinvoke v1.<io.vertx.core.http.Http2Settings: io.vertx.core.http.Http2Settings setMaxHeaderListSize(long)>(v7);
+label3:
+v8 = virtualinvoke v0.<io.netty.handler.codec.http2.Http2Settings: java.lang.Integer maxFrameSize()>();
+if v8 == null goto label4;
+v9 = virtualinvoke v8.<java.lang.Integer: int intValue()>();
+virtualinvoke v1.<io.vertx.core.http.Http2Settings: io.vertx.core.http.Http2Settings setMaxFrameSize(int)>(v9);
+label4:
+v10 = virtualinvoke v0.<io.netty.handler.codec.http2.Http2Settings: java.lang.Integer initialWindowSize()>();
+if v10 == null goto label5;
+v11 = virtualinvoke v10.<java.lang.Integer: int intValue()>();
+virtualinvoke v1.<io.vertx.core.http.Http2Settings: io.vertx.core.http.Http2Settings setInitialWindowSize(int)>(v11);
+label5:
+v12 = virtualinvoke v0.<io.netty.handler.codec.http2.Http2Settings: java.lang.Long headerTableSize()>();
+if v12 == null goto label6;
+v13 = virtualinvoke v12.<java.lang.Long: long longValue()>();
+virtualinvoke v1.<io.vertx.core.http.Http2Settings: io.vertx.core.http.Http2Settings setHeaderTableSize(long)>(v13);
+label6:
+v14 = staticinvoke <io.vertx.core.http.impl.HttpUtils$lambda_toVertxSettings_2__1060: java.util.function.BiConsumer bootstrap$(io.vertx.core.http.Http2Settings)>(v1);
+virtualinvoke v0.<io.netty.handler.codec.http2.Http2Settings: void forEach(java.util.function.BiConsumer)>(v14);
+return v1;
+}
+static io.netty.handler.codec.http2.Http2Settings decodeSettings(java.lang.String)
+{
+byte[] v3;
+java.util.Base64$Decoder v2;
+long v9;
+java.lang.Exception v11;
+io.netty.handler.codec.http2.Http2Settings v1;
+io.vertx.core.buffer.Buffer v4;
+java.lang.Long v10;
+int v5, v6, v7, v8;
+java.lang.String v0;
+v0 := @parameter0: java.lang.String;
+label1:
+v1 = new io.netty.handler.codec.http2.Http2Settings;
+specialinvoke v1.<io.netty.handler.codec.http2.Http2Settings: void <init>()>();
+v2 = staticinvoke <java.util.Base64: java.util.Base64$Decoder getUrlDecoder()>();
+v3 = virtualinvoke v2.<java.util.Base64$Decoder: byte[] decode(java.lang.String)>(v0);
+v4 = staticinvoke <io.vertx.core.buffer.Buffer: io.vertx.core.buffer.Buffer buffer(byte[])>(v3);
+v5 = 0;
+v6 = interfaceinvoke v4.<io.vertx.core.buffer.Buffer: int length()>();
+label2:
+if v5 >= v6 goto label3;
+v7 = interfaceinvoke v4.<io.vertx.core.buffer.Buffer: int getUnsignedShort(int)>(v5);
+v8 = v5 + 2;
+v9 = interfaceinvoke v4.<io.vertx.core.buffer.Buffer: long getUnsignedInt(int)>(v8);
+v5 = v8 + 4;
+v10 = staticinvoke <java.lang.Long: java.lang.Long valueOf(long)>(v9);
+virtualinvoke v1.<io.netty.handler.codec.http2.Http2Settings: java.lang.Long put(char,java.lang.Long)>(v7, v10);
+goto label2;
+label3:
+return v1;
+label4:
+v11 := @caughtexception;
+return null;
+catch java.lang.Exception from label1 to label3 with label4;
+}
+public static java.lang.String encodeSettings(io.vertx.core.http.Http2Settings)
+{
+io.netty.handler.codec.http2.Http2Settings v2;
+byte[] v5;
+io.vertx.core.buffer.Buffer v1;
+java.util.function.BiConsumer v3;
+java.util.Base64$Encoder v4;
+io.vertx.core.http.Http2Settings v0;
+java.lang.String v6;
+v0 := @parameter0: io.vertx.core.http.Http2Settings;
+v1 = staticinvoke <io.vertx.core.buffer.Buffer: io.vertx.core.buffer.Buffer buffer()>();
+v2 = staticinvoke <io.vertx.core.http.impl.HttpUtils: io.netty.handler.codec.http2.Http2Settings fromVertxSettings(io.vertx.core.http.Http2Settings)>(v0);
+v3 = staticinvoke <io.vertx.core.http.impl.HttpUtils$lambda_encodeSettings_3__1061: java.util.function.BiConsumer bootstrap$(io.vertx.core.buffer.Buffer)>(v1);
+virtualinvoke v2.<io.netty.handler.codec.http2.Http2Settings: void forEach(java.util.function.BiConsumer)>(v3);
+v4 = staticinvoke <java.util.Base64: java.util.Base64$Encoder getUrlEncoder()>();
+v5 = interfaceinvoke v1.<io.vertx.core.buffer.Buffer: byte[] getBytes()>();
+v6 = virtualinvoke v4.<java.util.Base64$Encoder: java.lang.String encodeToString(byte[])>(v5);
+return v6;
+}
+public static io.netty.buffer.ByteBuf generateWSCloseFrameByteBuf(short, java.lang.String)
+{
+io.netty.buffer.ByteBuf[] v2;
+short v0;
+io.netty.buffer.ByteBuf v3, v5, v6, v7;
+java.nio.charset.Charset v4;
+java.lang.String v1;
+v0 := @parameter0: short;
+v1 := @parameter1: java.lang.String;
+if v1 == null goto label1;
+v2 = newarray (io.netty.buffer.ByteBuf)[2];
+v3 = staticinvoke <io.netty.buffer.Unpooled: io.netty.buffer.ByteBuf copyShort(int)>(v0);
+v2[0] = v3;
+v4 = <java.nio.charset.StandardCharsets: java.nio.charset.Charset UTF_8>;
+v5 = staticinvoke <io.netty.buffer.Unpooled: io.netty.buffer.ByteBuf copiedBuffer(java.lang.CharSequence,java.nio.charset.Charset)>(v1, v4);
+v2[1] = v5;
+v6 = staticinvoke <io.netty.buffer.Unpooled: io.netty.buffer.ByteBuf copiedBuffer(io.netty.buffer.ByteBuf[])>(v2);
+return v6;
+label1:
+v7 = staticinvoke <io.netty.buffer.Unpooled: io.netty.buffer.ByteBuf copyShort(int)>(v0);
+return v7;
+}
+static void sendError(io.netty.channel.Channel, io.netty.handler.codec.http.HttpResponseStatus)
+{
+io.netty.channel.Channel v0;
+io.netty.handler.codec.http.HttpResponseStatus v1;
+java.lang.String v2;
+v0 := @parameter0: io.netty.channel.Channel;
+v1 := @parameter1: io.netty.handler.codec.http.HttpResponseStatus;
+v2 = virtualinvoke v1.<io.netty.handler.codec.http.HttpResponseStatus: java.lang.String reasonPhrase()>();
+staticinvoke <io.vertx.core.http.impl.HttpUtils: void sendError(io.netty.channel.Channel,io.netty.handler.codec.http.HttpResponseStatus,java.lang.CharSequence)>(v0, v1, v2);
+return;
+}
+static void sendError(io.netty.channel.Channel, io.netty.handler.codec.http.HttpResponseStatus, java.lang.CharSequence)
+{
+byte[] v14;
+io.netty.handler.codec.http.HttpVersion v4;
+io.netty.handler.codec.http.HttpHeaders v8;
+io.netty.buffer.ByteBuf v11;
+java.nio.charset.Charset v13;
+int v15, v5, v7;
+java.lang.String v12;
+java.lang.CharSequence v10, v2, v9;
+io.netty.handler.codec.http.HttpResponseStatus v1, v6;
+io.netty.channel.Channel v0;
+io.netty.handler.codec.http.DefaultFullHttpResponse v3;
+v0 := @parameter0: io.netty.channel.Channel;
+v1 := @parameter1: io.netty.handler.codec.http.HttpResponseStatus;
+v2 := @parameter2: java.lang.CharSequence;
+v3 = new io.netty.handler.codec.http.DefaultFullHttpResponse;
+v4 = <io.netty.handler.codec.http.HttpVersion: io.netty.handler.codec.http.HttpVersion HTTP_1_1>;
+specialinvoke v3.<io.netty.handler.codec.http.DefaultFullHttpResponse: void <init>(io.netty.handler.codec.http.HttpVersion,io.netty.handler.codec.http.HttpResponseStatus)>(v4, v1);
+v5 = virtualinvoke v1.<io.netty.handler.codec.http.HttpResponseStatus: int code()>();
+v6 = <io.netty.handler.codec.http.HttpResponseStatus: io.netty.handler.codec.http.HttpResponseStatus METHOD_NOT_ALLOWED>;
+v7 = virtualinvoke v6.<io.netty.handler.codec.http.HttpResponseStatus: int code()>();
+if v5 != v7 goto label1;
+v8 = interfaceinvoke v3.<io.netty.handler.codec.http.FullHttpResponse: io.netty.handler.codec.http.HttpHeaders headers()>();
+v9 = <io.vertx.core.http.HttpHeaders: java.lang.CharSequence ALLOW>;
+v10 = <io.vertx.core.http.HttpHeaders: java.lang.CharSequence GET>;
+virtualinvoke v8.<io.netty.handler.codec.http.HttpHeaders: io.netty.handler.codec.http.HttpHeaders set(java.lang.CharSequence,java.lang.Object)>(v9, v10);
+label1:
+if v2 == null goto label2;
+v11 = interfaceinvoke v3.<io.netty.handler.codec.http.FullHttpResponse: io.netty.buffer.ByteBuf content()>();
+v12 = virtualinvoke v2.<java.lang.Object: java.lang.String toString()>();
+v13 = <io.netty.util.CharsetUtil: java.nio.charset.Charset UTF_8>;
+v14 = virtualinvoke v12.<java.lang.String: byte[] getBytes(java.nio.charset.Charset)>(v13);
+virtualinvoke v11.<io.netty.buffer.ByteBuf: io.netty.buffer.ByteBuf writeBytes(byte[])>(v14);
+v15 = interfaceinvoke v2.<java.lang.CharSequence: int length()>();
+staticinvoke <io.netty.handler.codec.http.HttpUtil: void setContentLength(io.netty.handler.codec.http.HttpMessage,long)>(v3, v15);
+goto label3;
+label2:
+staticinvoke <io.netty.handler.codec.http.HttpUtil: void setContentLength(io.netty.handler.codec.http.HttpMessage,long)>(v3, 0L);
+label3:
+interfaceinvoke v0.<io.netty.channel.Channel: io.netty.channel.ChannelFuture writeAndFlush(java.lang.Object)>(v3);
+return;
+}
+static java.lang.String getWebSocketLocation(io.vertx.core.http.HttpServerRequest, boolean) throws java.lang.Exception
+{
+io.vertx.core.http.HttpServerRequest v0;
+io.vertx.core.MultiMap v6;
+io.netty.util.AsciiString v7;
+java.lang.String v10, v2, v4, v5, v8, v9;
+java.net.URI v3;
+boolean v1;
+v0 := @parameter0: io.vertx.core.http.HttpServerRequest;
+v1 := @parameter1: boolean;
+if v1 == 0 goto label1;
+v2 = "wss://";
+goto label2;
+label1:
+v2 = "ws://";
+label2:
+v3 = new java.net.URI;
+v4 = interfaceinvoke v0.<io.vertx.core.http.HttpServerRequest: java.lang.String uri()>();
+specialinvoke v3.<java.net.URI: void <init>(java.lang.String)>(v4);
+v5 = virtualinvoke v3.<java.net.URI: java.lang.String getRawPath()>();
+v6 = interfaceinvoke v0.<io.vertx.core.http.HttpServerRequest: io.vertx.core.MultiMap headers()>();
+v7 = <io.netty.handler.codec.http.HttpHeaderNames: io.netty.util.AsciiString HOST>;
+v8 = interfaceinvoke v6.<io.vertx.core.MultiMap: java.lang.String get(java.lang.CharSequence)>(v7);
+v9 = dynamicinvoke "makeConcatWithConstants" <java.lang.String (java.lang.String,java.lang.String,java.lang.String)>(v2, v8, v5) <java.lang.invoke.StringConcatFactory: java.lang.invoke.CallSite makeConcatWithConstants(java.lang.invoke.MethodHandles$Lookup,java.lang.String,java.lang.invoke.MethodType,java.lang.String,java.lang.Object[])>("\u0001\u0001\u0001");
+v10 = virtualinvoke v3.<java.net.URI: java.lang.String getRawQuery()>();
+if v10 == null goto label3;
+v9 = dynamicinvoke "makeConcatWithConstants" <java.lang.String (java.lang.String,java.lang.String)>(v9, v10) <java.lang.invoke.StringConcatFactory: java.lang.invoke.CallSite makeConcatWithConstants(java.lang.invoke.MethodHandles$Lookup,java.lang.String,java.lang.invoke.MethodType,java.lang.String,java.lang.Object[])>("\u0001?\u0001");
+label3:
+return v9;
+}
+public static java.lang.CharSequence toLowerCase(java.lang.CharSequence)
+{
+java.lang.CharSequence v0;
+char v4;
+int v2, v3, v6;
+java.lang.StringBuilder v1, v5;
+java.lang.String v7;
+v0 := @parameter0: java.lang.CharSequence;
+v1 = null;
+v2 = interfaceinvoke v0.<java.lang.CharSequence: int length()>();
+v3 = 0;
+label1:
+if v3 >= v2 goto label4;
+v4 = interfaceinvoke v0.<java.lang.CharSequence: char charAt(int)>(v3);
+if v4 < 65 goto label3;
+if v4 > 90 goto label3;
+if v1 != null goto label2;
+v5 = new java.lang.StringBuilder;
+specialinvoke v5.<java.lang.StringBuilder: void <init>(java.lang.CharSequence)>(v0);
+v1 = v5;
+label2:
+v6 = v4 + 32;
+virtualinvoke v1.<java.lang.StringBuilder: void setCharAt(int,char)>(v3, v6);
+label3:
+v3 = v3 + 1;
+goto label1;
+label4:
+if v1 == null goto label5;
+v7 = virtualinvoke v1.<java.lang.StringBuilder: java.lang.String toString()>();
+return v7;
+label5:
+return v0;
+}
+static io.netty.handler.codec.http.HttpVersion toNettyHttpVersion(io.vertx.core.http.HttpVersion)
+{
+io.netty.handler.codec.http.HttpVersion v4, v5;
+java.lang.IllegalArgumentException v6;
+int[] v1;
+io.vertx.core.http.HttpVersion v0;
+int v2, v3;
+java.lang.String v7;
+v0 := @parameter0: io.vertx.core.http.HttpVersion;
+v1 = <io.vertx.core.http.impl.HttpUtils$6: int[] $SwitchMap$io$vertx$core$http$HttpVersion>;
+v2 = virtualinvoke v0.<io.vertx.core.http.HttpVersion: int ordinal()>();
+v3 = v1[v2];
+lookupswitch(v3)
+{
+case 1: goto label1;
+case 2: goto label2;
+default: goto label3;
+};
+label1:
+v4 = <io.netty.handler.codec.http.HttpVersion: io.netty.handler.codec.http.HttpVersion HTTP_1_0>;
+return v4;
+label2:
+v5 = <io.netty.handler.codec.http.HttpVersion: io.netty.handler.codec.http.HttpVersion HTTP_1_1>;
+return v5;
+label3:
+v6 = new java.lang.IllegalArgumentException;
+v7 = dynamicinvoke "makeConcatWithConstants" <java.lang.String (io.vertx.core.http.HttpVersion)>(v0) <java.lang.invoke.StringConcatFactory: java.lang.invoke.CallSite makeConcatWithConstants(java.lang.invoke.MethodHandles$Lookup,java.lang.String,java.lang.invoke.MethodType,java.lang.String,java.lang.Object[])>("Unsupported HTTP version: \u0001");
+specialinvoke v6.<java.lang.IllegalArgumentException: void <init>(java.lang.String)>(v7);
+throw v6;
+}
+static io.vertx.core.http.HttpMethod toVertxMethod(java.lang.String)
+{
+java.lang.String v0;
+io.vertx.core.http.HttpMethod v1;
+v0 := @parameter0: java.lang.String;
+v1 = staticinvoke <io.vertx.core.http.HttpMethod: io.vertx.core.http.HttpMethod valueOf(java.lang.String)>(v0);
+return v1;
+}
+public static int parseKeepAliveHeaderTimeout(java.lang.CharSequence)
+{
+io.netty.util.AsciiString v10, v11, v14;
+int v1, v12, v15, v16, v17, v18, v2, v20, v21, v22, v23, v24, v3, v4, v5, v7, v8;
+boolean v13;
+java.lang.CharSequence v0;
+char v19, v6, v9;
+v0 := @parameter0: java.lang.CharSequence;
+v1 = interfaceinvoke v0.<java.lang.CharSequence: int length()>();
+v2 = 0;
+label01:
+if v2 >= v1 goto label11;
+v3 = staticinvoke <io.netty.util.AsciiString: int indexOf(java.lang.CharSequence,char,int)>(v0, 44, v2);
+v4 = (int) -1;
+if v3 != v4 goto label02;
+v5 = v1;
+v3 = v1;
+goto label03;
+label02:
+v5 = v3 + 1;
+label03:
+if v2 >= v3 goto label04;
+v6 = interfaceinvoke v0.<java.lang.CharSequence: char charAt(int)>(v2);
+if v6 != 32 goto label04;
+v2 = v2 + 1;
+goto label03;
+label04:
+v7 = v3;
+label05:
+if v7 <= v2 goto label06;
+v8 = v7 - 1;
+v9 = interfaceinvoke v0.<java.lang.CharSequence: char charAt(int)>(v8);
+if v9 != 32 goto label06;
+v7 = v7 - 1;
+goto label05;
+label06:
+v10 = <io.vertx.core.http.impl.HttpUtils: io.netty.util.AsciiString TIMEOUT_EQ>;
+v11 = <io.vertx.core.http.impl.HttpUtils: io.netty.util.AsciiString TIMEOUT_EQ>;
+v12 = virtualinvoke v11.<io.netty.util.AsciiString: int length()>();
+v13 = staticinvoke <io.netty.util.AsciiString: boolean regionMatches(java.lang.CharSequence,boolean,int,java.lang.CharSequence,int,int)>(v0, 1, v2, v10, 0, v12);
+if v13 == 0 goto label10;
+v14 = <io.vertx.core.http.impl.HttpUtils: io.netty.util.AsciiString TIMEOUT_EQ>;
+v15 = virtualinvoke v14.<io.netty.util.AsciiString: int length()>();
+v16 = v2 + v15;
+if v16 >= v7 goto label10;
+v17 = 0;
+label07:
+if v16 >= v7 goto label09;
+v18 = v16;
+v16 = v16 + 1;
+v19 = interfaceinvoke v0.<java.lang.CharSequence: char charAt(int)>(v18);
+if v19 < 48 goto label08;
+if v19 >= 57 goto label08;
+v20 = v17 * 10;
+v21 = v19 - 48;
+v17 = v20 + v21;
+goto label07;
+label08:
+v22 = (int) -1;
+v17 = v22;
+label09:
+v23 = (int) -1;
+if v17 <= v23 goto label10;
+return v17;
+label10:
+v2 = v5;
+goto label01;
+label11:
+v24 = (int) -1;
+return v24;
+}
+public static void validateHeader(java.lang.CharSequence, java.lang.CharSequence)
+{
+java.lang.CharSequence v0, v1;
+v0 := @parameter0: java.lang.CharSequence;
+v1 := @parameter1: java.lang.CharSequence;
+staticinvoke <io.vertx.core.http.impl.HttpUtils: void validateHeaderName(java.lang.CharSequence)>(v0);
+if v1 == null goto label1;
+staticinvoke <io.vertx.core.http.impl.HttpUtils: void validateHeaderValue(java.lang.CharSequence)>(v1);
+label1:
+return;
+}
+public static void validateHeader(java.lang.CharSequence, java.lang.Iterable)
+{
+java.util.function.Consumer v2;
+java.lang.CharSequence v0;
+java.lang.Iterable v1;
+v0 := @parameter0: java.lang.CharSequence;
+v1 := @parameter1: java.lang.Iterable;
+staticinvoke <io.vertx.core.http.impl.HttpUtils: void validateHeaderName(java.lang.CharSequence)>(v0);
+v2 = staticinvoke <io.vertx.core.http.impl.HttpUtils$lambda_validateHeader_4__1062: java.util.function.Consumer bootstrap$()>();
+interfaceinvoke v1.<java.lang.Iterable: void forEach(java.util.function.Consumer)>(v2);
+return;
+}
+public static void validateHeaderValue(java.lang.CharSequence)
+{
+java.lang.CharSequence v0;
+int v1, v2, v3;
+char v4;
+java.lang.String v6;
+java.lang.IllegalArgumentException v5;
+v0 := @parameter0: java.lang.CharSequence;
+v1 = 0;
+v2 = 0;
+label1:
+v3 = interfaceinvoke v0.<java.lang.CharSequence: int length()>();
+if v2 >= v3 goto label2;
+v4 = interfaceinvoke v0.<java.lang.CharSequence: char charAt(int)>(v2);
+v1 = staticinvoke <io.vertx.core.http.impl.HttpUtils: int validateValueChar(java.lang.CharSequence,int,char)>(v0, v1, v4);
+v2 = v2 + 1;
+goto label1;
+label2:
+if v1 == 0 goto label3;
+v5 = new java.lang.IllegalArgumentException;
+v6 = dynamicinvoke "makeConcatWithConstants" <java.lang.String (java.lang.CharSequence)>(v0) <java.lang.invoke.StringConcatFactory: java.lang.invoke.CallSite makeConcatWithConstants(java.lang.invoke.MethodHandles$Lookup,java.lang.String,java.lang.invoke.MethodType,java.lang.String,java.lang.Object[])>("a header value must not end with \'\\r\' or \'\\n\':\u0001");
+specialinvoke v5.<java.lang.IllegalArgumentException: void <init>(java.lang.String)>(v6);
+throw v5;
+label3:
+return;
+}
+private static int validateValueChar(java.lang.CharSequence, int, char)
+{
+java.lang.CharSequence v0;
+char v2;
+java.lang.IllegalArgumentException v5, v7, v9;
+int v1, v3, v4;
+java.lang.String v10, v6, v8;
+v0 := @parameter0: java.lang.CharSequence;
+v1 := @parameter1: int;
+v2 := @parameter2: char;
+v3 = (int) -32;
+v4 = v2 & v3;
+if v4 == 0 goto label01;
+if v2 != 127 goto label03;
+label01:
+tableswitch(v2)
+{
+case 9: goto label03;
+case 10: goto label03;
+case 11: goto label02;
+case 12: goto label02;
+case 13: goto label03;
+default: goto label02;
+};
+label02:
+v5 = new java.lang.IllegalArgumentException;
+v6 = dynamicinvoke "makeConcatWithConstants" <java.lang.String (char,java.lang.CharSequence)>(v2, v0) <java.lang.invoke.StringConcatFactory: java.lang.invoke.CallSite makeConcatWithConstants(java.lang.invoke.MethodHandles$Lookup,java.lang.String,java.lang.invoke.MethodType,java.lang.String,java.lang.Object[])>("a header value contains a prohibited character \'\u0001\': \u0001");
+specialinvoke v5.<java.lang.IllegalArgumentException: void <init>(java.lang.String)>(v6);
+throw v5;
+label03:
+tableswitch(v1)
+{
+case 0: goto label04;
+case 1: goto label07;
+case 2: goto label10;
+default: goto label13;
+};
+label04:
+lookupswitch(v2)
+{
+case 10: goto label06;
+case 13: goto label05;
+default: goto label13;
+};
+label05:
+return 1;
+label06:
+return 2;
+label07:
+lookupswitch(v2)
+{
+case 10: goto label08;
+default: goto label09;
+};
+label08:
+return 2;
+label09:
+v7 = new java.lang.IllegalArgumentException;
+v8 = dynamicinvoke "makeConcatWithConstants" <java.lang.String (java.lang.CharSequence)>(v0) <java.lang.invoke.StringConcatFactory: java.lang.invoke.CallSite makeConcatWithConstants(java.lang.invoke.MethodHandles$Lookup,java.lang.String,java.lang.invoke.MethodType,java.lang.String,java.lang.Object[])>("only \'\\n\' is allowed after \'\\r\': \u0001");
+specialinvoke v7.<java.lang.IllegalArgumentException: void <init>(java.lang.String)>(v8);
+throw v7;
+label10:
+lookupswitch(v2)
+{
+case 9: goto label11;
+case 32: goto label11;
+default: goto label12;
+};
+label11:
+return 0;
+label12:
+v9 = new java.lang.IllegalArgumentException;
+v10 = dynamicinvoke "makeConcatWithConstants" <java.lang.String (java.lang.CharSequence)>(v0) <java.lang.invoke.StringConcatFactory: java.lang.invoke.CallSite makeConcatWithConstants(java.lang.invoke.MethodHandles$Lookup,java.lang.String,java.lang.invoke.MethodType,java.lang.String,java.lang.Object[])>("only \' \' and \'\\t\' are allowed after \'\\n\': \u0001");
+specialinvoke v9.<java.lang.IllegalArgumentException: void <init>(java.lang.String)>(v10);
+throw v9;
+label13:
+return v1;
+}
+public static void validateHeaderName(java.lang.CharSequence)
+{
+java.lang.CharSequence v0;
+boolean v1;
+v0 := @parameter0: java.lang.CharSequence;
+v1 = v0 instanceof io.netty.util.AsciiString;
+if v1 == 0 goto label1;
+staticinvoke <io.vertx.core.http.impl.HttpUtils: void validateHeaderName(io.netty.util.AsciiString)>(v0);
+goto label2;
+label1:
+staticinvoke <io.vertx.core.http.impl.HttpUtils: void validateHeaderName0(java.lang.CharSequence)>(v0);
+label2:
+return;
+}
+private static void validateHeaderName(io.netty.util.AsciiString)
+{
+byte[] v3;
+boolean[] v9;
+io.netty.util.AsciiString v0;
+java.lang.IllegalArgumentException v12, v7;
+byte v10, v6;
+int v1, v2, v4, v5;
+java.lang.String v13, v8;
+boolean v11;
+v0 := @parameter0: io.netty.util.AsciiString;
+v1 = virtualinvoke v0.<io.netty.util.AsciiString: int length()>();
+v2 = virtualinvoke v0.<io.netty.util.AsciiString: int arrayOffset()>();
+v3 = virtualinvoke v0.<io.netty.util.AsciiString: byte[] array()>();
+v4 = 0;
+label1:
+if v4 >= v1 goto label4;
+v5 = v2 + v4;
+v6 = v3[v5];
+if v6 >= 0 goto label2;
+v7 = new java.lang.IllegalArgumentException;
+v8 = dynamicinvoke "makeConcatWithConstants" <java.lang.String (io.netty.util.AsciiString)>(v0) <java.lang.invoke.StringConcatFactory: java.lang.invoke.CallSite makeConcatWithConstants(java.lang.invoke.MethodHandles$Lookup,java.lang.String,java.lang.invoke.MethodType,java.lang.String,java.lang.Object[])>("a header name cannot contain non-ASCII character: \u0001");
+specialinvoke v7.<java.lang.IllegalArgumentException: void <init>(java.lang.String)>(v8);
+throw v7;
+label2:
+v9 = <io.vertx.core.http.impl.HttpUtils: boolean[] VALID_H_NAME_ASCII_CHARS>;
+v10 = v6 & 127;
+v11 = v9[v10];
+if v11 != 0 goto label3;
+v12 = new java.lang.IllegalArgumentException;
+v13 = dynamicinvoke "makeConcatWithConstants" <java.lang.String (io.netty.util.AsciiString)>(v0) <java.lang.invoke.StringConcatFactory: java.lang.invoke.CallSite makeConcatWithConstants(java.lang.invoke.MethodHandles$Lookup,java.lang.String,java.lang.invoke.MethodType,java.lang.String,java.lang.Object[])>("a header name cannot contain some prohibited characters, such as : \u0001");
+specialinvoke v12.<java.lang.IllegalArgumentException: void <init>(java.lang.String)>(v13);
+throw v12;
+label3:
+v4 = v4 + 1;
+goto label1;
+label4:
+return;
+}
+private static void validateHeaderName0(java.lang.CharSequence)
+{
+java.lang.CharSequence v0;
+boolean[] v6;
+char v3, v7;
+java.lang.IllegalArgumentException v4, v9;
+int v1, v2;
+java.lang.String v10, v5;
+boolean v8;
+v0 := @parameter0: java.lang.CharSequence;
+v1 = 0;
+label1:
+v2 = interfaceinvoke v0.<java.lang.CharSequence: int length()>();
+if v1 >= v2 goto label4;
+v3 = interfaceinvoke v0.<java.lang.CharSequence: char charAt(int)>(v1);
+if v3 <= 127 goto label2;
+v4 = new java.lang.IllegalArgumentException;
+v5 = dynamicinvoke "makeConcatWithConstants" <java.lang.String (java.lang.CharSequence)>(v0) <java.lang.invoke.StringConcatFactory: java.lang.invoke.CallSite makeConcatWithConstants(java.lang.invoke.MethodHandles$Lookup,java.lang.String,java.lang.invoke.MethodType,java.lang.String,java.lang.Object[])>("a header name cannot contain non-ASCII character: \u0001");
+specialinvoke v4.<java.lang.IllegalArgumentException: void <init>(java.lang.String)>(v5);
+throw v4;
+label2:
+v6 = <io.vertx.core.http.impl.HttpUtils: boolean[] VALID_H_NAME_ASCII_CHARS>;
+v7 = v3 & 127;
+v8 = v6[v7];
+if v8 != 0 goto label3;
+v9 = new java.lang.IllegalArgumentException;
+v10 = dynamicinvoke "makeConcatWithConstants" <java.lang.String (java.lang.CharSequence)>(v0) <java.lang.invoke.StringConcatFactory: java.lang.invoke.CallSite makeConcatWithConstants(java.lang.invoke.MethodHandles$Lookup,java.lang.String,java.lang.invoke.MethodType,java.lang.String,java.lang.Object[])>("a header name cannot contain some prohibited characters, such as : \u0001");
+specialinvoke v9.<java.lang.IllegalArgumentException: void <init>(java.lang.String)>(v10);
+throw v9;
+label3:
+v1 = v1 + 1;
+goto label1;
+label4:
+return;
+}
+public static boolean isValidMultipartContentType(java.lang.String)
+{
+io.netty.util.AsciiString v1, v2, v5, v6;
+int v3, v7;
+java.lang.String v0;
+boolean v4, v8, v9;
+v0 := @parameter0: java.lang.String;
+v1 = <io.netty.handler.codec.http.HttpHeaderValues: io.netty.util.AsciiString MULTIPART_FORM_DATA>;
+v2 = <io.netty.handler.codec.http.HttpHeaderValues: io.netty.util.AsciiString MULTIPART_FORM_DATA>;
+v3 = virtualinvoke v2.<io.netty.util.AsciiString: int length()>();
+v4 = virtualinvoke v1.<io.netty.util.AsciiString: boolean regionMatches(boolean,int,java.lang.CharSequence,int,int)>(1, 0, v0, 0, v3);
+if v4 != 0 goto label1;
+v5 = <io.netty.handler.codec.http.HttpHeaderValues: io.netty.util.AsciiString APPLICATION_X_WWW_FORM_URLENCODED>;
+v6 = <io.netty.handler.codec.http.HttpHeaderValues: io.netty.util.AsciiString APPLICATION_X_WWW_FORM_URLENCODED>;
+v7 = virtualinvoke v6.<io.netty.util.AsciiString: int length()>();
+v8 = virtualinvoke v5.<io.netty.util.AsciiString: boolean regionMatches(boolean,int,java.lang.CharSequence,int,int)>(1, 0, v0, 0, v7);
+if v8 == 0 goto label2;
+label1:
+v9 = 1;
+goto label3;
+label2:
+v9 = 0;
+label3:
+return v9;
+}
+public static boolean isValidMultipartMethod(io.netty.handler.codec.http.HttpMethod)
+{
+io.netty.handler.codec.http.HttpMethod v0, v1, v3, v5, v7;
+boolean v2, v4, v6, v8, v9;
+v0 := @parameter0: io.netty.handler.codec.http.HttpMethod;
+v1 = <io.netty.handler.codec.http.HttpMethod: io.netty.handler.codec.http.HttpMethod POST>;
+v2 = virtualinvoke v0.<io.netty.handler.codec.http.HttpMethod: boolean equals(java.lang.Object)>(v1);
+if v2 != 0 goto label1;
+v3 = <io.netty.handler.codec.http.HttpMethod: io.netty.handler.codec.http.HttpMethod PUT>;
+v4 = virtualinvoke v0.<io.netty.handler.codec.http.HttpMethod: boolean equals(java.lang.Object)>(v3);
+if v4 != 0 goto label1;
+v5 = <io.netty.handler.codec.http.HttpMethod: io.netty.handler.codec.http.HttpMethod PATCH>;
+v6 = virtualinvoke v0.<io.netty.handler.codec.http.HttpMethod: boolean equals(java.lang.Object)>(v5);
+if v6 != 0 goto label1;
+v7 = <io.netty.handler.codec.http.HttpMethod: io.netty.handler.codec.http.HttpMethod DELETE>;
+v8 = virtualinvoke v0.<io.netty.handler.codec.http.HttpMethod: boolean equals(java.lang.Object)>(v7);
+if v8 == 0 goto label2;
+label1:
+v9 = 1;
+goto label3;
+label2:
+v9 = 0;
+label3:
+return v9;
+}
+static void resolveFile(io.vertx.core.impl.VertxInternal, java.lang.String, long, long, io.vertx.core.Handler)
+{
+java.lang.Throwable v15;
+java.io.RandomAccessFile v9;
+long v2, v3;
+java.lang.String v1;
+boolean v6;
+io.vertx.core.impl.VertxInternal v0;
+io.vertx.core.file.OpenOptions v11, v12, v13;
+java.io.IOException v16;
+io.vertx.core.Future v17, v8;
+java.io.File v5;
+java.io.FileNotFoundException v7;
+io.vertx.core.file.FileSystem v10;
+io.vertx.core.Handler v14, v4;
+v0 := @parameter0: io.vertx.core.impl.VertxInternal;
+v1 := @parameter1: java.lang.String;
+v2 := @parameter2: long;
+v3 := @parameter3: long;
+v4 := @parameter4: io.vertx.core.Handler;
+v5 = interfaceinvoke v0.<io.vertx.core.impl.VertxInternal: java.io.File resolveFile(java.lang.String)>(v1);
+v6 = virtualinvoke v5.<java.io.File: boolean exists()>();
+if v6 != 0 goto label1;
+v7 = new java.io.FileNotFoundException;
+specialinvoke v7.<java.io.FileNotFoundException: void <init>()>();
+v8 = staticinvoke <io.vertx.core.Future: io.vertx.core.Future failedFuture(java.lang.Throwable)>(v7);
+interfaceinvoke v4.<io.vertx.core.Handler: void handle(java.lang.Object)>(v8);
+return;
+label1:
+v9 = new java.io.RandomAccessFile;
+specialinvoke v9.<java.io.RandomAccessFile: void <init>(java.io.File,java.lang.String)>(v5, "r");
+label2:
+v10 = interfaceinvoke v0.<io.vertx.core.impl.VertxInternal: io.vertx.core.file.FileSystem fileSystem()>();
+v11 = new io.vertx.core.file.OpenOptions;
+specialinvoke v11.<io.vertx.core.file.OpenOptions: void <init>()>();
+v12 = virtualinvoke v11.<io.vertx.core.file.OpenOptions: io.vertx.core.file.OpenOptions setCreate(boolean)>(0);
+v13 = virtualinvoke v12.<io.vertx.core.file.OpenOptions: io.vertx.core.file.OpenOptions setWrite(boolean)>(0);
+v14 = staticinvoke <io.vertx.core.http.impl.HttpUtils$lambda_resolveFile_5__1063: io.vertx.core.Handler bootstrap$(long,java.io.File,long,io.vertx.core.Handler)>(v3, v5, v2, v4);
+interfaceinvoke v10.<io.vertx.core.file.FileSystem: io.vertx.core.file.FileSystem open(java.lang.String,io.vertx.core.file.OpenOptions,io.vertx.core.Handler)>(v1, v13, v14);
+label3:
+virtualinvoke v9.<java.io.RandomAccessFile: void close()>();
+goto label6;
+label4:
+v15 := @caughtexception;
+throw v15;
+label5:
+v16 := @caughtexception;
+v17 = staticinvoke <io.vertx.core.Future: io.vertx.core.Future failedFuture(java.lang.Throwable)>(v16);
+interfaceinvoke v4.<io.vertx.core.Handler: void handle(java.lang.Object)>(v17);
+label6:
+return;
+catch java.lang.Throwable from label2 to label3 with label4;
+catch java.io.IOException from label1 to label5 with label5;
+}
+static boolean isConnectOrUpgrade(io.vertx.core.http.HttpMethod, io.vertx.core.MultiMap)
+{
+java.lang.CharSequence v4, v5;
+io.vertx.core.MultiMap v1;
+io.vertx.core.http.HttpMethod v0, v2, v3;
+boolean v6, v7;
+v0 := @parameter0: io.vertx.core.http.HttpMethod;
+v1 := @parameter1: io.vertx.core.MultiMap;
+v2 = <io.vertx.core.http.HttpMethod: io.vertx.core.http.HttpMethod CONNECT>;
+if v0 == v2 goto label1;
+v3 = <io.vertx.core.http.HttpMethod: io.vertx.core.http.HttpMethod GET>;
+if v0 != v3 goto label2;
+v4 = <io.vertx.core.http.HttpHeaders: java.lang.CharSequence CONNECTION>;
+v5 = <io.vertx.core.http.HttpHeaders: java.lang.CharSequence UPGRADE>;
+v6 = interfaceinvoke v1.<io.vertx.core.MultiMap: boolean contains(java.lang.CharSequence,java.lang.CharSequence,boolean)>(v4, v5, 1);
+if v6 == 0 goto label2;
+label1:
+v7 = 1;
+goto label3;
+label2:
+v7 = 0;
+label3:
+return v7;
+}
+static void <clinit>()
+{
+io.netty.util.AsciiString v7;
+io.vertx.core.http.HttpClosedException v0, v1;
+io.vertx.core.http.impl.HttpUtils$2 v3;
+io.vertx.core.http.impl.HttpUtils$1 v2;
+int v30;
+io.vertx.core.http.impl.HttpUtils$5 v6;
+io.vertx.core.http.impl.HttpUtils$4 v5;
+io.vertx.core.http.impl.HttpUtils$3 v4;
+boolean[] v10, v11, v12, v13, v14, v15, v16, v17, v18, v19, v20, v21, v22, v23, v24, v25, v26, v27, v28, v29, v31, v9;
+java.util.function.Consumer v8;
+v0 = new io.vertx.core.http.HttpClosedException;
+specialinvoke v0.<io.vertx.core.http.HttpClosedException: void <init>(java.lang.String)>("Connection was closed");
+<io.vertx.core.http.impl.HttpUtils: io.vertx.core.http.HttpClosedException CONNECTION_CLOSED_EXCEPTION> = v0;
+v1 = new io.vertx.core.http.HttpClosedException;
+specialinvoke v1.<io.vertx.core.http.HttpClosedException: void <init>(java.lang.String)>("Stream was closed");
+<io.vertx.core.http.impl.HttpUtils: io.vertx.core.http.HttpClosedException STREAM_CLOSED_EXCEPTION> = v1;
+v2 = new io.vertx.core.http.impl.HttpUtils$1;
+specialinvoke v2.<io.vertx.core.http.impl.HttpUtils$1: void <init>()>();
+<io.vertx.core.http.impl.HttpUtils: io.vertx.core.spi.tracing.TagExtractor SERVER_REQUEST_TAG_EXTRACTOR> = v2;
+v3 = new io.vertx.core.http.impl.HttpUtils$2;
+specialinvoke v3.<io.vertx.core.http.impl.HttpUtils$2: void <init>()>();
+<io.vertx.core.http.impl.HttpUtils: io.vertx.core.spi.tracing.TagExtractor SERVER_RESPONSE_TAG_EXTRACTOR> = v3;
+v4 = new io.vertx.core.http.impl.HttpUtils$3;
+specialinvoke v4.<io.vertx.core.http.impl.HttpUtils$3: void <init>()>();
+<io.vertx.core.http.impl.HttpUtils: io.vertx.core.spi.tracing.TagExtractor CLIENT_HTTP_REQUEST_TAG_EXTRACTOR> = v4;
+v5 = new io.vertx.core.http.impl.HttpUtils$4;
+specialinvoke v5.<io.vertx.core.http.impl.HttpUtils$4: void <init>()>();
+<io.vertx.core.http.impl.HttpUtils: io.vertx.core.spi.tracing.TagExtractor CLIENT_RESPONSE_TAG_EXTRACTOR> = v5;
+v6 = new io.vertx.core.http.impl.HttpUtils$5;
+specialinvoke v6.<io.vertx.core.http.impl.HttpUtils$5: void <init>()>();
+<io.vertx.core.http.impl.HttpUtils: io.vertx.core.http.StreamPriority DEFAULT_STREAM_PRIORITY> = v6;
+v7 = staticinvoke <io.netty.util.AsciiString: io.netty.util.AsciiString of(java.lang.CharSequence)>("timeout=");
+<io.vertx.core.http.impl.HttpUtils: io.netty.util.AsciiString TIMEOUT_EQ> = v7;
+v8 = staticinvoke <io.vertx.core.http.impl.HttpUtils$validateHeaderValue__1064: java.util.function.Consumer bootstrap$()>();
+<io.vertx.core.http.impl.HttpUtils: java.util.function.Consumer HEADER_VALUE_VALIDATOR> = v8;
+v9 = newarray (boolean)[128];
+<io.vertx.core.http.impl.HttpUtils: boolean[] VALID_H_NAME_ASCII_CHARS> = v9;
+v10 = <io.vertx.core.http.impl.HttpUtils: boolean[] VALID_H_NAME_ASCII_CHARS>;
+staticinvoke <java.util.Arrays: void fill(boolean[],boolean)>(v10, 1);
+v11 = <io.vertx.core.http.impl.HttpUtils: boolean[] VALID_H_NAME_ASCII_CHARS>;
+v11[32] = 0;
+v12 = <io.vertx.core.http.impl.HttpUtils: boolean[] VALID_H_NAME_ASCII_CHARS>;
+v12[34] = 0;
+v13 = <io.vertx.core.http.impl.HttpUtils: boolean[] VALID_H_NAME_ASCII_CHARS>;
+v13[40] = 0;
+v14 = <io.vertx.core.http.impl.HttpUtils: boolean[] VALID_H_NAME_ASCII_CHARS>;
+v14[41] = 0;
+v15 = <io.vertx.core.http.impl.HttpUtils: boolean[] VALID_H_NAME_ASCII_CHARS>;
+v15[44] = 0;
+v16 = <io.vertx.core.http.impl.HttpUtils: boolean[] VALID_H_NAME_ASCII_CHARS>;
+v16[47] = 0;
+v17 = <io.vertx.core.http.impl.HttpUtils: boolean[] VALID_H_NAME_ASCII_CHARS>;
+v17[58] = 0;
+v18 = <io.vertx.core.http.impl.HttpUtils: boolean[] VALID_H_NAME_ASCII_CHARS>;
+v18[59] = 0;
+v19 = <io.vertx.core.http.impl.HttpUtils: boolean[] VALID_H_NAME_ASCII_CHARS>;
+v19[60] = 0;
+v20 = <io.vertx.core.http.impl.HttpUtils: boolean[] VALID_H_NAME_ASCII_CHARS>;
+v20[62] = 0;
+v21 = <io.vertx.core.http.impl.HttpUtils: boolean[] VALID_H_NAME_ASCII_CHARS>;
+v21[61] = 0;
+v22 = <io.vertx.core.http.impl.HttpUtils: boolean[] VALID_H_NAME_ASCII_CHARS>;
+v22[63] = 0;
+v23 = <io.vertx.core.http.impl.HttpUtils: boolean[] VALID_H_NAME_ASCII_CHARS>;
+v23[64] = 0;
+v24 = <io.vertx.core.http.impl.HttpUtils: boolean[] VALID_H_NAME_ASCII_CHARS>;
+v24[91] = 0;
+v25 = <io.vertx.core.http.impl.HttpUtils: boolean[] VALID_H_NAME_ASCII_CHARS>;
+v25[93] = 0;
+v26 = <io.vertx.core.http.impl.HttpUtils: boolean[] VALID_H_NAME_ASCII_CHARS>;
+v26[92] = 0;
+v27 = <io.vertx.core.http.impl.HttpUtils: boolean[] VALID_H_NAME_ASCII_CHARS>;
+v27[123] = 0;
+v28 = <io.vertx.core.http.impl.HttpUtils: boolean[] VALID_H_NAME_ASCII_CHARS>;
+v28[125] = 0;
+v29 = <io.vertx.core.http.impl.HttpUtils: boolean[] VALID_H_NAME_ASCII_CHARS>;
+v29[127] = 0;
+v30 = 0;
+label1:
+if v30 >= 32 goto label2;
+v31 = <io.vertx.core.http.impl.HttpUtils: boolean[] VALID_H_NAME_ASCII_CHARS>;
+v31[v30] = 0;
+v30 = v30 + 1;
+goto label1;
+label2:
+return;
+}
+}

@@ -1,0 +1,660 @@
+public class io.quarkus.runtime.ApplicationLifecycleManager extends java.lang.Object
+{
+public static volatile io.quarkus.runtime.ShutdownEvent$ShutdownReason shutdownReason;
+private static volatile java.util.function.BiConsumer defaultExitCodeHandler;
+private static final java.lang.String DISABLE_SIGNAL_HANDLERS;
+private static final java.util.concurrent.locks.Lock stateLock;
+private static final java.util.concurrent.locks.Condition stateCond;
+private static io.quarkus.runtime.ApplicationLifecycleManager$ShutdownHookThread shutdownHookThread;
+private static int exitCode;
+private static volatile boolean shutdownRequested;
+private static io.quarkus.runtime.Application currentApplication;
+private static boolean vmShuttingDown;
+private static final boolean IS_WINDOWS;
+private static final boolean IS_MAC;
+private void <init>()
+{
+io.quarkus.runtime.ApplicationLifecycleManager v0;
+v0 := @this: io.quarkus.runtime.ApplicationLifecycleManager;
+specialinvoke v0.<java.lang.Object: void <init>()>();
+return;
+}
+public static transient void run(io.quarkus.runtime.Application, java.lang.String[])
+{
+java.lang.String[] v1;
+io.quarkus.runtime.Application v0;
+v0 := @parameter0: io.quarkus.runtime.Application;
+v1 := @parameter1: java.lang.String[];
+staticinvoke <io.quarkus.runtime.ApplicationLifecycleManager: void run(io.quarkus.runtime.Application,java.lang.Class,java.util.function.BiConsumer,java.lang.String[])>(v0, null, null, v1);
+return;
+}
+public static transient void run(io.quarkus.runtime.Application, java.lang.Class, java.util.function.BiConsumer, java.lang.String[])
+{
+java.lang.Integer v105, v95;
+java.util.stream.Collector v67;
+jakarta.enterprise.inject.spi.BeanManager v16;
+java.lang.Runtime v101, v55, v97;
+java.util.Set v19;
+java.lang.Exception v57;
+java.util.stream.Stream v64, v66;
+java.lang.Throwable v13, v37, v39, v46, v52, v58, v89, v99;
+java.lang.Object[] v27;
+io.quarkus.runtime.Application v0, v8;
+java.lang.reflect.Constructor v26;
+java.util.function.BiConsumer v103, v2, v7, v94;
+java.lang.String v79, v81, v84;
+java.lang.Class[] v25;
+java.util.concurrent.locks.Lock v12, v14, v31, v36, v38, v4, v40, v45, v47, v48, v51, v53, v86, v88, v90;
+java.lang.IllegalStateException v10, v102, v56, v98;
+jakarta.enterprise.inject.spi.CDI v15;
+jakarta.enterprise.inject.spi.Bean v20;
+boolean v22, v49, v5, v60, v69, v70, v72, v75, v77, v80, v82, v9, v91;
+java.util.List v61, v85;
+org.jboss.logging.Logger v59;
+java.lang.String[] v3;
+java.lang.'annotation'.Annotation[] v17;
+java.util.function.Function v65;
+int v104, v11, v30, v32, v33, v34, v41, v42, v43, v62, v92, v93;
+io.quarkus.runtime.ApplicationLifecycleManager$ShutdownHookThread v100, v54, v6, v96;
+java.io.PrintStream v78, v83;
+jakarta.enterprise.inject.Any$Literal v18;
+java.util.Iterator v21, v71, v74;
+jakarta.enterprise.context.spi.CreationalContext v29;
+java.util.concurrent.locks.Condition v35, v44, v50, v87;
+java.lang.Class v1, v24;
+java.lang.Object v23, v28, v63, v68, v73, v76;
+v0 := @parameter0: io.quarkus.runtime.Application;
+v1 := @parameter1: java.lang.Class;
+v2 := @parameter2: java.util.function.BiConsumer;
+v3 := @parameter3: java.lang.String[];
+v4 = <io.quarkus.runtime.ApplicationLifecycleManager: java.util.concurrent.locks.Lock stateLock>;
+interfaceinvoke v4.<java.util.concurrent.locks.Lock: void lock()>();
+v5 = virtualinvoke v0.<io.quarkus.runtime.Application: boolean isStarted()>();
+v6 = <io.quarkus.runtime.ApplicationLifecycleManager: io.quarkus.runtime.ApplicationLifecycleManager$ShutdownHookThread shutdownHookThread>;
+if v6 != null goto label03;
+if v2 != null goto label01;
+v7 = <io.quarkus.runtime.ApplicationLifecycleManager: java.util.function.BiConsumer defaultExitCodeHandler>;
+goto label02;
+label01:
+v7 = v2;
+label02:
+staticinvoke <io.quarkus.runtime.ApplicationLifecycleManager: void registerHooks(java.util.function.BiConsumer)>(v7);
+label03:
+v8 = <io.quarkus.runtime.ApplicationLifecycleManager: io.quarkus.runtime.Application currentApplication>;
+if v8 == null goto label04;
+v9 = <io.quarkus.runtime.ApplicationLifecycleManager: boolean shutdownRequested>;
+if v9 != 0 goto label04;
+v10 = new java.lang.IllegalStateException;
+specialinvoke v10.<java.lang.IllegalStateException: void <init>(java.lang.String)>("Quarkus already running");
+throw v10;
+label04:
+v11 = (int) -1;
+<io.quarkus.runtime.ApplicationLifecycleManager: int exitCode> = v11;
+<io.quarkus.runtime.ApplicationLifecycleManager: boolean shutdownRequested> = 0;
+<io.quarkus.runtime.ApplicationLifecycleManager: io.quarkus.runtime.Application currentApplication> = v0;
+label05:
+v12 = <io.quarkus.runtime.ApplicationLifecycleManager: java.util.concurrent.locks.Lock stateLock>;
+interfaceinvoke v12.<java.util.concurrent.locks.Lock: void unlock()>();
+goto label07;
+label06:
+v13 := @caughtexception;
+v14 = <io.quarkus.runtime.ApplicationLifecycleManager: java.util.concurrent.locks.Lock stateLock>;
+interfaceinvoke v14.<java.util.concurrent.locks.Lock: void unlock()>();
+throw v13;
+label07:
+virtualinvoke v0.<io.quarkus.runtime.Application: void start(java.lang.String[])>(v3);
+if v1 == null goto label23;
+v15 = staticinvoke <jakarta.enterprise.inject.spi.CDI: jakarta.enterprise.inject.spi.CDI current()>();
+v16 = virtualinvoke v15.<jakarta.enterprise.inject.spi.CDI: jakarta.enterprise.inject.spi.BeanManager getBeanManager()>();
+v17 = newarray (java.lang.'annotation'.Annotation)[1];
+v18 = <jakarta.enterprise.inject.Any$Literal: jakarta.enterprise.inject.Any$Literal INSTANCE>;
+v17[0] = v18;
+v19 = interfaceinvoke v16.<jakarta.enterprise.inject.spi.BeanManager: java.util.Set getBeans(java.lang.reflect.Type,java.lang.'annotation'.Annotation[])>(v1, v17);
+v20 = null;
+v21 = interfaceinvoke v19.<java.util.Set: java.util.Iterator iterator()>();
+label08:
+v22 = interfaceinvoke v21.<java.util.Iterator: boolean hasNext()>();
+if v22 == 0 goto label09;
+v23 = interfaceinvoke v21.<java.util.Iterator: java.lang.Object next()>();
+v24 = interfaceinvoke v23.<jakarta.enterprise.inject.spi.Bean: java.lang.Class getBeanClass()>();
+if v24 != v1 goto label08;
+v20 = v23;
+label09:
+if v20 != null goto label10;
+v25 = newarray (java.lang.Class)[0];
+v26 = virtualinvoke v1.<java.lang.Class: java.lang.reflect.Constructor getDeclaredConstructor(java.lang.Class[])>(v25);
+v27 = newarray (java.lang.Object)[0];
+v28 = virtualinvoke v26.<java.lang.reflect.Constructor: java.lang.Object newInstance(java.lang.Object[])>(v27);
+goto label11;
+label10:
+v29 = interfaceinvoke v16.<jakarta.enterprise.inject.spi.BeanManager: jakarta.enterprise.context.spi.CreationalContext createCreationalContext(jakarta.enterprise.context.spi.Contextual)>(v20);
+interfaceinvoke v16.<jakarta.enterprise.inject.spi.BeanManager: java.lang.Object getReference(jakarta.enterprise.inject.spi.Bean,java.lang.reflect.Type,jakarta.enterprise.context.spi.CreationalContext)>(v20, v1, v29);
+label11:
+v30 = interfaceinvoke v28.<io.quarkus.runtime.QuarkusApplication: int run(java.lang.String[])>(v3);
+label12:
+v31 = <io.quarkus.runtime.ApplicationLifecycleManager: java.util.concurrent.locks.Lock stateLock>;
+interfaceinvoke v31.<java.util.concurrent.locks.Lock: void lock()>();
+label13:
+v32 = <io.quarkus.runtime.ApplicationLifecycleManager: int exitCode>;
+v33 = (int) -1;
+if v32 != v33 goto label14;
+v34 = (int) -1;
+if v30 == v34 goto label14;
+<io.quarkus.runtime.ApplicationLifecycleManager: int exitCode> = v30;
+label14:
+<io.quarkus.runtime.ApplicationLifecycleManager: boolean shutdownRequested> = 1;
+v35 = <io.quarkus.runtime.ApplicationLifecycleManager: java.util.concurrent.locks.Condition stateCond>;
+interfaceinvoke v35.<java.util.concurrent.locks.Condition: void signalAll()>();
+label15:
+v36 = <io.quarkus.runtime.ApplicationLifecycleManager: java.util.concurrent.locks.Lock stateLock>;
+interfaceinvoke v36.<java.util.concurrent.locks.Lock: void unlock()>();
+goto label27;
+label16:
+v37 := @caughtexception;
+v38 = <io.quarkus.runtime.ApplicationLifecycleManager: java.util.concurrent.locks.Lock stateLock>;
+interfaceinvoke v38.<java.util.concurrent.locks.Lock: void unlock()>();
+throw v37;
+label17:
+v39 := @caughtexception;
+v40 = <io.quarkus.runtime.ApplicationLifecycleManager: java.util.concurrent.locks.Lock stateLock>;
+interfaceinvoke v40.<java.util.concurrent.locks.Lock: void lock()>();
+label18:
+v41 = <io.quarkus.runtime.ApplicationLifecycleManager: int exitCode>;
+v42 = (int) -1;
+if v41 != v42 goto label19;
+v43 = (int) -1;
+if -1 == v43 goto label19;
+<io.quarkus.runtime.ApplicationLifecycleManager: int exitCode> = -1;
+label19:
+<io.quarkus.runtime.ApplicationLifecycleManager: boolean shutdownRequested> = 1;
+v44 = <io.quarkus.runtime.ApplicationLifecycleManager: java.util.concurrent.locks.Condition stateCond>;
+interfaceinvoke v44.<java.util.concurrent.locks.Condition: void signalAll()>();
+label20:
+v45 = <io.quarkus.runtime.ApplicationLifecycleManager: java.util.concurrent.locks.Lock stateLock>;
+interfaceinvoke v45.<java.util.concurrent.locks.Lock: void unlock()>();
+goto label22;
+label21:
+v46 := @caughtexception;
+v47 = <io.quarkus.runtime.ApplicationLifecycleManager: java.util.concurrent.locks.Lock stateLock>;
+interfaceinvoke v47.<java.util.concurrent.locks.Lock: void unlock()>();
+throw v46;
+label22:
+throw v39;
+label23:
+staticinvoke <io.quarkus.runtime.ApplicationLifecycleManager: void longLivedPostBootCleanup()>();
+v48 = <io.quarkus.runtime.ApplicationLifecycleManager: java.util.concurrent.locks.Lock stateLock>;
+interfaceinvoke v48.<java.util.concurrent.locks.Lock: void lock()>();
+label24:
+v49 = <io.quarkus.runtime.ApplicationLifecycleManager: boolean shutdownRequested>;
+if v49 != 0 goto label25;
+staticinvoke <java.lang.Thread: boolean interrupted()>();
+v50 = <io.quarkus.runtime.ApplicationLifecycleManager: java.util.concurrent.locks.Condition stateCond>;
+interfaceinvoke v50.<java.util.concurrent.locks.Condition: void awaitUninterruptibly()>();
+goto label24;
+label25:
+v51 = <io.quarkus.runtime.ApplicationLifecycleManager: java.util.concurrent.locks.Lock stateLock>;
+interfaceinvoke v51.<java.util.concurrent.locks.Lock: void unlock()>();
+goto label27;
+label26:
+v52 := @caughtexception;
+v53 = <io.quarkus.runtime.ApplicationLifecycleManager: java.util.concurrent.locks.Lock stateLock>;
+interfaceinvoke v53.<java.util.concurrent.locks.Lock: void unlock()>();
+throw v52;
+label27:
+v54 = <io.quarkus.runtime.ApplicationLifecycleManager: io.quarkus.runtime.ApplicationLifecycleManager$ShutdownHookThread shutdownHookThread>;
+<io.quarkus.runtime.ApplicationLifecycleManager: io.quarkus.runtime.ApplicationLifecycleManager$ShutdownHookThread shutdownHookThread> = null;
+if v54 == null goto label60;
+v55 = staticinvoke <java.lang.Runtime: java.lang.Runtime getRuntime()>();
+virtualinvoke v55.<java.lang.Runtime: boolean removeShutdownHook(java.lang.Thread)>(v54);
+label28:
+goto label60;
+label29:
+v56 := @caughtexception;
+goto label60;
+label30:
+v57 := @caughtexception;
+v58 = staticinvoke <io.quarkus.runtime.util.ExceptionUtil: java.lang.Throwable getRootCause(java.lang.Throwable)>(v57);
+if v2 != null goto label42;
+v59 = staticinvoke <org.jboss.logging.Logger: org.jboss.logging.Logger getLogger(java.lang.Class)>(class "Lio/quarkus/runtime/Application;");
+v60 = v58 instanceof io.quarkus.runtime.QuarkusBindException;
+if v60 == 0 goto label39;
+v61 = virtualinvoke v58.<io.quarkus.runtime.QuarkusBindException: java.util.List getPorts()>();
+v62 = interfaceinvoke v61.<java.util.List: int size()>();
+if v62 != 1 goto label31;
+v63 = interfaceinvoke v61.<java.util.List: java.lang.Object get(int)>(0);
+virtualinvoke v59.<org.jboss.logging.Logger: void errorf(java.lang.String,java.lang.Object)>("Port %d seems to be in use by another process. Quarkus may already be running or the port is used by another application.", v63);
+goto label32;
+label31:
+v64 = interfaceinvoke v61.<java.util.List: java.util.stream.Stream stream()>();
+v65 = staticinvoke <io.quarkus.runtime.ApplicationLifecycleManager$toString__3022: java.util.function.Function bootstrap$()>();
+v66 = interfaceinvoke v64.<java.util.stream.Stream: java.util.stream.Stream map(java.util.function.Function)>(v65);
+v67 = staticinvoke <java.util.stream.Collectors: java.util.stream.Collector joining(java.lang.CharSequence)>(",");
+v68 = interfaceinvoke v66.<java.util.stream.Stream: java.lang.Object collect(java.util.stream.Collector)>(v67);
+virtualinvoke v59.<org.jboss.logging.Logger: void errorf(java.lang.String,java.lang.Object)>("One or more of the following ports: %s seem to be in use by another process. Quarkus may already be running or one of the ports is used by another application.", v68);
+label32:
+v69 = <io.quarkus.runtime.ApplicationLifecycleManager: boolean IS_WINDOWS>;
+if v69 == 0 goto label33;
+virtualinvoke v59.<org.jboss.logging.Logger: void warn(java.lang.Object)>("Use \'netstat -a -b -n -o\' to identify the process occupying the port.");
+virtualinvoke v59.<org.jboss.logging.Logger: void warn(java.lang.Object)>("You can try to kill it with \'taskkill /PID <pid>\' or via the Task Manager.");
+goto label42;
+label33:
+v70 = <io.quarkus.runtime.ApplicationLifecycleManager: boolean IS_MAC>;
+if v70 == 0 goto label36;
+v71 = interfaceinvoke v61.<java.util.List: java.util.Iterator iterator()>();
+label34:
+v72 = interfaceinvoke v71.<java.util.Iterator: boolean hasNext()>();
+if v72 == 0 goto label35;
+v73 = interfaceinvoke v71.<java.util.Iterator: java.lang.Object next()>();
+virtualinvoke v59.<org.jboss.logging.Logger: void warnf(java.lang.String,java.lang.Object)>("Use \'netstat -anv | grep %d\' to identify the process occupying the port.", v73);
+goto label34;
+label35:
+virtualinvoke v59.<org.jboss.logging.Logger: void warn(java.lang.Object)>("You can try to kill it with \'kill -9 <pid>\'.");
+goto label42;
+label36:
+v74 = interfaceinvoke v61.<java.util.List: java.util.Iterator iterator()>();
+label37:
+v75 = interfaceinvoke v74.<java.util.Iterator: boolean hasNext()>();
+if v75 == 0 goto label38;
+v76 = interfaceinvoke v74.<java.util.Iterator: java.lang.Object next()>();
+virtualinvoke v59.<org.jboss.logging.Logger: void warnf(java.lang.String,java.lang.Object)>("Use \'netstat -anop | grep %d\' to identify the process occupying the port.", v76);
+goto label37;
+label38:
+virtualinvoke v59.<org.jboss.logging.Logger: void warn(java.lang.Object)>("You can try to kill it with \'kill -9 <pid>\'.");
+goto label42;
+label39:
+v77 = v58 instanceof io.quarkus.runtime.configuration.ConfigurationException;
+if v77 == 0 goto label40;
+v78 = <java.lang.System: java.io.PrintStream err>;
+v79 = virtualinvoke v58.<java.lang.Throwable: java.lang.String getMessage()>();
+virtualinvoke v78.<java.io.PrintStream: void println(java.lang.String)>(v79);
+goto label42;
+label40:
+v80 = v58 instanceof io.quarkus.runtime.PreventFurtherStepsException;
+if v80 == 0 goto label41;
+v81 = virtualinvoke v58.<java.lang.Throwable: java.lang.String getMessage()>();
+v82 = staticinvoke <io.quarkus.runtime.util.StringUtil: boolean isNullOrEmpty(java.lang.String)>(v81);
+if v82 != 0 goto label41;
+v83 = <java.lang.System: java.io.PrintStream err>;
+v84 = virtualinvoke v58.<java.lang.Throwable: java.lang.String getMessage()>();
+virtualinvoke v83.<java.io.PrintStream: void println(java.lang.String)>(v84);
+goto label42;
+label41:
+v85 = staticinvoke <io.quarkus.runtime.configuration.ConfigUtils: java.util.List getProfiles()>();
+virtualinvoke v59.<org.jboss.logging.Logger: void errorv(java.lang.Throwable,java.lang.String,java.lang.Object)>(v58, "Failed to start application (with profile {0})", v85);
+staticinvoke <io.quarkus.runtime.ApplicationLifecycleManager: void ensureConsoleLogsDrained()>();
+label42:
+v86 = <io.quarkus.runtime.ApplicationLifecycleManager: java.util.concurrent.locks.Lock stateLock>;
+interfaceinvoke v86.<java.util.concurrent.locks.Lock: void lock()>();
+label43:
+<io.quarkus.runtime.ApplicationLifecycleManager: boolean shutdownRequested> = 1;
+v87 = <io.quarkus.runtime.ApplicationLifecycleManager: java.util.concurrent.locks.Condition stateCond>;
+interfaceinvoke v87.<java.util.concurrent.locks.Condition: void signalAll()>();
+label44:
+v88 = <io.quarkus.runtime.ApplicationLifecycleManager: java.util.concurrent.locks.Lock stateLock>;
+interfaceinvoke v88.<java.util.concurrent.locks.Lock: void unlock()>();
+goto label46;
+label45:
+v89 := @caughtexception;
+v90 = <io.quarkus.runtime.ApplicationLifecycleManager: java.util.concurrent.locks.Lock stateLock>;
+interfaceinvoke v90.<java.util.concurrent.locks.Lock: void unlock()>();
+throw v89;
+label46:
+virtualinvoke v0.<io.quarkus.runtime.Application: void stop()>();
+v91 = v58 instanceof io.quarkus.runtime.PreventFurtherStepsException;
+if v91 == 0 goto label47;
+v92 = virtualinvoke v58.<io.quarkus.runtime.PreventFurtherStepsException: int getExitCode()>();
+goto label48;
+label47:
+v92 = 1;
+label48:
+v93 = v92;
+if v2 != null goto label49;
+v94 = <io.quarkus.runtime.ApplicationLifecycleManager: java.util.function.BiConsumer defaultExitCodeHandler>;
+goto label50;
+label49:
+v94 = v2;
+label50:
+v95 = staticinvoke <java.lang.Integer: java.lang.Integer valueOf(int)>(v93);
+interfaceinvoke v94.<java.util.function.BiConsumer: void accept(java.lang.Object,java.lang.Object)>(v95, v57);
+label51:
+v96 = <io.quarkus.runtime.ApplicationLifecycleManager: io.quarkus.runtime.ApplicationLifecycleManager$ShutdownHookThread shutdownHookThread>;
+<io.quarkus.runtime.ApplicationLifecycleManager: io.quarkus.runtime.ApplicationLifecycleManager$ShutdownHookThread shutdownHookThread> = null;
+if v96 == null goto label54;
+v97 = staticinvoke <java.lang.Runtime: java.lang.Runtime getRuntime()>();
+virtualinvoke v97.<java.lang.Runtime: boolean removeShutdownHook(java.lang.Thread)>(v96);
+label52:
+goto label54;
+label53:
+v98 := @caughtexception;
+label54:
+return;
+label55:
+v99 := @caughtexception;
+label56:
+v100 = <io.quarkus.runtime.ApplicationLifecycleManager: io.quarkus.runtime.ApplicationLifecycleManager$ShutdownHookThread shutdownHookThread>;
+<io.quarkus.runtime.ApplicationLifecycleManager: io.quarkus.runtime.ApplicationLifecycleManager$ShutdownHookThread shutdownHookThread> = null;
+if v100 == null goto label59;
+v101 = staticinvoke <java.lang.Runtime: java.lang.Runtime getRuntime()>();
+virtualinvoke v101.<java.lang.Runtime: boolean removeShutdownHook(java.lang.Thread)>(v100);
+label57:
+goto label59;
+label58:
+v102 := @caughtexception;
+label59:
+throw v99;
+label60:
+if v5 != 0 goto label61;
+virtualinvoke v0.<io.quarkus.runtime.Application: void stop()>();
+label61:
+if v2 != null goto label62;
+v103 = <io.quarkus.runtime.ApplicationLifecycleManager: java.util.function.BiConsumer defaultExitCodeHandler>;
+goto label63;
+label62:
+v103 = v2;
+label63:
+v104 = staticinvoke <io.quarkus.runtime.ApplicationLifecycleManager: int getExitCode()>();
+v105 = staticinvoke <java.lang.Integer: java.lang.Integer valueOf(int)>(v104);
+interfaceinvoke v103.<java.util.function.BiConsumer: void accept(java.lang.Object,java.lang.Object)>(v105, null);
+return;
+catch java.lang.Throwable from label04 to label05 with label06;
+catch java.lang.Throwable from label13 to label15 with label16;
+catch java.lang.Throwable from label11 to label12 with label17;
+catch java.lang.Throwable from label18 to label20 with label21;
+catch java.lang.Throwable from label24 to label25 with label26;
+catch java.lang.IllegalStateException from label27 to label28 with label29;
+catch java.lang.Exception from label07 to label27 with label30;
+catch java.lang.Throwable from label43 to label44 with label45;
+catch java.lang.IllegalStateException from label51 to label52 with label53;
+catch java.lang.Throwable from label07 to label27 with label55;
+catch java.lang.Throwable from label30 to label51 with label55;
+catch java.lang.IllegalStateException from label56 to label57 with label58;
+}
+private static void ensureConsoleLogsDrained()
+{
+io.quarkus.bootstrap.logging.QuarkusDelayedHandler v0;
+java.util.logging.Handler[] v1, v6;
+java.lang.InterruptedException v12;
+java.lang.Thread v13;
+int v2, v3, v8, v9;
+java.util.logging.Handler v10, v4;
+boolean v11, v5, v7;
+v0 = <io.quarkus.bootstrap.logging.InitialConfigurator: io.quarkus.bootstrap.logging.QuarkusDelayedHandler DELAYED_HANDLER>;
+v1 = virtualinvoke v0.<io.quarkus.bootstrap.logging.QuarkusDelayedHandler: java.util.logging.Handler[] getHandlers()>();
+v2 = lengthof v1;
+v3 = 0;
+label01:
+if v3 >= v2 goto label06;
+v4 = v1[v3];
+v5 = v4 instanceof org.jboss.logmanager.handlers.AsyncHandler;
+if v5 == 0 goto label05;
+v6 = virtualinvoke v4.<org.jboss.logmanager.handlers.AsyncHandler: java.util.logging.Handler[] getHandlers()>();
+v7 = 0;
+v8 = lengthof v6;
+v9 = 0;
+label02:
+if v9 >= v8 goto label04;
+v10 = v6[v9];
+v11 = v10 instanceof java.util.logging.ConsoleHandler;
+if v11 == 0 goto label03;
+v7 = 1;
+goto label04;
+label03:
+v9 = v9 + 1;
+goto label02;
+label04:
+if v7 != 0 goto label05;
+v4 = null;
+label05:
+if v4 != null goto label06;
+v3 = v3 + 1;
+goto label01;
+label06:
+if v4 == null goto label10;
+label07:
+staticinvoke <java.lang.Thread: void sleep(long)>(200L);
+label08:
+goto label10;
+label09:
+v12 := @caughtexception;
+v13 = staticinvoke <java.lang.Thread: java.lang.Thread currentThread()>();
+virtualinvoke v13.<java.lang.Thread: void interrupt()>();
+label10:
+return;
+catch java.lang.InterruptedException from label07 to label08 with label09;
+}
+private static void longLivedPostBootCleanup()
+{
+java.lang.ClassLoader v1;
+boolean v2;
+java.lang.Thread v0;
+v0 = staticinvoke <java.lang.Thread: java.lang.Thread currentThread()>();
+v1 = virtualinvoke v0.<java.lang.Thread: java.lang.ClassLoader getContextClassLoader()>();
+v2 = v1 instanceof io.quarkus.bootstrap.runner.RunnerClassLoader;
+if v2 == 0 goto label1;
+virtualinvoke v1.<io.quarkus.bootstrap.runner.RunnerClassLoader: void resetInternalCaches()>();
+label1:
+return;
+}
+private static void registerHooks(java.util.function.BiConsumer)
+{
+io.quarkus.runtime.ImageMode v1, v2;
+java.lang.Runtime v5;
+io.quarkus.runtime.ApplicationLifecycleManager$ShutdownHookThread v4, v6;
+java.util.function.BiConsumer v0;
+java.lang.String v3;
+v0 := @parameter0: java.util.function.BiConsumer;
+v1 = staticinvoke <io.quarkus.runtime.ImageMode: io.quarkus.runtime.ImageMode current()>();
+v2 = <io.quarkus.runtime.ImageMode: io.quarkus.runtime.ImageMode NATIVE_RUN>;
+if v1 != v2 goto label1;
+v3 = staticinvoke <java.lang.System: java.lang.String getenv(java.lang.String)>("DISABLE_SIGNAL_HANDLERS");
+if v3 != null goto label1;
+staticinvoke <io.quarkus.runtime.ApplicationLifecycleManager: void registerSignalHandlers(java.util.function.BiConsumer)>(v0);
+label1:
+v4 = new io.quarkus.runtime.ApplicationLifecycleManager$ShutdownHookThread;
+specialinvoke v4.<io.quarkus.runtime.ApplicationLifecycleManager$ShutdownHookThread: void <init>()>();
+<io.quarkus.runtime.ApplicationLifecycleManager: io.quarkus.runtime.ApplicationLifecycleManager$ShutdownHookThread shutdownHookThread> = v4;
+v5 = staticinvoke <java.lang.Runtime: java.lang.Runtime getRuntime()>();
+v6 = <io.quarkus.runtime.ApplicationLifecycleManager: io.quarkus.runtime.ApplicationLifecycleManager$ShutdownHookThread shutdownHookThread>;
+virtualinvoke v5.<java.lang.Runtime: void addShutdownHook(java.lang.Thread)>(v6);
+return;
+}
+private static void registerSignalHandlers(java.util.function.BiConsumer)
+{
+io.quarkus.runtime.ApplicationLifecycleManager$2 v1;
+io.quarkus.runtime.ApplicationLifecycleManager$3 v2;
+java.util.function.BiConsumer v0;
+boolean v3;
+v0 := @parameter0: java.util.function.BiConsumer;
+v1 = new io.quarkus.runtime.ApplicationLifecycleManager$2;
+specialinvoke v1.<io.quarkus.runtime.ApplicationLifecycleManager$2: void <init>(java.util.function.BiConsumer)>(v0);
+v2 = new io.quarkus.runtime.ApplicationLifecycleManager$3;
+specialinvoke v2.<io.quarkus.runtime.ApplicationLifecycleManager$3: void <init>()>();
+staticinvoke <io.quarkus.runtime.ApplicationLifecycleManager: void handleSignal(java.lang.String,sun.misc.SignalHandler)>("INT", v1);
+staticinvoke <io.quarkus.runtime.ApplicationLifecycleManager: void handleSignal(java.lang.String,sun.misc.SignalHandler)>("TERM", v1);
+v3 = <io.quarkus.runtime.ApplicationLifecycleManager: boolean IS_WINDOWS>;
+if v3 == 0 goto label1;
+staticinvoke <io.quarkus.runtime.ApplicationLifecycleManager: void handleSignal(java.lang.String,sun.misc.SignalHandler)>("BREAK", v2);
+goto label2;
+label1:
+staticinvoke <io.quarkus.runtime.ApplicationLifecycleManager: void handleSignal(java.lang.String,sun.misc.SignalHandler)>("HUP", v1);
+staticinvoke <io.quarkus.runtime.ApplicationLifecycleManager: void handleSignal(java.lang.String,sun.misc.SignalHandler)>("QUIT", v2);
+label2:
+return;
+}
+public static io.quarkus.runtime.Application getCurrentApplication()
+{
+io.quarkus.runtime.Application v0;
+v0 = <io.quarkus.runtime.ApplicationLifecycleManager: io.quarkus.runtime.Application currentApplication>;
+return v0;
+}
+public static int getExitCode()
+{
+int v0, v1, v2;
+v0 = <io.quarkus.runtime.ApplicationLifecycleManager: int exitCode>;
+v1 = (int) -1;
+if v0 != v1 goto label1;
+v2 = 0;
+goto label2;
+label1:
+v2 = <io.quarkus.runtime.ApplicationLifecycleManager: int exitCode>;
+label2:
+return v2;
+}
+public static void exit()
+{
+staticinvoke <io.quarkus.runtime.ApplicationLifecycleManager: void exit(int)>(-1);
+return;
+}
+public static java.util.function.BiConsumer getDefaultExitCodeHandler()
+{
+java.util.function.BiConsumer v0;
+v0 = <io.quarkus.runtime.ApplicationLifecycleManager: java.util.function.BiConsumer defaultExitCodeHandler>;
+return v0;
+}
+public static boolean isVmShuttingDown()
+{
+boolean v0;
+v0 = <io.quarkus.runtime.ApplicationLifecycleManager: boolean vmShuttingDown>;
+return v0;
+}
+public static void setDefaultExitCodeHandler(java.util.function.BiConsumer)
+{
+java.util.function.BiConsumer v0;
+v0 := @parameter0: java.util.function.BiConsumer;
+virtualinvoke v0.<java.lang.Object: java.lang.Class getClass()>();
+<io.quarkus.runtime.ApplicationLifecycleManager: java.util.function.BiConsumer defaultExitCodeHandler> = v0;
+return;
+}
+public static void setDefaultExitCodeHandler(java.util.function.Consumer)
+{
+java.util.function.BiConsumer v1;
+java.util.function.Consumer v0;
+v0 := @parameter0: java.util.function.Consumer;
+v1 = staticinvoke <io.quarkus.runtime.ApplicationLifecycleManager$lambda_setDefaultExitCodeHandler_0__3023: java.util.function.BiConsumer bootstrap$(java.util.function.Consumer)>(v0);
+staticinvoke <io.quarkus.runtime.ApplicationLifecycleManager: void setDefaultExitCodeHandler(java.util.function.BiConsumer)>(v1);
+return;
+}
+public static void exit(int)
+{
+java.lang.Throwable v8;
+java.util.concurrent.locks.Condition v6;
+java.util.concurrent.locks.Lock v1, v5, v7, v9;
+int v0, v2, v3;
+boolean v4;
+v0 := @parameter0: int;
+v1 = <io.quarkus.runtime.ApplicationLifecycleManager: java.util.concurrent.locks.Lock stateLock>;
+interfaceinvoke v1.<java.util.concurrent.locks.Lock: void lock()>();
+label1:
+if v0 < 0 goto label2;
+v2 = <io.quarkus.runtime.ApplicationLifecycleManager: int exitCode>;
+v3 = (int) -1;
+if v2 != v3 goto label2;
+<io.quarkus.runtime.ApplicationLifecycleManager: int exitCode> = v0;
+label2:
+v4 = <io.quarkus.runtime.ApplicationLifecycleManager: boolean shutdownRequested>;
+if v4 == 0 goto label4;
+label3:
+v5 = <io.quarkus.runtime.ApplicationLifecycleManager: java.util.concurrent.locks.Lock stateLock>;
+interfaceinvoke v5.<java.util.concurrent.locks.Lock: void unlock()>();
+return;
+label4:
+<io.quarkus.runtime.ApplicationLifecycleManager: boolean shutdownRequested> = 1;
+v6 = <io.quarkus.runtime.ApplicationLifecycleManager: java.util.concurrent.locks.Condition stateCond>;
+interfaceinvoke v6.<java.util.concurrent.locks.Condition: void signalAll()>();
+label5:
+v7 = <io.quarkus.runtime.ApplicationLifecycleManager: java.util.concurrent.locks.Lock stateLock>;
+interfaceinvoke v7.<java.util.concurrent.locks.Lock: void unlock()>();
+goto label7;
+label6:
+v8 := @caughtexception;
+v9 = <io.quarkus.runtime.ApplicationLifecycleManager: java.util.concurrent.locks.Lock stateLock>;
+interfaceinvoke v9.<java.util.concurrent.locks.Lock: void unlock()>();
+throw v8;
+label7:
+return;
+catch java.lang.Throwable from label1 to label3 with label6;
+catch java.lang.Throwable from label4 to label5 with label6;
+}
+public static void waitForExit()
+{
+java.lang.Throwable v4;
+java.util.concurrent.locks.Condition v2;
+java.util.concurrent.locks.Lock v0, v3, v5;
+boolean v1;
+v0 = <io.quarkus.runtime.ApplicationLifecycleManager: java.util.concurrent.locks.Lock stateLock>;
+interfaceinvoke v0.<java.util.concurrent.locks.Lock: void lock()>();
+label1:
+v1 = <io.quarkus.runtime.ApplicationLifecycleManager: boolean shutdownRequested>;
+if v1 != 0 goto label2;
+v2 = <io.quarkus.runtime.ApplicationLifecycleManager: java.util.concurrent.locks.Condition stateCond>;
+interfaceinvoke v2.<java.util.concurrent.locks.Condition: void awaitUninterruptibly()>();
+goto label1;
+label2:
+v3 = <io.quarkus.runtime.ApplicationLifecycleManager: java.util.concurrent.locks.Lock stateLock>;
+interfaceinvoke v3.<java.util.concurrent.locks.Lock: void unlock()>();
+goto label4;
+label3:
+v4 := @caughtexception;
+v5 = <io.quarkus.runtime.ApplicationLifecycleManager: java.util.concurrent.locks.Lock stateLock>;
+interfaceinvoke v5.<java.util.concurrent.locks.Lock: void unlock()>();
+throw v4;
+label4:
+return;
+catch java.lang.Throwable from label1 to label2 with label3;
+}
+private static void handleSignal(java.lang.String, sun.misc.SignalHandler)
+{
+sun.misc.SignalHandler v1;
+sun.misc.Signal v2;
+java.lang.String v0;
+java.lang.IllegalArgumentException v3;
+v0 := @parameter0: java.lang.String;
+v1 := @parameter1: sun.misc.SignalHandler;
+label1:
+v2 = new sun.misc.Signal;
+specialinvoke v2.<sun.misc.Signal: void <init>(java.lang.String)>(v0);
+staticinvoke <sun.misc.Signal: sun.misc.SignalHandler handle(sun.misc.Signal,sun.misc.SignalHandler)>(v2, v1);
+label2:
+goto label4;
+label3:
+v3 := @caughtexception;
+label4:
+return;
+catch java.lang.IllegalArgumentException from label1 to label2 with label3;
+}
+static void <clinit>()
+{
+io.quarkus.runtime.ApplicationLifecycleManager$1 v1;
+java.util.concurrent.locks.Condition v4;
+java.util.concurrent.locks.Lock v3;
+io.quarkus.runtime.ShutdownEvent$ShutdownReason v0;
+java.util.Locale v11, v7;
+org.wildfly.common.lock.ExtendedLock v2;
+int v5;
+java.lang.String v10, v12, v6, v8;
+boolean v13, v9;
+v0 = <io.quarkus.runtime.ShutdownEvent$ShutdownReason: io.quarkus.runtime.ShutdownEvent$ShutdownReason STANDARD>;
+<io.quarkus.runtime.ApplicationLifecycleManager: io.quarkus.runtime.ShutdownEvent$ShutdownReason shutdownReason> = v0;
+v1 = new io.quarkus.runtime.ApplicationLifecycleManager$1;
+specialinvoke v1.<io.quarkus.runtime.ApplicationLifecycleManager$1: void <init>()>();
+<io.quarkus.runtime.ApplicationLifecycleManager: java.util.function.BiConsumer defaultExitCodeHandler> = v1;
+v2 = staticinvoke <org.wildfly.common.lock.Locks: org.wildfly.common.lock.ExtendedLock reentrantLock()>();
+<io.quarkus.runtime.ApplicationLifecycleManager: java.util.concurrent.locks.Lock stateLock> = v2;
+v3 = <io.quarkus.runtime.ApplicationLifecycleManager: java.util.concurrent.locks.Lock stateLock>;
+v4 = interfaceinvoke v3.<java.util.concurrent.locks.Lock: java.util.concurrent.locks.Condition newCondition()>();
+<io.quarkus.runtime.ApplicationLifecycleManager: java.util.concurrent.locks.Condition stateCond> = v4;
+v5 = (int) -1;
+<io.quarkus.runtime.ApplicationLifecycleManager: int exitCode> = v5;
+v6 = staticinvoke <java.lang.System: java.lang.String getProperty(java.lang.String)>("os.name");
+v7 = <java.util.Locale: java.util.Locale ENGLISH>;
+v8 = virtualinvoke v6.<java.lang.String: java.lang.String toLowerCase(java.util.Locale)>(v7);
+v9 = virtualinvoke v8.<java.lang.String: boolean contains(java.lang.CharSequence)>("windows");
+<io.quarkus.runtime.ApplicationLifecycleManager: boolean IS_WINDOWS> = v9;
+v10 = staticinvoke <java.lang.System: java.lang.String getProperty(java.lang.String)>("os.name");
+v11 = <java.util.Locale: java.util.Locale ENGLISH>;
+v12 = virtualinvoke v10.<java.lang.String: java.lang.String toLowerCase(java.util.Locale)>(v11);
+v13 = virtualinvoke v12.<java.lang.String: boolean contains(java.lang.CharSequence)>("mac");
+<io.quarkus.runtime.ApplicationLifecycleManager: boolean IS_MAC> = v13;
+return;
+}
+}

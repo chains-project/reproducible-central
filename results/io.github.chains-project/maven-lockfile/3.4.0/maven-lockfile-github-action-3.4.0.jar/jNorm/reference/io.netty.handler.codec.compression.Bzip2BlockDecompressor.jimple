@@ -1,0 +1,330 @@
+final class io.netty.handler.codec.compression.Bzip2BlockDecompressor extends java.lang.Object
+{
+private final io.netty.handler.codec.compression.Bzip2BitReader reader;
+private final io.netty.handler.codec.compression.Crc32 crc;
+private final int blockCRC;
+private final boolean blockRandomised;
+int huffmanEndOfBlockSymbol;
+int huffmanInUse16;
+final byte[] huffmanSymbolMap;
+private final int[] bwtByteCounts;
+private final byte[] bwtBlock;
+private final int bwtStartPointer;
+private int[] bwtMergedPointers;
+private int bwtCurrentMergedPointer;
+private int bwtBlockLength;
+private int bwtBytesDecoded;
+private int rleLastDecodedByte;
+private int rleAccumulator;
+private int rleRepeat;
+private int randomIndex;
+private int randomCount;
+private final io.netty.handler.codec.compression.Bzip2MoveToFrontTable symbolMTF;
+private int repeatCount;
+private int repeatIncrement;
+private int mtfValue;
+void <init>(int, int, boolean, int, io.netty.handler.codec.compression.Bzip2BitReader)
+{
+byte[] v13, v7;
+io.netty.handler.codec.compression.Crc32 v6;
+io.netty.handler.codec.compression.Bzip2BlockDecompressor v0;
+io.netty.handler.codec.compression.Bzip2MoveToFrontTable v12;
+io.netty.handler.codec.compression.Bzip2BitReader v5;
+int[] v8;
+int v1, v10, v11, v2, v4, v9;
+boolean v3;
+v0 := @this: io.netty.handler.codec.compression.Bzip2BlockDecompressor;
+v1 := @parameter0: int;
+v2 := @parameter1: int;
+v3 := @parameter2: boolean;
+v4 := @parameter3: int;
+v5 := @parameter4: io.netty.handler.codec.compression.Bzip2BitReader;
+specialinvoke v0.<java.lang.Object: void <init>()>();
+v6 = new io.netty.handler.codec.compression.Crc32;
+specialinvoke v6.<io.netty.handler.codec.compression.Crc32: void <init>()>();
+v0.<io.netty.handler.codec.compression.Bzip2BlockDecompressor: io.netty.handler.codec.compression.Crc32 crc> = v6;
+v7 = newarray (byte)[256];
+v0.<io.netty.handler.codec.compression.Bzip2BlockDecompressor: byte[] huffmanSymbolMap> = v7;
+v8 = newarray (int)[256];
+v0.<io.netty.handler.codec.compression.Bzip2BlockDecompressor: int[] bwtByteCounts> = v8;
+v9 = (int) -1;
+v0.<io.netty.handler.codec.compression.Bzip2BlockDecompressor: int rleLastDecodedByte> = v9;
+v10 = staticinvoke <io.netty.handler.codec.compression.Bzip2Rand: int rNums(int)>(0);
+v11 = v10 - 1;
+v0.<io.netty.handler.codec.compression.Bzip2BlockDecompressor: int randomCount> = v11;
+v12 = new io.netty.handler.codec.compression.Bzip2MoveToFrontTable;
+specialinvoke v12.<io.netty.handler.codec.compression.Bzip2MoveToFrontTable: void <init>()>();
+v0.<io.netty.handler.codec.compression.Bzip2BlockDecompressor: io.netty.handler.codec.compression.Bzip2MoveToFrontTable symbolMTF> = v12;
+v0.<io.netty.handler.codec.compression.Bzip2BlockDecompressor: int repeatIncrement> = 1;
+v13 = newarray (byte)[v1];
+v0.<io.netty.handler.codec.compression.Bzip2BlockDecompressor: byte[] bwtBlock> = v13;
+v0.<io.netty.handler.codec.compression.Bzip2BlockDecompressor: int blockCRC> = v2;
+v0.<io.netty.handler.codec.compression.Bzip2BlockDecompressor: boolean blockRandomised> = v3;
+v0.<io.netty.handler.codec.compression.Bzip2BlockDecompressor: int bwtStartPointer> = v4;
+v0.<io.netty.handler.codec.compression.Bzip2BlockDecompressor: io.netty.handler.codec.compression.Bzip2BitReader reader> = v5;
+return;
+}
+boolean decodeHuffmanData(io.netty.handler.codec.compression.Bzip2HuffmanStageDecoder)
+{
+byte[] v3, v4, v5;
+io.netty.handler.codec.compression.Bzip2BlockDecompressor v0;
+byte v19, v26, v27;
+int[] v8;
+boolean v14;
+io.netty.handler.codec.compression.Bzip2HuffmanStageDecoder v1;
+io.netty.handler.codec.compression.DecompressionException v18, v24, v32;
+short v20, v28;
+io.netty.handler.codec.compression.Bzip2BitReader v2;
+int v10, v11, v12, v13, v15, v16, v17, v21, v22, v23, v25, v29, v30, v31, v6, v7;
+java.lang.String v33;
+io.netty.handler.codec.compression.Bzip2MoveToFrontTable v9;
+v0 := @this: io.netty.handler.codec.compression.Bzip2BlockDecompressor;
+v1 := @parameter0: io.netty.handler.codec.compression.Bzip2HuffmanStageDecoder;
+v2 = v0.<io.netty.handler.codec.compression.Bzip2BlockDecompressor: io.netty.handler.codec.compression.Bzip2BitReader reader>;
+v3 = v0.<io.netty.handler.codec.compression.Bzip2BlockDecompressor: byte[] bwtBlock>;
+v4 = v0.<io.netty.handler.codec.compression.Bzip2BlockDecompressor: byte[] huffmanSymbolMap>;
+v5 = v0.<io.netty.handler.codec.compression.Bzip2BlockDecompressor: byte[] bwtBlock>;
+v6 = lengthof v5;
+v7 = v0.<io.netty.handler.codec.compression.Bzip2BlockDecompressor: int huffmanEndOfBlockSymbol>;
+v8 = v0.<io.netty.handler.codec.compression.Bzip2BlockDecompressor: int[] bwtByteCounts>;
+v9 = v0.<io.netty.handler.codec.compression.Bzip2BlockDecompressor: io.netty.handler.codec.compression.Bzip2MoveToFrontTable symbolMTF>;
+v10 = v0.<io.netty.handler.codec.compression.Bzip2BlockDecompressor: int bwtBlockLength>;
+v11 = v0.<io.netty.handler.codec.compression.Bzip2BlockDecompressor: int repeatCount>;
+v12 = v0.<io.netty.handler.codec.compression.Bzip2BlockDecompressor: int repeatIncrement>;
+v13 = v0.<io.netty.handler.codec.compression.Bzip2BlockDecompressor: int mtfValue>;
+label01:
+v14 = virtualinvoke v2.<io.netty.handler.codec.compression.Bzip2BitReader: boolean hasReadableBits(int)>(23);
+if v14 != 0 goto label02;
+v0.<io.netty.handler.codec.compression.Bzip2BlockDecompressor: int bwtBlockLength> = v10;
+v0.<io.netty.handler.codec.compression.Bzip2BlockDecompressor: int repeatCount> = v11;
+v0.<io.netty.handler.codec.compression.Bzip2BlockDecompressor: int repeatIncrement> = v12;
+v0.<io.netty.handler.codec.compression.Bzip2BlockDecompressor: int mtfValue> = v13;
+return 0;
+label02:
+v15 = virtualinvoke v1.<io.netty.handler.codec.compression.Bzip2HuffmanStageDecoder: int nextSymbol()>();
+if v15 != 0 goto label03;
+v11 = v11 + v12;
+v12 = v12 << 1;
+goto label01;
+label03:
+if v15 != 1 goto label04;
+v16 = v12 << 1;
+v11 = v11 + v16;
+v12 = v12 << 1;
+goto label01;
+label04:
+if v11 <= 0 goto label08;
+v17 = v10 + v11;
+if v17 <= v6 goto label05;
+v18 = new io.netty.handler.codec.compression.DecompressionException;
+specialinvoke v18.<io.netty.handler.codec.compression.DecompressionException: void <init>(java.lang.String)>("block exceeds declared block size");
+throw v18;
+label05:
+v19 = v4[v13];
+v20 = v19 & 255;
+v21 = v8[v20];
+v22 = v21 + v11;
+v8[v20] = v22;
+label06:
+v11 = v11 - 1;
+if v11 < 0 goto label07;
+v23 = v10;
+v10 = v10 + 1;
+v3[v23] = v19;
+goto label06;
+label07:
+v11 = 0;
+v12 = 1;
+label08:
+if v15 == v7 goto label10;
+if v10 < v6 goto label09;
+v24 = new io.netty.handler.codec.compression.DecompressionException;
+specialinvoke v24.<io.netty.handler.codec.compression.DecompressionException: void <init>(java.lang.String)>("block exceeds declared block size");
+throw v24;
+label09:
+v25 = v15 - 1;
+v26 = virtualinvoke v9.<io.netty.handler.codec.compression.Bzip2MoveToFrontTable: byte indexToFront(int)>(v25);
+v13 = v26 & 255;
+v27 = v4[v13];
+v28 = v27 & 255;
+v29 = v8[v28];
+v30 = v29 + 1;
+v8[v28] = v30;
+v31 = v10;
+v10 = v10 + 1;
+v3[v31] = v27;
+goto label01;
+label10:
+if v10 <= 900000 goto label11;
+v32 = new io.netty.handler.codec.compression.DecompressionException;
+v33 = dynamicinvoke "makeConcatWithConstants" <java.lang.String (int)>(v10) <java.lang.invoke.StringConcatFactory: java.lang.invoke.CallSite makeConcatWithConstants(java.lang.invoke.MethodHandles$Lookup,java.lang.String,java.lang.invoke.MethodType,java.lang.String,java.lang.Object[])>("block length exceeds max block length: \u0001 > 900000");
+specialinvoke v32.<io.netty.handler.codec.compression.DecompressionException: void <init>(java.lang.String)>(v33);
+throw v32;
+label11:
+v0.<io.netty.handler.codec.compression.Bzip2BlockDecompressor: int bwtBlockLength> = v10;
+specialinvoke v0.<io.netty.handler.codec.compression.Bzip2BlockDecompressor: void initialiseInverseBWT()>();
+return 1;
+}
+private void initialiseInverseBWT()
+{
+byte[] v2;
+io.netty.handler.codec.compression.DecompressionException v7;
+io.netty.handler.codec.compression.Bzip2BlockDecompressor v0;
+short v17;
+byte v16;
+int[] v4, v5, v8;
+int v1, v10, v11, v12, v13, v14, v15, v18, v19, v20, v21, v22, v3, v6, v9;
+v0 := @this: io.netty.handler.codec.compression.Bzip2BlockDecompressor;
+v1 = v0.<io.netty.handler.codec.compression.Bzip2BlockDecompressor: int bwtStartPointer>;
+v2 = v0.<io.netty.handler.codec.compression.Bzip2BlockDecompressor: byte[] bwtBlock>;
+v3 = v0.<io.netty.handler.codec.compression.Bzip2BlockDecompressor: int bwtBlockLength>;
+v4 = newarray (int)[v3];
+v5 = newarray (int)[256];
+if v1 < 0 goto label1;
+v6 = v0.<io.netty.handler.codec.compression.Bzip2BlockDecompressor: int bwtBlockLength>;
+if v1 < v6 goto label2;
+label1:
+v7 = new io.netty.handler.codec.compression.DecompressionException;
+specialinvoke v7.<io.netty.handler.codec.compression.DecompressionException: void <init>(java.lang.String)>("start pointer invalid");
+throw v7;
+label2:
+v8 = v0.<io.netty.handler.codec.compression.Bzip2BlockDecompressor: int[] bwtByteCounts>;
+staticinvoke <java.lang.System: void arraycopy(java.lang.Object,int,java.lang.Object,int,int)>(v8, 0, v5, 1, 255);
+v9 = 2;
+label3:
+if v9 > 255 goto label4;
+v10 = v5[v9];
+v11 = v9 - 1;
+v12 = v5[v11];
+v13 = v10 + v12;
+v5[v9] = v13;
+v9 = v9 + 1;
+goto label3;
+label4:
+v14 = 0;
+label5:
+v15 = v0.<io.netty.handler.codec.compression.Bzip2BlockDecompressor: int bwtBlockLength>;
+if v14 >= v15 goto label6;
+v16 = v2[v14];
+v17 = v16 & 255;
+v18 = v5[v17];
+v19 = v18 + 1;
+v5[v17] = v19;
+v20 = v14 << 8;
+v21 = v20 + v17;
+v4[v18] = v21;
+v14 = v14 + 1;
+goto label5;
+label6:
+v0.<io.netty.handler.codec.compression.Bzip2BlockDecompressor: int[] bwtMergedPointers> = v4;
+v22 = v4[v1];
+v0.<io.netty.handler.codec.compression.Bzip2BlockDecompressor: int bwtCurrentMergedPointer> = v22;
+return;
+}
+public int read()
+{
+io.netty.handler.codec.compression.Crc32 v12, v13, v7;
+io.netty.handler.codec.compression.Bzip2BlockDecompressor v0;
+int v1, v10, v11, v14, v15, v16, v2, v3, v4, v5, v6, v8, v9;
+v0 := @this: io.netty.handler.codec.compression.Bzip2BlockDecompressor;
+label1:
+v1 = v0.<io.netty.handler.codec.compression.Bzip2BlockDecompressor: int rleRepeat>;
+if v1 >= 1 goto label5;
+v2 = v0.<io.netty.handler.codec.compression.Bzip2BlockDecompressor: int bwtBytesDecoded>;
+v3 = v0.<io.netty.handler.codec.compression.Bzip2BlockDecompressor: int bwtBlockLength>;
+if v2 != v3 goto label2;
+v4 = (int) -1;
+return v4;
+label2:
+v5 = specialinvoke v0.<io.netty.handler.codec.compression.Bzip2BlockDecompressor: int decodeNextBWTByte()>();
+v6 = v0.<io.netty.handler.codec.compression.Bzip2BlockDecompressor: int rleLastDecodedByte>;
+if v5 == v6 goto label3;
+v0.<io.netty.handler.codec.compression.Bzip2BlockDecompressor: int rleLastDecodedByte> = v5;
+v0.<io.netty.handler.codec.compression.Bzip2BlockDecompressor: int rleRepeat> = 1;
+v0.<io.netty.handler.codec.compression.Bzip2BlockDecompressor: int rleAccumulator> = 1;
+v7 = v0.<io.netty.handler.codec.compression.Bzip2BlockDecompressor: io.netty.handler.codec.compression.Crc32 crc>;
+virtualinvoke v7.<io.netty.handler.codec.compression.Crc32: void updateCRC(int)>(v5);
+goto label1;
+label3:
+v8 = v0.<io.netty.handler.codec.compression.Bzip2BlockDecompressor: int rleAccumulator>;
+v9 = v8 + 1;
+v0.<io.netty.handler.codec.compression.Bzip2BlockDecompressor: int rleAccumulator> = v9;
+if v9 != 4 goto label4;
+v10 = specialinvoke v0.<io.netty.handler.codec.compression.Bzip2BlockDecompressor: int decodeNextBWTByte()>();
+v11 = v10 + 1;
+v0.<io.netty.handler.codec.compression.Bzip2BlockDecompressor: int rleRepeat> = v11;
+v0.<io.netty.handler.codec.compression.Bzip2BlockDecompressor: int rleAccumulator> = 0;
+v12 = v0.<io.netty.handler.codec.compression.Bzip2BlockDecompressor: io.netty.handler.codec.compression.Crc32 crc>;
+virtualinvoke v12.<io.netty.handler.codec.compression.Crc32: void updateCRC(int,int)>(v5, v11);
+goto label1;
+label4:
+v0.<io.netty.handler.codec.compression.Bzip2BlockDecompressor: int rleRepeat> = 1;
+v13 = v0.<io.netty.handler.codec.compression.Bzip2BlockDecompressor: io.netty.handler.codec.compression.Crc32 crc>;
+virtualinvoke v13.<io.netty.handler.codec.compression.Crc32: void updateCRC(int)>(v5);
+goto label1;
+label5:
+v14 = v0.<io.netty.handler.codec.compression.Bzip2BlockDecompressor: int rleRepeat>;
+v15 = v14 - 1;
+v0.<io.netty.handler.codec.compression.Bzip2BlockDecompressor: int rleRepeat> = v15;
+v16 = v0.<io.netty.handler.codec.compression.Bzip2BlockDecompressor: int rleLastDecodedByte>;
+return v16;
+}
+private int decodeNextBWTByte()
+{
+io.netty.handler.codec.compression.Bzip2BlockDecompressor v0;
+int[] v3;
+int v1, v10, v11, v12, v13, v14, v15, v2, v4, v5, v7, v8, v9;
+boolean v6;
+v0 := @this: io.netty.handler.codec.compression.Bzip2BlockDecompressor;
+v1 = v0.<io.netty.handler.codec.compression.Bzip2BlockDecompressor: int bwtCurrentMergedPointer>;
+v2 = v1 & 255;
+v3 = v0.<io.netty.handler.codec.compression.Bzip2BlockDecompressor: int[] bwtMergedPointers>;
+v4 = v1 >>> 8;
+v5 = v3[v4];
+v0.<io.netty.handler.codec.compression.Bzip2BlockDecompressor: int bwtCurrentMergedPointer> = v5;
+v6 = v0.<io.netty.handler.codec.compression.Bzip2BlockDecompressor: boolean blockRandomised>;
+if v6 == 0 goto label1;
+v7 = v0.<io.netty.handler.codec.compression.Bzip2BlockDecompressor: int randomCount>;
+v8 = v7 - 1;
+v0.<io.netty.handler.codec.compression.Bzip2BlockDecompressor: int randomCount> = v8;
+if v8 != 0 goto label1;
+v2 = v2 ^ 1;
+v9 = v0.<io.netty.handler.codec.compression.Bzip2BlockDecompressor: int randomIndex>;
+v10 = v9 + 1;
+v11 = v10 % 512;
+v0.<io.netty.handler.codec.compression.Bzip2BlockDecompressor: int randomIndex> = v11;
+v12 = v0.<io.netty.handler.codec.compression.Bzip2BlockDecompressor: int randomIndex>;
+v13 = staticinvoke <io.netty.handler.codec.compression.Bzip2Rand: int rNums(int)>(v12);
+v0.<io.netty.handler.codec.compression.Bzip2BlockDecompressor: int randomCount> = v13;
+label1:
+v14 = v0.<io.netty.handler.codec.compression.Bzip2BlockDecompressor: int bwtBytesDecoded>;
+v15 = v14 + 1;
+v0.<io.netty.handler.codec.compression.Bzip2BlockDecompressor: int bwtBytesDecoded> = v15;
+return v2;
+}
+public int blockLength()
+{
+int v1;
+io.netty.handler.codec.compression.Bzip2BlockDecompressor v0;
+v0 := @this: io.netty.handler.codec.compression.Bzip2BlockDecompressor;
+v1 = v0.<io.netty.handler.codec.compression.Bzip2BlockDecompressor: int bwtBlockLength>;
+return v1;
+}
+int checkCRC()
+{
+io.netty.handler.codec.compression.DecompressionException v4;
+io.netty.handler.codec.compression.Crc32 v1;
+int v2, v3;
+io.netty.handler.codec.compression.Bzip2BlockDecompressor v0;
+v0 := @this: io.netty.handler.codec.compression.Bzip2BlockDecompressor;
+v1 = v0.<io.netty.handler.codec.compression.Bzip2BlockDecompressor: io.netty.handler.codec.compression.Crc32 crc>;
+v2 = virtualinvoke v1.<io.netty.handler.codec.compression.Crc32: int getCRC()>();
+v3 = v0.<io.netty.handler.codec.compression.Bzip2BlockDecompressor: int blockCRC>;
+if v3 == v2 goto label1;
+v4 = new io.netty.handler.codec.compression.DecompressionException;
+specialinvoke v4.<io.netty.handler.codec.compression.DecompressionException: void <init>(java.lang.String)>("block CRC error");
+throw v4;
+label1:
+return v2;
+}
+}

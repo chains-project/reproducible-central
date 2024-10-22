@@ -1,0 +1,2601 @@
+public final class io.netty.util.internal.PlatformDependent extends java.lang.Object
+{
+private static final io.netty.util.internal.logging.InternalLogger logger;
+private static final java.util.regex.Pattern MAX_DIRECT_MEMORY_SIZE_ARG_PATTERN;
+private static final boolean MAYBE_SUPER_USER;
+private static final boolean CAN_ENABLE_TCP_NODELAY_BY_DEFAULT;
+private static final java.lang.Throwable UNSAFE_UNAVAILABILITY_CAUSE;
+private static final boolean DIRECT_BUFFER_PREFERRED;
+private static final long MAX_DIRECT_MEMORY;
+private static final int MPSC_CHUNK_SIZE;
+private static final int MIN_MAX_MPSC_CAPACITY;
+private static final int MAX_ALLOWED_MPSC_CAPACITY;
+private static final long BYTE_ARRAY_BASE_OFFSET;
+private static final java.io.File TMPDIR;
+private static final int BIT_MODE;
+private static final java.lang.String NORMALIZED_ARCH;
+private static final java.lang.String NORMALIZED_OS;
+private static final java.lang.String[] ALLOWED_LINUX_OS_CLASSIFIERS;
+private static final java.util.Set LINUX_OS_CLASSIFIERS;
+private static final boolean IS_WINDOWS;
+private static final boolean IS_OSX;
+private static final boolean IS_J9_JVM;
+private static final boolean IS_IVKVM_DOT_NET;
+private static final int ADDRESS_SIZE;
+private static final boolean USE_DIRECT_BUFFER_NO_CLEANER;
+private static final java.util.concurrent.atomic.AtomicLong DIRECT_MEMORY_COUNTER;
+private static final long DIRECT_MEMORY_LIMIT;
+private static final io.netty.util.internal.PlatformDependent$ThreadLocalRandomProvider RANDOM_PROVIDER;
+private static final io.netty.util.internal.Cleaner CLEANER;
+private static final int UNINITIALIZED_ARRAY_ALLOCATION_THRESHOLD;
+private static final java.lang.String[] OS_RELEASE_FILES;
+private static final java.lang.String LINUX_ID_PREFIX;
+private static final java.lang.String LINUX_ID_LIKE_PREFIX;
+public static final boolean BIG_ENDIAN_NATIVE_ORDER;
+private static final io.netty.util.internal.Cleaner NOOP;
+static final boolean $assertionsDisabled;
+static void addFilesystemOsClassifiers(java.util.Set, java.util.Set)
+{
+io.netty.util.internal.PlatformDependent$4 v7;
+java.util.Set v0, v1;
+java.lang.String[] v2;
+java.io.File v6;
+int v3, v4;
+java.lang.Object v8;
+java.lang.String v5;
+boolean v9;
+v0 := @parameter0: java.util.Set;
+v1 := @parameter1: java.util.Set;
+v2 = <io.netty.util.internal.PlatformDependent: java.lang.String[] OS_RELEASE_FILES>;
+v3 = lengthof v2;
+v4 = 0;
+label1:
+if v4 >= v3 goto label2;
+v5 = v2[v4];
+v6 = new java.io.File;
+specialinvoke v6.<java.io.File: void <init>(java.lang.String)>(v5);
+v7 = new io.netty.util.internal.PlatformDependent$4;
+specialinvoke v7.<io.netty.util.internal.PlatformDependent$4: void <init>(java.io.File,java.util.Set,java.util.Set,java.lang.String)>(v6, v0, v1, v5);
+v8 = staticinvoke <java.security.AccessController: java.lang.Object doPrivileged(java.security.PrivilegedAction)>(v7);
+v9 = virtualinvoke v8.<java.lang.Boolean: boolean booleanValue()>();
+if v9 != 0 goto label2;
+v4 = v4 + 1;
+goto label1;
+label2:
+return;
+}
+static boolean addPropertyOsClassifiers(java.util.Set, java.util.Set)
+{
+java.util.Set v0, v1;
+java.lang.String[] v14, v4;
+java.lang.IllegalArgumentException v6, v9;
+int v11, v12, v5, v8;
+java.lang.String v10, v13, v2, v7;
+boolean v3;
+v0 := @parameter0: java.util.Set;
+v1 := @parameter1: java.util.Set;
+v2 = staticinvoke <io.netty.util.internal.SystemPropertyUtil: java.lang.String get(java.lang.String)>("io.netty.osClassifiers");
+if v2 != null goto label1;
+return 0;
+label1:
+v3 = virtualinvoke v2.<java.lang.String: boolean isEmpty()>();
+if v3 == 0 goto label2;
+return 1;
+label2:
+v4 = virtualinvoke v2.<java.lang.String: java.lang.String[] split(java.lang.String)>(",");
+v5 = lengthof v4;
+if v5 != 0 goto label3;
+v6 = new java.lang.IllegalArgumentException;
+v7 = dynamicinvoke "makeConcatWithConstants" <java.lang.String (java.lang.String,java.lang.String)>("io.netty.osClassifiers", v2) <java.lang.invoke.StringConcatFactory: java.lang.invoke.CallSite makeConcatWithConstants(java.lang.invoke.MethodHandles$Lookup,java.lang.String,java.lang.invoke.MethodType,java.lang.String,java.lang.Object[])>("\u0001 property is not empty, but contains no classifiers: \u0001");
+specialinvoke v6.<java.lang.IllegalArgumentException: void <init>(java.lang.String)>(v7);
+throw v6;
+label3:
+v8 = lengthof v4;
+if v8 <= 2 goto label4;
+v9 = new java.lang.IllegalArgumentException;
+v10 = dynamicinvoke "makeConcatWithConstants" <java.lang.String (java.lang.String,java.lang.String)>("io.netty.osClassifiers", v2) <java.lang.invoke.StringConcatFactory: java.lang.invoke.CallSite makeConcatWithConstants(java.lang.invoke.MethodHandles$Lookup,java.lang.String,java.lang.invoke.MethodType,java.lang.String,java.lang.Object[])>("\u0001 property contains more than 2 classifiers: \u0001");
+specialinvoke v9.<java.lang.IllegalArgumentException: void <init>(java.lang.String)>(v10);
+throw v9;
+label4:
+v11 = lengthof v4;
+v12 = 0;
+label5:
+if v12 >= v11 goto label6;
+v13 = v4[v12];
+v14 = newarray (java.lang.String)[1];
+v14[0] = v13;
+staticinvoke <io.netty.util.internal.PlatformDependent: void addClassifier(java.util.Set,java.util.Set,java.lang.String[])>(v0, v1, v14);
+v12 = v12 + 1;
+goto label5;
+label6:
+return 1;
+}
+public static long byteArrayBaseOffset()
+{
+long v0;
+v0 = <io.netty.util.internal.PlatformDependent: long BYTE_ARRAY_BASE_OFFSET>;
+return v0;
+}
+public static boolean hasDirectBufferNoCleanerConstructor()
+{
+boolean v0;
+v0 = staticinvoke <io.netty.util.internal.PlatformDependent0: boolean hasDirectBufferNoCleanerConstructor()>();
+return v0;
+}
+public static byte[] allocateUninitializedArray(int)
+{
+byte[] v3;
+int v0, v1, v2;
+v0 := @parameter0: int;
+v1 = <io.netty.util.internal.PlatformDependent: int UNINITIALIZED_ARRAY_ALLOCATION_THRESHOLD>;
+if v1 < 0 goto label1;
+v2 = <io.netty.util.internal.PlatformDependent: int UNINITIALIZED_ARRAY_ALLOCATION_THRESHOLD>;
+if v2 <= v0 goto label2;
+label1:
+v3 = newarray (byte)[v0];
+goto label3;
+label2:
+v3 = staticinvoke <io.netty.util.internal.PlatformDependent0: byte[] allocateUninitializedArray(int)>(v0);
+label3:
+return v3;
+}
+public static boolean isAndroid()
+{
+boolean v0;
+v0 = staticinvoke <io.netty.util.internal.PlatformDependent0: boolean isAndroid()>();
+return v0;
+}
+public static boolean isWindows()
+{
+boolean v0;
+v0 = <io.netty.util.internal.PlatformDependent: boolean IS_WINDOWS>;
+return v0;
+}
+public static boolean isOsx()
+{
+boolean v0;
+v0 = <io.netty.util.internal.PlatformDependent: boolean IS_OSX>;
+return v0;
+}
+public static boolean maybeSuperUser()
+{
+boolean v0;
+v0 = <io.netty.util.internal.PlatformDependent: boolean MAYBE_SUPER_USER>;
+return v0;
+}
+public static int javaVersion()
+{
+int v0;
+v0 = staticinvoke <io.netty.util.internal.PlatformDependent0: int javaVersion()>();
+return v0;
+}
+public static boolean canEnableTcpNoDelayByDefault()
+{
+boolean v0;
+v0 = <io.netty.util.internal.PlatformDependent: boolean CAN_ENABLE_TCP_NODELAY_BY_DEFAULT>;
+return v0;
+}
+public static boolean hasUnsafe()
+{
+java.lang.Throwable v0;
+boolean v1;
+v0 = <io.netty.util.internal.PlatformDependent: java.lang.Throwable UNSAFE_UNAVAILABILITY_CAUSE>;
+if v0 != null goto label1;
+v1 = 1;
+goto label2;
+label1:
+v1 = 0;
+label2:
+return v1;
+}
+public static java.lang.Throwable getUnsafeUnavailabilityCause()
+{
+java.lang.Throwable v0;
+v0 = <io.netty.util.internal.PlatformDependent: java.lang.Throwable UNSAFE_UNAVAILABILITY_CAUSE>;
+return v0;
+}
+public static boolean isUnaligned()
+{
+boolean v0;
+v0 = staticinvoke <io.netty.util.internal.PlatformDependent0: boolean isUnaligned()>();
+return v0;
+}
+public static boolean directBufferPreferred()
+{
+boolean v0;
+v0 = <io.netty.util.internal.PlatformDependent: boolean DIRECT_BUFFER_PREFERRED>;
+return v0;
+}
+public static long maxDirectMemory()
+{
+long v0;
+v0 = <io.netty.util.internal.PlatformDependent: long DIRECT_MEMORY_LIMIT>;
+return v0;
+}
+public static long usedDirectMemory()
+{
+java.util.concurrent.atomic.AtomicLong v0, v1;
+long v2;
+v0 = <io.netty.util.internal.PlatformDependent: java.util.concurrent.atomic.AtomicLong DIRECT_MEMORY_COUNTER>;
+if v0 == null goto label1;
+v1 = <io.netty.util.internal.PlatformDependent: java.util.concurrent.atomic.AtomicLong DIRECT_MEMORY_COUNTER>;
+v2 = virtualinvoke v1.<java.util.concurrent.atomic.AtomicLong: long get()>();
+goto label2;
+label1:
+v2 = -1L;
+label2:
+return v2;
+}
+public static java.io.File tmpdir()
+{
+java.io.File v0;
+v0 = <io.netty.util.internal.PlatformDependent: java.io.File TMPDIR>;
+return v0;
+}
+public static int bitMode()
+{
+int v0;
+v0 = <io.netty.util.internal.PlatformDependent: int BIT_MODE>;
+return v0;
+}
+public static int addressSize()
+{
+int v0;
+v0 = <io.netty.util.internal.PlatformDependent: int ADDRESS_SIZE>;
+return v0;
+}
+public static long allocateMemory(long)
+{
+long v0, v1;
+v0 := @parameter0: long;
+v1 = staticinvoke <io.netty.util.internal.PlatformDependent0: long allocateMemory(long)>(v0);
+return v1;
+}
+public static void freeMemory(long)
+{
+long v0;
+v0 := @parameter0: long;
+staticinvoke <io.netty.util.internal.PlatformDependent0: void freeMemory(long)>(v0);
+return;
+}
+public static long reallocateMemory(long, long)
+{
+long v0, v1, v2;
+v0 := @parameter0: long;
+v1 := @parameter1: long;
+v2 = staticinvoke <io.netty.util.internal.PlatformDependent0: long reallocateMemory(long,long)>(v0, v1);
+return v2;
+}
+public static void throwException(java.lang.Throwable)
+{
+java.lang.Throwable v0;
+boolean v1;
+v0 := @parameter0: java.lang.Throwable;
+v1 = staticinvoke <io.netty.util.internal.PlatformDependent: boolean hasUnsafe()>();
+if v1 == 0 goto label1;
+staticinvoke <io.netty.util.internal.PlatformDependent0: void throwException(java.lang.Throwable)>(v0);
+goto label2;
+label1:
+staticinvoke <io.netty.util.internal.PlatformDependent: void throwException0(java.lang.Throwable)>(v0);
+label2:
+return;
+}
+private static void throwException0(java.lang.Throwable) throws java.lang.Throwable
+{
+java.lang.Throwable v0;
+v0 := @parameter0: java.lang.Throwable;
+throw v0;
+}
+public static java.util.concurrent.ConcurrentMap newConcurrentHashMap()
+{
+java.util.concurrent.ConcurrentHashMap v0;
+v0 = new java.util.concurrent.ConcurrentHashMap;
+specialinvoke v0.<java.util.concurrent.ConcurrentHashMap: void <init>()>();
+return v0;
+}
+public static io.netty.util.internal.LongCounter newLongCounter()
+{
+int v0;
+io.netty.util.internal.LongAdderCounter v1;
+io.netty.util.internal.PlatformDependent$AtomicLongCounter v2;
+v0 = staticinvoke <io.netty.util.internal.PlatformDependent: int javaVersion()>();
+if v0 < 8 goto label1;
+v1 = new io.netty.util.internal.LongAdderCounter;
+specialinvoke v1.<io.netty.util.internal.LongAdderCounter: void <init>()>();
+return v1;
+label1:
+v2 = new io.netty.util.internal.PlatformDependent$AtomicLongCounter;
+specialinvoke v2.<io.netty.util.internal.PlatformDependent$AtomicLongCounter: void <init>()>();
+return v2;
+}
+public static java.util.concurrent.ConcurrentMap newConcurrentHashMap(int)
+{
+int v0;
+java.util.concurrent.ConcurrentHashMap v1;
+v0 := @parameter0: int;
+v1 = new java.util.concurrent.ConcurrentHashMap;
+specialinvoke v1.<java.util.concurrent.ConcurrentHashMap: void <init>(int)>(v0);
+return v1;
+}
+public static java.util.concurrent.ConcurrentMap newConcurrentHashMap(int, float)
+{
+int v0;
+java.util.concurrent.ConcurrentHashMap v2;
+float v1;
+v0 := @parameter0: int;
+v1 := @parameter1: float;
+v2 = new java.util.concurrent.ConcurrentHashMap;
+specialinvoke v2.<java.util.concurrent.ConcurrentHashMap: void <init>(int,float)>(v0, v1);
+return v2;
+}
+public static java.util.concurrent.ConcurrentMap newConcurrentHashMap(int, float, int)
+{
+int v0, v2;
+java.util.concurrent.ConcurrentHashMap v3;
+float v1;
+v0 := @parameter0: int;
+v1 := @parameter1: float;
+v2 := @parameter2: int;
+v3 = new java.util.concurrent.ConcurrentHashMap;
+specialinvoke v3.<java.util.concurrent.ConcurrentHashMap: void <init>(int,float,int)>(v0, v1, v2);
+return v3;
+}
+public static java.util.concurrent.ConcurrentMap newConcurrentHashMap(java.util.Map)
+{
+java.util.concurrent.ConcurrentHashMap v1;
+java.util.Map v0;
+v0 := @parameter0: java.util.Map;
+v1 = new java.util.concurrent.ConcurrentHashMap;
+specialinvoke v1.<java.util.concurrent.ConcurrentHashMap: void <init>(java.util.Map)>(v0);
+return v1;
+}
+public static void freeDirectBuffer(java.nio.ByteBuffer)
+{
+io.netty.util.internal.Cleaner v1;
+java.nio.ByteBuffer v0;
+v0 := @parameter0: java.nio.ByteBuffer;
+v1 = <io.netty.util.internal.PlatformDependent: io.netty.util.internal.Cleaner CLEANER>;
+interfaceinvoke v1.<io.netty.util.internal.Cleaner: void freeDirectBuffer(java.nio.ByteBuffer)>(v0);
+return;
+}
+public static long directBufferAddress(java.nio.ByteBuffer)
+{
+long v1;
+java.nio.ByteBuffer v0;
+v0 := @parameter0: java.nio.ByteBuffer;
+v1 = staticinvoke <io.netty.util.internal.PlatformDependent0: long directBufferAddress(java.nio.ByteBuffer)>(v0);
+return v1;
+}
+public static java.nio.ByteBuffer directBuffer(long, int)
+{
+java.lang.UnsupportedOperationException v4;
+int v1;
+long v0;
+java.nio.ByteBuffer v3;
+boolean v2;
+v0 := @parameter0: long;
+v1 := @parameter1: int;
+v2 = staticinvoke <io.netty.util.internal.PlatformDependent0: boolean hasDirectBufferNoCleanerConstructor()>();
+if v2 == 0 goto label1;
+v3 = staticinvoke <io.netty.util.internal.PlatformDependent0: java.nio.ByteBuffer newDirectBuffer(long,int)>(v0, v1);
+return v3;
+label1:
+v4 = new java.lang.UnsupportedOperationException;
+specialinvoke v4.<java.lang.UnsupportedOperationException: void <init>(java.lang.String)>("sun.misc.Unsafe or java.nio.DirectByteBuffer.<init>(long, int) not available");
+throw v4;
+}
+public static java.lang.Object getObject(java.lang.Object, long)
+{
+java.lang.Object v0, v2;
+long v1;
+v0 := @parameter0: java.lang.Object;
+v1 := @parameter1: long;
+v2 = staticinvoke <io.netty.util.internal.PlatformDependent0: java.lang.Object getObject(java.lang.Object,long)>(v0, v1);
+return v2;
+}
+public static int getInt(java.lang.Object, long)
+{
+int v2;
+java.lang.Object v0;
+long v1;
+v0 := @parameter0: java.lang.Object;
+v1 := @parameter1: long;
+v2 = staticinvoke <io.netty.util.internal.PlatformDependent0: int getInt(java.lang.Object,long)>(v0, v1);
+return v2;
+}
+static void safeConstructPutInt(java.lang.Object, long, int)
+{
+int v2;
+java.lang.Object v0;
+long v1;
+v0 := @parameter0: java.lang.Object;
+v1 := @parameter1: long;
+v2 := @parameter2: int;
+staticinvoke <io.netty.util.internal.PlatformDependent0: void safeConstructPutInt(java.lang.Object,long,int)>(v0, v1, v2);
+return;
+}
+public static int getIntVolatile(long)
+{
+int v1;
+long v0;
+v0 := @parameter0: long;
+v1 = staticinvoke <io.netty.util.internal.PlatformDependent0: int getIntVolatile(long)>(v0);
+return v1;
+}
+public static void putIntOrdered(long, int)
+{
+int v1;
+long v0;
+v0 := @parameter0: long;
+v1 := @parameter1: int;
+staticinvoke <io.netty.util.internal.PlatformDependent0: void putIntOrdered(long,int)>(v0, v1);
+return;
+}
+public static byte getByte(long)
+{
+long v0;
+byte v1;
+v0 := @parameter0: long;
+v1 = staticinvoke <io.netty.util.internal.PlatformDependent0: byte getByte(long)>(v0);
+return v1;
+}
+public static short getShort(long)
+{
+long v0;
+short v1;
+v0 := @parameter0: long;
+v1 = staticinvoke <io.netty.util.internal.PlatformDependent0: short getShort(long)>(v0);
+return v1;
+}
+public static int getInt(long)
+{
+int v1;
+long v0;
+v0 := @parameter0: long;
+v1 = staticinvoke <io.netty.util.internal.PlatformDependent0: int getInt(long)>(v0);
+return v1;
+}
+public static long getLong(long)
+{
+long v0, v1;
+v0 := @parameter0: long;
+v1 = staticinvoke <io.netty.util.internal.PlatformDependent0: long getLong(long)>(v0);
+return v1;
+}
+public static byte getByte(byte[], int)
+{
+int v1;
+byte[] v0;
+byte v2;
+v0 := @parameter0: byte[];
+v1 := @parameter1: int;
+v2 = staticinvoke <io.netty.util.internal.PlatformDependent0: byte getByte(byte[],int)>(v0, v1);
+return v2;
+}
+public static byte getByte(byte[], long)
+{
+byte[] v0;
+long v1;
+byte v2;
+v0 := @parameter0: byte[];
+v1 := @parameter1: long;
+v2 = staticinvoke <io.netty.util.internal.PlatformDependent0: byte getByte(byte[],long)>(v0, v1);
+return v2;
+}
+public static short getShort(byte[], int)
+{
+int v1;
+byte[] v0;
+short v2;
+v0 := @parameter0: byte[];
+v1 := @parameter1: int;
+v2 = staticinvoke <io.netty.util.internal.PlatformDependent0: short getShort(byte[],int)>(v0, v1);
+return v2;
+}
+public static int getInt(byte[], int)
+{
+int v1, v2;
+byte[] v0;
+v0 := @parameter0: byte[];
+v1 := @parameter1: int;
+v2 = staticinvoke <io.netty.util.internal.PlatformDependent0: int getInt(byte[],int)>(v0, v1);
+return v2;
+}
+public static int getInt(int[], long)
+{
+int v2;
+long v1;
+int[] v0;
+v0 := @parameter0: int[];
+v1 := @parameter1: long;
+v2 = staticinvoke <io.netty.util.internal.PlatformDependent0: int getInt(int[],long)>(v0, v1);
+return v2;
+}
+public static long getLong(byte[], int)
+{
+int v1;
+byte[] v0;
+long v2;
+v0 := @parameter0: byte[];
+v1 := @parameter1: int;
+v2 = staticinvoke <io.netty.util.internal.PlatformDependent0: long getLong(byte[],int)>(v0, v1);
+return v2;
+}
+public static long getLong(long[], long)
+{
+long v1, v2;
+long[] v0;
+v0 := @parameter0: long[];
+v1 := @parameter1: long;
+v2 = staticinvoke <io.netty.util.internal.PlatformDependent0: long getLong(long[],long)>(v0, v1);
+return v2;
+}
+private static long getLongSafe(byte[], int)
+{
+byte[] v0;
+byte v11, v16, v21, v26, v3, v31, v36, v39, v42, v47, v52, v57, v6, v62, v67, v72;
+long v12, v13, v14, v17, v18, v19, v22, v23, v24, v27, v28, v29, v32, v33, v34, v37, v38, v4, v40, v43, v44, v45, v48, v49, v50, v53, v54, v55, v58, v59, v60, v63, v64, v65, v68, v69, v7, v70, v73, v74, v8, v9;
+boolean v2;
+int v1, v10, v15, v20, v25, v30, v35, v41, v46, v5, v51, v56, v61, v66, v71;
+v0 := @parameter0: byte[];
+v1 := @parameter1: int;
+v2 = <io.netty.util.internal.PlatformDependent: boolean BIG_ENDIAN_NATIVE_ORDER>;
+if v2 == 0 goto label1;
+v3 = v0[v1];
+v4 = v3 << 56;
+v5 = v1 + 1;
+v6 = v0[v5];
+v7 = v6 & 255L;
+v8 = v7 << 48;
+v9 = v4 | v8;
+v10 = v1 + 2;
+v11 = v0[v10];
+v12 = v11 & 255L;
+v13 = v12 << 40;
+v14 = v9 | v13;
+v15 = v1 + 3;
+v16 = v0[v15];
+v17 = v16 & 255L;
+v18 = v17 << 32;
+v19 = v14 | v18;
+v20 = v1 + 4;
+v21 = v0[v20];
+v22 = v21 & 255L;
+v23 = v22 << 24;
+v24 = v19 | v23;
+v25 = v1 + 5;
+v26 = v0[v25];
+v27 = v26 & 255L;
+v28 = v27 << 16;
+v29 = v24 | v28;
+v30 = v1 + 6;
+v31 = v0[v30];
+v32 = v31 & 255L;
+v33 = v32 << 8;
+v34 = v29 | v33;
+v35 = v1 + 7;
+v36 = v0[v35];
+v37 = v36 & 255L;
+v38 = v34 | v37;
+return v38;
+label1:
+v39 = v0[v1];
+v40 = v39 & 255L;
+v41 = v1 + 1;
+v42 = v0[v41];
+v43 = v42 & 255L;
+v44 = v43 << 8;
+v45 = v40 | v44;
+v46 = v1 + 2;
+v47 = v0[v46];
+v48 = v47 & 255L;
+v49 = v48 << 16;
+v50 = v45 | v49;
+v51 = v1 + 3;
+v52 = v0[v51];
+v53 = v52 & 255L;
+v54 = v53 << 24;
+v55 = v50 | v54;
+v56 = v1 + 4;
+v57 = v0[v56];
+v58 = v57 & 255L;
+v59 = v58 << 32;
+v60 = v55 | v59;
+v61 = v1 + 5;
+v62 = v0[v61];
+v63 = v62 & 255L;
+v64 = v63 << 40;
+v65 = v60 | v64;
+v66 = v1 + 6;
+v67 = v0[v66];
+v68 = v67 & 255L;
+v69 = v68 << 48;
+v70 = v65 | v69;
+v71 = v1 + 7;
+v72 = v0[v71];
+v73 = v72 << 56;
+v74 = v70 | v73;
+return v74;
+}
+private static int getIntSafe(byte[], int)
+{
+byte[] v0;
+byte v11, v16, v19, v22, v27, v3, v32, v6;
+boolean v2;
+short v12, v17, v20, v23, v28, v7;
+int v1, v10, v13, v14, v15, v18, v21, v24, v25, v26, v29, v30, v31, v33, v34, v4, v5, v8, v9;
+v0 := @parameter0: byte[];
+v1 := @parameter1: int;
+v2 = <io.netty.util.internal.PlatformDependent: boolean BIG_ENDIAN_NATIVE_ORDER>;
+if v2 == 0 goto label1;
+v3 = v0[v1];
+v4 = v3 << 24;
+v5 = v1 + 1;
+v6 = v0[v5];
+v7 = v6 & 255;
+v8 = v7 << 16;
+v9 = v4 | v8;
+v10 = v1 + 2;
+v11 = v0[v10];
+v12 = v11 & 255;
+v13 = v12 << 8;
+v14 = v9 | v13;
+v15 = v1 + 3;
+v16 = v0[v15];
+v17 = v16 & 255;
+v18 = v14 | v17;
+return v18;
+label1:
+v19 = v0[v1];
+v20 = v19 & 255;
+v21 = v1 + 1;
+v22 = v0[v21];
+v23 = v22 & 255;
+v24 = v23 << 8;
+v25 = v20 | v24;
+v26 = v1 + 2;
+v27 = v0[v26];
+v28 = v27 & 255;
+v29 = v28 << 16;
+v30 = v25 | v29;
+v31 = v1 + 3;
+v32 = v0[v31];
+v33 = v32 << 24;
+v34 = v30 | v33;
+return v34;
+}
+private static short getShortSafe(byte[], int)
+{
+byte[] v0;
+short v10, v7;
+byte v12, v3, v6, v9;
+int v1, v11, v13, v14, v4, v5, v8;
+boolean v2;
+v0 := @parameter0: byte[];
+v1 := @parameter1: int;
+v2 = <io.netty.util.internal.PlatformDependent: boolean BIG_ENDIAN_NATIVE_ORDER>;
+if v2 == 0 goto label1;
+v3 = v0[v1];
+v4 = v3 << 8;
+v5 = v1 + 1;
+v6 = v0[v5];
+v7 = v6 & 255;
+v8 = v4 | v7;
+return v8;
+label1:
+v9 = v0[v1];
+v10 = v9 & 255;
+v11 = v1 + 1;
+v12 = v0[v11];
+v13 = v12 << 8;
+v14 = v10 | v13;
+return v14;
+}
+private static int hashCodeAsciiCompute(java.lang.CharSequence, int, int)
+{
+int v1, v10, v11, v12, v13, v14, v15, v16, v17, v2, v4, v5, v6, v7, v8, v9;
+boolean v3;
+java.lang.CharSequence v0;
+v0 := @parameter0: java.lang.CharSequence;
+v1 := @parameter1: int;
+v2 := @parameter2: int;
+v3 = <io.netty.util.internal.PlatformDependent: boolean BIG_ENDIAN_NATIVE_ORDER>;
+if v3 == 0 goto label1;
+v4 = v2 * -862048943;
+v5 = v1 + 4;
+v6 = staticinvoke <io.netty.util.internal.PlatformDependent: int hashCodeAsciiSanitizeInt(java.lang.CharSequence,int)>(v0, v5);
+v7 = v6 * 461845907;
+v8 = v4 + v7;
+v9 = staticinvoke <io.netty.util.internal.PlatformDependent: int hashCodeAsciiSanitizeInt(java.lang.CharSequence,int)>(v0, v1);
+v10 = v8 + v9;
+return v10;
+label1:
+v11 = v2 * -862048943;
+v12 = staticinvoke <io.netty.util.internal.PlatformDependent: int hashCodeAsciiSanitizeInt(java.lang.CharSequence,int)>(v0, v1);
+v13 = v12 * 461845907;
+v14 = v11 + v13;
+v15 = v1 + 4;
+v16 = staticinvoke <io.netty.util.internal.PlatformDependent: int hashCodeAsciiSanitizeInt(java.lang.CharSequence,int)>(v0, v15);
+v17 = v14 + v16;
+return v17;
+}
+private static int hashCodeAsciiSanitizeInt(java.lang.CharSequence, int)
+{
+boolean v2;
+java.lang.CharSequence v0;
+int v1, v10, v11, v14, v15, v18, v19, v20, v23, v24, v27, v28, v29, v3, v32, v33, v36, v6, v9;
+char v12, v13, v16, v17, v21, v22, v25, v26, v30, v31, v34, v35, v4, v5, v7, v8;
+v0 := @parameter0: java.lang.CharSequence;
+v1 := @parameter1: int;
+v2 = <io.netty.util.internal.PlatformDependent: boolean BIG_ENDIAN_NATIVE_ORDER>;
+if v2 == 0 goto label1;
+v3 = v1 + 3;
+v4 = interfaceinvoke v0.<java.lang.CharSequence: char charAt(int)>(v3);
+v5 = v4 & 31;
+v6 = v1 + 2;
+v7 = interfaceinvoke v0.<java.lang.CharSequence: char charAt(int)>(v6);
+v8 = v7 & 31;
+v9 = v8 << 8;
+v10 = v5 | v9;
+v11 = v1 + 1;
+v12 = interfaceinvoke v0.<java.lang.CharSequence: char charAt(int)>(v11);
+v13 = v12 & 31;
+v14 = v13 << 16;
+v15 = v10 | v14;
+v16 = interfaceinvoke v0.<java.lang.CharSequence: char charAt(int)>(v1);
+v17 = v16 & 31;
+v18 = v17 << 24;
+v19 = v15 | v18;
+return v19;
+label1:
+v20 = v1 + 3;
+v21 = interfaceinvoke v0.<java.lang.CharSequence: char charAt(int)>(v20);
+v22 = v21 & 31;
+v23 = v22 << 24;
+v24 = v1 + 2;
+v25 = interfaceinvoke v0.<java.lang.CharSequence: char charAt(int)>(v24);
+v26 = v25 & 31;
+v27 = v26 << 16;
+v28 = v23 | v27;
+v29 = v1 + 1;
+v30 = interfaceinvoke v0.<java.lang.CharSequence: char charAt(int)>(v29);
+v31 = v30 & 31;
+v32 = v31 << 8;
+v33 = v28 | v32;
+v34 = interfaceinvoke v0.<java.lang.CharSequence: char charAt(int)>(v1);
+v35 = v34 & 31;
+v36 = v33 | v35;
+return v36;
+}
+private static int hashCodeAsciiSanitizeShort(java.lang.CharSequence, int)
+{
+int v1, v10, v13, v16, v3, v8, v9;
+boolean v2;
+java.lang.CharSequence v0;
+char v11, v12, v14, v15, v4, v5, v6, v7;
+v0 := @parameter0: java.lang.CharSequence;
+v1 := @parameter1: int;
+v2 = <io.netty.util.internal.PlatformDependent: boolean BIG_ENDIAN_NATIVE_ORDER>;
+if v2 == 0 goto label1;
+v3 = v1 + 1;
+v4 = interfaceinvoke v0.<java.lang.CharSequence: char charAt(int)>(v3);
+v5 = v4 & 31;
+v6 = interfaceinvoke v0.<java.lang.CharSequence: char charAt(int)>(v1);
+v7 = v6 & 31;
+v8 = v7 << 8;
+v9 = v5 | v8;
+return v9;
+label1:
+v10 = v1 + 1;
+v11 = interfaceinvoke v0.<java.lang.CharSequence: char charAt(int)>(v10);
+v12 = v11 & 31;
+v13 = v12 << 8;
+v14 = interfaceinvoke v0.<java.lang.CharSequence: char charAt(int)>(v1);
+v15 = v14 & 31;
+v16 = v13 | v15;
+return v16;
+}
+private static int hashCodeAsciiSanitizeByte(char)
+{
+char v0, v1;
+v0 := @parameter0: char;
+v1 = v0 & 31;
+return v1;
+}
+public static void putByte(long, byte)
+{
+long v0;
+byte v1;
+v0 := @parameter0: long;
+v1 := @parameter1: byte;
+staticinvoke <io.netty.util.internal.PlatformDependent0: void putByte(long,byte)>(v0, v1);
+return;
+}
+public static void putShort(long, short)
+{
+long v0;
+short v1;
+v0 := @parameter0: long;
+v1 := @parameter1: short;
+staticinvoke <io.netty.util.internal.PlatformDependent0: void putShort(long,short)>(v0, v1);
+return;
+}
+public static void putInt(long, int)
+{
+int v1;
+long v0;
+v0 := @parameter0: long;
+v1 := @parameter1: int;
+staticinvoke <io.netty.util.internal.PlatformDependent0: void putInt(long,int)>(v0, v1);
+return;
+}
+public static void putLong(long, long)
+{
+long v0, v1;
+v0 := @parameter0: long;
+v1 := @parameter1: long;
+staticinvoke <io.netty.util.internal.PlatformDependent0: void putLong(long,long)>(v0, v1);
+return;
+}
+public static void putByte(byte[], int, byte)
+{
+int v1;
+byte[] v0;
+byte v2;
+v0 := @parameter0: byte[];
+v1 := @parameter1: int;
+v2 := @parameter2: byte;
+staticinvoke <io.netty.util.internal.PlatformDependent0: void putByte(byte[],int,byte)>(v0, v1, v2);
+return;
+}
+public static void putByte(java.lang.Object, long, byte)
+{
+java.lang.Object v0;
+long v1;
+byte v2;
+v0 := @parameter0: java.lang.Object;
+v1 := @parameter1: long;
+v2 := @parameter2: byte;
+staticinvoke <io.netty.util.internal.PlatformDependent0: void putByte(java.lang.Object,long,byte)>(v0, v1, v2);
+return;
+}
+public static void putShort(byte[], int, short)
+{
+int v1;
+byte[] v0;
+short v2;
+v0 := @parameter0: byte[];
+v1 := @parameter1: int;
+v2 := @parameter2: short;
+staticinvoke <io.netty.util.internal.PlatformDependent0: void putShort(byte[],int,short)>(v0, v1, v2);
+return;
+}
+public static void putInt(byte[], int, int)
+{
+int v1, v2;
+byte[] v0;
+v0 := @parameter0: byte[];
+v1 := @parameter1: int;
+v2 := @parameter2: int;
+staticinvoke <io.netty.util.internal.PlatformDependent0: void putInt(byte[],int,int)>(v0, v1, v2);
+return;
+}
+public static void putLong(byte[], int, long)
+{
+int v1;
+byte[] v0;
+long v2;
+v0 := @parameter0: byte[];
+v1 := @parameter1: int;
+v2 := @parameter2: long;
+staticinvoke <io.netty.util.internal.PlatformDependent0: void putLong(byte[],int,long)>(v0, v1, v2);
+return;
+}
+public static void putObject(java.lang.Object, long, java.lang.Object)
+{
+java.lang.Object v0, v2;
+long v1;
+v0 := @parameter0: java.lang.Object;
+v1 := @parameter1: long;
+v2 := @parameter2: java.lang.Object;
+staticinvoke <io.netty.util.internal.PlatformDependent0: void putObject(java.lang.Object,long,java.lang.Object)>(v0, v1, v2);
+return;
+}
+public static long objectFieldOffset(java.lang.reflect.Field)
+{
+long v1;
+java.lang.reflect.Field v0;
+v0 := @parameter0: java.lang.reflect.Field;
+v1 = staticinvoke <io.netty.util.internal.PlatformDependent0: long objectFieldOffset(java.lang.reflect.Field)>(v0);
+return v1;
+}
+public static void copyMemory(long, long, long)
+{
+long v0, v1, v2;
+v0 := @parameter0: long;
+v1 := @parameter1: long;
+v2 := @parameter2: long;
+staticinvoke <io.netty.util.internal.PlatformDependent0: void copyMemory(long,long,long)>(v0, v1, v2);
+return;
+}
+public static void copyMemory(byte[], int, long, long)
+{
+byte[] v0;
+int v1;
+long v2, v3, v4, v5;
+v0 := @parameter0: byte[];
+v1 := @parameter1: int;
+v2 := @parameter2: long;
+v3 := @parameter3: long;
+v4 = <io.netty.util.internal.PlatformDependent: long BYTE_ARRAY_BASE_OFFSET>;
+v5 = v4 + v1;
+staticinvoke <io.netty.util.internal.PlatformDependent0: void copyMemory(java.lang.Object,long,java.lang.Object,long,long)>(v0, v5, null, v2, v3);
+return;
+}
+public static void copyMemory(byte[], int, byte[], int, long)
+{
+byte[] v0, v2;
+long v4, v5, v6, v7, v8;
+int v1, v3;
+v0 := @parameter0: byte[];
+v1 := @parameter1: int;
+v2 := @parameter2: byte[];
+v3 := @parameter3: int;
+v4 := @parameter4: long;
+v5 = <io.netty.util.internal.PlatformDependent: long BYTE_ARRAY_BASE_OFFSET>;
+v6 = v5 + v1;
+v7 = <io.netty.util.internal.PlatformDependent: long BYTE_ARRAY_BASE_OFFSET>;
+v8 = v7 + v3;
+staticinvoke <io.netty.util.internal.PlatformDependent0: void copyMemory(java.lang.Object,long,java.lang.Object,long,long)>(v0, v6, v2, v8, v4);
+return;
+}
+public static void copyMemory(long, byte[], int, long)
+{
+byte[] v1;
+int v2;
+long v0, v3, v4, v5;
+v0 := @parameter0: long;
+v1 := @parameter1: byte[];
+v2 := @parameter2: int;
+v3 := @parameter3: long;
+v4 = <io.netty.util.internal.PlatformDependent: long BYTE_ARRAY_BASE_OFFSET>;
+v5 = v4 + v2;
+staticinvoke <io.netty.util.internal.PlatformDependent0: void copyMemory(java.lang.Object,long,java.lang.Object,long,long)>(null, v0, v1, v5, v3);
+return;
+}
+public static void setMemory(byte[], int, long, byte)
+{
+byte[] v0;
+byte v3;
+int v1;
+long v2, v4, v5;
+v0 := @parameter0: byte[];
+v1 := @parameter1: int;
+v2 := @parameter2: long;
+v3 := @parameter3: byte;
+v4 = <io.netty.util.internal.PlatformDependent: long BYTE_ARRAY_BASE_OFFSET>;
+v5 = v4 + v1;
+staticinvoke <io.netty.util.internal.PlatformDependent0: void setMemory(java.lang.Object,long,long,byte)>(v0, v5, v2, v3);
+return;
+}
+public static void setMemory(long, long, byte)
+{
+long v0, v1;
+byte v2;
+v0 := @parameter0: long;
+v1 := @parameter1: long;
+v2 := @parameter2: byte;
+staticinvoke <io.netty.util.internal.PlatformDependent0: void setMemory(long,long,byte)>(v0, v1, v2);
+return;
+}
+public static java.nio.ByteBuffer allocateDirectNoCleaner(int)
+{
+java.lang.Throwable v5;
+int v0;
+java.lang.AssertionError v3;
+java.nio.ByteBuffer v4;
+boolean v1, v2;
+v0 := @parameter0: int;
+v1 = <io.netty.util.internal.PlatformDependent: boolean $assertionsDisabled>;
+if v1 != 0 goto label1;
+v2 = <io.netty.util.internal.PlatformDependent: boolean USE_DIRECT_BUFFER_NO_CLEANER>;
+if v2 != 0 goto label1;
+v3 = new java.lang.AssertionError;
+specialinvoke v3.<java.lang.AssertionError: void <init>()>();
+throw v3;
+label1:
+staticinvoke <io.netty.util.internal.PlatformDependent: void incrementMemoryCounter(int)>(v0);
+label2:
+v4 = staticinvoke <io.netty.util.internal.PlatformDependent0: java.nio.ByteBuffer allocateDirectNoCleaner(int)>(v0);
+label3:
+return v4;
+label4:
+v5 := @caughtexception;
+staticinvoke <io.netty.util.internal.PlatformDependent: void decrementMemoryCounter(int)>(v0);
+staticinvoke <io.netty.util.internal.PlatformDependent: void throwException(java.lang.Throwable)>(v5);
+return null;
+catch java.lang.Throwable from label2 to label3 with label4;
+}
+public static java.nio.ByteBuffer reallocateDirectNoCleaner(java.nio.ByteBuffer, int)
+{
+java.lang.Throwable v8;
+java.lang.AssertionError v4;
+java.nio.ByteBuffer v0, v7;
+int v1, v5, v6;
+boolean v2, v3;
+v0 := @parameter0: java.nio.ByteBuffer;
+v1 := @parameter1: int;
+v2 = <io.netty.util.internal.PlatformDependent: boolean $assertionsDisabled>;
+if v2 != 0 goto label1;
+v3 = <io.netty.util.internal.PlatformDependent: boolean USE_DIRECT_BUFFER_NO_CLEANER>;
+if v3 != 0 goto label1;
+v4 = new java.lang.AssertionError;
+specialinvoke v4.<java.lang.AssertionError: void <init>()>();
+throw v4;
+label1:
+v5 = virtualinvoke v0.<java.nio.ByteBuffer: int capacity()>();
+v6 = v1 - v5;
+staticinvoke <io.netty.util.internal.PlatformDependent: void incrementMemoryCounter(int)>(v6);
+label2:
+v7 = staticinvoke <io.netty.util.internal.PlatformDependent0: java.nio.ByteBuffer reallocateDirectNoCleaner(java.nio.ByteBuffer,int)>(v0, v1);
+label3:
+return v7;
+label4:
+v8 := @caughtexception;
+staticinvoke <io.netty.util.internal.PlatformDependent: void decrementMemoryCounter(int)>(v6);
+staticinvoke <io.netty.util.internal.PlatformDependent: void throwException(java.lang.Throwable)>(v8);
+return null;
+catch java.lang.Throwable from label2 to label3 with label4;
+}
+public static void freeDirectNoCleaner(java.nio.ByteBuffer)
+{
+int v4;
+long v5;
+java.lang.AssertionError v3;
+java.nio.ByteBuffer v0;
+boolean v1, v2;
+v0 := @parameter0: java.nio.ByteBuffer;
+v1 = <io.netty.util.internal.PlatformDependent: boolean $assertionsDisabled>;
+if v1 != 0 goto label1;
+v2 = <io.netty.util.internal.PlatformDependent: boolean USE_DIRECT_BUFFER_NO_CLEANER>;
+if v2 != 0 goto label1;
+v3 = new java.lang.AssertionError;
+specialinvoke v3.<java.lang.AssertionError: void <init>()>();
+throw v3;
+label1:
+v4 = virtualinvoke v0.<java.nio.ByteBuffer: int capacity()>();
+v5 = staticinvoke <io.netty.util.internal.PlatformDependent0: long directBufferAddress(java.nio.ByteBuffer)>(v0);
+staticinvoke <io.netty.util.internal.PlatformDependent0: void freeMemory(long)>(v5);
+staticinvoke <io.netty.util.internal.PlatformDependent: void decrementMemoryCounter(int)>(v4);
+return;
+}
+public static boolean hasAlignDirectByteBuffer()
+{
+boolean v0, v1, v2;
+v0 = staticinvoke <io.netty.util.internal.PlatformDependent: boolean hasUnsafe()>();
+if v0 != 0 goto label1;
+v1 = staticinvoke <io.netty.util.internal.PlatformDependent0: boolean hasAlignSliceMethod()>();
+if v1 == 0 goto label2;
+label1:
+v2 = 1;
+goto label3;
+label2:
+v2 = 0;
+label3:
+return v2;
+}
+public static java.nio.ByteBuffer alignDirectBuffer(java.nio.ByteBuffer, int)
+{
+java.lang.UnsupportedOperationException v11;
+long v7, v8, v9;
+java.lang.IllegalArgumentException v3;
+java.nio.ByteBuffer v0, v10, v5;
+int v1;
+boolean v2, v4, v6;
+v0 := @parameter0: java.nio.ByteBuffer;
+v1 := @parameter1: int;
+v2 = virtualinvoke v0.<java.nio.ByteBuffer: boolean isDirect()>();
+if v2 != 0 goto label1;
+v3 = new java.lang.IllegalArgumentException;
+specialinvoke v3.<java.lang.IllegalArgumentException: void <init>(java.lang.String)>("Cannot get aligned slice of non-direct byte buffer.");
+throw v3;
+label1:
+v4 = staticinvoke <io.netty.util.internal.PlatformDependent0: boolean hasAlignSliceMethod()>();
+if v4 == 0 goto label2;
+v5 = staticinvoke <io.netty.util.internal.PlatformDependent0: java.nio.ByteBuffer alignSlice(java.nio.ByteBuffer,int)>(v0, v1);
+return v5;
+label2:
+v6 = staticinvoke <io.netty.util.internal.PlatformDependent: boolean hasUnsafe()>();
+if v6 == 0 goto label3;
+v7 = staticinvoke <io.netty.util.internal.PlatformDependent: long directBufferAddress(java.nio.ByteBuffer)>(v0);
+v8 = staticinvoke <io.netty.util.internal.PlatformDependent: long align(long,int)>(v7, v1);
+v9 = v8 - v7;
+virtualinvoke v0.<java.nio.ByteBuffer: java.nio.ByteBuffer position(int)>(v9);
+v10 = virtualinvoke v0.<java.nio.ByteBuffer: java.nio.ByteBuffer slice()>();
+return v10;
+label3:
+v11 = new java.lang.UnsupportedOperationException;
+specialinvoke v11.<java.lang.UnsupportedOperationException: void <init>(java.lang.String)>("Cannot align direct buffer. Needs either Unsafe or ByteBuffer.alignSlice method available.");
+throw v11;
+}
+public static long align(long, int)
+{
+int v1;
+long v0, v2;
+v0 := @parameter0: long;
+v1 := @parameter1: int;
+v2 = staticinvoke <io.netty.util.internal.shaded.org.jctools.util.Pow2: long align(long,int)>(v0, v1);
+return v2;
+}
+private static void incrementMemoryCounter(int)
+{
+long v10, v3, v4, v9;
+java.util.concurrent.atomic.AtomicLong v1, v2, v6;
+byte v5;
+int v0, v7;
+java.lang.String v11;
+io.netty.util.internal.OutOfDirectMemoryError v8;
+v0 := @parameter0: int;
+v1 = <io.netty.util.internal.PlatformDependent: java.util.concurrent.atomic.AtomicLong DIRECT_MEMORY_COUNTER>;
+if v1 == null goto label1;
+v2 = <io.netty.util.internal.PlatformDependent: java.util.concurrent.atomic.AtomicLong DIRECT_MEMORY_COUNTER>;
+v3 = virtualinvoke v2.<java.util.concurrent.atomic.AtomicLong: long addAndGet(long)>(v0);
+v4 = <io.netty.util.internal.PlatformDependent: long DIRECT_MEMORY_LIMIT>;
+v5 = v3 cmp v4;
+if v5 <= 0 goto label1;
+v6 = <io.netty.util.internal.PlatformDependent: java.util.concurrent.atomic.AtomicLong DIRECT_MEMORY_COUNTER>;
+v7 = neg v0;
+virtualinvoke v6.<java.util.concurrent.atomic.AtomicLong: long addAndGet(long)>(v7);
+v8 = new io.netty.util.internal.OutOfDirectMemoryError;
+v9 = v3 - v0;
+v10 = <io.netty.util.internal.PlatformDependent: long DIRECT_MEMORY_LIMIT>;
+v11 = dynamicinvoke "makeConcatWithConstants" <java.lang.String (int,long,long)>(v0, v9, v10) <java.lang.invoke.StringConcatFactory: java.lang.invoke.CallSite makeConcatWithConstants(java.lang.invoke.MethodHandles$Lookup,java.lang.String,java.lang.invoke.MethodType,java.lang.String,java.lang.Object[])>("failed to allocate \u0001 byte(s) of direct memory (used: \u0001, max: \u0001)");
+specialinvoke v8.<io.netty.util.internal.OutOfDirectMemoryError: void <init>(java.lang.String)>(v11);
+throw v8;
+label1:
+return;
+}
+private static void decrementMemoryCounter(int)
+{
+long v4;
+java.lang.AssertionError v7;
+java.util.concurrent.atomic.AtomicLong v1, v2;
+byte v6;
+int v0, v3;
+boolean v5;
+v0 := @parameter0: int;
+v1 = <io.netty.util.internal.PlatformDependent: java.util.concurrent.atomic.AtomicLong DIRECT_MEMORY_COUNTER>;
+if v1 == null goto label1;
+v2 = <io.netty.util.internal.PlatformDependent: java.util.concurrent.atomic.AtomicLong DIRECT_MEMORY_COUNTER>;
+v3 = neg v0;
+v4 = virtualinvoke v2.<java.util.concurrent.atomic.AtomicLong: long addAndGet(long)>(v3);
+v5 = <io.netty.util.internal.PlatformDependent: boolean $assertionsDisabled>;
+if v5 != 0 goto label1;
+v6 = v4 cmp 0L;
+if v6 >= 0 goto label1;
+v7 = new java.lang.AssertionError;
+specialinvoke v7.<java.lang.AssertionError: void <init>()>();
+throw v7;
+label1:
+return;
+}
+public static boolean useDirectBufferNoCleaner()
+{
+boolean v0;
+v0 = <io.netty.util.internal.PlatformDependent: boolean USE_DIRECT_BUFFER_NO_CLEANER>;
+return v0;
+}
+public static boolean equals(byte[], int, byte[], int, int)
+{
+byte[] v0, v2;
+int v1, v3, v4;
+boolean v5, v6, v7;
+v0 := @parameter0: byte[];
+v1 := @parameter1: int;
+v2 := @parameter2: byte[];
+v3 := @parameter3: int;
+v4 := @parameter4: int;
+v5 = staticinvoke <io.netty.util.internal.PlatformDependent: boolean hasUnsafe()>();
+if v5 == 0 goto label1;
+v6 = staticinvoke <io.netty.util.internal.PlatformDependent0: boolean unalignedAccess()>();
+if v6 != 0 goto label2;
+label1:
+v7 = staticinvoke <io.netty.util.internal.PlatformDependent: boolean equalsSafe(byte[],int,byte[],int,int)>(v0, v1, v2, v3, v4);
+goto label3;
+label2:
+v7 = staticinvoke <io.netty.util.internal.PlatformDependent0: boolean equals(byte[],int,byte[],int,int)>(v0, v1, v2, v3, v4);
+label3:
+return v7;
+}
+public static boolean isZero(byte[], int, int)
+{
+byte[] v0;
+int v1, v2;
+boolean v3, v4, v5;
+v0 := @parameter0: byte[];
+v1 := @parameter1: int;
+v2 := @parameter2: int;
+v3 = staticinvoke <io.netty.util.internal.PlatformDependent: boolean hasUnsafe()>();
+if v3 == 0 goto label1;
+v4 = staticinvoke <io.netty.util.internal.PlatformDependent0: boolean unalignedAccess()>();
+if v4 != 0 goto label2;
+label1:
+v5 = staticinvoke <io.netty.util.internal.PlatformDependent: boolean isZeroSafe(byte[],int,int)>(v0, v1, v2);
+goto label3;
+label2:
+v5 = staticinvoke <io.netty.util.internal.PlatformDependent0: boolean isZero(byte[],int,int)>(v0, v1, v2);
+label3:
+return v5;
+}
+public static int equalsConstantTime(byte[], int, byte[], int, int)
+{
+byte[] v0, v2;
+int v1, v3, v4, v7;
+boolean v5, v6;
+v0 := @parameter0: byte[];
+v1 := @parameter1: int;
+v2 := @parameter2: byte[];
+v3 := @parameter3: int;
+v4 := @parameter4: int;
+v5 = staticinvoke <io.netty.util.internal.PlatformDependent: boolean hasUnsafe()>();
+if v5 == 0 goto label1;
+v6 = staticinvoke <io.netty.util.internal.PlatformDependent0: boolean unalignedAccess()>();
+if v6 != 0 goto label2;
+label1:
+v7 = staticinvoke <io.netty.util.internal.ConstantTimeUtils: int equalsConstantTime(byte[],int,byte[],int,int)>(v0, v1, v2, v3, v4);
+goto label3;
+label2:
+v7 = staticinvoke <io.netty.util.internal.PlatformDependent0: int equalsConstantTime(byte[],int,byte[],int,int)>(v0, v1, v2, v3, v4);
+label3:
+return v7;
+}
+public static int hashCodeAscii(byte[], int, int)
+{
+byte[] v0;
+int v1, v2, v5;
+boolean v3, v4;
+v0 := @parameter0: byte[];
+v1 := @parameter1: int;
+v2 := @parameter2: int;
+v3 = staticinvoke <io.netty.util.internal.PlatformDependent: boolean hasUnsafe()>();
+if v3 == 0 goto label1;
+v4 = staticinvoke <io.netty.util.internal.PlatformDependent0: boolean unalignedAccess()>();
+if v4 != 0 goto label2;
+label1:
+v5 = staticinvoke <io.netty.util.internal.PlatformDependent: int hashCodeAsciiSafe(byte[],int,int)>(v0, v1, v2);
+goto label3;
+label2:
+v5 = staticinvoke <io.netty.util.internal.PlatformDependent0: int hashCodeAscii(byte[],int,int)>(v0, v1, v2);
+label3:
+return v5;
+}
+public static int hashCodeAscii(java.lang.CharSequence)
+{
+boolean v10, v11, v12, v13, v17, v18, v19, v20, v21, v28, v29, v30, v9;
+java.lang.CharSequence v0;
+int v1, v14, v16, v2, v22, v23, v24, v25, v26, v27, v3, v31, v32, v33, v34, v4, v5, v6, v7, v8;
+char v15;
+v0 := @parameter0: java.lang.CharSequence;
+v1 = interfaceinvoke v0.<java.lang.CharSequence: int length()>();
+v2 = v1 & 7;
+v3 = -1028477387;
+if v1 < 32 goto label02;
+v4 = v1 - 8;
+label01:
+if v4 < v2 goto label03;
+v3 = staticinvoke <io.netty.util.internal.PlatformDependent: int hashCodeAsciiCompute(java.lang.CharSequence,int,int)>(v0, v4, v3);
+v4 = v4 - 8;
+goto label01;
+label02:
+if v1 < 8 goto label03;
+v5 = v1 - 8;
+v3 = staticinvoke <io.netty.util.internal.PlatformDependent: int hashCodeAsciiCompute(java.lang.CharSequence,int,int)>(v0, v5, -1028477387);
+if v1 < 16 goto label03;
+v6 = v1 - 16;
+v3 = staticinvoke <io.netty.util.internal.PlatformDependent: int hashCodeAsciiCompute(java.lang.CharSequence,int,int)>(v0, v6, v3);
+if v1 < 24 goto label03;
+v7 = v1 - 24;
+v3 = staticinvoke <io.netty.util.internal.PlatformDependent: int hashCodeAsciiCompute(java.lang.CharSequence,int,int)>(v0, v7, v3);
+label03:
+if v2 != 0 goto label04;
+return v3;
+label04:
+v8 = 0;
+if v2 == 2 goto label05;
+v9 = 1;
+goto label06;
+label05:
+v9 = 0;
+label06:
+if v2 == 4 goto label07;
+v10 = 1;
+goto label08;
+label07:
+v10 = 0;
+label08:
+v11 = v9 & v10;
+if v2 == 6 goto label09;
+v12 = 1;
+goto label10;
+label09:
+v12 = 0;
+label10:
+v13 = v11 & v12;
+if v13 == 0 goto label11;
+v14 = v3 * -862048943;
+v15 = interfaceinvoke v0.<java.lang.CharSequence: char charAt(int)>(0);
+v16 = staticinvoke <io.netty.util.internal.PlatformDependent: int hashCodeAsciiSanitizeByte(char)>(v15);
+v3 = v14 + v16;
+v8 = 1;
+label11:
+if v2 == 1 goto label12;
+v17 = 1;
+goto label13;
+label12:
+v17 = 0;
+label13:
+if v2 == 4 goto label14;
+v18 = 1;
+goto label15;
+label14:
+v18 = 0;
+label15:
+v19 = v17 & v18;
+if v2 == 5 goto label16;
+v20 = 1;
+goto label17;
+label16:
+v20 = 0;
+label17:
+v21 = v19 & v20;
+if v21 == 0 goto label20;
+v22 = v3;
+if v8 != 0 goto label18;
+v23 = -862048943;
+goto label19;
+label18:
+v23 = 461845907;
+label19:
+v24 = v22 * v23;
+v25 = staticinvoke <io.netty.util.internal.PlatformDependent: int hashCodeAsciiSanitizeShort(java.lang.CharSequence,int)>(v0, v8);
+v26 = staticinvoke <io.netty.util.internal.PlatformDependent0: int hashCodeAsciiSanitize(int)>(v25);
+v3 = v24 + v26;
+v8 = v8 + 2;
+label20:
+if v2 < 4 goto label27;
+v27 = v3;
+if v8 != 0 goto label21;
+v28 = 1;
+goto label22;
+label21:
+v28 = 0;
+label22:
+if v8 != 3 goto label23;
+v29 = 1;
+goto label24;
+label23:
+v29 = 0;
+label24:
+v30 = v28 | v29;
+if v30 == 0 goto label25;
+v31 = -862048943;
+goto label26;
+label25:
+v31 = 461845907;
+label26:
+v32 = v27 * v31;
+v33 = staticinvoke <io.netty.util.internal.PlatformDependent: int hashCodeAsciiSanitizeInt(java.lang.CharSequence,int)>(v0, v8);
+v34 = v32 + v33;
+return v34;
+label27:
+return v3;
+}
+public static java.util.Queue newMpscQueue()
+{
+java.util.Queue v0;
+v0 = staticinvoke <io.netty.util.internal.PlatformDependent$Mpsc: java.util.Queue newMpscQueue()>();
+return v0;
+}
+public static java.util.Queue newMpscQueue(int)
+{
+int v0;
+java.util.Queue v1;
+v0 := @parameter0: int;
+v1 = staticinvoke <io.netty.util.internal.PlatformDependent$Mpsc: java.util.Queue newMpscQueue(int)>(v0);
+return v1;
+}
+public static java.util.Queue newMpscQueue(int, int)
+{
+int v0, v1;
+java.util.Queue v2;
+v0 := @parameter0: int;
+v1 := @parameter1: int;
+v2 = staticinvoke <io.netty.util.internal.PlatformDependent$Mpsc: java.util.Queue newChunkedMpscQueue(int,int)>(v0, v1);
+return v2;
+}
+public static java.util.Queue newSpscQueue()
+{
+io.netty.util.internal.shaded.org.jctools.queues.atomic.SpscLinkedAtomicQueue v3;
+io.netty.util.internal.shaded.org.jctools.queues.SpscLinkedQueue v1;
+java.util.AbstractQueue v2;
+boolean v0;
+v0 = staticinvoke <io.netty.util.internal.PlatformDependent: boolean hasUnsafe()>();
+if v0 == 0 goto label1;
+v1 = new io.netty.util.internal.shaded.org.jctools.queues.SpscLinkedQueue;
+v2 = v1;
+specialinvoke v1.<io.netty.util.internal.shaded.org.jctools.queues.SpscLinkedQueue: void <init>()>();
+goto label2;
+label1:
+v3 = new io.netty.util.internal.shaded.org.jctools.queues.atomic.SpscLinkedAtomicQueue;
+v2 = v3;
+specialinvoke v3.<io.netty.util.internal.shaded.org.jctools.queues.atomic.SpscLinkedAtomicQueue: void <init>()>();
+label2:
+return v2;
+}
+public static java.util.Queue newFixedMpscQueue(int)
+{
+io.netty.util.internal.shaded.org.jctools.queues.MpscArrayQueue v2;
+int v0;
+io.netty.util.internal.shaded.org.jctools.queues.atomic.MpscAtomicArrayQueue v4;
+java.util.AbstractQueue v3;
+boolean v1;
+v0 := @parameter0: int;
+v1 = staticinvoke <io.netty.util.internal.PlatformDependent: boolean hasUnsafe()>();
+if v1 == 0 goto label1;
+v2 = new io.netty.util.internal.shaded.org.jctools.queues.MpscArrayQueue;
+v3 = v2;
+specialinvoke v2.<io.netty.util.internal.shaded.org.jctools.queues.MpscArrayQueue: void <init>(int)>(v0);
+goto label2;
+label1:
+v4 = new io.netty.util.internal.shaded.org.jctools.queues.atomic.MpscAtomicArrayQueue;
+v3 = v4;
+specialinvoke v4.<io.netty.util.internal.shaded.org.jctools.queues.atomic.MpscAtomicArrayQueue: void <init>(int)>(v0);
+label2:
+return v3;
+}
+public static java.lang.ClassLoader getClassLoader(java.lang.Class)
+{
+java.lang.Class v0;
+java.lang.ClassLoader v1;
+v0 := @parameter0: java.lang.Class;
+v1 = staticinvoke <io.netty.util.internal.PlatformDependent0: java.lang.ClassLoader getClassLoader(java.lang.Class)>(v0);
+return v1;
+}
+public static java.lang.ClassLoader getContextClassLoader()
+{
+java.lang.ClassLoader v0;
+v0 = staticinvoke <io.netty.util.internal.PlatformDependent0: java.lang.ClassLoader getContextClassLoader()>();
+return v0;
+}
+public static java.lang.ClassLoader getSystemClassLoader()
+{
+java.lang.ClassLoader v0;
+v0 = staticinvoke <io.netty.util.internal.PlatformDependent0: java.lang.ClassLoader getSystemClassLoader()>();
+return v0;
+}
+public static java.util.Deque newConcurrentDeque()
+{
+int v0;
+java.util.concurrent.LinkedBlockingDeque v1;
+java.util.concurrent.ConcurrentLinkedDeque v2;
+v0 = staticinvoke <io.netty.util.internal.PlatformDependent: int javaVersion()>();
+if v0 >= 7 goto label1;
+v1 = new java.util.concurrent.LinkedBlockingDeque;
+specialinvoke v1.<java.util.concurrent.LinkedBlockingDeque: void <init>()>();
+return v1;
+label1:
+v2 = new java.util.concurrent.ConcurrentLinkedDeque;
+specialinvoke v2.<java.util.concurrent.ConcurrentLinkedDeque: void <init>()>();
+return v2;
+}
+public static java.util.Random threadLocalRandom()
+{
+io.netty.util.internal.PlatformDependent$ThreadLocalRandomProvider v0;
+java.util.Random v1;
+v0 = <io.netty.util.internal.PlatformDependent: io.netty.util.internal.PlatformDependent$ThreadLocalRandomProvider RANDOM_PROVIDER>;
+v1 = interfaceinvoke v0.<io.netty.util.internal.PlatformDependent$ThreadLocalRandomProvider: java.util.Random current()>();
+return v1;
+}
+private static boolean isWindows0()
+{
+io.netty.util.internal.logging.InternalLogger v3;
+java.lang.String v0, v1;
+boolean v2;
+v0 = "windows";
+v1 = <io.netty.util.internal.PlatformDependent: java.lang.String NORMALIZED_OS>;
+v2 = virtualinvoke v0.<java.lang.String: boolean equals(java.lang.Object)>(v1);
+if v2 == 0 goto label1;
+v3 = <io.netty.util.internal.PlatformDependent: io.netty.util.internal.logging.InternalLogger logger>;
+interfaceinvoke v3.<io.netty.util.internal.logging.InternalLogger: void debug(java.lang.String)>("Platform: Windows");
+label1:
+return v2;
+}
+private static boolean isOsx0()
+{
+io.netty.util.internal.logging.InternalLogger v3;
+java.lang.String v0, v1;
+boolean v2;
+v0 = "osx";
+v1 = <io.netty.util.internal.PlatformDependent: java.lang.String NORMALIZED_OS>;
+v2 = virtualinvoke v0.<java.lang.String: boolean equals(java.lang.Object)>(v1);
+if v2 == 0 goto label1;
+v3 = <io.netty.util.internal.PlatformDependent: io.netty.util.internal.logging.InternalLogger logger>;
+interfaceinvoke v3.<io.netty.util.internal.logging.InternalLogger: void debug(java.lang.String)>("Platform: MacOS");
+label1:
+return v2;
+}
+private static boolean maybeSuperUser0()
+{
+java.lang.String v0, v2, v4, v6;
+boolean v1, v3, v5, v7, v8;
+v0 = staticinvoke <io.netty.util.internal.SystemPropertyUtil: java.lang.String get(java.lang.String)>("user.name");
+v1 = staticinvoke <io.netty.util.internal.PlatformDependent: boolean isWindows()>();
+if v1 == 0 goto label1;
+v2 = "Administrator";
+v3 = virtualinvoke v2.<java.lang.String: boolean equals(java.lang.Object)>(v0);
+return v3;
+label1:
+v4 = "root";
+v5 = virtualinvoke v4.<java.lang.String: boolean equals(java.lang.Object)>(v0);
+if v5 != 0 goto label2;
+v6 = "toor";
+v7 = virtualinvoke v6.<java.lang.String: boolean equals(java.lang.Object)>(v0);
+if v7 == 0 goto label3;
+label2:
+v8 = 1;
+goto label4;
+label3:
+v8 = 0;
+label4:
+return v8;
+}
+private static java.lang.Throwable unsafeUnavailabilityCause0()
+{
+java.lang.Throwable v10, v11, v6;
+java.lang.UnsupportedOperationException v13, v2, v5;
+io.netty.util.internal.logging.InternalLogger v1, v12, v4, v8;
+java.lang.String v9;
+boolean v0, v3, v7;
+v0 = staticinvoke <io.netty.util.internal.PlatformDependent: boolean isAndroid()>();
+if v0 == 0 goto label1;
+v1 = <io.netty.util.internal.PlatformDependent: io.netty.util.internal.logging.InternalLogger logger>;
+interfaceinvoke v1.<io.netty.util.internal.logging.InternalLogger: void debug(java.lang.String)>("sun.misc.Unsafe: unavailable (Android)");
+v2 = new java.lang.UnsupportedOperationException;
+specialinvoke v2.<java.lang.UnsupportedOperationException: void <init>(java.lang.String)>("sun.misc.Unsafe: unavailable (Android)");
+return v2;
+label1:
+v3 = staticinvoke <io.netty.util.internal.PlatformDependent: boolean isIkvmDotNet()>();
+if v3 == 0 goto label2;
+v4 = <io.netty.util.internal.PlatformDependent: io.netty.util.internal.logging.InternalLogger logger>;
+interfaceinvoke v4.<io.netty.util.internal.logging.InternalLogger: void debug(java.lang.String)>("sun.misc.Unsafe: unavailable (IKVM.NET)");
+v5 = new java.lang.UnsupportedOperationException;
+specialinvoke v5.<java.lang.UnsupportedOperationException: void <init>(java.lang.String)>("sun.misc.Unsafe: unavailable (IKVM.NET)");
+return v5;
+label2:
+v6 = staticinvoke <io.netty.util.internal.PlatformDependent0: java.lang.Throwable getUnsafeUnavailabilityCause()>();
+if v6 == null goto label3;
+return v6;
+label3:
+v7 = staticinvoke <io.netty.util.internal.PlatformDependent0: boolean hasUnsafe()>();
+v8 = <io.netty.util.internal.PlatformDependent: io.netty.util.internal.logging.InternalLogger logger>;
+if v7 == 0 goto label4;
+v9 = "available";
+goto label5;
+label4:
+v9 = "unavailable";
+label5:
+interfaceinvoke v8.<io.netty.util.internal.logging.InternalLogger: void debug(java.lang.String,java.lang.Object)>("sun.misc.Unsafe: {}", v9);
+if v7 == 0 goto label6;
+v10 = null;
+goto label7;
+label6:
+v10 = staticinvoke <io.netty.util.internal.PlatformDependent0: java.lang.Throwable getUnsafeUnavailabilityCause()>();
+label7:
+return v10;
+label8:
+v11 := @caughtexception;
+v12 = <io.netty.util.internal.PlatformDependent: io.netty.util.internal.logging.InternalLogger logger>;
+interfaceinvoke v12.<io.netty.util.internal.logging.InternalLogger: void trace(java.lang.String,java.lang.Throwable)>("Could not determine if Unsafe is available", v11);
+v13 = new java.lang.UnsupportedOperationException;
+specialinvoke v13.<java.lang.UnsupportedOperationException: void <init>(java.lang.String,java.lang.Throwable)>("Could not determine if Unsafe is available", v11);
+return v13;
+catch java.lang.Throwable from label3 to label7 with label8;
+}
+public static boolean isJ9Jvm()
+{
+boolean v0;
+v0 = <io.netty.util.internal.PlatformDependent: boolean IS_J9_JVM>;
+return v0;
+}
+private static boolean isJ9Jvm0()
+{
+java.lang.String v0, v1;
+boolean v2, v3, v4;
+v0 = staticinvoke <io.netty.util.internal.SystemPropertyUtil: java.lang.String get(java.lang.String,java.lang.String)>("java.vm.name", "");
+v1 = virtualinvoke v0.<java.lang.String: java.lang.String toLowerCase()>();
+v2 = virtualinvoke v1.<java.lang.String: boolean startsWith(java.lang.String)>("ibm j9");
+if v2 != 0 goto label1;
+v3 = virtualinvoke v1.<java.lang.String: boolean startsWith(java.lang.String)>("eclipse openj9");
+if v3 == 0 goto label2;
+label1:
+v4 = 1;
+goto label3;
+label2:
+v4 = 0;
+label3:
+return v4;
+}
+public static boolean isIkvmDotNet()
+{
+boolean v0;
+v0 = <io.netty.util.internal.PlatformDependent: boolean IS_IVKVM_DOT_NET>;
+return v0;
+}
+private static boolean isIkvmDotNet0()
+{
+java.util.Locale v1;
+java.lang.String v0, v2;
+boolean v3;
+v0 = staticinvoke <io.netty.util.internal.SystemPropertyUtil: java.lang.String get(java.lang.String,java.lang.String)>("java.vm.name", "");
+v1 = <java.util.Locale: java.util.Locale US>;
+v2 = virtualinvoke v0.<java.lang.String: java.lang.String toUpperCase(java.util.Locale)>(v1);
+v3 = virtualinvoke v2.<java.lang.String: boolean equals(java.lang.Object)>("IKVM.NET");
+return v3;
+}
+public static long estimateMaxDirectMemory()
+{
+java.util.regex.Matcher v27;
+byte v12, v33;
+java.lang.Long v36, v38;
+java.lang.reflect.Method v16, v20, v8;
+boolean v28, v4, v5;
+java.lang.Runtime v34;
+io.netty.util.internal.logging.InternalLogger v35, v37;
+java.lang.ClassLoader v1;
+java.util.regex.Pattern v25;
+java.lang.Throwable v11, v32;
+java.lang.Object[] v17, v21, v9;
+long v0;
+int v23, v24;
+java.lang.String v2, v29, v3, v30;
+java.lang.Class[] v15, v19, v7;
+char v31;
+java.lang.Class v13, v14, v6;
+java.lang.Object v10, v18, v22, v26;
+v0 = 0L;
+v1 = null;
+label01:
+v1 = staticinvoke <io.netty.util.internal.PlatformDependent: java.lang.ClassLoader getSystemClassLoader()>();
+v2 = staticinvoke <io.netty.util.internal.SystemPropertyUtil: java.lang.String get(java.lang.String,java.lang.String)>("java.vm.name", "");
+v3 = virtualinvoke v2.<java.lang.String: java.lang.String toLowerCase()>();
+v4 = virtualinvoke v3.<java.lang.String: boolean startsWith(java.lang.String)>("ibm j9");
+if v4 != 0 goto label04;
+v5 = virtualinvoke v3.<java.lang.String: boolean startsWith(java.lang.String)>("eclipse openj9");
+if v5 != 0 goto label04;
+v6 = staticinvoke <java.lang.Class: java.lang.Class forName(java.lang.String,boolean,java.lang.ClassLoader)>("sun.misc.VM", 1, v1);
+v7 = newarray (java.lang.Class)[0];
+v8 = virtualinvoke v6.<java.lang.Class: java.lang.reflect.Method getDeclaredMethod(java.lang.String,java.lang.Class[])>("maxDirectMemory", v7);
+v9 = newarray (java.lang.Object)[0];
+v10 = virtualinvoke v8.<java.lang.reflect.Method: java.lang.Object invoke(java.lang.Object,java.lang.Object[])>(null, v9);
+v0 = virtualinvoke v10.<java.lang.Number: long longValue()>();
+label02:
+goto label04;
+label03:
+v11 := @caughtexception;
+label04:
+v12 = v0 cmp 0L;
+if v12 <= 0 goto label05;
+return v0;
+label05:
+v13 = staticinvoke <java.lang.Class: java.lang.Class forName(java.lang.String,boolean,java.lang.ClassLoader)>("java.lang.management.ManagementFactory", 1, v1);
+v14 = staticinvoke <java.lang.Class: java.lang.Class forName(java.lang.String,boolean,java.lang.ClassLoader)>("java.lang.management.RuntimeMXBean", 1, v1);
+v15 = newarray (java.lang.Class)[0];
+v16 = virtualinvoke v13.<java.lang.Class: java.lang.reflect.Method getDeclaredMethod(java.lang.String,java.lang.Class[])>("getRuntimeMXBean", v15);
+v17 = newarray (java.lang.Object)[0];
+v18 = virtualinvoke v16.<java.lang.reflect.Method: java.lang.Object invoke(java.lang.Object,java.lang.Object[])>(null, v17);
+v19 = newarray (java.lang.Class)[0];
+v20 = virtualinvoke v14.<java.lang.Class: java.lang.reflect.Method getDeclaredMethod(java.lang.String,java.lang.Class[])>("getInputArguments", v19);
+v21 = newarray (java.lang.Object)[0];
+v22 = virtualinvoke v20.<java.lang.reflect.Method: java.lang.Object invoke(java.lang.Object,java.lang.Object[])>(v18, v21);
+v23 = interfaceinvoke v22.<java.util.List: int size()>();
+v24 = v23 - 1;
+label06:
+if v24 < 0 goto label12;
+v25 = <io.netty.util.internal.PlatformDependent: java.util.regex.Pattern MAX_DIRECT_MEMORY_SIZE_ARG_PATTERN>;
+v26 = interfaceinvoke v22.<java.util.List: java.lang.Object get(int)>(v24);
+v27 = virtualinvoke v25.<java.util.regex.Pattern: java.util.regex.Matcher matcher(java.lang.CharSequence)>(v26);
+v28 = virtualinvoke v27.<java.util.regex.Matcher: boolean matches()>();
+if v28 == 0 goto label10;
+v29 = virtualinvoke v27.<java.util.regex.Matcher: java.lang.String group(int)>(1);
+v0 = staticinvoke <java.lang.Long: long parseLong(java.lang.String)>(v29);
+v30 = virtualinvoke v27.<java.util.regex.Matcher: java.lang.String group(int)>(2);
+v31 = virtualinvoke v30.<java.lang.String: char charAt(int)>(0);
+lookupswitch(v31)
+{
+case 71: goto label09;
+case 75: goto label07;
+case 77: goto label08;
+case 103: goto label09;
+case 107: goto label07;
+case 109: goto label08;
+default: goto label12;
+};
+label07:
+v0 = v0 * 1024L;
+goto label12;
+label08:
+v0 = v0 * 1048576L;
+goto label12;
+label09:
+v0 = v0 * 1073741824L;
+goto label12;
+label10:
+v24 = v24 - 1;
+goto label06;
+label11:
+v32 := @caughtexception;
+label12:
+v33 = v0 cmp 0L;
+if v33 > 0 goto label13;
+v34 = staticinvoke <java.lang.Runtime: java.lang.Runtime getRuntime()>();
+v0 = virtualinvoke v34.<java.lang.Runtime: long maxMemory()>();
+v35 = <io.netty.util.internal.PlatformDependent: io.netty.util.internal.logging.InternalLogger logger>;
+v36 = staticinvoke <java.lang.Long: java.lang.Long valueOf(long)>(v0);
+interfaceinvoke v35.<io.netty.util.internal.logging.InternalLogger: void debug(java.lang.String,java.lang.Object)>("maxDirectMemory: {} bytes (maybe)", v36);
+goto label14;
+label13:
+v37 = <io.netty.util.internal.PlatformDependent: io.netty.util.internal.logging.InternalLogger logger>;
+v38 = staticinvoke <java.lang.Long: java.lang.Long valueOf(long)>(v0);
+interfaceinvoke v37.<io.netty.util.internal.logging.InternalLogger: void debug(java.lang.String,java.lang.Object)>("maxDirectMemory: {} bytes", v38);
+label14:
+return v0;
+catch java.lang.Throwable from label01 to label02 with label03;
+catch java.lang.Throwable from label05 to label11 with label11;
+}
+private static java.io.File tmpdir0()
+{
+java.lang.Throwable v20;
+java.lang.String v0, v10, v11, v14, v17, v3, v7;
+boolean v21, v6;
+java.io.File v1, v12, v15, v18, v22, v23, v24, v4, v8;
+io.netty.util.internal.logging.InternalLogger v13, v16, v19, v2, v25, v5, v9;
+label01:
+v0 = staticinvoke <io.netty.util.internal.SystemPropertyUtil: java.lang.String get(java.lang.String)>("io.netty.tmpdir");
+v1 = staticinvoke <io.netty.util.internal.PlatformDependent: java.io.File toDirectory(java.lang.String)>(v0);
+if v1 == null goto label03;
+v2 = <io.netty.util.internal.PlatformDependent: io.netty.util.internal.logging.InternalLogger logger>;
+interfaceinvoke v2.<io.netty.util.internal.logging.InternalLogger: void debug(java.lang.String,java.lang.Object)>("-Dio.netty.tmpdir: {}", v1);
+label02:
+return v1;
+label03:
+v3 = staticinvoke <io.netty.util.internal.SystemPropertyUtil: java.lang.String get(java.lang.String)>("java.io.tmpdir");
+v4 = staticinvoke <io.netty.util.internal.PlatformDependent: java.io.File toDirectory(java.lang.String)>(v3);
+if v4 == null goto label05;
+v5 = <io.netty.util.internal.PlatformDependent: io.netty.util.internal.logging.InternalLogger logger>;
+interfaceinvoke v5.<io.netty.util.internal.logging.InternalLogger: void debug(java.lang.String,java.lang.Object)>("-Dio.netty.tmpdir: {} (java.io.tmpdir)", v4);
+label04:
+return v4;
+label05:
+v6 = staticinvoke <io.netty.util.internal.PlatformDependent: boolean isWindows()>();
+if v6 == 0 goto label11;
+v7 = staticinvoke <java.lang.System: java.lang.String getenv(java.lang.String)>("TEMP");
+v8 = staticinvoke <io.netty.util.internal.PlatformDependent: java.io.File toDirectory(java.lang.String)>(v7);
+if v8 == null goto label07;
+v9 = <io.netty.util.internal.PlatformDependent: io.netty.util.internal.logging.InternalLogger logger>;
+interfaceinvoke v9.<io.netty.util.internal.logging.InternalLogger: void debug(java.lang.String,java.lang.Object)>("-Dio.netty.tmpdir: {} (%TEMP%)", v8);
+label06:
+return v8;
+label07:
+v10 = staticinvoke <java.lang.System: java.lang.String getenv(java.lang.String)>("USERPROFILE");
+if v10 == null goto label14;
+v11 = dynamicinvoke "makeConcatWithConstants" <java.lang.String (java.lang.String)>(v10) <java.lang.invoke.StringConcatFactory: java.lang.invoke.CallSite makeConcatWithConstants(java.lang.invoke.MethodHandles$Lookup,java.lang.String,java.lang.invoke.MethodType,java.lang.String,java.lang.Object[])>("\u0001\\AppData\\Local\\Temp");
+v12 = staticinvoke <io.netty.util.internal.PlatformDependent: java.io.File toDirectory(java.lang.String)>(v11);
+if v12 == null goto label09;
+v13 = <io.netty.util.internal.PlatformDependent: io.netty.util.internal.logging.InternalLogger logger>;
+interfaceinvoke v13.<io.netty.util.internal.logging.InternalLogger: void debug(java.lang.String,java.lang.Object)>("-Dio.netty.tmpdir: {} (%USERPROFILE%\\AppData\\Local\\Temp)", v12);
+label08:
+return v12;
+label09:
+v14 = dynamicinvoke "makeConcatWithConstants" <java.lang.String (java.lang.String)>(v10) <java.lang.invoke.StringConcatFactory: java.lang.invoke.CallSite makeConcatWithConstants(java.lang.invoke.MethodHandles$Lookup,java.lang.String,java.lang.invoke.MethodType,java.lang.String,java.lang.Object[])>("\u0001\\Local Settings\\Temp");
+v15 = staticinvoke <io.netty.util.internal.PlatformDependent: java.io.File toDirectory(java.lang.String)>(v14);
+if v15 == null goto label14;
+v16 = <io.netty.util.internal.PlatformDependent: io.netty.util.internal.logging.InternalLogger logger>;
+interfaceinvoke v16.<io.netty.util.internal.logging.InternalLogger: void debug(java.lang.String,java.lang.Object)>("-Dio.netty.tmpdir: {} (%USERPROFILE%\\Local Settings\\Temp)", v15);
+label10:
+return v15;
+label11:
+v17 = staticinvoke <java.lang.System: java.lang.String getenv(java.lang.String)>("TMPDIR");
+v18 = staticinvoke <io.netty.util.internal.PlatformDependent: java.io.File toDirectory(java.lang.String)>(v17);
+if v18 == null goto label14;
+v19 = <io.netty.util.internal.PlatformDependent: io.netty.util.internal.logging.InternalLogger logger>;
+interfaceinvoke v19.<io.netty.util.internal.logging.InternalLogger: void debug(java.lang.String,java.lang.Object)>("-Dio.netty.tmpdir: {} ($TMPDIR)", v18);
+label12:
+return v18;
+label13:
+v20 := @caughtexception;
+label14:
+v21 = staticinvoke <io.netty.util.internal.PlatformDependent: boolean isWindows()>();
+if v21 == 0 goto label15;
+v22 = new java.io.File;
+specialinvoke v22.<java.io.File: void <init>(java.lang.String)>("C:\\Windows\\Temp");
+v23 = v22;
+goto label16;
+label15:
+v24 = new java.io.File;
+specialinvoke v24.<java.io.File: void <init>(java.lang.String)>("/tmp");
+v23 = v24;
+label16:
+v25 = <io.netty.util.internal.PlatformDependent: io.netty.util.internal.logging.InternalLogger logger>;
+interfaceinvoke v25.<io.netty.util.internal.logging.InternalLogger: void warn(java.lang.String,java.lang.Object)>("Failed to get the temporary directory; falling back to: {}", v23);
+return v23;
+catch java.lang.Throwable from label01 to label02 with label13;
+catch java.lang.Throwable from label03 to label04 with label13;
+catch java.lang.Throwable from label05 to label06 with label13;
+catch java.lang.Throwable from label07 to label08 with label13;
+catch java.lang.Throwable from label09 to label10 with label13;
+catch java.lang.Throwable from label11 to label12 with label13;
+}
+private static java.io.File toDirectory(java.lang.String)
+{
+java.lang.String v0;
+java.io.File v1, v3;
+java.lang.Exception v4;
+boolean v2;
+v0 := @parameter0: java.lang.String;
+if v0 != null goto label1;
+return null;
+label1:
+v1 = new java.io.File;
+specialinvoke v1.<java.io.File: void <init>(java.lang.String)>(v0);
+virtualinvoke v1.<java.io.File: boolean mkdirs()>();
+v2 = virtualinvoke v1.<java.io.File: boolean isDirectory()>();
+if v2 != 0 goto label2;
+return null;
+label2:
+v3 = virtualinvoke v1.<java.io.File: java.io.File getAbsoluteFile()>();
+label3:
+return v3;
+label4:
+v4 := @caughtexception;
+return v1;
+catch java.lang.Exception from label2 to label3 with label4;
+}
+private static int bitMode0()
+{
+java.lang.Integer v2, v26, v5, v8;
+java.util.regex.Matcher v31;
+java.util.Locale v10, v28;
+boolean v14, v16, v18, v20, v22, v24, v32;
+io.netty.util.internal.logging.InternalLogger v1, v25, v4, v7;
+java.util.regex.Pattern v30;
+int v0, v3, v34, v6;
+java.lang.String v11, v12, v13, v15, v17, v19, v21, v23, v27, v29, v33, v9;
+v0 = staticinvoke <io.netty.util.internal.SystemPropertyUtil: int getInt(java.lang.String,int)>("io.netty.bitMode", 0);
+if v0 <= 0 goto label1;
+v1 = <io.netty.util.internal.PlatformDependent: io.netty.util.internal.logging.InternalLogger logger>;
+v2 = staticinvoke <java.lang.Integer: java.lang.Integer valueOf(int)>(v0);
+interfaceinvoke v1.<io.netty.util.internal.logging.InternalLogger: void debug(java.lang.String,java.lang.Object)>("-Dio.netty.bitMode: {}", v2);
+return v0;
+label1:
+v3 = staticinvoke <io.netty.util.internal.SystemPropertyUtil: int getInt(java.lang.String,int)>("sun.arch.data.model", 0);
+if v3 <= 0 goto label2;
+v4 = <io.netty.util.internal.PlatformDependent: io.netty.util.internal.logging.InternalLogger logger>;
+v5 = staticinvoke <java.lang.Integer: java.lang.Integer valueOf(int)>(v3);
+interfaceinvoke v4.<io.netty.util.internal.logging.InternalLogger: void debug(java.lang.String,java.lang.Object)>("-Dio.netty.bitMode: {} (sun.arch.data.model)", v5);
+return v3;
+label2:
+v6 = staticinvoke <io.netty.util.internal.SystemPropertyUtil: int getInt(java.lang.String,int)>("com.ibm.vm.bitmode", 0);
+if v6 <= 0 goto label3;
+v7 = <io.netty.util.internal.PlatformDependent: io.netty.util.internal.logging.InternalLogger logger>;
+v8 = staticinvoke <java.lang.Integer: java.lang.Integer valueOf(int)>(v6);
+interfaceinvoke v7.<io.netty.util.internal.logging.InternalLogger: void debug(java.lang.String,java.lang.Object)>("-Dio.netty.bitMode: {} (com.ibm.vm.bitmode)", v8);
+return v6;
+label3:
+v9 = staticinvoke <io.netty.util.internal.SystemPropertyUtil: java.lang.String get(java.lang.String,java.lang.String)>("os.arch", "");
+v10 = <java.util.Locale: java.util.Locale US>;
+v11 = virtualinvoke v9.<java.lang.String: java.lang.String toLowerCase(java.util.Locale)>(v10);
+v12 = virtualinvoke v11.<java.lang.String: java.lang.String trim()>();
+v13 = "amd64";
+v14 = virtualinvoke v13.<java.lang.String: boolean equals(java.lang.Object)>(v12);
+if v14 != 0 goto label4;
+v15 = "x86_64";
+v16 = virtualinvoke v15.<java.lang.String: boolean equals(java.lang.Object)>(v12);
+if v16 == 0 goto label5;
+label4:
+v6 = 64;
+goto label7;
+label5:
+v17 = "i386";
+v18 = virtualinvoke v17.<java.lang.String: boolean equals(java.lang.Object)>(v12);
+if v18 != 0 goto label6;
+v19 = "i486";
+v20 = virtualinvoke v19.<java.lang.String: boolean equals(java.lang.Object)>(v12);
+if v20 != 0 goto label6;
+v21 = "i586";
+v22 = virtualinvoke v21.<java.lang.String: boolean equals(java.lang.Object)>(v12);
+if v22 != 0 goto label6;
+v23 = "i686";
+v24 = virtualinvoke v23.<java.lang.String: boolean equals(java.lang.Object)>(v12);
+if v24 == 0 goto label7;
+label6:
+v6 = 32;
+label7:
+if v6 <= 0 goto label8;
+v25 = <io.netty.util.internal.PlatformDependent: io.netty.util.internal.logging.InternalLogger logger>;
+v26 = staticinvoke <java.lang.Integer: java.lang.Integer valueOf(int)>(v6);
+interfaceinvoke v25.<io.netty.util.internal.logging.InternalLogger: void debug(java.lang.String,java.lang.Object,java.lang.Object)>("-Dio.netty.bitMode: {} (os.arch: {})", v26, v12);
+label8:
+v27 = staticinvoke <io.netty.util.internal.SystemPropertyUtil: java.lang.String get(java.lang.String,java.lang.String)>("java.vm.name", "");
+v28 = <java.util.Locale: java.util.Locale US>;
+v29 = virtualinvoke v27.<java.lang.String: java.lang.String toLowerCase(java.util.Locale)>(v28);
+v30 = staticinvoke <java.util.regex.Pattern: java.util.regex.Pattern compile(java.lang.String)>("([1-9][0-9]+)-?bit");
+v31 = virtualinvoke v30.<java.util.regex.Pattern: java.util.regex.Matcher matcher(java.lang.CharSequence)>(v29);
+v32 = virtualinvoke v31.<java.util.regex.Matcher: boolean find()>();
+if v32 == 0 goto label9;
+v33 = virtualinvoke v31.<java.util.regex.Matcher: java.lang.String group(int)>(1);
+v34 = staticinvoke <java.lang.Integer: int parseInt(java.lang.String)>(v33);
+return v34;
+label9:
+return 64;
+}
+private static int addressSize0()
+{
+int v1, v2;
+boolean v0;
+v0 = staticinvoke <io.netty.util.internal.PlatformDependent: boolean hasUnsafe()>();
+if v0 != 0 goto label1;
+v1 = (int) -1;
+return v1;
+label1:
+v2 = staticinvoke <io.netty.util.internal.PlatformDependent0: int addressSize()>();
+return v2;
+}
+private static long byteArrayBaseOffset0()
+{
+long v1;
+boolean v0;
+v0 = staticinvoke <io.netty.util.internal.PlatformDependent: boolean hasUnsafe()>();
+if v0 != 0 goto label1;
+return -1L;
+label1:
+v1 = staticinvoke <io.netty.util.internal.PlatformDependent0: long byteArrayBaseOffset()>();
+return v1;
+}
+private static boolean equalsSafe(byte[], int, byte[], int, int)
+{
+byte[] v0, v2;
+byte v6, v7;
+int v1, v3, v4, v5;
+v0 := @parameter0: byte[];
+v1 := @parameter1: int;
+v2 := @parameter2: byte[];
+v3 := @parameter3: int;
+v4 := @parameter4: int;
+v5 = v1 + v4;
+label1:
+if v1 >= v5 goto label3;
+v6 = v0[v1];
+v7 = v2[v3];
+if v6 == v7 goto label2;
+return 0;
+label2:
+v1 = v1 + 1;
+v3 = v3 + 1;
+goto label1;
+label3:
+return 1;
+}
+private static boolean isZeroSafe(byte[], int, int)
+{
+byte[] v0;
+byte v4;
+int v1, v2, v3;
+v0 := @parameter0: byte[];
+v1 := @parameter1: int;
+v2 := @parameter2: int;
+v3 = v1 + v2;
+label1:
+if v1 >= v3 goto label3;
+v4 = v0[v1];
+if v4 == 0 goto label2;
+return 0;
+label2:
+v1 = v1 + 1;
+goto label1;
+label3:
+return 1;
+}
+static int hashCodeAsciiSafe(byte[], int, int)
+{
+byte[] v0;
+byte v10, v33, v46, v59;
+long v8;
+short v15, v24, v51, v55;
+int v1, v11, v12, v13, v14, v16, v17, v18, v19, v2, v20, v21, v22, v23, v25, v26, v27, v28, v29, v3, v30, v31, v32, v34, v35, v36, v37, v38, v39, v4, v40, v41, v42, v43, v44, v45, v47, v48, v49, v5, v50, v52, v53, v54, v56, v57, v58, v6, v60, v61, v7, v9;
+v0 := @parameter0: byte[];
+v1 := @parameter1: int;
+v2 := @parameter2: int;
+v3 = -1028477387;
+v4 = v2 & 7;
+v5 = v1 + v4;
+v6 = v1 - 8;
+v7 = v6 + v2;
+label01:
+if v7 < v5 goto label02;
+v8 = staticinvoke <io.netty.util.internal.PlatformDependent: long getLongSafe(byte[],int)>(v0, v7);
+v3 = staticinvoke <io.netty.util.internal.PlatformDependent0: int hashCodeAsciiCompute(long,int)>(v8, v3);
+v7 = v7 - 8;
+goto label01;
+label02:
+tableswitch(v4)
+{
+case 1: goto label09;
+case 2: goto label08;
+case 3: goto label07;
+case 4: goto label06;
+case 5: goto label05;
+case 6: goto label04;
+case 7: goto label03;
+default: goto label10;
+};
+label03:
+v9 = v3 * -862048943;
+v10 = v0[v1];
+v11 = staticinvoke <io.netty.util.internal.PlatformDependent0: int hashCodeAsciiSanitize(byte)>(v10);
+v12 = v9 + v11;
+v13 = v12 * 461845907;
+v14 = v1 + 1;
+v15 = staticinvoke <io.netty.util.internal.PlatformDependent: short getShortSafe(byte[],int)>(v0, v14);
+v16 = staticinvoke <io.netty.util.internal.PlatformDependent0: int hashCodeAsciiSanitize(short)>(v15);
+v17 = v13 + v16;
+v18 = v17 * -862048943;
+v19 = v1 + 3;
+v20 = staticinvoke <io.netty.util.internal.PlatformDependent: int getIntSafe(byte[],int)>(v0, v19);
+v21 = staticinvoke <io.netty.util.internal.PlatformDependent0: int hashCodeAsciiSanitize(int)>(v20);
+v22 = v18 + v21;
+return v22;
+label04:
+v23 = v3 * -862048943;
+v24 = staticinvoke <io.netty.util.internal.PlatformDependent: short getShortSafe(byte[],int)>(v0, v1);
+v25 = staticinvoke <io.netty.util.internal.PlatformDependent0: int hashCodeAsciiSanitize(short)>(v24);
+v26 = v23 + v25;
+v27 = v26 * 461845907;
+v28 = v1 + 2;
+v29 = staticinvoke <io.netty.util.internal.PlatformDependent: int getIntSafe(byte[],int)>(v0, v28);
+v30 = staticinvoke <io.netty.util.internal.PlatformDependent0: int hashCodeAsciiSanitize(int)>(v29);
+v31 = v27 + v30;
+return v31;
+label05:
+v32 = v3 * -862048943;
+v33 = v0[v1];
+v34 = staticinvoke <io.netty.util.internal.PlatformDependent0: int hashCodeAsciiSanitize(byte)>(v33);
+v35 = v32 + v34;
+v36 = v35 * 461845907;
+v37 = v1 + 1;
+v38 = staticinvoke <io.netty.util.internal.PlatformDependent: int getIntSafe(byte[],int)>(v0, v37);
+v39 = staticinvoke <io.netty.util.internal.PlatformDependent0: int hashCodeAsciiSanitize(int)>(v38);
+v40 = v36 + v39;
+return v40;
+label06:
+v41 = v3 * -862048943;
+v42 = staticinvoke <io.netty.util.internal.PlatformDependent: int getIntSafe(byte[],int)>(v0, v1);
+v43 = staticinvoke <io.netty.util.internal.PlatformDependent0: int hashCodeAsciiSanitize(int)>(v42);
+v44 = v41 + v43;
+return v44;
+label07:
+v45 = v3 * -862048943;
+v46 = v0[v1];
+v47 = staticinvoke <io.netty.util.internal.PlatformDependent0: int hashCodeAsciiSanitize(byte)>(v46);
+v48 = v45 + v47;
+v49 = v48 * 461845907;
+v50 = v1 + 1;
+v51 = staticinvoke <io.netty.util.internal.PlatformDependent: short getShortSafe(byte[],int)>(v0, v50);
+v52 = staticinvoke <io.netty.util.internal.PlatformDependent0: int hashCodeAsciiSanitize(short)>(v51);
+v53 = v49 + v52;
+return v53;
+label08:
+v54 = v3 * -862048943;
+v55 = staticinvoke <io.netty.util.internal.PlatformDependent: short getShortSafe(byte[],int)>(v0, v1);
+v56 = staticinvoke <io.netty.util.internal.PlatformDependent0: int hashCodeAsciiSanitize(short)>(v55);
+v57 = v54 + v56;
+return v57;
+label09:
+v58 = v3 * -862048943;
+v59 = v0[v1];
+v60 = staticinvoke <io.netty.util.internal.PlatformDependent0: int hashCodeAsciiSanitize(byte)>(v59);
+v61 = v58 + v60;
+return v61;
+label10:
+return v3;
+}
+public static java.lang.String normalizedArch()
+{
+java.lang.String v0;
+v0 = <io.netty.util.internal.PlatformDependent: java.lang.String NORMALIZED_ARCH>;
+return v0;
+}
+public static java.lang.String normalizedOs()
+{
+java.lang.String v0;
+v0 = <io.netty.util.internal.PlatformDependent: java.lang.String NORMALIZED_OS>;
+return v0;
+}
+public static java.util.Set normalizedLinuxClassifiers()
+{
+java.util.Set v0;
+v0 = <io.netty.util.internal.PlatformDependent: java.util.Set LINUX_OS_CLASSIFIERS>;
+return v0;
+}
+public static java.io.File createTempFile(java.lang.String, java.lang.String, java.io.File) throws java.io.IOException
+{
+java.nio.file.attribute.FileAttribute[] v4, v8;
+int v3;
+java.lang.String v0, v1, v14, v17;
+java.nio.file.Path v5, v7, v9;
+boolean v12, v15;
+java.io.IOException v13, v16;
+java.io.File v10, v11, v2, v6;
+v0 := @parameter0: java.lang.String;
+v1 := @parameter1: java.lang.String;
+v2 := @parameter2: java.io.File;
+v3 = staticinvoke <io.netty.util.internal.PlatformDependent: int javaVersion()>();
+if v3 < 7 goto label2;
+if v2 != null goto label1;
+v4 = newarray (java.nio.file.attribute.FileAttribute)[0];
+v5 = staticinvoke <java.nio.file.Files: java.nio.file.Path createTempFile(java.lang.String,java.lang.String,java.nio.file.attribute.FileAttribute[])>(v0, v1, v4);
+v6 = interfaceinvoke v5.<java.nio.file.Path: java.io.File toFile()>();
+return v6;
+label1:
+v7 = virtualinvoke v2.<java.io.File: java.nio.file.Path toPath()>();
+v8 = newarray (java.nio.file.attribute.FileAttribute)[0];
+v9 = staticinvoke <java.nio.file.Files: java.nio.file.Path createTempFile(java.nio.file.Path,java.lang.String,java.lang.String,java.nio.file.attribute.FileAttribute[])>(v7, v0, v1, v8);
+v10 = interfaceinvoke v9.<java.nio.file.Path: java.io.File toFile()>();
+return v10;
+label2:
+if v2 != null goto label3;
+v11 = staticinvoke <java.io.File: java.io.File createTempFile(java.lang.String,java.lang.String)>(v0, v1);
+goto label4;
+label3:
+v11 = staticinvoke <java.io.File: java.io.File createTempFile(java.lang.String,java.lang.String,java.io.File)>(v0, v1, v2);
+label4:
+v12 = virtualinvoke v11.<java.io.File: boolean setReadable(boolean,boolean)>(0, 0);
+if v12 != 0 goto label5;
+v13 = new java.io.IOException;
+v14 = dynamicinvoke "makeConcatWithConstants" <java.lang.String (java.io.File)>(v11) <java.lang.invoke.StringConcatFactory: java.lang.invoke.CallSite makeConcatWithConstants(java.lang.invoke.MethodHandles$Lookup,java.lang.String,java.lang.invoke.MethodType,java.lang.String,java.lang.Object[])>("Failed to set permissions on temporary file \u0001");
+specialinvoke v13.<java.io.IOException: void <init>(java.lang.String)>(v14);
+throw v13;
+label5:
+v15 = virtualinvoke v11.<java.io.File: boolean setReadable(boolean,boolean)>(1, 1);
+if v15 != 0 goto label6;
+v16 = new java.io.IOException;
+v17 = dynamicinvoke "makeConcatWithConstants" <java.lang.String (java.io.File)>(v11) <java.lang.invoke.StringConcatFactory: java.lang.invoke.CallSite makeConcatWithConstants(java.lang.invoke.MethodHandles$Lookup,java.lang.String,java.lang.invoke.MethodType,java.lang.String,java.lang.Object[])>("Failed to set permissions on temporary file \u0001");
+specialinvoke v16.<java.io.IOException: void <init>(java.lang.String)>(v17);
+throw v16;
+label6:
+return v11;
+}
+private static transient void addClassifier(java.util.Set, java.util.Set, java.lang.String[])
+{
+int v3, v4;
+java.util.Set v0, v1;
+java.lang.String[] v2;
+java.lang.String v5;
+boolean v6;
+v0 := @parameter0: java.util.Set;
+v1 := @parameter1: java.util.Set;
+v2 := @parameter2: java.lang.String[];
+v3 = lengthof v2;
+v4 = 0;
+label1:
+if v4 >= v3 goto label3;
+v5 = v2[v4];
+v6 = interfaceinvoke v0.<java.util.Set: boolean contains(java.lang.Object)>(v5);
+if v6 == 0 goto label2;
+interfaceinvoke v1.<java.util.Set: boolean add(java.lang.Object)>(v5);
+label2:
+v4 = v4 + 1;
+goto label1;
+label3:
+return;
+}
+private static java.lang.String normalizeOsReleaseVariableValue(java.lang.String)
+{
+java.lang.String v0, v1, v2;
+v0 := @parameter0: java.lang.String;
+v1 = virtualinvoke v0.<java.lang.String: java.lang.String trim()>();
+v2 = virtualinvoke v1.<java.lang.String: java.lang.String replaceAll(java.lang.String,java.lang.String)>("[\"\']", "");
+return v2;
+}
+private static java.lang.String normalize(java.lang.String)
+{
+java.util.Locale v1;
+java.lang.String v0, v2, v3;
+v0 := @parameter0: java.lang.String;
+v1 = <java.util.Locale: java.util.Locale US>;
+v2 = virtualinvoke v0.<java.lang.String: java.lang.String toLowerCase(java.util.Locale)>(v1);
+v3 = virtualinvoke v2.<java.lang.String: java.lang.String replaceAll(java.lang.String,java.lang.String)>("[^a-z0-9]+", "");
+return v3;
+}
+private static java.lang.String normalizeArch(java.lang.String)
+{
+java.lang.String v0, v1, v11, v13, v15, v17, v19, v8;
+boolean v10, v12, v14, v16, v18, v2, v20, v3, v4, v5, v6, v7, v9;
+v0 := @parameter0: java.lang.String;
+v1 = staticinvoke <io.netty.util.internal.PlatformDependent: java.lang.String normalize(java.lang.String)>(v0);
+v2 = virtualinvoke v1.<java.lang.String: boolean matches(java.lang.String)>("^(x8664|amd64|ia32e|em64t|x64)$");
+if v2 == 0 goto label01;
+return "x86_64";
+label01:
+v3 = virtualinvoke v1.<java.lang.String: boolean matches(java.lang.String)>("^(x8632|x86|i[3-6]86|ia32|x32)$");
+if v3 == 0 goto label02;
+return "x86_32";
+label02:
+v4 = virtualinvoke v1.<java.lang.String: boolean matches(java.lang.String)>("^(ia64|itanium64)$");
+if v4 == 0 goto label03;
+return "itanium_64";
+label03:
+v5 = virtualinvoke v1.<java.lang.String: boolean matches(java.lang.String)>("^(sparc|sparc32)$");
+if v5 == 0 goto label04;
+return "sparc_32";
+label04:
+v6 = virtualinvoke v1.<java.lang.String: boolean matches(java.lang.String)>("^(sparcv9|sparc64)$");
+if v6 == 0 goto label05;
+return "sparc_64";
+label05:
+v7 = virtualinvoke v1.<java.lang.String: boolean matches(java.lang.String)>("^(arm|arm32)$");
+if v7 == 0 goto label06;
+return "arm_32";
+label06:
+v8 = "aarch64";
+v9 = virtualinvoke v8.<java.lang.String: boolean equals(java.lang.Object)>(v1);
+if v9 == 0 goto label07;
+return "aarch_64";
+label07:
+v10 = virtualinvoke v1.<java.lang.String: boolean matches(java.lang.String)>("^(ppc|ppc32)$");
+if v10 == 0 goto label08;
+return "ppc_32";
+label08:
+v11 = "ppc64";
+v12 = virtualinvoke v11.<java.lang.String: boolean equals(java.lang.Object)>(v1);
+if v12 == 0 goto label09;
+return "ppc_64";
+label09:
+v13 = "ppc64le";
+v14 = virtualinvoke v13.<java.lang.String: boolean equals(java.lang.Object)>(v1);
+if v14 == 0 goto label10;
+return "ppcle_64";
+label10:
+v15 = "s390";
+v16 = virtualinvoke v15.<java.lang.String: boolean equals(java.lang.Object)>(v1);
+if v16 == 0 goto label11;
+return "s390_32";
+label11:
+v17 = "s390x";
+v18 = virtualinvoke v17.<java.lang.String: boolean equals(java.lang.Object)>(v1);
+if v18 == 0 goto label12;
+return "s390_64";
+label12:
+v19 = "loongarch64";
+v20 = virtualinvoke v19.<java.lang.String: boolean equals(java.lang.Object)>(v1);
+if v20 == 0 goto label13;
+return "loongarch_64";
+label13:
+return "unknown";
+}
+private static java.lang.String normalizeOs(java.lang.String)
+{
+int v5;
+java.lang.String v0, v1;
+boolean v10, v11, v12, v13, v14, v15, v16, v17, v2, v3, v4, v7, v8, v9;
+char v6;
+v0 := @parameter0: java.lang.String;
+v1 = staticinvoke <io.netty.util.internal.PlatformDependent: java.lang.String normalize(java.lang.String)>(v0);
+v2 = virtualinvoke v1.<java.lang.String: boolean startsWith(java.lang.String)>("aix");
+if v2 == 0 goto label01;
+return "aix";
+label01:
+v3 = virtualinvoke v1.<java.lang.String: boolean startsWith(java.lang.String)>("hpux");
+if v3 == 0 goto label02;
+return "hpux";
+label02:
+v4 = virtualinvoke v1.<java.lang.String: boolean startsWith(java.lang.String)>("os400");
+if v4 == 0 goto label04;
+v5 = virtualinvoke v1.<java.lang.String: int length()>();
+if v5 <= 5 goto label03;
+v6 = virtualinvoke v1.<java.lang.String: char charAt(int)>(5);
+v7 = staticinvoke <java.lang.Character: boolean isDigit(char)>(v6);
+if v7 != 0 goto label04;
+label03:
+return "os400";
+label04:
+v8 = virtualinvoke v1.<java.lang.String: boolean startsWith(java.lang.String)>("linux");
+if v8 == 0 goto label05;
+return "linux";
+label05:
+v9 = virtualinvoke v1.<java.lang.String: boolean startsWith(java.lang.String)>("macosx");
+if v9 != 0 goto label06;
+v10 = virtualinvoke v1.<java.lang.String: boolean startsWith(java.lang.String)>("osx");
+if v10 != 0 goto label06;
+v11 = virtualinvoke v1.<java.lang.String: boolean startsWith(java.lang.String)>("darwin");
+if v11 == 0 goto label07;
+label06:
+return "osx";
+label07:
+v12 = virtualinvoke v1.<java.lang.String: boolean startsWith(java.lang.String)>("freebsd");
+if v12 == 0 goto label08;
+return "freebsd";
+label08:
+v13 = virtualinvoke v1.<java.lang.String: boolean startsWith(java.lang.String)>("openbsd");
+if v13 == 0 goto label09;
+return "openbsd";
+label09:
+v14 = virtualinvoke v1.<java.lang.String: boolean startsWith(java.lang.String)>("netbsd");
+if v14 == 0 goto label10;
+return "netbsd";
+label10:
+v15 = virtualinvoke v1.<java.lang.String: boolean startsWith(java.lang.String)>("solaris");
+if v15 != 0 goto label11;
+v16 = virtualinvoke v1.<java.lang.String: boolean startsWith(java.lang.String)>("sunos");
+if v16 == 0 goto label12;
+label11:
+return "sunos";
+label12:
+v17 = virtualinvoke v1.<java.lang.String: boolean startsWith(java.lang.String)>("windows");
+if v17 == 0 goto label13;
+return "windows";
+label13:
+return "unknown";
+}
+private void <init>()
+{
+io.netty.util.internal.PlatformDependent v0;
+v0 := @this: io.netty.util.internal.PlatformDependent;
+specialinvoke v0.<java.lang.Object: void <init>()>();
+return;
+}
+static void <clinit>()
+{
+io.netty.util.internal.Cleaner v55, v58, v59, v60, v61, v70, v71;
+java.lang.Integer v49;
+byte v31, v34, v35, v40;
+java.lang.Long v39;
+io.netty.util.internal.CleanerJava9 v54;
+java.util.Set v77, v80;
+io.netty.util.internal.CleanerJava6 v57;
+java.nio.ByteOrder v23, v24;
+io.netty.util.internal.logging.InternalLogger v3, v38, v47, v64, v66, v73;
+io.netty.util.internal.PlatformDependent$1 v26;
+java.lang.Throwable v7;
+io.netty.util.internal.PlatformDependent$2 v28;
+io.netty.util.internal.PlatformDependent$3 v29;
+long v30, v41, v8, v9;
+java.lang.String v12, v13, v14, v15;
+java.util.LinkedHashSet v78;
+java.io.File v10;
+java.util.concurrent.atomic.AtomicLong v36, v37;
+boolean v1, v17, v18, v19, v2, v20, v25, v32, v33, v44, v5, v50, v51, v53, v56, v6, v62, v63, v65, v67, v68, v72, v79;
+java.util.List v76;
+java.util.regex.Pattern v4;
+java.lang.String[] v16, v22, v75;
+java.util.HashSet v74;
+int v11, v21, v27, v42, v43, v45, v46, v48, v52;
+java.lang.Boolean v69;
+java.lang.Class v0;
+v0 = class "Lio/netty/util/internal/PlatformDependent;";
+v1 = virtualinvoke v0.<java.lang.Class: boolean desiredAssertionStatus()>();
+if v1 != 0 goto label01;
+v2 = 1;
+goto label02;
+label01:
+v2 = 0;
+label02:
+<io.netty.util.internal.PlatformDependent: boolean $assertionsDisabled> = v2;
+v3 = staticinvoke <io.netty.util.internal.logging.InternalLoggerFactory: io.netty.util.internal.logging.InternalLogger getInstance(java.lang.Class)>(class "Lio/netty/util/internal/PlatformDependent;");
+<io.netty.util.internal.PlatformDependent: io.netty.util.internal.logging.InternalLogger logger> = v3;
+v4 = staticinvoke <java.util.regex.Pattern: java.util.regex.Pattern compile(java.lang.String)>("\\s*-XX:MaxDirectMemorySize\\s*=\\s*([0-9]+)\\s*([kKmMgG]?)\\s*$");
+<io.netty.util.internal.PlatformDependent: java.util.regex.Pattern MAX_DIRECT_MEMORY_SIZE_ARG_PATTERN> = v4;
+v5 = staticinvoke <io.netty.util.internal.PlatformDependent: boolean isAndroid()>();
+if v5 != 0 goto label03;
+v6 = 1;
+goto label04;
+label03:
+v6 = 0;
+label04:
+<io.netty.util.internal.PlatformDependent: boolean CAN_ENABLE_TCP_NODELAY_BY_DEFAULT> = v6;
+v7 = staticinvoke <io.netty.util.internal.PlatformDependent: java.lang.Throwable unsafeUnavailabilityCause0()>();
+<io.netty.util.internal.PlatformDependent: java.lang.Throwable UNSAFE_UNAVAILABILITY_CAUSE> = v7;
+v8 = staticinvoke <io.netty.util.internal.PlatformDependent: long estimateMaxDirectMemory()>();
+<io.netty.util.internal.PlatformDependent: long MAX_DIRECT_MEMORY> = v8;
+v9 = staticinvoke <io.netty.util.internal.PlatformDependent: long byteArrayBaseOffset0()>();
+<io.netty.util.internal.PlatformDependent: long BYTE_ARRAY_BASE_OFFSET> = v9;
+v10 = staticinvoke <io.netty.util.internal.PlatformDependent: java.io.File tmpdir0()>();
+<io.netty.util.internal.PlatformDependent: java.io.File TMPDIR> = v10;
+v11 = staticinvoke <io.netty.util.internal.PlatformDependent: int bitMode0()>();
+<io.netty.util.internal.PlatformDependent: int BIT_MODE> = v11;
+v12 = staticinvoke <io.netty.util.internal.SystemPropertyUtil: java.lang.String get(java.lang.String,java.lang.String)>("os.arch", "");
+v13 = staticinvoke <io.netty.util.internal.PlatformDependent: java.lang.String normalizeArch(java.lang.String)>(v12);
+<io.netty.util.internal.PlatformDependent: java.lang.String NORMALIZED_ARCH> = v13;
+v14 = staticinvoke <io.netty.util.internal.SystemPropertyUtil: java.lang.String get(java.lang.String,java.lang.String)>("os.name", "");
+v15 = staticinvoke <io.netty.util.internal.PlatformDependent: java.lang.String normalizeOs(java.lang.String)>(v14);
+<io.netty.util.internal.PlatformDependent: java.lang.String NORMALIZED_OS> = v15;
+v16 = newarray (java.lang.String)[3];
+v16[0] = "fedora";
+v16[1] = "suse";
+v16[2] = "arch";
+<io.netty.util.internal.PlatformDependent: java.lang.String[] ALLOWED_LINUX_OS_CLASSIFIERS> = v16;
+v17 = staticinvoke <io.netty.util.internal.PlatformDependent: boolean isWindows0()>();
+<io.netty.util.internal.PlatformDependent: boolean IS_WINDOWS> = v17;
+v18 = staticinvoke <io.netty.util.internal.PlatformDependent: boolean isOsx0()>();
+<io.netty.util.internal.PlatformDependent: boolean IS_OSX> = v18;
+v19 = staticinvoke <io.netty.util.internal.PlatformDependent: boolean isJ9Jvm0()>();
+<io.netty.util.internal.PlatformDependent: boolean IS_J9_JVM> = v19;
+v20 = staticinvoke <io.netty.util.internal.PlatformDependent: boolean isIkvmDotNet0()>();
+<io.netty.util.internal.PlatformDependent: boolean IS_IVKVM_DOT_NET> = v20;
+v21 = staticinvoke <io.netty.util.internal.PlatformDependent: int addressSize0()>();
+<io.netty.util.internal.PlatformDependent: int ADDRESS_SIZE> = v21;
+v22 = newarray (java.lang.String)[2];
+v22[0] = "/etc/os-release";
+v22[1] = "/usr/lib/os-release";
+<io.netty.util.internal.PlatformDependent: java.lang.String[] OS_RELEASE_FILES> = v22;
+v23 = staticinvoke <java.nio.ByteOrder: java.nio.ByteOrder nativeOrder()>();
+v24 = <java.nio.ByteOrder: java.nio.ByteOrder BIG_ENDIAN>;
+if v23 != v24 goto label05;
+v25 = 1;
+goto label06;
+label05:
+v25 = 0;
+label06:
+<io.netty.util.internal.PlatformDependent: boolean BIG_ENDIAN_NATIVE_ORDER> = v25;
+v26 = new io.netty.util.internal.PlatformDependent$1;
+specialinvoke v26.<io.netty.util.internal.PlatformDependent$1: void <init>()>();
+<io.netty.util.internal.PlatformDependent: io.netty.util.internal.Cleaner NOOP> = v26;
+v27 = staticinvoke <io.netty.util.internal.PlatformDependent: int javaVersion()>();
+if v27 < 7 goto label07;
+v28 = new io.netty.util.internal.PlatformDependent$2;
+specialinvoke v28.<io.netty.util.internal.PlatformDependent$2: void <init>()>();
+<io.netty.util.internal.PlatformDependent: io.netty.util.internal.PlatformDependent$ThreadLocalRandomProvider RANDOM_PROVIDER> = v28;
+goto label08;
+label07:
+v29 = new io.netty.util.internal.PlatformDependent$3;
+specialinvoke v29.<io.netty.util.internal.PlatformDependent$3: void <init>()>();
+<io.netty.util.internal.PlatformDependent: io.netty.util.internal.PlatformDependent$ThreadLocalRandomProvider RANDOM_PROVIDER> = v29;
+label08:
+v30 = staticinvoke <io.netty.util.internal.SystemPropertyUtil: long getLong(java.lang.String,long)>("io.netty.maxDirectMemory", -1L);
+v31 = v30 cmp 0L;
+if v31 == 0 goto label09;
+v32 = staticinvoke <io.netty.util.internal.PlatformDependent: boolean hasUnsafe()>();
+if v32 == 0 goto label09;
+v33 = staticinvoke <io.netty.util.internal.PlatformDependent0: boolean hasDirectBufferNoCleanerConstructor()>();
+if v33 != 0 goto label10;
+label09:
+<io.netty.util.internal.PlatformDependent: boolean USE_DIRECT_BUFFER_NO_CLEANER> = 0;
+<io.netty.util.internal.PlatformDependent: java.util.concurrent.atomic.AtomicLong DIRECT_MEMORY_COUNTER> = null;
+goto label13;
+label10:
+<io.netty.util.internal.PlatformDependent: boolean USE_DIRECT_BUFFER_NO_CLEANER> = 1;
+v34 = v30 cmp 0L;
+if v34 >= 0 goto label12;
+v30 = <io.netty.util.internal.PlatformDependent: long MAX_DIRECT_MEMORY>;
+v35 = v30 cmp 0L;
+if v35 > 0 goto label11;
+<io.netty.util.internal.PlatformDependent: java.util.concurrent.atomic.AtomicLong DIRECT_MEMORY_COUNTER> = null;
+goto label13;
+label11:
+v36 = new java.util.concurrent.atomic.AtomicLong;
+specialinvoke v36.<java.util.concurrent.atomic.AtomicLong: void <init>()>();
+<io.netty.util.internal.PlatformDependent: java.util.concurrent.atomic.AtomicLong DIRECT_MEMORY_COUNTER> = v36;
+goto label13;
+label12:
+v37 = new java.util.concurrent.atomic.AtomicLong;
+specialinvoke v37.<java.util.concurrent.atomic.AtomicLong: void <init>()>();
+<io.netty.util.internal.PlatformDependent: java.util.concurrent.atomic.AtomicLong DIRECT_MEMORY_COUNTER> = v37;
+label13:
+v38 = <io.netty.util.internal.PlatformDependent: io.netty.util.internal.logging.InternalLogger logger>;
+v39 = staticinvoke <java.lang.Long: java.lang.Long valueOf(long)>(v30);
+interfaceinvoke v38.<io.netty.util.internal.logging.InternalLogger: void debug(java.lang.String,java.lang.Object)>("-Dio.netty.maxDirectMemory: {} bytes", v39);
+v40 = v30 cmp 1L;
+if v40 < 0 goto label14;
+v41 = v30;
+goto label15;
+label14:
+v41 = <io.netty.util.internal.PlatformDependent: long MAX_DIRECT_MEMORY>;
+label15:
+<io.netty.util.internal.PlatformDependent: long DIRECT_MEMORY_LIMIT> = v41;
+v42 = staticinvoke <io.netty.util.internal.SystemPropertyUtil: int getInt(java.lang.String,int)>("io.netty.uninitializedArrayAllocationThreshold", 1024);
+v43 = staticinvoke <io.netty.util.internal.PlatformDependent: int javaVersion()>();
+if v43 < 9 goto label16;
+v44 = staticinvoke <io.netty.util.internal.PlatformDependent0: boolean hasAllocateArrayMethod()>();
+if v44 == 0 goto label16;
+v45 = v42;
+goto label17;
+label16:
+v46 = (int) -1;
+v45 = v46;
+label17:
+<io.netty.util.internal.PlatformDependent: int UNINITIALIZED_ARRAY_ALLOCATION_THRESHOLD> = v45;
+v47 = <io.netty.util.internal.PlatformDependent: io.netty.util.internal.logging.InternalLogger logger>;
+v48 = <io.netty.util.internal.PlatformDependent: int UNINITIALIZED_ARRAY_ALLOCATION_THRESHOLD>;
+v49 = staticinvoke <java.lang.Integer: java.lang.Integer valueOf(int)>(v48);
+interfaceinvoke v47.<io.netty.util.internal.logging.InternalLogger: void debug(java.lang.String,java.lang.Object)>("-Dio.netty.uninitializedArrayAllocationThreshold: {}", v49);
+v50 = staticinvoke <io.netty.util.internal.PlatformDependent: boolean maybeSuperUser0()>();
+<io.netty.util.internal.PlatformDependent: boolean MAYBE_SUPER_USER> = v50;
+v51 = staticinvoke <io.netty.util.internal.PlatformDependent: boolean isAndroid()>();
+if v51 != 0 goto label23;
+v52 = staticinvoke <io.netty.util.internal.PlatformDependent: int javaVersion()>();
+if v52 < 9 goto label20;
+v53 = staticinvoke <io.netty.util.internal.CleanerJava9: boolean isSupported()>();
+if v53 == 0 goto label18;
+v54 = new io.netty.util.internal.CleanerJava9;
+v55 = v54;
+specialinvoke v54.<io.netty.util.internal.CleanerJava9: void <init>()>();
+goto label19;
+label18:
+v55 = <io.netty.util.internal.PlatformDependent: io.netty.util.internal.Cleaner NOOP>;
+label19:
+<io.netty.util.internal.PlatformDependent: io.netty.util.internal.Cleaner CLEANER> = v55;
+goto label24;
+label20:
+v56 = staticinvoke <io.netty.util.internal.CleanerJava6: boolean isSupported()>();
+if v56 == 0 goto label21;
+v57 = new io.netty.util.internal.CleanerJava6;
+v58 = v57;
+specialinvoke v57.<io.netty.util.internal.CleanerJava6: void <init>()>();
+goto label22;
+label21:
+v58 = <io.netty.util.internal.PlatformDependent: io.netty.util.internal.Cleaner NOOP>;
+label22:
+<io.netty.util.internal.PlatformDependent: io.netty.util.internal.Cleaner CLEANER> = v58;
+goto label24;
+label23:
+v59 = <io.netty.util.internal.PlatformDependent: io.netty.util.internal.Cleaner NOOP>;
+<io.netty.util.internal.PlatformDependent: io.netty.util.internal.Cleaner CLEANER> = v59;
+label24:
+v60 = <io.netty.util.internal.PlatformDependent: io.netty.util.internal.Cleaner CLEANER>;
+v61 = <io.netty.util.internal.PlatformDependent: io.netty.util.internal.Cleaner NOOP>;
+if v60 == v61 goto label25;
+v62 = staticinvoke <io.netty.util.internal.SystemPropertyUtil: boolean getBoolean(java.lang.String,boolean)>("io.netty.noPreferDirect", 0);
+if v62 != 0 goto label25;
+v63 = 1;
+goto label26;
+label25:
+v63 = 0;
+label26:
+<io.netty.util.internal.PlatformDependent: boolean DIRECT_BUFFER_PREFERRED> = v63;
+v64 = <io.netty.util.internal.PlatformDependent: io.netty.util.internal.logging.InternalLogger logger>;
+v65 = interfaceinvoke v64.<io.netty.util.internal.logging.InternalLogger: boolean isDebugEnabled()>();
+if v65 == 0 goto label29;
+v66 = <io.netty.util.internal.PlatformDependent: io.netty.util.internal.logging.InternalLogger logger>;
+v67 = <io.netty.util.internal.PlatformDependent: boolean DIRECT_BUFFER_PREFERRED>;
+if v67 != 0 goto label27;
+v68 = 1;
+goto label28;
+label27:
+v68 = 0;
+label28:
+v69 = staticinvoke <java.lang.Boolean: java.lang.Boolean valueOf(boolean)>(v68);
+interfaceinvoke v66.<io.netty.util.internal.logging.InternalLogger: void debug(java.lang.String,java.lang.Object)>("-Dio.netty.noPreferDirect: {}", v69);
+label29:
+v70 = <io.netty.util.internal.PlatformDependent: io.netty.util.internal.Cleaner CLEANER>;
+v71 = <io.netty.util.internal.PlatformDependent: io.netty.util.internal.Cleaner NOOP>;
+if v70 != v71 goto label30;
+v72 = staticinvoke <io.netty.util.internal.PlatformDependent0: boolean isExplicitNoUnsafe()>();
+if v72 != 0 goto label30;
+v73 = <io.netty.util.internal.PlatformDependent: io.netty.util.internal.logging.InternalLogger logger>;
+interfaceinvoke v73.<io.netty.util.internal.logging.InternalLogger: void info(java.lang.String)>("Your platform does not provide complete low-level API for accessing direct buffers reliably. Unless explicitly requested, heap buffer will always be preferred to avoid potential system instability.");
+label30:
+v74 = new java.util.HashSet;
+v75 = <io.netty.util.internal.PlatformDependent: java.lang.String[] ALLOWED_LINUX_OS_CLASSIFIERS>;
+v76 = staticinvoke <java.util.Arrays: java.util.List asList(java.lang.Object[])>(v75);
+specialinvoke v74.<java.util.HashSet: void <init>(java.util.Collection)>(v76);
+v77 = staticinvoke <java.util.Collections: java.util.Set unmodifiableSet(java.util.Set)>(v74);
+v78 = new java.util.LinkedHashSet;
+specialinvoke v78.<java.util.LinkedHashSet: void <init>()>();
+v79 = staticinvoke <io.netty.util.internal.PlatformDependent: boolean addPropertyOsClassifiers(java.util.Set,java.util.Set)>(v77, v78);
+if v79 != 0 goto label31;
+staticinvoke <io.netty.util.internal.PlatformDependent: void addFilesystemOsClassifiers(java.util.Set,java.util.Set)>(v77, v78);
+label31:
+v80 = staticinvoke <java.util.Collections: java.util.Set unmodifiableSet(java.util.Set)>(v78);
+<io.netty.util.internal.PlatformDependent: java.util.Set LINUX_OS_CLASSIFIERS> = v80;
+return;
+}
+}

@@ -1,0 +1,317 @@
+final class io.smallrye.mutiny.operators.multi.MultiEmitOnOp$MultiEmitOnProcessor extends io.smallrye.mutiny.operators.multi.MultiOperatorProcessor implements java.lang.Runnable
+{
+private final java.util.concurrent.Executor executor;
+private final int limit;
+private final java.util.Queue queue;
+private volatile boolean cancelled;
+private volatile boolean done;
+private final java.util.concurrent.atomic.AtomicReference failure;
+private final java.util.concurrent.atomic.AtomicInteger wip;
+private final java.util.concurrent.atomic.AtomicLong requested;
+private long produced;
+void <init>(io.smallrye.mutiny.subscription.MultiSubscriber, java.util.concurrent.Executor, java.util.function.Supplier)
+{
+java.util.concurrent.Executor v2;
+java.util.concurrent.atomic.AtomicReference v4;
+java.util.function.Supplier v3;
+java.util.concurrent.atomic.AtomicLong v6;
+java.util.concurrent.atomic.AtomicInteger v5;
+java.lang.Object v7;
+io.smallrye.mutiny.operators.multi.MultiEmitOnOp$MultiEmitOnProcessor v0;
+io.smallrye.mutiny.subscription.MultiSubscriber v1;
+v0 := @this: io.smallrye.mutiny.operators.multi.MultiEmitOnOp$MultiEmitOnProcessor;
+v1 := @parameter0: io.smallrye.mutiny.subscription.MultiSubscriber;
+v2 := @parameter1: java.util.concurrent.Executor;
+v3 := @parameter2: java.util.function.Supplier;
+specialinvoke v0.<io.smallrye.mutiny.operators.multi.MultiOperatorProcessor: void <init>(io.smallrye.mutiny.subscription.MultiSubscriber)>(v1);
+v4 = new java.util.concurrent.atomic.AtomicReference;
+specialinvoke v4.<java.util.concurrent.atomic.AtomicReference: void <init>()>();
+v0.<io.smallrye.mutiny.operators.multi.MultiEmitOnOp$MultiEmitOnProcessor: java.util.concurrent.atomic.AtomicReference failure> = v4;
+v5 = new java.util.concurrent.atomic.AtomicInteger;
+specialinvoke v5.<java.util.concurrent.atomic.AtomicInteger: void <init>()>();
+v0.<io.smallrye.mutiny.operators.multi.MultiEmitOnOp$MultiEmitOnProcessor: java.util.concurrent.atomic.AtomicInteger wip> = v5;
+v6 = new java.util.concurrent.atomic.AtomicLong;
+specialinvoke v6.<java.util.concurrent.atomic.AtomicLong: void <init>()>();
+v0.<io.smallrye.mutiny.operators.multi.MultiEmitOnOp$MultiEmitOnProcessor: java.util.concurrent.atomic.AtomicLong requested> = v6;
+v0.<io.smallrye.mutiny.operators.multi.MultiEmitOnOp$MultiEmitOnProcessor: java.util.concurrent.Executor executor> = v2;
+v0.<io.smallrye.mutiny.operators.multi.MultiEmitOnOp$MultiEmitOnProcessor: int limit> = 16;
+v7 = interfaceinvoke v3.<java.util.function.Supplier: java.lang.Object get()>();
+v0.<io.smallrye.mutiny.operators.multi.MultiEmitOnOp$MultiEmitOnProcessor: java.util.Queue queue> = v7;
+return;
+}
+public void onSubscribe(java.util.concurrent.Flow$Subscription)
+{
+io.smallrye.mutiny.operators.multi.MultiEmitOnOp$MultiEmitOnProcessor v0;
+io.smallrye.mutiny.subscription.MultiSubscriber v3;
+boolean v2;
+java.util.concurrent.Flow$Subscription v1;
+v0 := @this: io.smallrye.mutiny.operators.multi.MultiEmitOnOp$MultiEmitOnProcessor;
+v1 := @parameter0: java.util.concurrent.Flow$Subscription;
+v2 = virtualinvoke v0.<io.smallrye.mutiny.operators.multi.MultiEmitOnOp$MultiEmitOnProcessor: boolean compareAndSetUpstreamSubscription(java.util.concurrent.Flow$Subscription,java.util.concurrent.Flow$Subscription)>(null, v1);
+if v2 == 0 goto label1;
+v3 = v0.<io.smallrye.mutiny.operators.multi.MultiEmitOnOp$MultiEmitOnProcessor: io.smallrye.mutiny.subscription.MultiSubscriber downstream>;
+interfaceinvoke v3.<io.smallrye.mutiny.subscription.MultiSubscriber: void onSubscribe(java.util.concurrent.Flow$Subscription)>(v0);
+interfaceinvoke v1.<java.util.concurrent.Flow$Subscription: void request(long)>(16L);
+goto label2;
+label1:
+interfaceinvoke v1.<java.util.concurrent.Flow$Subscription: void cancel()>();
+label2:
+return;
+}
+public void onItem(java.lang.Object)
+{
+io.smallrye.mutiny.subscription.BackPressureFailure v5;
+java.lang.Object v1;
+java.util.Queue v3;
+io.smallrye.mutiny.operators.multi.MultiEmitOnOp$MultiEmitOnProcessor v0;
+boolean v2, v4;
+v0 := @this: io.smallrye.mutiny.operators.multi.MultiEmitOnOp$MultiEmitOnProcessor;
+v1 := @parameter0: java.lang.Object;
+v2 = v0.<io.smallrye.mutiny.operators.multi.MultiEmitOnOp$MultiEmitOnProcessor: boolean done>;
+if v2 == 0 goto label1;
+return;
+label1:
+v3 = v0.<io.smallrye.mutiny.operators.multi.MultiEmitOnOp$MultiEmitOnProcessor: java.util.Queue queue>;
+v4 = interfaceinvoke v3.<java.util.Queue: boolean offer(java.lang.Object)>(v1);
+if v4 != 0 goto label2;
+virtualinvoke v0.<io.smallrye.mutiny.operators.multi.MultiEmitOnOp$MultiEmitOnProcessor: void cancelUpstream()>();
+v5 = new io.smallrye.mutiny.subscription.BackPressureFailure;
+specialinvoke v5.<io.smallrye.mutiny.subscription.BackPressureFailure: void <init>(java.lang.String)>("Queue is full, the upstream didn\'t enforce the requests");
+virtualinvoke v0.<io.smallrye.mutiny.operators.multi.MultiEmitOnOp$MultiEmitOnProcessor: void onFailure(java.lang.Throwable)>(v5);
+v0.<io.smallrye.mutiny.operators.multi.MultiEmitOnOp$MultiEmitOnProcessor: boolean done> = 1;
+goto label3;
+label2:
+virtualinvoke v0.<io.smallrye.mutiny.operators.multi.MultiEmitOnOp$MultiEmitOnProcessor: void schedule()>();
+label3:
+return;
+}
+public void onFailure(java.lang.Throwable)
+{
+java.lang.Throwable v1;
+io.smallrye.mutiny.operators.multi.MultiEmitOnOp$MultiEmitOnProcessor v0;
+java.util.concurrent.atomic.AtomicReference v4;
+boolean v2, v3;
+v0 := @this: io.smallrye.mutiny.operators.multi.MultiEmitOnOp$MultiEmitOnProcessor;
+v1 := @parameter0: java.lang.Throwable;
+v2 = v0.<io.smallrye.mutiny.operators.multi.MultiEmitOnOp$MultiEmitOnProcessor: boolean done>;
+if v2 == 0 goto label1;
+v3 = v0.<io.smallrye.mutiny.operators.multi.MultiEmitOnOp$MultiEmitOnProcessor: boolean cancelled>;
+if v3 != 0 goto label2;
+label1:
+v0.<io.smallrye.mutiny.operators.multi.MultiEmitOnOp$MultiEmitOnProcessor: boolean done> = 1;
+v4 = v0.<io.smallrye.mutiny.operators.multi.MultiEmitOnOp$MultiEmitOnProcessor: java.util.concurrent.atomic.AtomicReference failure>;
+virtualinvoke v4.<java.util.concurrent.atomic.AtomicReference: void set(java.lang.Object)>(v1);
+virtualinvoke v0.<io.smallrye.mutiny.operators.multi.MultiEmitOnOp$MultiEmitOnProcessor: void schedule()>();
+label2:
+return;
+}
+public void onCompletion()
+{
+io.smallrye.mutiny.operators.multi.MultiEmitOnOp$MultiEmitOnProcessor v0;
+boolean v1, v2;
+v0 := @this: io.smallrye.mutiny.operators.multi.MultiEmitOnOp$MultiEmitOnProcessor;
+v1 = v0.<io.smallrye.mutiny.operators.multi.MultiEmitOnOp$MultiEmitOnProcessor: boolean done>;
+if v1 == 0 goto label1;
+v2 = v0.<io.smallrye.mutiny.operators.multi.MultiEmitOnOp$MultiEmitOnProcessor: boolean cancelled>;
+if v2 != 0 goto label2;
+label1:
+v0.<io.smallrye.mutiny.operators.multi.MultiEmitOnOp$MultiEmitOnProcessor: boolean done> = 1;
+virtualinvoke v0.<io.smallrye.mutiny.operators.multi.MultiEmitOnOp$MultiEmitOnProcessor: void schedule()>();
+label2:
+return;
+}
+public void request(long)
+{
+java.util.concurrent.atomic.AtomicLong v5;
+byte v2;
+long v1;
+io.smallrye.mutiny.operators.multi.MultiEmitOnOp$MultiEmitOnProcessor v0;
+java.lang.IllegalArgumentException v6;
+boolean v3, v4;
+v0 := @this: io.smallrye.mutiny.operators.multi.MultiEmitOnOp$MultiEmitOnProcessor;
+v1 := @parameter0: long;
+v2 = v1 cmp 0L;
+if v2 <= 0 goto label2;
+v3 = v0.<io.smallrye.mutiny.operators.multi.MultiEmitOnOp$MultiEmitOnProcessor: boolean done>;
+if v3 == 0 goto label1;
+v4 = v0.<io.smallrye.mutiny.operators.multi.MultiEmitOnOp$MultiEmitOnProcessor: boolean cancelled>;
+if v4 != 0 goto label3;
+label1:
+v5 = v0.<io.smallrye.mutiny.operators.multi.MultiEmitOnOp$MultiEmitOnProcessor: java.util.concurrent.atomic.AtomicLong requested>;
+staticinvoke <io.smallrye.mutiny.helpers.Subscriptions: long add(java.util.concurrent.atomic.AtomicLong,long)>(v5, v1);
+virtualinvoke v0.<io.smallrye.mutiny.operators.multi.MultiEmitOnOp$MultiEmitOnProcessor: void schedule()>();
+goto label3;
+label2:
+v6 = staticinvoke <io.smallrye.mutiny.helpers.Subscriptions: java.lang.IllegalArgumentException getInvalidRequestException()>();
+virtualinvoke v0.<io.smallrye.mutiny.operators.multi.MultiEmitOnOp$MultiEmitOnProcessor: void onFailure(java.lang.Throwable)>(v6);
+label3:
+return;
+}
+public void cancel()
+{
+java.util.concurrent.atomic.AtomicInteger v2;
+int v3;
+java.util.Queue v4;
+io.smallrye.mutiny.operators.multi.MultiEmitOnOp$MultiEmitOnProcessor v0;
+boolean v1;
+v0 := @this: io.smallrye.mutiny.operators.multi.MultiEmitOnOp$MultiEmitOnProcessor;
+v1 = v0.<io.smallrye.mutiny.operators.multi.MultiEmitOnOp$MultiEmitOnProcessor: boolean cancelled>;
+if v1 == 0 goto label1;
+return;
+label1:
+v0.<io.smallrye.mutiny.operators.multi.MultiEmitOnOp$MultiEmitOnProcessor: boolean cancelled> = 1;
+virtualinvoke v0.<io.smallrye.mutiny.operators.multi.MultiEmitOnOp$MultiEmitOnProcessor: void cancelUpstream()>();
+v2 = v0.<io.smallrye.mutiny.operators.multi.MultiEmitOnOp$MultiEmitOnProcessor: java.util.concurrent.atomic.AtomicInteger wip>;
+v3 = virtualinvoke v2.<java.util.concurrent.atomic.AtomicInteger: int getAndIncrement()>();
+if v3 != 0 goto label2;
+v4 = v0.<io.smallrye.mutiny.operators.multi.MultiEmitOnOp$MultiEmitOnProcessor: java.util.Queue queue>;
+interfaceinvoke v4.<java.util.Queue: void clear()>();
+label2:
+return;
+}
+void schedule()
+{
+java.util.concurrent.Executor v3;
+io.smallrye.mutiny.helpers.Subscriptions$EmptySubscription v5, v7;
+java.util.concurrent.RejectedExecutionException v4;
+java.util.concurrent.atomic.AtomicInteger v1;
+int v2;
+java.util.Queue v8;
+io.smallrye.mutiny.operators.multi.MultiEmitOnOp$MultiEmitOnProcessor v0;
+io.smallrye.mutiny.subscription.MultiSubscriber v9;
+java.util.concurrent.Flow$Subscription v6;
+v0 := @this: io.smallrye.mutiny.operators.multi.MultiEmitOnOp$MultiEmitOnProcessor;
+v1 = v0.<io.smallrye.mutiny.operators.multi.MultiEmitOnOp$MultiEmitOnProcessor: java.util.concurrent.atomic.AtomicInteger wip>;
+v2 = virtualinvoke v1.<java.util.concurrent.atomic.AtomicInteger: int getAndIncrement()>();
+if v2 == 0 goto label1;
+return;
+label1:
+v3 = v0.<io.smallrye.mutiny.operators.multi.MultiEmitOnOp$MultiEmitOnProcessor: java.util.concurrent.Executor executor>;
+interfaceinvoke v3.<java.util.concurrent.Executor: void execute(java.lang.Runnable)>(v0);
+label2:
+goto label4;
+label3:
+v4 := @caughtexception;
+v5 = <io.smallrye.mutiny.helpers.Subscriptions: io.smallrye.mutiny.helpers.Subscriptions$EmptySubscription CANCELLED>;
+v6 = virtualinvoke v0.<io.smallrye.mutiny.operators.multi.MultiEmitOnOp$MultiEmitOnProcessor: java.util.concurrent.Flow$Subscription getAndSetUpstreamSubscription(java.util.concurrent.Flow$Subscription)>(v5);
+v7 = <io.smallrye.mutiny.helpers.Subscriptions: io.smallrye.mutiny.helpers.Subscriptions$EmptySubscription CANCELLED>;
+if v6 == v7 goto label4;
+v0.<io.smallrye.mutiny.operators.multi.MultiEmitOnOp$MultiEmitOnProcessor: boolean done> = 1;
+virtualinvoke v0.<io.smallrye.mutiny.operators.multi.MultiEmitOnOp$MultiEmitOnProcessor: void cancelUpstream()>();
+v8 = v0.<io.smallrye.mutiny.operators.multi.MultiEmitOnOp$MultiEmitOnProcessor: java.util.Queue queue>;
+interfaceinvoke v8.<java.util.Queue: void clear()>();
+v9 = v0.<io.smallrye.mutiny.operators.multi.MultiEmitOnOp$MultiEmitOnProcessor: io.smallrye.mutiny.subscription.MultiSubscriber downstream>;
+interfaceinvoke v9.<io.smallrye.mutiny.subscription.MultiSubscriber: void onFailure(java.lang.Throwable)>(v4);
+specialinvoke v0.<io.smallrye.mutiny.operators.multi.MultiOperatorProcessor: void cancel()>();
+label4:
+return;
+catch java.util.concurrent.RejectedExecutionException from label1 to label2 with label3;
+}
+public void run()
+{
+long v16, v3, v5;
+byte v13, v14, v17, v6;
+java.util.concurrent.atomic.AtomicInteger v21, v23;
+int v1, v12, v22, v24;
+io.smallrye.mutiny.operators.multi.MultiEmitOnOp$MultiEmitOnProcessor v0;
+io.smallrye.mutiny.subscription.MultiSubscriber v11;
+boolean v10, v18, v19, v20, v7, v9;
+java.util.concurrent.atomic.AtomicLong v15, v4;
+java.lang.Object v8;
+java.util.Queue v2;
+v0 := @this: io.smallrye.mutiny.operators.multi.MultiEmitOnOp$MultiEmitOnProcessor;
+v1 = 1;
+v2 = v0.<io.smallrye.mutiny.operators.multi.MultiEmitOnOp$MultiEmitOnProcessor: java.util.Queue queue>;
+v3 = v0.<io.smallrye.mutiny.operators.multi.MultiEmitOnOp$MultiEmitOnProcessor: long produced>;
+label01:
+v4 = v0.<io.smallrye.mutiny.operators.multi.MultiEmitOnOp$MultiEmitOnProcessor: java.util.concurrent.atomic.AtomicLong requested>;
+v5 = virtualinvoke v4.<java.util.concurrent.atomic.AtomicLong: long get()>();
+label02:
+v6 = v3 cmp v5;
+if v6 == 0 goto label07;
+v7 = v0.<io.smallrye.mutiny.operators.multi.MultiEmitOnOp$MultiEmitOnProcessor: boolean done>;
+v8 = interfaceinvoke v2.<java.util.Queue: java.lang.Object poll()>();
+if v8 != null goto label03;
+v9 = 1;
+goto label04;
+label03:
+v9 = 0;
+label04:
+v10 = virtualinvoke v0.<io.smallrye.mutiny.operators.multi.MultiEmitOnOp$MultiEmitOnProcessor: boolean isDoneOrCancelled(boolean,boolean)>(v7, v9);
+if v10 == 0 goto label05;
+return;
+label05:
+if v9 != 0 goto label07;
+v11 = v0.<io.smallrye.mutiny.operators.multi.MultiEmitOnOp$MultiEmitOnProcessor: io.smallrye.mutiny.subscription.MultiSubscriber downstream>;
+interfaceinvoke v11.<io.smallrye.mutiny.subscription.MultiSubscriber: void onItem(java.lang.Object)>(v8);
+v3 = v3 + 1L;
+v12 = v0.<io.smallrye.mutiny.operators.multi.MultiEmitOnOp$MultiEmitOnProcessor: int limit>;
+v13 = v3 cmp v12;
+if v13 != 0 goto label02;
+v14 = v5 cmp 9223372036854775807L;
+if v14 == 0 goto label06;
+v15 = v0.<io.smallrye.mutiny.operators.multi.MultiEmitOnOp$MultiEmitOnProcessor: java.util.concurrent.atomic.AtomicLong requested>;
+v16 = neg v3;
+v5 = virtualinvoke v15.<java.util.concurrent.atomic.AtomicLong: long addAndGet(long)>(v16);
+label06:
+specialinvoke v0.<io.smallrye.mutiny.operators.multi.MultiOperatorProcessor: void request(long)>(v3);
+v3 = 0L;
+goto label02;
+label07:
+v17 = v3 cmp v5;
+if v17 != 0 goto label08;
+v18 = v0.<io.smallrye.mutiny.operators.multi.MultiEmitOnOp$MultiEmitOnProcessor: boolean done>;
+v19 = interfaceinvoke v2.<java.util.Queue: boolean isEmpty()>();
+v20 = virtualinvoke v0.<io.smallrye.mutiny.operators.multi.MultiEmitOnOp$MultiEmitOnProcessor: boolean isDoneOrCancelled(boolean,boolean)>(v18, v19);
+if v20 == 0 goto label08;
+return;
+label08:
+v21 = v0.<io.smallrye.mutiny.operators.multi.MultiEmitOnOp$MultiEmitOnProcessor: java.util.concurrent.atomic.AtomicInteger wip>;
+v22 = virtualinvoke v21.<java.util.concurrent.atomic.AtomicInteger: int get()>();
+if v1 != v22 goto label09;
+v0.<io.smallrye.mutiny.operators.multi.MultiEmitOnOp$MultiEmitOnProcessor: long produced> = v3;
+v23 = v0.<io.smallrye.mutiny.operators.multi.MultiEmitOnOp$MultiEmitOnProcessor: java.util.concurrent.atomic.AtomicInteger wip>;
+v24 = neg v1;
+v1 = virtualinvoke v23.<java.util.concurrent.atomic.AtomicInteger: int addAndGet(int)>(v24);
+if v1 != 0 goto label01;
+goto label10;
+label09:
+v1 = v22;
+goto label01;
+label10:
+return;
+}
+boolean isDoneOrCancelled(boolean, boolean)
+{
+java.util.concurrent.atomic.AtomicReference v5;
+java.lang.Object v6;
+java.util.Queue v4;
+io.smallrye.mutiny.operators.multi.MultiEmitOnOp$MultiEmitOnProcessor v0;
+io.smallrye.mutiny.subscription.MultiSubscriber v7, v8;
+boolean v1, v2, v3;
+v0 := @this: io.smallrye.mutiny.operators.multi.MultiEmitOnOp$MultiEmitOnProcessor;
+v1 := @parameter0: boolean;
+v2 := @parameter1: boolean;
+v3 = v0.<io.smallrye.mutiny.operators.multi.MultiEmitOnOp$MultiEmitOnProcessor: boolean cancelled>;
+if v3 == 0 goto label1;
+v4 = v0.<io.smallrye.mutiny.operators.multi.MultiEmitOnOp$MultiEmitOnProcessor: java.util.Queue queue>;
+interfaceinvoke v4.<java.util.Queue: void clear()>();
+return 1;
+label1:
+v5 = v0.<io.smallrye.mutiny.operators.multi.MultiEmitOnOp$MultiEmitOnProcessor: java.util.concurrent.atomic.AtomicReference failure>;
+v6 = virtualinvoke v5.<java.util.concurrent.atomic.AtomicReference: java.lang.Object get()>();
+if v1 == 0 goto label3;
+if v6 == null goto label2;
+v7 = v0.<io.smallrye.mutiny.operators.multi.MultiEmitOnOp$MultiEmitOnProcessor: io.smallrye.mutiny.subscription.MultiSubscriber downstream>;
+interfaceinvoke v7.<io.smallrye.mutiny.subscription.MultiSubscriber: void onFailure(java.lang.Throwable)>(v6);
+return 1;
+label2:
+if v1 == 0 goto label3;
+if v2 == 0 goto label3;
+v8 = v0.<io.smallrye.mutiny.operators.multi.MultiEmitOnOp$MultiEmitOnProcessor: io.smallrye.mutiny.subscription.MultiSubscriber downstream>;
+interfaceinvoke v8.<io.smallrye.mutiny.subscription.MultiSubscriber: void onCompletion()>();
+return 1;
+label3:
+return 0;
+}
+}

@@ -1,0 +1,1460 @@
+abstract class io.netty.resolver.dns.DnsResolveContext extends java.lang.Object
+{
+private static final io.netty.util.internal.logging.InternalLogger logger;
+private static final java.lang.RuntimeException NXDOMAIN_QUERY_FAILED_EXCEPTION;
+private static final java.lang.RuntimeException CNAME_NOT_FOUND_QUERY_FAILED_EXCEPTION;
+private static final java.lang.RuntimeException NO_MATCHING_RECORD_QUERY_FAILED_EXCEPTION;
+private static final java.lang.RuntimeException UNRECOGNIZED_TYPE_QUERY_FAILED_EXCEPTION;
+private static final java.lang.RuntimeException NAME_SERVERS_EXHAUSTED_EXCEPTION;
+final io.netty.resolver.dns.DnsNameResolver parent;
+private final io.netty.util.concurrent.Promise originalPromise;
+private final io.netty.resolver.dns.DnsServerAddressStream nameServerAddrs;
+private final java.lang.String hostname;
+private final int dnsClass;
+private final io.netty.handler.codec.dns.DnsRecordType[] expectedTypes;
+final io.netty.handler.codec.dns.DnsRecord[] additionals;
+private final java.util.Set queriesInProgress;
+private java.util.List finalResult;
+private int allowedQueries;
+private boolean triedCNAME;
+private boolean completeEarly;
+static final boolean $assertionsDisabled;
+void <init>(io.netty.resolver.dns.DnsNameResolver, io.netty.util.concurrent.Promise, java.lang.String, int, io.netty.handler.codec.dns.DnsRecordType[], io.netty.handler.codec.dns.DnsRecord[], io.netty.resolver.dns.DnsServerAddressStream, int)
+{
+io.netty.resolver.dns.DnsNameResolver v1;
+java.util.IdentityHashMap v9;
+io.netty.util.concurrent.Promise v2;
+io.netty.resolver.dns.DnsServerAddressStream v7;
+java.util.Set v10;
+io.netty.handler.codec.dns.DnsRecordType[] v5;
+java.lang.AssertionError v13;
+io.netty.resolver.dns.DnsResolveContext v0;
+io.netty.handler.codec.dns.DnsRecord[] v6;
+int v12, v4, v8;
+java.lang.Object v14;
+java.lang.String v3;
+boolean v11;
+v0 := @this: io.netty.resolver.dns.DnsResolveContext;
+v1 := @parameter0: io.netty.resolver.dns.DnsNameResolver;
+v2 := @parameter1: io.netty.util.concurrent.Promise;
+v3 := @parameter2: java.lang.String;
+v4 := @parameter3: int;
+v5 := @parameter4: io.netty.handler.codec.dns.DnsRecordType[];
+v6 := @parameter5: io.netty.handler.codec.dns.DnsRecord[];
+v7 := @parameter6: io.netty.resolver.dns.DnsServerAddressStream;
+v8 := @parameter7: int;
+specialinvoke v0.<java.lang.Object: void <init>()>();
+v9 = new java.util.IdentityHashMap;
+specialinvoke v9.<java.util.IdentityHashMap: void <init>()>();
+v10 = staticinvoke <java.util.Collections: java.util.Set newSetFromMap(java.util.Map)>(v9);
+v0.<io.netty.resolver.dns.DnsResolveContext: java.util.Set queriesInProgress> = v10;
+v11 = <io.netty.resolver.dns.DnsResolveContext: boolean $assertionsDisabled>;
+if v11 != 0 goto label1;
+v12 = lengthof v5;
+if v12 > 0 goto label1;
+v13 = new java.lang.AssertionError;
+specialinvoke v13.<java.lang.AssertionError: void <init>()>();
+throw v13;
+label1:
+v0.<io.netty.resolver.dns.DnsResolveContext: io.netty.resolver.dns.DnsNameResolver parent> = v1;
+v0.<io.netty.resolver.dns.DnsResolveContext: io.netty.util.concurrent.Promise originalPromise> = v2;
+v0.<io.netty.resolver.dns.DnsResolveContext: java.lang.String hostname> = v3;
+v0.<io.netty.resolver.dns.DnsResolveContext: int dnsClass> = v4;
+v0.<io.netty.resolver.dns.DnsResolveContext: io.netty.handler.codec.dns.DnsRecordType[] expectedTypes> = v5;
+v0.<io.netty.resolver.dns.DnsResolveContext: io.netty.handler.codec.dns.DnsRecord[] additionals> = v6;
+v14 = staticinvoke <io.netty.util.internal.ObjectUtil: java.lang.Object checkNotNull(java.lang.Object,java.lang.String)>(v7, "nameServerAddrs");
+v0.<io.netty.resolver.dns.DnsResolveContext: io.netty.resolver.dns.DnsServerAddressStream nameServerAddrs> = v14;
+v0.<io.netty.resolver.dns.DnsResolveContext: int allowedQueries> = v8;
+return;
+}
+io.netty.resolver.dns.DnsCache resolveCache()
+{
+io.netty.resolver.dns.DnsResolveContext v0;
+io.netty.resolver.dns.DnsNameResolver v1;
+io.netty.resolver.dns.DnsCache v2;
+v0 := @this: io.netty.resolver.dns.DnsResolveContext;
+v1 = v0.<io.netty.resolver.dns.DnsResolveContext: io.netty.resolver.dns.DnsNameResolver parent>;
+v2 = virtualinvoke v1.<io.netty.resolver.dns.DnsNameResolver: io.netty.resolver.dns.DnsCache resolveCache()>();
+return v2;
+}
+io.netty.resolver.dns.DnsCnameCache cnameCache()
+{
+io.netty.resolver.dns.DnsResolveContext v0;
+io.netty.resolver.dns.DnsNameResolver v1;
+io.netty.resolver.dns.DnsCnameCache v2;
+v0 := @this: io.netty.resolver.dns.DnsResolveContext;
+v1 = v0.<io.netty.resolver.dns.DnsResolveContext: io.netty.resolver.dns.DnsNameResolver parent>;
+v2 = virtualinvoke v1.<io.netty.resolver.dns.DnsNameResolver: io.netty.resolver.dns.DnsCnameCache cnameCache()>();
+return v2;
+}
+io.netty.resolver.dns.AuthoritativeDnsServerCache authoritativeDnsServerCache()
+{
+io.netty.resolver.dns.AuthoritativeDnsServerCache v2;
+io.netty.resolver.dns.DnsResolveContext v0;
+io.netty.resolver.dns.DnsNameResolver v1;
+v0 := @this: io.netty.resolver.dns.DnsResolveContext;
+v1 = v0.<io.netty.resolver.dns.DnsResolveContext: io.netty.resolver.dns.DnsNameResolver parent>;
+v2 = virtualinvoke v1.<io.netty.resolver.dns.DnsNameResolver: io.netty.resolver.dns.AuthoritativeDnsServerCache authoritativeDnsServerCache()>();
+return v2;
+}
+abstract io.netty.resolver.dns.DnsResolveContext newResolverContext(io.netty.resolver.dns.DnsNameResolver, io.netty.util.concurrent.Promise, java.lang.String, int, io.netty.handler.codec.dns.DnsRecordType[], io.netty.handler.codec.dns.DnsRecord[], io.netty.resolver.dns.DnsServerAddressStream, int);
+abstract java.lang.Object convertRecord(io.netty.handler.codec.dns.DnsRecord, java.lang.String, io.netty.handler.codec.dns.DnsRecord[], io.netty.channel.EventLoop);
+abstract java.util.List filterResults(java.util.List);
+abstract boolean isCompleteEarly(java.lang.Object);
+abstract boolean isDuplicateAllowed();
+abstract void cache(java.lang.String, io.netty.handler.codec.dns.DnsRecord[], io.netty.handler.codec.dns.DnsRecord, java.lang.Object);
+abstract void cache(java.lang.String, io.netty.handler.codec.dns.DnsRecord[], java.net.UnknownHostException);
+void resolve(io.netty.util.concurrent.Promise)
+{
+java.lang.String[] v3;
+io.netty.resolver.dns.DnsResolveContext v0;
+byte v15;
+int v4, v6;
+java.lang.String v11, v12, v13, v14, v7, v9;
+boolean v10, v8;
+io.netty.resolver.dns.DnsNameResolver v16, v2, v5;
+io.netty.util.concurrent.Promise v1, v18;
+io.netty.channel.EventLoop v17;
+io.netty.resolver.dns.DnsResolveContext$1 v19;
+v0 := @this: io.netty.resolver.dns.DnsResolveContext;
+v1 := @parameter0: io.netty.util.concurrent.Promise;
+v2 = v0.<io.netty.resolver.dns.DnsResolveContext: io.netty.resolver.dns.DnsNameResolver parent>;
+v3 = virtualinvoke v2.<io.netty.resolver.dns.DnsNameResolver: java.lang.String[] searchDomains()>();
+v4 = lengthof v3;
+if v4 == 0 goto label1;
+v5 = v0.<io.netty.resolver.dns.DnsResolveContext: io.netty.resolver.dns.DnsNameResolver parent>;
+v6 = virtualinvoke v5.<io.netty.resolver.dns.DnsNameResolver: int ndots()>();
+if v6 == 0 goto label1;
+v7 = v0.<io.netty.resolver.dns.DnsResolveContext: java.lang.String hostname>;
+v8 = staticinvoke <io.netty.util.internal.StringUtil: boolean endsWith(java.lang.CharSequence,char)>(v7, 46);
+if v8 == 0 goto label2;
+label1:
+v9 = v0.<io.netty.resolver.dns.DnsResolveContext: java.lang.String hostname>;
+specialinvoke v0.<io.netty.resolver.dns.DnsResolveContext: void internalResolve(java.lang.String,io.netty.util.concurrent.Promise)>(v9, v1);
+goto label7;
+label2:
+v10 = specialinvoke v0.<io.netty.resolver.dns.DnsResolveContext: boolean hasNDots()>();
+if v10 == 0 goto label3;
+v11 = v0.<io.netty.resolver.dns.DnsResolveContext: java.lang.String hostname>;
+goto label4;
+label3:
+v12 = v0.<io.netty.resolver.dns.DnsResolveContext: java.lang.String hostname>;
+v13 = v3[0];
+v11 = dynamicinvoke "makeConcatWithConstants" <java.lang.String (java.lang.String,java.lang.String)>(v12, v13) <java.lang.invoke.StringConcatFactory: java.lang.invoke.CallSite makeConcatWithConstants(java.lang.invoke.MethodHandles$Lookup,java.lang.String,java.lang.invoke.MethodType,java.lang.String,java.lang.Object[])>("\u0001.\u0001");
+label4:
+v14 = v11;
+if v10 == 0 goto label5;
+v15 = 0;
+goto label6;
+label5:
+v15 = 1;
+label6:
+v16 = v0.<io.netty.resolver.dns.DnsResolveContext: io.netty.resolver.dns.DnsNameResolver parent>;
+v17 = virtualinvoke v16.<io.netty.resolver.dns.DnsNameResolver: io.netty.channel.EventLoop executor()>();
+v18 = interfaceinvoke v17.<io.netty.channel.EventLoop: io.netty.util.concurrent.Promise newPromise()>();
+v19 = new io.netty.resolver.dns.DnsResolveContext$1;
+specialinvoke v19.<io.netty.resolver.dns.DnsResolveContext$1: void <init>(io.netty.resolver.dns.DnsResolveContext,int,io.netty.util.concurrent.Promise,java.lang.String[],boolean)>(v0, v15, v1, v3, v10);
+interfaceinvoke v18.<io.netty.util.concurrent.Promise: io.netty.util.concurrent.Promise addListener(io.netty.util.concurrent.GenericFutureListener)>(v19);
+virtualinvoke v0.<io.netty.resolver.dns.DnsResolveContext: void doSearchDomainQuery(java.lang.String,io.netty.util.concurrent.Promise)>(v14, v18);
+label7:
+return;
+}
+private boolean hasNDots()
+{
+io.netty.resolver.dns.DnsNameResolver v7;
+char v6;
+io.netty.resolver.dns.DnsResolveContext v0;
+int v2, v3, v4, v8;
+java.lang.String v1, v5;
+v0 := @this: io.netty.resolver.dns.DnsResolveContext;
+v1 = v0.<io.netty.resolver.dns.DnsResolveContext: java.lang.String hostname>;
+v2 = virtualinvoke v1.<java.lang.String: int length()>();
+v3 = v2 - 1;
+v4 = 0;
+label1:
+if v3 < 0 goto label3;
+v5 = v0.<io.netty.resolver.dns.DnsResolveContext: java.lang.String hostname>;
+v6 = virtualinvoke v5.<java.lang.String: char charAt(int)>(v3);
+if v6 != 46 goto label2;
+v4 = v4 + 1;
+v7 = v0.<io.netty.resolver.dns.DnsResolveContext: io.netty.resolver.dns.DnsNameResolver parent>;
+v8 = virtualinvoke v7.<io.netty.resolver.dns.DnsNameResolver: int ndots()>();
+if v4 < v8 goto label2;
+return 1;
+label2:
+v3 = v3 - 1;
+goto label1;
+label3:
+return 0;
+}
+void doSearchDomainQuery(java.lang.String, io.netty.util.concurrent.Promise)
+{
+io.netty.resolver.dns.DnsNameResolver v3, v9;
+io.netty.util.concurrent.Promise v2, v4;
+io.netty.resolver.dns.DnsServerAddressStream v8;
+io.netty.handler.codec.dns.DnsRecordType[] v6;
+io.netty.resolver.dns.DnsResolveContext v0, v11;
+io.netty.handler.codec.dns.DnsRecord[] v7;
+int v10, v5;
+java.lang.String v1;
+v0 := @this: io.netty.resolver.dns.DnsResolveContext;
+v1 := @parameter0: java.lang.String;
+v2 := @parameter1: io.netty.util.concurrent.Promise;
+v3 = v0.<io.netty.resolver.dns.DnsResolveContext: io.netty.resolver.dns.DnsNameResolver parent>;
+v4 = v0.<io.netty.resolver.dns.DnsResolveContext: io.netty.util.concurrent.Promise originalPromise>;
+v5 = v0.<io.netty.resolver.dns.DnsResolveContext: int dnsClass>;
+v6 = v0.<io.netty.resolver.dns.DnsResolveContext: io.netty.handler.codec.dns.DnsRecordType[] expectedTypes>;
+v7 = v0.<io.netty.resolver.dns.DnsResolveContext: io.netty.handler.codec.dns.DnsRecord[] additionals>;
+v8 = v0.<io.netty.resolver.dns.DnsResolveContext: io.netty.resolver.dns.DnsServerAddressStream nameServerAddrs>;
+v9 = v0.<io.netty.resolver.dns.DnsResolveContext: io.netty.resolver.dns.DnsNameResolver parent>;
+v10 = virtualinvoke v9.<io.netty.resolver.dns.DnsNameResolver: int maxQueriesPerResolve()>();
+v11 = virtualinvoke v0.<io.netty.resolver.dns.DnsResolveContext: io.netty.resolver.dns.DnsResolveContext newResolverContext(io.netty.resolver.dns.DnsNameResolver,io.netty.util.concurrent.Promise,java.lang.String,int,io.netty.handler.codec.dns.DnsRecordType[],io.netty.handler.codec.dns.DnsRecord[],io.netty.resolver.dns.DnsServerAddressStream,int)>(v3, v4, v1, v5, v6, v7, v8, v10);
+specialinvoke v11.<io.netty.resolver.dns.DnsResolveContext: void internalResolve(java.lang.String,io.netty.util.concurrent.Promise)>(v1, v2);
+return;
+}
+private static java.lang.String hostnameWithDot(java.lang.String)
+{
+java.lang.String v0, v2;
+boolean v1;
+v0 := @parameter0: java.lang.String;
+v1 = staticinvoke <io.netty.util.internal.StringUtil: boolean endsWith(java.lang.CharSequence,char)>(v0, 46);
+if v1 == 0 goto label1;
+return v0;
+label1:
+v2 = dynamicinvoke "makeConcatWithConstants" <java.lang.String (java.lang.String)>(v0) <java.lang.invoke.StringConcatFactory: java.lang.invoke.CallSite makeConcatWithConstants(java.lang.invoke.MethodHandles$Lookup,java.lang.String,java.lang.invoke.MethodType,java.lang.String,java.lang.Object[])>("\u0001.");
+return v2;
+}
+static java.lang.String cnameResolveFromCache(io.netty.resolver.dns.DnsCnameCache, java.lang.String) throws java.net.UnknownHostException
+{
+java.lang.String v1, v2, v3, v4, v5, v6;
+io.netty.resolver.dns.DnsCnameCache v0;
+v0 := @parameter0: io.netty.resolver.dns.DnsCnameCache;
+v1 := @parameter1: java.lang.String;
+v2 = staticinvoke <io.netty.resolver.dns.DnsResolveContext: java.lang.String hostnameWithDot(java.lang.String)>(v1);
+v3 = interfaceinvoke v0.<io.netty.resolver.dns.DnsCnameCache: java.lang.String get(java.lang.String)>(v2);
+if v3 != null goto label1;
+return v1;
+label1:
+v4 = staticinvoke <io.netty.resolver.dns.DnsResolveContext: java.lang.String hostnameWithDot(java.lang.String)>(v3);
+v5 = interfaceinvoke v0.<io.netty.resolver.dns.DnsCnameCache: java.lang.String get(java.lang.String)>(v4);
+if v5 != null goto label2;
+return v3;
+label2:
+staticinvoke <io.netty.resolver.dns.DnsResolveContext: void checkCnameLoop(java.lang.String,java.lang.String,java.lang.String)>(v1, v3, v5);
+v6 = staticinvoke <io.netty.resolver.dns.DnsResolveContext: java.lang.String cnameResolveFromCacheLoop(io.netty.resolver.dns.DnsCnameCache,java.lang.String,java.lang.String,java.lang.String)>(v0, v1, v3, v5);
+return v6;
+}
+private static java.lang.String cnameResolveFromCacheLoop(io.netty.resolver.dns.DnsCnameCache, java.lang.String, java.lang.String, java.lang.String) throws java.net.UnknownHostException
+{
+java.lang.String v1, v2, v3, v5, v6, v7;
+io.netty.resolver.dns.DnsCnameCache v0;
+boolean v4, v8;
+v0 := @parameter0: io.netty.resolver.dns.DnsCnameCache;
+v1 := @parameter1: java.lang.String;
+v2 := @parameter2: java.lang.String;
+v3 := @parameter3: java.lang.String;
+v4 = 0;
+v5 = v3;
+label1:
+v6 = staticinvoke <io.netty.resolver.dns.DnsResolveContext: java.lang.String hostnameWithDot(java.lang.String)>(v5);
+v7 = interfaceinvoke v0.<io.netty.resolver.dns.DnsCnameCache: java.lang.String get(java.lang.String)>(v6);
+if v7 == null goto label5;
+staticinvoke <io.netty.resolver.dns.DnsResolveContext: void checkCnameLoop(java.lang.String,java.lang.String,java.lang.String)>(v1, v2, v7);
+v5 = v7;
+if v4 == 0 goto label2;
+v2 = interfaceinvoke v0.<io.netty.resolver.dns.DnsCnameCache: java.lang.String get(java.lang.String)>(v2);
+label2:
+if v4 != 0 goto label3;
+v8 = 1;
+goto label4;
+label3:
+v8 = 0;
+label4:
+v4 = v8;
+goto label1;
+label5:
+return v5;
+}
+private static void checkCnameLoop(java.lang.String, java.lang.String, java.lang.String) throws java.net.UnknownHostException
+{
+java.lang.String v0, v1, v2, v5;
+java.net.UnknownHostException v4;
+boolean v3;
+v0 := @parameter0: java.lang.String;
+v1 := @parameter1: java.lang.String;
+v2 := @parameter2: java.lang.String;
+v3 = virtualinvoke v1.<java.lang.String: boolean equals(java.lang.Object)>(v2);
+if v3 == 0 goto label1;
+v4 = new java.net.UnknownHostException;
+v5 = dynamicinvoke "makeConcatWithConstants" <java.lang.String (java.lang.String)>(v0) <java.lang.invoke.StringConcatFactory: java.lang.invoke.CallSite makeConcatWithConstants(java.lang.invoke.MethodHandles$Lookup,java.lang.String,java.lang.invoke.MethodType,java.lang.String,java.lang.Object[])>("CNAME loop detected for \'\u0001\'");
+specialinvoke v4.<java.net.UnknownHostException: void <init>(java.lang.String)>(v5);
+throw v4;
+label1:
+return;
+}
+private void internalResolve(java.lang.String, io.netty.util.concurrent.Promise)
+{
+java.lang.Throwable v19, v5;
+io.netty.resolver.dns.DnsServerAddressStream v13, v6;
+io.netty.handler.codec.dns.DnsRecordType[] v11, v16, v7;
+io.netty.resolver.dns.DnsResolveContext v0;
+int v10, v8, v9;
+java.lang.String v1, v4;
+boolean v14;
+io.netty.handler.codec.dns.DnsRecordType v12, v17;
+io.netty.resolver.dns.DnsNameResolver v15, v18, v20;
+io.netty.util.concurrent.Promise v2;
+io.netty.resolver.dns.DnsCnameCache v3;
+v0 := @this: io.netty.resolver.dns.DnsResolveContext;
+v1 := @parameter0: java.lang.String;
+v2 := @parameter1: io.netty.util.concurrent.Promise;
+label01:
+v3 = virtualinvoke v0.<io.netty.resolver.dns.DnsResolveContext: io.netty.resolver.dns.DnsCnameCache cnameCache()>();
+v4 = staticinvoke <io.netty.resolver.dns.DnsResolveContext: java.lang.String cnameResolveFromCache(io.netty.resolver.dns.DnsCnameCache,java.lang.String)>(v3, v1);
+label02:
+goto label04;
+label03:
+v5 := @caughtexception;
+interfaceinvoke v2.<io.netty.util.concurrent.Promise: boolean tryFailure(java.lang.Throwable)>(v5);
+return;
+label04:
+v6 = specialinvoke v0.<io.netty.resolver.dns.DnsResolveContext: io.netty.resolver.dns.DnsServerAddressStream getNameServers(java.lang.String)>(v4);
+v7 = v0.<io.netty.resolver.dns.DnsResolveContext: io.netty.handler.codec.dns.DnsRecordType[] expectedTypes>;
+v8 = lengthof v7;
+v9 = v8 - 1;
+v10 = 0;
+label05:
+if v10 >= v9 goto label08;
+v11 = v0.<io.netty.resolver.dns.DnsResolveContext: io.netty.handler.codec.dns.DnsRecordType[] expectedTypes>;
+v12 = v11[v10];
+v13 = interfaceinvoke v6.<io.netty.resolver.dns.DnsServerAddressStream: io.netty.resolver.dns.DnsServerAddressStream duplicate()>();
+v14 = specialinvoke v0.<io.netty.resolver.dns.DnsResolveContext: boolean query(java.lang.String,io.netty.handler.codec.dns.DnsRecordType,io.netty.resolver.dns.DnsServerAddressStream,boolean,io.netty.util.concurrent.Promise)>(v4, v12, v13, 0, v2);
+if v14 != 0 goto label07;
+label06:
+v15 = v0.<io.netty.resolver.dns.DnsResolveContext: io.netty.resolver.dns.DnsNameResolver parent>;
+virtualinvoke v15.<io.netty.resolver.dns.DnsNameResolver: void flushQueries()>();
+return;
+label07:
+v10 = v10 + 1;
+goto label05;
+label08:
+v16 = v0.<io.netty.resolver.dns.DnsResolveContext: io.netty.handler.codec.dns.DnsRecordType[] expectedTypes>;
+v17 = v16[v9];
+specialinvoke v0.<io.netty.resolver.dns.DnsResolveContext: boolean query(java.lang.String,io.netty.handler.codec.dns.DnsRecordType,io.netty.resolver.dns.DnsServerAddressStream,boolean,io.netty.util.concurrent.Promise)>(v4, v17, v6, 0, v2);
+label09:
+v18 = v0.<io.netty.resolver.dns.DnsResolveContext: io.netty.resolver.dns.DnsNameResolver parent>;
+virtualinvoke v18.<io.netty.resolver.dns.DnsNameResolver: void flushQueries()>();
+goto label11;
+label10:
+v19 := @caughtexception;
+v20 = v0.<io.netty.resolver.dns.DnsResolveContext: io.netty.resolver.dns.DnsNameResolver parent>;
+virtualinvoke v20.<io.netty.resolver.dns.DnsNameResolver: void flushQueries()>();
+throw v19;
+label11:
+return;
+catch java.lang.Throwable from label01 to label02 with label03;
+catch java.lang.Throwable from label04 to label06 with label10;
+catch java.lang.Throwable from label07 to label09 with label10;
+}
+private io.netty.resolver.dns.DnsServerAddressStream getNameServersFromCache(java.lang.String)
+{
+io.netty.resolver.dns.DnsServerAddressStream v13;
+char v4;
+io.netty.resolver.dns.AuthoritativeDnsServerCache v12;
+io.netty.resolver.dns.DnsResolveContext v0;
+int v10, v11, v2, v3, v5, v6, v7, v8, v9;
+java.lang.String v1;
+v0 := @this: io.netty.resolver.dns.DnsResolveContext;
+v1 := @parameter0: java.lang.String;
+v2 = virtualinvoke v1.<java.lang.String: int length()>();
+if v2 != 0 goto label1;
+return null;
+label1:
+v3 = v2 - 1;
+v4 = virtualinvoke v1.<java.lang.String: char charAt(int)>(v3);
+if v4 == 46 goto label2;
+v1 = dynamicinvoke "makeConcatWithConstants" <java.lang.String (java.lang.String)>(v1) <java.lang.invoke.StringConcatFactory: java.lang.invoke.CallSite makeConcatWithConstants(java.lang.invoke.MethodHandles$Lookup,java.lang.String,java.lang.invoke.MethodType,java.lang.String,java.lang.Object[])>("\u0001.");
+label2:
+v5 = virtualinvoke v1.<java.lang.String: int indexOf(int)>(46);
+v6 = virtualinvoke v1.<java.lang.String: int length()>();
+v7 = v6 - 1;
+if v5 != v7 goto label3;
+return null;
+label3:
+v8 = v5 + 1;
+v1 = virtualinvoke v1.<java.lang.String: java.lang.String substring(int)>(v8);
+v9 = virtualinvoke v1.<java.lang.String: int indexOf(int)>(46);
+if v9 <= 0 goto label4;
+v10 = virtualinvoke v1.<java.lang.String: int length()>();
+v11 = v10 - 1;
+if v9 != v11 goto label5;
+label4:
+return null;
+label5:
+v5 = v9;
+v12 = virtualinvoke v0.<io.netty.resolver.dns.DnsResolveContext: io.netty.resolver.dns.AuthoritativeDnsServerCache authoritativeDnsServerCache()>();
+v13 = interfaceinvoke v12.<io.netty.resolver.dns.AuthoritativeDnsServerCache: io.netty.resolver.dns.DnsServerAddressStream get(java.lang.String)>(v1);
+if v13 == null goto label3;
+return v13;
+}
+private void query(io.netty.resolver.dns.DnsServerAddressStream, int, io.netty.handler.codec.dns.DnsQuestion, io.netty.resolver.dns.DnsQueryLifecycleObserver, boolean, io.netty.util.concurrent.Promise, java.lang.Throwable)
+{
+io.netty.resolver.dns.DnsServerAddressStream v1;
+io.netty.resolver.dns.DnsResolveContext v0;
+io.netty.channel.ChannelPromise v20;
+boolean v12, v13, v17, v25, v27, v5, v8;
+io.netty.resolver.dns.DnsNameResolver v18, v21, v28;
+io.netty.handler.codec.dns.DnsQuestion v3;
+java.util.Set v31;
+io.netty.channel.EventLoop v23;
+java.net.InetSocketAddress v16;
+io.netty.resolver.dns.DnsQueryLifecycleObserver v4;
+io.netty.resolver.dns.DnsResolveContext$2 v32;
+java.lang.Throwable v7;
+long v26;
+int v10, v14, v15, v2, v9;
+io.netty.util.concurrent.Promise v11, v24, v6;
+io.netty.channel.Channel v19, v22;
+io.netty.handler.codec.dns.DnsRecord[] v29;
+io.netty.util.concurrent.Future v30;
+v0 := @this: io.netty.resolver.dns.DnsResolveContext;
+v1 := @parameter0: io.netty.resolver.dns.DnsServerAddressStream;
+v2 := @parameter1: int;
+v3 := @parameter2: io.netty.handler.codec.dns.DnsQuestion;
+v4 := @parameter3: io.netty.resolver.dns.DnsQueryLifecycleObserver;
+v5 := @parameter4: boolean;
+v6 := @parameter5: io.netty.util.concurrent.Promise;
+v7 := @parameter6: java.lang.Throwable;
+v8 = v0.<io.netty.resolver.dns.DnsResolveContext: boolean completeEarly>;
+if v8 != 0 goto label1;
+v9 = interfaceinvoke v1.<io.netty.resolver.dns.DnsServerAddressStream: int size()>();
+if v2 >= v9 goto label1;
+v10 = v0.<io.netty.resolver.dns.DnsResolveContext: int allowedQueries>;
+if v10 == 0 goto label1;
+v11 = v0.<io.netty.resolver.dns.DnsResolveContext: io.netty.util.concurrent.Promise originalPromise>;
+v12 = interfaceinvoke v11.<io.netty.util.concurrent.Promise: boolean isCancelled()>();
+if v12 != 0 goto label1;
+v13 = interfaceinvoke v6.<io.netty.util.concurrent.Promise: boolean isCancelled()>();
+if v13 == 0 goto label2;
+label1:
+specialinvoke v0.<io.netty.resolver.dns.DnsResolveContext: void tryToFinishResolve(io.netty.resolver.dns.DnsServerAddressStream,int,io.netty.handler.codec.dns.DnsQuestion,io.netty.resolver.dns.DnsQueryLifecycleObserver,io.netty.util.concurrent.Promise,java.lang.Throwable)>(v1, v2, v3, v4, v6, v7);
+return;
+label2:
+v14 = v0.<io.netty.resolver.dns.DnsResolveContext: int allowedQueries>;
+v15 = v14 - 1;
+v0.<io.netty.resolver.dns.DnsResolveContext: int allowedQueries> = v15;
+v16 = interfaceinvoke v1.<io.netty.resolver.dns.DnsServerAddressStream: java.net.InetSocketAddress next()>();
+v17 = virtualinvoke v16.<java.net.InetSocketAddress: boolean isUnresolved()>();
+if v17 == 0 goto label3;
+specialinvoke v0.<io.netty.resolver.dns.DnsResolveContext: void queryUnresolvedNameServer(java.net.InetSocketAddress,io.netty.resolver.dns.DnsServerAddressStream,int,io.netty.handler.codec.dns.DnsQuestion,io.netty.resolver.dns.DnsQueryLifecycleObserver,io.netty.util.concurrent.Promise,java.lang.Throwable)>(v16, v1, v2, v3, v4, v6, v7);
+return;
+label3:
+v18 = v0.<io.netty.resolver.dns.DnsResolveContext: io.netty.resolver.dns.DnsNameResolver parent>;
+v19 = v18.<io.netty.resolver.dns.DnsNameResolver: io.netty.channel.Channel ch>;
+v20 = interfaceinvoke v19.<io.netty.channel.Channel: io.netty.channel.ChannelPromise newPromise()>();
+v21 = v0.<io.netty.resolver.dns.DnsResolveContext: io.netty.resolver.dns.DnsNameResolver parent>;
+v22 = v21.<io.netty.resolver.dns.DnsNameResolver: io.netty.channel.Channel ch>;
+v23 = interfaceinvoke v22.<io.netty.channel.Channel: io.netty.channel.EventLoop eventLoop()>();
+v24 = interfaceinvoke v23.<io.netty.channel.EventLoop: io.netty.util.concurrent.Promise newPromise()>();
+v25 = v1 instanceof io.netty.resolver.dns.DnsServerResponseFeedbackAddressStream;
+if v25 == 0 goto label4;
+v26 = staticinvoke <java.lang.System: long nanoTime()>();
+v27 = 1;
+goto label5;
+label4:
+v26 = -1L;
+v27 = 0;
+label5:
+v28 = v0.<io.netty.resolver.dns.DnsResolveContext: io.netty.resolver.dns.DnsNameResolver parent>;
+v29 = v0.<io.netty.resolver.dns.DnsResolveContext: io.netty.handler.codec.dns.DnsRecord[] additionals>;
+v30 = virtualinvoke v28.<io.netty.resolver.dns.DnsNameResolver: io.netty.util.concurrent.Future query0(java.net.InetSocketAddress,io.netty.handler.codec.dns.DnsQuestion,io.netty.handler.codec.dns.DnsRecord[],boolean,io.netty.channel.ChannelPromise,io.netty.util.concurrent.Promise)>(v16, v3, v29, v5, v20, v24);
+v31 = v0.<io.netty.resolver.dns.DnsResolveContext: java.util.Set queriesInProgress>;
+interfaceinvoke v31.<java.util.Set: boolean add(java.lang.Object)>(v30);
+interfaceinvoke v4.<io.netty.resolver.dns.DnsQueryLifecycleObserver: void queryWritten(java.net.InetSocketAddress,io.netty.channel.ChannelFuture)>(v16, v20);
+v32 = new io.netty.resolver.dns.DnsResolveContext$2;
+specialinvoke v32.<io.netty.resolver.dns.DnsResolveContext$2: void <init>(io.netty.resolver.dns.DnsResolveContext,io.netty.util.concurrent.Promise,io.netty.resolver.dns.DnsQueryLifecycleObserver,boolean,io.netty.resolver.dns.DnsServerAddressStream,java.net.InetSocketAddress,long,int,io.netty.handler.codec.dns.DnsQuestion)>(v0, v6, v4, v27, v1, v16, v26, v2, v3);
+interfaceinvoke v30.<io.netty.util.concurrent.Future: io.netty.util.concurrent.Future addListener(io.netty.util.concurrent.GenericFutureListener)>(v32);
+return;
+}
+private void queryUnresolvedNameServer(java.net.InetSocketAddress, io.netty.resolver.dns.DnsServerAddressStream, int, io.netty.handler.codec.dns.DnsQuestion, io.netty.resolver.dns.DnsQueryLifecycleObserver, io.netty.util.concurrent.Promise, java.lang.Throwable)
+{
+io.netty.resolver.dns.DnsServerAddressStream v2, v31;
+io.netty.resolver.dns.DnsResolveContext v0;
+boolean v11, v25;
+io.netty.resolver.dns.DnsNameResolver v13, v17, v23, v27, v30;
+io.netty.handler.codec.dns.DnsQuestion v4;
+java.util.Set v16;
+io.netty.channel.EventLoop v14, v18;
+java.net.InetSocketAddress v1;
+io.netty.resolver.dns.DnsQueryLifecycleObserver v5;
+io.netty.channel.socket.InternetProtocolFamily[] v24;
+io.netty.resolver.dns.DnsResolveContext$3 v20;
+java.lang.Throwable v7;
+io.netty.resolver.dns.DnsAddressResolveContext v26;
+io.netty.resolver.dns.AuthoritativeDnsServerCache v33, v34;
+java.lang.AssertionError v12;
+io.netty.resolver.dns.DnsCache v21;
+int v3, v32, v8;
+java.lang.String v10, v9;
+io.netty.util.concurrent.Promise v19, v28, v6;
+io.netty.handler.codec.dns.DnsRecord[] v22, v29;
+io.netty.util.concurrent.Future v15;
+v0 := @this: io.netty.resolver.dns.DnsResolveContext;
+v1 := @parameter0: java.net.InetSocketAddress;
+v2 := @parameter1: io.netty.resolver.dns.DnsServerAddressStream;
+v3 := @parameter2: int;
+v4 := @parameter3: io.netty.handler.codec.dns.DnsQuestion;
+v5 := @parameter4: io.netty.resolver.dns.DnsQueryLifecycleObserver;
+v6 := @parameter5: io.netty.util.concurrent.Promise;
+v7 := @parameter6: java.lang.Throwable;
+v8 = staticinvoke <io.netty.util.internal.PlatformDependent: int javaVersion()>();
+if v8 < 7 goto label1;
+v9 = virtualinvoke v1.<java.net.InetSocketAddress: java.lang.String getHostString()>();
+goto label2;
+label1:
+v9 = virtualinvoke v1.<java.net.InetSocketAddress: java.lang.String getHostName()>();
+label2:
+v10 = v9;
+v11 = <io.netty.resolver.dns.DnsResolveContext: boolean $assertionsDisabled>;
+if v11 != 0 goto label3;
+if v9 != null goto label3;
+v12 = new java.lang.AssertionError;
+specialinvoke v12.<java.lang.AssertionError: void <init>()>();
+throw v12;
+label3:
+v13 = v0.<io.netty.resolver.dns.DnsResolveContext: io.netty.resolver.dns.DnsNameResolver parent>;
+v14 = virtualinvoke v13.<io.netty.resolver.dns.DnsNameResolver: io.netty.channel.EventLoop executor()>();
+v15 = interfaceinvoke v14.<io.netty.channel.EventLoop: io.netty.util.concurrent.Future newSucceededFuture(java.lang.Object)>(null);
+v16 = v0.<io.netty.resolver.dns.DnsResolveContext: java.util.Set queriesInProgress>;
+interfaceinvoke v16.<java.util.Set: boolean add(java.lang.Object)>(v15);
+v17 = v0.<io.netty.resolver.dns.DnsResolveContext: io.netty.resolver.dns.DnsNameResolver parent>;
+v18 = virtualinvoke v17.<io.netty.resolver.dns.DnsNameResolver: io.netty.channel.EventLoop executor()>();
+v19 = interfaceinvoke v18.<io.netty.channel.EventLoop: io.netty.util.concurrent.Promise newPromise()>();
+v20 = new io.netty.resolver.dns.DnsResolveContext$3;
+specialinvoke v20.<io.netty.resolver.dns.DnsResolveContext$3: void <init>(io.netty.resolver.dns.DnsResolveContext,io.netty.util.concurrent.Future,java.net.InetSocketAddress,io.netty.resolver.dns.DnsServerAddressStream,int,io.netty.handler.codec.dns.DnsQuestion,io.netty.resolver.dns.DnsQueryLifecycleObserver,io.netty.util.concurrent.Promise,java.lang.Throwable)>(v0, v15, v1, v2, v3, v4, v5, v6, v7);
+interfaceinvoke v19.<io.netty.util.concurrent.Promise: io.netty.util.concurrent.Promise addListener(io.netty.util.concurrent.GenericFutureListener)>(v20);
+v21 = virtualinvoke v0.<io.netty.resolver.dns.DnsResolveContext: io.netty.resolver.dns.DnsCache resolveCache()>();
+v22 = v0.<io.netty.resolver.dns.DnsResolveContext: io.netty.handler.codec.dns.DnsRecord[] additionals>;
+v23 = v0.<io.netty.resolver.dns.DnsResolveContext: io.netty.resolver.dns.DnsNameResolver parent>;
+v24 = virtualinvoke v23.<io.netty.resolver.dns.DnsNameResolver: io.netty.channel.socket.InternetProtocolFamily[] resolvedInternetProtocolFamiliesUnsafe()>();
+v25 = staticinvoke <io.netty.resolver.dns.DnsNameResolver: boolean doResolveAllCached(java.lang.String,io.netty.handler.codec.dns.DnsRecord[],io.netty.util.concurrent.Promise,io.netty.resolver.dns.DnsCache,io.netty.channel.socket.InternetProtocolFamily[])>(v10, v22, v19, v21, v24);
+if v25 != 0 goto label4;
+v26 = new io.netty.resolver.dns.DnsAddressResolveContext;
+v27 = v0.<io.netty.resolver.dns.DnsResolveContext: io.netty.resolver.dns.DnsNameResolver parent>;
+v28 = v0.<io.netty.resolver.dns.DnsResolveContext: io.netty.util.concurrent.Promise originalPromise>;
+v29 = v0.<io.netty.resolver.dns.DnsResolveContext: io.netty.handler.codec.dns.DnsRecord[] additionals>;
+v30 = v0.<io.netty.resolver.dns.DnsResolveContext: io.netty.resolver.dns.DnsNameResolver parent>;
+v31 = virtualinvoke v30.<io.netty.resolver.dns.DnsNameResolver: io.netty.resolver.dns.DnsServerAddressStream newNameServerAddressStream(java.lang.String)>(v10);
+v32 = v0.<io.netty.resolver.dns.DnsResolveContext: int allowedQueries>;
+v33 = virtualinvoke v0.<io.netty.resolver.dns.DnsResolveContext: io.netty.resolver.dns.AuthoritativeDnsServerCache authoritativeDnsServerCache()>();
+v34 = staticinvoke <io.netty.resolver.dns.DnsResolveContext: io.netty.resolver.dns.AuthoritativeDnsServerCache redirectAuthoritativeDnsServerCache(io.netty.resolver.dns.AuthoritativeDnsServerCache)>(v33);
+specialinvoke v26.<io.netty.resolver.dns.DnsAddressResolveContext: void <init>(io.netty.resolver.dns.DnsNameResolver,io.netty.util.concurrent.Promise,java.lang.String,io.netty.handler.codec.dns.DnsRecord[],io.netty.resolver.dns.DnsServerAddressStream,int,io.netty.resolver.dns.DnsCache,io.netty.resolver.dns.AuthoritativeDnsServerCache,boolean)>(v27, v28, v10, v29, v31, v32, v21, v34, 0);
+virtualinvoke v26.<io.netty.resolver.dns.DnsAddressResolveContext: void resolve(io.netty.util.concurrent.Promise)>(v19);
+label4:
+return;
+}
+private static io.netty.resolver.dns.AuthoritativeDnsServerCache redirectAuthoritativeDnsServerCache(io.netty.resolver.dns.AuthoritativeDnsServerCache)
+{
+io.netty.resolver.dns.AuthoritativeDnsServerCache v0;
+io.netty.resolver.dns.DnsResolveContext$RedirectAuthoritativeDnsServerCache v2;
+boolean v1;
+v0 := @parameter0: io.netty.resolver.dns.AuthoritativeDnsServerCache;
+v1 = v0 instanceof io.netty.resolver.dns.DnsResolveContext$RedirectAuthoritativeDnsServerCache;
+if v1 == 0 goto label1;
+return v0;
+label1:
+v2 = new io.netty.resolver.dns.DnsResolveContext$RedirectAuthoritativeDnsServerCache;
+specialinvoke v2.<io.netty.resolver.dns.DnsResolveContext$RedirectAuthoritativeDnsServerCache: void <init>(io.netty.resolver.dns.AuthoritativeDnsServerCache)>(v0);
+return v2;
+}
+private void onResponse(io.netty.resolver.dns.DnsServerAddressStream, int, io.netty.handler.codec.dns.DnsQuestion, io.netty.channel.AddressedEnvelope, io.netty.resolver.dns.DnsQueryLifecycleObserver, io.netty.util.concurrent.Promise)
+{
+io.netty.handler.codec.dns.DnsResponseCode v23, v8, v9;
+java.lang.Throwable v30;
+io.netty.resolver.dns.DnsServerAddressStream v1;
+io.netty.handler.codec.dns.DnsRecordType[] v18;
+io.netty.channel.AddressedEnvelope v4;
+io.netty.resolver.dns.DnsResolveContext v0;
+java.util.Map v17;
+int v19, v2, v20, v24, v28;
+boolean v10, v27;
+io.netty.handler.codec.dns.DnsRecordType v11, v12, v21;
+io.netty.resolver.dns.DnsNameResolver v15;
+io.netty.util.concurrent.Promise v6;
+io.netty.handler.codec.dns.DnsQuestion v3;
+java.lang.RuntimeException v22, v26;
+io.netty.channel.EventLoop v16;
+io.netty.resolver.dns.DnsQueryLifecycleObserver v25, v29, v5;
+java.lang.Object v13, v7;
+io.netty.resolver.dns.DnsCnameCache v14;
+v0 := @this: io.netty.resolver.dns.DnsResolveContext;
+v1 := @parameter0: io.netty.resolver.dns.DnsServerAddressStream;
+v2 := @parameter1: int;
+v3 := @parameter2: io.netty.handler.codec.dns.DnsQuestion;
+v4 := @parameter3: io.netty.channel.AddressedEnvelope;
+v5 := @parameter4: io.netty.resolver.dns.DnsQueryLifecycleObserver;
+v6 := @parameter5: io.netty.util.concurrent.Promise;
+label01:
+v7 = interfaceinvoke v4.<io.netty.channel.AddressedEnvelope: java.lang.Object content()>();
+v8 = interfaceinvoke v7.<io.netty.handler.codec.dns.DnsResponse: io.netty.handler.codec.dns.DnsResponseCode code()>();
+v9 = <io.netty.handler.codec.dns.DnsResponseCode: io.netty.handler.codec.dns.DnsResponseCode NOERROR>;
+if v8 != v9 goto label11;
+v10 = specialinvoke v0.<io.netty.resolver.dns.DnsResolveContext: boolean handleRedirect(io.netty.handler.codec.dns.DnsQuestion,io.netty.channel.AddressedEnvelope,io.netty.resolver.dns.DnsQueryLifecycleObserver,io.netty.util.concurrent.Promise)>(v3, v4, v5, v6);
+if v10 == 0 goto label03;
+label02:
+staticinvoke <io.netty.util.ReferenceCountUtil: void safeRelease(java.lang.Object)>(v4);
+return;
+label03:
+v11 = interfaceinvoke v3.<io.netty.handler.codec.dns.DnsQuestion: io.netty.handler.codec.dns.DnsRecordType type()>();
+v12 = <io.netty.handler.codec.dns.DnsRecordType: io.netty.handler.codec.dns.DnsRecordType CNAME>;
+if v11 != v12 goto label05;
+v13 = interfaceinvoke v4.<io.netty.channel.AddressedEnvelope: java.lang.Object content()>();
+v14 = virtualinvoke v0.<io.netty.resolver.dns.DnsResolveContext: io.netty.resolver.dns.DnsCnameCache cnameCache()>();
+v15 = v0.<io.netty.resolver.dns.DnsResolveContext: io.netty.resolver.dns.DnsNameResolver parent>;
+v16 = virtualinvoke v15.<io.netty.resolver.dns.DnsNameResolver: io.netty.channel.EventLoop executor()>();
+v17 = staticinvoke <io.netty.resolver.dns.DnsResolveContext: java.util.Map buildAliasMap(io.netty.handler.codec.dns.DnsResponse,io.netty.resolver.dns.DnsCnameCache,io.netty.channel.EventLoop)>(v13, v14, v16);
+specialinvoke v0.<io.netty.resolver.dns.DnsResolveContext: void onResponseCNAME(io.netty.handler.codec.dns.DnsQuestion,java.util.Map,io.netty.resolver.dns.DnsQueryLifecycleObserver,io.netty.util.concurrent.Promise)>(v3, v17, v5, v6);
+label04:
+staticinvoke <io.netty.util.ReferenceCountUtil: void safeRelease(java.lang.Object)>(v4);
+return;
+label05:
+v18 = v0.<io.netty.resolver.dns.DnsResolveContext: io.netty.handler.codec.dns.DnsRecordType[] expectedTypes>;
+v19 = lengthof v18;
+v20 = 0;
+label06:
+if v20 >= v19 goto label09;
+v21 = v18[v20];
+if v11 != v21 goto label08;
+specialinvoke v0.<io.netty.resolver.dns.DnsResolveContext: void onExpectedResponse(io.netty.handler.codec.dns.DnsQuestion,io.netty.channel.AddressedEnvelope,io.netty.resolver.dns.DnsQueryLifecycleObserver,io.netty.util.concurrent.Promise)>(v3, v4, v5, v6);
+label07:
+staticinvoke <io.netty.util.ReferenceCountUtil: void safeRelease(java.lang.Object)>(v4);
+return;
+label08:
+v20 = v20 + 1;
+goto label06;
+label09:
+v22 = <io.netty.resolver.dns.DnsResolveContext: java.lang.RuntimeException UNRECOGNIZED_TYPE_QUERY_FAILED_EXCEPTION>;
+interfaceinvoke v5.<io.netty.resolver.dns.DnsQueryLifecycleObserver: void queryFailed(java.lang.Throwable)>(v22);
+label10:
+staticinvoke <io.netty.util.ReferenceCountUtil: void safeRelease(java.lang.Object)>(v4);
+return;
+label11:
+v23 = <io.netty.handler.codec.dns.DnsResponseCode: io.netty.handler.codec.dns.DnsResponseCode NXDOMAIN>;
+if v8 == v23 goto label12;
+v24 = v2 + 1;
+v25 = interfaceinvoke v5.<io.netty.resolver.dns.DnsQueryLifecycleObserver: io.netty.resolver.dns.DnsQueryLifecycleObserver queryNoAnswer(io.netty.handler.codec.dns.DnsResponseCode)>(v8);
+specialinvoke v0.<io.netty.resolver.dns.DnsResolveContext: void query(io.netty.resolver.dns.DnsServerAddressStream,int,io.netty.handler.codec.dns.DnsQuestion,io.netty.resolver.dns.DnsQueryLifecycleObserver,boolean,io.netty.util.concurrent.Promise,java.lang.Throwable)>(v1, v24, v3, v25, 1, v6, null);
+goto label13;
+label12:
+v26 = <io.netty.resolver.dns.DnsResolveContext: java.lang.RuntimeException NXDOMAIN_QUERY_FAILED_EXCEPTION>;
+interfaceinvoke v5.<io.netty.resolver.dns.DnsQueryLifecycleObserver: void queryFailed(java.lang.Throwable)>(v26);
+v27 = interfaceinvoke v7.<io.netty.handler.codec.dns.DnsResponse: boolean isAuthoritativeAnswer()>();
+if v27 != 0 goto label13;
+v28 = v2 + 1;
+v29 = specialinvoke v0.<io.netty.resolver.dns.DnsResolveContext: io.netty.resolver.dns.DnsQueryLifecycleObserver newDnsQueryLifecycleObserver(io.netty.handler.codec.dns.DnsQuestion)>(v3);
+specialinvoke v0.<io.netty.resolver.dns.DnsResolveContext: void query(io.netty.resolver.dns.DnsServerAddressStream,int,io.netty.handler.codec.dns.DnsQuestion,io.netty.resolver.dns.DnsQueryLifecycleObserver,boolean,io.netty.util.concurrent.Promise,java.lang.Throwable)>(v1, v28, v3, v29, 1, v6, null);
+label13:
+staticinvoke <io.netty.util.ReferenceCountUtil: void safeRelease(java.lang.Object)>(v4);
+goto label15;
+label14:
+v30 := @caughtexception;
+staticinvoke <io.netty.util.ReferenceCountUtil: void safeRelease(java.lang.Object)>(v4);
+throw v30;
+label15:
+return;
+catch java.lang.Throwable from label01 to label02 with label14;
+catch java.lang.Throwable from label03 to label04 with label14;
+catch java.lang.Throwable from label05 to label07 with label14;
+catch java.lang.Throwable from label08 to label10 with label14;
+catch java.lang.Throwable from label11 to label13 with label14;
+}
+private boolean handleRedirect(io.netty.handler.codec.dns.DnsQuestion, io.netty.channel.AddressedEnvelope, io.netty.resolver.dns.DnsQueryLifecycleObserver, io.netty.util.concurrent.Promise)
+{
+io.netty.resolver.dns.DnsServerAddressStream v30;
+io.netty.resolver.dns.DnsResolveContext$DnsAddressStreamList v31;
+io.netty.resolver.dns.DnsResolveContext v0;
+io.netty.handler.codec.dns.DnsSection v10, v14, v6;
+boolean v19, v23;
+io.netty.resolver.dns.DnsNameResolver v18, v22, v24, v25, v28;
+io.netty.handler.codec.dns.DnsQuestion v1;
+io.netty.resolver.dns.DnsQueryLifecycleObserver v3, v32;
+java.util.List v27;
+io.netty.handler.codec.dns.DnsRecord v15;
+io.netty.resolver.dns.AuthoritativeDnsServerCache v12;
+io.netty.channel.AddressedEnvelope v2;
+io.netty.resolver.dns.DnsCache v26;
+int v11, v13, v7;
+java.lang.String v29, v8;
+io.netty.handler.codec.dns.DnsRecordType v16, v17, v20, v21;
+io.netty.util.concurrent.Promise v4;
+io.netty.resolver.dns.DnsResolveContext$AuthoritativeNameServerList v9;
+java.lang.Object v5;
+v0 := @this: io.netty.resolver.dns.DnsResolveContext;
+v1 := @parameter0: io.netty.handler.codec.dns.DnsQuestion;
+v2 := @parameter1: io.netty.channel.AddressedEnvelope;
+v3 := @parameter2: io.netty.resolver.dns.DnsQueryLifecycleObserver;
+v4 := @parameter3: io.netty.util.concurrent.Promise;
+v5 = interfaceinvoke v2.<io.netty.channel.AddressedEnvelope: java.lang.Object content()>();
+v6 = <io.netty.handler.codec.dns.DnsSection: io.netty.handler.codec.dns.DnsSection ANSWER>;
+v7 = interfaceinvoke v5.<io.netty.handler.codec.dns.DnsResponse: int count(io.netty.handler.codec.dns.DnsSection)>(v6);
+if v7 != 0 goto label6;
+v8 = interfaceinvoke v1.<io.netty.handler.codec.dns.DnsQuestion: java.lang.String name()>();
+v9 = staticinvoke <io.netty.resolver.dns.DnsResolveContext: io.netty.resolver.dns.DnsResolveContext$AuthoritativeNameServerList extractAuthoritativeNameServers(java.lang.String,io.netty.handler.codec.dns.DnsResponse)>(v8, v5);
+if v9 == null goto label6;
+v10 = <io.netty.handler.codec.dns.DnsSection: io.netty.handler.codec.dns.DnsSection ADDITIONAL>;
+v11 = interfaceinvoke v5.<io.netty.handler.codec.dns.DnsResponse: int count(io.netty.handler.codec.dns.DnsSection)>(v10);
+v12 = virtualinvoke v0.<io.netty.resolver.dns.DnsResolveContext: io.netty.resolver.dns.AuthoritativeDnsServerCache authoritativeDnsServerCache()>();
+v13 = 0;
+label1:
+if v13 >= v11 goto label5;
+v14 = <io.netty.handler.codec.dns.DnsSection: io.netty.handler.codec.dns.DnsSection ADDITIONAL>;
+v15 = interfaceinvoke v5.<io.netty.handler.codec.dns.DnsResponse: io.netty.handler.codec.dns.DnsRecord recordAt(io.netty.handler.codec.dns.DnsSection,int)>(v14, v13);
+v16 = interfaceinvoke v15.<io.netty.handler.codec.dns.DnsRecord: io.netty.handler.codec.dns.DnsRecordType type()>();
+v17 = <io.netty.handler.codec.dns.DnsRecordType: io.netty.handler.codec.dns.DnsRecordType A>;
+if v16 != v17 goto label2;
+v18 = v0.<io.netty.resolver.dns.DnsResolveContext: io.netty.resolver.dns.DnsNameResolver parent>;
+v19 = virtualinvoke v18.<io.netty.resolver.dns.DnsNameResolver: boolean supportsARecords()>();
+if v19 == 0 goto label4;
+label2:
+v20 = interfaceinvoke v15.<io.netty.handler.codec.dns.DnsRecord: io.netty.handler.codec.dns.DnsRecordType type()>();
+v21 = <io.netty.handler.codec.dns.DnsRecordType: io.netty.handler.codec.dns.DnsRecordType AAAA>;
+if v20 != v21 goto label3;
+v22 = v0.<io.netty.resolver.dns.DnsResolveContext: io.netty.resolver.dns.DnsNameResolver parent>;
+v23 = virtualinvoke v22.<io.netty.resolver.dns.DnsNameResolver: boolean supportsAAAARecords()>();
+if v23 == 0 goto label4;
+label3:
+v24 = v0.<io.netty.resolver.dns.DnsResolveContext: io.netty.resolver.dns.DnsNameResolver parent>;
+virtualinvoke v9.<io.netty.resolver.dns.DnsResolveContext$AuthoritativeNameServerList: void handleWithAdditional(io.netty.resolver.dns.DnsNameResolver,io.netty.handler.codec.dns.DnsRecord,io.netty.resolver.dns.AuthoritativeDnsServerCache)>(v24, v15, v12);
+label4:
+v13 = v13 + 1;
+goto label1;
+label5:
+v25 = v0.<io.netty.resolver.dns.DnsResolveContext: io.netty.resolver.dns.DnsNameResolver parent>;
+v26 = virtualinvoke v0.<io.netty.resolver.dns.DnsResolveContext: io.netty.resolver.dns.DnsCache resolveCache()>();
+virtualinvoke v9.<io.netty.resolver.dns.DnsResolveContext$AuthoritativeNameServerList: void handleWithoutAdditionals(io.netty.resolver.dns.DnsNameResolver,io.netty.resolver.dns.DnsCache,io.netty.resolver.dns.AuthoritativeDnsServerCache)>(v25, v26, v12);
+v27 = virtualinvoke v9.<io.netty.resolver.dns.DnsResolveContext$AuthoritativeNameServerList: java.util.List addressList()>();
+v28 = v0.<io.netty.resolver.dns.DnsResolveContext: io.netty.resolver.dns.DnsNameResolver parent>;
+v29 = interfaceinvoke v1.<io.netty.handler.codec.dns.DnsQuestion: java.lang.String name()>();
+v30 = virtualinvoke v28.<io.netty.resolver.dns.DnsNameResolver: io.netty.resolver.dns.DnsServerAddressStream newRedirectDnsServerStream(java.lang.String,java.util.List)>(v29, v27);
+if v30 == null goto label6;
+v31 = new io.netty.resolver.dns.DnsResolveContext$DnsAddressStreamList;
+specialinvoke v31.<io.netty.resolver.dns.DnsResolveContext$DnsAddressStreamList: void <init>(io.netty.resolver.dns.DnsServerAddressStream)>(v30);
+v32 = interfaceinvoke v3.<io.netty.resolver.dns.DnsQueryLifecycleObserver: io.netty.resolver.dns.DnsQueryLifecycleObserver queryRedirected(java.util.List)>(v31);
+specialinvoke v0.<io.netty.resolver.dns.DnsResolveContext: void query(io.netty.resolver.dns.DnsServerAddressStream,int,io.netty.handler.codec.dns.DnsQuestion,io.netty.resolver.dns.DnsQueryLifecycleObserver,boolean,io.netty.util.concurrent.Promise,java.lang.Throwable)>(v30, 0, v1, v32, 1, v4, null);
+return 1;
+label6:
+return 0;
+}
+private static io.netty.resolver.dns.DnsResolveContext$AuthoritativeNameServerList extractAuthoritativeNameServers(java.lang.String, io.netty.handler.codec.dns.DnsResponse)
+{
+io.netty.handler.codec.dns.DnsRecord v7;
+io.netty.handler.codec.dns.DnsResponse v1;
+io.netty.resolver.dns.DnsResolveContext$AuthoritativeNameServerList v4, v9;
+io.netty.handler.codec.dns.DnsSection v2, v6;
+int v3, v5;
+java.lang.String v0;
+boolean v8;
+v0 := @parameter0: java.lang.String;
+v1 := @parameter1: io.netty.handler.codec.dns.DnsResponse;
+v2 = <io.netty.handler.codec.dns.DnsSection: io.netty.handler.codec.dns.DnsSection AUTHORITY>;
+v3 = interfaceinvoke v1.<io.netty.handler.codec.dns.DnsResponse: int count(io.netty.handler.codec.dns.DnsSection)>(v2);
+if v3 != 0 goto label1;
+return null;
+label1:
+v4 = new io.netty.resolver.dns.DnsResolveContext$AuthoritativeNameServerList;
+specialinvoke v4.<io.netty.resolver.dns.DnsResolveContext$AuthoritativeNameServerList: void <init>(java.lang.String)>(v0);
+v5 = 0;
+label2:
+if v5 >= v3 goto label3;
+v6 = <io.netty.handler.codec.dns.DnsSection: io.netty.handler.codec.dns.DnsSection AUTHORITY>;
+v7 = interfaceinvoke v1.<io.netty.handler.codec.dns.DnsResponse: io.netty.handler.codec.dns.DnsRecord recordAt(io.netty.handler.codec.dns.DnsSection,int)>(v6, v5);
+virtualinvoke v4.<io.netty.resolver.dns.DnsResolveContext$AuthoritativeNameServerList: void add(io.netty.handler.codec.dns.DnsRecord)>(v7);
+v5 = v5 + 1;
+goto label2;
+label3:
+v8 = virtualinvoke v4.<io.netty.resolver.dns.DnsResolveContext$AuthoritativeNameServerList: boolean isEmpty()>();
+if v8 == 0 goto label4;
+v9 = null;
+goto label5;
+label4:
+v9 = v4;
+label5:
+return v9;
+}
+private void onExpectedResponse(io.netty.handler.codec.dns.DnsQuestion, io.netty.channel.AddressedEnvelope, io.netty.resolver.dns.DnsQueryLifecycleObserver, io.netty.util.concurrent.Promise)
+{
+io.netty.resolver.dns.DnsResolveContext v0;
+java.util.Map v9;
+io.netty.resolver.dns.DnsNameResolver v42, v58, v62, v7;
+io.netty.handler.codec.dns.DnsQuestion v1;
+io.netty.resolver.dns.DnsQueryLifecycleObserver v3, v85;
+io.netty.util.internal.logging.InternalLogger v53, v55, v65, v67;
+io.netty.resolver.dns.DnsCnameCache v6;
+java.lang.Object[] v56, v68;
+java.lang.AssertionError v41;
+io.netty.channel.AddressedEnvelope v2;
+java.util.ArrayList v75;
+java.lang.String v26, v28, v29, v31, v46, v51, v57, v60, v69, v70, v81;
+io.netty.util.concurrent.Promise v4;
+java.lang.RuntimeException v84;
+io.netty.handler.codec.dns.DnsRecord[] v61, v71, v82;
+io.netty.handler.codec.dns.DnsRecordType[] v22;
+io.netty.handler.codec.dns.DnsSection v10, v18;
+java.util.Locale v27, v30;
+boolean v12, v13, v14, v15, v16, v21, v32, v35, v36, v37, v47, v52, v54, v66, v72, v73, v77, v79, v83;
+io.netty.channel.EventLoop v63, v8;
+java.util.List v74, v76, v78, v80;
+io.netty.handler.codec.dns.DnsRecord v19;
+java.lang.String[] v43, v59;
+java.util.HashMap v33;
+int v11, v17, v23, v24, v38, v39, v44, v45, v48, v49;
+io.netty.handler.codec.dns.DnsRecordType v20, v25;
+char v40, v50;
+java.lang.Object v34, v5, v64;
+v0 := @this: io.netty.resolver.dns.DnsResolveContext;
+v1 := @parameter0: io.netty.handler.codec.dns.DnsQuestion;
+v2 := @parameter1: io.netty.channel.AddressedEnvelope;
+v3 := @parameter2: io.netty.resolver.dns.DnsQueryLifecycleObserver;
+v4 := @parameter3: io.netty.util.concurrent.Promise;
+v5 = interfaceinvoke v2.<io.netty.channel.AddressedEnvelope: java.lang.Object content()>();
+v6 = virtualinvoke v0.<io.netty.resolver.dns.DnsResolveContext: io.netty.resolver.dns.DnsCnameCache cnameCache()>();
+v7 = v0.<io.netty.resolver.dns.DnsResolveContext: io.netty.resolver.dns.DnsNameResolver parent>;
+v8 = virtualinvoke v7.<io.netty.resolver.dns.DnsNameResolver: io.netty.channel.EventLoop executor()>();
+v9 = staticinvoke <io.netty.resolver.dns.DnsResolveContext: java.util.Map buildAliasMap(io.netty.handler.codec.dns.DnsResponse,io.netty.resolver.dns.DnsCnameCache,io.netty.channel.EventLoop)>(v5, v6, v8);
+v10 = <io.netty.handler.codec.dns.DnsSection: io.netty.handler.codec.dns.DnsSection ANSWER>;
+v11 = interfaceinvoke v5.<io.netty.handler.codec.dns.DnsResponse: int count(io.netty.handler.codec.dns.DnsSection)>(v10);
+v12 = 0;
+v13 = v0.<io.netty.resolver.dns.DnsResolveContext: boolean completeEarly>;
+v14 = interfaceinvoke v9.<java.util.Map: boolean isEmpty()>();
+if v14 != 0 goto label01;
+v15 = 1;
+goto label02;
+label01:
+v15 = 0;
+label02:
+v16 = v15;
+v17 = 0;
+label03:
+if v17 >= v11 goto label25;
+v18 = <io.netty.handler.codec.dns.DnsSection: io.netty.handler.codec.dns.DnsSection ANSWER>;
+v19 = interfaceinvoke v5.<io.netty.handler.codec.dns.DnsResponse: io.netty.handler.codec.dns.DnsRecord recordAt(io.netty.handler.codec.dns.DnsSection,int)>(v18, v17);
+v20 = interfaceinvoke v19.<io.netty.handler.codec.dns.DnsRecord: io.netty.handler.codec.dns.DnsRecordType type()>();
+v21 = 0;
+v22 = v0.<io.netty.resolver.dns.DnsResolveContext: io.netty.handler.codec.dns.DnsRecordType[] expectedTypes>;
+v23 = lengthof v22;
+v24 = 0;
+label04:
+if v24 >= v23 goto label06;
+v25 = v22[v24];
+if v20 != v25 goto label05;
+v21 = 1;
+goto label06;
+label05:
+v24 = v24 + 1;
+goto label04;
+label06:
+if v21 == 0 goto label24;
+v26 = interfaceinvoke v1.<io.netty.handler.codec.dns.DnsQuestion: java.lang.String name()>();
+v27 = <java.util.Locale: java.util.Locale US>;
+v28 = virtualinvoke v26.<java.lang.String: java.lang.String toLowerCase(java.util.Locale)>(v27);
+v29 = interfaceinvoke v19.<io.netty.handler.codec.dns.DnsRecord: java.lang.String name()>();
+v30 = <java.util.Locale: java.util.Locale US>;
+v31 = virtualinvoke v29.<java.lang.String: java.lang.String toLowerCase(java.util.Locale)>(v30);
+v32 = virtualinvoke v31.<java.lang.String: boolean equals(java.lang.Object)>(v28);
+if v32 != 0 goto label16;
+v33 = new java.util.HashMap;
+specialinvoke v33.<java.util.HashMap: void <init>(java.util.Map)>(v9);
+label07:
+v34 = interfaceinvoke v33.<java.util.Map: java.lang.Object remove(java.lang.Object)>(v28);
+v35 = virtualinvoke v31.<java.lang.String: boolean equals(java.lang.Object)>(v34);
+if v35 == 0 goto label08;
+v16 = 0;
+goto label09;
+label08:
+if v34 != null goto label07;
+label09:
+if v34 != null goto label16;
+v36 = <io.netty.resolver.dns.DnsResolveContext: boolean $assertionsDisabled>;
+if v36 != 0 goto label10;
+v37 = virtualinvoke v28.<java.lang.String: boolean isEmpty()>();
+if v37 != 0 goto label10;
+v38 = virtualinvoke v28.<java.lang.String: int length()>();
+v39 = v38 - 1;
+v40 = virtualinvoke v28.<java.lang.String: char charAt(int)>(v39);
+if v40 == 46 goto label10;
+v41 = new java.lang.AssertionError;
+specialinvoke v41.<java.lang.AssertionError: void <init>()>();
+throw v41;
+label10:
+v42 = v0.<io.netty.resolver.dns.DnsResolveContext: io.netty.resolver.dns.DnsNameResolver parent>;
+v43 = virtualinvoke v42.<io.netty.resolver.dns.DnsNameResolver: java.lang.String[] searchDomains()>();
+v44 = lengthof v43;
+v45 = 0;
+label11:
+if v45 >= v44 goto label15;
+v46 = v43[v45];
+v47 = virtualinvoke v46.<java.lang.String: boolean isEmpty()>();
+if v47 != 0 goto label14;
+v48 = virtualinvoke v46.<java.lang.String: int length()>();
+v49 = v48 - 1;
+v50 = virtualinvoke v46.<java.lang.String: char charAt(int)>(v49);
+if v50 != 46 goto label12;
+v51 = dynamicinvoke "makeConcatWithConstants" <java.lang.String (java.lang.String,java.lang.String)>(v28, v46) <java.lang.invoke.StringConcatFactory: java.lang.invoke.CallSite makeConcatWithConstants(java.lang.invoke.MethodHandles$Lookup,java.lang.String,java.lang.invoke.MethodType,java.lang.String,java.lang.Object[])>("\u0001\u0001");
+goto label13;
+label12:
+v51 = dynamicinvoke "makeConcatWithConstants" <java.lang.String (java.lang.String,java.lang.String)>(v28, v46) <java.lang.invoke.StringConcatFactory: java.lang.invoke.CallSite makeConcatWithConstants(java.lang.invoke.MethodHandles$Lookup,java.lang.String,java.lang.invoke.MethodType,java.lang.String,java.lang.Object[])>("\u0001\u0001.");
+label13:
+v52 = virtualinvoke v31.<java.lang.String: boolean equals(java.lang.Object)>(v51);
+if v52 == 0 goto label14;
+v34 = v31;
+goto label15;
+label14:
+v45 = v45 + 1;
+goto label11;
+label15:
+if v34 != null goto label16;
+v53 = <io.netty.resolver.dns.DnsResolveContext: io.netty.util.internal.logging.InternalLogger logger>;
+v54 = interfaceinvoke v53.<io.netty.util.internal.logging.InternalLogger: boolean isDebugEnabled()>();
+if v54 == 0 goto label24;
+v55 = <io.netty.resolver.dns.DnsResolveContext: io.netty.util.internal.logging.InternalLogger logger>;
+v56 = newarray (java.lang.Object)[4];
+v57 = virtualinvoke v19.<java.lang.Object: java.lang.String toString()>();
+v56[0] = v57;
+v56[1] = v28;
+v56[2] = v9;
+v58 = v0.<io.netty.resolver.dns.DnsResolveContext: io.netty.resolver.dns.DnsNameResolver parent>;
+v59 = virtualinvoke v58.<io.netty.resolver.dns.DnsNameResolver: java.lang.String[] searchDomains()>();
+v56[3] = v59;
+interfaceinvoke v55.<io.netty.util.internal.logging.InternalLogger: void debug(java.lang.String,java.lang.Object[])>("Ignoring record {} as it contains a different name than the question name [{}]. Cnames: {}, Search domains: {}", v56);
+goto label24;
+label16:
+v60 = v0.<io.netty.resolver.dns.DnsResolveContext: java.lang.String hostname>;
+v61 = v0.<io.netty.resolver.dns.DnsResolveContext: io.netty.handler.codec.dns.DnsRecord[] additionals>;
+v62 = v0.<io.netty.resolver.dns.DnsResolveContext: io.netty.resolver.dns.DnsNameResolver parent>;
+v63 = virtualinvoke v62.<io.netty.resolver.dns.DnsNameResolver: io.netty.channel.EventLoop executor()>();
+v64 = virtualinvoke v0.<io.netty.resolver.dns.DnsResolveContext: java.lang.Object convertRecord(io.netty.handler.codec.dns.DnsRecord,java.lang.String,io.netty.handler.codec.dns.DnsRecord[],io.netty.channel.EventLoop)>(v19, v60, v61, v63);
+if v64 != null goto label17;
+v65 = <io.netty.resolver.dns.DnsResolveContext: io.netty.util.internal.logging.InternalLogger logger>;
+v66 = interfaceinvoke v65.<io.netty.util.internal.logging.InternalLogger: boolean isDebugEnabled()>();
+if v66 == 0 goto label24;
+v67 = <io.netty.resolver.dns.DnsResolveContext: io.netty.util.internal.logging.InternalLogger logger>;
+v68 = newarray (java.lang.Object)[3];
+v69 = virtualinvoke v19.<java.lang.Object: java.lang.String toString()>();
+v68[0] = v69;
+v70 = v0.<io.netty.resolver.dns.DnsResolveContext: java.lang.String hostname>;
+v68[1] = v70;
+v71 = v0.<io.netty.resolver.dns.DnsResolveContext: io.netty.handler.codec.dns.DnsRecord[] additionals>;
+v68[2] = v71;
+interfaceinvoke v67.<io.netty.util.internal.logging.InternalLogger: void debug(java.lang.String,java.lang.Object[])>("Ignoring record {} as the converted record is null. hostname [{}], Additionals: {}", v68);
+goto label24;
+label17:
+v72 = 0;
+if v13 != 0 goto label18;
+v13 = virtualinvoke v0.<io.netty.resolver.dns.DnsResolveContext: boolean isCompleteEarly(java.lang.Object)>(v64);
+label18:
+v73 = interfaceinvoke v4.<io.netty.util.concurrent.Promise: boolean isDone()>();
+if v73 != 0 goto label22;
+v74 = v0.<io.netty.resolver.dns.DnsResolveContext: java.util.List finalResult>;
+if v74 != null goto label19;
+v75 = new java.util.ArrayList;
+specialinvoke v75.<java.util.ArrayList: void <init>(int)>(8);
+v0.<io.netty.resolver.dns.DnsResolveContext: java.util.List finalResult> = v75;
+v76 = v0.<io.netty.resolver.dns.DnsResolveContext: java.util.List finalResult>;
+interfaceinvoke v76.<java.util.List: boolean add(java.lang.Object)>(v64);
+goto label23;
+label19:
+v77 = virtualinvoke v0.<io.netty.resolver.dns.DnsResolveContext: boolean isDuplicateAllowed()>();
+if v77 != 0 goto label20;
+v78 = v0.<io.netty.resolver.dns.DnsResolveContext: java.util.List finalResult>;
+v79 = interfaceinvoke v78.<java.util.List: boolean contains(java.lang.Object)>(v64);
+if v79 != 0 goto label21;
+label20:
+v80 = v0.<io.netty.resolver.dns.DnsResolveContext: java.util.List finalResult>;
+interfaceinvoke v80.<java.util.List: boolean add(java.lang.Object)>(v64);
+goto label23;
+label21:
+v72 = 1;
+goto label23;
+label22:
+v72 = 1;
+label23:
+v81 = v0.<io.netty.resolver.dns.DnsResolveContext: java.lang.String hostname>;
+v82 = v0.<io.netty.resolver.dns.DnsResolveContext: io.netty.handler.codec.dns.DnsRecord[] additionals>;
+virtualinvoke v0.<io.netty.resolver.dns.DnsResolveContext: void cache(java.lang.String,io.netty.handler.codec.dns.DnsRecord[],io.netty.handler.codec.dns.DnsRecord,java.lang.Object)>(v81, v82, v19, v64);
+v12 = 1;
+if v72 == 0 goto label24;
+staticinvoke <io.netty.util.ReferenceCountUtil: boolean release(java.lang.Object)>(v64);
+label24:
+v17 = v17 + 1;
+goto label03;
+label25:
+if v12 == 0 goto label27;
+if v16 != 0 goto label27;
+if v13 == 0 goto label26;
+v0.<io.netty.resolver.dns.DnsResolveContext: boolean completeEarly> = 1;
+label26:
+interfaceinvoke v3.<io.netty.resolver.dns.DnsQueryLifecycleObserver: void querySucceed()>();
+goto label29;
+label27:
+v83 = interfaceinvoke v9.<java.util.Map: boolean isEmpty()>();
+if v83 == 0 goto label28;
+v84 = <io.netty.resolver.dns.DnsResolveContext: java.lang.RuntimeException NO_MATCHING_RECORD_QUERY_FAILED_EXCEPTION>;
+interfaceinvoke v3.<io.netty.resolver.dns.DnsQueryLifecycleObserver: void queryFailed(java.lang.Throwable)>(v84);
+goto label29;
+label28:
+interfaceinvoke v3.<io.netty.resolver.dns.DnsQueryLifecycleObserver: void querySucceed()>();
+v85 = specialinvoke v0.<io.netty.resolver.dns.DnsResolveContext: io.netty.resolver.dns.DnsQueryLifecycleObserver newDnsQueryLifecycleObserver(io.netty.handler.codec.dns.DnsQuestion)>(v1);
+specialinvoke v0.<io.netty.resolver.dns.DnsResolveContext: void onResponseCNAME(io.netty.handler.codec.dns.DnsQuestion,java.util.Map,io.netty.resolver.dns.DnsQueryLifecycleObserver,io.netty.util.concurrent.Promise)>(v1, v9, v85, v4);
+label29:
+return;
+}
+private void onResponseCNAME(io.netty.handler.codec.dns.DnsQuestion, java.util.Map, io.netty.resolver.dns.DnsQueryLifecycleObserver, io.netty.util.concurrent.Promise)
+{
+io.netty.util.concurrent.Promise v4;
+io.netty.handler.codec.dns.DnsQuestion v1;
+java.lang.RuntimeException v11;
+io.netty.resolver.dns.DnsQueryLifecycleObserver v3;
+io.netty.resolver.dns.DnsResolveContext v0;
+java.util.Locale v6;
+java.util.Map v2;
+java.lang.Object v10;
+java.lang.String v5, v7;
+boolean v8, v9;
+v0 := @this: io.netty.resolver.dns.DnsResolveContext;
+v1 := @parameter0: io.netty.handler.codec.dns.DnsQuestion;
+v2 := @parameter1: java.util.Map;
+v3 := @parameter2: io.netty.resolver.dns.DnsQueryLifecycleObserver;
+v4 := @parameter3: io.netty.util.concurrent.Promise;
+v5 = interfaceinvoke v1.<io.netty.handler.codec.dns.DnsQuestion: java.lang.String name()>();
+v6 = <java.util.Locale: java.util.Locale US>;
+v7 = virtualinvoke v5.<java.lang.String: java.lang.String toLowerCase(java.util.Locale)>(v6);
+v8 = 0;
+label1:
+v9 = interfaceinvoke v2.<java.util.Map: boolean isEmpty()>();
+if v9 != 0 goto label2;
+v10 = interfaceinvoke v2.<java.util.Map: java.lang.Object remove(java.lang.Object)>(v7);
+if v10 == null goto label2;
+v8 = 1;
+v7 = v10;
+goto label1;
+label2:
+if v8 == 0 goto label3;
+specialinvoke v0.<io.netty.resolver.dns.DnsResolveContext: void followCname(io.netty.handler.codec.dns.DnsQuestion,java.lang.String,io.netty.resolver.dns.DnsQueryLifecycleObserver,io.netty.util.concurrent.Promise)>(v1, v7, v3, v4);
+goto label4;
+label3:
+v11 = <io.netty.resolver.dns.DnsResolveContext: java.lang.RuntimeException CNAME_NOT_FOUND_QUERY_FAILED_EXCEPTION>;
+interfaceinvoke v3.<io.netty.resolver.dns.DnsQueryLifecycleObserver: void queryFailed(java.lang.Throwable)>(v11);
+label4:
+return;
+}
+private static java.util.Map buildAliasMap(io.netty.handler.codec.dns.DnsResponse, io.netty.resolver.dns.DnsCnameCache, io.netty.channel.EventLoop)
+{
+io.netty.handler.codec.dns.DnsRecord v8;
+io.netty.handler.codec.dns.DnsResponse v0;
+java.util.HashMap v14, v5;
+long v24;
+io.netty.buffer.ByteBuf v12;
+io.netty.handler.codec.dns.DnsSection v3, v7;
+java.util.Locale v17, v19;
+java.util.Map v25;
+int v15, v4, v6;
+java.lang.String v13, v16, v18, v20, v21, v22;
+boolean v11, v23;
+io.netty.handler.codec.dns.DnsRecordType v10, v9;
+io.netty.channel.EventLoop v2;
+io.netty.resolver.dns.DnsCnameCache v1;
+v0 := @parameter0: io.netty.handler.codec.dns.DnsResponse;
+v1 := @parameter1: io.netty.resolver.dns.DnsCnameCache;
+v2 := @parameter2: io.netty.channel.EventLoop;
+v3 = <io.netty.handler.codec.dns.DnsSection: io.netty.handler.codec.dns.DnsSection ANSWER>;
+v4 = interfaceinvoke v0.<io.netty.handler.codec.dns.DnsResponse: int count(io.netty.handler.codec.dns.DnsSection)>(v3);
+v5 = null;
+v6 = 0;
+label1:
+if v6 >= v4 goto label4;
+v7 = <io.netty.handler.codec.dns.DnsSection: io.netty.handler.codec.dns.DnsSection ANSWER>;
+v8 = interfaceinvoke v0.<io.netty.handler.codec.dns.DnsResponse: io.netty.handler.codec.dns.DnsRecord recordAt(io.netty.handler.codec.dns.DnsSection,int)>(v7, v6);
+v9 = interfaceinvoke v8.<io.netty.handler.codec.dns.DnsRecord: io.netty.handler.codec.dns.DnsRecordType type()>();
+v10 = <io.netty.handler.codec.dns.DnsRecordType: io.netty.handler.codec.dns.DnsRecordType CNAME>;
+if v9 != v10 goto label3;
+v11 = v8 instanceof io.netty.handler.codec.dns.DnsRawRecord;
+if v11 == 0 goto label3;
+v12 = interfaceinvoke v8.<io.netty.buffer.ByteBufHolder: io.netty.buffer.ByteBuf content()>();
+v13 = staticinvoke <io.netty.resolver.dns.DnsResolveContext: java.lang.String decodeDomainName(io.netty.buffer.ByteBuf)>(v12);
+if v13 == null goto label3;
+if v5 != null goto label2;
+v14 = new java.util.HashMap;
+v15 = staticinvoke <java.lang.Math: int min(int,int)>(8, v4);
+specialinvoke v14.<java.util.HashMap: void <init>(int)>(v15);
+v5 = v14;
+label2:
+v16 = interfaceinvoke v8.<io.netty.handler.codec.dns.DnsRecord: java.lang.String name()>();
+v17 = <java.util.Locale: java.util.Locale US>;
+v18 = virtualinvoke v16.<java.lang.String: java.lang.String toLowerCase(java.util.Locale)>(v17);
+v19 = <java.util.Locale: java.util.Locale US>;
+v20 = virtualinvoke v13.<java.lang.String: java.lang.String toLowerCase(java.util.Locale)>(v19);
+v21 = staticinvoke <io.netty.resolver.dns.DnsResolveContext: java.lang.String hostnameWithDot(java.lang.String)>(v18);
+v22 = staticinvoke <io.netty.resolver.dns.DnsResolveContext: java.lang.String hostnameWithDot(java.lang.String)>(v20);
+v23 = virtualinvoke v21.<java.lang.String: boolean equalsIgnoreCase(java.lang.String)>(v22);
+if v23 != 0 goto label3;
+v24 = interfaceinvoke v8.<io.netty.handler.codec.dns.DnsRecord: long timeToLive()>();
+interfaceinvoke v1.<io.netty.resolver.dns.DnsCnameCache: void cache(java.lang.String,java.lang.String,long,io.netty.channel.EventLoop)>(v21, v22, v24, v2);
+interfaceinvoke v5.<java.util.Map: java.lang.Object put(java.lang.Object,java.lang.Object)>(v18, v20);
+label3:
+v6 = v6 + 1;
+goto label1;
+label4:
+if v5 == null goto label5;
+v25 = v5;
+goto label6;
+label5:
+v25 = staticinvoke <java.util.Collections: java.util.Map emptyMap()>();
+label6:
+return v25;
+}
+private void tryToFinishResolve(io.netty.resolver.dns.DnsServerAddressStream, int, io.netty.handler.codec.dns.DnsQuestion, io.netty.resolver.dns.DnsQueryLifecycleObserver, io.netty.util.concurrent.Promise, java.lang.Throwable)
+{
+java.lang.Throwable v6;
+io.netty.resolver.dns.DnsServerAddressStream v1, v26;
+io.netty.resolver.dns.DnsResolveContext v0;
+int v10, v12, v14, v16, v2, v27;
+java.lang.String v23, v25;
+boolean v18, v7, v9;
+io.netty.handler.codec.dns.DnsRecordType v19, v20, v21, v22, v24;
+io.netty.util.concurrent.Promise v5;
+io.netty.handler.codec.dns.DnsQuestion v3;
+java.util.Set v8;
+java.lang.RuntimeException v17;
+io.netty.resolver.dns.DnsQueryLifecycleObserver v15, v4;
+java.util.List v11;
+io.netty.resolver.dns.NoopDnsQueryLifecycleObserver v13;
+v0 := @this: io.netty.resolver.dns.DnsResolveContext;
+v1 := @parameter0: io.netty.resolver.dns.DnsServerAddressStream;
+v2 := @parameter1: int;
+v3 := @parameter2: io.netty.handler.codec.dns.DnsQuestion;
+v4 := @parameter3: io.netty.resolver.dns.DnsQueryLifecycleObserver;
+v5 := @parameter4: io.netty.util.concurrent.Promise;
+v6 := @parameter5: java.lang.Throwable;
+v7 = v0.<io.netty.resolver.dns.DnsResolveContext: boolean completeEarly>;
+if v7 != 0 goto label1;
+v8 = v0.<io.netty.resolver.dns.DnsResolveContext: java.util.Set queriesInProgress>;
+v9 = interfaceinvoke v8.<java.util.Set: boolean isEmpty()>();
+if v9 != 0 goto label1;
+v10 = v0.<io.netty.resolver.dns.DnsResolveContext: int allowedQueries>;
+interfaceinvoke v4.<io.netty.resolver.dns.DnsQueryLifecycleObserver: void queryCancelled(int)>(v10);
+return;
+label1:
+v11 = v0.<io.netty.resolver.dns.DnsResolveContext: java.util.List finalResult>;
+if v11 != null goto label6;
+v12 = interfaceinvoke v1.<io.netty.resolver.dns.DnsServerAddressStream: int size()>();
+if v2 >= v12 goto label4;
+v13 = <io.netty.resolver.dns.NoopDnsQueryLifecycleObserver: io.netty.resolver.dns.NoopDnsQueryLifecycleObserver INSTANCE>;
+if v4 != v13 goto label2;
+v14 = v2 + 1;
+v15 = specialinvoke v0.<io.netty.resolver.dns.DnsResolveContext: io.netty.resolver.dns.DnsQueryLifecycleObserver newDnsQueryLifecycleObserver(io.netty.handler.codec.dns.DnsQuestion)>(v3);
+specialinvoke v0.<io.netty.resolver.dns.DnsResolveContext: void query(io.netty.resolver.dns.DnsServerAddressStream,int,io.netty.handler.codec.dns.DnsQuestion,io.netty.resolver.dns.DnsQueryLifecycleObserver,boolean,io.netty.util.concurrent.Promise,java.lang.Throwable)>(v1, v14, v3, v15, 1, v5, v6);
+goto label3;
+label2:
+v16 = v2 + 1;
+specialinvoke v0.<io.netty.resolver.dns.DnsResolveContext: void query(io.netty.resolver.dns.DnsServerAddressStream,int,io.netty.handler.codec.dns.DnsQuestion,io.netty.resolver.dns.DnsQueryLifecycleObserver,boolean,io.netty.util.concurrent.Promise,java.lang.Throwable)>(v1, v16, v3, v4, 1, v5, v6);
+label3:
+return;
+label4:
+v17 = <io.netty.resolver.dns.DnsResolveContext: java.lang.RuntimeException NAME_SERVERS_EXHAUSTED_EXCEPTION>;
+interfaceinvoke v4.<io.netty.resolver.dns.DnsQueryLifecycleObserver: void queryFailed(java.lang.Throwable)>(v17);
+if v6 != null goto label7;
+v18 = v0.<io.netty.resolver.dns.DnsResolveContext: boolean triedCNAME>;
+if v18 != 0 goto label7;
+v19 = interfaceinvoke v3.<io.netty.handler.codec.dns.DnsQuestion: io.netty.handler.codec.dns.DnsRecordType type()>();
+v20 = <io.netty.handler.codec.dns.DnsRecordType: io.netty.handler.codec.dns.DnsRecordType A>;
+if v19 == v20 goto label5;
+v21 = interfaceinvoke v3.<io.netty.handler.codec.dns.DnsQuestion: io.netty.handler.codec.dns.DnsRecordType type()>();
+v22 = <io.netty.handler.codec.dns.DnsRecordType: io.netty.handler.codec.dns.DnsRecordType AAAA>;
+if v21 != v22 goto label7;
+label5:
+v0.<io.netty.resolver.dns.DnsResolveContext: boolean triedCNAME> = 1;
+v23 = v0.<io.netty.resolver.dns.DnsResolveContext: java.lang.String hostname>;
+v24 = <io.netty.handler.codec.dns.DnsRecordType: io.netty.handler.codec.dns.DnsRecordType CNAME>;
+v25 = v0.<io.netty.resolver.dns.DnsResolveContext: java.lang.String hostname>;
+v26 = specialinvoke v0.<io.netty.resolver.dns.DnsResolveContext: io.netty.resolver.dns.DnsServerAddressStream getNameServers(java.lang.String)>(v25);
+specialinvoke v0.<io.netty.resolver.dns.DnsResolveContext: boolean query(java.lang.String,io.netty.handler.codec.dns.DnsRecordType,io.netty.resolver.dns.DnsServerAddressStream,boolean,io.netty.util.concurrent.Promise)>(v23, v24, v26, 1, v5);
+return;
+label6:
+v27 = v0.<io.netty.resolver.dns.DnsResolveContext: int allowedQueries>;
+interfaceinvoke v4.<io.netty.resolver.dns.DnsQueryLifecycleObserver: void queryCancelled(int)>(v27);
+label7:
+specialinvoke v0.<io.netty.resolver.dns.DnsResolveContext: void finishResolve(io.netty.util.concurrent.Promise,java.lang.Throwable)>(v5, v6);
+return;
+}
+private void finishResolve(io.netty.util.concurrent.Promise, java.lang.Throwable)
+{
+io.netty.handler.codec.dns.DnsRecordType[] v32;
+io.netty.resolver.dns.DnsResolveContext v0;
+boolean v11, v15, v17, v19, v21, v3, v5, v8;
+io.netty.resolver.dns.DnsNameResolver v23;
+java.util.Set v4, v6;
+java.util.List v10, v12, v13, v14, v20;
+java.lang.StringBuilder v27, v28, v30, v31, v34, v35, v36, v37;
+java.lang.Throwable v2;
+java.lang.AssertionError v22;
+int v24, v25, v26;
+java.lang.String v29, v33, v39, v40;
+io.netty.util.concurrent.Promise v1;
+java.util.Iterator v16, v7;
+java.net.UnknownHostException v38;
+io.netty.handler.codec.dns.DnsRecord[] v41;
+java.lang.Object v18, v9;
+v0 := @this: io.netty.resolver.dns.DnsResolveContext;
+v1 := @parameter0: io.netty.util.concurrent.Promise;
+v2 := @parameter1: java.lang.Throwable;
+v3 = v0.<io.netty.resolver.dns.DnsResolveContext: boolean completeEarly>;
+if v3 != 0 goto label02;
+v4 = v0.<io.netty.resolver.dns.DnsResolveContext: java.util.Set queriesInProgress>;
+v5 = interfaceinvoke v4.<java.util.Set: boolean isEmpty()>();
+if v5 != 0 goto label02;
+v6 = v0.<io.netty.resolver.dns.DnsResolveContext: java.util.Set queriesInProgress>;
+v7 = interfaceinvoke v6.<java.util.Set: java.util.Iterator iterator()>();
+label01:
+v8 = interfaceinvoke v7.<java.util.Iterator: boolean hasNext()>();
+if v8 == 0 goto label02;
+v9 = interfaceinvoke v7.<java.util.Iterator: java.lang.Object next()>();
+interfaceinvoke v7.<java.util.Iterator: void remove()>();
+interfaceinvoke v9.<io.netty.util.concurrent.Future: boolean cancel(boolean)>(0);
+goto label01;
+label02:
+v10 = v0.<io.netty.resolver.dns.DnsResolveContext: java.util.List finalResult>;
+if v10 == null goto label06;
+v11 = interfaceinvoke v1.<io.netty.util.concurrent.Promise: boolean isDone()>();
+if v11 != 0 goto label04;
+v12 = v0.<io.netty.resolver.dns.DnsResolveContext: java.util.List finalResult>;
+v13 = virtualinvoke v0.<io.netty.resolver.dns.DnsResolveContext: java.util.List filterResults(java.util.List)>(v12);
+v14 = staticinvoke <java.util.Collections: java.util.List emptyList()>();
+v0.<io.netty.resolver.dns.DnsResolveContext: java.util.List finalResult> = v14;
+v15 = staticinvoke <io.netty.resolver.dns.DnsNameResolver: boolean trySuccess(io.netty.util.concurrent.Promise,java.lang.Object)>(v1, v13);
+if v15 != 0 goto label05;
+v16 = interfaceinvoke v13.<java.util.List: java.util.Iterator iterator()>();
+label03:
+v17 = interfaceinvoke v16.<java.util.Iterator: boolean hasNext()>();
+if v17 == 0 goto label05;
+v18 = interfaceinvoke v16.<java.util.Iterator: java.lang.Object next()>();
+staticinvoke <io.netty.util.ReferenceCountUtil: void safeRelease(java.lang.Object)>(v18);
+goto label03;
+label04:
+v19 = <io.netty.resolver.dns.DnsResolveContext: boolean $assertionsDisabled>;
+if v19 != 0 goto label05;
+v20 = v0.<io.netty.resolver.dns.DnsResolveContext: java.util.List finalResult>;
+v21 = interfaceinvoke v20.<java.util.List: boolean isEmpty()>();
+if v21 != 0 goto label05;
+v22 = new java.lang.AssertionError;
+specialinvoke v22.<java.lang.AssertionError: void <init>()>();
+throw v22;
+label05:
+return;
+label06:
+v23 = v0.<io.netty.resolver.dns.DnsResolveContext: io.netty.resolver.dns.DnsNameResolver parent>;
+v24 = virtualinvoke v23.<io.netty.resolver.dns.DnsNameResolver: int maxQueriesPerResolve()>();
+v25 = v0.<io.netty.resolver.dns.DnsResolveContext: int allowedQueries>;
+v26 = v24 - v25;
+v27 = new java.lang.StringBuilder;
+specialinvoke v27.<java.lang.StringBuilder: void <init>(int)>(64);
+v28 = virtualinvoke v27.<java.lang.StringBuilder: java.lang.StringBuilder append(java.lang.String)>("Failed to resolve \'");
+v29 = v0.<io.netty.resolver.dns.DnsResolveContext: java.lang.String hostname>;
+v30 = virtualinvoke v28.<java.lang.StringBuilder: java.lang.StringBuilder append(java.lang.String)>(v29);
+v31 = virtualinvoke v30.<java.lang.StringBuilder: java.lang.StringBuilder append(java.lang.String)>("\' ");
+v32 = v0.<io.netty.resolver.dns.DnsResolveContext: io.netty.handler.codec.dns.DnsRecordType[] expectedTypes>;
+v33 = staticinvoke <java.util.Arrays: java.lang.String toString(java.lang.Object[])>(v32);
+virtualinvoke v31.<java.lang.StringBuilder: java.lang.StringBuilder append(java.lang.String)>(v33);
+if v26 <= 1 goto label08;
+if v26 >= v24 goto label07;
+v34 = virtualinvoke v27.<java.lang.StringBuilder: java.lang.StringBuilder append(java.lang.String)>(" after ");
+v35 = virtualinvoke v34.<java.lang.StringBuilder: java.lang.StringBuilder append(int)>(v26);
+virtualinvoke v35.<java.lang.StringBuilder: java.lang.StringBuilder append(java.lang.String)>(" queries ");
+goto label08;
+label07:
+v36 = virtualinvoke v27.<java.lang.StringBuilder: java.lang.StringBuilder append(java.lang.String)>(". Exceeded max queries per resolve ");
+v37 = virtualinvoke v36.<java.lang.StringBuilder: java.lang.StringBuilder append(int)>(v24);
+virtualinvoke v37.<java.lang.StringBuilder: java.lang.StringBuilder append(char)>(32);
+label08:
+v38 = new java.net.UnknownHostException;
+v39 = virtualinvoke v27.<java.lang.StringBuilder: java.lang.String toString()>();
+specialinvoke v38.<java.net.UnknownHostException: void <init>(java.lang.String)>(v39);
+if v2 != null goto label09;
+v40 = v0.<io.netty.resolver.dns.DnsResolveContext: java.lang.String hostname>;
+v41 = v0.<io.netty.resolver.dns.DnsResolveContext: io.netty.handler.codec.dns.DnsRecord[] additionals>;
+virtualinvoke v0.<io.netty.resolver.dns.DnsResolveContext: void cache(java.lang.String,io.netty.handler.codec.dns.DnsRecord[],java.net.UnknownHostException)>(v40, v41, v38);
+goto label10;
+label09:
+virtualinvoke v38.<java.net.UnknownHostException: java.lang.Throwable initCause(java.lang.Throwable)>(v2);
+label10:
+interfaceinvoke v1.<io.netty.util.concurrent.Promise: boolean tryFailure(java.lang.Throwable)>(v38);
+return;
+}
+static java.lang.String decodeDomainName(io.netty.buffer.ByteBuf)
+{
+java.lang.Throwable v3;
+io.netty.buffer.ByteBuf v0;
+java.lang.String v1;
+io.netty.handler.codec.CorruptedFrameException v2;
+v0 := @parameter0: io.netty.buffer.ByteBuf;
+virtualinvoke v0.<io.netty.buffer.ByteBuf: io.netty.buffer.ByteBuf markReaderIndex()>();
+label1:
+v1 = staticinvoke <io.netty.handler.codec.dns.DefaultDnsRecordDecoder: java.lang.String decodeName(io.netty.buffer.ByteBuf)>(v0);
+label2:
+virtualinvoke v0.<io.netty.buffer.ByteBuf: io.netty.buffer.ByteBuf resetReaderIndex()>();
+return v1;
+label3:
+v2 := @caughtexception;
+virtualinvoke v0.<io.netty.buffer.ByteBuf: io.netty.buffer.ByteBuf resetReaderIndex()>();
+return null;
+label4:
+v3 := @caughtexception;
+virtualinvoke v0.<io.netty.buffer.ByteBuf: io.netty.buffer.ByteBuf resetReaderIndex()>();
+throw v3;
+catch io.netty.handler.codec.CorruptedFrameException from label1 to label2 with label3;
+catch java.lang.Throwable from label1 to label2 with label4;
+}
+private io.netty.resolver.dns.DnsServerAddressStream getNameServers(java.lang.String)
+{
+io.netty.resolver.dns.DnsNameResolver v7;
+io.netty.resolver.dns.DnsServerAddressStream v2, v5, v6, v8;
+io.netty.resolver.dns.DnsResolveContext v0;
+java.lang.String v1, v3;
+boolean v4;
+v0 := @this: io.netty.resolver.dns.DnsResolveContext;
+v1 := @parameter0: java.lang.String;
+v2 = specialinvoke v0.<io.netty.resolver.dns.DnsResolveContext: io.netty.resolver.dns.DnsServerAddressStream getNameServersFromCache(java.lang.String)>(v1);
+if v2 != null goto label2;
+v3 = v0.<io.netty.resolver.dns.DnsResolveContext: java.lang.String hostname>;
+v4 = virtualinvoke v1.<java.lang.String: boolean equals(java.lang.Object)>(v3);
+if v4 == 0 goto label1;
+v5 = v0.<io.netty.resolver.dns.DnsResolveContext: io.netty.resolver.dns.DnsServerAddressStream nameServerAddrs>;
+v6 = interfaceinvoke v5.<io.netty.resolver.dns.DnsServerAddressStream: io.netty.resolver.dns.DnsServerAddressStream duplicate()>();
+return v6;
+label1:
+v7 = v0.<io.netty.resolver.dns.DnsResolveContext: io.netty.resolver.dns.DnsNameResolver parent>;
+v8 = virtualinvoke v7.<io.netty.resolver.dns.DnsNameResolver: io.netty.resolver.dns.DnsServerAddressStream newNameServerAddressStream(java.lang.String)>(v1);
+return v8;
+label2:
+return v2;
+}
+private void followCname(io.netty.handler.codec.dns.DnsQuestion, java.lang.String, io.netty.resolver.dns.DnsQueryLifecycleObserver, io.netty.util.concurrent.Promise)
+{
+java.lang.Throwable v11;
+io.netty.handler.codec.dns.DnsRecordType v9;
+io.netty.util.concurrent.Promise v4;
+io.netty.handler.codec.dns.DnsQuestion v1;
+io.netty.resolver.dns.DnsServerAddressStream v7;
+io.netty.handler.codec.dns.DefaultDnsQuestion v8;
+io.netty.resolver.dns.DnsQueryLifecycleObserver v12, v3;
+io.netty.resolver.dns.DnsResolveContext v0;
+int v10;
+java.lang.String v2, v6;
+io.netty.resolver.dns.DnsCnameCache v5;
+v0 := @this: io.netty.resolver.dns.DnsResolveContext;
+v1 := @parameter0: io.netty.handler.codec.dns.DnsQuestion;
+v2 := @parameter1: java.lang.String;
+v3 := @parameter2: io.netty.resolver.dns.DnsQueryLifecycleObserver;
+v4 := @parameter3: io.netty.util.concurrent.Promise;
+label1:
+v5 = virtualinvoke v0.<io.netty.resolver.dns.DnsResolveContext: io.netty.resolver.dns.DnsCnameCache cnameCache()>();
+v6 = staticinvoke <io.netty.resolver.dns.DnsResolveContext: java.lang.String cnameResolveFromCache(io.netty.resolver.dns.DnsCnameCache,java.lang.String)>(v5, v2);
+v7 = specialinvoke v0.<io.netty.resolver.dns.DnsResolveContext: io.netty.resolver.dns.DnsServerAddressStream getNameServers(java.lang.String)>(v6);
+v8 = new io.netty.handler.codec.dns.DefaultDnsQuestion;
+v9 = interfaceinvoke v1.<io.netty.handler.codec.dns.DnsQuestion: io.netty.handler.codec.dns.DnsRecordType type()>();
+v10 = v0.<io.netty.resolver.dns.DnsResolveContext: int dnsClass>;
+specialinvoke v8.<io.netty.handler.codec.dns.DefaultDnsQuestion: void <init>(java.lang.String,io.netty.handler.codec.dns.DnsRecordType,int)>(v6, v9, v10);
+label2:
+goto label4;
+label3:
+v11 := @caughtexception;
+interfaceinvoke v3.<io.netty.resolver.dns.DnsQueryLifecycleObserver: void queryFailed(java.lang.Throwable)>(v11);
+staticinvoke <io.netty.util.internal.PlatformDependent: void throwException(java.lang.Throwable)>(v11);
+return;
+label4:
+v12 = interfaceinvoke v3.<io.netty.resolver.dns.DnsQueryLifecycleObserver: io.netty.resolver.dns.DnsQueryLifecycleObserver queryCNAMEd(io.netty.handler.codec.dns.DnsQuestion)>(v8);
+specialinvoke v0.<io.netty.resolver.dns.DnsResolveContext: void query(io.netty.resolver.dns.DnsServerAddressStream,int,io.netty.handler.codec.dns.DnsQuestion,io.netty.resolver.dns.DnsQueryLifecycleObserver,boolean,io.netty.util.concurrent.Promise,java.lang.Throwable)>(v7, 0, v8, v12, 1, v4, null);
+return;
+catch java.lang.Throwable from label1 to label2 with label3;
+}
+private boolean query(java.lang.String, io.netty.handler.codec.dns.DnsRecordType, io.netty.resolver.dns.DnsServerAddressStream, boolean, io.netty.util.concurrent.Promise)
+{
+java.lang.Throwable v8;
+io.netty.handler.codec.dns.DnsRecordType v2;
+io.netty.util.concurrent.Promise v5;
+io.netty.resolver.dns.DnsServerAddressStream v3;
+java.lang.IllegalArgumentException v9;
+io.netty.handler.codec.dns.DefaultDnsQuestion v6;
+io.netty.resolver.dns.DnsQueryLifecycleObserver v11;
+io.netty.resolver.dns.DnsResolveContext v0;
+int v7;
+java.lang.String v1, v10;
+boolean v4;
+v0 := @this: io.netty.resolver.dns.DnsResolveContext;
+v1 := @parameter0: java.lang.String;
+v2 := @parameter1: io.netty.handler.codec.dns.DnsRecordType;
+v3 := @parameter2: io.netty.resolver.dns.DnsServerAddressStream;
+v4 := @parameter3: boolean;
+v5 := @parameter4: io.netty.util.concurrent.Promise;
+label1:
+v6 = new io.netty.handler.codec.dns.DefaultDnsQuestion;
+v7 = v0.<io.netty.resolver.dns.DnsResolveContext: int dnsClass>;
+specialinvoke v6.<io.netty.handler.codec.dns.DefaultDnsQuestion: void <init>(java.lang.String,io.netty.handler.codec.dns.DnsRecordType,int)>(v1, v2, v7);
+label2:
+goto label4;
+label3:
+v8 := @caughtexception;
+v9 = new java.lang.IllegalArgumentException;
+v10 = dynamicinvoke "makeConcatWithConstants" <java.lang.String (java.lang.String,io.netty.handler.codec.dns.DnsRecordType)>(v1, v2) <java.lang.invoke.StringConcatFactory: java.lang.invoke.CallSite makeConcatWithConstants(java.lang.invoke.MethodHandles$Lookup,java.lang.String,java.lang.invoke.MethodType,java.lang.String,java.lang.Object[])>("Unable to create DNS Question for: [\u0001, \u0001]");
+specialinvoke v9.<java.lang.IllegalArgumentException: void <init>(java.lang.String,java.lang.Throwable)>(v10, v8);
+interfaceinvoke v5.<io.netty.util.concurrent.Promise: boolean tryFailure(java.lang.Throwable)>(v9);
+return 0;
+label4:
+v11 = specialinvoke v0.<io.netty.resolver.dns.DnsResolveContext: io.netty.resolver.dns.DnsQueryLifecycleObserver newDnsQueryLifecycleObserver(io.netty.handler.codec.dns.DnsQuestion)>(v6);
+specialinvoke v0.<io.netty.resolver.dns.DnsResolveContext: void query(io.netty.resolver.dns.DnsServerAddressStream,int,io.netty.handler.codec.dns.DnsQuestion,io.netty.resolver.dns.DnsQueryLifecycleObserver,boolean,io.netty.util.concurrent.Promise,java.lang.Throwable)>(v3, 0, v6, v11, v4, v5, null);
+return 1;
+catch java.lang.Throwable from label1 to label2 with label3;
+}
+private io.netty.resolver.dns.DnsQueryLifecycleObserver newDnsQueryLifecycleObserver(io.netty.handler.codec.dns.DnsQuestion)
+{
+io.netty.resolver.dns.DnsQueryLifecycleObserver v4;
+io.netty.resolver.dns.DnsResolveContext v0;
+io.netty.resolver.dns.DnsNameResolver v2;
+io.netty.handler.codec.dns.DnsQuestion v1;
+io.netty.resolver.dns.DnsQueryLifecycleObserverFactory v3;
+v0 := @this: io.netty.resolver.dns.DnsResolveContext;
+v1 := @parameter0: io.netty.handler.codec.dns.DnsQuestion;
+v2 = v0.<io.netty.resolver.dns.DnsResolveContext: io.netty.resolver.dns.DnsNameResolver parent>;
+v3 = virtualinvoke v2.<io.netty.resolver.dns.DnsNameResolver: io.netty.resolver.dns.DnsQueryLifecycleObserverFactory dnsQueryLifecycleObserverFactory()>();
+v4 = interfaceinvoke v3.<io.netty.resolver.dns.DnsQueryLifecycleObserverFactory: io.netty.resolver.dns.DnsQueryLifecycleObserver newDnsQueryLifecycleObserver(io.netty.handler.codec.dns.DnsQuestion)>(v1);
+return v4;
+}
+static void <clinit>()
+{
+io.netty.resolver.dns.DnsResolveContext$DnsResolveContextException v4, v5, v6, v7, v8;
+io.netty.util.internal.logging.InternalLogger v3;
+java.lang.Class v0;
+boolean v1, v2;
+v0 = class "Lio/netty/resolver/dns/DnsResolveContext;";
+v1 = virtualinvoke v0.<java.lang.Class: boolean desiredAssertionStatus()>();
+if v1 != 0 goto label1;
+v2 = 1;
+goto label2;
+label1:
+v2 = 0;
+label2:
+<io.netty.resolver.dns.DnsResolveContext: boolean $assertionsDisabled> = v2;
+v3 = staticinvoke <io.netty.util.internal.logging.InternalLoggerFactory: io.netty.util.internal.logging.InternalLogger getInstance(java.lang.Class)>(class "Lio/netty/resolver/dns/DnsResolveContext;");
+<io.netty.resolver.dns.DnsResolveContext: io.netty.util.internal.logging.InternalLogger logger> = v3;
+v4 = staticinvoke <io.netty.resolver.dns.DnsResolveContext$DnsResolveContextException: io.netty.resolver.dns.DnsResolveContext$DnsResolveContextException newStatic(java.lang.String,java.lang.Class,java.lang.String)>("No answer found and NXDOMAIN response code returned", class "Lio/netty/resolver/dns/DnsResolveContext;", "onResponse(..)");
+<io.netty.resolver.dns.DnsResolveContext: java.lang.RuntimeException NXDOMAIN_QUERY_FAILED_EXCEPTION> = v4;
+v5 = staticinvoke <io.netty.resolver.dns.DnsResolveContext$DnsResolveContextException: io.netty.resolver.dns.DnsResolveContext$DnsResolveContextException newStatic(java.lang.String,java.lang.Class,java.lang.String)>("No matching CNAME record found", class "Lio/netty/resolver/dns/DnsResolveContext;", "onResponseCNAME(..)");
+<io.netty.resolver.dns.DnsResolveContext: java.lang.RuntimeException CNAME_NOT_FOUND_QUERY_FAILED_EXCEPTION> = v5;
+v6 = staticinvoke <io.netty.resolver.dns.DnsResolveContext$DnsResolveContextException: io.netty.resolver.dns.DnsResolveContext$DnsResolveContextException newStatic(java.lang.String,java.lang.Class,java.lang.String)>("No matching record type found", class "Lio/netty/resolver/dns/DnsResolveContext;", "onResponseAorAAAA(..)");
+<io.netty.resolver.dns.DnsResolveContext: java.lang.RuntimeException NO_MATCHING_RECORD_QUERY_FAILED_EXCEPTION> = v6;
+v7 = staticinvoke <io.netty.resolver.dns.DnsResolveContext$DnsResolveContextException: io.netty.resolver.dns.DnsResolveContext$DnsResolveContextException newStatic(java.lang.String,java.lang.Class,java.lang.String)>("Response type was unrecognized", class "Lio/netty/resolver/dns/DnsResolveContext;", "onResponse(..)");
+<io.netty.resolver.dns.DnsResolveContext: java.lang.RuntimeException UNRECOGNIZED_TYPE_QUERY_FAILED_EXCEPTION> = v7;
+v8 = staticinvoke <io.netty.resolver.dns.DnsResolveContext$DnsResolveContextException: io.netty.resolver.dns.DnsResolveContext$DnsResolveContextException newStatic(java.lang.String,java.lang.Class,java.lang.String)>("No name servers returned an answer", class "Lio/netty/resolver/dns/DnsResolveContext;", "tryToFinishResolve(..)");
+<io.netty.resolver.dns.DnsResolveContext: java.lang.RuntimeException NAME_SERVERS_EXHAUSTED_EXCEPTION> = v8;
+return;
+}
+}

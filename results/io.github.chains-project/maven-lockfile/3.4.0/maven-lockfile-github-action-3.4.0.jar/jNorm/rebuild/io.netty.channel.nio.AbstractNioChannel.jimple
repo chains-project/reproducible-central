@@ -1,0 +1,364 @@
+public abstract class io.netty.channel.nio.AbstractNioChannel extends io.netty.channel.AbstractChannel
+{
+private static final io.netty.util.internal.logging.InternalLogger logger;
+private final java.nio.channels.SelectableChannel ch;
+protected final int readInterestOp;
+volatile java.nio.channels.SelectionKey selectionKey;
+boolean readPending;
+private final java.lang.Runnable clearReadPendingRunnable;
+private io.netty.channel.ChannelPromise connectPromise;
+private io.netty.util.concurrent.Future connectTimeoutFuture;
+private java.net.SocketAddress requestedRemoteAddress;
+static final boolean $assertionsDisabled;
+protected void <init>(io.netty.channel.Channel, java.nio.channels.SelectableChannel, int)
+{
+io.netty.channel.Channel v1;
+io.netty.channel.ChannelException v6;
+java.nio.channels.SelectableChannel v2;
+int v3;
+java.io.IOException v5;
+io.netty.channel.nio.AbstractNioChannel v0;
+io.netty.channel.nio.AbstractNioChannel$1 v4;
+v0 := @this: io.netty.channel.nio.AbstractNioChannel;
+v1 := @parameter0: io.netty.channel.Channel;
+v2 := @parameter1: java.nio.channels.SelectableChannel;
+v3 := @parameter2: int;
+specialinvoke v0.<io.netty.channel.AbstractChannel: void <init>(io.netty.channel.Channel)>(v1);
+v4 = new io.netty.channel.nio.AbstractNioChannel$1;
+specialinvoke v4.<io.netty.channel.nio.AbstractNioChannel$1: void <init>(io.netty.channel.nio.AbstractNioChannel)>(v0);
+v0.<io.netty.channel.nio.AbstractNioChannel: java.lang.Runnable clearReadPendingRunnable> = v4;
+v0.<io.netty.channel.nio.AbstractNioChannel: java.nio.channels.SelectableChannel ch> = v2;
+v0.<io.netty.channel.nio.AbstractNioChannel: int readInterestOp> = v3;
+label1:
+virtualinvoke v2.<java.nio.channels.SelectableChannel: java.nio.channels.SelectableChannel configureBlocking(boolean)>(0);
+label2:
+goto label4;
+label3:
+v5 := @caughtexception;
+v6 = new io.netty.channel.ChannelException;
+specialinvoke v6.<io.netty.channel.ChannelException: void <init>(java.lang.String,java.lang.Throwable)>("Failed to enter non-blocking mode.", v5);
+throw v6;
+label4:
+return;
+catch java.io.IOException from label1 to label2 with label3;
+}
+public boolean isOpen()
+{
+io.netty.channel.nio.AbstractNioChannel v0;
+java.nio.channels.SelectableChannel v1;
+boolean v2;
+v0 := @this: io.netty.channel.nio.AbstractNioChannel;
+v1 = v0.<io.netty.channel.nio.AbstractNioChannel: java.nio.channels.SelectableChannel ch>;
+v2 = virtualinvoke v1.<java.nio.channels.SelectableChannel: boolean isOpen()>();
+return v2;
+}
+public io.netty.channel.nio.AbstractNioChannel$NioUnsafe unsafe()
+{
+io.netty.channel.nio.AbstractNioChannel v0;
+io.netty.channel.Channel$Unsafe v1;
+v0 := @this: io.netty.channel.nio.AbstractNioChannel;
+v1 = specialinvoke v0.<io.netty.channel.AbstractChannel: io.netty.channel.Channel$Unsafe unsafe()>();
+return v1;
+}
+protected java.nio.channels.SelectableChannel javaChannel()
+{
+io.netty.channel.nio.AbstractNioChannel v0;
+java.nio.channels.SelectableChannel v1;
+v0 := @this: io.netty.channel.nio.AbstractNioChannel;
+v1 = v0.<io.netty.channel.nio.AbstractNioChannel: java.nio.channels.SelectableChannel ch>;
+return v1;
+}
+public io.netty.channel.nio.NioEventLoop eventLoop()
+{
+io.netty.channel.nio.AbstractNioChannel v0;
+io.netty.channel.EventLoop v1;
+v0 := @this: io.netty.channel.nio.AbstractNioChannel;
+v1 = specialinvoke v0.<io.netty.channel.AbstractChannel: io.netty.channel.EventLoop eventLoop()>();
+return v1;
+}
+protected java.nio.channels.SelectionKey selectionKey()
+{
+java.nio.channels.SelectionKey v2, v4;
+io.netty.channel.nio.AbstractNioChannel v0;
+java.lang.AssertionError v3;
+boolean v1;
+v0 := @this: io.netty.channel.nio.AbstractNioChannel;
+v1 = <io.netty.channel.nio.AbstractNioChannel: boolean $assertionsDisabled>;
+if v1 != 0 goto label1;
+v2 = v0.<io.netty.channel.nio.AbstractNioChannel: java.nio.channels.SelectionKey selectionKey>;
+if v2 != null goto label1;
+v3 = new java.lang.AssertionError;
+specialinvoke v3.<java.lang.AssertionError: void <init>()>();
+throw v3;
+label1:
+v4 = v0.<io.netty.channel.nio.AbstractNioChannel: java.nio.channels.SelectionKey selectionKey>;
+return v4;
+}
+protected boolean isReadPending()
+{
+io.netty.channel.nio.AbstractNioChannel v0;
+boolean v1;
+v0 := @this: io.netty.channel.nio.AbstractNioChannel;
+v1 = v0.<io.netty.channel.nio.AbstractNioChannel: boolean readPending>;
+return v1;
+}
+protected void setReadPending(boolean)
+{
+io.netty.channel.nio.AbstractNioChannel$2 v5;
+io.netty.channel.nio.NioEventLoop v3;
+io.netty.channel.nio.AbstractNioChannel v0;
+boolean v1, v2, v4;
+v0 := @this: io.netty.channel.nio.AbstractNioChannel;
+v1 := @parameter0: boolean;
+v2 = virtualinvoke v0.<io.netty.channel.nio.AbstractNioChannel: boolean isRegistered()>();
+if v2 == 0 goto label2;
+v3 = virtualinvoke v0.<io.netty.channel.nio.AbstractNioChannel: io.netty.channel.nio.NioEventLoop eventLoop()>();
+v4 = interfaceinvoke v3.<io.netty.channel.EventLoop: boolean inEventLoop()>();
+if v4 == 0 goto label1;
+specialinvoke v0.<io.netty.channel.nio.AbstractNioChannel: void setReadPending0(boolean)>(v1);
+goto label3;
+label1:
+v5 = new io.netty.channel.nio.AbstractNioChannel$2;
+specialinvoke v5.<io.netty.channel.nio.AbstractNioChannel$2: void <init>(io.netty.channel.nio.AbstractNioChannel,boolean)>(v0, v1);
+interfaceinvoke v3.<io.netty.channel.EventLoop: void execute(java.lang.Runnable)>(v5);
+goto label3;
+label2:
+v0.<io.netty.channel.nio.AbstractNioChannel: boolean readPending> = v1;
+label3:
+return;
+}
+protected final void clearReadPending()
+{
+io.netty.channel.nio.NioEventLoop v2;
+io.netty.channel.nio.AbstractNioChannel v0;
+java.lang.Runnable v4;
+boolean v1, v3;
+v0 := @this: io.netty.channel.nio.AbstractNioChannel;
+v1 = virtualinvoke v0.<io.netty.channel.nio.AbstractNioChannel: boolean isRegistered()>();
+if v1 == 0 goto label2;
+v2 = virtualinvoke v0.<io.netty.channel.nio.AbstractNioChannel: io.netty.channel.nio.NioEventLoop eventLoop()>();
+v3 = interfaceinvoke v2.<io.netty.channel.EventLoop: boolean inEventLoop()>();
+if v3 == 0 goto label1;
+specialinvoke v0.<io.netty.channel.nio.AbstractNioChannel: void clearReadPending0()>();
+goto label3;
+label1:
+v4 = v0.<io.netty.channel.nio.AbstractNioChannel: java.lang.Runnable clearReadPendingRunnable>;
+interfaceinvoke v2.<io.netty.channel.EventLoop: void execute(java.lang.Runnable)>(v4);
+goto label3;
+label2:
+v0.<io.netty.channel.nio.AbstractNioChannel: boolean readPending> = 0;
+label3:
+return;
+}
+private void setReadPending0(boolean)
+{
+io.netty.channel.nio.AbstractNioChannel v0;
+boolean v1;
+io.netty.channel.nio.AbstractNioChannel$NioUnsafe v2;
+v0 := @this: io.netty.channel.nio.AbstractNioChannel;
+v1 := @parameter0: boolean;
+v0.<io.netty.channel.nio.AbstractNioChannel: boolean readPending> = v1;
+if v1 != 0 goto label1;
+v2 = virtualinvoke v0.<io.netty.channel.nio.AbstractNioChannel: io.netty.channel.nio.AbstractNioChannel$NioUnsafe unsafe()>();
+virtualinvoke v2.<io.netty.channel.nio.AbstractNioChannel$AbstractNioUnsafe: void removeReadOp()>();
+label1:
+return;
+}
+private void clearReadPending0()
+{
+io.netty.channel.nio.AbstractNioChannel v0;
+io.netty.channel.nio.AbstractNioChannel$NioUnsafe v1;
+v0 := @this: io.netty.channel.nio.AbstractNioChannel;
+v0.<io.netty.channel.nio.AbstractNioChannel: boolean readPending> = 0;
+v1 = virtualinvoke v0.<io.netty.channel.nio.AbstractNioChannel: io.netty.channel.nio.AbstractNioChannel$NioUnsafe unsafe()>();
+virtualinvoke v1.<io.netty.channel.nio.AbstractNioChannel$AbstractNioUnsafe: void removeReadOp()>();
+return;
+}
+protected boolean isCompatible(io.netty.channel.EventLoop)
+{
+io.netty.channel.nio.AbstractNioChannel v0;
+io.netty.channel.EventLoop v1;
+boolean v2;
+v0 := @this: io.netty.channel.nio.AbstractNioChannel;
+v1 := @parameter0: io.netty.channel.EventLoop;
+v2 = v1 instanceof io.netty.channel.nio.NioEventLoop;
+return v2;
+}
+protected void doRegister() throws java.lang.Exception
+{
+java.nio.channels.CancelledKeyException v6;
+java.nio.channels.SelectionKey v5;
+java.nio.channels.Selector v4;
+java.nio.channels.SelectableChannel v2;
+io.netty.channel.nio.NioEventLoop v3, v7;
+io.netty.channel.nio.AbstractNioChannel v0;
+boolean v1;
+v0 := @this: io.netty.channel.nio.AbstractNioChannel;
+v1 = 0;
+label1:
+v2 = virtualinvoke v0.<io.netty.channel.nio.AbstractNioChannel: java.nio.channels.SelectableChannel javaChannel()>();
+v3 = virtualinvoke v0.<io.netty.channel.nio.AbstractNioChannel: io.netty.channel.nio.NioEventLoop eventLoop()>();
+v4 = virtualinvoke v3.<io.netty.channel.nio.NioEventLoop: java.nio.channels.Selector unwrappedSelector()>();
+v5 = virtualinvoke v2.<java.nio.channels.SelectableChannel: java.nio.channels.SelectionKey register(java.nio.channels.Selector,int,java.lang.Object)>(v4, 0, v0);
+v0.<io.netty.channel.nio.AbstractNioChannel: java.nio.channels.SelectionKey selectionKey> = v5;
+label2:
+return;
+label3:
+v6 := @caughtexception;
+if v1 != 0 goto label4;
+v7 = virtualinvoke v0.<io.netty.channel.nio.AbstractNioChannel: io.netty.channel.nio.NioEventLoop eventLoop()>();
+virtualinvoke v7.<io.netty.channel.nio.NioEventLoop: int selectNow()>();
+v1 = 1;
+goto label1;
+label4:
+throw v6;
+catch java.nio.channels.CancelledKeyException from label1 to label2 with label3;
+}
+protected void doDeregister() throws java.lang.Exception
+{
+io.netty.channel.nio.NioEventLoop v1;
+io.netty.channel.nio.AbstractNioChannel v0;
+java.nio.channels.SelectionKey v2;
+v0 := @this: io.netty.channel.nio.AbstractNioChannel;
+v1 = virtualinvoke v0.<io.netty.channel.nio.AbstractNioChannel: io.netty.channel.nio.NioEventLoop eventLoop()>();
+v2 = virtualinvoke v0.<io.netty.channel.nio.AbstractNioChannel: java.nio.channels.SelectionKey selectionKey()>();
+virtualinvoke v1.<io.netty.channel.nio.NioEventLoop: void cancel(java.nio.channels.SelectionKey)>(v2);
+return;
+}
+protected void doBeginRead() throws java.lang.Exception
+{
+java.nio.channels.SelectionKey v1;
+int v3, v4, v5, v6, v7;
+io.netty.channel.nio.AbstractNioChannel v0;
+boolean v2;
+v0 := @this: io.netty.channel.nio.AbstractNioChannel;
+v1 = v0.<io.netty.channel.nio.AbstractNioChannel: java.nio.channels.SelectionKey selectionKey>;
+v2 = virtualinvoke v1.<java.nio.channels.SelectionKey: boolean isValid()>();
+if v2 != 0 goto label1;
+return;
+label1:
+v0.<io.netty.channel.nio.AbstractNioChannel: boolean readPending> = 1;
+v3 = virtualinvoke v1.<java.nio.channels.SelectionKey: int interestOps()>();
+v4 = v0.<io.netty.channel.nio.AbstractNioChannel: int readInterestOp>;
+v5 = v3 & v4;
+if v5 != 0 goto label2;
+v6 = v0.<io.netty.channel.nio.AbstractNioChannel: int readInterestOp>;
+v7 = v3 | v6;
+virtualinvoke v1.<java.nio.channels.SelectionKey: java.nio.channels.SelectionKey interestOps(int)>(v7);
+label2:
+return;
+}
+protected abstract boolean doConnect(java.net.SocketAddress, java.net.SocketAddress) throws java.lang.Exception;
+protected abstract void doFinishConnect() throws java.lang.Exception;
+protected final io.netty.buffer.ByteBuf newDirectBuffer(io.netty.buffer.ByteBuf)
+{
+io.netty.buffer.ByteBufAllocator v4;
+io.netty.buffer.ByteBuf v1, v3, v6, v8;
+int v2, v7, v9;
+io.netty.channel.nio.AbstractNioChannel v0;
+boolean v5;
+v0 := @this: io.netty.channel.nio.AbstractNioChannel;
+v1 := @parameter0: io.netty.buffer.ByteBuf;
+v2 = virtualinvoke v1.<io.netty.buffer.ByteBuf: int readableBytes()>();
+if v2 != 0 goto label1;
+staticinvoke <io.netty.util.ReferenceCountUtil: void safeRelease(java.lang.Object)>(v1);
+v3 = <io.netty.buffer.Unpooled: io.netty.buffer.ByteBuf EMPTY_BUFFER>;
+return v3;
+label1:
+v4 = virtualinvoke v0.<io.netty.channel.nio.AbstractNioChannel: io.netty.buffer.ByteBufAllocator alloc()>();
+v5 = interfaceinvoke v4.<io.netty.buffer.ByteBufAllocator: boolean isDirectBufferPooled()>();
+if v5 == 0 goto label2;
+v6 = interfaceinvoke v4.<io.netty.buffer.ByteBufAllocator: io.netty.buffer.ByteBuf directBuffer(int)>(v2);
+v7 = virtualinvoke v1.<io.netty.buffer.ByteBuf: int readerIndex()>();
+virtualinvoke v6.<io.netty.buffer.ByteBuf: io.netty.buffer.ByteBuf writeBytes(io.netty.buffer.ByteBuf,int,int)>(v1, v7, v2);
+staticinvoke <io.netty.util.ReferenceCountUtil: void safeRelease(java.lang.Object)>(v1);
+return v6;
+label2:
+v8 = staticinvoke <io.netty.buffer.ByteBufUtil: io.netty.buffer.ByteBuf threadLocalDirectBuffer()>();
+if v8 == null goto label3;
+v9 = virtualinvoke v1.<io.netty.buffer.ByteBuf: int readerIndex()>();
+virtualinvoke v8.<io.netty.buffer.ByteBuf: io.netty.buffer.ByteBuf writeBytes(io.netty.buffer.ByteBuf,int,int)>(v1, v9, v2);
+staticinvoke <io.netty.util.ReferenceCountUtil: void safeRelease(java.lang.Object)>(v1);
+return v8;
+label3:
+return v1;
+}
+protected final io.netty.buffer.ByteBuf newDirectBuffer(io.netty.util.ReferenceCounted, io.netty.buffer.ByteBuf)
+{
+io.netty.buffer.ByteBufAllocator v5;
+io.netty.util.ReferenceCounted v1;
+io.netty.buffer.ByteBuf v2, v4, v7, v9;
+int v10, v3, v8;
+io.netty.channel.nio.AbstractNioChannel v0;
+boolean v6;
+v0 := @this: io.netty.channel.nio.AbstractNioChannel;
+v1 := @parameter0: io.netty.util.ReferenceCounted;
+v2 := @parameter1: io.netty.buffer.ByteBuf;
+v3 = virtualinvoke v2.<io.netty.buffer.ByteBuf: int readableBytes()>();
+if v3 != 0 goto label1;
+staticinvoke <io.netty.util.ReferenceCountUtil: void safeRelease(java.lang.Object)>(v1);
+v4 = <io.netty.buffer.Unpooled: io.netty.buffer.ByteBuf EMPTY_BUFFER>;
+return v4;
+label1:
+v5 = virtualinvoke v0.<io.netty.channel.nio.AbstractNioChannel: io.netty.buffer.ByteBufAllocator alloc()>();
+v6 = interfaceinvoke v5.<io.netty.buffer.ByteBufAllocator: boolean isDirectBufferPooled()>();
+if v6 == 0 goto label2;
+v7 = interfaceinvoke v5.<io.netty.buffer.ByteBufAllocator: io.netty.buffer.ByteBuf directBuffer(int)>(v3);
+v8 = virtualinvoke v2.<io.netty.buffer.ByteBuf: int readerIndex()>();
+virtualinvoke v7.<io.netty.buffer.ByteBuf: io.netty.buffer.ByteBuf writeBytes(io.netty.buffer.ByteBuf,int,int)>(v2, v8, v3);
+staticinvoke <io.netty.util.ReferenceCountUtil: void safeRelease(java.lang.Object)>(v1);
+return v7;
+label2:
+v9 = staticinvoke <io.netty.buffer.ByteBufUtil: io.netty.buffer.ByteBuf threadLocalDirectBuffer()>();
+if v9 == null goto label3;
+v10 = virtualinvoke v2.<io.netty.buffer.ByteBuf: int readerIndex()>();
+virtualinvoke v9.<io.netty.buffer.ByteBuf: io.netty.buffer.ByteBuf writeBytes(io.netty.buffer.ByteBuf,int,int)>(v2, v10, v3);
+staticinvoke <io.netty.util.ReferenceCountUtil: void safeRelease(java.lang.Object)>(v1);
+return v9;
+label3:
+if v1 == v2 goto label4;
+virtualinvoke v2.<io.netty.buffer.ByteBuf: io.netty.buffer.ByteBuf retain()>();
+staticinvoke <io.netty.util.ReferenceCountUtil: void safeRelease(java.lang.Object)>(v1);
+label4:
+return v2;
+}
+protected void doClose() throws java.lang.Exception
+{
+io.netty.channel.ChannelPromise v1;
+java.nio.channels.ClosedChannelException v2;
+io.netty.channel.nio.AbstractNioChannel v0;
+io.netty.util.concurrent.Future v3;
+v0 := @this: io.netty.channel.nio.AbstractNioChannel;
+v1 = v0.<io.netty.channel.nio.AbstractNioChannel: io.netty.channel.ChannelPromise connectPromise>;
+if v1 == null goto label1;
+v2 = new java.nio.channels.ClosedChannelException;
+specialinvoke v2.<java.nio.channels.ClosedChannelException: void <init>()>();
+interfaceinvoke v1.<io.netty.channel.ChannelPromise: boolean tryFailure(java.lang.Throwable)>(v2);
+v0.<io.netty.channel.nio.AbstractNioChannel: io.netty.channel.ChannelPromise connectPromise> = null;
+label1:
+v3 = v0.<io.netty.channel.nio.AbstractNioChannel: io.netty.util.concurrent.Future connectTimeoutFuture>;
+if v3 == null goto label2;
+interfaceinvoke v3.<io.netty.util.concurrent.Future: boolean cancel(boolean)>(0);
+v0.<io.netty.channel.nio.AbstractNioChannel: io.netty.util.concurrent.Future connectTimeoutFuture> = null;
+label2:
+return;
+}
+static void <clinit>()
+{
+io.netty.util.internal.logging.InternalLogger v3;
+java.lang.Class v0;
+boolean v1, v2;
+v0 = class "Lio/netty/channel/nio/AbstractNioChannel;";
+v1 = virtualinvoke v0.<java.lang.Class: boolean desiredAssertionStatus()>();
+if v1 != 0 goto label1;
+v2 = 1;
+goto label2;
+label1:
+v2 = 0;
+label2:
+<io.netty.channel.nio.AbstractNioChannel: boolean $assertionsDisabled> = v2;
+v3 = staticinvoke <io.netty.util.internal.logging.InternalLoggerFactory: io.netty.util.internal.logging.InternalLogger getInstance(java.lang.Class)>(class "Lio/netty/channel/nio/AbstractNioChannel;");
+<io.netty.channel.nio.AbstractNioChannel: io.netty.util.internal.logging.InternalLogger logger> = v3;
+return;
+}
+}

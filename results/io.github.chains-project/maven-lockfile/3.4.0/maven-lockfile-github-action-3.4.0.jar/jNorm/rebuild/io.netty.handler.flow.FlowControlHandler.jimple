@@ -1,0 +1,229 @@
+public class io.netty.handler.flow.FlowControlHandler extends io.netty.channel.ChannelDuplexHandler
+{
+private static final io.netty.util.internal.logging.InternalLogger logger;
+private final boolean releaseMessages;
+private io.netty.handler.flow.FlowControlHandler$RecyclableArrayDeque queue;
+private io.netty.channel.ChannelConfig config;
+private boolean shouldConsume;
+public void <init>()
+{
+io.netty.handler.flow.FlowControlHandler v0;
+v0 := @this: io.netty.handler.flow.FlowControlHandler;
+specialinvoke v0.<io.netty.handler.flow.FlowControlHandler: void <init>(boolean)>(1);
+return;
+}
+public void <init>(boolean)
+{
+io.netty.handler.flow.FlowControlHandler v0;
+boolean v1;
+v0 := @this: io.netty.handler.flow.FlowControlHandler;
+v1 := @parameter0: boolean;
+specialinvoke v0.<io.netty.channel.ChannelDuplexHandler: void <init>()>();
+v0.<io.netty.handler.flow.FlowControlHandler: boolean releaseMessages> = v1;
+return;
+}
+boolean isQueueEmpty()
+{
+io.netty.handler.flow.FlowControlHandler v0;
+io.netty.handler.flow.FlowControlHandler$RecyclableArrayDeque v1, v2;
+boolean v3, v4;
+v0 := @this: io.netty.handler.flow.FlowControlHandler;
+v1 = v0.<io.netty.handler.flow.FlowControlHandler: io.netty.handler.flow.FlowControlHandler$RecyclableArrayDeque queue>;
+if v1 == null goto label1;
+v2 = v0.<io.netty.handler.flow.FlowControlHandler: io.netty.handler.flow.FlowControlHandler$RecyclableArrayDeque queue>;
+v3 = virtualinvoke v2.<io.netty.handler.flow.FlowControlHandler$RecyclableArrayDeque: boolean isEmpty()>();
+if v3 == 0 goto label2;
+label1:
+v4 = 1;
+goto label3;
+label2:
+v4 = 0;
+label3:
+return v4;
+}
+private void destroy()
+{
+io.netty.handler.flow.FlowControlHandler v0;
+io.netty.handler.flow.FlowControlHandler$RecyclableArrayDeque v1, v2, v5, v7, v9;
+io.netty.util.internal.logging.InternalLogger v4;
+java.lang.Object v8;
+boolean v3, v6;
+v0 := @this: io.netty.handler.flow.FlowControlHandler;
+v1 = v0.<io.netty.handler.flow.FlowControlHandler: io.netty.handler.flow.FlowControlHandler$RecyclableArrayDeque queue>;
+if v1 == null goto label3;
+v2 = v0.<io.netty.handler.flow.FlowControlHandler: io.netty.handler.flow.FlowControlHandler$RecyclableArrayDeque queue>;
+v3 = virtualinvoke v2.<io.netty.handler.flow.FlowControlHandler$RecyclableArrayDeque: boolean isEmpty()>();
+if v3 != 0 goto label2;
+v4 = <io.netty.handler.flow.FlowControlHandler: io.netty.util.internal.logging.InternalLogger logger>;
+v5 = v0.<io.netty.handler.flow.FlowControlHandler: io.netty.handler.flow.FlowControlHandler$RecyclableArrayDeque queue>;
+interfaceinvoke v4.<io.netty.util.internal.logging.InternalLogger: void trace(java.lang.String,java.lang.Object)>("Non-empty queue: {}", v5);
+v6 = v0.<io.netty.handler.flow.FlowControlHandler: boolean releaseMessages>;
+if v6 == 0 goto label2;
+label1:
+v7 = v0.<io.netty.handler.flow.FlowControlHandler: io.netty.handler.flow.FlowControlHandler$RecyclableArrayDeque queue>;
+v8 = virtualinvoke v7.<io.netty.handler.flow.FlowControlHandler$RecyclableArrayDeque: java.lang.Object poll()>();
+if v8 == null goto label2;
+staticinvoke <io.netty.util.ReferenceCountUtil: void safeRelease(java.lang.Object)>(v8);
+goto label1;
+label2:
+v9 = v0.<io.netty.handler.flow.FlowControlHandler: io.netty.handler.flow.FlowControlHandler$RecyclableArrayDeque queue>;
+virtualinvoke v9.<io.netty.handler.flow.FlowControlHandler$RecyclableArrayDeque: void recycle()>();
+v0.<io.netty.handler.flow.FlowControlHandler: io.netty.handler.flow.FlowControlHandler$RecyclableArrayDeque queue> = null;
+label3:
+return;
+}
+public void handlerAdded(io.netty.channel.ChannelHandlerContext) throws java.lang.Exception
+{
+io.netty.channel.Channel v2;
+io.netty.channel.ChannelHandlerContext v1;
+io.netty.channel.ChannelConfig v3;
+io.netty.handler.flow.FlowControlHandler v0;
+v0 := @this: io.netty.handler.flow.FlowControlHandler;
+v1 := @parameter0: io.netty.channel.ChannelHandlerContext;
+v2 = interfaceinvoke v1.<io.netty.channel.ChannelHandlerContext: io.netty.channel.Channel channel()>();
+v3 = interfaceinvoke v2.<io.netty.channel.Channel: io.netty.channel.ChannelConfig config()>();
+v0.<io.netty.handler.flow.FlowControlHandler: io.netty.channel.ChannelConfig config> = v3;
+return;
+}
+public void handlerRemoved(io.netty.channel.ChannelHandlerContext) throws java.lang.Exception
+{
+io.netty.channel.ChannelHandlerContext v1;
+io.netty.handler.flow.FlowControlHandler v0;
+io.netty.handler.flow.FlowControlHandler$RecyclableArrayDeque v3;
+int v4;
+boolean v2;
+v0 := @this: io.netty.handler.flow.FlowControlHandler;
+v1 := @parameter0: io.netty.channel.ChannelHandlerContext;
+specialinvoke v0.<io.netty.channel.ChannelDuplexHandler: void handlerRemoved(io.netty.channel.ChannelHandlerContext)>(v1);
+v2 = virtualinvoke v0.<io.netty.handler.flow.FlowControlHandler: boolean isQueueEmpty()>();
+if v2 != 0 goto label1;
+v3 = v0.<io.netty.handler.flow.FlowControlHandler: io.netty.handler.flow.FlowControlHandler$RecyclableArrayDeque queue>;
+v4 = virtualinvoke v3.<io.netty.handler.flow.FlowControlHandler$RecyclableArrayDeque: int size()>();
+specialinvoke v0.<io.netty.handler.flow.FlowControlHandler: int dequeue(io.netty.channel.ChannelHandlerContext,int)>(v1, v4);
+label1:
+specialinvoke v0.<io.netty.handler.flow.FlowControlHandler: void destroy()>();
+return;
+}
+public void channelInactive(io.netty.channel.ChannelHandlerContext) throws java.lang.Exception
+{
+io.netty.channel.ChannelHandlerContext v1;
+io.netty.handler.flow.FlowControlHandler v0;
+v0 := @this: io.netty.handler.flow.FlowControlHandler;
+v1 := @parameter0: io.netty.channel.ChannelHandlerContext;
+specialinvoke v0.<io.netty.handler.flow.FlowControlHandler: void destroy()>();
+interfaceinvoke v1.<io.netty.channel.ChannelHandlerContext: io.netty.channel.ChannelHandlerContext fireChannelInactive()>();
+return;
+}
+public void read(io.netty.channel.ChannelHandlerContext) throws java.lang.Exception
+{
+io.netty.channel.ChannelHandlerContext v1;
+io.netty.channel.ChannelConfig v3;
+io.netty.handler.flow.FlowControlHandler v0;
+int v2;
+boolean v4;
+v0 := @this: io.netty.handler.flow.FlowControlHandler;
+v1 := @parameter0: io.netty.channel.ChannelHandlerContext;
+v2 = specialinvoke v0.<io.netty.handler.flow.FlowControlHandler: int dequeue(io.netty.channel.ChannelHandlerContext,int)>(v1, 1);
+if v2 != 0 goto label1;
+v0.<io.netty.handler.flow.FlowControlHandler: boolean shouldConsume> = 1;
+interfaceinvoke v1.<io.netty.channel.ChannelHandlerContext: io.netty.channel.ChannelHandlerContext read()>();
+goto label2;
+label1:
+v3 = v0.<io.netty.handler.flow.FlowControlHandler: io.netty.channel.ChannelConfig config>;
+v4 = interfaceinvoke v3.<io.netty.channel.ChannelConfig: boolean isAutoRead()>();
+if v4 == 0 goto label2;
+interfaceinvoke v1.<io.netty.channel.ChannelHandlerContext: io.netty.channel.ChannelHandlerContext read()>();
+label2:
+return;
+}
+public void channelRead(io.netty.channel.ChannelHandlerContext, java.lang.Object) throws java.lang.Exception
+{
+io.netty.handler.flow.FlowControlHandler v0;
+io.netty.channel.ChannelHandlerContext v1;
+byte v7;
+io.netty.handler.flow.FlowControlHandler$RecyclableArrayDeque v3, v4, v5;
+java.lang.Object v2;
+boolean v6;
+v0 := @this: io.netty.handler.flow.FlowControlHandler;
+v1 := @parameter0: io.netty.channel.ChannelHandlerContext;
+v2 := @parameter1: java.lang.Object;
+v3 = v0.<io.netty.handler.flow.FlowControlHandler: io.netty.handler.flow.FlowControlHandler$RecyclableArrayDeque queue>;
+if v3 != null goto label1;
+v4 = staticinvoke <io.netty.handler.flow.FlowControlHandler$RecyclableArrayDeque: io.netty.handler.flow.FlowControlHandler$RecyclableArrayDeque newInstance()>();
+v0.<io.netty.handler.flow.FlowControlHandler: io.netty.handler.flow.FlowControlHandler$RecyclableArrayDeque queue> = v4;
+label1:
+v5 = v0.<io.netty.handler.flow.FlowControlHandler: io.netty.handler.flow.FlowControlHandler$RecyclableArrayDeque queue>;
+virtualinvoke v5.<io.netty.handler.flow.FlowControlHandler$RecyclableArrayDeque: boolean offer(java.lang.Object)>(v2);
+v6 = v0.<io.netty.handler.flow.FlowControlHandler: boolean shouldConsume>;
+if v6 == 0 goto label2;
+v7 = 1;
+goto label3;
+label2:
+v7 = 0;
+label3:
+v0.<io.netty.handler.flow.FlowControlHandler: boolean shouldConsume> = 0;
+specialinvoke v0.<io.netty.handler.flow.FlowControlHandler: int dequeue(io.netty.channel.ChannelHandlerContext,int)>(v1, v7);
+return;
+}
+public void channelReadComplete(io.netty.channel.ChannelHandlerContext) throws java.lang.Exception
+{
+io.netty.channel.ChannelHandlerContext v1;
+io.netty.handler.flow.FlowControlHandler v0;
+boolean v2;
+v0 := @this: io.netty.handler.flow.FlowControlHandler;
+v1 := @parameter0: io.netty.channel.ChannelHandlerContext;
+v2 = virtualinvoke v0.<io.netty.handler.flow.FlowControlHandler: boolean isQueueEmpty()>();
+if v2 == 0 goto label1;
+interfaceinvoke v1.<io.netty.channel.ChannelHandlerContext: io.netty.channel.ChannelHandlerContext fireChannelReadComplete()>();
+label1:
+return;
+}
+private int dequeue(io.netty.channel.ChannelHandlerContext, int)
+{
+io.netty.handler.flow.FlowControlHandler v0;
+io.netty.channel.ChannelHandlerContext v1;
+io.netty.channel.ChannelConfig v5;
+io.netty.handler.flow.FlowControlHandler$RecyclableArrayDeque v10, v12, v4, v7, v9;
+int v2, v3;
+java.lang.Object v8;
+boolean v11, v6;
+v0 := @this: io.netty.handler.flow.FlowControlHandler;
+v1 := @parameter0: io.netty.channel.ChannelHandlerContext;
+v2 := @parameter1: int;
+v3 = 0;
+label1:
+v4 = v0.<io.netty.handler.flow.FlowControlHandler: io.netty.handler.flow.FlowControlHandler$RecyclableArrayDeque queue>;
+if v4 == null goto label3;
+if v3 < v2 goto label2;
+v5 = v0.<io.netty.handler.flow.FlowControlHandler: io.netty.channel.ChannelConfig config>;
+v6 = interfaceinvoke v5.<io.netty.channel.ChannelConfig: boolean isAutoRead()>();
+if v6 == 0 goto label3;
+label2:
+v7 = v0.<io.netty.handler.flow.FlowControlHandler: io.netty.handler.flow.FlowControlHandler$RecyclableArrayDeque queue>;
+v8 = virtualinvoke v7.<io.netty.handler.flow.FlowControlHandler$RecyclableArrayDeque: java.lang.Object poll()>();
+if v8 == null goto label3;
+v3 = v3 + 1;
+interfaceinvoke v1.<io.netty.channel.ChannelHandlerContext: io.netty.channel.ChannelHandlerContext fireChannelRead(java.lang.Object)>(v8);
+goto label1;
+label3:
+v9 = v0.<io.netty.handler.flow.FlowControlHandler: io.netty.handler.flow.FlowControlHandler$RecyclableArrayDeque queue>;
+if v9 == null goto label4;
+v10 = v0.<io.netty.handler.flow.FlowControlHandler: io.netty.handler.flow.FlowControlHandler$RecyclableArrayDeque queue>;
+v11 = virtualinvoke v10.<io.netty.handler.flow.FlowControlHandler$RecyclableArrayDeque: boolean isEmpty()>();
+if v11 == 0 goto label4;
+v12 = v0.<io.netty.handler.flow.FlowControlHandler: io.netty.handler.flow.FlowControlHandler$RecyclableArrayDeque queue>;
+virtualinvoke v12.<io.netty.handler.flow.FlowControlHandler$RecyclableArrayDeque: void recycle()>();
+v0.<io.netty.handler.flow.FlowControlHandler: io.netty.handler.flow.FlowControlHandler$RecyclableArrayDeque queue> = null;
+if v3 <= 0 goto label4;
+interfaceinvoke v1.<io.netty.channel.ChannelHandlerContext: io.netty.channel.ChannelHandlerContext fireChannelReadComplete()>();
+label4:
+return v3;
+}
+static void <clinit>()
+{
+io.netty.util.internal.logging.InternalLogger v0;
+v0 = staticinvoke <io.netty.util.internal.logging.InternalLoggerFactory: io.netty.util.internal.logging.InternalLogger getInstance(java.lang.Class)>(class "Lio/netty/handler/flow/FlowControlHandler;");
+<io.netty.handler.flow.FlowControlHandler: io.netty.util.internal.logging.InternalLogger logger> = v0;
+return;
+}
+}

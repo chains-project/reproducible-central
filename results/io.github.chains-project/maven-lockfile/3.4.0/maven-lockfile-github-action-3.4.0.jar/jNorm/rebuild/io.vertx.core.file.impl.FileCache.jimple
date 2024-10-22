@@ -1,0 +1,436 @@
+class io.vertx.core.file.impl.FileCache extends java.lang.Object
+{
+private java.lang.Thread shutdownHook;
+private java.io.File cacheDir;
+static io.vertx.core.file.impl.FileCache setupCache(java.lang.String)
+{
+io.vertx.core.file.impl.FileCache v1;
+java.lang.String v0;
+java.io.File v2;
+v0 := @parameter0: java.lang.String;
+v1 = new io.vertx.core.file.impl.FileCache;
+v2 = staticinvoke <io.vertx.core.file.impl.FileCache: java.io.File setupCacheDir(java.lang.String)>(v0);
+specialinvoke v1.<io.vertx.core.file.impl.FileCache: void <init>(java.io.File)>(v2);
+virtualinvoke v1.<io.vertx.core.file.impl.FileCache: void registerShutdownHook()>();
+return v1;
+}
+static java.io.File setupCacheDir(java.lang.String)
+{
+java.lang.IllegalStateException v18;
+java.nio.file.attribute.FileAttribute[] v12, v15;
+int v3, v5, v6;
+java.lang.String v0, v1, v19, v4, v8;
+java.nio.file.Path v11, v14;
+boolean v10, v2;
+java.util.Set v13;
+java.io.IOException v17;
+java.nio.file.attribute.FileAttribute v16;
+java.util.UUID v7;
+java.io.File v9;
+v0 := @parameter0: java.lang.String;
+v1 = <java.io.File: java.lang.String separator>;
+v2 = virtualinvoke v0.<java.lang.String: boolean endsWith(java.lang.String)>(v1);
+if v2 == 0 goto label1;
+v3 = virtualinvoke v0.<java.lang.String: int length()>();
+v4 = <java.io.File: java.lang.String separator>;
+v5 = virtualinvoke v4.<java.lang.String: int length()>();
+v6 = v3 - v5;
+v0 = virtualinvoke v0.<java.lang.String: java.lang.String substring(int,int)>(0, v6);
+label1:
+v7 = staticinvoke <java.util.UUID: java.util.UUID randomUUID()>();
+v8 = dynamicinvoke "makeConcatWithConstants" <java.lang.String (java.lang.String,java.util.UUID)>(v0, v7) <java.lang.invoke.StringConcatFactory: java.lang.invoke.CallSite makeConcatWithConstants(java.lang.invoke.MethodHandles$Lookup,java.lang.String,java.lang.invoke.MethodType,java.lang.String,java.lang.Object[])>("\u0001-\u0001");
+v9 = new java.io.File;
+specialinvoke v9.<java.io.File: void <init>(java.lang.String)>(v8);
+label2:
+v10 = staticinvoke <io.vertx.core.impl.Utils: boolean isWindows()>();
+if v10 == 0 goto label3;
+v11 = virtualinvoke v9.<java.io.File: java.nio.file.Path toPath()>();
+v12 = newarray (java.nio.file.attribute.FileAttribute)[0];
+staticinvoke <java.nio.file.Files: java.nio.file.Path createDirectories(java.nio.file.Path,java.nio.file.attribute.FileAttribute[])>(v11, v12);
+goto label6;
+label3:
+v13 = staticinvoke <java.nio.file.attribute.PosixFilePermissions: java.util.Set fromString(java.lang.String)>("rwx------");
+v14 = virtualinvoke v9.<java.io.File: java.nio.file.Path toPath()>();
+v15 = newarray (java.nio.file.attribute.FileAttribute)[1];
+v16 = staticinvoke <java.nio.file.attribute.PosixFilePermissions: java.nio.file.attribute.FileAttribute asFileAttribute(java.util.Set)>(v13);
+v15[0] = v16;
+staticinvoke <java.nio.file.Files: java.nio.file.Path createDirectories(java.nio.file.Path,java.nio.file.attribute.FileAttribute[])>(v14, v15);
+label4:
+goto label6;
+label5:
+v17 := @caughtexception;
+v18 = new java.lang.IllegalStateException;
+v19 = staticinvoke <io.vertx.core.file.impl.FileSystemImpl: java.lang.String getFolderAccessErrorMessage(java.lang.String,java.lang.String)>("create", v0);
+specialinvoke v18.<java.lang.IllegalStateException: void <init>(java.lang.String,java.lang.Throwable)>(v19, v17);
+throw v18;
+label6:
+return v9;
+catch java.io.IOException from label2 to label4 with label5;
+}
+public void <init>(java.io.File)
+{
+io.vertx.core.VertxException v4;
+io.vertx.core.file.impl.FileCache v0;
+java.io.IOException v3;
+java.io.File v1, v2;
+v0 := @this: io.vertx.core.file.impl.FileCache;
+v1 := @parameter0: java.io.File;
+specialinvoke v0.<java.lang.Object: void <init>()>();
+label1:
+v2 = virtualinvoke v1.<java.io.File: java.io.File getCanonicalFile()>();
+v0.<io.vertx.core.file.impl.FileCache: java.io.File cacheDir> = v2;
+label2:
+goto label4;
+label3:
+v3 := @caughtexception;
+v4 = new io.vertx.core.VertxException;
+specialinvoke v4.<io.vertx.core.VertxException: void <init>(java.lang.String,java.lang.Throwable)>("Cannot get canonical name of cacheDir", v3);
+throw v4;
+label4:
+return;
+catch java.io.IOException from label1 to label2 with label3;
+}
+synchronized void registerShutdownHook()
+{
+io.vertx.core.file.impl.FileCache v0;
+java.lang.Runtime v3;
+java.lang.Thread v1;
+java.lang.Runnable v2;
+v0 := @this: io.vertx.core.file.impl.FileCache;
+v1 = new java.lang.Thread;
+v2 = staticinvoke <io.vertx.core.file.impl.FileCache$runHook__1254: java.lang.Runnable bootstrap$(io.vertx.core.file.impl.FileCache)>(v0);
+specialinvoke v1.<java.lang.Thread: void <init>(java.lang.Runnable)>(v2);
+v0.<io.vertx.core.file.impl.FileCache: java.lang.Thread shutdownHook> = v1;
+v3 = staticinvoke <java.lang.Runtime: java.lang.Runtime getRuntime()>();
+virtualinvoke v3.<java.lang.Runtime: void addShutdownHook(java.lang.Thread)>(v1);
+return;
+}
+public void runHook()
+{
+java.lang.Throwable v2;
+io.vertx.core.file.impl.FileCache v0;
+java.lang.InterruptedException v5;
+java.lang.Thread v3, v6;
+java.lang.Runnable v4;
+java.io.File v1;
+v0 := @this: io.vertx.core.file.impl.FileCache;
+entermonitor v0;
+label01:
+v1 = v0.<io.vertx.core.file.impl.FileCache: java.io.File cacheDir>;
+if v1 != null goto label03;
+exitmonitor v0;
+label02:
+return;
+label03:
+exitmonitor v0;
+label04:
+goto label06;
+label05:
+v2 := @caughtexception;
+exitmonitor v0;
+throw v2;
+label06:
+v3 = new java.lang.Thread;
+v4 = staticinvoke <io.vertx.core.file.impl.FileCache$lambda_runHook_0__1255: java.lang.Runnable bootstrap$(io.vertx.core.file.impl.FileCache)>(v0);
+specialinvoke v3.<java.lang.Thread: void <init>(java.lang.Runnable)>(v4);
+virtualinvoke v3.<java.lang.Thread: void start()>();
+label07:
+virtualinvoke v3.<java.lang.Thread: void join(long)>(10000L);
+label08:
+goto label10;
+label09:
+v5 := @caughtexception;
+v6 = staticinvoke <java.lang.Thread: java.lang.Thread currentThread()>();
+virtualinvoke v6.<java.lang.Thread: void interrupt()>();
+label10:
+return;
+catch java.lang.Throwable from label01 to label02 with label05;
+catch java.lang.Throwable from label03 to label04 with label05;
+catch java.lang.InterruptedException from label07 to label08 with label09;
+}
+java.lang.String cacheDir()
+{
+io.vertx.core.file.impl.FileCache v0;
+java.lang.String v2;
+java.io.File v1;
+v0 := @this: io.vertx.core.file.impl.FileCache;
+v1 = specialinvoke v0.<io.vertx.core.file.impl.FileCache: java.io.File getCacheDir()>();
+v2 = virtualinvoke v1.<java.io.File: java.lang.String getPath()>();
+return v2;
+}
+void close() throws java.io.IOException
+{
+java.lang.Throwable v2;
+java.lang.IllegalStateException v4;
+io.vertx.core.file.impl.FileCache v0;
+java.lang.Runtime v3;
+java.lang.Thread v1;
+v0 := @this: io.vertx.core.file.impl.FileCache;
+entermonitor v0;
+label1:
+v1 = v0.<io.vertx.core.file.impl.FileCache: java.lang.Thread shutdownHook>;
+v0.<io.vertx.core.file.impl.FileCache: java.lang.Thread shutdownHook> = null;
+exitmonitor v0;
+label2:
+goto label4;
+label3:
+v2 := @caughtexception;
+exitmonitor v0;
+throw v2;
+label4:
+if v1 == null goto label8;
+label5:
+v3 = staticinvoke <java.lang.Runtime: java.lang.Runtime getRuntime()>();
+virtualinvoke v3.<java.lang.Runtime: boolean removeShutdownHook(java.lang.Thread)>(v1);
+label6:
+goto label8;
+label7:
+v4 := @caughtexception;
+label8:
+specialinvoke v0.<io.vertx.core.file.impl.FileCache: void deleteCacheDir()>();
+return;
+catch java.lang.Throwable from label1 to label2 with label3;
+catch java.lang.IllegalStateException from label5 to label6 with label7;
+}
+private void deleteCacheDir() throws java.io.IOException
+{
+java.lang.Throwable v3;
+io.vertx.core.file.impl.FileCache v0;
+java.nio.file.Path v5;
+java.io.File v1, v2;
+boolean v4;
+v0 := @this: io.vertx.core.file.impl.FileCache;
+entermonitor v0;
+label1:
+v1 = v0.<io.vertx.core.file.impl.FileCache: java.io.File cacheDir>;
+if v1 != null goto label3;
+exitmonitor v0;
+label2:
+return;
+label3:
+v2 = v0.<io.vertx.core.file.impl.FileCache: java.io.File cacheDir>;
+v0.<io.vertx.core.file.impl.FileCache: java.io.File cacheDir> = null;
+exitmonitor v0;
+label4:
+goto label6;
+label5:
+v3 := @caughtexception;
+exitmonitor v0;
+throw v3;
+label6:
+v4 = virtualinvoke v2.<java.io.File: boolean exists()>();
+if v4 == 0 goto label7;
+v5 = virtualinvoke v2.<java.io.File: java.nio.file.Path toPath()>();
+staticinvoke <io.vertx.core.file.impl.FileSystemImpl: void delete(java.nio.file.Path,boolean)>(v5, 1);
+label7:
+return;
+catch java.lang.Throwable from label1 to label2 with label5;
+catch java.lang.Throwable from label3 to label4 with label5;
+}
+java.io.File getFile(java.lang.String)
+{
+io.vertx.core.file.impl.FileCache v0;
+java.lang.String v1;
+java.io.File v2, v3;
+v0 := @this: io.vertx.core.file.impl.FileCache;
+v1 := @parameter0: java.lang.String;
+v2 = new java.io.File;
+v3 = specialinvoke v0.<io.vertx.core.file.impl.FileCache: java.io.File getCacheDir()>();
+specialinvoke v2.<java.io.File: void <init>(java.io.File,java.lang.String)>(v3, v1);
+return v2;
+}
+java.io.File getCanonicalFile(java.io.File)
+{
+java.io.IOException v7;
+java.io.File v1, v3, v5, v6;
+io.vertx.core.file.impl.FileCache v0;
+java.lang.String v4;
+boolean v2;
+v0 := @this: io.vertx.core.file.impl.FileCache;
+v1 := @parameter0: java.io.File;
+label1:
+v2 = virtualinvoke v1.<java.io.File: boolean isAbsolute()>();
+if v2 == 0 goto label3;
+v3 = virtualinvoke v1.<java.io.File: java.io.File getCanonicalFile()>();
+label2:
+return v3;
+label3:
+v4 = virtualinvoke v1.<java.io.File: java.lang.String getPath()>();
+v5 = virtualinvoke v0.<io.vertx.core.file.impl.FileCache: java.io.File getFile(java.lang.String)>(v4);
+v6 = virtualinvoke v5.<java.io.File: java.io.File getCanonicalFile()>();
+label4:
+return v6;
+label5:
+v7 := @caughtexception;
+return null;
+catch java.io.IOException from label1 to label2 with label5;
+catch java.io.IOException from label3 to label4 with label5;
+}
+java.lang.String relativize(java.lang.String)
+{
+char v7, v8;
+java.io.File v2;
+io.vertx.core.file.impl.FileCache v0;
+int v5, v6, v9;
+java.lang.String v1, v10, v3;
+boolean v4;
+v0 := @this: io.vertx.core.file.impl.FileCache;
+v1 := @parameter0: java.lang.String;
+v2 = specialinvoke v0.<io.vertx.core.file.impl.FileCache: java.io.File getCacheDir()>();
+v3 = virtualinvoke v2.<java.io.File: java.lang.String getPath()>();
+v4 = virtualinvoke v1.<java.lang.String: boolean startsWith(java.lang.String)>(v3);
+if v4 == 0 goto label2;
+v5 = virtualinvoke v3.<java.lang.String: int length()>();
+v6 = virtualinvoke v1.<java.lang.String: int length()>();
+if v6 != v5 goto label1;
+return "";
+label1:
+v7 = virtualinvoke v1.<java.lang.String: char charAt(int)>(v5);
+v8 = <java.io.File: char separatorChar>;
+if v7 != v8 goto label2;
+v9 = v5 + 1;
+v10 = virtualinvoke v1.<java.lang.String: java.lang.String substring(int)>(v9);
+return v10;
+label2:
+return null;
+}
+java.io.File cacheFile(java.lang.String, java.io.File, boolean) throws java.io.IOException
+{
+java.nio.file.CopyOption[] v10, v14;
+java.nio.file.StandardCopyOption v15;
+java.lang.String v1;
+java.nio.file.Path v12, v13, v8, v9;
+boolean v3, v6;
+java.nio.file.FileAlreadyExistsException v11;
+java.io.File v2, v4, v5, v7;
+io.vertx.core.file.impl.FileCache v0;
+v0 := @this: io.vertx.core.file.impl.FileCache;
+v1 := @parameter0: java.lang.String;
+v2 := @parameter1: java.io.File;
+v3 := @parameter2: boolean;
+v4 = new java.io.File;
+v5 = specialinvoke v0.<io.vertx.core.file.impl.FileCache: java.io.File getCacheDir()>();
+specialinvoke v4.<java.io.File: void <init>(java.io.File,java.lang.String)>(v5, v1);
+specialinvoke v0.<io.vertx.core.file.impl.FileCache: void fileNameCheck(java.io.File)>(v4);
+v6 = virtualinvoke v2.<java.io.File: boolean isDirectory()>();
+if v6 != 0 goto label5;
+v7 = virtualinvoke v4.<java.io.File: java.io.File getParentFile()>();
+virtualinvoke v7.<java.io.File: boolean mkdirs()>();
+if v3 != 0 goto label4;
+label1:
+v8 = virtualinvoke v2.<java.io.File: java.nio.file.Path toPath()>();
+v9 = virtualinvoke v4.<java.io.File: java.nio.file.Path toPath()>();
+v10 = newarray (java.nio.file.CopyOption)[0];
+staticinvoke <java.nio.file.Files: java.nio.file.Path copy(java.nio.file.Path,java.nio.file.Path,java.nio.file.CopyOption[])>(v8, v9, v10);
+label2:
+goto label6;
+label3:
+v11 := @caughtexception;
+goto label6;
+label4:
+v12 = virtualinvoke v2.<java.io.File: java.nio.file.Path toPath()>();
+v13 = virtualinvoke v4.<java.io.File: java.nio.file.Path toPath()>();
+v14 = newarray (java.nio.file.CopyOption)[1];
+v15 = <java.nio.file.StandardCopyOption: java.nio.file.StandardCopyOption REPLACE_EXISTING>;
+v14[0] = v15;
+staticinvoke <java.nio.file.Files: java.nio.file.Path copy(java.nio.file.Path,java.nio.file.Path,java.nio.file.CopyOption[])>(v12, v13, v14);
+goto label6;
+label5:
+virtualinvoke v4.<java.io.File: boolean mkdirs()>();
+label6:
+return v4;
+catch java.nio.file.FileAlreadyExistsException from label1 to label2 with label3;
+}
+void cacheFile(java.lang.String, java.io.InputStream, boolean) throws java.io.IOException
+{
+java.nio.file.CopyOption[] v11, v8;
+java.nio.file.FileAlreadyExistsException v9;
+java.io.File v4, v5, v6;
+java.nio.file.StandardCopyOption v12;
+io.vertx.core.file.impl.FileCache v0;
+java.lang.String v1;
+java.nio.file.Path v10, v7;
+boolean v3;
+java.io.InputStream v2;
+v0 := @this: io.vertx.core.file.impl.FileCache;
+v1 := @parameter0: java.lang.String;
+v2 := @parameter1: java.io.InputStream;
+v3 := @parameter2: boolean;
+v4 = new java.io.File;
+v5 = specialinvoke v0.<io.vertx.core.file.impl.FileCache: java.io.File getCacheDir()>();
+specialinvoke v4.<java.io.File: void <init>(java.io.File,java.lang.String)>(v5, v1);
+specialinvoke v0.<io.vertx.core.file.impl.FileCache: void fileNameCheck(java.io.File)>(v4);
+v6 = virtualinvoke v4.<java.io.File: java.io.File getParentFile()>();
+virtualinvoke v6.<java.io.File: boolean mkdirs()>();
+if v3 != 0 goto label4;
+label1:
+v7 = virtualinvoke v4.<java.io.File: java.nio.file.Path toPath()>();
+v8 = newarray (java.nio.file.CopyOption)[0];
+staticinvoke <java.nio.file.Files: long copy(java.io.InputStream,java.nio.file.Path,java.nio.file.CopyOption[])>(v2, v7, v8);
+label2:
+goto label5;
+label3:
+v9 := @caughtexception;
+goto label5;
+label4:
+v10 = virtualinvoke v4.<java.io.File: java.nio.file.Path toPath()>();
+v11 = newarray (java.nio.file.CopyOption)[1];
+v12 = <java.nio.file.StandardCopyOption: java.nio.file.StandardCopyOption REPLACE_EXISTING>;
+v11[0] = v12;
+staticinvoke <java.nio.file.Files: long copy(java.io.InputStream,java.nio.file.Path,java.nio.file.CopyOption[])>(v2, v10, v11);
+label5:
+return;
+catch java.nio.file.FileAlreadyExistsException from label1 to label2 with label3;
+}
+void cacheDir(java.lang.String) throws java.io.IOException
+{
+io.vertx.core.file.impl.FileCache v0;
+java.lang.String v1;
+java.io.File v2, v3;
+v0 := @this: io.vertx.core.file.impl.FileCache;
+v1 := @parameter0: java.lang.String;
+v2 = new java.io.File;
+v3 = specialinvoke v0.<io.vertx.core.file.impl.FileCache: java.io.File getCacheDir()>();
+specialinvoke v2.<java.io.File: void <init>(java.io.File,java.lang.String)>(v3, v1);
+specialinvoke v0.<io.vertx.core.file.impl.FileCache: void fileNameCheck(java.io.File)>(v2);
+virtualinvoke v2.<java.io.File: boolean mkdirs()>();
+return;
+}
+private void fileNameCheck(java.io.File) throws java.io.IOException
+{
+io.vertx.core.VertxException v7;
+java.io.File v1, v2, v4;
+io.vertx.core.file.impl.FileCache v0;
+java.lang.String v8;
+java.nio.file.Path v3, v5;
+boolean v6;
+v0 := @this: io.vertx.core.file.impl.FileCache;
+v1 := @parameter0: java.io.File;
+v2 = virtualinvoke v1.<java.io.File: java.io.File getCanonicalFile()>();
+v3 = virtualinvoke v2.<java.io.File: java.nio.file.Path toPath()>();
+v4 = specialinvoke v0.<io.vertx.core.file.impl.FileCache: java.io.File getCacheDir()>();
+v5 = virtualinvoke v4.<java.io.File: java.nio.file.Path toPath()>();
+v6 = interfaceinvoke v3.<java.nio.file.Path: boolean startsWith(java.nio.file.Path)>(v5);
+if v6 != 0 goto label1;
+v7 = new io.vertx.core.VertxException;
+v8 = dynamicinvoke "makeConcatWithConstants" <java.lang.String (java.io.File)>(v1) <java.lang.invoke.StringConcatFactory: java.lang.invoke.CallSite makeConcatWithConstants(java.lang.invoke.MethodHandles$Lookup,java.lang.String,java.lang.invoke.MethodType,java.lang.String,java.lang.Object[])>("File is outside of the cacheDir dir: \u0001");
+specialinvoke v7.<io.vertx.core.VertxException: void <init>(java.lang.String)>(v8);
+throw v7;
+label1:
+return;
+}
+private java.io.File getCacheDir()
+{
+java.lang.IllegalStateException v2;
+io.vertx.core.file.impl.FileCache v0;
+java.io.File v1;
+v0 := @this: io.vertx.core.file.impl.FileCache;
+v1 = v0.<io.vertx.core.file.impl.FileCache: java.io.File cacheDir>;
+if v1 != null goto label1;
+v2 = new java.lang.IllegalStateException;
+specialinvoke v2.<java.lang.IllegalStateException: void <init>(java.lang.String)>("cacheDir has been removed. FileResolver is closing?");
+throw v2;
+label1:
+return v1;
+}
+}

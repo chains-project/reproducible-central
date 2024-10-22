@@ -1,0 +1,689 @@
+public class io.vertx.core.net.impl.NetSocketImpl extends io.vertx.core.net.impl.ConnectionBase implements io.vertx.core.net.impl.NetSocketInternal
+{
+private static final io.vertx.core.impl.logging.Logger log;
+private final java.lang.String writeHandlerID;
+private final io.vertx.core.net.impl.SslChannelProvider sslChannelProvider;
+private final io.vertx.core.net.SocketAddress remoteAddress;
+private final io.vertx.core.spi.metrics.TCPMetrics metrics;
+private final io.vertx.core.streams.impl.InboundBuffer pending;
+private final java.lang.String negotiatedApplicationLayerProtocol;
+private io.vertx.core.Handler endHandler;
+private io.vertx.core.Handler drainHandler;
+private io.vertx.core.eventbus.MessageConsumer registration;
+private io.vertx.core.Handler handler;
+private io.vertx.core.Handler messageHandler;
+private io.vertx.core.Handler eventHandler;
+public void <init>(io.vertx.core.impl.ContextInternal, io.netty.channel.ChannelHandlerContext, io.vertx.core.net.impl.SslChannelProvider, io.vertx.core.spi.metrics.TCPMetrics, boolean)
+{
+io.vertx.core.net.impl.NetSocketImpl v0;
+io.netty.channel.ChannelHandlerContext v2;
+io.vertx.core.net.impl.SslChannelProvider v3;
+io.vertx.core.impl.ContextInternal v1;
+io.vertx.core.spi.metrics.TCPMetrics v4;
+boolean v5;
+v0 := @this: io.vertx.core.net.impl.NetSocketImpl;
+v1 := @parameter0: io.vertx.core.impl.ContextInternal;
+v2 := @parameter1: io.netty.channel.ChannelHandlerContext;
+v3 := @parameter2: io.vertx.core.net.impl.SslChannelProvider;
+v4 := @parameter3: io.vertx.core.spi.metrics.TCPMetrics;
+v5 := @parameter4: boolean;
+specialinvoke v0.<io.vertx.core.net.impl.NetSocketImpl: void <init>(io.vertx.core.impl.ContextInternal,io.netty.channel.ChannelHandlerContext,io.vertx.core.net.SocketAddress,io.vertx.core.net.impl.SslChannelProvider,io.vertx.core.spi.metrics.TCPMetrics,java.lang.String,boolean)>(v1, v2, null, v3, v4, null, v5);
+return;
+}
+public void <init>(io.vertx.core.impl.ContextInternal, io.netty.channel.ChannelHandlerContext, io.vertx.core.net.SocketAddress, io.vertx.core.net.impl.SslChannelProvider, io.vertx.core.spi.metrics.TCPMetrics, java.lang.String, boolean)
+{
+io.vertx.core.net.impl.NetSocketImpl v0;
+io.vertx.core.streams.impl.InboundBuffer v11, v12, v14, v16;
+io.vertx.core.impl.ContextInternal v1;
+io.vertx.core.spi.metrics.TCPMetrics v5;
+io.netty.channel.ChannelHandlerContext v2;
+java.lang.String v6, v9;
+boolean v7;
+io.vertx.core.net.SocketAddress v3;
+io.vertx.core.net.impl.NetSocketImpl$DataMessageHandler v10;
+java.util.UUID v8;
+io.vertx.core.net.impl.SslChannelProvider v4;
+io.vertx.core.Handler v13, v15, v17;
+v0 := @this: io.vertx.core.net.impl.NetSocketImpl;
+v1 := @parameter0: io.vertx.core.impl.ContextInternal;
+v2 := @parameter1: io.netty.channel.ChannelHandlerContext;
+v3 := @parameter2: io.vertx.core.net.SocketAddress;
+v4 := @parameter3: io.vertx.core.net.impl.SslChannelProvider;
+v5 := @parameter4: io.vertx.core.spi.metrics.TCPMetrics;
+v6 := @parameter5: java.lang.String;
+v7 := @parameter6: boolean;
+specialinvoke v0.<io.vertx.core.net.impl.ConnectionBase: void <init>(io.vertx.core.impl.ContextInternal,io.netty.channel.ChannelHandlerContext)>(v1, v2);
+v0.<io.vertx.core.net.impl.NetSocketImpl: io.vertx.core.net.impl.SslChannelProvider sslChannelProvider> = v4;
+if v7 == 0 goto label1;
+v8 = staticinvoke <java.util.UUID: java.util.UUID randomUUID()>();
+v9 = dynamicinvoke "makeConcatWithConstants" <java.lang.String (java.util.UUID)>(v8) <java.lang.invoke.StringConcatFactory: java.lang.invoke.CallSite makeConcatWithConstants(java.lang.invoke.MethodHandles$Lookup,java.lang.String,java.lang.invoke.MethodType,java.lang.String,java.lang.Object[])>("__vertx.net.\u0001");
+goto label2;
+label1:
+v9 = null;
+label2:
+v0.<io.vertx.core.net.impl.NetSocketImpl: java.lang.String writeHandlerID> = v9;
+v0.<io.vertx.core.net.impl.NetSocketImpl: io.vertx.core.net.SocketAddress remoteAddress> = v3;
+v0.<io.vertx.core.net.impl.NetSocketImpl: io.vertx.core.spi.metrics.TCPMetrics metrics> = v5;
+v10 = new io.vertx.core.net.impl.NetSocketImpl$DataMessageHandler;
+specialinvoke v10.<io.vertx.core.net.impl.NetSocketImpl$DataMessageHandler: void <init>(io.vertx.core.net.impl.NetSocketImpl)>(v0);
+v0.<io.vertx.core.net.impl.NetSocketImpl: io.vertx.core.Handler messageHandler> = v10;
+v0.<io.vertx.core.net.impl.NetSocketImpl: java.lang.String negotiatedApplicationLayerProtocol> = v6;
+v11 = new io.vertx.core.streams.impl.InboundBuffer;
+specialinvoke v11.<io.vertx.core.streams.impl.InboundBuffer: void <init>(io.vertx.core.Context)>(v1);
+v0.<io.vertx.core.net.impl.NetSocketImpl: io.vertx.core.streams.impl.InboundBuffer pending> = v11;
+v12 = v0.<io.vertx.core.net.impl.NetSocketImpl: io.vertx.core.streams.impl.InboundBuffer pending>;
+v13 = staticinvoke <io.vertx.core.net.impl.NetSocketImpl$lambda_new_0__1321: io.vertx.core.Handler bootstrap$(io.vertx.core.net.impl.NetSocketImpl)>(v0);
+virtualinvoke v12.<io.vertx.core.streams.impl.InboundBuffer: io.vertx.core.streams.impl.InboundBuffer drainHandler(io.vertx.core.Handler)>(v13);
+v14 = v0.<io.vertx.core.net.impl.NetSocketImpl: io.vertx.core.streams.impl.InboundBuffer pending>;
+virtualinvoke v1.<java.lang.Object: java.lang.Class getClass()>();
+v15 = staticinvoke <io.vertx.core.net.impl.NetSocketImpl$reportException__1322: io.vertx.core.Handler bootstrap$(io.vertx.core.impl.ContextInternal)>(v1);
+virtualinvoke v14.<io.vertx.core.streams.impl.InboundBuffer: io.vertx.core.streams.impl.InboundBuffer exceptionHandler(io.vertx.core.Handler)>(v15);
+v16 = v0.<io.vertx.core.net.impl.NetSocketImpl: io.vertx.core.streams.impl.InboundBuffer pending>;
+v17 = staticinvoke <io.vertx.core.net.impl.NetSocketImpl$lambda_new_1__1323: io.vertx.core.Handler bootstrap$(io.vertx.core.net.impl.NetSocketImpl)>(v0);
+virtualinvoke v16.<io.vertx.core.streams.impl.InboundBuffer: io.vertx.core.streams.impl.InboundBuffer handler(io.vertx.core.Handler)>(v17);
+return;
+}
+void registerEventBusHandler()
+{
+io.vertx.core.net.impl.NetSocketImpl v0;
+io.vertx.core.impl.VertxInternal v3;
+io.vertx.core.eventbus.EventBus v4;
+java.lang.String v1, v5;
+io.vertx.core.Handler v2;
+io.vertx.core.eventbus.MessageConsumer v6, v7;
+v0 := @this: io.vertx.core.net.impl.NetSocketImpl;
+v1 = v0.<io.vertx.core.net.impl.NetSocketImpl: java.lang.String writeHandlerID>;
+if v1 == null goto label1;
+v2 = staticinvoke <io.vertx.core.net.impl.NetSocketImpl$lambda_registerEventBusHandler_2__1324: io.vertx.core.Handler bootstrap$(io.vertx.core.net.impl.NetSocketImpl)>(v0);
+v3 = v0.<io.vertx.core.net.impl.NetSocketImpl: io.vertx.core.impl.VertxInternal vertx>;
+v4 = interfaceinvoke v3.<io.vertx.core.impl.VertxInternal: io.vertx.core.eventbus.EventBus eventBus()>();
+v5 = v0.<io.vertx.core.net.impl.NetSocketImpl: java.lang.String writeHandlerID>;
+v6 = interfaceinvoke v4.<io.vertx.core.eventbus.EventBus: io.vertx.core.eventbus.MessageConsumer localConsumer(java.lang.String)>(v5);
+v7 = interfaceinvoke v6.<io.vertx.core.eventbus.MessageConsumer: io.vertx.core.eventbus.MessageConsumer handler(io.vertx.core.Handler)>(v2);
+v0.<io.vertx.core.net.impl.NetSocketImpl: io.vertx.core.eventbus.MessageConsumer registration> = v7;
+label1:
+return;
+}
+void unregisterEventBusHandler()
+{
+io.vertx.core.net.impl.NetSocketImpl v0;
+io.vertx.core.eventbus.MessageConsumer v1, v2;
+v0 := @this: io.vertx.core.net.impl.NetSocketImpl;
+v1 = v0.<io.vertx.core.net.impl.NetSocketImpl: io.vertx.core.eventbus.MessageConsumer registration>;
+if v1 == null goto label1;
+v2 = v0.<io.vertx.core.net.impl.NetSocketImpl: io.vertx.core.eventbus.MessageConsumer registration>;
+v0.<io.vertx.core.net.impl.NetSocketImpl: io.vertx.core.eventbus.MessageConsumer registration> = null;
+interfaceinvoke v2.<io.vertx.core.eventbus.MessageConsumer: io.vertx.core.Future unregister()>();
+label1:
+return;
+}
+public io.vertx.core.spi.metrics.TCPMetrics metrics()
+{
+io.vertx.core.net.impl.NetSocketImpl v0;
+io.vertx.core.spi.metrics.TCPMetrics v1;
+v0 := @this: io.vertx.core.net.impl.NetSocketImpl;
+v1 = v0.<io.vertx.core.net.impl.NetSocketImpl: io.vertx.core.spi.metrics.TCPMetrics metrics>;
+return v1;
+}
+public java.lang.String writeHandlerID()
+{
+io.vertx.core.net.impl.NetSocketImpl v0;
+java.lang.String v1;
+v0 := @this: io.vertx.core.net.impl.NetSocketImpl;
+v1 = v0.<io.vertx.core.net.impl.NetSocketImpl: java.lang.String writeHandlerID>;
+return v1;
+}
+public synchronized io.vertx.core.Future writeMessage(java.lang.Object)
+{
+io.vertx.core.net.impl.NetSocketImpl v0;
+io.vertx.core.impl.future.PromiseInternal v3;
+io.vertx.core.impl.ContextInternal v2;
+java.lang.Object v1;
+io.vertx.core.Future v4;
+v0 := @this: io.vertx.core.net.impl.NetSocketImpl;
+v1 := @parameter0: java.lang.Object;
+v2 = v0.<io.vertx.core.net.impl.NetSocketImpl: io.vertx.core.impl.ContextInternal context>;
+v3 = interfaceinvoke v2.<io.vertx.core.impl.ContextInternal: io.vertx.core.impl.future.PromiseInternal promise()>();
+virtualinvoke v0.<io.vertx.core.net.impl.NetSocketImpl: io.vertx.core.net.impl.NetSocketInternal writeMessage(java.lang.Object,io.vertx.core.Handler)>(v1, v3);
+v4 = interfaceinvoke v3.<io.vertx.core.Promise: io.vertx.core.Future future()>();
+return v4;
+}
+public io.vertx.core.net.impl.NetSocketInternal writeMessage(java.lang.Object, io.vertx.core.Handler)
+{
+io.vertx.core.net.impl.NetSocketImpl v0;
+io.vertx.core.impl.future.PromiseInternal v3;
+io.vertx.core.impl.ContextInternal v4;
+java.lang.Object v1;
+io.vertx.core.Handler v2;
+v0 := @this: io.vertx.core.net.impl.NetSocketImpl;
+v1 := @parameter0: java.lang.Object;
+v2 := @parameter1: io.vertx.core.Handler;
+if v2 != null goto label1;
+v3 = null;
+goto label2;
+label1:
+v4 = v0.<io.vertx.core.net.impl.NetSocketImpl: io.vertx.core.impl.ContextInternal context>;
+v3 = interfaceinvoke v4.<io.vertx.core.impl.ContextInternal: io.vertx.core.impl.future.PromiseInternal promise(io.vertx.core.Handler)>(v2);
+label2:
+virtualinvoke v0.<io.vertx.core.net.impl.NetSocketImpl: void writeToChannel(java.lang.Object,io.netty.util.concurrent.FutureListener)>(v1, v3);
+return v0;
+}
+public java.lang.String applicationLayerProtocol()
+{
+io.vertx.core.net.impl.NetSocketImpl v0;
+java.lang.String v1;
+v0 := @this: io.vertx.core.net.impl.NetSocketImpl;
+v1 = v0.<io.vertx.core.net.impl.NetSocketImpl: java.lang.String negotiatedApplicationLayerProtocol>;
+return v1;
+}
+public io.vertx.core.Future write(io.vertx.core.buffer.Buffer)
+{
+io.vertx.core.net.impl.NetSocketImpl v0;
+io.netty.buffer.ByteBuf v2;
+io.vertx.core.buffer.Buffer v1;
+io.vertx.core.Future v3;
+v0 := @this: io.vertx.core.net.impl.NetSocketImpl;
+v1 := @parameter0: io.vertx.core.buffer.Buffer;
+v2 = interfaceinvoke v1.<io.vertx.core.buffer.Buffer: io.netty.buffer.ByteBuf getByteBuf()>();
+v3 = virtualinvoke v0.<io.vertx.core.net.impl.NetSocketImpl: io.vertx.core.Future writeMessage(java.lang.Object)>(v2);
+return v3;
+}
+public void write(java.lang.String, io.vertx.core.Handler)
+{
+io.vertx.core.net.impl.NetSocketImpl v0;
+io.netty.buffer.ByteBuf v4;
+java.nio.charset.Charset v3;
+java.lang.String v1;
+io.vertx.core.Handler v2;
+v0 := @this: io.vertx.core.net.impl.NetSocketImpl;
+v1 := @parameter0: java.lang.String;
+v2 := @parameter1: io.vertx.core.Handler;
+v3 = <io.netty.util.CharsetUtil: java.nio.charset.Charset UTF_8>;
+v4 = staticinvoke <io.netty.buffer.Unpooled: io.netty.buffer.ByteBuf copiedBuffer(java.lang.CharSequence,java.nio.charset.Charset)>(v1, v3);
+specialinvoke v0.<io.vertx.core.net.impl.NetSocketImpl: void write(io.netty.buffer.ByteBuf,io.vertx.core.Handler)>(v4, v2);
+return;
+}
+public io.vertx.core.Future write(java.lang.String)
+{
+io.vertx.core.net.impl.NetSocketImpl v0;
+io.netty.buffer.ByteBuf v3;
+java.nio.charset.Charset v2;
+java.lang.String v1;
+io.vertx.core.Future v4;
+v0 := @this: io.vertx.core.net.impl.NetSocketImpl;
+v1 := @parameter0: java.lang.String;
+v2 = <io.netty.util.CharsetUtil: java.nio.charset.Charset UTF_8>;
+v3 = staticinvoke <io.netty.buffer.Unpooled: io.netty.buffer.ByteBuf copiedBuffer(java.lang.CharSequence,java.nio.charset.Charset)>(v1, v2);
+v4 = virtualinvoke v0.<io.vertx.core.net.impl.NetSocketImpl: io.vertx.core.Future writeMessage(java.lang.Object)>(v3);
+return v4;
+}
+public io.vertx.core.Future write(java.lang.String, java.lang.String)
+{
+io.vertx.core.net.impl.NetSocketImpl v0;
+io.netty.buffer.ByteBuf v4;
+java.nio.charset.Charset v3;
+java.lang.String v1, v2;
+io.vertx.core.Future v5;
+v0 := @this: io.vertx.core.net.impl.NetSocketImpl;
+v1 := @parameter0: java.lang.String;
+v2 := @parameter1: java.lang.String;
+v3 = staticinvoke <java.nio.charset.Charset: java.nio.charset.Charset forName(java.lang.String)>(v2);
+v4 = staticinvoke <io.netty.buffer.Unpooled: io.netty.buffer.ByteBuf copiedBuffer(java.lang.CharSequence,java.nio.charset.Charset)>(v1, v3);
+v5 = virtualinvoke v0.<io.vertx.core.net.impl.NetSocketImpl: io.vertx.core.Future writeMessage(java.lang.Object)>(v4);
+return v5;
+}
+public void write(java.lang.String, java.lang.String, io.vertx.core.Handler)
+{
+io.vertx.core.net.impl.NetSocketImpl v0;
+io.netty.buffer.ByteBuf v5;
+java.nio.charset.Charset v4;
+java.lang.String v1, v2;
+io.vertx.core.Handler v3;
+v0 := @this: io.vertx.core.net.impl.NetSocketImpl;
+v1 := @parameter0: java.lang.String;
+v2 := @parameter1: java.lang.String;
+v3 := @parameter2: io.vertx.core.Handler;
+if v2 == null goto label1;
+v4 = staticinvoke <java.nio.charset.Charset: java.nio.charset.Charset forName(java.lang.String)>(v2);
+goto label2;
+label1:
+v4 = <io.netty.util.CharsetUtil: java.nio.charset.Charset UTF_8>;
+label2:
+v5 = staticinvoke <io.netty.buffer.Unpooled: io.netty.buffer.ByteBuf copiedBuffer(java.lang.CharSequence,java.nio.charset.Charset)>(v1, v4);
+specialinvoke v0.<io.vertx.core.net.impl.NetSocketImpl: void write(io.netty.buffer.ByteBuf,io.vertx.core.Handler)>(v5, v3);
+return;
+}
+public void write(io.vertx.core.buffer.Buffer, io.vertx.core.Handler)
+{
+io.vertx.core.net.impl.NetSocketImpl v0;
+io.netty.buffer.ByteBuf v3;
+io.vertx.core.buffer.Buffer v1;
+io.vertx.core.Handler v2;
+v0 := @this: io.vertx.core.net.impl.NetSocketImpl;
+v1 := @parameter0: io.vertx.core.buffer.Buffer;
+v2 := @parameter1: io.vertx.core.Handler;
+v3 = interfaceinvoke v1.<io.vertx.core.buffer.Buffer: io.netty.buffer.ByteBuf getByteBuf()>();
+specialinvoke v0.<io.vertx.core.net.impl.NetSocketImpl: void write(io.netty.buffer.ByteBuf,io.vertx.core.Handler)>(v3, v2);
+return;
+}
+private void write(io.netty.buffer.ByteBuf, io.vertx.core.Handler)
+{
+io.vertx.core.net.impl.NetSocketImpl v0;
+io.netty.buffer.ByteBuf v1;
+int v3;
+io.vertx.core.Handler v2;
+v0 := @this: io.vertx.core.net.impl.NetSocketImpl;
+v1 := @parameter0: io.netty.buffer.ByteBuf;
+v2 := @parameter1: io.vertx.core.Handler;
+v3 = virtualinvoke v1.<io.netty.buffer.ByteBuf: int readableBytes()>();
+virtualinvoke v0.<io.vertx.core.net.impl.NetSocketImpl: void reportBytesWritten(long)>(v3);
+virtualinvoke v0.<io.vertx.core.net.impl.NetSocketImpl: io.vertx.core.net.impl.NetSocketInternal writeMessage(java.lang.Object,io.vertx.core.Handler)>(v1, v2);
+return;
+}
+private synchronized io.vertx.core.Handler handler()
+{
+io.vertx.core.net.impl.NetSocketImpl v0;
+io.vertx.core.Handler v1;
+v0 := @this: io.vertx.core.net.impl.NetSocketImpl;
+v1 = v0.<io.vertx.core.net.impl.NetSocketImpl: io.vertx.core.Handler handler>;
+return v1;
+}
+public synchronized io.vertx.core.net.NetSocket handler(io.vertx.core.Handler)
+{
+io.vertx.core.net.impl.NetSocketImpl v0;
+io.vertx.core.Handler v1;
+v0 := @this: io.vertx.core.net.impl.NetSocketImpl;
+v1 := @parameter0: io.vertx.core.Handler;
+v0.<io.vertx.core.net.impl.NetSocketImpl: io.vertx.core.Handler handler> = v1;
+return v0;
+}
+private synchronized io.vertx.core.Handler messageHandler()
+{
+io.vertx.core.net.impl.NetSocketImpl v0;
+io.vertx.core.Handler v1;
+v0 := @this: io.vertx.core.net.impl.NetSocketImpl;
+v1 = v0.<io.vertx.core.net.impl.NetSocketImpl: io.vertx.core.Handler messageHandler>;
+return v1;
+}
+public synchronized io.vertx.core.net.impl.NetSocketInternal messageHandler(io.vertx.core.Handler)
+{
+io.vertx.core.net.impl.NetSocketImpl v0;
+io.vertx.core.net.impl.NetSocketImpl$DataMessageHandler v2;
+io.vertx.core.Handler v1, v3;
+v0 := @this: io.vertx.core.net.impl.NetSocketImpl;
+v1 := @parameter0: io.vertx.core.Handler;
+if v1 != null goto label1;
+v2 = new io.vertx.core.net.impl.NetSocketImpl$DataMessageHandler;
+v3 = v2;
+specialinvoke v2.<io.vertx.core.net.impl.NetSocketImpl$DataMessageHandler: void <init>(io.vertx.core.net.impl.NetSocketImpl)>(v0);
+goto label2;
+label1:
+v3 = v1;
+label2:
+v0.<io.vertx.core.net.impl.NetSocketImpl: io.vertx.core.Handler messageHandler> = v3;
+return v0;
+}
+public synchronized io.vertx.core.net.impl.NetSocketInternal eventHandler(io.vertx.core.Handler)
+{
+io.vertx.core.net.impl.NetSocketImpl v0;
+io.vertx.core.Handler v1;
+v0 := @this: io.vertx.core.net.impl.NetSocketImpl;
+v1 := @parameter0: io.vertx.core.Handler;
+v0.<io.vertx.core.net.impl.NetSocketImpl: io.vertx.core.Handler eventHandler> = v1;
+return v0;
+}
+public synchronized io.vertx.core.net.NetSocket pause()
+{
+io.vertx.core.net.impl.NetSocketImpl v0;
+io.vertx.core.streams.impl.InboundBuffer v1;
+v0 := @this: io.vertx.core.net.impl.NetSocketImpl;
+v1 = v0.<io.vertx.core.net.impl.NetSocketImpl: io.vertx.core.streams.impl.InboundBuffer pending>;
+virtualinvoke v1.<io.vertx.core.streams.impl.InboundBuffer: io.vertx.core.streams.impl.InboundBuffer pause()>();
+return v0;
+}
+public io.vertx.core.net.NetSocket fetch(long)
+{
+io.vertx.core.net.impl.NetSocketImpl v0;
+long v1;
+io.vertx.core.streams.impl.InboundBuffer v2;
+v0 := @this: io.vertx.core.net.impl.NetSocketImpl;
+v1 := @parameter0: long;
+v2 = v0.<io.vertx.core.net.impl.NetSocketImpl: io.vertx.core.streams.impl.InboundBuffer pending>;
+virtualinvoke v2.<io.vertx.core.streams.impl.InboundBuffer: boolean fetch(long)>(v1);
+return v0;
+}
+public synchronized io.vertx.core.net.NetSocket resume()
+{
+io.vertx.core.net.impl.NetSocketImpl v0;
+io.vertx.core.net.NetSocket v1;
+v0 := @this: io.vertx.core.net.impl.NetSocketImpl;
+v1 = virtualinvoke v0.<io.vertx.core.net.impl.NetSocketImpl: io.vertx.core.net.NetSocket fetch(long)>(9223372036854775807L);
+return v1;
+}
+public io.vertx.core.net.NetSocket setWriteQueueMaxSize(int)
+{
+int v1;
+io.vertx.core.net.impl.NetSocketImpl v0;
+v0 := @this: io.vertx.core.net.impl.NetSocketImpl;
+v1 := @parameter0: int;
+virtualinvoke v0.<io.vertx.core.net.impl.NetSocketImpl: void doSetWriteQueueMaxSize(int)>(v1);
+return v0;
+}
+public boolean writeQueueFull()
+{
+io.vertx.core.net.impl.NetSocketImpl v0;
+boolean v1;
+v0 := @this: io.vertx.core.net.impl.NetSocketImpl;
+v1 = virtualinvoke v0.<io.vertx.core.net.impl.NetSocketImpl: boolean isNotWritable()>();
+return v1;
+}
+private synchronized io.vertx.core.Handler endHandler()
+{
+io.vertx.core.net.impl.NetSocketImpl v0;
+io.vertx.core.Handler v1;
+v0 := @this: io.vertx.core.net.impl.NetSocketImpl;
+v1 = v0.<io.vertx.core.net.impl.NetSocketImpl: io.vertx.core.Handler endHandler>;
+return v1;
+}
+public synchronized io.vertx.core.net.NetSocket endHandler(io.vertx.core.Handler)
+{
+io.vertx.core.net.impl.NetSocketImpl v0;
+io.vertx.core.Handler v1;
+v0 := @this: io.vertx.core.net.impl.NetSocketImpl;
+v1 := @parameter0: io.vertx.core.Handler;
+v0.<io.vertx.core.net.impl.NetSocketImpl: io.vertx.core.Handler endHandler> = v1;
+return v0;
+}
+public synchronized io.vertx.core.net.NetSocket drainHandler(io.vertx.core.Handler)
+{
+io.vertx.core.net.impl.NetSocketImpl v0;
+io.vertx.core.impl.VertxInternal v2;
+io.vertx.core.Handler v1, v3;
+v0 := @this: io.vertx.core.net.impl.NetSocketImpl;
+v1 := @parameter0: io.vertx.core.Handler;
+v0.<io.vertx.core.net.impl.NetSocketImpl: io.vertx.core.Handler drainHandler> = v1;
+v2 = v0.<io.vertx.core.net.impl.NetSocketImpl: io.vertx.core.impl.VertxInternal vertx>;
+v3 = staticinvoke <io.vertx.core.net.impl.NetSocketImpl$lambda_drainHandler_3__1325: io.vertx.core.Handler bootstrap$(io.vertx.core.net.impl.NetSocketImpl)>(v0);
+interfaceinvoke v2.<io.vertx.core.impl.VertxInternal: void runOnContext(io.vertx.core.Handler)>(v3);
+return v0;
+}
+public io.vertx.core.Future sendFile(java.lang.String, long, long)
+{
+io.vertx.core.net.impl.NetSocketImpl v0;
+io.vertx.core.impl.future.PromiseInternal v5;
+io.vertx.core.impl.ContextInternal v4;
+long v2, v3;
+java.lang.String v1;
+io.vertx.core.Future v6;
+v0 := @this: io.vertx.core.net.impl.NetSocketImpl;
+v1 := @parameter0: java.lang.String;
+v2 := @parameter1: long;
+v3 := @parameter2: long;
+v4 = v0.<io.vertx.core.net.impl.NetSocketImpl: io.vertx.core.impl.ContextInternal context>;
+v5 = interfaceinvoke v4.<io.vertx.core.impl.ContextInternal: io.vertx.core.impl.future.PromiseInternal promise()>();
+virtualinvoke v0.<io.vertx.core.net.impl.NetSocketImpl: io.vertx.core.net.NetSocket sendFile(java.lang.String,long,long,io.vertx.core.Handler)>(v1, v2, v3, v5);
+v6 = interfaceinvoke v5.<io.vertx.core.Promise: io.vertx.core.Future future()>();
+return v6;
+}
+public io.vertx.core.net.NetSocket sendFile(java.lang.String, long, long, io.vertx.core.Handler)
+{
+io.vertx.core.net.impl.NetSocketImpl v0;
+java.io.RandomAccessFile v10, v9;
+long v11, v12, v13, v14, v15, v2, v3;
+java.lang.String v1;
+boolean v7;
+io.vertx.core.impl.logging.Logger v22;
+io.vertx.core.impl.VertxInternal v20, v5;
+io.netty.util.concurrent.GenericFutureListener v17;
+java.io.IOException v18, v19;
+java.lang.IllegalArgumentException v8;
+java.io.File v6;
+io.netty.channel.ChannelFuture v16;
+io.vertx.core.Handler v21, v4;
+v0 := @this: io.vertx.core.net.impl.NetSocketImpl;
+v1 := @parameter0: java.lang.String;
+v2 := @parameter1: long;
+v3 := @parameter2: long;
+v4 := @parameter3: io.vertx.core.Handler;
+v5 = v0.<io.vertx.core.net.impl.NetSocketImpl: io.vertx.core.impl.VertxInternal vertx>;
+v6 = interfaceinvoke v5.<io.vertx.core.impl.VertxInternal: java.io.File resolveFile(java.lang.String)>(v1);
+v7 = virtualinvoke v6.<java.io.File: boolean isDirectory()>();
+if v7 == 0 goto label01;
+v8 = new java.lang.IllegalArgumentException;
+specialinvoke v8.<java.lang.IllegalArgumentException: void <init>(java.lang.String)>("filename must point to a file and not to a directory");
+throw v8;
+label01:
+v9 = null;
+label02:
+v10 = new java.io.RandomAccessFile;
+specialinvoke v10.<java.io.RandomAccessFile: void <init>(java.io.File,java.lang.String)>(v6, "r");
+v9 = v10;
+v11 = virtualinvoke v6.<java.io.File: long length()>();
+v12 = staticinvoke <java.lang.Math: long min(long,long)>(v2, v11);
+v13 = virtualinvoke v6.<java.io.File: long length()>();
+v14 = v13 - v2;
+v15 = staticinvoke <java.lang.Math: long min(long,long)>(v3, v14);
+v16 = specialinvoke v0.<io.vertx.core.net.impl.ConnectionBase: io.netty.channel.ChannelFuture sendFile(java.io.RandomAccessFile,long,long)>(v10, v12, v15);
+if v4 == null goto label10;
+v17 = staticinvoke <io.vertx.core.net.impl.NetSocketImpl$lambda_sendFile_5__1326: io.netty.util.concurrent.GenericFutureListener bootstrap$(io.vertx.core.net.impl.NetSocketImpl,io.netty.channel.ChannelFuture,io.vertx.core.Handler)>(v0, v16, v4);
+interfaceinvoke v16.<io.netty.channel.ChannelFuture: io.netty.channel.ChannelFuture addListener(io.netty.util.concurrent.GenericFutureListener)>(v17);
+label03:
+goto label10;
+label04:
+v18 := @caughtexception;
+label05:
+if v9 == null goto label08;
+virtualinvoke v9.<java.io.RandomAccessFile: void close()>();
+label06:
+goto label08;
+label07:
+v19 := @caughtexception;
+label08:
+if v4 == null goto label09;
+v20 = v0.<io.vertx.core.net.impl.NetSocketImpl: io.vertx.core.impl.VertxInternal vertx>;
+v21 = staticinvoke <io.vertx.core.net.impl.NetSocketImpl$lambda_sendFile_6__1327: io.vertx.core.Handler bootstrap$(io.vertx.core.Handler,java.io.IOException)>(v4, v18);
+interfaceinvoke v20.<io.vertx.core.impl.VertxInternal: void runOnContext(io.vertx.core.Handler)>(v21);
+goto label10;
+label09:
+v22 = <io.vertx.core.net.impl.NetSocketImpl: io.vertx.core.impl.logging.Logger log>;
+interfaceinvoke v22.<io.vertx.core.impl.logging.Logger: void error(java.lang.Object,java.lang.Throwable)>("Failed to send file", v18);
+label10:
+return v0;
+catch java.io.IOException from label02 to label03 with label04;
+catch java.io.IOException from label05 to label06 with label07;
+}
+public io.vertx.core.net.impl.NetSocketImpl exceptionHandler(io.vertx.core.Handler)
+{
+io.vertx.core.net.impl.NetSocketImpl v0;
+io.vertx.core.Handler v1;
+io.vertx.core.net.impl.ConnectionBase v2;
+v0 := @this: io.vertx.core.net.impl.NetSocketImpl;
+v1 := @parameter0: io.vertx.core.Handler;
+v2 = specialinvoke v0.<io.vertx.core.net.impl.ConnectionBase: io.vertx.core.net.impl.ConnectionBase exceptionHandler(io.vertx.core.Handler)>(v1);
+return v2;
+}
+public io.vertx.core.net.impl.NetSocketImpl closeHandler(io.vertx.core.Handler)
+{
+io.vertx.core.net.impl.NetSocketImpl v0;
+io.vertx.core.Handler v1;
+io.vertx.core.net.impl.ConnectionBase v2;
+v0 := @this: io.vertx.core.net.impl.NetSocketImpl;
+v1 := @parameter0: io.vertx.core.Handler;
+v2 = specialinvoke v0.<io.vertx.core.net.impl.ConnectionBase: io.vertx.core.net.impl.ConnectionBase closeHandler(io.vertx.core.Handler)>(v1);
+return v2;
+}
+public io.vertx.core.Future upgradeToSsl()
+{
+io.vertx.core.net.impl.NetSocketImpl v0;
+java.lang.String v1;
+io.vertx.core.Future v2;
+v0 := @this: io.vertx.core.net.impl.NetSocketImpl;
+v1 = null;
+v2 = virtualinvoke v0.<io.vertx.core.net.impl.NetSocketImpl: io.vertx.core.Future upgradeToSsl(java.lang.String)>(v1);
+return v2;
+}
+public io.vertx.core.Future upgradeToSsl(java.lang.String)
+{
+io.vertx.core.net.impl.NetSocketImpl v0;
+io.vertx.core.impl.future.PromiseInternal v3;
+io.netty.util.concurrent.GenericFutureListener v9;
+io.vertx.core.impl.ContextInternal v2;
+io.netty.channel.ChannelPipeline v5;
+io.vertx.core.Future v10;
+io.netty.channel.ChannelHandlerContext v4, v7;
+io.netty.channel.ChannelPromise v8;
+io.netty.channel.ChannelHandler v6;
+java.lang.String v1;
+v0 := @this: io.vertx.core.net.impl.NetSocketImpl;
+v1 := @parameter0: java.lang.String;
+v2 = v0.<io.vertx.core.net.impl.NetSocketImpl: io.vertx.core.impl.ContextInternal context>;
+v3 = interfaceinvoke v2.<io.vertx.core.impl.ContextInternal: io.vertx.core.impl.future.PromiseInternal promise()>();
+v4 = v0.<io.vertx.core.net.impl.NetSocketImpl: io.netty.channel.ChannelHandlerContext chctx>;
+v5 = interfaceinvoke v4.<io.netty.channel.ChannelHandlerContext: io.netty.channel.ChannelPipeline pipeline()>();
+v6 = interfaceinvoke v5.<io.netty.channel.ChannelPipeline: io.netty.channel.ChannelHandler get(java.lang.String)>("ssl");
+if v6 != null goto label1;
+v7 = v0.<io.vertx.core.net.impl.NetSocketImpl: io.netty.channel.ChannelHandlerContext chctx>;
+v8 = interfaceinvoke v7.<io.netty.channel.ChannelHandlerContext: io.netty.channel.ChannelPromise newPromise()>();
+virtualinvoke v0.<io.vertx.core.net.impl.NetSocketImpl: void flush(io.netty.channel.ChannelPromise)>(v8);
+v9 = staticinvoke <io.vertx.core.net.impl.NetSocketImpl$lambda_upgradeToSsl_7__1328: io.netty.util.concurrent.GenericFutureListener bootstrap$(io.vertx.core.net.impl.NetSocketImpl,io.vertx.core.impl.future.PromiseInternal,java.lang.String)>(v0, v3, v1);
+interfaceinvoke v8.<io.netty.channel.ChannelPromise: io.netty.channel.ChannelPromise addListener(io.netty.util.concurrent.GenericFutureListener)>(v9);
+label1:
+v10 = interfaceinvoke v3.<io.vertx.core.impl.future.PromiseInternal: io.vertx.core.Future future()>();
+return v10;
+}
+public io.vertx.core.net.NetSocket upgradeToSsl(io.vertx.core.Handler)
+{
+io.vertx.core.net.impl.NetSocketImpl v0;
+io.vertx.core.Handler v1;
+io.vertx.core.net.NetSocket v2;
+v0 := @this: io.vertx.core.net.impl.NetSocketImpl;
+v1 := @parameter0: io.vertx.core.Handler;
+v2 = virtualinvoke v0.<io.vertx.core.net.impl.NetSocketImpl: io.vertx.core.net.NetSocket upgradeToSsl(java.lang.String,io.vertx.core.Handler)>(null, v1);
+return v2;
+}
+public io.vertx.core.net.NetSocket upgradeToSsl(java.lang.String, io.vertx.core.Handler)
+{
+io.vertx.core.net.impl.NetSocketImpl v0;
+java.lang.String v1;
+io.vertx.core.Handler v2;
+io.vertx.core.Future v3;
+v0 := @this: io.vertx.core.net.impl.NetSocketImpl;
+v1 := @parameter0: java.lang.String;
+v2 := @parameter1: io.vertx.core.Handler;
+v3 = virtualinvoke v0.<io.vertx.core.net.impl.NetSocketImpl: io.vertx.core.Future upgradeToSsl(java.lang.String)>(v1);
+if v2 == null goto label1;
+interfaceinvoke v3.<io.vertx.core.Future: io.vertx.core.Future onComplete(io.vertx.core.Handler)>(v2);
+label1:
+return v0;
+}
+protected void handleInterestedOpsChanged()
+{
+io.vertx.core.net.impl.NetSocketImpl v0;
+io.vertx.core.impl.ContextInternal v1;
+io.vertx.core.Handler v2;
+v0 := @this: io.vertx.core.net.impl.NetSocketImpl;
+v1 = v0.<io.vertx.core.net.impl.NetSocketImpl: io.vertx.core.impl.ContextInternal context>;
+v2 = staticinvoke <io.vertx.core.net.impl.NetSocketImpl$lambda_handleInterestedOpsChanged_8__1329: io.vertx.core.Handler bootstrap$(io.vertx.core.net.impl.NetSocketImpl)>(v0);
+interfaceinvoke v1.<io.vertx.core.impl.ContextInternal: void emit(java.lang.Object,io.vertx.core.Handler)>(null, v2);
+return;
+}
+public void end(io.vertx.core.Handler)
+{
+io.vertx.core.net.impl.NetSocketImpl v0;
+io.vertx.core.Handler v1;
+v0 := @this: io.vertx.core.net.impl.NetSocketImpl;
+v1 := @parameter0: io.vertx.core.Handler;
+virtualinvoke v0.<io.vertx.core.net.impl.NetSocketImpl: void close(io.vertx.core.Handler)>(v1);
+return;
+}
+public io.vertx.core.Future end()
+{
+io.vertx.core.net.impl.NetSocketImpl v0;
+io.vertx.core.Future v1;
+v0 := @this: io.vertx.core.net.impl.NetSocketImpl;
+v1 = virtualinvoke v0.<io.vertx.core.net.impl.NetSocketImpl: io.vertx.core.Future close()>();
+return v1;
+}
+protected void handleClosed()
+{
+io.vertx.core.net.impl.NetSocketImpl v0;
+io.vertx.core.streams.impl.InboundBuffer v3;
+io.vertx.core.impl.ContextInternal v1;
+java.lang.Object v2;
+io.vertx.core.Handler v4;
+v0 := @this: io.vertx.core.net.impl.NetSocketImpl;
+v1 = v0.<io.vertx.core.net.impl.NetSocketImpl: io.vertx.core.impl.ContextInternal context>;
+v2 = <io.vertx.core.streams.impl.InboundBuffer: java.lang.Object END_SENTINEL>;
+v3 = v0.<io.vertx.core.net.impl.NetSocketImpl: io.vertx.core.streams.impl.InboundBuffer pending>;
+virtualinvoke v3.<java.lang.Object: java.lang.Class getClass()>();
+v4 = staticinvoke <io.vertx.core.net.impl.NetSocketImpl$write__1330: io.vertx.core.Handler bootstrap$(io.vertx.core.streams.impl.InboundBuffer)>(v3);
+interfaceinvoke v1.<io.vertx.core.impl.ContextInternal: void emit(java.lang.Object,io.vertx.core.Handler)>(v2, v4);
+specialinvoke v0.<io.vertx.core.net.impl.ConnectionBase: void handleClosed()>();
+return;
+}
+public void handleMessage(java.lang.Object)
+{
+io.vertx.core.net.impl.NetSocketImpl v0;
+io.vertx.core.impl.ContextInternal v2;
+java.lang.Object v1;
+io.vertx.core.Handler v3;
+v0 := @this: io.vertx.core.net.impl.NetSocketImpl;
+v1 := @parameter0: java.lang.Object;
+v2 = v0.<io.vertx.core.net.impl.NetSocketImpl: io.vertx.core.impl.ContextInternal context>;
+v3 = specialinvoke v0.<io.vertx.core.net.impl.NetSocketImpl: io.vertx.core.Handler messageHandler()>();
+interfaceinvoke v2.<io.vertx.core.impl.ContextInternal: void emit(java.lang.Object,io.vertx.core.Handler)>(v1, v3);
+return;
+}
+protected void handleEvent(java.lang.Object)
+{
+io.vertx.core.net.impl.NetSocketImpl v0;
+java.lang.Throwable v3;
+io.vertx.core.impl.ContextInternal v4;
+java.lang.Object v1;
+io.vertx.core.Handler v2;
+v0 := @this: io.vertx.core.net.impl.NetSocketImpl;
+v1 := @parameter0: java.lang.Object;
+entermonitor v0;
+label1:
+v2 = v0.<io.vertx.core.net.impl.NetSocketImpl: io.vertx.core.Handler eventHandler>;
+exitmonitor v0;
+label2:
+goto label4;
+label3:
+v3 := @caughtexception;
+exitmonitor v0;
+throw v3;
+label4:
+if v2 == null goto label5;
+v4 = v0.<io.vertx.core.net.impl.NetSocketImpl: io.vertx.core.impl.ContextInternal context>;
+interfaceinvoke v4.<io.vertx.core.impl.ContextInternal: void emit(java.lang.Object,io.vertx.core.Handler)>(v1, v2);
+goto label6;
+label5:
+specialinvoke v0.<io.vertx.core.net.impl.ConnectionBase: void handleEvent(java.lang.Object)>(v1);
+label6:
+return;
+catch java.lang.Throwable from label1 to label2 with label3;
+}
+private synchronized void callDrainHandler()
+{
+io.vertx.core.net.impl.NetSocketImpl v0;
+io.vertx.core.Handler v1, v3;
+boolean v2;
+v0 := @this: io.vertx.core.net.impl.NetSocketImpl;
+v1 = v0.<io.vertx.core.net.impl.NetSocketImpl: io.vertx.core.Handler drainHandler>;
+if v1 == null goto label1;
+v2 = virtualinvoke v0.<io.vertx.core.net.impl.NetSocketImpl: boolean writeQueueFull()>();
+if v2 != 0 goto label1;
+v3 = v0.<io.vertx.core.net.impl.NetSocketImpl: io.vertx.core.Handler drainHandler>;
+interfaceinvoke v3.<io.vertx.core.Handler: void handle(java.lang.Object)>(null);
+label1:
+return;
+}
+static void <clinit>()
+{
+io.vertx.core.impl.logging.Logger v0;
+v0 = staticinvoke <io.vertx.core.impl.logging.LoggerFactory: io.vertx.core.impl.logging.Logger getLogger(java.lang.Class)>(class "Lio/vertx/core/net/impl/NetSocketImpl;");
+<io.vertx.core.net.impl.NetSocketImpl: io.vertx.core.impl.logging.Logger log> = v0;
+return;
+}
+}

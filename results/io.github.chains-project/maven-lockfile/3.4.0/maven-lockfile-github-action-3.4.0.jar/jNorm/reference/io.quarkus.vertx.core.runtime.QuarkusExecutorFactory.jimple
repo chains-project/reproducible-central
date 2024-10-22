@@ -1,0 +1,136 @@
+public class io.quarkus.vertx.core.runtime.QuarkusExecutorFactory extends java.lang.Object implements io.vertx.core.spi.ExecutorServiceFactory
+{
+static volatile java.util.concurrent.ExecutorService sharedExecutor;
+private static final java.util.concurrent.atomic.AtomicInteger executorCount;
+private static final org.jboss.logging.Logger log;
+private final io.quarkus.vertx.core.runtime.config.VertxConfiguration conf;
+private final io.quarkus.runtime.LaunchMode launchMode;
+public void <init>(io.quarkus.vertx.core.runtime.config.VertxConfiguration, io.quarkus.runtime.LaunchMode)
+{
+io.quarkus.runtime.LaunchMode v2;
+io.quarkus.vertx.core.runtime.QuarkusExecutorFactory v0;
+io.quarkus.vertx.core.runtime.config.VertxConfiguration v1;
+v0 := @this: io.quarkus.vertx.core.runtime.QuarkusExecutorFactory;
+v1 := @parameter0: io.quarkus.vertx.core.runtime.config.VertxConfiguration;
+v2 := @parameter1: io.quarkus.runtime.LaunchMode;
+specialinvoke v0.<java.lang.Object: void <init>()>();
+v0.<io.quarkus.vertx.core.runtime.QuarkusExecutorFactory: io.quarkus.vertx.core.runtime.config.VertxConfiguration conf> = v1;
+v0.<io.quarkus.vertx.core.runtime.QuarkusExecutorFactory: io.quarkus.runtime.LaunchMode launchMode> = v2;
+return;
+}
+public java.util.concurrent.ExecutorService createExecutor(java.util.concurrent.ThreadFactory, java.lang.Integer, java.lang.Integer)
+{
+org.jboss.logging.Logger v9;
+io.quarkus.runtime.LaunchMode v6, v7;
+java.lang.Integer v2, v3;
+java.util.concurrent.atomic.AtomicInteger v4;
+int v5;
+java.util.concurrent.ThreadFactory v1;
+io.quarkus.vertx.core.runtime.QuarkusExecutorFactory v0;
+java.util.concurrent.ExecutorService v10, v11, v12, v8;
+v0 := @this: io.quarkus.vertx.core.runtime.QuarkusExecutorFactory;
+v1 := @parameter0: java.util.concurrent.ThreadFactory;
+v2 := @parameter1: java.lang.Integer;
+v3 := @parameter2: java.lang.Integer;
+v4 = <io.quarkus.vertx.core.runtime.QuarkusExecutorFactory: java.util.concurrent.atomic.AtomicInteger executorCount>;
+v5 = virtualinvoke v4.<java.util.concurrent.atomic.AtomicInteger: int incrementAndGet()>();
+if v5 != 1 goto label2;
+v6 = v0.<io.quarkus.vertx.core.runtime.QuarkusExecutorFactory: io.quarkus.runtime.LaunchMode launchMode>;
+v7 = <io.quarkus.runtime.LaunchMode: io.quarkus.runtime.LaunchMode DEVELOPMENT>;
+if v6 == v7 goto label2;
+v8 = <io.quarkus.vertx.core.runtime.QuarkusExecutorFactory: java.util.concurrent.ExecutorService sharedExecutor>;
+if v8 != null goto label1;
+v9 = <io.quarkus.vertx.core.runtime.QuarkusExecutorFactory: org.jboss.logging.Logger log>;
+virtualinvoke v9.<org.jboss.logging.Logger: void warn(java.lang.Object)>("Shared executor not set. Unshared executor will be created for blocking work");
+v10 = specialinvoke v0.<io.quarkus.vertx.core.runtime.QuarkusExecutorFactory: java.util.concurrent.ExecutorService internalCreateExecutor(java.util.concurrent.ThreadFactory,java.lang.Integer,java.lang.Integer)>(v1, v2, v3);
+<io.quarkus.vertx.core.runtime.QuarkusExecutorFactory: java.util.concurrent.ExecutorService sharedExecutor> = v10;
+label1:
+v11 = <io.quarkus.vertx.core.runtime.QuarkusExecutorFactory: java.util.concurrent.ExecutorService sharedExecutor>;
+return v11;
+label2:
+v12 = specialinvoke v0.<io.quarkus.vertx.core.runtime.QuarkusExecutorFactory: java.util.concurrent.ExecutorService internalCreateExecutor(java.util.concurrent.ThreadFactory,java.lang.Integer,java.lang.Integer)>(v1, v2, v3);
+return v12;
+}
+private java.util.concurrent.ExecutorService internalCreateExecutor(java.util.concurrent.ThreadFactory, java.lang.Integer, java.lang.Integer)
+{
+java.lang.Integer v2, v3;
+io.quarkus.vertx.core.runtime.config.VertxConfiguration v14, v15, v18, v21, v24, v26, v29, v30;
+java.time.Duration v27;
+java.util.concurrent.ThreadFactory v1, v8;
+boolean v17, v31;
+float v25;
+org.jboss.threads.EnhancedQueueExecutor v28;
+java.util.OptionalInt v16, v19, v22;
+int v10, v11, v12, v13, v20, v23;
+java.util.concurrent.Executor v6;
+org.jboss.threads.EnhancedQueueExecutor$Builder v4, v5, v7, v9;
+io.quarkus.vertx.core.runtime.QuarkusExecutorFactory v0;
+v0 := @this: io.quarkus.vertx.core.runtime.QuarkusExecutorFactory;
+v1 := @parameter0: java.util.concurrent.ThreadFactory;
+v2 := @parameter1: java.lang.Integer;
+v3 := @parameter2: java.lang.Integer;
+v4 = new org.jboss.threads.EnhancedQueueExecutor$Builder;
+specialinvoke v4.<org.jboss.threads.EnhancedQueueExecutor$Builder: void <init>()>();
+v5 = virtualinvoke v4.<org.jboss.threads.EnhancedQueueExecutor$Builder: org.jboss.threads.EnhancedQueueExecutor$Builder setRegisterMBean(boolean)>(0);
+v6 = staticinvoke <org.jboss.threads.JBossExecutors: java.util.concurrent.Executor rejectingExecutor()>();
+v7 = virtualinvoke v5.<org.jboss.threads.EnhancedQueueExecutor$Builder: org.jboss.threads.EnhancedQueueExecutor$Builder setHandoffExecutor(java.util.concurrent.Executor)>(v6);
+v8 = staticinvoke <org.jboss.threads.JBossExecutors: java.util.concurrent.ThreadFactory resettingThreadFactory(java.util.concurrent.ThreadFactory)>(v1);
+v9 = virtualinvoke v7.<org.jboss.threads.EnhancedQueueExecutor$Builder: org.jboss.threads.EnhancedQueueExecutor$Builder setThreadFactory(java.util.concurrent.ThreadFactory)>(v8);
+v10 = staticinvoke <org.wildfly.common.cpu.ProcessorInfo: int availableProcessors()>();
+v11 = virtualinvoke v2.<java.lang.Integer: int intValue()>();
+virtualinvoke v9.<org.jboss.threads.EnhancedQueueExecutor$Builder: org.jboss.threads.EnhancedQueueExecutor$Builder setCorePoolSize(int)>(v11);
+if v3 == null goto label1;
+v12 = virtualinvoke v3.<java.lang.Integer: int intValue()>();
+goto label2;
+label1:
+v13 = 8 * v10;
+v12 = staticinvoke <java.lang.Math: int max(int,int)>(v13, 200);
+label2:
+virtualinvoke v9.<org.jboss.threads.EnhancedQueueExecutor$Builder: org.jboss.threads.EnhancedQueueExecutor$Builder setMaximumPoolSize(int)>(v12);
+v14 = v0.<io.quarkus.vertx.core.runtime.QuarkusExecutorFactory: io.quarkus.vertx.core.runtime.config.VertxConfiguration conf>;
+if v14 == null goto label5;
+v15 = v0.<io.quarkus.vertx.core.runtime.QuarkusExecutorFactory: io.quarkus.vertx.core.runtime.config.VertxConfiguration conf>;
+v16 = v15.<io.quarkus.vertx.core.runtime.config.VertxConfiguration: java.util.OptionalInt queueSize>;
+v17 = virtualinvoke v16.<java.util.OptionalInt: boolean isPresent()>();
+if v17 == 0 goto label4;
+v18 = v0.<io.quarkus.vertx.core.runtime.QuarkusExecutorFactory: io.quarkus.vertx.core.runtime.config.VertxConfiguration conf>;
+v19 = v18.<io.quarkus.vertx.core.runtime.config.VertxConfiguration: java.util.OptionalInt queueSize>;
+v20 = virtualinvoke v19.<java.util.OptionalInt: int getAsInt()>();
+if v20 >= 0 goto label3;
+virtualinvoke v9.<org.jboss.threads.EnhancedQueueExecutor$Builder: org.jboss.threads.EnhancedQueueExecutor$Builder setMaximumQueueSize(int)>(2147483647);
+goto label4;
+label3:
+v21 = v0.<io.quarkus.vertx.core.runtime.QuarkusExecutorFactory: io.quarkus.vertx.core.runtime.config.VertxConfiguration conf>;
+v22 = v21.<io.quarkus.vertx.core.runtime.config.VertxConfiguration: java.util.OptionalInt queueSize>;
+v23 = virtualinvoke v22.<java.util.OptionalInt: int getAsInt()>();
+virtualinvoke v9.<org.jboss.threads.EnhancedQueueExecutor$Builder: org.jboss.threads.EnhancedQueueExecutor$Builder setMaximumQueueSize(int)>(v23);
+label4:
+v24 = v0.<io.quarkus.vertx.core.runtime.QuarkusExecutorFactory: io.quarkus.vertx.core.runtime.config.VertxConfiguration conf>;
+v25 = v24.<io.quarkus.vertx.core.runtime.config.VertxConfiguration: float growthResistance>;
+virtualinvoke v9.<org.jboss.threads.EnhancedQueueExecutor$Builder: org.jboss.threads.EnhancedQueueExecutor$Builder setGrowthResistance(float)>(v25);
+v26 = v0.<io.quarkus.vertx.core.runtime.QuarkusExecutorFactory: io.quarkus.vertx.core.runtime.config.VertxConfiguration conf>;
+v27 = v26.<io.quarkus.vertx.core.runtime.config.VertxConfiguration: java.time.Duration keepAliveTime>;
+virtualinvoke v9.<org.jboss.threads.EnhancedQueueExecutor$Builder: org.jboss.threads.EnhancedQueueExecutor$Builder setKeepAliveTime(java.time.Duration)>(v27);
+label5:
+v28 = virtualinvoke v9.<org.jboss.threads.EnhancedQueueExecutor$Builder: org.jboss.threads.EnhancedQueueExecutor build()>();
+v29 = v0.<io.quarkus.vertx.core.runtime.QuarkusExecutorFactory: io.quarkus.vertx.core.runtime.config.VertxConfiguration conf>;
+if v29 == null goto label6;
+v30 = v0.<io.quarkus.vertx.core.runtime.QuarkusExecutorFactory: io.quarkus.vertx.core.runtime.config.VertxConfiguration conf>;
+v31 = v30.<io.quarkus.vertx.core.runtime.config.VertxConfiguration: boolean prefill>;
+if v31 == 0 goto label6;
+virtualinvoke v28.<org.jboss.threads.EnhancedQueueExecutor: int prestartAllCoreThreads()>();
+label6:
+return v28;
+}
+static void <clinit>()
+{
+java.util.concurrent.atomic.AtomicInteger v0;
+org.jboss.logging.Logger v1;
+v0 = new java.util.concurrent.atomic.AtomicInteger;
+specialinvoke v0.<java.util.concurrent.atomic.AtomicInteger: void <init>(int)>(0);
+<io.quarkus.vertx.core.runtime.QuarkusExecutorFactory: java.util.concurrent.atomic.AtomicInteger executorCount> = v0;
+v1 = staticinvoke <org.jboss.logging.Logger: org.jboss.logging.Logger getLogger(java.lang.Class)>(class "Lio/quarkus/vertx/core/runtime/QuarkusExecutorFactory;");
+<io.quarkus.vertx.core.runtime.QuarkusExecutorFactory: org.jboss.logging.Logger log> = v1;
+return;
+}
+}

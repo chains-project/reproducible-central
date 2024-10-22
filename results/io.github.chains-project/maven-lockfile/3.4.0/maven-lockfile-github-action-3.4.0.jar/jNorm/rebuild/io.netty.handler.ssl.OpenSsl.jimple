@@ -1,0 +1,1112 @@
+public final class io.netty.handler.ssl.OpenSsl extends java.lang.Object
+{
+private static final io.netty.util.internal.logging.InternalLogger logger;
+private static final java.lang.Throwable UNAVAILABILITY_CAUSE;
+static final java.util.List DEFAULT_CIPHERS;
+static final java.util.Set AVAILABLE_CIPHER_SUITES;
+private static final java.util.Set AVAILABLE_OPENSSL_CIPHER_SUITES;
+private static final java.util.Set AVAILABLE_JAVA_CIPHER_SUITES;
+private static final boolean SUPPORTS_KEYMANAGER_FACTORY;
+private static final boolean USE_KEYMANAGER_FACTORY;
+private static final boolean SUPPORTS_OCSP;
+private static final boolean TLSV13_SUPPORTED;
+private static final boolean IS_BORINGSSL;
+private static final java.util.Set CLIENT_DEFAULT_PROTOCOLS;
+private static final java.util.Set SERVER_DEFAULT_PROTOCOLS;
+static final java.util.Set SUPPORTED_PROTOCOLS_SET;
+static final java.lang.String[] EXTRA_SUPPORTED_TLS_1_3_CIPHERS;
+static final java.lang.String EXTRA_SUPPORTED_TLS_1_3_CIPHERS_STRING;
+static final java.lang.String[] NAMED_GROUPS;
+private static final java.lang.String[] DEFAULT_NAMED_GROUPS;
+private static final java.lang.String CERT;
+private static final java.lang.String KEY;
+static final boolean $assertionsDisabled;
+static java.lang.String checkTls13Ciphers(io.netty.util.internal.logging.InternalLogger, java.lang.String)
+{
+boolean v12, v17, v18, v2, v20, v21, v22, v23, v24, v25, v3, v4;
+io.netty.util.internal.logging.InternalLogger v0;
+java.lang.StringBuilder v26, v32;
+java.lang.String[] v11, v13, v27, v5, v9;
+java.lang.AssertionError v7;
+java.util.HashSet v8;
+int v10, v14, v15, v28, v29, v33, v34, v6;
+java.lang.String v1, v16, v19, v30, v31, v35, v36;
+v0 := @parameter0: io.netty.util.internal.logging.InternalLogger;
+v1 := @parameter1: java.lang.String;
+v2 = <io.netty.handler.ssl.OpenSsl: boolean IS_BORINGSSL>;
+if v2 == 0 goto label11;
+v3 = virtualinvoke v1.<java.lang.String: boolean isEmpty()>();
+if v3 != 0 goto label11;
+v4 = <io.netty.handler.ssl.OpenSsl: boolean $assertionsDisabled>;
+if v4 != 0 goto label01;
+v5 = <io.netty.handler.ssl.OpenSsl: java.lang.String[] EXTRA_SUPPORTED_TLS_1_3_CIPHERS>;
+v6 = lengthof v5;
+if v6 > 0 goto label01;
+v7 = new java.lang.AssertionError;
+specialinvoke v7.<java.lang.AssertionError: void <init>()>();
+throw v7;
+label01:
+v8 = new java.util.HashSet;
+v9 = <io.netty.handler.ssl.OpenSsl: java.lang.String[] EXTRA_SUPPORTED_TLS_1_3_CIPHERS>;
+v10 = lengthof v9;
+specialinvoke v8.<java.util.HashSet: void <init>(int)>(v10);
+v11 = <io.netty.handler.ssl.OpenSsl: java.lang.String[] EXTRA_SUPPORTED_TLS_1_3_CIPHERS>;
+staticinvoke <java.util.Collections: boolean addAll(java.util.Collection,java.lang.Object[])>(v8, v11);
+v12 = 0;
+v13 = virtualinvoke v1.<java.lang.String: java.lang.String[] split(java.lang.String)>(":");
+v14 = lengthof v13;
+v15 = 0;
+label02:
+if v15 >= v14 goto label05;
+v16 = v13[v15];
+v17 = interfaceinvoke v8.<java.util.Set: boolean isEmpty()>();
+if v17 == 0 goto label03;
+v12 = 1;
+goto label05;
+label03:
+v18 = interfaceinvoke v8.<java.util.Set: boolean remove(java.lang.Object)>(v16);
+if v18 != 0 goto label04;
+v19 = staticinvoke <io.netty.handler.ssl.CipherSuiteConverter: java.lang.String toJava(java.lang.String,java.lang.String)>(v16, "TLS");
+v20 = interfaceinvoke v8.<java.util.Set: boolean remove(java.lang.Object)>(v19);
+if v20 != 0 goto label04;
+v12 = 1;
+goto label05;
+label04:
+v15 = v15 + 1;
+goto label02;
+label05:
+v21 = v12;
+v22 = interfaceinvoke v8.<java.util.Set: boolean isEmpty()>();
+if v22 != 0 goto label06;
+v23 = 1;
+goto label07;
+label06:
+v23 = 0;
+label07:
+v24 = v21 | v23;
+if v24 == 0 goto label11;
+v25 = interfaceinvoke v0.<io.netty.util.internal.logging.InternalLogger: boolean isInfoEnabled()>();
+if v25 == 0 goto label10;
+v26 = new java.lang.StringBuilder;
+specialinvoke v26.<java.lang.StringBuilder: void <init>(int)>(128);
+v27 = virtualinvoke v1.<java.lang.String: java.lang.String[] split(java.lang.String)>(":");
+v28 = lengthof v27;
+v29 = 0;
+label08:
+if v29 >= v28 goto label09;
+v30 = v27[v29];
+v31 = staticinvoke <io.netty.handler.ssl.CipherSuiteConverter: java.lang.String toJava(java.lang.String,java.lang.String)>(v30, "TLS");
+v32 = virtualinvoke v26.<java.lang.StringBuilder: java.lang.StringBuilder append(java.lang.String)>(v31);
+virtualinvoke v32.<java.lang.StringBuilder: java.lang.StringBuilder append(java.lang.String)>(":");
+v29 = v29 + 1;
+goto label08;
+label09:
+v33 = virtualinvoke v26.<java.lang.StringBuilder: int length()>();
+v34 = v33 - 1;
+virtualinvoke v26.<java.lang.StringBuilder: void setLength(int)>(v34);
+v35 = <io.netty.handler.ssl.OpenSsl: java.lang.String EXTRA_SUPPORTED_TLS_1_3_CIPHERS_STRING>;
+interfaceinvoke v0.<io.netty.util.internal.logging.InternalLogger: void info(java.lang.String,java.lang.Object,java.lang.Object)>("BoringSSL doesn\'t allow to enable or disable TLSv1.3 ciphers explicitly. Provided TLSv1.3 ciphers: \'{}\', default TLSv1.3 ciphers that will be used: \'{}\'.", v26, v35);
+label10:
+v36 = <io.netty.handler.ssl.OpenSsl: java.lang.String EXTRA_SUPPORTED_TLS_1_3_CIPHERS_STRING>;
+return v36;
+label11:
+return v1;
+}
+static boolean isSessionCacheSupported()
+{
+int v0;
+byte v1;
+boolean v2;
+v0 = staticinvoke <io.netty.handler.ssl.OpenSsl: int version()>();
+v1 = v0 cmp 269484032L;
+if v1 < 0 goto label1;
+v2 = 1;
+goto label2;
+label1:
+v2 = 0;
+label2:
+return v2;
+}
+static java.security.cert.X509Certificate selfSignedCertificate() throws java.security.cert.CertificateException
+{
+byte[] v4;
+java.security.cert.Certificate v5;
+java.io.ByteArrayInputStream v1;
+java.nio.charset.Charset v3;
+java.security.cert.CertificateFactory v0;
+java.lang.String v2;
+v0 = <io.netty.handler.ssl.SslContext: java.security.cert.CertificateFactory X509_CERT_FACTORY>;
+v1 = new java.io.ByteArrayInputStream;
+v2 = "-----BEGIN CERTIFICATE-----\nMIICrjCCAZagAwIBAgIIdSvQPv1QAZQwDQYJKoZIhvcNAQELBQAwFjEUMBIGA1UEAxMLZXhhbXBs\nZS5jb20wIBcNMTgwNDA2MjIwNjU5WhgPOTk5OTEyMzEyMzU5NTlaMBYxFDASBgNVBAMTC2V4YW1w\nbGUuY29tMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAggbWsmDQ6zNzRZ5AW8E3eoGl\nqWvOBDb5Fs1oBRrVQHuYmVAoaqwDzXYJ0LOwa293AgWEQ1jpcbZ2hpoYQzqEZBTLnFhMrhRFlH6K\nbJND8Y33kZ/iSVBBDuGbdSbJShlM+4WwQ9IAso4MZ4vW3S1iv5fGGpLgbtXRmBf/RU8omN0Gijlv\nWlLWHWijLN8xQtySFuBQ7ssW8RcKAary3pUm6UUQB+Co6lnfti0Tzag8PgjhAJq2Z3wbsGRnP2YS\nvYoaK6qzmHXRYlp/PxrjBAZAmkLJs4YTm/XFF+fkeYx4i9zqHbyone5yerRibsHaXZWLnUL+rFoe\nMdKvr0VS3sGmhQIDAQABMA0GCSqGSIb3DQEBCwUAA4IBAQADQi441pKmXf9FvUV5EHU4v8nJT9Iq\nyqwsKwXnr7AsUlDGHBD7jGrjAXnG5rGxuNKBQ35wRxJATKrUtyaquFUL6H8O6aGQehiFTk6zmPbe\n12Gu44vqqTgIUxnv3JQJiox8S2hMxsSddpeCmSdvmalvD6WG4NthH6B9ZaBEiep1+0s0RUaBYn73\nI7CCUaAtbjfR6pcJjrFk5ei7uwdQZFSJtkP2z8r7zfeANJddAKFlkaMWn7u+OIVuB4XPooWicObk\nNAHFtP65bocUYnDpTVdiyvn8DdqyZ/EO8n1bBKBzuSLplk2msW4pdgaFgY7Vw/0wzcFXfUXmL1uy\nG8sQD/wx\n-----END CERTIFICATE-----";
+v3 = <io.netty.util.CharsetUtil: java.nio.charset.Charset US_ASCII>;
+v4 = virtualinvoke v2.<java.lang.String: byte[] getBytes(java.nio.charset.Charset)>(v3);
+specialinvoke v1.<java.io.ByteArrayInputStream: void <init>(byte[])>(v4);
+v5 = virtualinvoke v0.<java.security.cert.CertificateFactory: java.security.cert.Certificate generateCertificate(java.io.InputStream)>(v1);
+return v5;
+}
+private static boolean doesSupportOcsp()
+{
+java.lang.Throwable v7;
+long v3;
+java.lang.Exception v5;
+byte v2, v4, v6, v8;
+int v1;
+boolean v0;
+v0 = 0;
+v1 = staticinvoke <io.netty.handler.ssl.OpenSsl: int version()>();
+v2 = v1 cmp 268443648L;
+if v2 < 0 goto label6;
+v3 = -1L;
+label1:
+v3 = staticinvoke <io.netty.internal.tcnative.SSLContext: long make(int,int)>(16, 1);
+staticinvoke <io.netty.internal.tcnative.SSLContext: void enableOcsp(long,boolean)>(v3, 0);
+v0 = 1;
+label2:
+v4 = v3 cmp -1L;
+if v4 == 0 goto label6;
+staticinvoke <io.netty.internal.tcnative.SSLContext: int free(long)>(v3);
+goto label6;
+label3:
+v5 := @caughtexception;
+v6 = v3 cmp -1L;
+if v6 == 0 goto label6;
+staticinvoke <io.netty.internal.tcnative.SSLContext: int free(long)>(v3);
+goto label6;
+label4:
+v7 := @caughtexception;
+v8 = v3 cmp -1L;
+if v8 == 0 goto label5;
+staticinvoke <io.netty.internal.tcnative.SSLContext: int free(long)>(v3);
+label5:
+throw v7;
+label6:
+return v0;
+catch java.lang.Exception from label1 to label2 with label3;
+catch java.lang.Throwable from label1 to label2 with label4;
+}
+private static boolean doesSupportProtocol(int, int)
+{
+java.lang.Throwable v5;
+byte v3;
+int v0, v1;
+long v2;
+java.lang.Exception v4;
+v0 := @parameter0: int;
+v1 := @parameter1: int;
+if v1 != 0 goto label1;
+return 0;
+label1:
+v2 = staticinvoke <io.netty.internal.tcnative.SSLContext: long make(int,int)>(v0, 2);
+label2:
+v3 = v2 cmp -1L;
+if v3 == 0 goto label3;
+staticinvoke <io.netty.internal.tcnative.SSLContext: int free(long)>(v2);
+label3:
+return 1;
+label4:
+v4 := @caughtexception;
+label5:
+return 0;
+label6:
+v5 := @caughtexception;
+throw v5;
+catch java.lang.Exception from label1 to label2 with label4;
+catch java.lang.Throwable from label1 to label2 with label6;
+catch java.lang.Throwable from label4 to label5 with label6;
+}
+public static boolean isAvailable()
+{
+java.lang.Throwable v0;
+boolean v1;
+v0 = <io.netty.handler.ssl.OpenSsl: java.lang.Throwable UNAVAILABILITY_CAUSE>;
+if v0 != null goto label1;
+v1 = 1;
+goto label2;
+label1:
+v1 = 0;
+label2:
+return v1;
+}
+public static boolean isAlpnSupported()
+{
+int v0;
+byte v1;
+boolean v2;
+v0 = staticinvoke <io.netty.handler.ssl.OpenSsl: int version()>();
+v1 = v0 cmp 268443648L;
+if v1 < 0 goto label1;
+v2 = 1;
+goto label2;
+label1:
+v2 = 0;
+label2:
+return v2;
+}
+public static boolean isOcspSupported()
+{
+boolean v0;
+v0 = <io.netty.handler.ssl.OpenSsl: boolean SUPPORTS_OCSP>;
+return v0;
+}
+public static int version()
+{
+int v1, v2;
+boolean v0;
+v0 = staticinvoke <io.netty.handler.ssl.OpenSsl: boolean isAvailable()>();
+if v0 == 0 goto label1;
+v1 = staticinvoke <io.netty.internal.tcnative.SSL: int version()>();
+goto label2;
+label1:
+v2 = (int) -1;
+v1 = v2;
+label2:
+return v1;
+}
+public static java.lang.String versionString()
+{
+java.lang.String v1;
+boolean v0;
+v0 = staticinvoke <io.netty.handler.ssl.OpenSsl: boolean isAvailable()>();
+if v0 == 0 goto label1;
+v1 = staticinvoke <io.netty.internal.tcnative.SSL: java.lang.String versionString()>();
+goto label2;
+label1:
+v1 = null;
+label2:
+return v1;
+}
+public static void ensureAvailability()
+{
+java.lang.Throwable v0, v2, v3;
+java.lang.UnsatisfiedLinkError v1;
+v0 = <io.netty.handler.ssl.OpenSsl: java.lang.Throwable UNAVAILABILITY_CAUSE>;
+if v0 == null goto label1;
+v1 = new java.lang.UnsatisfiedLinkError;
+specialinvoke v1.<java.lang.UnsatisfiedLinkError: void <init>(java.lang.String)>("failed to load the required native library");
+v2 = <io.netty.handler.ssl.OpenSsl: java.lang.Throwable UNAVAILABILITY_CAUSE>;
+v3 = virtualinvoke v1.<java.lang.UnsatisfiedLinkError: java.lang.Throwable initCause(java.lang.Throwable)>(v2);
+throw v3;
+label1:
+return;
+}
+public static java.lang.Throwable unavailabilityCause()
+{
+java.lang.Throwable v0;
+v0 = <io.netty.handler.ssl.OpenSsl: java.lang.Throwable UNAVAILABILITY_CAUSE>;
+return v0;
+}
+public static java.util.Set availableCipherSuites()
+{
+java.util.Set v0;
+v0 = staticinvoke <io.netty.handler.ssl.OpenSsl: java.util.Set availableOpenSslCipherSuites()>();
+return v0;
+}
+public static java.util.Set availableOpenSslCipherSuites()
+{
+java.util.Set v0;
+v0 = <io.netty.handler.ssl.OpenSsl: java.util.Set AVAILABLE_OPENSSL_CIPHER_SUITES>;
+return v0;
+}
+public static java.util.Set availableJavaCipherSuites()
+{
+java.util.Set v0;
+v0 = <io.netty.handler.ssl.OpenSsl: java.util.Set AVAILABLE_JAVA_CIPHER_SUITES>;
+return v0;
+}
+public static boolean isCipherSuiteAvailable(java.lang.String)
+{
+java.util.Set v3;
+java.lang.String v0, v2;
+boolean v1, v4;
+v0 := @parameter0: java.lang.String;
+v1 = <io.netty.handler.ssl.OpenSsl: boolean IS_BORINGSSL>;
+v2 = staticinvoke <io.netty.handler.ssl.CipherSuiteConverter: java.lang.String toOpenSsl(java.lang.String,boolean)>(v0, v1);
+if v2 == null goto label1;
+v0 = v2;
+label1:
+v3 = <io.netty.handler.ssl.OpenSsl: java.util.Set AVAILABLE_OPENSSL_CIPHER_SUITES>;
+v4 = interfaceinvoke v3.<java.util.Set: boolean contains(java.lang.Object)>(v0);
+return v4;
+}
+public static boolean supportsKeyManagerFactory()
+{
+boolean v0;
+v0 = <io.netty.handler.ssl.OpenSsl: boolean SUPPORTS_KEYMANAGER_FACTORY>;
+return v0;
+}
+public static boolean supportsHostnameValidation()
+{
+boolean v0;
+v0 = staticinvoke <io.netty.handler.ssl.OpenSsl: boolean isAvailable()>();
+return v0;
+}
+static boolean useKeyManagerFactory()
+{
+boolean v0;
+v0 = <io.netty.handler.ssl.OpenSsl: boolean USE_KEYMANAGER_FACTORY>;
+return v0;
+}
+static long memoryAddress(io.netty.buffer.ByteBuf)
+{
+long v5;
+java.lang.AssertionError v3;
+java.nio.ByteBuffer v7;
+io.netty.buffer.ByteBuf v0;
+int v6;
+boolean v1, v2, v4;
+v0 := @parameter0: io.netty.buffer.ByteBuf;
+v1 = <io.netty.handler.ssl.OpenSsl: boolean $assertionsDisabled>;
+if v1 != 0 goto label1;
+v2 = virtualinvoke v0.<io.netty.buffer.ByteBuf: boolean isDirect()>();
+if v2 != 0 goto label1;
+v3 = new java.lang.AssertionError;
+specialinvoke v3.<java.lang.AssertionError: void <init>()>();
+throw v3;
+label1:
+v4 = virtualinvoke v0.<io.netty.buffer.ByteBuf: boolean hasMemoryAddress()>();
+if v4 == 0 goto label2;
+v5 = virtualinvoke v0.<io.netty.buffer.ByteBuf: long memoryAddress()>();
+goto label3;
+label2:
+v6 = virtualinvoke v0.<io.netty.buffer.ByteBuf: int readableBytes()>();
+v7 = virtualinvoke v0.<io.netty.buffer.ByteBuf: java.nio.ByteBuffer internalNioBuffer(int,int)>(0, v6);
+v5 = staticinvoke <io.netty.internal.tcnative.Buffer: long address(java.nio.ByteBuffer)>(v7);
+label3:
+return v5;
+}
+private void <init>()
+{
+io.netty.handler.ssl.OpenSsl v0;
+v0 := @this: io.netty.handler.ssl.OpenSsl;
+specialinvoke v0.<java.lang.Object: void <init>()>();
+return;
+}
+private static void loadTcNative() throws java.lang.Exception
+{
+java.lang.Object[] v16;
+java.lang.String[] v15;
+java.lang.String v0, v1, v10, v11, v12, v13, v3, v9;
+java.util.LinkedHashSet v2;
+boolean v4, v7;
+java.util.Iterator v6;
+java.util.Set v5;
+java.lang.Object v8;
+java.lang.ClassLoader v14;
+v0 = staticinvoke <io.netty.util.internal.PlatformDependent: java.lang.String normalizedOs()>();
+v1 = staticinvoke <io.netty.util.internal.PlatformDependent: java.lang.String normalizedArch()>();
+v2 = new java.util.LinkedHashSet;
+specialinvoke v2.<java.util.LinkedHashSet: void <init>(int)>(5);
+v3 = "linux";
+v4 = virtualinvoke v3.<java.lang.String: boolean equals(java.lang.Object)>(v0);
+if v4 == 0 goto label3;
+v5 = staticinvoke <io.netty.util.internal.PlatformDependent: java.util.Set normalizedLinuxClassifiers()>();
+v6 = interfaceinvoke v5.<java.util.Set: java.util.Iterator iterator()>();
+label1:
+v7 = interfaceinvoke v6.<java.util.Iterator: boolean hasNext()>();
+if v7 == 0 goto label2;
+v8 = interfaceinvoke v6.<java.util.Iterator: java.lang.Object next()>();
+v9 = dynamicinvoke "makeConcatWithConstants" <java.lang.String (java.lang.String,java.lang.String,java.lang.String,java.lang.Object)>("netty_tcnative", v0, v1, v8) <java.lang.invoke.StringConcatFactory: java.lang.invoke.CallSite makeConcatWithConstants(java.lang.invoke.MethodHandles$Lookup,java.lang.String,java.lang.invoke.MethodType,java.lang.String,java.lang.Object[])>("\u0001_\u0001_\u0001_\u0001");
+interfaceinvoke v2.<java.util.Set: boolean add(java.lang.Object)>(v9);
+goto label1;
+label2:
+v10 = dynamicinvoke "makeConcatWithConstants" <java.lang.String (java.lang.String,java.lang.String,java.lang.String)>("netty_tcnative", v0, v1) <java.lang.invoke.StringConcatFactory: java.lang.invoke.CallSite makeConcatWithConstants(java.lang.invoke.MethodHandles$Lookup,java.lang.String,java.lang.invoke.MethodType,java.lang.String,java.lang.Object[])>("\u0001_\u0001_\u0001");
+interfaceinvoke v2.<java.util.Set: boolean add(java.lang.Object)>(v10);
+v11 = dynamicinvoke "makeConcatWithConstants" <java.lang.String (java.lang.String,java.lang.String,java.lang.String)>("netty_tcnative", v0, v1) <java.lang.invoke.StringConcatFactory: java.lang.invoke.CallSite makeConcatWithConstants(java.lang.invoke.MethodHandles$Lookup,java.lang.String,java.lang.invoke.MethodType,java.lang.String,java.lang.Object[])>("\u0001_\u0001_\u0001_fedora");
+interfaceinvoke v2.<java.util.Set: boolean add(java.lang.Object)>(v11);
+goto label4;
+label3:
+v12 = dynamicinvoke "makeConcatWithConstants" <java.lang.String (java.lang.String,java.lang.String,java.lang.String)>("netty_tcnative", v0, v1) <java.lang.invoke.StringConcatFactory: java.lang.invoke.CallSite makeConcatWithConstants(java.lang.invoke.MethodHandles$Lookup,java.lang.String,java.lang.invoke.MethodType,java.lang.String,java.lang.Object[])>("\u0001_\u0001_\u0001");
+interfaceinvoke v2.<java.util.Set: boolean add(java.lang.Object)>(v12);
+label4:
+v13 = dynamicinvoke "makeConcatWithConstants" <java.lang.String (java.lang.String,java.lang.String)>("netty_tcnative", v1) <java.lang.invoke.StringConcatFactory: java.lang.invoke.CallSite makeConcatWithConstants(java.lang.invoke.MethodHandles$Lookup,java.lang.String,java.lang.invoke.MethodType,java.lang.String,java.lang.Object[])>("\u0001_\u0001");
+interfaceinvoke v2.<java.util.Set: boolean add(java.lang.Object)>(v13);
+interfaceinvoke v2.<java.util.Set: boolean add(java.lang.Object)>("netty_tcnative");
+v14 = staticinvoke <io.netty.util.internal.PlatformDependent: java.lang.ClassLoader getClassLoader(java.lang.Class)>(class "Lio/netty/internal/tcnative/SSLContext;");
+v15 = newarray (java.lang.String)[0];
+v16 = interfaceinvoke v2.<java.util.Set: java.lang.Object[] toArray(java.lang.Object[])>(v15);
+staticinvoke <io.netty.util.internal.NativeLibraryLoader: void loadFirstAvailable(java.lang.ClassLoader,java.lang.String[])>(v14, v16);
+return;
+}
+private static boolean initializeTcNative(java.lang.String) throws java.lang.Exception
+{
+java.lang.String v0;
+boolean v1;
+v0 := @parameter0: java.lang.String;
+v1 = staticinvoke <io.netty.internal.tcnative.Library: boolean initialize(java.lang.String,java.lang.String)>("provided", v0);
+return v1;
+}
+static void releaseIfNeeded(io.netty.util.ReferenceCounted)
+{
+int v1;
+io.netty.util.ReferenceCounted v0;
+v0 := @parameter0: io.netty.util.ReferenceCounted;
+v1 = interfaceinvoke v0.<io.netty.util.ReferenceCounted: int refCnt()>();
+if v1 <= 0 goto label1;
+staticinvoke <io.netty.util.ReferenceCountUtil: void safeRelease(java.lang.Object)>(v0);
+label1:
+return;
+}
+static boolean isTlsv13Supported()
+{
+boolean v0;
+v0 = <io.netty.handler.ssl.OpenSsl: boolean TLSV13_SUPPORTED>;
+return v0;
+}
+static boolean isOptionSupported(io.netty.handler.ssl.SslContextOption)
+{
+io.netty.handler.ssl.SslContextOption v0;
+io.netty.handler.ssl.OpenSslContextOption v2, v4, v5, v6, v7;
+boolean v1, v3, v8;
+v0 := @parameter0: io.netty.handler.ssl.SslContextOption;
+v1 = staticinvoke <io.netty.handler.ssl.OpenSsl: boolean isAvailable()>();
+if v1 == 0 goto label5;
+v2 = <io.netty.handler.ssl.OpenSslContextOption: io.netty.handler.ssl.OpenSslContextOption USE_TASKS>;
+if v0 != v2 goto label1;
+return 1;
+label1:
+v3 = staticinvoke <io.netty.handler.ssl.OpenSsl: boolean isBoringSSL()>();
+if v3 == 0 goto label5;
+v4 = <io.netty.handler.ssl.OpenSslContextOption: io.netty.handler.ssl.OpenSslContextOption ASYNC_PRIVATE_KEY_METHOD>;
+if v0 == v4 goto label2;
+v5 = <io.netty.handler.ssl.OpenSslContextOption: io.netty.handler.ssl.OpenSslContextOption PRIVATE_KEY_METHOD>;
+if v0 == v5 goto label2;
+v6 = <io.netty.handler.ssl.OpenSslContextOption: io.netty.handler.ssl.OpenSslContextOption CERTIFICATE_COMPRESSION_ALGORITHMS>;
+if v0 == v6 goto label2;
+v7 = <io.netty.handler.ssl.OpenSslContextOption: io.netty.handler.ssl.OpenSslContextOption TLS_FALSE_START>;
+if v0 != v7 goto label3;
+label2:
+v8 = 1;
+goto label4;
+label3:
+v8 = 0;
+label4:
+return v8;
+label5:
+return 0;
+}
+private static java.util.Set protocols(java.lang.String)
+{
+java.lang.String[] v3;
+java.util.HashSet v2;
+int v4, v5;
+java.lang.String v0, v1, v6, v7;
+v0 := @parameter0: java.lang.String;
+v1 = staticinvoke <io.netty.util.internal.SystemPropertyUtil: java.lang.String get(java.lang.String,java.lang.String)>(v0, null);
+if v1 == null goto label3;
+v2 = new java.util.HashSet;
+specialinvoke v2.<java.util.HashSet: void <init>()>();
+v3 = virtualinvoke v1.<java.lang.String: java.lang.String[] split(java.lang.String)>(",");
+v4 = lengthof v3;
+v5 = 0;
+label1:
+if v5 >= v4 goto label2;
+v6 = v3[v5];
+v7 = virtualinvoke v6.<java.lang.String: java.lang.String trim()>();
+interfaceinvoke v2.<java.util.Set: boolean add(java.lang.Object)>(v7);
+v5 = v5 + 1;
+goto label1;
+label2:
+return v2;
+label3:
+return null;
+}
+static java.lang.String[] defaultProtocols(boolean)
+{
+java.lang.Object[] v10;
+java.util.Iterator v4;
+java.util.Set v1, v7;
+java.lang.String[] v9;
+java.util.ArrayList v2;
+int v3;
+java.lang.Object v6;
+boolean v0, v5, v8;
+v0 := @parameter0: boolean;
+if v0 == 0 goto label1;
+v1 = <io.netty.handler.ssl.OpenSsl: java.util.Set CLIENT_DEFAULT_PROTOCOLS>;
+goto label2;
+label1:
+v1 = <io.netty.handler.ssl.OpenSsl: java.util.Set SERVER_DEFAULT_PROTOCOLS>;
+label2:
+if v1 != null goto label3;
+return null;
+label3:
+v2 = new java.util.ArrayList;
+v3 = interfaceinvoke v1.<java.util.Collection: int size()>();
+specialinvoke v2.<java.util.ArrayList: void <init>(int)>(v3);
+v4 = interfaceinvoke v1.<java.util.Collection: java.util.Iterator iterator()>();
+label4:
+v5 = interfaceinvoke v4.<java.util.Iterator: boolean hasNext()>();
+if v5 == 0 goto label5;
+v6 = interfaceinvoke v4.<java.util.Iterator: java.lang.Object next()>();
+v7 = <io.netty.handler.ssl.OpenSsl: java.util.Set SUPPORTED_PROTOCOLS_SET>;
+v8 = interfaceinvoke v7.<java.util.Set: boolean contains(java.lang.Object)>(v6);
+if v8 == 0 goto label4;
+interfaceinvoke v2.<java.util.List: boolean add(java.lang.Object)>(v6);
+goto label4;
+label5:
+v9 = newarray (java.lang.String)[0];
+v10 = interfaceinvoke v2.<java.util.List: java.lang.Object[] toArray(java.lang.Object[])>(v9);
+return v10;
+}
+static boolean isBoringSSL()
+{
+boolean v0;
+v0 = <io.netty.handler.ssl.OpenSsl: boolean IS_BORINGSSL>;
+return v0;
+}
+static void <clinit>()
+{
+byte[] v95;
+byte v111, v112, v113, v114, v116, v117, v118, v119;
+io.netty.util.internal.logging.InternalLogger v104, v105, v107, v109, v134, v14, v143, v145, v154, v19, v195, v197, v199, v24, v25, v27, v3, v33, v8;
+java.lang.StringBuilder v52, v57, v69, v76;
+java.lang.ClassLoader v12;
+java.lang.Object[] v136, v141, v148, v151;
+long v62, v63, v64, v65, v66, v82;
+java.security.cert.X509Certificate v97;
+io.netty.buffer.ByteBufAllocator v98;
+java.nio.charset.Charset v94;
+int v123, v125, v127, v128, v158, v159, v174, v176, v177, v181, v183, v185, v187, v189, v191, v41, v43, v44, v54, v55, v58, v59, v77, v78, v79, v84, v85;
+io.netty.handler.ssl.SslProvider v67;
+java.lang.Class v0, v15, v20, v28, v9;
+java.lang.Object v163, v73;
+io.netty.handler.ssl.PemEncoded v101;
+java.util.Set v155, v157, v160, v171, v173, v175, v178, v179, v193, v198, v202, v203, v204, v205, v31, v32, v70;
+java.lang.Exception v153, v81;
+io.netty.buffer.UnpooledByteBufAllocator v100;
+java.lang.Throwable v106, v110, v115, v152, v18, v26, v5;
+java.lang.Error v108;
+java.util.ArrayList v35;
+java.lang.String v10, v11, v120, v129, v130, v137, v139, v144, v146, v149, v16, v165, v166, v17, v21, v22, v23, v29, v30, v34, v45, v46, v47, v48, v56, v60, v75, v80, v86, v93;
+java.util.LinkedHashSet v122, v124, v126, v156, v172, v180, v36;
+java.lang.UnsupportedOperationException v7;
+java.lang.ClassNotFoundException v13;
+io.netty.handler.ssl.PemPrivateKey v96;
+boolean v1, v102, v103, v132, v133, v142, v162, v164, v182, v184, v186, v188, v190, v192, v194, v196, v2, v37, v38, v39, v49, v50, v6, v68, v72, v74, v87, v88, v89, v90;
+java.util.List v170, v200, v201;
+java.security.cert.X509Certificate[] v99;
+java.lang.String[] v121, v131, v135, v138, v140, v147, v150, v167, v168, v169, v206, v207, v4, v40, v42, v51, v53, v61, v83, v91, v92;
+java.util.Iterator v161, v71;
+v0 = class "Lio/netty/handler/ssl/OpenSsl;";
+v1 = virtualinvoke v0.<java.lang.Class: boolean desiredAssertionStatus()>();
+if v1 != 0 goto label01;
+v2 = 1;
+goto label02;
+label01:
+v2 = 0;
+label02:
+<io.netty.handler.ssl.OpenSsl: boolean $assertionsDisabled> = v2;
+v3 = staticinvoke <io.netty.util.internal.logging.InternalLoggerFactory: io.netty.util.internal.logging.InternalLogger getInstance(java.lang.Class)>(class "Lio/netty/handler/ssl/OpenSsl;");
+<io.netty.handler.ssl.OpenSsl: io.netty.util.internal.logging.InternalLogger logger> = v3;
+v4 = newarray (java.lang.String)[4];
+v4[0] = "x25519";
+v4[1] = "secp256r1";
+v4[2] = "secp384r1";
+v4[3] = "secp521r1";
+<io.netty.handler.ssl.OpenSsl: java.lang.String[] DEFAULT_NAMED_GROUPS> = v4;
+v5 = null;
+v6 = staticinvoke <io.netty.util.internal.SystemPropertyUtil: boolean getBoolean(java.lang.String,boolean)>("io.netty.handler.ssl.noOpenSsl", 0);
+if v6 == 0 goto label03;
+v7 = new java.lang.UnsupportedOperationException;
+specialinvoke v7.<java.lang.UnsupportedOperationException: void <init>(java.lang.String)>("OpenSSL was explicit disabled with -Dio.netty.handler.ssl.noOpenSsl=true");
+v5 = v7;
+v8 = <io.netty.handler.ssl.OpenSsl: io.netty.util.internal.logging.InternalLogger logger>;
+v9 = class "Lio/netty/handler/ssl/OpenSslEngine;";
+v10 = virtualinvoke v9.<java.lang.Class: java.lang.String getSimpleName()>();
+v11 = dynamicinvoke "makeConcatWithConstants" <java.lang.String (java.lang.String)>(v10) <java.lang.invoke.StringConcatFactory: java.lang.invoke.CallSite makeConcatWithConstants(java.lang.invoke.MethodHandles$Lookup,java.lang.String,java.lang.invoke.MethodType,java.lang.String,java.lang.Object[])>("netty-tcnative explicit disabled; \u0001 will be unavailable.");
+interfaceinvoke v8.<io.netty.util.internal.logging.InternalLogger: void debug(java.lang.String,java.lang.Throwable)>(v11, v7);
+goto label16;
+label03:
+v12 = staticinvoke <io.netty.util.internal.PlatformDependent: java.lang.ClassLoader getClassLoader(java.lang.Class)>(class "Lio/netty/handler/ssl/OpenSsl;");
+staticinvoke <java.lang.Class: java.lang.Class forName(java.lang.String,boolean,java.lang.ClassLoader)>("io.netty.internal.tcnative.SSLContext", 0, v12);
+label04:
+goto label06;
+label05:
+v13 := @caughtexception;
+v5 = v13;
+v14 = <io.netty.handler.ssl.OpenSsl: io.netty.util.internal.logging.InternalLogger logger>;
+v15 = class "Lio/netty/handler/ssl/OpenSslEngine;";
+v16 = virtualinvoke v15.<java.lang.Class: java.lang.String getSimpleName()>();
+v17 = dynamicinvoke "makeConcatWithConstants" <java.lang.String (java.lang.String)>(v16) <java.lang.invoke.StringConcatFactory: java.lang.invoke.CallSite makeConcatWithConstants(java.lang.invoke.MethodHandles$Lookup,java.lang.String,java.lang.invoke.MethodType,java.lang.String,java.lang.Object[])>("netty-tcnative not in the classpath; \u0001 will be unavailable.");
+interfaceinvoke v14.<io.netty.util.internal.logging.InternalLogger: void debug(java.lang.String)>(v17);
+label06:
+if v5 != null goto label16;
+label07:
+staticinvoke <io.netty.handler.ssl.OpenSsl: void loadTcNative()>();
+label08:
+goto label10;
+label09:
+v18 := @caughtexception;
+v5 = v18;
+v19 = <io.netty.handler.ssl.OpenSsl: io.netty.util.internal.logging.InternalLogger logger>;
+v20 = class "Lio/netty/handler/ssl/OpenSslEngine;";
+v21 = virtualinvoke v20.<java.lang.Class: java.lang.String getSimpleName()>();
+v22 = dynamicinvoke "makeConcatWithConstants" <java.lang.String (java.lang.String)>(v21) <java.lang.invoke.StringConcatFactory: java.lang.invoke.CallSite makeConcatWithConstants(java.lang.invoke.MethodHandles$Lookup,java.lang.String,java.lang.invoke.MethodType,java.lang.String,java.lang.Object[])>("Failed to load netty-tcnative; \u0001 will be unavailable, unless the application has already loaded the symbols by some other means. See https://netty.io/wiki/forked-tomcat-native.html for more information.");
+interfaceinvoke v19.<io.netty.util.internal.logging.InternalLogger: void debug(java.lang.String,java.lang.Throwable)>(v22, v18);
+label10:
+v23 = staticinvoke <io.netty.util.internal.SystemPropertyUtil: java.lang.String get(java.lang.String,java.lang.String)>("io.netty.handler.ssl.openssl.engine", null);
+if v23 != null goto label11;
+v24 = <io.netty.handler.ssl.OpenSsl: io.netty.util.internal.logging.InternalLogger logger>;
+interfaceinvoke v24.<io.netty.util.internal.logging.InternalLogger: void debug(java.lang.String)>("Initialize netty-tcnative using engine: \'default\'");
+goto label12;
+label11:
+v25 = <io.netty.handler.ssl.OpenSsl: io.netty.util.internal.logging.InternalLogger logger>;
+interfaceinvoke v25.<io.netty.util.internal.logging.InternalLogger: void debug(java.lang.String,java.lang.Object)>("Initialize netty-tcnative using engine: \'{}\'", v23);
+label12:
+staticinvoke <io.netty.handler.ssl.OpenSsl: boolean initializeTcNative(java.lang.String)>(v23);
+v5 = null;
+label13:
+goto label16;
+label14:
+v26 := @caughtexception;
+if v5 != null goto label15;
+v5 = v26;
+label15:
+v27 = <io.netty.handler.ssl.OpenSsl: io.netty.util.internal.logging.InternalLogger logger>;
+v28 = class "Lio/netty/handler/ssl/OpenSslEngine;";
+v29 = virtualinvoke v28.<java.lang.Class: java.lang.String getSimpleName()>();
+v30 = dynamicinvoke "makeConcatWithConstants" <java.lang.String (java.lang.String)>(v29) <java.lang.invoke.StringConcatFactory: java.lang.invoke.CallSite makeConcatWithConstants(java.lang.invoke.MethodHandles$Lookup,java.lang.String,java.lang.invoke.MethodType,java.lang.String,java.lang.Object[])>("Failed to initialize netty-tcnative; \u0001 will be unavailable. See https://netty.io/wiki/forked-tomcat-native.html for more information.");
+interfaceinvoke v27.<io.netty.util.internal.logging.InternalLogger: void debug(java.lang.String,java.lang.Throwable)>(v30, v26);
+label16:
+<io.netty.handler.ssl.OpenSsl: java.lang.Throwable UNAVAILABILITY_CAUSE> = v5;
+v31 = staticinvoke <io.netty.handler.ssl.OpenSsl: java.util.Set protocols(java.lang.String)>("jdk.tls.client.protocols");
+<io.netty.handler.ssl.OpenSsl: java.util.Set CLIENT_DEFAULT_PROTOCOLS> = v31;
+v32 = staticinvoke <io.netty.handler.ssl.OpenSsl: java.util.Set protocols(java.lang.String)>("jdk.tls.server.protocols");
+<io.netty.handler.ssl.OpenSsl: java.util.Set SERVER_DEFAULT_PROTOCOLS> = v32;
+if v5 != null goto label78;
+v33 = <io.netty.handler.ssl.OpenSsl: io.netty.util.internal.logging.InternalLogger logger>;
+v34 = staticinvoke <io.netty.internal.tcnative.SSL: java.lang.String versionString()>();
+interfaceinvoke v33.<io.netty.util.internal.logging.InternalLogger: void debug(java.lang.String,java.lang.Object)>("netty-tcnative using native library: {}", v34);
+v35 = new java.util.ArrayList;
+specialinvoke v35.<java.util.ArrayList: void <init>()>();
+v36 = new java.util.LinkedHashSet;
+specialinvoke v36.<java.util.LinkedHashSet: void <init>(int)>(128);
+v37 = 0;
+v38 = 0;
+v39 = 0;
+v40 = <io.netty.handler.ssl.OpenSsl: java.lang.String[] DEFAULT_NAMED_GROUPS>;
+v41 = lengthof v40;
+v42 = newarray (java.lang.String)[v41];
+v43 = 0;
+label17:
+v44 = lengthof v40;
+if v43 >= v44 goto label18;
+v45 = v40[v43];
+v46 = staticinvoke <io.netty.handler.ssl.GroupsConverter: java.lang.String toOpenSsl(java.lang.String)>(v45);
+v42[v43] = v46;
+v43 = v43 + 1;
+goto label17;
+label18:
+v47 = "BoringSSL";
+v48 = staticinvoke <io.netty.handler.ssl.OpenSsl: java.lang.String versionString()>();
+v49 = virtualinvoke v47.<java.lang.String: boolean equals(java.lang.Object)>(v48);
+<io.netty.handler.ssl.OpenSsl: boolean IS_BORINGSSL> = v49;
+v50 = <io.netty.handler.ssl.OpenSsl: boolean IS_BORINGSSL>;
+if v50 == 0 goto label21;
+v51 = newarray (java.lang.String)[3];
+v51[0] = "TLS_AES_128_GCM_SHA256";
+v51[1] = "TLS_AES_256_GCM_SHA384";
+v51[2] = "TLS_CHACHA20_POLY1305_SHA256";
+<io.netty.handler.ssl.OpenSsl: java.lang.String[] EXTRA_SUPPORTED_TLS_1_3_CIPHERS> = v51;
+v52 = new java.lang.StringBuilder;
+specialinvoke v52.<java.lang.StringBuilder: void <init>(int)>(128);
+v53 = <io.netty.handler.ssl.OpenSsl: java.lang.String[] EXTRA_SUPPORTED_TLS_1_3_CIPHERS>;
+v54 = lengthof v53;
+v55 = 0;
+label19:
+if v55 >= v54 goto label20;
+v56 = v53[v55];
+v57 = virtualinvoke v52.<java.lang.StringBuilder: java.lang.StringBuilder append(java.lang.String)>(v56);
+virtualinvoke v57.<java.lang.StringBuilder: java.lang.StringBuilder append(java.lang.String)>(":");
+v55 = v55 + 1;
+goto label19;
+label20:
+v58 = virtualinvoke v52.<java.lang.StringBuilder: int length()>();
+v59 = v58 - 1;
+virtualinvoke v52.<java.lang.StringBuilder: void setLength(int)>(v59);
+v60 = virtualinvoke v52.<java.lang.StringBuilder: java.lang.String toString()>();
+<io.netty.handler.ssl.OpenSsl: java.lang.String EXTRA_SUPPORTED_TLS_1_3_CIPHERS_STRING> = v60;
+goto label22;
+label21:
+v61 = <io.netty.util.internal.EmptyArrays: java.lang.String[] EMPTY_STRINGS>;
+<io.netty.handler.ssl.OpenSsl: java.lang.String[] EXTRA_SUPPORTED_TLS_1_3_CIPHERS> = v61;
+<io.netty.handler.ssl.OpenSsl: java.lang.String EXTRA_SUPPORTED_TLS_1_3_CIPHERS_STRING> = "";
+label22:
+v62 = staticinvoke <io.netty.internal.tcnative.SSLContext: long make(int,int)>(63, 1);
+v63 = 0L;
+v64 = 0L;
+v65 = 0L;
+v66 = 0L;
+label23:
+v67 = <io.netty.handler.ssl.SslProvider: io.netty.handler.ssl.SslProvider JDK>;
+v68 = staticinvoke <io.netty.handler.ssl.SslProvider: boolean isTlsv13Supported(io.netty.handler.ssl.SslProvider)>(v67);
+if v68 == 0 goto label30;
+label24:
+v69 = new java.lang.StringBuilder;
+specialinvoke v69.<java.lang.StringBuilder: void <init>()>();
+v70 = <io.netty.handler.ssl.SslUtils: java.util.Set TLSV13_CIPHERS>;
+v71 = interfaceinvoke v70.<java.util.Set: java.util.Iterator iterator()>();
+label25:
+v72 = interfaceinvoke v71.<java.util.Iterator: boolean hasNext()>();
+if v72 == 0 goto label26;
+v73 = interfaceinvoke v71.<java.util.Iterator: java.lang.Object next()>();
+v74 = <io.netty.handler.ssl.OpenSsl: boolean IS_BORINGSSL>;
+v75 = staticinvoke <io.netty.handler.ssl.CipherSuiteConverter: java.lang.String toOpenSsl(java.lang.String,boolean)>(v73, v74);
+if v75 == null goto label25;
+v76 = virtualinvoke v69.<java.lang.StringBuilder: java.lang.StringBuilder append(java.lang.String)>(v75);
+virtualinvoke v76.<java.lang.StringBuilder: java.lang.StringBuilder append(char)>(58);
+goto label25;
+label26:
+v77 = virtualinvoke v69.<java.lang.StringBuilder: int length()>();
+if v77 != 0 goto label27;
+v39 = 0;
+goto label30;
+label27:
+v78 = virtualinvoke v69.<java.lang.StringBuilder: int length()>();
+v79 = v78 - 1;
+virtualinvoke v69.<java.lang.StringBuilder: void setLength(int)>(v79);
+v80 = virtualinvoke v69.<java.lang.StringBuilder: java.lang.String toString()>();
+staticinvoke <io.netty.internal.tcnative.SSLContext: boolean setCipherSuite(long,java.lang.String,boolean)>(v62, v80, 1);
+v39 = 1;
+label28:
+goto label30;
+label29:
+v81 := @caughtexception;
+v39 = 0;
+label30:
+staticinvoke <io.netty.internal.tcnative.SSLContext: boolean setCipherSuite(long,java.lang.String,boolean)>(v62, "ALL", 0);
+v82 = staticinvoke <io.netty.internal.tcnative.SSL: long newSSL(long,boolean)>(v62, 1);
+label31:
+v83 = staticinvoke <io.netty.internal.tcnative.SSL: java.lang.String[] getCiphers(long)>(v82);
+v84 = lengthof v83;
+v85 = 0;
+label32:
+if v85 >= v84 goto label35;
+v86 = v83[v85];
+if v86 == null goto label34;
+v87 = virtualinvoke v86.<java.lang.String: boolean isEmpty()>();
+if v87 != 0 goto label34;
+v88 = interfaceinvoke v36.<java.util.Set: boolean contains(java.lang.Object)>(v86);
+if v88 != 0 goto label34;
+if v39 != 0 goto label33;
+v89 = staticinvoke <io.netty.handler.ssl.SslUtils: boolean isTLSv13Cipher(java.lang.String)>(v86);
+if v89 != 0 goto label34;
+label33:
+interfaceinvoke v36.<java.util.Set: boolean add(java.lang.Object)>(v86);
+label34:
+v85 = v85 + 1;
+goto label32;
+label35:
+v90 = <io.netty.handler.ssl.OpenSsl: boolean IS_BORINGSSL>;
+if v90 == 0 goto label36;
+v91 = <io.netty.handler.ssl.OpenSsl: java.lang.String[] EXTRA_SUPPORTED_TLS_1_3_CIPHERS>;
+staticinvoke <java.util.Collections: boolean addAll(java.util.Collection,java.lang.Object[])>(v36, v91);
+v92 = newarray (java.lang.String)[3];
+v92[0] = "AEAD-AES128-GCM-SHA256";
+v92[1] = "AEAD-AES256-GCM-SHA384";
+v92[2] = "AEAD-CHACHA20-POLY1305-SHA256";
+staticinvoke <java.util.Collections: boolean addAll(java.util.Collection,java.lang.Object[])>(v36, v92);
+label36:
+v93 = "-----BEGIN PRIVATE KEY-----\nMIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQCCBtayYNDrM3NFnkBbwTd6gaWp\na84ENvkWzWgFGtVAe5iZUChqrAPNdgnQs7Brb3cCBYRDWOlxtnaGmhhDOoRkFMucWEyuFEWUfops\nk0PxjfeRn+JJUEEO4Zt1JslKGUz7hbBD0gCyjgxni9bdLWK/l8YakuBu1dGYF/9FTyiY3QaKOW9a\nUtYdaKMs3zFC3JIW4FDuyxbxFwoBqvLelSbpRRAH4KjqWd+2LRPNqDw+COEAmrZnfBuwZGc/ZhK9\nihorqrOYddFiWn8/GuMEBkCaQsmzhhOb9cUX5+R5jHiL3OodvKid7nJ6tGJuwdpdlYudQv6sWh4x\n0q+vRVLewaaFAgMBAAECggEAP8tPJvFtTxhNJAkCloHz0D0vpDHqQBMgntlkgayqmBqLwhyb18pR\ni0qwgh7HHc7wWqOOQuSqlEnrWRrdcI6TSe8R/sErzfTQNoznKWIPYcI/hskk4sdnQ//Yn9/Jvnsv\nU/BBjOTJxtD+sQbhAl80JcA3R+5sArURQkfzzHOL/YMqzAsn5hTzp7HZCxUqBk3KaHRxV7NefeOE\nxlZuWSmxYWfbFIs4kx19/1t7h8CHQWezw+G60G2VBtSBBxDnhBWvqG6R/wpzJ3nEhPLLY9T+XIHe\nipzdMOOOUZorfIg7M+pyYPji+ZIZxIpY5OjrOzXHciAjRtr5Y7l99K1CG1LguQKBgQDrQfIMxxtZ\nvxU/1cRmUV9l7pt5bjV5R6byXq178LxPKVYNjdZ840Q0/OpZEVqaT1xKVi35ohP1QfNjxPLlHD+K\niDAR9z6zkwjIrbwPCnb5kuXy4lpwPcmmmkva25fI7qlpHtbcuQdoBdCfr/KkKaUCMPyY89LCXgEw\n5KTDj64UywKBgQCNfbO+eZLGzhiHhtNJurresCsIGWlInv322gL8CSfBMYl6eNfUTZvUDdFhPISL\nUljKWzXDrjw0ujFSPR0XhUGtiq89H+HUTuPPYv25gVXO+HTgBFZEPl4PpA+BUsSVZy0NddneyqLk\n42Wey9omY9Q8WsdNQS5cbUvy0uG6WFoX7wKBgQDZ1jpW8pa0x2bZsQsm4vo+3G5CRnZlUp+XlWt2\ndDcp5dC0xD1zbs1dc0NcLeGDOTDv9FSl7hok42iHXXq8AygjEm/QcuwwQ1nC2HxmQP5holAiUs4D\nWHM8PWs3wFYPzE459EBoKTxeaeP/uWAn+he8q7d5uWvSZlEcANs/6e77eQKBgD21Ar0hfFfj7mK8\n9E0FeRZBsqK3omkfnhcYgZC11Xa2SgT1yvs2Va2n0RcdM5kncr3eBZav2GYOhhAdwyBM55XuE/sO\neokDVutNeuZ6d5fqV96TRaRBpvgfTvvRwxZ9hvKF4Vz+9wfn/JvCwANaKmegF6ejs7pvmF3whq2k\ndrZVAoGAX5YxQ5XMTD0QbMAl7/6qp6S58xNoVdfCkmkj1ZLKaHKIjS/benkKGlySVQVPexPfnkZx\np/Vv9yyphBoudiTBS9Uog66ueLYZqpgxlM/6OhYg86Gm3U2ycvMxYjBM1NFiyze21AqAhI+HX+Ot\nmraV2/guSgDgZAhukRZzeQ2RucI=\n-----END PRIVATE KEY-----";
+v94 = <io.netty.util.CharsetUtil: java.nio.charset.Charset US_ASCII>;
+v95 = virtualinvoke v93.<java.lang.String: byte[] getBytes(java.nio.charset.Charset)>(v94);
+v96 = staticinvoke <io.netty.handler.ssl.PemPrivateKey: io.netty.handler.ssl.PemPrivateKey valueOf(byte[])>(v95);
+label37:
+staticinvoke <io.netty.internal.tcnative.SSLContext: void setCertificateCallback(long,io.netty.internal.tcnative.CertificateCallback)>(v62, null);
+v97 = staticinvoke <io.netty.handler.ssl.OpenSsl: java.security.cert.X509Certificate selfSignedCertificate()>();
+v98 = <io.netty.buffer.ByteBufAllocator: io.netty.buffer.ByteBufAllocator DEFAULT>;
+v99 = newarray (java.security.cert.X509Certificate)[1];
+v99[0] = v97;
+v63 = staticinvoke <io.netty.handler.ssl.ReferenceCountedOpenSslContext: long toBIO(io.netty.buffer.ByteBufAllocator,java.security.cert.X509Certificate[])>(v98, v99);
+v65 = staticinvoke <io.netty.internal.tcnative.SSL: long parseX509Chain(long)>(v63);
+v100 = <io.netty.buffer.UnpooledByteBufAllocator: io.netty.buffer.UnpooledByteBufAllocator DEFAULT>;
+v101 = interfaceinvoke v96.<io.netty.handler.ssl.PemEncoded: io.netty.handler.ssl.PemEncoded retain()>();
+v64 = staticinvoke <io.netty.handler.ssl.ReferenceCountedOpenSslContext: long toBIO(io.netty.buffer.ByteBufAllocator,io.netty.handler.ssl.PemEncoded)>(v100, v101);
+v66 = staticinvoke <io.netty.internal.tcnative.SSL: long parsePrivateKey(long,java.lang.String)>(v64, null);
+staticinvoke <io.netty.internal.tcnative.SSL: void setKeyMaterial(long,long,long)>(v82, v65, v66);
+v37 = 1;
+label38:
+v102 = staticinvoke <io.netty.util.internal.SystemPropertyUtil: boolean contains(java.lang.String)>("io.netty.handler.ssl.openssl.useKeyManagerFactory");
+v103 = <io.netty.handler.ssl.OpenSsl: boolean IS_BORINGSSL>;
+if v103 != 0 goto label39;
+v38 = staticinvoke <io.netty.util.internal.SystemPropertyUtil: boolean getBoolean(java.lang.String,boolean)>("io.netty.handler.ssl.openssl.useKeyManagerFactory", 1);
+if v102 == 0 goto label42;
+v104 = <io.netty.handler.ssl.OpenSsl: io.netty.util.internal.logging.InternalLogger logger>;
+interfaceinvoke v104.<io.netty.util.internal.logging.InternalLogger: void info(java.lang.String)>("System property \'io.netty.handler.ssl.openssl.useKeyManagerFactory\' is deprecated and so will be ignored in the future");
+goto label42;
+label39:
+v38 = 1;
+if v102 == 0 goto label42;
+v105 = <io.netty.handler.ssl.OpenSsl: io.netty.util.internal.logging.InternalLogger logger>;
+interfaceinvoke v105.<io.netty.util.internal.logging.InternalLogger: void info(java.lang.String)>("System property \'io.netty.handler.ssl.openssl.useKeyManagerFactory\' is deprecated and will be ignored when using BoringSSL");
+label40:
+goto label42;
+label41:
+v106 := @caughtexception;
+v107 = <io.netty.handler.ssl.OpenSsl: io.netty.util.internal.logging.InternalLogger logger>;
+interfaceinvoke v107.<io.netty.util.internal.logging.InternalLogger: void debug(java.lang.String)>("Failed to get useKeyManagerFactory system property.");
+label42:
+interfaceinvoke v96.<io.netty.handler.ssl.PemEncoded: boolean release()>();
+goto label46;
+label43:
+v108 := @caughtexception;
+v109 = <io.netty.handler.ssl.OpenSsl: io.netty.util.internal.logging.InternalLogger logger>;
+interfaceinvoke v109.<io.netty.util.internal.logging.InternalLogger: void debug(java.lang.String)>("KeyManagerFactory not supported.");
+label44:
+interfaceinvoke v96.<io.netty.handler.ssl.PemEncoded: boolean release()>();
+goto label46;
+label45:
+v110 := @caughtexception;
+interfaceinvoke v96.<io.netty.handler.ssl.PemEncoded: boolean release()>();
+throw v110;
+label46:
+staticinvoke <io.netty.internal.tcnative.SSL: void freeSSL(long)>(v82);
+v111 = v63 cmp 0L;
+if v111 == 0 goto label47;
+staticinvoke <io.netty.internal.tcnative.SSL: void freeBIO(long)>(v63);
+label47:
+v112 = v64 cmp 0L;
+if v112 == 0 goto label48;
+staticinvoke <io.netty.internal.tcnative.SSL: void freeBIO(long)>(v64);
+label48:
+v113 = v65 cmp 0L;
+if v113 == 0 goto label49;
+staticinvoke <io.netty.internal.tcnative.SSL: void freeX509Chain(long)>(v65);
+label49:
+v114 = v66 cmp 0L;
+if v114 == 0 goto label55;
+staticinvoke <io.netty.internal.tcnative.SSL: void freePrivateKey(long)>(v66);
+goto label55;
+label50:
+v115 := @caughtexception;
+staticinvoke <io.netty.internal.tcnative.SSL: void freeSSL(long)>(v82);
+v116 = v63 cmp 0L;
+if v116 == 0 goto label51;
+staticinvoke <io.netty.internal.tcnative.SSL: void freeBIO(long)>(v63);
+label51:
+v117 = v64 cmp 0L;
+if v117 == 0 goto label52;
+staticinvoke <io.netty.internal.tcnative.SSL: void freeBIO(long)>(v64);
+label52:
+v118 = v65 cmp 0L;
+if v118 == 0 goto label53;
+staticinvoke <io.netty.internal.tcnative.SSL: void freeX509Chain(long)>(v65);
+label53:
+v119 = v66 cmp 0L;
+if v119 == 0 goto label54;
+staticinvoke <io.netty.internal.tcnative.SSL: void freePrivateKey(long)>(v66);
+label54:
+throw v115;
+label55:
+v120 = staticinvoke <io.netty.util.internal.SystemPropertyUtil: java.lang.String get(java.lang.String,java.lang.String)>("jdk.tls.namedGroups", null);
+if v120 == null goto label63;
+v121 = virtualinvoke v120.<java.lang.String: java.lang.String[] split(java.lang.String)>(",");
+v122 = new java.util.LinkedHashSet;
+v123 = lengthof v121;
+specialinvoke v122.<java.util.LinkedHashSet: void <init>(int)>(v123);
+v124 = new java.util.LinkedHashSet;
+v125 = lengthof v121;
+specialinvoke v124.<java.util.LinkedHashSet: void <init>(int)>(v125);
+v126 = new java.util.LinkedHashSet;
+specialinvoke v126.<java.util.LinkedHashSet: void <init>()>();
+v127 = lengthof v121;
+v128 = 0;
+label56:
+if v128 >= v127 goto label59;
+v129 = v121[v128];
+v130 = staticinvoke <io.netty.handler.ssl.GroupsConverter: java.lang.String toOpenSsl(java.lang.String)>(v129);
+v131 = newarray (java.lang.String)[1];
+v131[0] = v130;
+v132 = staticinvoke <io.netty.internal.tcnative.SSLContext: boolean setCurvesList(long,java.lang.String[])>(v62, v131);
+if v132 == 0 goto label57;
+interfaceinvoke v124.<java.util.Set: boolean add(java.lang.Object)>(v130);
+interfaceinvoke v122.<java.util.Set: boolean add(java.lang.Object)>(v129);
+goto label58;
+label57:
+interfaceinvoke v126.<java.util.Set: boolean add(java.lang.Object)>(v129);
+label58:
+v128 = v128 + 1;
+goto label56;
+label59:
+v133 = interfaceinvoke v122.<java.util.Set: boolean isEmpty()>();
+if v133 == 0 goto label60;
+v134 = <io.netty.handler.ssl.OpenSsl: io.netty.util.internal.logging.InternalLogger logger>;
+v135 = <io.netty.util.internal.EmptyArrays: java.lang.String[] EMPTY_STRINGS>;
+v136 = interfaceinvoke v126.<java.util.Set: java.lang.Object[] toArray(java.lang.Object[])>(v135);
+v137 = staticinvoke <java.util.Arrays: java.lang.String toString(java.lang.Object[])>(v136);
+v138 = <io.netty.handler.ssl.OpenSsl: java.lang.String[] DEFAULT_NAMED_GROUPS>;
+v139 = staticinvoke <java.util.Arrays: java.lang.String toString(java.lang.Object[])>(v138);
+interfaceinvoke v134.<io.netty.util.internal.logging.InternalLogger: void info(java.lang.String,java.lang.Object,java.lang.Object)>("All configured namedGroups are not supported: {}. Use default: {}.", v137, v139);
+goto label64;
+label60:
+v140 = <io.netty.util.internal.EmptyArrays: java.lang.String[] EMPTY_STRINGS>;
+v141 = interfaceinvoke v122.<java.util.Set: java.lang.Object[] toArray(java.lang.Object[])>(v140);
+v142 = interfaceinvoke v126.<java.util.Set: boolean isEmpty()>();
+if v142 == 0 goto label61;
+v143 = <io.netty.handler.ssl.OpenSsl: io.netty.util.internal.logging.InternalLogger logger>;
+v144 = staticinvoke <java.util.Arrays: java.lang.String toString(java.lang.Object[])>(v141);
+interfaceinvoke v143.<io.netty.util.internal.logging.InternalLogger: void info(java.lang.String,java.lang.Object)>("Using configured namedGroups -D \'jdk.tls.namedGroup\': {} ", v144);
+goto label62;
+label61:
+v145 = <io.netty.handler.ssl.OpenSsl: io.netty.util.internal.logging.InternalLogger logger>;
+v146 = staticinvoke <java.util.Arrays: java.lang.String toString(java.lang.Object[])>(v141);
+v147 = <io.netty.util.internal.EmptyArrays: java.lang.String[] EMPTY_STRINGS>;
+v148 = interfaceinvoke v126.<java.util.Set: java.lang.Object[] toArray(java.lang.Object[])>(v147);
+v149 = staticinvoke <java.util.Arrays: java.lang.String toString(java.lang.Object[])>(v148);
+interfaceinvoke v145.<io.netty.util.internal.logging.InternalLogger: void info(java.lang.String,java.lang.Object,java.lang.Object)>("Using supported configured namedGroups: {}. Unsupported namedGroups: {}. ", v146, v149);
+label62:
+v150 = <io.netty.util.internal.EmptyArrays: java.lang.String[] EMPTY_STRINGS>;
+v151 = interfaceinvoke v124.<java.util.Set: java.lang.Object[] toArray(java.lang.Object[])>(v150);
+goto label64;
+label63:
+v151 = v42;
+label64:
+staticinvoke <io.netty.internal.tcnative.SSLContext: int free(long)>(v62);
+goto label67;
+label65:
+v152 := @caughtexception;
+staticinvoke <io.netty.internal.tcnative.SSLContext: int free(long)>(v62);
+throw v152;
+label66:
+v153 := @caughtexception;
+v154 = <io.netty.handler.ssl.OpenSsl: io.netty.util.internal.logging.InternalLogger logger>;
+interfaceinvoke v154.<io.netty.util.internal.logging.InternalLogger: void warn(java.lang.String,java.lang.Throwable)>("Failed to get the list of available OpenSSL cipher suites.", v153);
+label67:
+<io.netty.handler.ssl.OpenSsl: java.lang.String[] NAMED_GROUPS> = v151;
+v155 = staticinvoke <java.util.Collections: java.util.Set unmodifiableSet(java.util.Set)>(v36);
+<io.netty.handler.ssl.OpenSsl: java.util.Set AVAILABLE_OPENSSL_CIPHER_SUITES> = v155;
+v156 = new java.util.LinkedHashSet;
+v157 = <io.netty.handler.ssl.OpenSsl: java.util.Set AVAILABLE_OPENSSL_CIPHER_SUITES>;
+v158 = interfaceinvoke v157.<java.util.Set: int size()>();
+v159 = v158 * 2;
+specialinvoke v156.<java.util.LinkedHashSet: void <init>(int)>(v159);
+v160 = <io.netty.handler.ssl.OpenSsl: java.util.Set AVAILABLE_OPENSSL_CIPHER_SUITES>;
+v161 = interfaceinvoke v160.<java.util.Set: java.util.Iterator iterator()>();
+label68:
+v162 = interfaceinvoke v161.<java.util.Iterator: boolean hasNext()>();
+if v162 == 0 goto label70;
+v163 = interfaceinvoke v161.<java.util.Iterator: java.lang.Object next()>();
+v164 = staticinvoke <io.netty.handler.ssl.SslUtils: boolean isTLSv13Cipher(java.lang.String)>(v163);
+if v164 != 0 goto label69;
+v165 = staticinvoke <io.netty.handler.ssl.CipherSuiteConverter: java.lang.String toJava(java.lang.String,java.lang.String)>(v163, "TLS");
+interfaceinvoke v156.<java.util.Set: boolean add(java.lang.Object)>(v165);
+v166 = staticinvoke <io.netty.handler.ssl.CipherSuiteConverter: java.lang.String toJava(java.lang.String,java.lang.String)>(v163, "SSL");
+interfaceinvoke v156.<java.util.Set: boolean add(java.lang.Object)>(v166);
+goto label68;
+label69:
+interfaceinvoke v156.<java.util.Set: boolean add(java.lang.Object)>(v163);
+goto label68;
+label70:
+v167 = <io.netty.handler.ssl.SslUtils: java.lang.String[] DEFAULT_CIPHER_SUITES>;
+staticinvoke <io.netty.handler.ssl.SslUtils: void addIfSupported(java.util.Set,java.util.List,java.lang.String[])>(v156, v35, v167);
+v168 = <io.netty.handler.ssl.SslUtils: java.lang.String[] TLSV13_CIPHER_SUITES>;
+staticinvoke <io.netty.handler.ssl.SslUtils: void addIfSupported(java.util.Set,java.util.List,java.lang.String[])>(v156, v35, v168);
+v169 = <io.netty.handler.ssl.OpenSsl: java.lang.String[] EXTRA_SUPPORTED_TLS_1_3_CIPHERS>;
+staticinvoke <io.netty.handler.ssl.SslUtils: void addIfSupported(java.util.Set,java.util.List,java.lang.String[])>(v156, v35, v169);
+staticinvoke <io.netty.handler.ssl.SslUtils: void useFallbackCiphersIfDefaultIsEmpty(java.util.List,java.lang.Iterable)>(v35, v156);
+v170 = staticinvoke <java.util.Collections: java.util.List unmodifiableList(java.util.List)>(v35);
+<io.netty.handler.ssl.OpenSsl: java.util.List DEFAULT_CIPHERS> = v170;
+v171 = staticinvoke <java.util.Collections: java.util.Set unmodifiableSet(java.util.Set)>(v156);
+<io.netty.handler.ssl.OpenSsl: java.util.Set AVAILABLE_JAVA_CIPHER_SUITES> = v171;
+v172 = new java.util.LinkedHashSet;
+v173 = <io.netty.handler.ssl.OpenSsl: java.util.Set AVAILABLE_OPENSSL_CIPHER_SUITES>;
+v174 = interfaceinvoke v173.<java.util.Set: int size()>();
+v175 = <io.netty.handler.ssl.OpenSsl: java.util.Set AVAILABLE_JAVA_CIPHER_SUITES>;
+v176 = interfaceinvoke v175.<java.util.Set: int size()>();
+v177 = v174 + v176;
+specialinvoke v172.<java.util.LinkedHashSet: void <init>(int)>(v177);
+v178 = <io.netty.handler.ssl.OpenSsl: java.util.Set AVAILABLE_OPENSSL_CIPHER_SUITES>;
+interfaceinvoke v172.<java.util.Set: boolean addAll(java.util.Collection)>(v178);
+v179 = <io.netty.handler.ssl.OpenSsl: java.util.Set AVAILABLE_JAVA_CIPHER_SUITES>;
+interfaceinvoke v172.<java.util.Set: boolean addAll(java.util.Collection)>(v179);
+<io.netty.handler.ssl.OpenSsl: java.util.Set AVAILABLE_CIPHER_SUITES> = v172;
+<io.netty.handler.ssl.OpenSsl: boolean SUPPORTS_KEYMANAGER_FACTORY> = v37;
+<io.netty.handler.ssl.OpenSsl: boolean USE_KEYMANAGER_FACTORY> = v38;
+v180 = new java.util.LinkedHashSet;
+specialinvoke v180.<java.util.LinkedHashSet: void <init>(int)>(6);
+interfaceinvoke v180.<java.util.Set: boolean add(java.lang.Object)>("SSLv2Hello");
+v181 = <io.netty.internal.tcnative.SSL: int SSL_OP_NO_SSLv2>;
+v182 = staticinvoke <io.netty.handler.ssl.OpenSsl: boolean doesSupportProtocol(int,int)>(1, v181);
+if v182 == 0 goto label71;
+interfaceinvoke v180.<java.util.Set: boolean add(java.lang.Object)>("SSLv2");
+label71:
+v183 = <io.netty.internal.tcnative.SSL: int SSL_OP_NO_SSLv3>;
+v184 = staticinvoke <io.netty.handler.ssl.OpenSsl: boolean doesSupportProtocol(int,int)>(2, v183);
+if v184 == 0 goto label72;
+interfaceinvoke v180.<java.util.Set: boolean add(java.lang.Object)>("SSLv3");
+label72:
+v185 = <io.netty.internal.tcnative.SSL: int SSL_OP_NO_TLSv1>;
+v186 = staticinvoke <io.netty.handler.ssl.OpenSsl: boolean doesSupportProtocol(int,int)>(4, v185);
+if v186 == 0 goto label73;
+interfaceinvoke v180.<java.util.Set: boolean add(java.lang.Object)>("TLSv1");
+label73:
+v187 = <io.netty.internal.tcnative.SSL: int SSL_OP_NO_TLSv1_1>;
+v188 = staticinvoke <io.netty.handler.ssl.OpenSsl: boolean doesSupportProtocol(int,int)>(8, v187);
+if v188 == 0 goto label74;
+interfaceinvoke v180.<java.util.Set: boolean add(java.lang.Object)>("TLSv1.1");
+label74:
+v189 = <io.netty.internal.tcnative.SSL: int SSL_OP_NO_TLSv1_2>;
+v190 = staticinvoke <io.netty.handler.ssl.OpenSsl: boolean doesSupportProtocol(int,int)>(16, v189);
+if v190 == 0 goto label75;
+interfaceinvoke v180.<java.util.Set: boolean add(java.lang.Object)>("TLSv1.2");
+label75:
+if v39 == 0 goto label76;
+v191 = <io.netty.internal.tcnative.SSL: int SSL_OP_NO_TLSv1_3>;
+v192 = staticinvoke <io.netty.handler.ssl.OpenSsl: boolean doesSupportProtocol(int,int)>(32, v191);
+if v192 == 0 goto label76;
+interfaceinvoke v180.<java.util.Set: boolean add(java.lang.Object)>("TLSv1.3");
+<io.netty.handler.ssl.OpenSsl: boolean TLSV13_SUPPORTED> = 1;
+goto label77;
+label76:
+<io.netty.handler.ssl.OpenSsl: boolean TLSV13_SUPPORTED> = 0;
+label77:
+v193 = staticinvoke <java.util.Collections: java.util.Set unmodifiableSet(java.util.Set)>(v180);
+<io.netty.handler.ssl.OpenSsl: java.util.Set SUPPORTED_PROTOCOLS_SET> = v193;
+v194 = staticinvoke <io.netty.handler.ssl.OpenSsl: boolean doesSupportOcsp()>();
+<io.netty.handler.ssl.OpenSsl: boolean SUPPORTS_OCSP> = v194;
+v195 = <io.netty.handler.ssl.OpenSsl: io.netty.util.internal.logging.InternalLogger logger>;
+v196 = interfaceinvoke v195.<io.netty.util.internal.logging.InternalLogger: boolean isDebugEnabled()>();
+if v196 == 0 goto label79;
+v197 = <io.netty.handler.ssl.OpenSsl: io.netty.util.internal.logging.InternalLogger logger>;
+v198 = <io.netty.handler.ssl.OpenSsl: java.util.Set SUPPORTED_PROTOCOLS_SET>;
+interfaceinvoke v197.<io.netty.util.internal.logging.InternalLogger: void debug(java.lang.String,java.lang.Object)>("Supported protocols (OpenSSL): {} ", v198);
+v199 = <io.netty.handler.ssl.OpenSsl: io.netty.util.internal.logging.InternalLogger logger>;
+v200 = <io.netty.handler.ssl.OpenSsl: java.util.List DEFAULT_CIPHERS>;
+interfaceinvoke v199.<io.netty.util.internal.logging.InternalLogger: void debug(java.lang.String,java.lang.Object)>("Default cipher suites (OpenSSL): {}", v200);
+goto label79;
+label78:
+v201 = staticinvoke <java.util.Collections: java.util.List emptyList()>();
+<io.netty.handler.ssl.OpenSsl: java.util.List DEFAULT_CIPHERS> = v201;
+v202 = staticinvoke <java.util.Collections: java.util.Set emptySet()>();
+<io.netty.handler.ssl.OpenSsl: java.util.Set AVAILABLE_OPENSSL_CIPHER_SUITES> = v202;
+v203 = staticinvoke <java.util.Collections: java.util.Set emptySet()>();
+<io.netty.handler.ssl.OpenSsl: java.util.Set AVAILABLE_JAVA_CIPHER_SUITES> = v203;
+v204 = staticinvoke <java.util.Collections: java.util.Set emptySet()>();
+<io.netty.handler.ssl.OpenSsl: java.util.Set AVAILABLE_CIPHER_SUITES> = v204;
+<io.netty.handler.ssl.OpenSsl: boolean SUPPORTS_KEYMANAGER_FACTORY> = 0;
+<io.netty.handler.ssl.OpenSsl: boolean USE_KEYMANAGER_FACTORY> = 0;
+v205 = staticinvoke <java.util.Collections: java.util.Set emptySet()>();
+<io.netty.handler.ssl.OpenSsl: java.util.Set SUPPORTED_PROTOCOLS_SET> = v205;
+<io.netty.handler.ssl.OpenSsl: boolean SUPPORTS_OCSP> = 0;
+<io.netty.handler.ssl.OpenSsl: boolean TLSV13_SUPPORTED> = 0;
+<io.netty.handler.ssl.OpenSsl: boolean IS_BORINGSSL> = 0;
+v206 = <io.netty.util.internal.EmptyArrays: java.lang.String[] EMPTY_STRINGS>;
+<io.netty.handler.ssl.OpenSsl: java.lang.String[] EXTRA_SUPPORTED_TLS_1_3_CIPHERS> = v206;
+<io.netty.handler.ssl.OpenSsl: java.lang.String EXTRA_SUPPORTED_TLS_1_3_CIPHERS_STRING> = "";
+v207 = <io.netty.handler.ssl.OpenSsl: java.lang.String[] DEFAULT_NAMED_GROUPS>;
+<io.netty.handler.ssl.OpenSsl: java.lang.String[] NAMED_GROUPS> = v207;
+label79:
+return;
+catch java.lang.ClassNotFoundException from label03 to label04 with label05;
+catch java.lang.Throwable from label07 to label08 with label09;
+catch java.lang.Throwable from label10 to label13 with label14;
+catch java.lang.Exception from label24 to label28 with label29;
+catch java.lang.Throwable from label38 to label40 with label41;
+catch java.lang.Error from label37 to label42 with label43;
+catch java.lang.Throwable from label37 to label42 with label45;
+catch java.lang.Throwable from label43 to label44 with label45;
+catch java.lang.Throwable from label31 to label46 with label50;
+catch java.lang.Throwable from label23 to label64 with label65;
+catch java.lang.Exception from label22 to label66 with label66;
+}
+}

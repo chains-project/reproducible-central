@@ -1,0 +1,659 @@
+public abstract class io.netty.handler.traffic.AbstractTrafficShapingHandler extends io.netty.channel.ChannelDuplexHandler
+{
+private static final io.netty.util.internal.logging.InternalLogger logger;
+public static final long DEFAULT_CHECK_INTERVAL;
+public static final long DEFAULT_MAX_TIME;
+static final long DEFAULT_MAX_SIZE;
+static final long MINIMAL_WAIT;
+protected io.netty.handler.traffic.TrafficCounter trafficCounter;
+private volatile long writeLimit;
+private volatile long readLimit;
+protected volatile long maxTime;
+protected volatile long checkInterval;
+static final io.netty.util.AttributeKey READ_SUSPENDED;
+static final io.netty.util.AttributeKey REOPEN_TASK;
+volatile long maxWriteDelay;
+volatile long maxWriteSize;
+final int userDefinedWritabilityIndex;
+static final int CHANNEL_DEFAULT_USER_DEFINED_WRITABILITY_INDEX;
+static final int GLOBAL_DEFAULT_USER_DEFINED_WRITABILITY_INDEX;
+static final int GLOBALCHANNEL_DEFAULT_USER_DEFINED_WRITABILITY_INDEX;
+void setTrafficCounter(io.netty.handler.traffic.TrafficCounter)
+{
+io.netty.handler.traffic.TrafficCounter v1;
+io.netty.handler.traffic.AbstractTrafficShapingHandler v0;
+v0 := @this: io.netty.handler.traffic.AbstractTrafficShapingHandler;
+v1 := @parameter0: io.netty.handler.traffic.TrafficCounter;
+v0.<io.netty.handler.traffic.AbstractTrafficShapingHandler: io.netty.handler.traffic.TrafficCounter trafficCounter> = v1;
+return;
+}
+protected int userDefinedWritabilityIndex()
+{
+io.netty.handler.traffic.AbstractTrafficShapingHandler v0;
+v0 := @this: io.netty.handler.traffic.AbstractTrafficShapingHandler;
+return 1;
+}
+protected void <init>(long, long, long, long)
+{
+io.netty.handler.traffic.AbstractTrafficShapingHandler v0;
+int v6;
+long v1, v2, v3, v4, v5;
+v0 := @this: io.netty.handler.traffic.AbstractTrafficShapingHandler;
+v1 := @parameter0: long;
+v2 := @parameter1: long;
+v3 := @parameter2: long;
+v4 := @parameter3: long;
+specialinvoke v0.<io.netty.channel.ChannelDuplexHandler: void <init>()>();
+v0.<io.netty.handler.traffic.AbstractTrafficShapingHandler: long maxTime> = 15000L;
+v0.<io.netty.handler.traffic.AbstractTrafficShapingHandler: long checkInterval> = 1000L;
+v0.<io.netty.handler.traffic.AbstractTrafficShapingHandler: long maxWriteDelay> = 4000L;
+v0.<io.netty.handler.traffic.AbstractTrafficShapingHandler: long maxWriteSize> = 4194304L;
+v5 = staticinvoke <io.netty.util.internal.ObjectUtil: long checkPositive(long,java.lang.String)>(v4, "maxTime");
+v0.<io.netty.handler.traffic.AbstractTrafficShapingHandler: long maxTime> = v5;
+v6 = virtualinvoke v0.<io.netty.handler.traffic.AbstractTrafficShapingHandler: int userDefinedWritabilityIndex()>();
+v0.<io.netty.handler.traffic.AbstractTrafficShapingHandler: int userDefinedWritabilityIndex> = v6;
+v0.<io.netty.handler.traffic.AbstractTrafficShapingHandler: long writeLimit> = v1;
+v0.<io.netty.handler.traffic.AbstractTrafficShapingHandler: long readLimit> = v2;
+v0.<io.netty.handler.traffic.AbstractTrafficShapingHandler: long checkInterval> = v3;
+return;
+}
+protected void <init>(long, long, long)
+{
+io.netty.handler.traffic.AbstractTrafficShapingHandler v0;
+long v1, v2, v3;
+v0 := @this: io.netty.handler.traffic.AbstractTrafficShapingHandler;
+v1 := @parameter0: long;
+v2 := @parameter1: long;
+v3 := @parameter2: long;
+specialinvoke v0.<io.netty.handler.traffic.AbstractTrafficShapingHandler: void <init>(long,long,long,long)>(v1, v2, v3, 15000L);
+return;
+}
+protected void <init>(long, long)
+{
+long v1, v2;
+io.netty.handler.traffic.AbstractTrafficShapingHandler v0;
+v0 := @this: io.netty.handler.traffic.AbstractTrafficShapingHandler;
+v1 := @parameter0: long;
+v2 := @parameter1: long;
+specialinvoke v0.<io.netty.handler.traffic.AbstractTrafficShapingHandler: void <init>(long,long,long,long)>(v1, v2, 1000L, 15000L);
+return;
+}
+protected void <init>()
+{
+io.netty.handler.traffic.AbstractTrafficShapingHandler v0;
+v0 := @this: io.netty.handler.traffic.AbstractTrafficShapingHandler;
+specialinvoke v0.<io.netty.handler.traffic.AbstractTrafficShapingHandler: void <init>(long,long,long,long)>(0L, 0L, 1000L, 15000L);
+return;
+}
+protected void <init>(long)
+{
+long v1;
+io.netty.handler.traffic.AbstractTrafficShapingHandler v0;
+v0 := @this: io.netty.handler.traffic.AbstractTrafficShapingHandler;
+v1 := @parameter0: long;
+specialinvoke v0.<io.netty.handler.traffic.AbstractTrafficShapingHandler: void <init>(long,long,long,long)>(0L, 0L, v1, 15000L);
+return;
+}
+public void configure(long, long, long)
+{
+io.netty.handler.traffic.AbstractTrafficShapingHandler v0;
+long v1, v2, v3;
+v0 := @this: io.netty.handler.traffic.AbstractTrafficShapingHandler;
+v1 := @parameter0: long;
+v2 := @parameter1: long;
+v3 := @parameter2: long;
+virtualinvoke v0.<io.netty.handler.traffic.AbstractTrafficShapingHandler: void configure(long,long)>(v1, v2);
+virtualinvoke v0.<io.netty.handler.traffic.AbstractTrafficShapingHandler: void configure(long)>(v3);
+return;
+}
+public void configure(long, long)
+{
+io.netty.handler.traffic.TrafficCounter v3, v4;
+io.netty.handler.traffic.AbstractTrafficShapingHandler v0;
+long v1, v2, v5;
+v0 := @this: io.netty.handler.traffic.AbstractTrafficShapingHandler;
+v1 := @parameter0: long;
+v2 := @parameter1: long;
+v0.<io.netty.handler.traffic.AbstractTrafficShapingHandler: long writeLimit> = v1;
+v0.<io.netty.handler.traffic.AbstractTrafficShapingHandler: long readLimit> = v2;
+v3 = v0.<io.netty.handler.traffic.AbstractTrafficShapingHandler: io.netty.handler.traffic.TrafficCounter trafficCounter>;
+if v3 == null goto label1;
+v4 = v0.<io.netty.handler.traffic.AbstractTrafficShapingHandler: io.netty.handler.traffic.TrafficCounter trafficCounter>;
+v5 = staticinvoke <io.netty.handler.traffic.TrafficCounter: long milliSecondFromNano()>();
+virtualinvoke v4.<io.netty.handler.traffic.TrafficCounter: void resetAccounting(long)>(v5);
+label1:
+return;
+}
+public void configure(long)
+{
+io.netty.handler.traffic.TrafficCounter v2, v3;
+io.netty.handler.traffic.AbstractTrafficShapingHandler v0;
+long v1, v4;
+v0 := @this: io.netty.handler.traffic.AbstractTrafficShapingHandler;
+v1 := @parameter0: long;
+v0.<io.netty.handler.traffic.AbstractTrafficShapingHandler: long checkInterval> = v1;
+v2 = v0.<io.netty.handler.traffic.AbstractTrafficShapingHandler: io.netty.handler.traffic.TrafficCounter trafficCounter>;
+if v2 == null goto label1;
+v3 = v0.<io.netty.handler.traffic.AbstractTrafficShapingHandler: io.netty.handler.traffic.TrafficCounter trafficCounter>;
+v4 = v0.<io.netty.handler.traffic.AbstractTrafficShapingHandler: long checkInterval>;
+virtualinvoke v3.<io.netty.handler.traffic.TrafficCounter: void configure(long)>(v4);
+label1:
+return;
+}
+public long getWriteLimit()
+{
+long v1;
+io.netty.handler.traffic.AbstractTrafficShapingHandler v0;
+v0 := @this: io.netty.handler.traffic.AbstractTrafficShapingHandler;
+v1 = v0.<io.netty.handler.traffic.AbstractTrafficShapingHandler: long writeLimit>;
+return v1;
+}
+public void setWriteLimit(long)
+{
+io.netty.handler.traffic.TrafficCounter v2, v3;
+io.netty.handler.traffic.AbstractTrafficShapingHandler v0;
+long v1, v4;
+v0 := @this: io.netty.handler.traffic.AbstractTrafficShapingHandler;
+v1 := @parameter0: long;
+v0.<io.netty.handler.traffic.AbstractTrafficShapingHandler: long writeLimit> = v1;
+v2 = v0.<io.netty.handler.traffic.AbstractTrafficShapingHandler: io.netty.handler.traffic.TrafficCounter trafficCounter>;
+if v2 == null goto label1;
+v3 = v0.<io.netty.handler.traffic.AbstractTrafficShapingHandler: io.netty.handler.traffic.TrafficCounter trafficCounter>;
+v4 = staticinvoke <io.netty.handler.traffic.TrafficCounter: long milliSecondFromNano()>();
+virtualinvoke v3.<io.netty.handler.traffic.TrafficCounter: void resetAccounting(long)>(v4);
+label1:
+return;
+}
+public long getReadLimit()
+{
+long v1;
+io.netty.handler.traffic.AbstractTrafficShapingHandler v0;
+v0 := @this: io.netty.handler.traffic.AbstractTrafficShapingHandler;
+v1 = v0.<io.netty.handler.traffic.AbstractTrafficShapingHandler: long readLimit>;
+return v1;
+}
+public void setReadLimit(long)
+{
+io.netty.handler.traffic.TrafficCounter v2, v3;
+io.netty.handler.traffic.AbstractTrafficShapingHandler v0;
+long v1, v4;
+v0 := @this: io.netty.handler.traffic.AbstractTrafficShapingHandler;
+v1 := @parameter0: long;
+v0.<io.netty.handler.traffic.AbstractTrafficShapingHandler: long readLimit> = v1;
+v2 = v0.<io.netty.handler.traffic.AbstractTrafficShapingHandler: io.netty.handler.traffic.TrafficCounter trafficCounter>;
+if v2 == null goto label1;
+v3 = v0.<io.netty.handler.traffic.AbstractTrafficShapingHandler: io.netty.handler.traffic.TrafficCounter trafficCounter>;
+v4 = staticinvoke <io.netty.handler.traffic.TrafficCounter: long milliSecondFromNano()>();
+virtualinvoke v3.<io.netty.handler.traffic.TrafficCounter: void resetAccounting(long)>(v4);
+label1:
+return;
+}
+public long getCheckInterval()
+{
+long v1;
+io.netty.handler.traffic.AbstractTrafficShapingHandler v0;
+v0 := @this: io.netty.handler.traffic.AbstractTrafficShapingHandler;
+v1 = v0.<io.netty.handler.traffic.AbstractTrafficShapingHandler: long checkInterval>;
+return v1;
+}
+public void setCheckInterval(long)
+{
+io.netty.handler.traffic.TrafficCounter v2, v3;
+io.netty.handler.traffic.AbstractTrafficShapingHandler v0;
+long v1;
+v0 := @this: io.netty.handler.traffic.AbstractTrafficShapingHandler;
+v1 := @parameter0: long;
+v0.<io.netty.handler.traffic.AbstractTrafficShapingHandler: long checkInterval> = v1;
+v2 = v0.<io.netty.handler.traffic.AbstractTrafficShapingHandler: io.netty.handler.traffic.TrafficCounter trafficCounter>;
+if v2 == null goto label1;
+v3 = v0.<io.netty.handler.traffic.AbstractTrafficShapingHandler: io.netty.handler.traffic.TrafficCounter trafficCounter>;
+virtualinvoke v3.<io.netty.handler.traffic.TrafficCounter: void configure(long)>(v1);
+label1:
+return;
+}
+public void setMaxTimeWait(long)
+{
+long v1, v2;
+io.netty.handler.traffic.AbstractTrafficShapingHandler v0;
+v0 := @this: io.netty.handler.traffic.AbstractTrafficShapingHandler;
+v1 := @parameter0: long;
+v2 = staticinvoke <io.netty.util.internal.ObjectUtil: long checkPositive(long,java.lang.String)>(v1, "maxTime");
+v0.<io.netty.handler.traffic.AbstractTrafficShapingHandler: long maxTime> = v2;
+return;
+}
+public long getMaxTimeWait()
+{
+long v1;
+io.netty.handler.traffic.AbstractTrafficShapingHandler v0;
+v0 := @this: io.netty.handler.traffic.AbstractTrafficShapingHandler;
+v1 = v0.<io.netty.handler.traffic.AbstractTrafficShapingHandler: long maxTime>;
+return v1;
+}
+public long getMaxWriteDelay()
+{
+long v1;
+io.netty.handler.traffic.AbstractTrafficShapingHandler v0;
+v0 := @this: io.netty.handler.traffic.AbstractTrafficShapingHandler;
+v1 = v0.<io.netty.handler.traffic.AbstractTrafficShapingHandler: long maxWriteDelay>;
+return v1;
+}
+public void setMaxWriteDelay(long)
+{
+long v1, v2;
+io.netty.handler.traffic.AbstractTrafficShapingHandler v0;
+v0 := @this: io.netty.handler.traffic.AbstractTrafficShapingHandler;
+v1 := @parameter0: long;
+v2 = staticinvoke <io.netty.util.internal.ObjectUtil: long checkPositive(long,java.lang.String)>(v1, "maxWriteDelay");
+v0.<io.netty.handler.traffic.AbstractTrafficShapingHandler: long maxWriteDelay> = v2;
+return;
+}
+public long getMaxWriteSize()
+{
+long v1;
+io.netty.handler.traffic.AbstractTrafficShapingHandler v0;
+v0 := @this: io.netty.handler.traffic.AbstractTrafficShapingHandler;
+v1 = v0.<io.netty.handler.traffic.AbstractTrafficShapingHandler: long maxWriteSize>;
+return v1;
+}
+public void setMaxWriteSize(long)
+{
+long v1;
+io.netty.handler.traffic.AbstractTrafficShapingHandler v0;
+v0 := @this: io.netty.handler.traffic.AbstractTrafficShapingHandler;
+v1 := @parameter0: long;
+v0.<io.netty.handler.traffic.AbstractTrafficShapingHandler: long maxWriteSize> = v1;
+return;
+}
+protected void doAccounting(io.netty.handler.traffic.TrafficCounter)
+{
+io.netty.handler.traffic.TrafficCounter v1;
+io.netty.handler.traffic.AbstractTrafficShapingHandler v0;
+v0 := @this: io.netty.handler.traffic.AbstractTrafficShapingHandler;
+v1 := @parameter0: io.netty.handler.traffic.TrafficCounter;
+return;
+}
+void releaseReadSuspended(io.netty.channel.ChannelHandlerContext)
+{
+io.netty.channel.Channel v2;
+io.netty.util.AttributeKey v3;
+io.netty.channel.ChannelHandlerContext v1;
+io.netty.util.Attribute v4;
+io.netty.channel.ChannelConfig v6;
+io.netty.handler.traffic.AbstractTrafficShapingHandler v0;
+java.lang.Boolean v5;
+v0 := @this: io.netty.handler.traffic.AbstractTrafficShapingHandler;
+v1 := @parameter0: io.netty.channel.ChannelHandlerContext;
+v2 = interfaceinvoke v1.<io.netty.channel.ChannelHandlerContext: io.netty.channel.Channel channel()>();
+v3 = <io.netty.handler.traffic.AbstractTrafficShapingHandler: io.netty.util.AttributeKey READ_SUSPENDED>;
+v4 = interfaceinvoke v2.<io.netty.channel.Channel: io.netty.util.Attribute attr(io.netty.util.AttributeKey)>(v3);
+v5 = staticinvoke <java.lang.Boolean: java.lang.Boolean valueOf(boolean)>(0);
+interfaceinvoke v4.<io.netty.util.Attribute: void set(java.lang.Object)>(v5);
+v6 = interfaceinvoke v2.<io.netty.channel.Channel: io.netty.channel.ChannelConfig config()>();
+interfaceinvoke v6.<io.netty.channel.ChannelConfig: io.netty.channel.ChannelConfig setAutoRead(boolean)>(1);
+return;
+}
+public void channelRead(io.netty.channel.ChannelHandlerContext, java.lang.Object) throws java.lang.Exception
+{
+io.netty.handler.traffic.TrafficCounter v6;
+io.netty.util.AttributeKey v22, v25;
+byte v11, v5;
+io.netty.handler.traffic.AbstractTrafficShapingHandler$ReopenReadTimerTask v28;
+boolean v15, v17, v18, v20, v21, v32, v34, v35;
+io.netty.util.internal.logging.InternalLogger v14, v16, v31, v33;
+io.netty.util.concurrent.EventExecutor v29;
+long v10, v3, v4, v7, v8, v9;
+io.netty.channel.ChannelHandlerContext v1;
+java.lang.Boolean v24;
+java.lang.String v19, v36;
+io.netty.util.Attribute v23, v26;
+io.netty.handler.traffic.AbstractTrafficShapingHandler v0;
+io.netty.channel.Channel v12;
+java.util.concurrent.TimeUnit v30;
+io.netty.channel.ChannelConfig v13;
+java.lang.Object v2, v27;
+v0 := @this: io.netty.handler.traffic.AbstractTrafficShapingHandler;
+v1 := @parameter0: io.netty.channel.ChannelHandlerContext;
+v2 := @parameter1: java.lang.Object;
+v3 = virtualinvoke v0.<io.netty.handler.traffic.AbstractTrafficShapingHandler: long calculateSize(java.lang.Object)>(v2);
+v4 = staticinvoke <io.netty.handler.traffic.TrafficCounter: long milliSecondFromNano()>();
+v5 = v3 cmp 0L;
+if v5 <= 0 goto label3;
+v6 = v0.<io.netty.handler.traffic.AbstractTrafficShapingHandler: io.netty.handler.traffic.TrafficCounter trafficCounter>;
+v7 = v0.<io.netty.handler.traffic.AbstractTrafficShapingHandler: long readLimit>;
+v8 = v0.<io.netty.handler.traffic.AbstractTrafficShapingHandler: long maxTime>;
+v9 = virtualinvoke v6.<io.netty.handler.traffic.TrafficCounter: long readTimeToWait(long,long,long,long)>(v3, v7, v8, v4);
+v10 = virtualinvoke v0.<io.netty.handler.traffic.AbstractTrafficShapingHandler: long checkWaitReadTime(io.netty.channel.ChannelHandlerContext,long,long)>(v1, v9, v4);
+v11 = v10 cmp 10L;
+if v11 < 0 goto label3;
+v12 = interfaceinvoke v1.<io.netty.channel.ChannelHandlerContext: io.netty.channel.Channel channel()>();
+v13 = interfaceinvoke v12.<io.netty.channel.Channel: io.netty.channel.ChannelConfig config()>();
+v14 = <io.netty.handler.traffic.AbstractTrafficShapingHandler: io.netty.util.internal.logging.InternalLogger logger>;
+v15 = interfaceinvoke v14.<io.netty.util.internal.logging.InternalLogger: boolean isDebugEnabled()>();
+if v15 == 0 goto label1;
+v16 = <io.netty.handler.traffic.AbstractTrafficShapingHandler: io.netty.util.internal.logging.InternalLogger logger>;
+v17 = interfaceinvoke v13.<io.netty.channel.ChannelConfig: boolean isAutoRead()>();
+v18 = staticinvoke <io.netty.handler.traffic.AbstractTrafficShapingHandler: boolean isHandlerActive(io.netty.channel.ChannelHandlerContext)>(v1);
+v19 = dynamicinvoke "makeConcatWithConstants" <java.lang.String (long,boolean,boolean)>(v10, v17, v18) <java.lang.invoke.StringConcatFactory: java.lang.invoke.CallSite makeConcatWithConstants(java.lang.invoke.MethodHandles$Lookup,java.lang.String,java.lang.invoke.MethodType,java.lang.String,java.lang.Object[])>("Read suspend: \u0001:\u0001:\u0001");
+interfaceinvoke v16.<io.netty.util.internal.logging.InternalLogger: void debug(java.lang.String)>(v19);
+label1:
+v20 = interfaceinvoke v13.<io.netty.channel.ChannelConfig: boolean isAutoRead()>();
+if v20 == 0 goto label3;
+v21 = staticinvoke <io.netty.handler.traffic.AbstractTrafficShapingHandler: boolean isHandlerActive(io.netty.channel.ChannelHandlerContext)>(v1);
+if v21 == 0 goto label3;
+interfaceinvoke v13.<io.netty.channel.ChannelConfig: io.netty.channel.ChannelConfig setAutoRead(boolean)>(0);
+v22 = <io.netty.handler.traffic.AbstractTrafficShapingHandler: io.netty.util.AttributeKey READ_SUSPENDED>;
+v23 = interfaceinvoke v12.<io.netty.channel.Channel: io.netty.util.Attribute attr(io.netty.util.AttributeKey)>(v22);
+v24 = staticinvoke <java.lang.Boolean: java.lang.Boolean valueOf(boolean)>(1);
+interfaceinvoke v23.<io.netty.util.Attribute: void set(java.lang.Object)>(v24);
+v25 = <io.netty.handler.traffic.AbstractTrafficShapingHandler: io.netty.util.AttributeKey REOPEN_TASK>;
+v26 = interfaceinvoke v12.<io.netty.channel.Channel: io.netty.util.Attribute attr(io.netty.util.AttributeKey)>(v25);
+v27 = interfaceinvoke v26.<io.netty.util.Attribute: java.lang.Object get()>();
+if v27 != null goto label2;
+v28 = new io.netty.handler.traffic.AbstractTrafficShapingHandler$ReopenReadTimerTask;
+specialinvoke v28.<io.netty.handler.traffic.AbstractTrafficShapingHandler$ReopenReadTimerTask: void <init>(io.netty.channel.ChannelHandlerContext)>(v1);
+v27 = v28;
+interfaceinvoke v26.<io.netty.util.Attribute: void set(java.lang.Object)>(v28);
+label2:
+v29 = interfaceinvoke v1.<io.netty.channel.ChannelHandlerContext: io.netty.util.concurrent.EventExecutor executor()>();
+v30 = <java.util.concurrent.TimeUnit: java.util.concurrent.TimeUnit MILLISECONDS>;
+interfaceinvoke v29.<io.netty.util.concurrent.EventExecutor: io.netty.util.concurrent.ScheduledFuture schedule(java.lang.Runnable,long,java.util.concurrent.TimeUnit)>(v27, v10, v30);
+v31 = <io.netty.handler.traffic.AbstractTrafficShapingHandler: io.netty.util.internal.logging.InternalLogger logger>;
+v32 = interfaceinvoke v31.<io.netty.util.internal.logging.InternalLogger: boolean isDebugEnabled()>();
+if v32 == 0 goto label3;
+v33 = <io.netty.handler.traffic.AbstractTrafficShapingHandler: io.netty.util.internal.logging.InternalLogger logger>;
+v34 = interfaceinvoke v13.<io.netty.channel.ChannelConfig: boolean isAutoRead()>();
+v35 = staticinvoke <io.netty.handler.traffic.AbstractTrafficShapingHandler: boolean isHandlerActive(io.netty.channel.ChannelHandlerContext)>(v1);
+v36 = dynamicinvoke "makeConcatWithConstants" <java.lang.String (boolean,boolean,long)>(v34, v35, v10) <java.lang.invoke.StringConcatFactory: java.lang.invoke.CallSite makeConcatWithConstants(java.lang.invoke.MethodHandles$Lookup,java.lang.String,java.lang.invoke.MethodType,java.lang.String,java.lang.Object[])>("Suspend final status => \u0001:\u0001 will reopened at: \u0001");
+interfaceinvoke v33.<io.netty.util.internal.logging.InternalLogger: void debug(java.lang.String)>(v36);
+label3:
+virtualinvoke v0.<io.netty.handler.traffic.AbstractTrafficShapingHandler: void informReadOperation(io.netty.channel.ChannelHandlerContext,long)>(v1, v4);
+interfaceinvoke v1.<io.netty.channel.ChannelHandlerContext: io.netty.channel.ChannelHandlerContext fireChannelRead(java.lang.Object)>(v2);
+return;
+}
+public void handlerRemoved(io.netty.channel.ChannelHandlerContext) throws java.lang.Exception
+{
+io.netty.channel.Channel v2;
+io.netty.util.AttributeKey v3, v5;
+io.netty.channel.ChannelHandlerContext v1;
+io.netty.util.Attribute v6;
+io.netty.handler.traffic.AbstractTrafficShapingHandler v0;
+boolean v4;
+v0 := @this: io.netty.handler.traffic.AbstractTrafficShapingHandler;
+v1 := @parameter0: io.netty.channel.ChannelHandlerContext;
+v2 = interfaceinvoke v1.<io.netty.channel.ChannelHandlerContext: io.netty.channel.Channel channel()>();
+v3 = <io.netty.handler.traffic.AbstractTrafficShapingHandler: io.netty.util.AttributeKey REOPEN_TASK>;
+v4 = interfaceinvoke v2.<io.netty.channel.Channel: boolean hasAttr(io.netty.util.AttributeKey)>(v3);
+if v4 == 0 goto label1;
+v5 = <io.netty.handler.traffic.AbstractTrafficShapingHandler: io.netty.util.AttributeKey REOPEN_TASK>;
+v6 = interfaceinvoke v2.<io.netty.channel.Channel: io.netty.util.Attribute attr(io.netty.util.AttributeKey)>(v5);
+interfaceinvoke v6.<io.netty.util.Attribute: void set(java.lang.Object)>(null);
+label1:
+specialinvoke v0.<io.netty.channel.ChannelDuplexHandler: void handlerRemoved(io.netty.channel.ChannelHandlerContext)>(v1);
+return;
+}
+long checkWaitReadTime(io.netty.channel.ChannelHandlerContext, long, long)
+{
+io.netty.channel.ChannelHandlerContext v1;
+io.netty.handler.traffic.AbstractTrafficShapingHandler v0;
+long v2, v3;
+v0 := @this: io.netty.handler.traffic.AbstractTrafficShapingHandler;
+v1 := @parameter0: io.netty.channel.ChannelHandlerContext;
+v2 := @parameter1: long;
+v3 := @parameter2: long;
+return v2;
+}
+void informReadOperation(io.netty.channel.ChannelHandlerContext, long)
+{
+io.netty.channel.ChannelHandlerContext v1;
+long v2;
+io.netty.handler.traffic.AbstractTrafficShapingHandler v0;
+v0 := @this: io.netty.handler.traffic.AbstractTrafficShapingHandler;
+v1 := @parameter0: io.netty.channel.ChannelHandlerContext;
+v2 := @parameter1: long;
+return;
+}
+protected static boolean isHandlerActive(io.netty.channel.ChannelHandlerContext)
+{
+io.netty.util.AttributeKey v2;
+io.netty.util.Attribute v3;
+io.netty.channel.Channel v1;
+io.netty.channel.ChannelHandlerContext v0;
+java.lang.Boolean v5;
+java.lang.Object v4;
+boolean v6, v7;
+v0 := @parameter0: io.netty.channel.ChannelHandlerContext;
+v1 = interfaceinvoke v0.<io.netty.channel.ChannelHandlerContext: io.netty.channel.Channel channel()>();
+v2 = <io.netty.handler.traffic.AbstractTrafficShapingHandler: io.netty.util.AttributeKey READ_SUSPENDED>;
+v3 = interfaceinvoke v1.<io.netty.channel.Channel: io.netty.util.Attribute attr(io.netty.util.AttributeKey)>(v2);
+v4 = interfaceinvoke v3.<io.netty.util.Attribute: java.lang.Object get()>();
+if v4 == null goto label1;
+v5 = <java.lang.Boolean: java.lang.Boolean FALSE>;
+v6 = virtualinvoke v5.<java.lang.Boolean: boolean equals(java.lang.Object)>(v4);
+if v6 == 0 goto label2;
+label1:
+v7 = 1;
+goto label3;
+label2:
+v7 = 0;
+label3:
+return v7;
+}
+public void read(io.netty.channel.ChannelHandlerContext)
+{
+io.netty.channel.ChannelHandlerContext v1;
+io.netty.handler.traffic.AbstractTrafficShapingHandler v0;
+boolean v2;
+v0 := @this: io.netty.handler.traffic.AbstractTrafficShapingHandler;
+v1 := @parameter0: io.netty.channel.ChannelHandlerContext;
+v2 = staticinvoke <io.netty.handler.traffic.AbstractTrafficShapingHandler: boolean isHandlerActive(io.netty.channel.ChannelHandlerContext)>(v1);
+if v2 == 0 goto label1;
+interfaceinvoke v1.<io.netty.channel.ChannelHandlerContext: io.netty.channel.ChannelHandlerContext read()>();
+label1:
+return;
+}
+public void write(io.netty.channel.ChannelHandlerContext, java.lang.Object, io.netty.channel.ChannelPromise) throws java.lang.Exception
+{
+io.netty.handler.traffic.TrafficCounter v7;
+long v10, v4, v5, v8, v9;
+io.netty.channel.ChannelHandlerContext v1;
+byte v11, v6;
+io.netty.channel.ChannelPromise v3;
+java.lang.String v19;
+boolean v13, v17, v18;
+io.netty.handler.traffic.AbstractTrafficShapingHandler v0;
+io.netty.channel.Channel v15;
+io.netty.channel.ChannelConfig v16;
+io.netty.util.internal.logging.InternalLogger v12, v14;
+java.lang.Object v2;
+v0 := @this: io.netty.handler.traffic.AbstractTrafficShapingHandler;
+v1 := @parameter0: io.netty.channel.ChannelHandlerContext;
+v2 := @parameter1: java.lang.Object;
+v3 := @parameter2: io.netty.channel.ChannelPromise;
+v4 = virtualinvoke v0.<io.netty.handler.traffic.AbstractTrafficShapingHandler: long calculateSize(java.lang.Object)>(v2);
+v5 = staticinvoke <io.netty.handler.traffic.TrafficCounter: long milliSecondFromNano()>();
+v6 = v4 cmp 0L;
+if v6 <= 0 goto label2;
+v7 = v0.<io.netty.handler.traffic.AbstractTrafficShapingHandler: io.netty.handler.traffic.TrafficCounter trafficCounter>;
+v8 = v0.<io.netty.handler.traffic.AbstractTrafficShapingHandler: long writeLimit>;
+v9 = v0.<io.netty.handler.traffic.AbstractTrafficShapingHandler: long maxTime>;
+v10 = virtualinvoke v7.<io.netty.handler.traffic.TrafficCounter: long writeTimeToWait(long,long,long,long)>(v4, v8, v9, v5);
+v11 = v10 cmp 10L;
+if v11 < 0 goto label2;
+v12 = <io.netty.handler.traffic.AbstractTrafficShapingHandler: io.netty.util.internal.logging.InternalLogger logger>;
+v13 = interfaceinvoke v12.<io.netty.util.internal.logging.InternalLogger: boolean isDebugEnabled()>();
+if v13 == 0 goto label1;
+v14 = <io.netty.handler.traffic.AbstractTrafficShapingHandler: io.netty.util.internal.logging.InternalLogger logger>;
+v15 = interfaceinvoke v1.<io.netty.channel.ChannelHandlerContext: io.netty.channel.Channel channel()>();
+v16 = interfaceinvoke v15.<io.netty.channel.Channel: io.netty.channel.ChannelConfig config()>();
+v17 = interfaceinvoke v16.<io.netty.channel.ChannelConfig: boolean isAutoRead()>();
+v18 = staticinvoke <io.netty.handler.traffic.AbstractTrafficShapingHandler: boolean isHandlerActive(io.netty.channel.ChannelHandlerContext)>(v1);
+v19 = dynamicinvoke "makeConcatWithConstants" <java.lang.String (long,boolean,boolean)>(v10, v17, v18) <java.lang.invoke.StringConcatFactory: java.lang.invoke.CallSite makeConcatWithConstants(java.lang.invoke.MethodHandles$Lookup,java.lang.String,java.lang.invoke.MethodType,java.lang.String,java.lang.Object[])>("Write suspend: \u0001:\u0001:\u0001");
+interfaceinvoke v14.<io.netty.util.internal.logging.InternalLogger: void debug(java.lang.String)>(v19);
+label1:
+virtualinvoke v0.<io.netty.handler.traffic.AbstractTrafficShapingHandler: void submitWrite(io.netty.channel.ChannelHandlerContext,java.lang.Object,long,long,long,io.netty.channel.ChannelPromise)>(v1, v2, v4, v10, v5, v3);
+return;
+label2:
+virtualinvoke v0.<io.netty.handler.traffic.AbstractTrafficShapingHandler: void submitWrite(io.netty.channel.ChannelHandlerContext,java.lang.Object,long,long,long,io.netty.channel.ChannelPromise)>(v1, v2, v4, 0L, v5, v3);
+return;
+}
+protected void submitWrite(io.netty.channel.ChannelHandlerContext, java.lang.Object, long, io.netty.channel.ChannelPromise)
+{
+io.netty.channel.ChannelHandlerContext v1;
+io.netty.channel.ChannelPromise v4;
+io.netty.handler.traffic.AbstractTrafficShapingHandler v0;
+java.lang.Object v2;
+long v3, v5, v6;
+v0 := @this: io.netty.handler.traffic.AbstractTrafficShapingHandler;
+v1 := @parameter0: io.netty.channel.ChannelHandlerContext;
+v2 := @parameter1: java.lang.Object;
+v3 := @parameter2: long;
+v4 := @parameter3: io.netty.channel.ChannelPromise;
+v5 = virtualinvoke v0.<io.netty.handler.traffic.AbstractTrafficShapingHandler: long calculateSize(java.lang.Object)>(v2);
+v6 = staticinvoke <io.netty.handler.traffic.TrafficCounter: long milliSecondFromNano()>();
+virtualinvoke v0.<io.netty.handler.traffic.AbstractTrafficShapingHandler: void submitWrite(io.netty.channel.ChannelHandlerContext,java.lang.Object,long,long,long,io.netty.channel.ChannelPromise)>(v1, v2, v5, v3, v6, v4);
+return;
+}
+abstract void submitWrite(io.netty.channel.ChannelHandlerContext, java.lang.Object, long, long, long, io.netty.channel.ChannelPromise);
+public void channelRegistered(io.netty.channel.ChannelHandlerContext) throws java.lang.Exception
+{
+io.netty.channel.ChannelHandlerContext v1;
+io.netty.handler.traffic.AbstractTrafficShapingHandler v0;
+v0 := @this: io.netty.handler.traffic.AbstractTrafficShapingHandler;
+v1 := @parameter0: io.netty.channel.ChannelHandlerContext;
+virtualinvoke v0.<io.netty.handler.traffic.AbstractTrafficShapingHandler: void setUserDefinedWritability(io.netty.channel.ChannelHandlerContext,boolean)>(v1, 1);
+specialinvoke v0.<io.netty.channel.ChannelDuplexHandler: void channelRegistered(io.netty.channel.ChannelHandlerContext)>(v1);
+return;
+}
+void setUserDefinedWritability(io.netty.channel.ChannelHandlerContext, boolean)
+{
+io.netty.channel.Channel v3;
+io.netty.channel.ChannelOutboundBuffer v5;
+io.netty.channel.ChannelHandlerContext v1;
+io.netty.handler.traffic.AbstractTrafficShapingHandler v0;
+int v6;
+io.netty.channel.Channel$Unsafe v4;
+boolean v2;
+v0 := @this: io.netty.handler.traffic.AbstractTrafficShapingHandler;
+v1 := @parameter0: io.netty.channel.ChannelHandlerContext;
+v2 := @parameter1: boolean;
+v3 = interfaceinvoke v1.<io.netty.channel.ChannelHandlerContext: io.netty.channel.Channel channel()>();
+v4 = interfaceinvoke v3.<io.netty.channel.Channel: io.netty.channel.Channel$Unsafe unsafe()>();
+v5 = interfaceinvoke v4.<io.netty.channel.Channel$Unsafe: io.netty.channel.ChannelOutboundBuffer outboundBuffer()>();
+if v5 == null goto label1;
+v6 = v0.<io.netty.handler.traffic.AbstractTrafficShapingHandler: int userDefinedWritabilityIndex>;
+virtualinvoke v5.<io.netty.channel.ChannelOutboundBuffer: void setUserDefinedWritability(int,boolean)>(v6, v2);
+label1:
+return;
+}
+void checkWriteSuspend(io.netty.channel.ChannelHandlerContext, long, long)
+{
+io.netty.handler.traffic.AbstractTrafficShapingHandler v0;
+long v2, v3, v4, v6;
+io.netty.channel.ChannelHandlerContext v1;
+byte v5, v7;
+v0 := @this: io.netty.handler.traffic.AbstractTrafficShapingHandler;
+v1 := @parameter0: io.netty.channel.ChannelHandlerContext;
+v2 := @parameter1: long;
+v3 := @parameter2: long;
+v4 = v0.<io.netty.handler.traffic.AbstractTrafficShapingHandler: long maxWriteSize>;
+v5 = v3 cmp v4;
+if v5 > 0 goto label1;
+v6 = v0.<io.netty.handler.traffic.AbstractTrafficShapingHandler: long maxWriteDelay>;
+v7 = v2 cmp v6;
+if v7 <= 0 goto label2;
+label1:
+virtualinvoke v0.<io.netty.handler.traffic.AbstractTrafficShapingHandler: void setUserDefinedWritability(io.netty.channel.ChannelHandlerContext,boolean)>(v1, 0);
+label2:
+return;
+}
+void releaseWriteSuspended(io.netty.channel.ChannelHandlerContext)
+{
+io.netty.channel.ChannelHandlerContext v1;
+io.netty.handler.traffic.AbstractTrafficShapingHandler v0;
+v0 := @this: io.netty.handler.traffic.AbstractTrafficShapingHandler;
+v1 := @parameter0: io.netty.channel.ChannelHandlerContext;
+virtualinvoke v0.<io.netty.handler.traffic.AbstractTrafficShapingHandler: void setUserDefinedWritability(io.netty.channel.ChannelHandlerContext,boolean)>(v1, 1);
+return;
+}
+public io.netty.handler.traffic.TrafficCounter trafficCounter()
+{
+io.netty.handler.traffic.TrafficCounter v1;
+io.netty.handler.traffic.AbstractTrafficShapingHandler v0;
+v0 := @this: io.netty.handler.traffic.AbstractTrafficShapingHandler;
+v1 = v0.<io.netty.handler.traffic.AbstractTrafficShapingHandler: io.netty.handler.traffic.TrafficCounter trafficCounter>;
+return v1;
+}
+public java.lang.String toString()
+{
+io.netty.handler.traffic.TrafficCounter v6, v7;
+io.netty.handler.traffic.AbstractTrafficShapingHandler v0;
+long v1, v2, v3, v4, v5;
+java.lang.StringBuilder v10, v9;
+java.lang.String v8;
+v0 := @this: io.netty.handler.traffic.AbstractTrafficShapingHandler;
+specialinvoke v9.<java.lang.StringBuilder: void <init>(int)>(290);
+v1 = v0.<io.netty.handler.traffic.AbstractTrafficShapingHandler: long writeLimit>;
+v2 = v0.<io.netty.handler.traffic.AbstractTrafficShapingHandler: long readLimit>;
+v3 = v0.<io.netty.handler.traffic.AbstractTrafficShapingHandler: long checkInterval>;
+v4 = v0.<io.netty.handler.traffic.AbstractTrafficShapingHandler: long maxWriteDelay>;
+v5 = v0.<io.netty.handler.traffic.AbstractTrafficShapingHandler: long maxWriteSize>;
+v6 = v0.<io.netty.handler.traffic.AbstractTrafficShapingHandler: io.netty.handler.traffic.TrafficCounter trafficCounter>;
+if v6 == null goto label1;
+v7 = v0.<io.netty.handler.traffic.AbstractTrafficShapingHandler: io.netty.handler.traffic.TrafficCounter trafficCounter>;
+virtualinvoke v10.<java.lang.StringBuilder: java.lang.StringBuilder append(java.lang.Object)>(v7);
+goto label2;
+label1:
+virtualinvoke v10.<java.lang.StringBuilder: java.lang.StringBuilder append(java.lang.String)>("none");
+label2:
+v8 = dynamicinvoke "makeConcatWithConstants" <java.lang.String (long,long,long,long,long)>(v1, v2, v3, v4, v5) <java.lang.invoke.StringConcatFactory: java.lang.invoke.CallSite makeConcatWithConstants(java.lang.invoke.MethodHandles$Lookup,java.lang.String,java.lang.invoke.MethodType,java.lang.String,java.lang.Object[])>("TrafficShaping with Write Limit: \u0001 Read Limit: \u0001 CheckInterval: \u0001 maxDelay: \u0001 maxSize: \u0001 and Counter: ");
+return v8;
+}
+protected long calculateSize(java.lang.Object)
+{
+io.netty.handler.traffic.AbstractTrafficShapingHandler v0;
+long v8;
+io.netty.buffer.ByteBuf v5;
+int v3, v6;
+java.lang.Object v1;
+boolean v2, v4, v7;
+v0 := @this: io.netty.handler.traffic.AbstractTrafficShapingHandler;
+v1 := @parameter0: java.lang.Object;
+v2 = v1 instanceof io.netty.buffer.ByteBuf;
+if v2 == 0 goto label1;
+v3 = virtualinvoke v1.<io.netty.buffer.ByteBuf: int readableBytes()>();
+return v3;
+label1:
+v4 = v1 instanceof io.netty.buffer.ByteBufHolder;
+if v4 == 0 goto label2;
+v5 = interfaceinvoke v1.<io.netty.buffer.ByteBufHolder: io.netty.buffer.ByteBuf content()>();
+v6 = virtualinvoke v5.<io.netty.buffer.ByteBuf: int readableBytes()>();
+return v6;
+label2:
+v7 = v1 instanceof io.netty.channel.FileRegion;
+if v7 == 0 goto label3;
+v8 = interfaceinvoke v1.<io.netty.channel.FileRegion: long count()>();
+return v8;
+label3:
+return -1L;
+}
+static void <clinit>()
+{
+io.netty.util.AttributeKey v4, v8;
+io.netty.util.internal.logging.InternalLogger v0;
+java.lang.Class v1, v5;
+java.lang.String v2, v3, v6, v7;
+v0 = staticinvoke <io.netty.util.internal.logging.InternalLoggerFactory: io.netty.util.internal.logging.InternalLogger getInstance(java.lang.Class)>(class "Lio/netty/handler/traffic/AbstractTrafficShapingHandler;");
+<io.netty.handler.traffic.AbstractTrafficShapingHandler: io.netty.util.internal.logging.InternalLogger logger> = v0;
+v1 = class "Lio/netty/handler/traffic/AbstractTrafficShapingHandler;";
+v2 = virtualinvoke v1.<java.lang.Class: java.lang.String getName()>();
+v3 = dynamicinvoke "makeConcatWithConstants" <java.lang.String (java.lang.String)>(v2) <java.lang.invoke.StringConcatFactory: java.lang.invoke.CallSite makeConcatWithConstants(java.lang.invoke.MethodHandles$Lookup,java.lang.String,java.lang.invoke.MethodType,java.lang.String,java.lang.Object[])>("\u0001.READ_SUSPENDED");
+v4 = staticinvoke <io.netty.util.AttributeKey: io.netty.util.AttributeKey valueOf(java.lang.String)>(v3);
+<io.netty.handler.traffic.AbstractTrafficShapingHandler: io.netty.util.AttributeKey READ_SUSPENDED> = v4;
+v5 = class "Lio/netty/handler/traffic/AbstractTrafficShapingHandler;";
+v6 = virtualinvoke v5.<java.lang.Class: java.lang.String getName()>();
+v7 = dynamicinvoke "makeConcatWithConstants" <java.lang.String (java.lang.String)>(v6) <java.lang.invoke.StringConcatFactory: java.lang.invoke.CallSite makeConcatWithConstants(java.lang.invoke.MethodHandles$Lookup,java.lang.String,java.lang.invoke.MethodType,java.lang.String,java.lang.Object[])>("\u0001.REOPEN_TASK");
+v8 = staticinvoke <io.netty.util.AttributeKey: io.netty.util.AttributeKey valueOf(java.lang.String)>(v7);
+<io.netty.handler.traffic.AbstractTrafficShapingHandler: io.netty.util.AttributeKey REOPEN_TASK> = v8;
+return;
+}
+}

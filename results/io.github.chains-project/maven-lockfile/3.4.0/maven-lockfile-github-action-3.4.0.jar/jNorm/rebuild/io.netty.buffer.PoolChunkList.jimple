@@ -1,0 +1,416 @@
+final class io.netty.buffer.PoolChunkList extends java.lang.Object implements io.netty.buffer.PoolChunkListMetric
+{
+private static final java.util.Iterator EMPTY_METRICS;
+private final io.netty.buffer.PoolArena arena;
+private final io.netty.buffer.PoolChunkList nextList;
+private final int minUsage;
+private final int maxUsage;
+private final int maxCapacity;
+private io.netty.buffer.PoolChunk head;
+private final int freeMinThreshold;
+private final int freeMaxThreshold;
+private io.netty.buffer.PoolChunkList prevList;
+static final boolean $assertionsDisabled;
+void <init>(io.netty.buffer.PoolArena, io.netty.buffer.PoolChunkList, int, int, int)
+{
+io.netty.buffer.PoolChunkList v0, v2;
+java.lang.AssertionError v7;
+int v3, v4, v5, v8;
+boolean v6;
+double v10, v11, v12, v13, v14, v15, v16, v9;
+io.netty.buffer.PoolArena v1;
+v0 := @this: io.netty.buffer.PoolChunkList;
+v1 := @parameter0: io.netty.buffer.PoolArena;
+v2 := @parameter1: io.netty.buffer.PoolChunkList;
+v3 := @parameter2: int;
+v4 := @parameter3: int;
+v5 := @parameter4: int;
+specialinvoke v0.<java.lang.Object: void <init>()>();
+v6 = <io.netty.buffer.PoolChunkList: boolean $assertionsDisabled>;
+if v6 != 0 goto label1;
+if v3 <= v4 goto label1;
+v7 = new java.lang.AssertionError;
+specialinvoke v7.<java.lang.AssertionError: void <init>()>();
+throw v7;
+label1:
+v0.<io.netty.buffer.PoolChunkList: io.netty.buffer.PoolArena arena> = v1;
+v0.<io.netty.buffer.PoolChunkList: io.netty.buffer.PoolChunkList nextList> = v2;
+v0.<io.netty.buffer.PoolChunkList: int minUsage> = v3;
+v0.<io.netty.buffer.PoolChunkList: int maxUsage> = v4;
+v8 = staticinvoke <io.netty.buffer.PoolChunkList: int calculateMaxCapacity(int,int)>(v3, v5);
+v0.<io.netty.buffer.PoolChunkList: int maxCapacity> = v8;
+if v4 == 100 goto label2;
+v9 = 100.0 - v4;
+v10 = v9 + 0.99999999;
+v11 = v5 * v10;
+v12 = v11 / 100.0;
+label2:
+v0.<io.netty.buffer.PoolChunkList: int freeMinThreshold> = v12;
+if v3 == 100 goto label3;
+v13 = 100.0 - v3;
+v14 = v13 + 0.99999999;
+v15 = v5 * v14;
+v16 = v15 / 100.0;
+label3:
+v0.<io.netty.buffer.PoolChunkList: int freeMaxThreshold> = v16;
+return;
+}
+private static int calculateMaxCapacity(int, int)
+{
+int v0, v1, v2;
+long v3, v4, v5;
+v0 := @parameter0: int;
+v1 := @parameter1: int;
+v2 = staticinvoke <io.netty.buffer.PoolChunkList: int minUsage0(int)>(v0);
+if v2 != 100 goto label1;
+return 0;
+label1:
+v3 = 100L - v2;
+v4 = v1 * v3;
+v5 = v4 / 100L;
+return v5;
+}
+void prevList(io.netty.buffer.PoolChunkList)
+{
+io.netty.buffer.PoolChunkList v0, v1, v3;
+java.lang.AssertionError v4;
+boolean v2;
+v0 := @this: io.netty.buffer.PoolChunkList;
+v1 := @parameter0: io.netty.buffer.PoolChunkList;
+v2 = <io.netty.buffer.PoolChunkList: boolean $assertionsDisabled>;
+if v2 != 0 goto label1;
+v3 = v0.<io.netty.buffer.PoolChunkList: io.netty.buffer.PoolChunkList prevList>;
+if v3 == null goto label1;
+v4 = new java.lang.AssertionError;
+specialinvoke v4.<java.lang.AssertionError: void <init>()>();
+throw v4;
+label1:
+v0.<io.netty.buffer.PoolChunkList: io.netty.buffer.PoolChunkList prevList> = v1;
+return;
+}
+boolean allocate(io.netty.buffer.PooledByteBuf, int, int, io.netty.buffer.PoolThreadCache)
+{
+io.netty.buffer.PoolArena v5;
+io.netty.buffer.PoolChunkList v0, v12;
+io.netty.buffer.PooledByteBuf v1;
+io.netty.buffer.PoolThreadCache v4;
+int v10, v11, v2, v3, v6, v7;
+io.netty.buffer.PoolChunk v8;
+boolean v9;
+v0 := @this: io.netty.buffer.PoolChunkList;
+v1 := @parameter0: io.netty.buffer.PooledByteBuf;
+v2 := @parameter1: int;
+v3 := @parameter2: int;
+v4 := @parameter3: io.netty.buffer.PoolThreadCache;
+v5 = v0.<io.netty.buffer.PoolChunkList: io.netty.buffer.PoolArena arena>;
+v6 = virtualinvoke v5.<io.netty.buffer.PoolArena: int sizeIdx2size(int)>(v3);
+v7 = v0.<io.netty.buffer.PoolChunkList: int maxCapacity>;
+if v6 <= v7 goto label1;
+return 0;
+label1:
+v8 = v0.<io.netty.buffer.PoolChunkList: io.netty.buffer.PoolChunk head>;
+label2:
+if v8 == null goto label5;
+v9 = virtualinvoke v8.<io.netty.buffer.PoolChunk: boolean allocate(io.netty.buffer.PooledByteBuf,int,int,io.netty.buffer.PoolThreadCache)>(v1, v2, v3, v4);
+if v9 == 0 goto label4;
+v10 = v8.<io.netty.buffer.PoolChunk: int freeBytes>;
+v11 = v0.<io.netty.buffer.PoolChunkList: int freeMinThreshold>;
+if v10 > v11 goto label3;
+specialinvoke v0.<io.netty.buffer.PoolChunkList: void remove(io.netty.buffer.PoolChunk)>(v8);
+v12 = v0.<io.netty.buffer.PoolChunkList: io.netty.buffer.PoolChunkList nextList>;
+virtualinvoke v12.<io.netty.buffer.PoolChunkList: void add(io.netty.buffer.PoolChunk)>(v8);
+label3:
+return 1;
+label4:
+v8 = v8.<io.netty.buffer.PoolChunk: io.netty.buffer.PoolChunk next>;
+goto label2;
+label5:
+return 0;
+}
+boolean free(io.netty.buffer.PoolChunk, long, int, java.nio.ByteBuffer)
+{
+io.netty.buffer.PoolChunkList v0;
+long v2;
+java.nio.ByteBuffer v4;
+int v3, v5, v6;
+io.netty.buffer.PoolChunk v1;
+boolean v7;
+v0 := @this: io.netty.buffer.PoolChunkList;
+v1 := @parameter0: io.netty.buffer.PoolChunk;
+v2 := @parameter1: long;
+v3 := @parameter2: int;
+v4 := @parameter3: java.nio.ByteBuffer;
+virtualinvoke v1.<io.netty.buffer.PoolChunk: void free(long,int,java.nio.ByteBuffer)>(v2, v3, v4);
+v5 = v1.<io.netty.buffer.PoolChunk: int freeBytes>;
+v6 = v0.<io.netty.buffer.PoolChunkList: int freeMaxThreshold>;
+if v5 <= v6 goto label1;
+specialinvoke v0.<io.netty.buffer.PoolChunkList: void remove(io.netty.buffer.PoolChunk)>(v1);
+v7 = specialinvoke v0.<io.netty.buffer.PoolChunkList: boolean move0(io.netty.buffer.PoolChunk)>(v1);
+return v7;
+label1:
+return 1;
+}
+private boolean move(io.netty.buffer.PoolChunk)
+{
+io.netty.buffer.PoolChunkList v0;
+java.lang.AssertionError v5;
+int v3, v4, v6, v7;
+io.netty.buffer.PoolChunk v1;
+boolean v2, v8;
+v0 := @this: io.netty.buffer.PoolChunkList;
+v1 := @parameter0: io.netty.buffer.PoolChunk;
+v2 = <io.netty.buffer.PoolChunkList: boolean $assertionsDisabled>;
+if v2 != 0 goto label1;
+v3 = virtualinvoke v1.<io.netty.buffer.PoolChunk: int usage()>();
+v4 = v0.<io.netty.buffer.PoolChunkList: int maxUsage>;
+if v3 < v4 goto label1;
+v5 = new java.lang.AssertionError;
+specialinvoke v5.<java.lang.AssertionError: void <init>()>();
+throw v5;
+label1:
+v6 = v1.<io.netty.buffer.PoolChunk: int freeBytes>;
+v7 = v0.<io.netty.buffer.PoolChunkList: int freeMaxThreshold>;
+if v6 <= v7 goto label2;
+v8 = specialinvoke v0.<io.netty.buffer.PoolChunkList: boolean move0(io.netty.buffer.PoolChunk)>(v1);
+return v8;
+label2:
+virtualinvoke v0.<io.netty.buffer.PoolChunkList: void add0(io.netty.buffer.PoolChunk)>(v1);
+return 1;
+}
+private boolean move0(io.netty.buffer.PoolChunk)
+{
+io.netty.buffer.PoolChunkList v0, v2, v6;
+java.lang.AssertionError v5;
+int v4;
+io.netty.buffer.PoolChunk v1;
+boolean v3, v7;
+v0 := @this: io.netty.buffer.PoolChunkList;
+v1 := @parameter0: io.netty.buffer.PoolChunk;
+v2 = v0.<io.netty.buffer.PoolChunkList: io.netty.buffer.PoolChunkList prevList>;
+if v2 != null goto label2;
+v3 = <io.netty.buffer.PoolChunkList: boolean $assertionsDisabled>;
+if v3 != 0 goto label1;
+v4 = virtualinvoke v1.<io.netty.buffer.PoolChunk: int usage()>();
+if v4 == 0 goto label1;
+v5 = new java.lang.AssertionError;
+specialinvoke v5.<java.lang.AssertionError: void <init>()>();
+throw v5;
+label1:
+return 0;
+label2:
+v6 = v0.<io.netty.buffer.PoolChunkList: io.netty.buffer.PoolChunkList prevList>;
+v7 = specialinvoke v6.<io.netty.buffer.PoolChunkList: boolean move(io.netty.buffer.PoolChunk)>(v1);
+return v7;
+}
+void add(io.netty.buffer.PoolChunk)
+{
+int v2, v3;
+io.netty.buffer.PoolChunk v1;
+io.netty.buffer.PoolChunkList v0, v4;
+v0 := @this: io.netty.buffer.PoolChunkList;
+v1 := @parameter0: io.netty.buffer.PoolChunk;
+v2 = v1.<io.netty.buffer.PoolChunk: int freeBytes>;
+v3 = v0.<io.netty.buffer.PoolChunkList: int freeMinThreshold>;
+if v2 > v3 goto label1;
+v4 = v0.<io.netty.buffer.PoolChunkList: io.netty.buffer.PoolChunkList nextList>;
+virtualinvoke v4.<io.netty.buffer.PoolChunkList: void add(io.netty.buffer.PoolChunk)>(v1);
+return;
+label1:
+virtualinvoke v0.<io.netty.buffer.PoolChunkList: void add0(io.netty.buffer.PoolChunk)>(v1);
+return;
+}
+void add0(io.netty.buffer.PoolChunk)
+{
+io.netty.buffer.PoolChunk v1, v2, v3, v4;
+io.netty.buffer.PoolChunkList v0;
+v0 := @this: io.netty.buffer.PoolChunkList;
+v1 := @parameter0: io.netty.buffer.PoolChunk;
+v1.<io.netty.buffer.PoolChunk: io.netty.buffer.PoolChunkList parent> = v0;
+v2 = v0.<io.netty.buffer.PoolChunkList: io.netty.buffer.PoolChunk head>;
+if v2 != null goto label1;
+v0.<io.netty.buffer.PoolChunkList: io.netty.buffer.PoolChunk head> = v1;
+v1.<io.netty.buffer.PoolChunk: io.netty.buffer.PoolChunk prev> = null;
+v1.<io.netty.buffer.PoolChunk: io.netty.buffer.PoolChunk next> = null;
+goto label2;
+label1:
+v1.<io.netty.buffer.PoolChunk: io.netty.buffer.PoolChunk prev> = null;
+v3 = v0.<io.netty.buffer.PoolChunkList: io.netty.buffer.PoolChunk head>;
+v1.<io.netty.buffer.PoolChunk: io.netty.buffer.PoolChunk next> = v3;
+v4 = v0.<io.netty.buffer.PoolChunkList: io.netty.buffer.PoolChunk head>;
+v4.<io.netty.buffer.PoolChunk: io.netty.buffer.PoolChunk prev> = v1;
+v0.<io.netty.buffer.PoolChunkList: io.netty.buffer.PoolChunk head> = v1;
+label2:
+return;
+}
+private void remove(io.netty.buffer.PoolChunk)
+{
+io.netty.buffer.PoolChunkList v0;
+io.netty.buffer.PoolChunk v1, v2, v3, v4, v5, v6, v7, v8;
+v0 := @this: io.netty.buffer.PoolChunkList;
+v1 := @parameter0: io.netty.buffer.PoolChunk;
+v2 = v0.<io.netty.buffer.PoolChunkList: io.netty.buffer.PoolChunk head>;
+if v1 != v2 goto label1;
+v3 = v1.<io.netty.buffer.PoolChunk: io.netty.buffer.PoolChunk next>;
+v0.<io.netty.buffer.PoolChunkList: io.netty.buffer.PoolChunk head> = v3;
+v4 = v0.<io.netty.buffer.PoolChunkList: io.netty.buffer.PoolChunk head>;
+if v4 == null goto label2;
+v5 = v0.<io.netty.buffer.PoolChunkList: io.netty.buffer.PoolChunk head>;
+v5.<io.netty.buffer.PoolChunk: io.netty.buffer.PoolChunk prev> = null;
+goto label2;
+label1:
+v6 = v1.<io.netty.buffer.PoolChunk: io.netty.buffer.PoolChunk next>;
+v7 = v1.<io.netty.buffer.PoolChunk: io.netty.buffer.PoolChunk prev>;
+v7.<io.netty.buffer.PoolChunk: io.netty.buffer.PoolChunk next> = v6;
+if v6 == null goto label2;
+v8 = v1.<io.netty.buffer.PoolChunk: io.netty.buffer.PoolChunk prev>;
+v6.<io.netty.buffer.PoolChunk: io.netty.buffer.PoolChunk prev> = v8;
+label2:
+return;
+}
+public int minUsage()
+{
+int v1, v2;
+io.netty.buffer.PoolChunkList v0;
+v0 := @this: io.netty.buffer.PoolChunkList;
+v1 = v0.<io.netty.buffer.PoolChunkList: int minUsage>;
+v2 = staticinvoke <io.netty.buffer.PoolChunkList: int minUsage0(int)>(v1);
+return v2;
+}
+public int maxUsage()
+{
+int v1, v2;
+io.netty.buffer.PoolChunkList v0;
+v0 := @this: io.netty.buffer.PoolChunkList;
+v1 = v0.<io.netty.buffer.PoolChunkList: int maxUsage>;
+v2 = staticinvoke <java.lang.Math: int min(int,int)>(v1, 100);
+return v2;
+}
+private static int minUsage0(int)
+{
+int v0, v1;
+v0 := @parameter0: int;
+v1 = staticinvoke <java.lang.Math: int max(int,int)>(1, v0);
+return v1;
+}
+public java.util.Iterator iterator()
+{
+java.lang.Throwable v9;
+java.util.Iterator v3, v7;
+io.netty.buffer.PoolArena v1, v10, v4, v8;
+io.netty.buffer.PoolChunkList v0;
+java.util.ArrayList v5;
+io.netty.buffer.PoolChunk v2, v6;
+v0 := @this: io.netty.buffer.PoolChunkList;
+v1 = v0.<io.netty.buffer.PoolChunkList: io.netty.buffer.PoolArena arena>;
+virtualinvoke v1.<io.netty.buffer.PoolArena: void lock()>();
+label1:
+v2 = v0.<io.netty.buffer.PoolChunkList: io.netty.buffer.PoolChunk head>;
+if v2 != null goto label3;
+v3 = <io.netty.buffer.PoolChunkList: java.util.Iterator EMPTY_METRICS>;
+label2:
+v4 = v0.<io.netty.buffer.PoolChunkList: io.netty.buffer.PoolArena arena>;
+virtualinvoke v4.<io.netty.buffer.PoolArena: void unlock()>();
+return v3;
+label3:
+v5 = new java.util.ArrayList;
+specialinvoke v5.<java.util.ArrayList: void <init>()>();
+v6 = v0.<io.netty.buffer.PoolChunkList: io.netty.buffer.PoolChunk head>;
+label4:
+interfaceinvoke v5.<java.util.List: boolean add(java.lang.Object)>(v6);
+v6 = v6.<io.netty.buffer.PoolChunk: io.netty.buffer.PoolChunk next>;
+if v6 != null goto label4;
+v7 = interfaceinvoke v5.<java.util.List: java.util.Iterator iterator()>();
+label5:
+v8 = v0.<io.netty.buffer.PoolChunkList: io.netty.buffer.PoolArena arena>;
+virtualinvoke v8.<io.netty.buffer.PoolArena: void unlock()>();
+return v7;
+label6:
+v9 := @caughtexception;
+v10 = v0.<io.netty.buffer.PoolChunkList: io.netty.buffer.PoolArena arena>;
+virtualinvoke v10.<io.netty.buffer.PoolArena: void unlock()>();
+throw v9;
+catch java.lang.Throwable from label1 to label2 with label6;
+catch java.lang.Throwable from label3 to label5 with label6;
+}
+public java.lang.String toString()
+{
+java.lang.Throwable v8;
+io.netty.buffer.PoolArena v2, v4, v7, v9;
+io.netty.buffer.PoolChunkList v0;
+io.netty.buffer.PoolChunk v3, v5;
+java.lang.StringBuilder v1;
+java.lang.String v10, v6;
+v0 := @this: io.netty.buffer.PoolChunkList;
+v1 = new java.lang.StringBuilder;
+specialinvoke v1.<java.lang.StringBuilder: void <init>()>();
+v2 = v0.<io.netty.buffer.PoolChunkList: io.netty.buffer.PoolArena arena>;
+virtualinvoke v2.<io.netty.buffer.PoolArena: void lock()>();
+label1:
+v3 = v0.<io.netty.buffer.PoolChunkList: io.netty.buffer.PoolChunk head>;
+if v3 != null goto label3;
+label2:
+v4 = v0.<io.netty.buffer.PoolChunkList: io.netty.buffer.PoolArena arena>;
+virtualinvoke v4.<io.netty.buffer.PoolArena: void unlock()>();
+return "none";
+label3:
+v5 = v0.<io.netty.buffer.PoolChunkList: io.netty.buffer.PoolChunk head>;
+label4:
+virtualinvoke v1.<java.lang.StringBuilder: java.lang.StringBuilder append(java.lang.Object)>(v5);
+v5 = v5.<io.netty.buffer.PoolChunk: io.netty.buffer.PoolChunk next>;
+if v5 == null goto label5;
+v6 = <io.netty.util.internal.StringUtil: java.lang.String NEWLINE>;
+virtualinvoke v1.<java.lang.StringBuilder: java.lang.StringBuilder append(java.lang.String)>(v6);
+goto label4;
+label5:
+v7 = v0.<io.netty.buffer.PoolChunkList: io.netty.buffer.PoolArena arena>;
+virtualinvoke v7.<io.netty.buffer.PoolArena: void unlock()>();
+goto label7;
+label6:
+v8 := @caughtexception;
+v9 = v0.<io.netty.buffer.PoolChunkList: io.netty.buffer.PoolArena arena>;
+virtualinvoke v9.<io.netty.buffer.PoolArena: void unlock()>();
+throw v8;
+label7:
+v10 = virtualinvoke v1.<java.lang.StringBuilder: java.lang.String toString()>();
+return v10;
+catch java.lang.Throwable from label1 to label2 with label6;
+catch java.lang.Throwable from label3 to label5 with label6;
+}
+void destroy(io.netty.buffer.PoolArena)
+{
+io.netty.buffer.PoolChunk v2;
+io.netty.buffer.PoolChunkList v0;
+io.netty.buffer.PoolArena v1;
+v0 := @this: io.netty.buffer.PoolChunkList;
+v1 := @parameter0: io.netty.buffer.PoolArena;
+v2 = v0.<io.netty.buffer.PoolChunkList: io.netty.buffer.PoolChunk head>;
+label1:
+if v2 == null goto label2;
+virtualinvoke v1.<io.netty.buffer.PoolArena: void destroyChunk(io.netty.buffer.PoolChunk)>(v2);
+v2 = v2.<io.netty.buffer.PoolChunk: io.netty.buffer.PoolChunk next>;
+goto label1;
+label2:
+v0.<io.netty.buffer.PoolChunkList: io.netty.buffer.PoolChunk head> = null;
+return;
+}
+static void <clinit>()
+{
+java.util.List v3;
+java.util.Iterator v4;
+java.lang.Class v0;
+boolean v1, v2;
+v0 = class "Lio/netty/buffer/PoolChunkList;";
+v1 = virtualinvoke v0.<java.lang.Class: boolean desiredAssertionStatus()>();
+if v1 != 0 goto label1;
+v2 = 1;
+goto label2;
+label1:
+v2 = 0;
+label2:
+<io.netty.buffer.PoolChunkList: boolean $assertionsDisabled> = v2;
+v3 = staticinvoke <java.util.Collections: java.util.List emptyList()>();
+v4 = interfaceinvoke v3.<java.util.List: java.util.Iterator iterator()>();
+<io.netty.buffer.PoolChunkList: java.util.Iterator EMPTY_METRICS> = v4;
+return;
+}
+}

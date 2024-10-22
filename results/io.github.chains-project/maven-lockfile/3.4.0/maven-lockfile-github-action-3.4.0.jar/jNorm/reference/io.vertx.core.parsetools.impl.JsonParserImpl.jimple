@@ -1,0 +1,606 @@
+public class io.vertx.core.parsetools.impl.JsonParserImpl extends java.lang.Object implements io.vertx.core.parsetools.JsonParser
+{
+private final com.fasterxml.jackson.core.json.async.NonBlockingJsonParser parser;
+private io.vertx.core.Handler tokenHandler;
+private io.vertx.core.Handler eventHandler;
+private boolean objectValueMode;
+private boolean arrayValueMode;
+private io.vertx.core.Handler exceptionHandler;
+private java.lang.String currentField;
+private io.vertx.core.Handler endHandler;
+private long demand;
+private boolean ended;
+private final io.vertx.core.streams.ReadStream stream;
+private boolean emitting;
+private final java.util.Deque pending;
+private java.util.List collectedExceptions;
+public void <init>(io.vertx.core.streams.ReadStream)
+{
+io.vertx.core.VertxException v7;
+com.fasterxml.jackson.core.JsonParser v5;
+io.vertx.core.parsetools.impl.JsonParserImpl v0;
+java.lang.Exception v6;
+com.fasterxml.jackson.core.JsonFactory v4;
+io.vertx.core.streams.ReadStream v1;
+io.vertx.core.Handler v2;
+java.util.ArrayDeque v3;
+v0 := @this: io.vertx.core.parsetools.impl.JsonParserImpl;
+v1 := @parameter0: io.vertx.core.streams.ReadStream;
+specialinvoke v0.<java.lang.Object: void <init>()>();
+v2 = staticinvoke <io.vertx.core.parsetools.impl.JsonParserImpl$handleEvent__940: io.vertx.core.Handler bootstrap$(io.vertx.core.parsetools.impl.JsonParserImpl)>(v0);
+v0.<io.vertx.core.parsetools.impl.JsonParserImpl: io.vertx.core.Handler tokenHandler> = v2;
+v0.<io.vertx.core.parsetools.impl.JsonParserImpl: long demand> = 9223372036854775807L;
+v3 = new java.util.ArrayDeque;
+specialinvoke v3.<java.util.ArrayDeque: void <init>()>();
+v0.<io.vertx.core.parsetools.impl.JsonParserImpl: java.util.Deque pending> = v3;
+v0.<io.vertx.core.parsetools.impl.JsonParserImpl: io.vertx.core.streams.ReadStream stream> = v1;
+v4 = new com.fasterxml.jackson.core.JsonFactory;
+specialinvoke v4.<com.fasterxml.jackson.core.JsonFactory: void <init>()>();
+label1:
+v5 = virtualinvoke v4.<com.fasterxml.jackson.core.JsonFactory: com.fasterxml.jackson.core.JsonParser createNonBlockingByteArrayParser()>();
+v0.<io.vertx.core.parsetools.impl.JsonParserImpl: com.fasterxml.jackson.core.json.async.NonBlockingJsonParser parser> = v5;
+label2:
+goto label4;
+label3:
+v6 := @caughtexception;
+v7 = new io.vertx.core.VertxException;
+specialinvoke v7.<io.vertx.core.VertxException: void <init>(java.lang.Throwable)>(v6);
+throw v7;
+label4:
+return;
+catch java.lang.Exception from label1 to label2 with label3;
+}
+public io.vertx.core.parsetools.JsonParser pause()
+{
+io.vertx.core.parsetools.impl.JsonParserImpl v0;
+v0 := @this: io.vertx.core.parsetools.impl.JsonParserImpl;
+v0.<io.vertx.core.parsetools.impl.JsonParserImpl: long demand> = 0L;
+return v0;
+}
+public io.vertx.core.parsetools.JsonParser resume()
+{
+io.vertx.core.parsetools.JsonParser v1;
+io.vertx.core.parsetools.impl.JsonParserImpl v0;
+v0 := @this: io.vertx.core.parsetools.impl.JsonParserImpl;
+v1 = virtualinvoke v0.<io.vertx.core.parsetools.impl.JsonParserImpl: io.vertx.core.parsetools.JsonParser fetch(long)>(9223372036854775807L);
+return v1;
+}
+public io.vertx.core.parsetools.JsonParser fetch(long)
+{
+io.vertx.core.parsetools.impl.JsonParserImpl v0;
+long v1, v4, v5, v6;
+byte v2, v7;
+boolean v3;
+v0 := @this: io.vertx.core.parsetools.impl.JsonParserImpl;
+v1 := @parameter0: long;
+v2 = v1 cmp 0L;
+if v2 <= 0 goto label1;
+v3 = 1;
+goto label2;
+label1:
+v3 = 0;
+label2:
+staticinvoke <io.vertx.core.impl.Arguments: void require(boolean,java.lang.String)>(v3, "Fetch amount must be > 0L");
+v4 = v0.<io.vertx.core.parsetools.impl.JsonParserImpl: long demand>;
+v5 = v4 + v1;
+v0.<io.vertx.core.parsetools.impl.JsonParserImpl: long demand> = v5;
+v6 = v0.<io.vertx.core.parsetools.impl.JsonParserImpl: long demand>;
+v7 = v6 cmp 0L;
+if v7 >= 0 goto label3;
+v0.<io.vertx.core.parsetools.impl.JsonParserImpl: long demand> = 9223372036854775807L;
+label3:
+specialinvoke v0.<io.vertx.core.parsetools.impl.JsonParserImpl: void checkPending()>();
+return v0;
+}
+public io.vertx.core.parsetools.JsonParser endHandler(io.vertx.core.Handler)
+{
+io.vertx.core.parsetools.impl.JsonParserImpl v0;
+int v3;
+io.vertx.core.Handler v1;
+java.util.Deque v2;
+boolean v4;
+v0 := @this: io.vertx.core.parsetools.impl.JsonParserImpl;
+v1 := @parameter0: io.vertx.core.Handler;
+v2 = v0.<io.vertx.core.parsetools.impl.JsonParserImpl: java.util.Deque pending>;
+v3 = interfaceinvoke v2.<java.util.Deque: int size()>();
+if v3 > 0 goto label1;
+v4 = v0.<io.vertx.core.parsetools.impl.JsonParserImpl: boolean ended>;
+if v4 != 0 goto label2;
+label1:
+v0.<io.vertx.core.parsetools.impl.JsonParserImpl: io.vertx.core.Handler endHandler> = v1;
+label2:
+return v0;
+}
+public io.vertx.core.parsetools.JsonParser handler(io.vertx.core.Handler)
+{
+io.vertx.core.parsetools.impl.JsonParserImpl v0;
+io.vertx.core.streams.ReadStream v10, v2, v3, v5, v7, v8, v9;
+io.vertx.core.Handler v1, v4, v6;
+v0 := @this: io.vertx.core.parsetools.impl.JsonParserImpl;
+v1 := @parameter0: io.vertx.core.Handler;
+v0.<io.vertx.core.parsetools.impl.JsonParserImpl: io.vertx.core.Handler eventHandler> = v1;
+v2 = v0.<io.vertx.core.parsetools.impl.JsonParserImpl: io.vertx.core.streams.ReadStream stream>;
+if v2 == null goto label2;
+if v1 == null goto label1;
+v3 = v0.<io.vertx.core.parsetools.impl.JsonParserImpl: io.vertx.core.streams.ReadStream stream>;
+v4 = staticinvoke <io.vertx.core.parsetools.impl.JsonParserImpl$lambda_handler_0__941: io.vertx.core.Handler bootstrap$(io.vertx.core.parsetools.impl.JsonParserImpl)>(v0);
+interfaceinvoke v3.<io.vertx.core.streams.ReadStream: io.vertx.core.streams.ReadStream endHandler(io.vertx.core.Handler)>(v4);
+v5 = v0.<io.vertx.core.parsetools.impl.JsonParserImpl: io.vertx.core.streams.ReadStream stream>;
+v6 = staticinvoke <io.vertx.core.parsetools.impl.JsonParserImpl$lambda_handler_1__942: io.vertx.core.Handler bootstrap$(io.vertx.core.parsetools.impl.JsonParserImpl)>(v0);
+interfaceinvoke v5.<io.vertx.core.streams.ReadStream: io.vertx.core.streams.ReadStream exceptionHandler(io.vertx.core.Handler)>(v6);
+v7 = v0.<io.vertx.core.parsetools.impl.JsonParserImpl: io.vertx.core.streams.ReadStream stream>;
+interfaceinvoke v7.<io.vertx.core.streams.ReadStream: io.vertx.core.streams.ReadStream handler(io.vertx.core.Handler)>(v0);
+goto label2;
+label1:
+v8 = v0.<io.vertx.core.parsetools.impl.JsonParserImpl: io.vertx.core.streams.ReadStream stream>;
+interfaceinvoke v8.<io.vertx.core.streams.ReadStream: io.vertx.core.streams.ReadStream handler(io.vertx.core.Handler)>(null);
+v9 = v0.<io.vertx.core.parsetools.impl.JsonParserImpl: io.vertx.core.streams.ReadStream stream>;
+interfaceinvoke v9.<io.vertx.core.streams.ReadStream: io.vertx.core.streams.ReadStream endHandler(io.vertx.core.Handler)>(null);
+v10 = v0.<io.vertx.core.parsetools.impl.JsonParserImpl: io.vertx.core.streams.ReadStream stream>;
+interfaceinvoke v10.<io.vertx.core.streams.ReadStream: io.vertx.core.streams.ReadStream exceptionHandler(io.vertx.core.Handler)>(null);
+label2:
+return v0;
+}
+public void handleEvent(io.vertx.core.parsetools.impl.JsonEventImpl)
+{
+io.vertx.core.parsetools.impl.JsonParserImpl$BufferingHandler v13, v5;
+io.vertx.core.parsetools.impl.JsonParserImpl v0;
+long v18, v20, v21;
+byte v19;
+com.fasterxml.jackson.core.JsonToken v16, v8;
+boolean v12, v4;
+io.vertx.core.parsetools.impl.JsonEventImpl v1, v15, v7;
+io.vertx.core.parsetools.JsonEventType v10, v11, v17, v2, v3, v9;
+io.vertx.core.Handler v14, v22, v23, v6;
+v0 := @this: io.vertx.core.parsetools.impl.JsonParserImpl;
+v1 := @parameter0: io.vertx.core.parsetools.impl.JsonEventImpl;
+v2 = virtualinvoke v1.<io.vertx.core.parsetools.impl.JsonEventImpl: io.vertx.core.parsetools.JsonEventType type()>();
+v3 = <io.vertx.core.parsetools.JsonEventType: io.vertx.core.parsetools.JsonEventType START_OBJECT>;
+if v2 != v3 goto label1;
+v4 = v0.<io.vertx.core.parsetools.impl.JsonParserImpl: boolean objectValueMode>;
+if v4 == 0 goto label1;
+v5 = new io.vertx.core.parsetools.impl.JsonParserImpl$BufferingHandler;
+specialinvoke v5.<io.vertx.core.parsetools.impl.JsonParserImpl$BufferingHandler: void <init>(io.vertx.core.parsetools.impl.JsonParserImpl)>(v0);
+v6 = staticinvoke <io.vertx.core.parsetools.impl.JsonParserImpl$lambda_handleEvent_2__944: io.vertx.core.Handler bootstrap$(io.vertx.core.parsetools.impl.JsonParserImpl,io.vertx.core.parsetools.impl.JsonEventImpl,io.vertx.core.parsetools.impl.JsonParserImpl$BufferingHandler)>(v0, v1, v5);
+v5.<io.vertx.core.parsetools.impl.JsonParserImpl$BufferingHandler: io.vertx.core.Handler handler> = v6;
+v0.<io.vertx.core.parsetools.impl.JsonParserImpl: io.vertx.core.Handler tokenHandler> = v5;
+v7 = new io.vertx.core.parsetools.impl.JsonEventImpl;
+v8 = <com.fasterxml.jackson.core.JsonToken: com.fasterxml.jackson.core.JsonToken START_OBJECT>;
+v9 = <io.vertx.core.parsetools.JsonEventType: io.vertx.core.parsetools.JsonEventType START_OBJECT>;
+specialinvoke v7.<io.vertx.core.parsetools.impl.JsonEventImpl: void <init>(com.fasterxml.jackson.core.JsonToken,io.vertx.core.parsetools.JsonEventType,java.lang.String,java.lang.Object)>(v8, v9, null, null);
+virtualinvoke v5.<io.vertx.core.parsetools.impl.JsonParserImpl$BufferingHandler: void handle(io.vertx.core.parsetools.impl.JsonEventImpl)>(v7);
+goto label4;
+label1:
+v10 = virtualinvoke v1.<io.vertx.core.parsetools.impl.JsonEventImpl: io.vertx.core.parsetools.JsonEventType type()>();
+v11 = <io.vertx.core.parsetools.JsonEventType: io.vertx.core.parsetools.JsonEventType START_ARRAY>;
+if v10 != v11 goto label2;
+v12 = v0.<io.vertx.core.parsetools.impl.JsonParserImpl: boolean arrayValueMode>;
+if v12 == 0 goto label2;
+v13 = new io.vertx.core.parsetools.impl.JsonParserImpl$BufferingHandler;
+specialinvoke v13.<io.vertx.core.parsetools.impl.JsonParserImpl$BufferingHandler: void <init>(io.vertx.core.parsetools.impl.JsonParserImpl)>(v0);
+v14 = staticinvoke <io.vertx.core.parsetools.impl.JsonParserImpl$lambda_handleEvent_3__943: io.vertx.core.Handler bootstrap$(io.vertx.core.parsetools.impl.JsonParserImpl,io.vertx.core.parsetools.impl.JsonEventImpl,io.vertx.core.parsetools.impl.JsonParserImpl$BufferingHandler)>(v0, v1, v13);
+v13.<io.vertx.core.parsetools.impl.JsonParserImpl$BufferingHandler: io.vertx.core.Handler handler> = v14;
+v0.<io.vertx.core.parsetools.impl.JsonParserImpl: io.vertx.core.Handler tokenHandler> = v13;
+v15 = new io.vertx.core.parsetools.impl.JsonEventImpl;
+v16 = <com.fasterxml.jackson.core.JsonToken: com.fasterxml.jackson.core.JsonToken START_ARRAY>;
+v17 = <io.vertx.core.parsetools.JsonEventType: io.vertx.core.parsetools.JsonEventType START_ARRAY>;
+specialinvoke v15.<io.vertx.core.parsetools.impl.JsonEventImpl: void <init>(com.fasterxml.jackson.core.JsonToken,io.vertx.core.parsetools.JsonEventType,java.lang.String,java.lang.Object)>(v16, v17, null, null);
+virtualinvoke v13.<io.vertx.core.parsetools.impl.JsonParserImpl$BufferingHandler: void handle(io.vertx.core.parsetools.impl.JsonEventImpl)>(v15);
+goto label4;
+label2:
+v18 = v0.<io.vertx.core.parsetools.impl.JsonParserImpl: long demand>;
+v19 = v18 cmp 9223372036854775807L;
+if v19 == 0 goto label3;
+v20 = v0.<io.vertx.core.parsetools.impl.JsonParserImpl: long demand>;
+v21 = v20 - 1L;
+v0.<io.vertx.core.parsetools.impl.JsonParserImpl: long demand> = v21;
+label3:
+v22 = v0.<io.vertx.core.parsetools.impl.JsonParserImpl: io.vertx.core.Handler eventHandler>;
+if v22 == null goto label4;
+v23 = v0.<io.vertx.core.parsetools.impl.JsonParserImpl: io.vertx.core.Handler eventHandler>;
+interfaceinvoke v23.<io.vertx.core.Handler: void handle(java.lang.Object)>(v1);
+label4:
+return;
+}
+private void handle(java.io.IOException)
+{
+java.util.List v2, v4;
+io.vertx.core.parsetools.impl.JsonParserImpl v0;
+java.io.IOException v1;
+java.util.ArrayList v3;
+v0 := @this: io.vertx.core.parsetools.impl.JsonParserImpl;
+v1 := @parameter0: java.io.IOException;
+v2 = v0.<io.vertx.core.parsetools.impl.JsonParserImpl: java.util.List collectedExceptions>;
+if v2 != null goto label1;
+v3 = new java.util.ArrayList;
+specialinvoke v3.<java.util.ArrayList: void <init>()>();
+v0.<io.vertx.core.parsetools.impl.JsonParserImpl: java.util.List collectedExceptions> = v3;
+label1:
+v4 = v0.<io.vertx.core.parsetools.impl.JsonParserImpl: java.util.List collectedExceptions>;
+interfaceinvoke v4.<java.util.List: boolean add(java.lang.Object)>(v1);
+return;
+}
+public void handle(io.vertx.core.buffer.Buffer)
+{
+byte[] v2;
+io.vertx.core.buffer.Buffer v1;
+io.vertx.core.parsetools.impl.JsonParserImpl v0;
+int v4;
+java.io.IOException v5;
+com.fasterxml.jackson.core.json.async.NonBlockingJsonParser v3;
+v0 := @this: io.vertx.core.parsetools.impl.JsonParserImpl;
+v1 := @parameter0: io.vertx.core.buffer.Buffer;
+v2 = interfaceinvoke v1.<io.vertx.core.buffer.Buffer: byte[] getBytes()>();
+label1:
+v3 = v0.<io.vertx.core.parsetools.impl.JsonParserImpl: com.fasterxml.jackson.core.json.async.NonBlockingJsonParser parser>;
+v4 = lengthof v2;
+virtualinvoke v3.<com.fasterxml.jackson.core.json.async.NonBlockingJsonParser: void feedInput(byte[],int,int)>(v2, 0, v4);
+label2:
+goto label4;
+label3:
+v5 := @caughtexception;
+specialinvoke v0.<io.vertx.core.parsetools.impl.JsonParserImpl: void handle(java.io.IOException)>(v5);
+label4:
+specialinvoke v0.<io.vertx.core.parsetools.impl.JsonParserImpl: void checkTokens()>();
+specialinvoke v0.<io.vertx.core.parsetools.impl.JsonParserImpl: void checkPending()>();
+specialinvoke v0.<io.vertx.core.parsetools.impl.JsonParserImpl: void checkExceptions()>();
+return;
+catch java.io.IOException from label1 to label2 with label3;
+}
+public void end()
+{
+java.lang.IllegalStateException v2;
+io.vertx.core.parsetools.impl.JsonParserImpl v0;
+com.fasterxml.jackson.core.json.async.NonBlockingJsonParser v3;
+boolean v1;
+v0 := @this: io.vertx.core.parsetools.impl.JsonParserImpl;
+v1 = v0.<io.vertx.core.parsetools.impl.JsonParserImpl: boolean ended>;
+if v1 == 0 goto label1;
+v2 = new java.lang.IllegalStateException;
+specialinvoke v2.<java.lang.IllegalStateException: void <init>(java.lang.String)>("Parsing already done");
+throw v2;
+label1:
+v0.<io.vertx.core.parsetools.impl.JsonParserImpl: boolean ended> = 1;
+v3 = v0.<io.vertx.core.parsetools.impl.JsonParserImpl: com.fasterxml.jackson.core.json.async.NonBlockingJsonParser parser>;
+virtualinvoke v3.<com.fasterxml.jackson.core.json.async.NonBlockingJsonParser: void endOfInput()>();
+specialinvoke v0.<io.vertx.core.parsetools.impl.JsonParserImpl: void checkTokens()>();
+specialinvoke v0.<io.vertx.core.parsetools.impl.JsonParserImpl: void checkPending()>();
+specialinvoke v0.<io.vertx.core.parsetools.impl.JsonParserImpl: void checkExceptions()>();
+return;
+}
+private void checkTokens()
+{
+int[] v10;
+java.lang.Long v38;
+boolean v7;
+com.fasterxml.jackson.core.json.async.NonBlockingJsonParser v18, v2, v23, v36, v42, v5;
+io.vertx.core.parsetools.JsonEventType v14, v17, v22, v27, v30, v33, v35, v41, v47, v49;
+com.fasterxml.jackson.core.JsonLocation v1, v6;
+io.vertx.core.parsetools.impl.JsonParserImpl v0;
+java.lang.Double v44;
+long v37;
+java.util.Deque v52;
+int v11, v12;
+java.lang.Boolean v28, v31;
+com.fasterxml.jackson.core.JsonToken v3, v8;
+java.lang.String v19, v24, v51, v9;
+double v43;
+java.lang.UnsupportedOperationException v50;
+java.io.IOException v20, v25, v39, v4, v45;
+io.vertx.core.parsetools.impl.JsonEventImpl v13, v15, v16, v21, v26, v29, v32, v34, v40, v46, v48;
+v0 := @this: io.vertx.core.parsetools.impl.JsonParserImpl;
+v1 = null;
+label01:
+v2 = v0.<io.vertx.core.parsetools.impl.JsonParserImpl: com.fasterxml.jackson.core.json.async.NonBlockingJsonParser parser>;
+v3 = virtualinvoke v2.<com.fasterxml.jackson.core.json.async.NonBlockingJsonParser: com.fasterxml.jackson.core.JsonToken nextToken()>();
+label02:
+goto label05;
+label03:
+v4 := @caughtexception;
+v5 = v0.<io.vertx.core.parsetools.impl.JsonParserImpl: com.fasterxml.jackson.core.json.async.NonBlockingJsonParser parser>;
+v6 = virtualinvoke v5.<com.fasterxml.jackson.core.json.async.NonBlockingJsonParser: com.fasterxml.jackson.core.JsonLocation currentLocation()>();
+if v1 == null goto label04;
+v7 = virtualinvoke v6.<com.fasterxml.jackson.core.JsonLocation: boolean equals(java.lang.Object)>(v1);
+if v7 == 0 goto label04;
+return;
+label04:
+v1 = v6;
+specialinvoke v0.<io.vertx.core.parsetools.impl.JsonParserImpl: void handle(java.io.IOException)>(v4);
+goto label01;
+label05:
+if v3 == null goto label27;
+v8 = <com.fasterxml.jackson.core.JsonToken: com.fasterxml.jackson.core.JsonToken NOT_AVAILABLE>;
+if v3 == v8 goto label27;
+v1 = null;
+v9 = v0.<io.vertx.core.parsetools.impl.JsonParserImpl: java.lang.String currentField>;
+v0.<io.vertx.core.parsetools.impl.JsonParserImpl: java.lang.String currentField> = null;
+v10 = <io.vertx.core.parsetools.impl.JsonParserImpl$1: int[] $SwitchMap$com$fasterxml$jackson$core$JsonToken>;
+v11 = virtualinvoke v3.<com.fasterxml.jackson.core.JsonToken: int ordinal()>();
+v12 = v10[v11];
+tableswitch(v12)
+{
+case 1: goto label06;
+case 2: goto label07;
+case 3: goto label08;
+case 4: goto label11;
+case 5: goto label14;
+case 6: goto label15;
+case 7: goto label16;
+case 8: goto label17;
+case 9: goto label20;
+case 10: goto label23;
+case 11: goto label24;
+default: goto label25;
+};
+label06:
+v13 = new io.vertx.core.parsetools.impl.JsonEventImpl;
+v14 = <io.vertx.core.parsetools.JsonEventType: io.vertx.core.parsetools.JsonEventType START_OBJECT>;
+specialinvoke v13.<io.vertx.core.parsetools.impl.JsonEventImpl: void <init>(com.fasterxml.jackson.core.JsonToken,io.vertx.core.parsetools.JsonEventType,java.lang.String,java.lang.Object)>(v3, v14, v9, null);
+v15 = v13;
+goto label26;
+label07:
+v16 = new io.vertx.core.parsetools.impl.JsonEventImpl;
+v17 = <io.vertx.core.parsetools.JsonEventType: io.vertx.core.parsetools.JsonEventType START_ARRAY>;
+specialinvoke v16.<io.vertx.core.parsetools.impl.JsonEventImpl: void <init>(com.fasterxml.jackson.core.JsonToken,io.vertx.core.parsetools.JsonEventType,java.lang.String,java.lang.Object)>(v3, v17, v9, null);
+v15 = v16;
+goto label26;
+label08:
+v18 = v0.<io.vertx.core.parsetools.impl.JsonParserImpl: com.fasterxml.jackson.core.json.async.NonBlockingJsonParser parser>;
+v19 = virtualinvoke v18.<com.fasterxml.jackson.core.json.async.NonBlockingJsonParser: java.lang.String getCurrentName()>();
+v0.<io.vertx.core.parsetools.impl.JsonParserImpl: java.lang.String currentField> = v19;
+label09:
+goto label01;
+label10:
+v20 := @caughtexception;
+specialinvoke v0.<io.vertx.core.parsetools.impl.JsonParserImpl: void handle(java.io.IOException)>(v20);
+goto label01;
+label11:
+v21 = new io.vertx.core.parsetools.impl.JsonEventImpl;
+v22 = <io.vertx.core.parsetools.JsonEventType: io.vertx.core.parsetools.JsonEventType VALUE>;
+v23 = v0.<io.vertx.core.parsetools.impl.JsonParserImpl: com.fasterxml.jackson.core.json.async.NonBlockingJsonParser parser>;
+v24 = virtualinvoke v23.<com.fasterxml.jackson.core.json.async.NonBlockingJsonParser: java.lang.String getText()>();
+specialinvoke v21.<io.vertx.core.parsetools.impl.JsonEventImpl: void <init>(com.fasterxml.jackson.core.JsonToken,io.vertx.core.parsetools.JsonEventType,java.lang.String,java.lang.Object)>(v3, v22, v9, v24);
+v15 = v21;
+label12:
+goto label26;
+label13:
+v25 := @caughtexception;
+specialinvoke v0.<io.vertx.core.parsetools.impl.JsonParserImpl: void handle(java.io.IOException)>(v25);
+goto label01;
+label14:
+v26 = new io.vertx.core.parsetools.impl.JsonEventImpl;
+v27 = <io.vertx.core.parsetools.JsonEventType: io.vertx.core.parsetools.JsonEventType VALUE>;
+v28 = <java.lang.Boolean: java.lang.Boolean TRUE>;
+specialinvoke v26.<io.vertx.core.parsetools.impl.JsonEventImpl: void <init>(com.fasterxml.jackson.core.JsonToken,io.vertx.core.parsetools.JsonEventType,java.lang.String,java.lang.Object)>(v3, v27, v9, v28);
+v15 = v26;
+goto label26;
+label15:
+v29 = new io.vertx.core.parsetools.impl.JsonEventImpl;
+v30 = <io.vertx.core.parsetools.JsonEventType: io.vertx.core.parsetools.JsonEventType VALUE>;
+v31 = <java.lang.Boolean: java.lang.Boolean FALSE>;
+specialinvoke v29.<io.vertx.core.parsetools.impl.JsonEventImpl: void <init>(com.fasterxml.jackson.core.JsonToken,io.vertx.core.parsetools.JsonEventType,java.lang.String,java.lang.Object)>(v3, v30, v9, v31);
+v15 = v29;
+goto label26;
+label16:
+v32 = new io.vertx.core.parsetools.impl.JsonEventImpl;
+v33 = <io.vertx.core.parsetools.JsonEventType: io.vertx.core.parsetools.JsonEventType VALUE>;
+specialinvoke v32.<io.vertx.core.parsetools.impl.JsonEventImpl: void <init>(com.fasterxml.jackson.core.JsonToken,io.vertx.core.parsetools.JsonEventType,java.lang.String,java.lang.Object)>(v3, v33, v9, null);
+v15 = v32;
+goto label26;
+label17:
+v34 = new io.vertx.core.parsetools.impl.JsonEventImpl;
+v35 = <io.vertx.core.parsetools.JsonEventType: io.vertx.core.parsetools.JsonEventType VALUE>;
+v36 = v0.<io.vertx.core.parsetools.impl.JsonParserImpl: com.fasterxml.jackson.core.json.async.NonBlockingJsonParser parser>;
+v37 = virtualinvoke v36.<com.fasterxml.jackson.core.json.async.NonBlockingJsonParser: long getLongValue()>();
+v38 = staticinvoke <java.lang.Long: java.lang.Long valueOf(long)>(v37);
+specialinvoke v34.<io.vertx.core.parsetools.impl.JsonEventImpl: void <init>(com.fasterxml.jackson.core.JsonToken,io.vertx.core.parsetools.JsonEventType,java.lang.String,java.lang.Object)>(v3, v35, v9, v38);
+v15 = v34;
+label18:
+goto label26;
+label19:
+v39 := @caughtexception;
+specialinvoke v0.<io.vertx.core.parsetools.impl.JsonParserImpl: void handle(java.io.IOException)>(v39);
+goto label01;
+label20:
+v40 = new io.vertx.core.parsetools.impl.JsonEventImpl;
+v41 = <io.vertx.core.parsetools.JsonEventType: io.vertx.core.parsetools.JsonEventType VALUE>;
+v42 = v0.<io.vertx.core.parsetools.impl.JsonParserImpl: com.fasterxml.jackson.core.json.async.NonBlockingJsonParser parser>;
+v43 = virtualinvoke v42.<com.fasterxml.jackson.core.json.async.NonBlockingJsonParser: double getDoubleValue()>();
+v44 = staticinvoke <java.lang.Double: java.lang.Double valueOf(double)>(v43);
+specialinvoke v40.<io.vertx.core.parsetools.impl.JsonEventImpl: void <init>(com.fasterxml.jackson.core.JsonToken,io.vertx.core.parsetools.JsonEventType,java.lang.String,java.lang.Object)>(v3, v41, v9, v44);
+v15 = v40;
+label21:
+goto label26;
+label22:
+v45 := @caughtexception;
+specialinvoke v0.<io.vertx.core.parsetools.impl.JsonParserImpl: void handle(java.io.IOException)>(v45);
+goto label01;
+label23:
+v46 = new io.vertx.core.parsetools.impl.JsonEventImpl;
+v47 = <io.vertx.core.parsetools.JsonEventType: io.vertx.core.parsetools.JsonEventType END_OBJECT>;
+specialinvoke v46.<io.vertx.core.parsetools.impl.JsonEventImpl: void <init>(com.fasterxml.jackson.core.JsonToken,io.vertx.core.parsetools.JsonEventType,java.lang.String,java.lang.Object)>(v3, v47, null, null);
+v15 = v46;
+goto label26;
+label24:
+v48 = new io.vertx.core.parsetools.impl.JsonEventImpl;
+v49 = <io.vertx.core.parsetools.JsonEventType: io.vertx.core.parsetools.JsonEventType END_ARRAY>;
+specialinvoke v48.<io.vertx.core.parsetools.impl.JsonEventImpl: void <init>(com.fasterxml.jackson.core.JsonToken,io.vertx.core.parsetools.JsonEventType,java.lang.String,java.lang.Object)>(v3, v49, null, null);
+v15 = v48;
+goto label26;
+label25:
+v50 = new java.lang.UnsupportedOperationException;
+v51 = dynamicinvoke "makeConcatWithConstants" <java.lang.String (com.fasterxml.jackson.core.JsonToken)>(v3) <java.lang.invoke.StringConcatFactory: java.lang.invoke.CallSite makeConcatWithConstants(java.lang.invoke.MethodHandles$Lookup,java.lang.String,java.lang.invoke.MethodType,java.lang.String,java.lang.Object[])>("Token \u0001 not implemented");
+specialinvoke v50.<java.lang.UnsupportedOperationException: void <init>(java.lang.String)>(v51);
+throw v50;
+label26:
+v52 = v0.<io.vertx.core.parsetools.impl.JsonParserImpl: java.util.Deque pending>;
+interfaceinvoke v52.<java.util.Deque: boolean add(java.lang.Object)>(v15);
+goto label01;
+label27:
+return;
+catch java.io.IOException from label01 to label02 with label03;
+catch java.io.IOException from label08 to label09 with label10;
+catch java.io.IOException from label11 to label12 with label13;
+catch java.io.IOException from label17 to label18 with label19;
+catch java.io.IOException from label20 to label21 with label22;
+}
+private void checkPending()
+{
+java.lang.Throwable v20;
+io.vertx.core.parsetools.impl.JsonParserImpl v0;
+long v11, v2;
+java.util.Deque v4, v8;
+byte v12, v3;
+io.vertx.core.streams.ReadStream v13, v14, v15, v16;
+boolean v1, v7, v9;
+java.lang.Exception v17;
+java.lang.Object v5;
+io.vertx.core.Handler v10, v18, v19, v6;
+v0 := @this: io.vertx.core.parsetools.impl.JsonParserImpl;
+v1 = v0.<io.vertx.core.parsetools.impl.JsonParserImpl: boolean emitting>;
+if v1 != 0 goto label10;
+v0.<io.vertx.core.parsetools.impl.JsonParserImpl: boolean emitting> = 1;
+label01:
+v2 = v0.<io.vertx.core.parsetools.impl.JsonParserImpl: long demand>;
+v3 = v2 cmp 0L;
+if v3 <= 0 goto label02;
+v4 = v0.<io.vertx.core.parsetools.impl.JsonParserImpl: java.util.Deque pending>;
+v5 = interfaceinvoke v4.<java.util.Deque: java.lang.Object poll()>();
+if v5 == null goto label02;
+v6 = v0.<io.vertx.core.parsetools.impl.JsonParserImpl: io.vertx.core.Handler tokenHandler>;
+interfaceinvoke v6.<io.vertx.core.Handler: void handle(java.lang.Object)>(v5);
+goto label01;
+label02:
+v7 = v0.<io.vertx.core.parsetools.impl.JsonParserImpl: boolean ended>;
+if v7 == 0 goto label03;
+v8 = v0.<io.vertx.core.parsetools.impl.JsonParserImpl: java.util.Deque pending>;
+v9 = interfaceinvoke v8.<java.util.Deque: boolean isEmpty()>();
+if v9 == 0 goto label05;
+specialinvoke v0.<io.vertx.core.parsetools.impl.JsonParserImpl: void checkExceptions()>();
+v10 = v0.<io.vertx.core.parsetools.impl.JsonParserImpl: io.vertx.core.Handler endHandler>;
+v0.<io.vertx.core.parsetools.impl.JsonParserImpl: io.vertx.core.Handler endHandler> = null;
+if v10 == null goto label05;
+interfaceinvoke v10.<io.vertx.core.Handler: void handle(java.lang.Object)>(null);
+goto label05;
+label03:
+v11 = v0.<io.vertx.core.parsetools.impl.JsonParserImpl: long demand>;
+v12 = v11 cmp 0L;
+if v12 != 0 goto label04;
+v13 = v0.<io.vertx.core.parsetools.impl.JsonParserImpl: io.vertx.core.streams.ReadStream stream>;
+if v13 == null goto label05;
+v14 = v0.<io.vertx.core.parsetools.impl.JsonParserImpl: io.vertx.core.streams.ReadStream stream>;
+interfaceinvoke v14.<io.vertx.core.streams.ReadStream: io.vertx.core.streams.ReadStream pause()>();
+goto label05;
+label04:
+v15 = v0.<io.vertx.core.parsetools.impl.JsonParserImpl: io.vertx.core.streams.ReadStream stream>;
+if v15 == null goto label05;
+v16 = v0.<io.vertx.core.parsetools.impl.JsonParserImpl: io.vertx.core.streams.ReadStream stream>;
+interfaceinvoke v16.<io.vertx.core.streams.ReadStream: io.vertx.core.streams.ReadStream resume()>();
+label05:
+v0.<io.vertx.core.parsetools.impl.JsonParserImpl: boolean emitting> = 0;
+goto label10;
+label06:
+v17 := @caughtexception;
+v18 = v0.<io.vertx.core.parsetools.impl.JsonParserImpl: io.vertx.core.Handler exceptionHandler>;
+if v18 == null goto label07;
+v19 = v0.<io.vertx.core.parsetools.impl.JsonParserImpl: io.vertx.core.Handler exceptionHandler>;
+interfaceinvoke v19.<io.vertx.core.Handler: void handle(java.lang.Object)>(v17);
+goto label08;
+label07:
+throw v17;
+label08:
+v0.<io.vertx.core.parsetools.impl.JsonParserImpl: boolean emitting> = 0;
+goto label10;
+label09:
+v20 := @caughtexception;
+v0.<io.vertx.core.parsetools.impl.JsonParserImpl: boolean emitting> = 0;
+throw v20;
+label10:
+return;
+catch java.lang.Exception from label01 to label05 with label06;
+catch java.lang.Throwable from label01 to label05 with label09;
+catch java.lang.Throwable from label06 to label08 with label09;
+}
+private void checkExceptions()
+{
+io.vertx.core.parsetools.impl.JsonParserImpl v0;
+java.util.Iterator v4;
+io.vertx.core.json.DecodeException v9;
+java.util.List v1;
+int v2;
+java.lang.Object v6, v8;
+java.lang.String v10;
+io.vertx.core.Handler v3, v7;
+boolean v5;
+v0 := @this: io.vertx.core.parsetools.impl.JsonParserImpl;
+v1 = v0.<io.vertx.core.parsetools.impl.JsonParserImpl: java.util.List collectedExceptions>;
+v0.<io.vertx.core.parsetools.impl.JsonParserImpl: java.util.List collectedExceptions> = null;
+if v1 == null goto label3;
+v2 = interfaceinvoke v1.<java.util.List: int size()>();
+if v2 <= 0 goto label3;
+v3 = v0.<io.vertx.core.parsetools.impl.JsonParserImpl: io.vertx.core.Handler exceptionHandler>;
+if v3 == null goto label2;
+v4 = interfaceinvoke v1.<java.util.List: java.util.Iterator iterator()>();
+label1:
+v5 = interfaceinvoke v4.<java.util.Iterator: boolean hasNext()>();
+if v5 == 0 goto label3;
+v6 = interfaceinvoke v4.<java.util.Iterator: java.lang.Object next()>();
+v7 = v0.<io.vertx.core.parsetools.impl.JsonParserImpl: io.vertx.core.Handler exceptionHandler>;
+interfaceinvoke v7.<io.vertx.core.Handler: void handle(java.lang.Object)>(v6);
+goto label1;
+label2:
+v8 = interfaceinvoke v1.<java.util.List: java.lang.Object get(int)>(0);
+v9 = new io.vertx.core.json.DecodeException;
+v10 = virtualinvoke v8.<java.io.IOException: java.lang.String getMessage()>();
+specialinvoke v9.<io.vertx.core.json.DecodeException: void <init>(java.lang.String,java.lang.Throwable)>(v10, v8);
+throw v9;
+label3:
+return;
+}
+public io.vertx.core.parsetools.JsonParser objectEventMode()
+{
+io.vertx.core.parsetools.impl.JsonParserImpl v0;
+v0 := @this: io.vertx.core.parsetools.impl.JsonParserImpl;
+v0.<io.vertx.core.parsetools.impl.JsonParserImpl: boolean objectValueMode> = 0;
+return v0;
+}
+public io.vertx.core.parsetools.JsonParser objectValueMode()
+{
+io.vertx.core.parsetools.impl.JsonParserImpl v0;
+v0 := @this: io.vertx.core.parsetools.impl.JsonParserImpl;
+v0.<io.vertx.core.parsetools.impl.JsonParserImpl: boolean objectValueMode> = 1;
+return v0;
+}
+public io.vertx.core.parsetools.JsonParser arrayEventMode()
+{
+io.vertx.core.parsetools.impl.JsonParserImpl v0;
+v0 := @this: io.vertx.core.parsetools.impl.JsonParserImpl;
+v0.<io.vertx.core.parsetools.impl.JsonParserImpl: boolean arrayValueMode> = 0;
+return v0;
+}
+public io.vertx.core.parsetools.JsonParser arrayValueMode()
+{
+io.vertx.core.parsetools.impl.JsonParserImpl v0;
+v0 := @this: io.vertx.core.parsetools.impl.JsonParserImpl;
+v0.<io.vertx.core.parsetools.impl.JsonParserImpl: boolean arrayValueMode> = 1;
+return v0;
+}
+public io.vertx.core.parsetools.JsonParser write(io.vertx.core.buffer.Buffer)
+{
+io.vertx.core.buffer.Buffer v1;
+io.vertx.core.parsetools.impl.JsonParserImpl v0;
+v0 := @this: io.vertx.core.parsetools.impl.JsonParserImpl;
+v1 := @parameter0: io.vertx.core.buffer.Buffer;
+virtualinvoke v0.<io.vertx.core.parsetools.impl.JsonParserImpl: void handle(io.vertx.core.buffer.Buffer)>(v1);
+return v0;
+}
+public io.vertx.core.parsetools.JsonParser exceptionHandler(io.vertx.core.Handler)
+{
+io.vertx.core.Handler v1;
+io.vertx.core.parsetools.impl.JsonParserImpl v0;
+v0 := @this: io.vertx.core.parsetools.impl.JsonParserImpl;
+v1 := @parameter0: io.vertx.core.Handler;
+v0.<io.vertx.core.parsetools.impl.JsonParserImpl: io.vertx.core.Handler exceptionHandler> = v1;
+return v0;
+}
+}

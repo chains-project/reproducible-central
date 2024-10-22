@@ -1,0 +1,133 @@
+public class io.vertx.core.impl.btc.BlockedThreadChecker extends java.lang.Object
+{
+public static final java.lang.String LOGGER_NAME;
+private static final io.vertx.core.impl.logging.Logger log;
+private final java.util.Map threads;
+private final java.util.Timer timer;
+private io.vertx.core.Handler blockedThreadHandler;
+public void <init>(long, java.util.concurrent.TimeUnit, long, java.util.concurrent.TimeUnit)
+{
+io.vertx.core.impl.btc.BlockedThreadChecker$1 v9;
+java.util.Timer v6, v8;
+long v1, v10, v11, v3;
+java.util.concurrent.TimeUnit v2, v4;
+io.vertx.core.impl.btc.BlockedThreadChecker v0;
+io.vertx.core.Handler v7;
+java.util.WeakHashMap v5;
+v0 := @this: io.vertx.core.impl.btc.BlockedThreadChecker;
+v1 := @parameter0: long;
+v2 := @parameter1: java.util.concurrent.TimeUnit;
+v3 := @parameter2: long;
+v4 := @parameter3: java.util.concurrent.TimeUnit;
+specialinvoke v0.<java.lang.Object: void <init>()>();
+v5 = new java.util.WeakHashMap;
+specialinvoke v5.<java.util.WeakHashMap: void <init>()>();
+v0.<io.vertx.core.impl.btc.BlockedThreadChecker: java.util.Map threads> = v5;
+v6 = new java.util.Timer;
+specialinvoke v6.<java.util.Timer: void <init>(java.lang.String,boolean)>("vertx-blocked-thread-checker", 1);
+v0.<io.vertx.core.impl.btc.BlockedThreadChecker: java.util.Timer timer> = v6;
+v7 = staticinvoke <io.vertx.core.impl.btc.BlockedThreadChecker$defaultBlockedThreadHandler__1597: io.vertx.core.Handler bootstrap$()>();
+v0.<io.vertx.core.impl.btc.BlockedThreadChecker: io.vertx.core.Handler blockedThreadHandler> = v7;
+v8 = v0.<io.vertx.core.impl.btc.BlockedThreadChecker: java.util.Timer timer>;
+v9 = new io.vertx.core.impl.btc.BlockedThreadChecker$1;
+specialinvoke v9.<io.vertx.core.impl.btc.BlockedThreadChecker$1: void <init>(io.vertx.core.impl.btc.BlockedThreadChecker,long,java.util.concurrent.TimeUnit)>(v0, v3, v4);
+v10 = virtualinvoke v2.<java.util.concurrent.TimeUnit: long toMillis(long)>(v1);
+v11 = virtualinvoke v2.<java.util.concurrent.TimeUnit: long toMillis(long)>(v1);
+virtualinvoke v8.<java.util.Timer: void schedule(java.util.TimerTask,long,long)>(v9, v10, v11);
+return;
+}
+public synchronized void setThreadBlockedHandler(io.vertx.core.Handler)
+{
+io.vertx.core.impl.btc.BlockedThreadChecker v0;
+io.vertx.core.Handler v1, v2;
+v0 := @this: io.vertx.core.impl.btc.BlockedThreadChecker;
+v1 := @parameter0: io.vertx.core.Handler;
+if v1 != null goto label1;
+v2 = staticinvoke <io.vertx.core.impl.btc.BlockedThreadChecker$defaultBlockedThreadHandler__1598: io.vertx.core.Handler bootstrap$()>();
+goto label2;
+label1:
+v2 = v1;
+label2:
+v0.<io.vertx.core.impl.btc.BlockedThreadChecker: io.vertx.core.Handler blockedThreadHandler> = v2;
+return;
+}
+public synchronized void registerThread(java.lang.Thread, io.vertx.core.impl.btc.ThreadInfo)
+{
+java.lang.Thread v1;
+java.util.Map v3;
+io.vertx.core.impl.btc.BlockedThreadChecker v0;
+io.vertx.core.impl.btc.ThreadInfo v2;
+v0 := @this: io.vertx.core.impl.btc.BlockedThreadChecker;
+v1 := @parameter0: java.lang.Thread;
+v2 := @parameter1: io.vertx.core.impl.btc.ThreadInfo;
+v3 = v0.<io.vertx.core.impl.btc.BlockedThreadChecker: java.util.Map threads>;
+interfaceinvoke v3.<java.util.Map: java.lang.Object put(java.lang.Object,java.lang.Object)>(v1, v2);
+return;
+}
+public void close()
+{
+java.lang.Throwable v3;
+java.util.Map v2;
+io.vertx.core.impl.btc.BlockedThreadChecker v0;
+java.util.Timer v1;
+v0 := @this: io.vertx.core.impl.btc.BlockedThreadChecker;
+v1 = v0.<io.vertx.core.impl.btc.BlockedThreadChecker: java.util.Timer timer>;
+virtualinvoke v1.<java.util.Timer: void cancel()>();
+entermonitor v0;
+label1:
+v2 = v0.<io.vertx.core.impl.btc.BlockedThreadChecker: java.util.Map threads>;
+interfaceinvoke v2.<java.util.Map: void clear()>();
+exitmonitor v0;
+label2:
+goto label4;
+label3:
+v3 := @caughtexception;
+exitmonitor v0;
+throw v3;
+label4:
+return;
+catch java.lang.Throwable from label1 to label2 with label3;
+}
+public static void defaultBlockedThreadHandler(io.vertx.core.impl.btc.BlockedThreadEvent)
+{
+io.vertx.core.VertxException v11;
+io.vertx.core.impl.logging.Logger v10, v14;
+io.vertx.core.impl.btc.BlockedThreadEvent v0;
+long v2, v3, v4, v5, v7, v8;
+java.lang.StackTraceElement[] v13;
+byte v9;
+java.lang.Thread v1, v12;
+java.lang.String v6;
+v0 := @parameter0: io.vertx.core.impl.btc.BlockedThreadEvent;
+v1 = virtualinvoke v0.<io.vertx.core.impl.btc.BlockedThreadEvent: java.lang.Thread thread()>();
+v2 = virtualinvoke v0.<io.vertx.core.impl.btc.BlockedThreadEvent: long duration()>();
+v3 = v2 / 1000000L;
+v4 = virtualinvoke v0.<io.vertx.core.impl.btc.BlockedThreadEvent: long maxExecTime()>();
+v5 = v4 / 1000000L;
+v6 = dynamicinvoke "makeConcatWithConstants" <java.lang.String (java.lang.Thread,long,long)>(v1, v3, v5) <java.lang.invoke.StringConcatFactory: java.lang.invoke.CallSite makeConcatWithConstants(java.lang.invoke.MethodHandles$Lookup,java.lang.String,java.lang.invoke.MethodType,java.lang.String,java.lang.Object[])>("Thread \u0001 has been blocked for \u0001 ms, time limit is \u0001 ms");
+v7 = virtualinvoke v0.<io.vertx.core.impl.btc.BlockedThreadEvent: long duration()>();
+v8 = virtualinvoke v0.<io.vertx.core.impl.btc.BlockedThreadEvent: long warningExceptionTime()>();
+v9 = v7 cmp v8;
+if v9 > 0 goto label1;
+v10 = <io.vertx.core.impl.btc.BlockedThreadChecker: io.vertx.core.impl.logging.Logger log>;
+interfaceinvoke v10.<io.vertx.core.impl.logging.Logger: void warn(java.lang.Object)>(v6);
+goto label2;
+label1:
+v11 = new io.vertx.core.VertxException;
+specialinvoke v11.<io.vertx.core.VertxException: void <init>(java.lang.String)>("Thread blocked");
+v12 = virtualinvoke v0.<io.vertx.core.impl.btc.BlockedThreadEvent: java.lang.Thread thread()>();
+v13 = virtualinvoke v12.<java.lang.Thread: java.lang.StackTraceElement[] getStackTrace()>();
+virtualinvoke v11.<io.vertx.core.VertxException: void setStackTrace(java.lang.StackTraceElement[])>(v13);
+v14 = <io.vertx.core.impl.btc.BlockedThreadChecker: io.vertx.core.impl.logging.Logger log>;
+interfaceinvoke v14.<io.vertx.core.impl.logging.Logger: void warn(java.lang.Object,java.lang.Throwable)>(v6, v11);
+label2:
+return;
+}
+static void <clinit>()
+{
+io.vertx.core.impl.logging.Logger v0;
+v0 = staticinvoke <io.vertx.core.impl.logging.LoggerFactory: io.vertx.core.impl.logging.Logger getLogger(java.lang.String)>("io.vertx.core.impl.BlockedThreadChecker");
+<io.vertx.core.impl.btc.BlockedThreadChecker: io.vertx.core.impl.logging.Logger log> = v0;
+return;
+}
+}

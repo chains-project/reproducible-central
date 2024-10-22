@@ -1,0 +1,215 @@
+public class io.smallrye.mutiny.groups.UniRetry extends java.lang.Object
+{
+private final io.smallrye.mutiny.Uni upstream;
+private final java.util.function.Predicate onFailurePredicate;
+private java.time.Duration initialBackOffDuration;
+private java.time.Duration maxBackoffDuration;
+private double jitter;
+private boolean backOffConfigured;
+public void <init>(io.smallrye.mutiny.Uni, java.util.function.Predicate)
+{
+java.util.function.Predicate v2;
+java.time.Duration v3, v4;
+io.smallrye.mutiny.groups.UniRetry v0;
+io.smallrye.mutiny.Uni v1;
+v0 := @this: io.smallrye.mutiny.groups.UniRetry;
+v1 := @parameter0: io.smallrye.mutiny.Uni;
+v2 := @parameter1: java.util.function.Predicate;
+specialinvoke v0.<java.lang.Object: void <init>()>();
+v3 = staticinvoke <java.time.Duration: java.time.Duration ofSeconds(long)>(1L);
+v0.<io.smallrye.mutiny.groups.UniRetry: java.time.Duration initialBackOffDuration> = v3;
+v4 = <io.smallrye.mutiny.helpers.ExponentialBackoff: java.time.Duration MAX_BACKOFF>;
+v0.<io.smallrye.mutiny.groups.UniRetry: java.time.Duration maxBackoffDuration> = v4;
+v0.<io.smallrye.mutiny.groups.UniRetry: double jitter> = 0.5;
+v0.<io.smallrye.mutiny.groups.UniRetry: boolean backOffConfigured> = 0;
+v0.<io.smallrye.mutiny.groups.UniRetry: io.smallrye.mutiny.Uni upstream> = v1;
+v0.<io.smallrye.mutiny.groups.UniRetry: java.util.function.Predicate onFailurePredicate> = v2;
+return;
+}
+public io.smallrye.mutiny.Uni indefinitely()
+{
+io.smallrye.mutiny.groups.UniRetry v0;
+io.smallrye.mutiny.Uni v1;
+v0 := @this: io.smallrye.mutiny.groups.UniRetry;
+v1 = virtualinvoke v0.<io.smallrye.mutiny.groups.UniRetry: io.smallrye.mutiny.Uni atMost(long)>(9223372036854775807L);
+return v1;
+}
+public io.smallrye.mutiny.Uni atMost(long)
+{
+io.smallrye.mutiny.operators.uni.UniRetryAtMost v3;
+long v1;
+java.util.function.Function v11;
+io.smallrye.mutiny.Multi v13, v17;
+io.smallrye.mutiny.Uni v12, v18, v4, v6;
+java.time.Duration v7, v8;
+java.util.concurrent.ScheduledExecutorService v10;
+boolean v2;
+double v9;
+java.util.function.Predicate v14, v5;
+io.smallrye.mutiny.groups.UniRetry v0;
+io.smallrye.mutiny.groups.MultiOnFailure v15;
+io.smallrye.mutiny.groups.MultiRetry v16;
+v0 := @this: io.smallrye.mutiny.groups.UniRetry;
+v1 := @parameter0: long;
+v2 = v0.<io.smallrye.mutiny.groups.UniRetry: boolean backOffConfigured>;
+if v2 != 0 goto label1;
+v3 = new io.smallrye.mutiny.operators.uni.UniRetryAtMost;
+v4 = v0.<io.smallrye.mutiny.groups.UniRetry: io.smallrye.mutiny.Uni upstream>;
+v5 = v0.<io.smallrye.mutiny.groups.UniRetry: java.util.function.Predicate onFailurePredicate>;
+specialinvoke v3.<io.smallrye.mutiny.operators.uni.UniRetryAtMost: void <init>(io.smallrye.mutiny.Uni,java.util.function.Predicate,long)>(v4, v5, v1);
+v6 = staticinvoke <io.smallrye.mutiny.infrastructure.Infrastructure: io.smallrye.mutiny.Uni onUniCreation(io.smallrye.mutiny.Uni)>(v3);
+return v6;
+label1:
+v7 = v0.<io.smallrye.mutiny.groups.UniRetry: java.time.Duration initialBackOffDuration>;
+v8 = v0.<io.smallrye.mutiny.groups.UniRetry: java.time.Duration maxBackoffDuration>;
+v9 = v0.<io.smallrye.mutiny.groups.UniRetry: double jitter>;
+v10 = staticinvoke <io.smallrye.mutiny.infrastructure.Infrastructure: java.util.concurrent.ScheduledExecutorService getDefaultWorkerPool()>();
+v11 = staticinvoke <io.smallrye.mutiny.helpers.ExponentialBackoff: java.util.function.Function randomExponentialBackoffFunction(long,java.time.Duration,java.time.Duration,double,java.util.concurrent.ScheduledExecutorService)>(v1, v7, v8, v9, v10);
+v12 = v0.<io.smallrye.mutiny.groups.UniRetry: io.smallrye.mutiny.Uni upstream>;
+v13 = interfaceinvoke v12.<io.smallrye.mutiny.Uni: io.smallrye.mutiny.Multi toMulti()>();
+v14 = v0.<io.smallrye.mutiny.groups.UniRetry: java.util.function.Predicate onFailurePredicate>;
+v15 = interfaceinvoke v13.<io.smallrye.mutiny.Multi: io.smallrye.mutiny.groups.MultiOnFailure onFailure(java.util.function.Predicate)>(v14);
+v16 = virtualinvoke v15.<io.smallrye.mutiny.groups.MultiOnFailure: io.smallrye.mutiny.groups.MultiRetry retry()>();
+v17 = virtualinvoke v16.<io.smallrye.mutiny.groups.MultiRetry: io.smallrye.mutiny.Multi when(java.util.function.Function)>(v11);
+v18 = interfaceinvoke v17.<io.smallrye.mutiny.Multi: io.smallrye.mutiny.Uni toUni()>();
+return v18;
+}
+public io.smallrye.mutiny.Uni expireAt(long)
+{
+long v1;
+java.util.function.Function v8;
+io.smallrye.mutiny.Multi v10, v14;
+io.smallrye.mutiny.Uni v15, v9;
+java.time.Duration v4, v5;
+java.util.concurrent.ScheduledExecutorService v7;
+boolean v2;
+double v6;
+java.util.function.Predicate v11;
+io.smallrye.mutiny.groups.UniRetry v0;
+java.lang.IllegalArgumentException v3;
+io.smallrye.mutiny.groups.MultiOnFailure v12;
+io.smallrye.mutiny.groups.MultiRetry v13;
+v0 := @this: io.smallrye.mutiny.groups.UniRetry;
+v1 := @parameter0: long;
+v2 = v0.<io.smallrye.mutiny.groups.UniRetry: boolean backOffConfigured>;
+if v2 != 0 goto label1;
+v3 = new java.lang.IllegalArgumentException;
+specialinvoke v3.<java.lang.IllegalArgumentException: void <init>(java.lang.String)>("Invalid retry configuration, `expiresAt/expiresIn` must be used with a back-off configuration");
+throw v3;
+label1:
+v4 = v0.<io.smallrye.mutiny.groups.UniRetry: java.time.Duration initialBackOffDuration>;
+v5 = v0.<io.smallrye.mutiny.groups.UniRetry: java.time.Duration maxBackoffDuration>;
+v6 = v0.<io.smallrye.mutiny.groups.UniRetry: double jitter>;
+v7 = staticinvoke <io.smallrye.mutiny.infrastructure.Infrastructure: java.util.concurrent.ScheduledExecutorService getDefaultWorkerPool()>();
+v8 = staticinvoke <io.smallrye.mutiny.helpers.ExponentialBackoff: java.util.function.Function randomExponentialBackoffFunctionExpireAt(long,java.time.Duration,java.time.Duration,double,java.util.concurrent.ScheduledExecutorService)>(v1, v4, v5, v6, v7);
+v9 = v0.<io.smallrye.mutiny.groups.UniRetry: io.smallrye.mutiny.Uni upstream>;
+v10 = interfaceinvoke v9.<io.smallrye.mutiny.Uni: io.smallrye.mutiny.Multi toMulti()>();
+v11 = v0.<io.smallrye.mutiny.groups.UniRetry: java.util.function.Predicate onFailurePredicate>;
+v12 = interfaceinvoke v10.<io.smallrye.mutiny.Multi: io.smallrye.mutiny.groups.MultiOnFailure onFailure(java.util.function.Predicate)>(v11);
+v13 = virtualinvoke v12.<io.smallrye.mutiny.groups.MultiOnFailure: io.smallrye.mutiny.groups.MultiRetry retry()>();
+v14 = virtualinvoke v13.<io.smallrye.mutiny.groups.MultiRetry: io.smallrye.mutiny.Multi when(java.util.function.Function)>(v8);
+v15 = interfaceinvoke v14.<io.smallrye.mutiny.Multi: io.smallrye.mutiny.Uni toUni()>();
+return v15;
+}
+public io.smallrye.mutiny.Uni expireIn(long)
+{
+io.smallrye.mutiny.groups.UniRetry v0;
+long v1, v2, v3;
+io.smallrye.mutiny.Uni v4;
+v0 := @this: io.smallrye.mutiny.groups.UniRetry;
+v1 := @parameter0: long;
+v2 = staticinvoke <java.lang.System: long currentTimeMillis()>();
+v3 = v2 + v1;
+v4 = virtualinvoke v0.<io.smallrye.mutiny.groups.UniRetry: io.smallrye.mutiny.Uni expireAt(long)>(v3);
+return v4;
+}
+public io.smallrye.mutiny.Uni until(java.util.function.Predicate)
+{
+java.util.function.Predicate v1;
+io.smallrye.mutiny.groups.UniRetry v0;
+java.util.function.Function v2;
+io.smallrye.mutiny.Uni v3;
+v0 := @this: io.smallrye.mutiny.groups.UniRetry;
+v1 := @parameter0: java.util.function.Predicate;
+staticinvoke <io.smallrye.mutiny.helpers.ParameterValidation: java.lang.Object nonNull(java.lang.Object,java.lang.String)>(v1, "predicate");
+v2 = staticinvoke <io.smallrye.mutiny.groups.UniRetry$lambda_until_2__2897: java.util.function.Function bootstrap$(java.util.function.Predicate)>(v1);
+v3 = virtualinvoke v0.<io.smallrye.mutiny.groups.UniRetry: io.smallrye.mutiny.Uni when(java.util.function.Function)>(v2);
+return v3;
+}
+public io.smallrye.mutiny.Uni when(java.util.function.Function)
+{
+java.util.function.Predicate v8;
+io.smallrye.mutiny.groups.UniRetry v0;
+java.lang.IllegalArgumentException v3;
+java.util.function.Function v1, v5;
+io.smallrye.mutiny.Multi v11, v7;
+io.smallrye.mutiny.Uni v12, v6;
+java.lang.Object v4;
+io.smallrye.mutiny.groups.MultiOnFailure v9;
+boolean v2;
+io.smallrye.mutiny.groups.MultiRetry v10;
+v0 := @this: io.smallrye.mutiny.groups.UniRetry;
+v1 := @parameter0: java.util.function.Function;
+v2 = v0.<io.smallrye.mutiny.groups.UniRetry: boolean backOffConfigured>;
+if v2 == 0 goto label1;
+v3 = new java.lang.IllegalArgumentException;
+specialinvoke v3.<java.lang.IllegalArgumentException: void <init>(java.lang.String)>("Invalid retry configuration, `when` cannot be used with a back-off configuration");
+throw v3;
+label1:
+v4 = staticinvoke <io.smallrye.mutiny.helpers.ParameterValidation: java.lang.Object nonNull(java.lang.Object,java.lang.String)>(v1, "whenStreamFactory");
+v5 = staticinvoke <io.smallrye.mutiny.infrastructure.Infrastructure: java.util.function.Function decorate(java.util.function.Function)>(v4);
+v6 = v0.<io.smallrye.mutiny.groups.UniRetry: io.smallrye.mutiny.Uni upstream>;
+v7 = interfaceinvoke v6.<io.smallrye.mutiny.Uni: io.smallrye.mutiny.Multi toMulti()>();
+v8 = v0.<io.smallrye.mutiny.groups.UniRetry: java.util.function.Predicate onFailurePredicate>;
+v9 = interfaceinvoke v7.<io.smallrye.mutiny.Multi: io.smallrye.mutiny.groups.MultiOnFailure onFailure(java.util.function.Predicate)>(v8);
+v10 = virtualinvoke v9.<io.smallrye.mutiny.groups.MultiOnFailure: io.smallrye.mutiny.groups.MultiRetry retry()>();
+v11 = virtualinvoke v10.<io.smallrye.mutiny.groups.MultiRetry: io.smallrye.mutiny.Multi when(java.util.function.Function)>(v5);
+v12 = interfaceinvoke v11.<io.smallrye.mutiny.Multi: io.smallrye.mutiny.Uni toUni()>();
+return v12;
+}
+public io.smallrye.mutiny.groups.UniRetry withBackOff(java.time.Duration)
+{
+java.time.Duration v1, v2;
+io.smallrye.mutiny.groups.UniRetry v0, v3;
+v0 := @this: io.smallrye.mutiny.groups.UniRetry;
+v1 := @parameter0: java.time.Duration;
+v2 = <io.smallrye.mutiny.helpers.ExponentialBackoff: java.time.Duration MAX_BACKOFF>;
+v3 = virtualinvoke v0.<io.smallrye.mutiny.groups.UniRetry: io.smallrye.mutiny.groups.UniRetry withBackOff(java.time.Duration,java.time.Duration)>(v1, v2);
+return v3;
+}
+public io.smallrye.mutiny.groups.UniRetry withBackOff(java.time.Duration, java.time.Duration)
+{
+java.time.Duration v1, v2, v3, v4;
+io.smallrye.mutiny.groups.UniRetry v0;
+v0 := @this: io.smallrye.mutiny.groups.UniRetry;
+v1 := @parameter0: java.time.Duration;
+v2 := @parameter1: java.time.Duration;
+v0.<io.smallrye.mutiny.groups.UniRetry: boolean backOffConfigured> = 1;
+v3 = staticinvoke <io.smallrye.mutiny.helpers.ParameterValidation: java.time.Duration validate(java.time.Duration,java.lang.String)>(v1, "initialBackOff");
+v0.<io.smallrye.mutiny.groups.UniRetry: java.time.Duration initialBackOffDuration> = v3;
+v4 = staticinvoke <io.smallrye.mutiny.helpers.ParameterValidation: java.time.Duration validate(java.time.Duration,java.lang.String)>(v2, "maxBackOff");
+v0.<io.smallrye.mutiny.groups.UniRetry: java.time.Duration maxBackoffDuration> = v4;
+return v0;
+}
+public io.smallrye.mutiny.groups.UniRetry withJitter(double)
+{
+byte v2, v3;
+io.smallrye.mutiny.groups.UniRetry v0;
+java.lang.IllegalArgumentException v4;
+double v1;
+v0 := @this: io.smallrye.mutiny.groups.UniRetry;
+v1 := @parameter0: double;
+v2 = v1 cmpg 0.0;
+if v2 < 0 goto label1;
+v3 = v1 cmpl 1.0;
+if v3 <= 0 goto label2;
+label1:
+v4 = new java.lang.IllegalArgumentException;
+specialinvoke v4.<java.lang.IllegalArgumentException: void <init>(java.lang.String)>("Invalid `jitter`, the value must be in [0.0, 1.0]");
+throw v4;
+label2:
+v0.<io.smallrye.mutiny.groups.UniRetry: boolean backOffConfigured> = 1;
+v0.<io.smallrye.mutiny.groups.UniRetry: double jitter> = v1;
+return v0;
+}
+}

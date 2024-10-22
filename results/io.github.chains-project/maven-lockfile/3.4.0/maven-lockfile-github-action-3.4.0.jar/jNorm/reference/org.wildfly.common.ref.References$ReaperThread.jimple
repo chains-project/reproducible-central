@@ -1,0 +1,74 @@
+final class org.wildfly.common.ref.References$ReaperThread extends java.lang.Thread
+{
+static final java.lang.ref.ReferenceQueue REAPER_QUEUE;
+void <init>()
+{
+org.wildfly.common.ref.References$ReaperThread v0;
+v0 := @this: org.wildfly.common.ref.References$ReaperThread;
+specialinvoke v0.<java.lang.Thread: void <init>()>();
+return;
+}
+public void run()
+{
+java.lang.Throwable v6;
+org.wildfly.common.ref.References$ReaperThread v0;
+java.lang.ref.ReferenceQueue v1;
+java.lang.ref.Reference v2;
+java.lang.InterruptedException v5;
+org.wildfly.common.ref.Log v7;
+boolean v3, v4;
+v0 := @this: org.wildfly.common.ref.References$ReaperThread;
+label1:
+v1 = <org.wildfly.common.ref.References$ReaperThread: java.lang.ref.ReferenceQueue REAPER_QUEUE>;
+v2 = virtualinvoke v1.<java.lang.ref.ReferenceQueue: java.lang.ref.Reference remove()>();
+v3 = v2 instanceof org.wildfly.common.ref.CleanerReference;
+if v3 == 0 goto label2;
+virtualinvoke v2.<org.wildfly.common.ref.CleanerReference: void clean()>();
+label2:
+v4 = v2 instanceof org.wildfly.common.ref.Reapable;
+if v4 == 0 goto label1;
+staticinvoke <org.wildfly.common.ref.References$ReaperThread: void reap(org.wildfly.common.ref.Reapable)>(v2);
+label3:
+goto label1;
+label4:
+v5 := @caughtexception;
+goto label1;
+label5:
+v6 := @caughtexception;
+v7 = <org.wildfly.common.ref.Log: org.wildfly.common.ref.Log log>;
+interfaceinvoke v7.<org.wildfly.common.ref.Log: void reapFailed(java.lang.Throwable)>(v6);
+goto label1;
+catch java.lang.InterruptedException from label1 to label3 with label4;
+catch java.lang.Throwable from label1 to label3 with label5;
+}
+private static void reap(org.wildfly.common.ref.Reapable)
+{
+org.wildfly.common.ref.Reapable v0;
+org.wildfly.common.ref.Reaper v1;
+v0 := @parameter0: org.wildfly.common.ref.Reapable;
+v1 = interfaceinvoke v0.<org.wildfly.common.ref.Reapable: org.wildfly.common.ref.Reaper getReaper()>();
+interfaceinvoke v1.<org.wildfly.common.ref.Reaper: void reap(org.wildfly.common.ref.Reference)>(v0);
+return;
+}
+static void <clinit>()
+{
+java.util.concurrent.atomic.AtomicInteger v1;
+int v3;
+java.security.PrivilegedAction v2;
+java.lang.ref.ReferenceQueue v0;
+v0 = new java.lang.ref.ReferenceQueue;
+specialinvoke v0.<java.lang.ref.ReferenceQueue: void <init>()>();
+<org.wildfly.common.ref.References$ReaperThread: java.lang.ref.ReferenceQueue REAPER_QUEUE> = v0;
+v1 = new java.util.concurrent.atomic.AtomicInteger;
+specialinvoke v1.<java.util.concurrent.atomic.AtomicInteger: void <init>(int)>(1);
+v2 = staticinvoke <org.wildfly.common.ref.References$ReaperThread$lambda_static_0__3236: java.security.PrivilegedAction bootstrap$(java.util.concurrent.atomic.AtomicInteger)>(v1);
+v3 = 0;
+label1:
+if v3 >= 3 goto label2;
+staticinvoke <java.security.AccessController: java.lang.Object doPrivileged(java.security.PrivilegedAction)>(v2);
+v3 = v3 + 1;
+goto label1;
+label2:
+return;
+}
+}

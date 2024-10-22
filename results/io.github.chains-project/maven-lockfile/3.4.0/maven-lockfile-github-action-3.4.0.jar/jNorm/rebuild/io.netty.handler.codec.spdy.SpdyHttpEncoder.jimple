@@ -1,0 +1,332 @@
+public class io.netty.handler.codec.spdy.SpdyHttpEncoder extends io.netty.handler.codec.MessageToMessageEncoder
+{
+private int currentStreamId;
+private final boolean validateHeaders;
+private final boolean headersToLowerCase;
+public void <init>(io.netty.handler.codec.spdy.SpdyVersion)
+{
+io.netty.handler.codec.spdy.SpdyHttpEncoder v0;
+io.netty.handler.codec.spdy.SpdyVersion v1;
+v0 := @this: io.netty.handler.codec.spdy.SpdyHttpEncoder;
+v1 := @parameter0: io.netty.handler.codec.spdy.SpdyVersion;
+specialinvoke v0.<io.netty.handler.codec.spdy.SpdyHttpEncoder: void <init>(io.netty.handler.codec.spdy.SpdyVersion,boolean,boolean)>(v1, 1, 1);
+return;
+}
+public void <init>(io.netty.handler.codec.spdy.SpdyVersion, boolean, boolean)
+{
+io.netty.handler.codec.spdy.SpdyHttpEncoder v0;
+io.netty.handler.codec.spdy.SpdyVersion v1;
+boolean v2, v3;
+v0 := @this: io.netty.handler.codec.spdy.SpdyHttpEncoder;
+v1 := @parameter0: io.netty.handler.codec.spdy.SpdyVersion;
+v2 := @parameter1: boolean;
+v3 := @parameter2: boolean;
+specialinvoke v0.<io.netty.handler.codec.MessageToMessageEncoder: void <init>()>();
+staticinvoke <io.netty.util.internal.ObjectUtil: java.lang.Object checkNotNull(java.lang.Object,java.lang.String)>(v1, "version");
+v0.<io.netty.handler.codec.spdy.SpdyHttpEncoder: boolean headersToLowerCase> = v2;
+v0.<io.netty.handler.codec.spdy.SpdyHttpEncoder: boolean validateHeaders> = v3;
+return;
+}
+protected void encode(io.netty.channel.ChannelHandlerContext, io.netty.handler.codec.http.HttpObject, java.util.List) throws java.lang.Exception
+{
+io.netty.handler.codec.spdy.SpdyHeadersFrame v12;
+io.netty.handler.codec.http.HttpHeaders v19;
+io.netty.handler.codec.spdy.SpdyHttpEncoder v0;
+io.netty.util.AsciiString v29;
+io.netty.handler.codec.http.HttpObject v2;
+io.netty.handler.codec.spdy.DefaultSpdyHeadersFrame v21;
+boolean v10, v11, v13, v18, v20, v23, v25, v27, v4, v5, v6, v8, v9;
+io.netty.handler.codec.spdy.DefaultSpdyDataFrame v15;
+java.util.List v3;
+io.netty.channel.ChannelHandlerContext v1;
+io.netty.buffer.ByteBuf v14, v17;
+int v16, v22;
+io.netty.handler.codec.http.HttpContent v35;
+java.util.Iterator v24;
+java.lang.Class[] v34;
+io.netty.handler.codec.spdy.SpdySynStreamFrame v7;
+io.netty.handler.codec.spdy.SpdyHeaders v31;
+java.lang.Object v26, v28, v30, v32;
+io.netty.handler.codec.UnsupportedMessageTypeException v33;
+v0 := @this: io.netty.handler.codec.spdy.SpdyHttpEncoder;
+v1 := @parameter0: io.netty.channel.ChannelHandlerContext;
+v2 := @parameter1: io.netty.handler.codec.http.HttpObject;
+v3 := @parameter2: java.util.List;
+v4 = 0;
+v5 = 0;
+v6 = v2 instanceof io.netty.handler.codec.http.HttpRequest;
+if v6 == 0 goto label04;
+v7 = specialinvoke v0.<io.netty.handler.codec.spdy.SpdyHttpEncoder: io.netty.handler.codec.spdy.SpdySynStreamFrame createSynStreamFrame(io.netty.handler.codec.http.HttpRequest)>(v2);
+interfaceinvoke v3.<java.util.List: boolean add(java.lang.Object)>(v7);
+v8 = interfaceinvoke v7.<io.netty.handler.codec.spdy.SpdySynStreamFrame: boolean isLast()>();
+if v8 != 0 goto label01;
+v9 = interfaceinvoke v7.<io.netty.handler.codec.spdy.SpdySynStreamFrame: boolean isUnidirectional()>();
+if v9 == 0 goto label02;
+label01:
+v10 = 1;
+goto label03;
+label02:
+v10 = 0;
+label03:
+v5 = v10;
+v4 = 1;
+label04:
+v11 = v2 instanceof io.netty.handler.codec.http.HttpResponse;
+if v11 == 0 goto label05;
+v12 = specialinvoke v0.<io.netty.handler.codec.spdy.SpdyHttpEncoder: io.netty.handler.codec.spdy.SpdyHeadersFrame createHeadersFrame(io.netty.handler.codec.http.HttpResponse)>(v2);
+interfaceinvoke v3.<java.util.List: boolean add(java.lang.Object)>(v12);
+v5 = interfaceinvoke v12.<io.netty.handler.codec.spdy.SpdyHeadersFrame: boolean isLast()>();
+v4 = 1;
+label05:
+v13 = v2 instanceof io.netty.handler.codec.http.HttpContent;
+if v13 == 0 goto label13;
+if v5 != 0 goto label13;
+v14 = interfaceinvoke v2.<io.netty.handler.codec.http.HttpContent: io.netty.buffer.ByteBuf content()>();
+virtualinvoke v14.<io.netty.buffer.ByteBuf: io.netty.buffer.ByteBuf retain()>();
+v15 = new io.netty.handler.codec.spdy.DefaultSpdyDataFrame;
+v16 = v0.<io.netty.handler.codec.spdy.SpdyHttpEncoder: int currentStreamId>;
+v17 = interfaceinvoke v2.<io.netty.handler.codec.http.HttpContent: io.netty.buffer.ByteBuf content()>();
+specialinvoke v15.<io.netty.handler.codec.spdy.DefaultSpdyDataFrame: void <init>(int,io.netty.buffer.ByteBuf)>(v16, v17);
+v18 = v2 instanceof io.netty.handler.codec.http.LastHttpContent;
+if v18 == 0 goto label11;
+v19 = interfaceinvoke v35.<io.netty.handler.codec.http.LastHttpContent: io.netty.handler.codec.http.HttpHeaders trailingHeaders()>();
+v20 = virtualinvoke v19.<io.netty.handler.codec.http.HttpHeaders: boolean isEmpty()>();
+if v20 == 0 goto label06;
+interfaceinvoke v15.<io.netty.handler.codec.spdy.SpdyDataFrame: io.netty.handler.codec.spdy.SpdyDataFrame setLast(boolean)>(1);
+interfaceinvoke v3.<java.util.List: boolean add(java.lang.Object)>(v15);
+goto label12;
+label06:
+v21 = new io.netty.handler.codec.spdy.DefaultSpdyHeadersFrame;
+v22 = v0.<io.netty.handler.codec.spdy.SpdyHttpEncoder: int currentStreamId>;
+v23 = v0.<io.netty.handler.codec.spdy.SpdyHttpEncoder: boolean validateHeaders>;
+specialinvoke v21.<io.netty.handler.codec.spdy.DefaultSpdyHeadersFrame: void <init>(int,boolean)>(v22, v23);
+interfaceinvoke v21.<io.netty.handler.codec.spdy.SpdyHeadersFrame: io.netty.handler.codec.spdy.SpdyHeadersFrame setLast(boolean)>(1);
+v24 = virtualinvoke v19.<io.netty.handler.codec.http.HttpHeaders: java.util.Iterator iteratorCharSequence()>();
+label07:
+v25 = interfaceinvoke v24.<java.util.Iterator: boolean hasNext()>();
+if v25 == 0 goto label10;
+v26 = interfaceinvoke v24.<java.util.Iterator: java.lang.Object next()>();
+v27 = v0.<io.netty.handler.codec.spdy.SpdyHttpEncoder: boolean headersToLowerCase>;
+if v27 == 0 goto label08;
+v28 = interfaceinvoke v26.<java.util.Map$Entry: java.lang.Object getKey()>();
+v29 = staticinvoke <io.netty.util.AsciiString: io.netty.util.AsciiString of(java.lang.CharSequence)>(v28);
+virtualinvoke v29.<io.netty.util.AsciiString: io.netty.util.AsciiString toLowerCase()>();
+goto label09;
+label08:
+v30 = interfaceinvoke v26.<java.util.Map$Entry: java.lang.Object getKey()>();
+label09:
+v31 = interfaceinvoke v21.<io.netty.handler.codec.spdy.SpdyHeadersFrame: io.netty.handler.codec.spdy.SpdyHeaders headers()>();
+v32 = interfaceinvoke v26.<java.util.Map$Entry: java.lang.Object getValue()>();
+interfaceinvoke v31.<io.netty.handler.codec.spdy.SpdyHeaders: io.netty.handler.codec.Headers add(java.lang.Object,java.lang.Object)>(v30, v32);
+goto label07;
+label10:
+interfaceinvoke v3.<java.util.List: boolean add(java.lang.Object)>(v15);
+interfaceinvoke v3.<java.util.List: boolean add(java.lang.Object)>(v21);
+goto label12;
+label11:
+interfaceinvoke v3.<java.util.List: boolean add(java.lang.Object)>(v15);
+label12:
+v4 = 1;
+label13:
+if v4 != 0 goto label14;
+v33 = new io.netty.handler.codec.UnsupportedMessageTypeException;
+v34 = newarray (java.lang.Class)[0];
+specialinvoke v33.<io.netty.handler.codec.UnsupportedMessageTypeException: void <init>(java.lang.Object,java.lang.Class[])>(v2, v34);
+throw v33;
+label14:
+return;
+}
+private io.netty.handler.codec.spdy.SpdySynStreamFrame createSynStreamFrame(io.netty.handler.codec.http.HttpRequest) throws java.lang.Exception
+{
+io.netty.handler.codec.http.HttpHeaders v2;
+io.netty.handler.codec.spdy.SpdyHttpEncoder v0;
+io.netty.util.AsciiString v10, v12, v13, v14, v15, v16, v17, v21, v24, v26, v29, v3, v31, v32, v33, v39, v6, v8;
+java.lang.Integer v4;
+io.netty.handler.codec.spdy.DefaultSpdySynStreamFrame v18;
+boolean v19, v35, v37, v43;
+io.netty.handler.codec.http.HttpRequest v1;
+io.netty.handler.codec.http.HttpVersion v27;
+int v42, v5, v7, v9;
+java.lang.String v11, v23, v25, v28, v30;
+java.util.Iterator v34;
+io.netty.handler.codec.http.HttpMethod v22;
+io.netty.handler.codec.spdy.SpdyHeaders v20;
+java.lang.Object v36, v38, v40, v41;
+v0 := @this: io.netty.handler.codec.spdy.SpdyHttpEncoder;
+v1 := @parameter0: io.netty.handler.codec.http.HttpRequest;
+v2 = interfaceinvoke v1.<io.netty.handler.codec.http.HttpRequest: io.netty.handler.codec.http.HttpHeaders headers()>();
+v3 = <io.netty.handler.codec.spdy.SpdyHttpHeaders$Names: io.netty.util.AsciiString STREAM_ID>;
+v4 = virtualinvoke v2.<io.netty.handler.codec.http.HttpHeaders: java.lang.Integer getInt(java.lang.CharSequence)>(v3);
+v5 = virtualinvoke v4.<java.lang.Integer: int intValue()>();
+v6 = <io.netty.handler.codec.spdy.SpdyHttpHeaders$Names: io.netty.util.AsciiString ASSOCIATED_TO_STREAM_ID>;
+v7 = virtualinvoke v2.<io.netty.handler.codec.http.HttpHeaders: int getInt(java.lang.CharSequence,int)>(v6, 0);
+v8 = <io.netty.handler.codec.spdy.SpdyHttpHeaders$Names: io.netty.util.AsciiString PRIORITY>;
+v9 = virtualinvoke v2.<io.netty.handler.codec.http.HttpHeaders: int getInt(java.lang.CharSequence,int)>(v8, 0);
+v10 = <io.netty.handler.codec.spdy.SpdyHttpHeaders$Names: io.netty.util.AsciiString SCHEME>;
+v11 = virtualinvoke v2.<io.netty.handler.codec.http.HttpHeaders: java.lang.String get(java.lang.CharSequence)>(v10);
+v12 = <io.netty.handler.codec.spdy.SpdyHttpHeaders$Names: io.netty.util.AsciiString STREAM_ID>;
+virtualinvoke v2.<io.netty.handler.codec.http.HttpHeaders: io.netty.handler.codec.http.HttpHeaders remove(java.lang.CharSequence)>(v12);
+v13 = <io.netty.handler.codec.spdy.SpdyHttpHeaders$Names: io.netty.util.AsciiString ASSOCIATED_TO_STREAM_ID>;
+virtualinvoke v2.<io.netty.handler.codec.http.HttpHeaders: io.netty.handler.codec.http.HttpHeaders remove(java.lang.CharSequence)>(v13);
+v14 = <io.netty.handler.codec.spdy.SpdyHttpHeaders$Names: io.netty.util.AsciiString PRIORITY>;
+virtualinvoke v2.<io.netty.handler.codec.http.HttpHeaders: io.netty.handler.codec.http.HttpHeaders remove(java.lang.CharSequence)>(v14);
+v15 = <io.netty.handler.codec.spdy.SpdyHttpHeaders$Names: io.netty.util.AsciiString SCHEME>;
+virtualinvoke v2.<io.netty.handler.codec.http.HttpHeaders: io.netty.handler.codec.http.HttpHeaders remove(java.lang.CharSequence)>(v15);
+v16 = <io.netty.handler.codec.http.HttpHeaderNames: io.netty.util.AsciiString CONNECTION>;
+virtualinvoke v2.<io.netty.handler.codec.http.HttpHeaders: io.netty.handler.codec.http.HttpHeaders remove(java.lang.CharSequence)>(v16);
+virtualinvoke v2.<io.netty.handler.codec.http.HttpHeaders: io.netty.handler.codec.http.HttpHeaders remove(java.lang.String)>("Keep-Alive");
+virtualinvoke v2.<io.netty.handler.codec.http.HttpHeaders: io.netty.handler.codec.http.HttpHeaders remove(java.lang.String)>("Proxy-Connection");
+v17 = <io.netty.handler.codec.http.HttpHeaderNames: io.netty.util.AsciiString TRANSFER_ENCODING>;
+virtualinvoke v2.<io.netty.handler.codec.http.HttpHeaders: io.netty.handler.codec.http.HttpHeaders remove(java.lang.CharSequence)>(v17);
+v18 = new io.netty.handler.codec.spdy.DefaultSpdySynStreamFrame;
+v19 = v0.<io.netty.handler.codec.spdy.SpdyHttpEncoder: boolean validateHeaders>;
+specialinvoke v18.<io.netty.handler.codec.spdy.DefaultSpdySynStreamFrame: void <init>(int,int,byte,boolean)>(v5, v7, v9, v19);
+v20 = interfaceinvoke v18.<io.netty.handler.codec.spdy.SpdySynStreamFrame: io.netty.handler.codec.spdy.SpdyHeaders headers()>();
+v21 = <io.netty.handler.codec.spdy.SpdyHeaders$HttpNames: io.netty.util.AsciiString METHOD>;
+v22 = interfaceinvoke v1.<io.netty.handler.codec.http.HttpRequest: io.netty.handler.codec.http.HttpMethod method()>();
+v23 = virtualinvoke v22.<io.netty.handler.codec.http.HttpMethod: java.lang.String name()>();
+interfaceinvoke v20.<io.netty.handler.codec.spdy.SpdyHeaders: io.netty.handler.codec.Headers set(java.lang.Object,java.lang.Object)>(v21, v23);
+v24 = <io.netty.handler.codec.spdy.SpdyHeaders$HttpNames: io.netty.util.AsciiString PATH>;
+v25 = interfaceinvoke v1.<io.netty.handler.codec.http.HttpRequest: java.lang.String uri()>();
+interfaceinvoke v20.<io.netty.handler.codec.spdy.SpdyHeaders: io.netty.handler.codec.Headers set(java.lang.Object,java.lang.Object)>(v24, v25);
+v26 = <io.netty.handler.codec.spdy.SpdyHeaders$HttpNames: io.netty.util.AsciiString VERSION>;
+v27 = interfaceinvoke v1.<io.netty.handler.codec.http.HttpRequest: io.netty.handler.codec.http.HttpVersion protocolVersion()>();
+v28 = virtualinvoke v27.<io.netty.handler.codec.http.HttpVersion: java.lang.String text()>();
+interfaceinvoke v20.<io.netty.handler.codec.spdy.SpdyHeaders: io.netty.handler.codec.Headers set(java.lang.Object,java.lang.Object)>(v26, v28);
+v29 = <io.netty.handler.codec.http.HttpHeaderNames: io.netty.util.AsciiString HOST>;
+v30 = virtualinvoke v2.<io.netty.handler.codec.http.HttpHeaders: java.lang.String get(java.lang.CharSequence)>(v29);
+v31 = <io.netty.handler.codec.http.HttpHeaderNames: io.netty.util.AsciiString HOST>;
+virtualinvoke v2.<io.netty.handler.codec.http.HttpHeaders: io.netty.handler.codec.http.HttpHeaders remove(java.lang.CharSequence)>(v31);
+v32 = <io.netty.handler.codec.spdy.SpdyHeaders$HttpNames: io.netty.util.AsciiString HOST>;
+interfaceinvoke v20.<io.netty.handler.codec.spdy.SpdyHeaders: io.netty.handler.codec.Headers set(java.lang.Object,java.lang.Object)>(v32, v30);
+if v11 != null goto label1;
+v11 = "https";
+label1:
+v33 = <io.netty.handler.codec.spdy.SpdyHeaders$HttpNames: io.netty.util.AsciiString SCHEME>;
+interfaceinvoke v20.<io.netty.handler.codec.spdy.SpdyHeaders: io.netty.handler.codec.Headers set(java.lang.Object,java.lang.Object)>(v33, v11);
+v34 = virtualinvoke v2.<io.netty.handler.codec.http.HttpHeaders: java.util.Iterator iteratorCharSequence()>();
+label2:
+v35 = interfaceinvoke v34.<java.util.Iterator: boolean hasNext()>();
+if v35 == 0 goto label5;
+v36 = interfaceinvoke v34.<java.util.Iterator: java.lang.Object next()>();
+v37 = v0.<io.netty.handler.codec.spdy.SpdyHttpEncoder: boolean headersToLowerCase>;
+if v37 == 0 goto label3;
+v38 = interfaceinvoke v36.<java.util.Map$Entry: java.lang.Object getKey()>();
+v39 = staticinvoke <io.netty.util.AsciiString: io.netty.util.AsciiString of(java.lang.CharSequence)>(v38);
+virtualinvoke v39.<io.netty.util.AsciiString: io.netty.util.AsciiString toLowerCase()>();
+goto label4;
+label3:
+v40 = interfaceinvoke v36.<java.util.Map$Entry: java.lang.Object getKey()>();
+label4:
+v41 = interfaceinvoke v36.<java.util.Map$Entry: java.lang.Object getValue()>();
+interfaceinvoke v20.<io.netty.handler.codec.spdy.SpdyHeaders: io.netty.handler.codec.Headers add(java.lang.Object,java.lang.Object)>(v40, v41);
+goto label2;
+label5:
+v42 = interfaceinvoke v18.<io.netty.handler.codec.spdy.SpdySynStreamFrame: int streamId()>();
+v0.<io.netty.handler.codec.spdy.SpdyHttpEncoder: int currentStreamId> = v42;
+if v7 != 0 goto label6;
+v43 = staticinvoke <io.netty.handler.codec.spdy.SpdyHttpEncoder: boolean isLast(io.netty.handler.codec.http.HttpMessage)>(v1);
+interfaceinvoke v18.<io.netty.handler.codec.spdy.SpdySynStreamFrame: io.netty.handler.codec.spdy.SpdySynStreamFrame setLast(boolean)>(v43);
+goto label7;
+label6:
+interfaceinvoke v18.<io.netty.handler.codec.spdy.SpdySynStreamFrame: io.netty.handler.codec.spdy.SpdySynStreamFrame setUnidirectional(boolean)>(1);
+label7:
+return v18;
+}
+private io.netty.handler.codec.spdy.SpdyHeadersFrame createHeadersFrame(io.netty.handler.codec.http.HttpResponse) throws java.lang.Exception
+{
+io.netty.handler.codec.http.HttpHeaders v2;
+io.netty.handler.codec.spdy.SpdyHttpEncoder v0;
+io.netty.util.AsciiString v16, v18, v19, v27, v3, v6, v7, v8;
+java.lang.Integer v4;
+io.netty.handler.codec.spdy.DefaultSpdyHeadersFrame v10, v12;
+boolean v11, v14, v23, v25, v31, v9;
+io.netty.handler.codec.http.HttpResponseStatus v17;
+io.netty.handler.codec.http.HttpResponse v1;
+io.netty.handler.codec.http.HttpVersion v20;
+int v5;
+io.netty.handler.codec.spdy.DefaultSpdySynReplyFrame v13;
+java.lang.String v21;
+java.util.Iterator v22;
+io.netty.handler.codec.spdy.SpdyHeaders v15, v29;
+java.lang.Object v24, v26, v28, v30;
+v0 := @this: io.netty.handler.codec.spdy.SpdyHttpEncoder;
+v1 := @parameter0: io.netty.handler.codec.http.HttpResponse;
+v2 = interfaceinvoke v1.<io.netty.handler.codec.http.HttpResponse: io.netty.handler.codec.http.HttpHeaders headers()>();
+v3 = <io.netty.handler.codec.spdy.SpdyHttpHeaders$Names: io.netty.util.AsciiString STREAM_ID>;
+v4 = virtualinvoke v2.<io.netty.handler.codec.http.HttpHeaders: java.lang.Integer getInt(java.lang.CharSequence)>(v3);
+v5 = virtualinvoke v4.<java.lang.Integer: int intValue()>();
+v6 = <io.netty.handler.codec.spdy.SpdyHttpHeaders$Names: io.netty.util.AsciiString STREAM_ID>;
+virtualinvoke v2.<io.netty.handler.codec.http.HttpHeaders: io.netty.handler.codec.http.HttpHeaders remove(java.lang.CharSequence)>(v6);
+v7 = <io.netty.handler.codec.http.HttpHeaderNames: io.netty.util.AsciiString CONNECTION>;
+virtualinvoke v2.<io.netty.handler.codec.http.HttpHeaders: io.netty.handler.codec.http.HttpHeaders remove(java.lang.CharSequence)>(v7);
+virtualinvoke v2.<io.netty.handler.codec.http.HttpHeaders: io.netty.handler.codec.http.HttpHeaders remove(java.lang.String)>("Keep-Alive");
+virtualinvoke v2.<io.netty.handler.codec.http.HttpHeaders: io.netty.handler.codec.http.HttpHeaders remove(java.lang.String)>("Proxy-Connection");
+v8 = <io.netty.handler.codec.http.HttpHeaderNames: io.netty.util.AsciiString TRANSFER_ENCODING>;
+virtualinvoke v2.<io.netty.handler.codec.http.HttpHeaders: io.netty.handler.codec.http.HttpHeaders remove(java.lang.CharSequence)>(v8);
+v9 = staticinvoke <io.netty.handler.codec.spdy.SpdyCodecUtil: boolean isServerId(int)>(v5);
+if v9 == 0 goto label1;
+v10 = new io.netty.handler.codec.spdy.DefaultSpdyHeadersFrame;
+v11 = v0.<io.netty.handler.codec.spdy.SpdyHttpEncoder: boolean validateHeaders>;
+specialinvoke v10.<io.netty.handler.codec.spdy.DefaultSpdyHeadersFrame: void <init>(int,boolean)>(v5, v11);
+v12 = v10;
+goto label2;
+label1:
+v13 = new io.netty.handler.codec.spdy.DefaultSpdySynReplyFrame;
+v14 = v0.<io.netty.handler.codec.spdy.SpdyHttpEncoder: boolean validateHeaders>;
+specialinvoke v13.<io.netty.handler.codec.spdy.DefaultSpdySynReplyFrame: void <init>(int,boolean)>(v5, v14);
+v12 = v13;
+label2:
+v15 = interfaceinvoke v12.<io.netty.handler.codec.spdy.SpdyHeadersFrame: io.netty.handler.codec.spdy.SpdyHeaders headers()>();
+v16 = <io.netty.handler.codec.spdy.SpdyHeaders$HttpNames: io.netty.util.AsciiString STATUS>;
+v17 = interfaceinvoke v1.<io.netty.handler.codec.http.HttpResponse: io.netty.handler.codec.http.HttpResponseStatus status()>();
+v18 = virtualinvoke v17.<io.netty.handler.codec.http.HttpResponseStatus: io.netty.util.AsciiString codeAsText()>();
+interfaceinvoke v15.<io.netty.handler.codec.spdy.SpdyHeaders: io.netty.handler.codec.Headers set(java.lang.Object,java.lang.Object)>(v16, v18);
+v19 = <io.netty.handler.codec.spdy.SpdyHeaders$HttpNames: io.netty.util.AsciiString VERSION>;
+v20 = interfaceinvoke v1.<io.netty.handler.codec.http.HttpResponse: io.netty.handler.codec.http.HttpVersion protocolVersion()>();
+v21 = virtualinvoke v20.<io.netty.handler.codec.http.HttpVersion: java.lang.String text()>();
+interfaceinvoke v15.<io.netty.handler.codec.spdy.SpdyHeaders: io.netty.handler.codec.Headers set(java.lang.Object,java.lang.Object)>(v19, v21);
+v22 = virtualinvoke v2.<io.netty.handler.codec.http.HttpHeaders: java.util.Iterator iteratorCharSequence()>();
+label3:
+v23 = interfaceinvoke v22.<java.util.Iterator: boolean hasNext()>();
+if v23 == 0 goto label6;
+v24 = interfaceinvoke v22.<java.util.Iterator: java.lang.Object next()>();
+v25 = v0.<io.netty.handler.codec.spdy.SpdyHttpEncoder: boolean headersToLowerCase>;
+if v25 == 0 goto label4;
+v26 = interfaceinvoke v24.<java.util.Map$Entry: java.lang.Object getKey()>();
+v27 = staticinvoke <io.netty.util.AsciiString: io.netty.util.AsciiString of(java.lang.CharSequence)>(v26);
+virtualinvoke v27.<io.netty.util.AsciiString: io.netty.util.AsciiString toLowerCase()>();
+goto label5;
+label4:
+v28 = interfaceinvoke v24.<java.util.Map$Entry: java.lang.Object getKey()>();
+label5:
+v29 = interfaceinvoke v12.<io.netty.handler.codec.spdy.SpdyHeadersFrame: io.netty.handler.codec.spdy.SpdyHeaders headers()>();
+v30 = interfaceinvoke v24.<java.util.Map$Entry: java.lang.Object getValue()>();
+interfaceinvoke v29.<io.netty.handler.codec.spdy.SpdyHeaders: io.netty.handler.codec.Headers add(java.lang.Object,java.lang.Object)>(v28, v30);
+goto label3;
+label6:
+v0.<io.netty.handler.codec.spdy.SpdyHttpEncoder: int currentStreamId> = v5;
+v31 = staticinvoke <io.netty.handler.codec.spdy.SpdyHttpEncoder: boolean isLast(io.netty.handler.codec.http.HttpMessage)>(v1);
+interfaceinvoke v12.<io.netty.handler.codec.spdy.SpdyHeadersFrame: io.netty.handler.codec.spdy.SpdyHeadersFrame setLast(boolean)>(v31);
+return v12;
+}
+private static boolean isLast(io.netty.handler.codec.http.HttpMessage)
+{
+io.netty.handler.codec.http.HttpHeaders v2;
+io.netty.buffer.ByteBuf v4;
+io.netty.handler.codec.http.HttpMessage v0;
+boolean v1, v3, v5;
+v0 := @parameter0: io.netty.handler.codec.http.HttpMessage;
+v1 = v0 instanceof io.netty.handler.codec.http.FullHttpMessage;
+if v1 == 0 goto label1;
+v2 = interfaceinvoke v0.<io.netty.handler.codec.http.FullHttpMessage: io.netty.handler.codec.http.HttpHeaders trailingHeaders()>();
+v3 = virtualinvoke v2.<io.netty.handler.codec.http.HttpHeaders: boolean isEmpty()>();
+if v3 == 0 goto label1;
+v4 = interfaceinvoke v0.<io.netty.handler.codec.http.FullHttpMessage: io.netty.buffer.ByteBuf content()>();
+v5 = virtualinvoke v4.<io.netty.buffer.ByteBuf: boolean isReadable()>();
+if v5 != 0 goto label1;
+return 1;
+label1:
+return 0;
+}
+}

@@ -9,7 +9,7 @@ For example,
 
 It seems to create a lot of build time generated code that in non-reproducible.
 
-```
+```diff
 @@ -131,7 +131,7 @@
  v15 = virtualinvoke v13.<org.kohsuke.github.Requester: org.kohsuke.github.GitHubRequest$Builder withPreview(org.kohsuke.github.internal.Previews)>(v14);
  v16 = <org.kohsuke.github.internal.Previews: org.kohsuke.github.internal.Previews FLASH>;

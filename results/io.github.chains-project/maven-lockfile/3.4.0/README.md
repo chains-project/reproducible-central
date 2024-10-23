@@ -9,6 +9,7 @@ For example,
 
 It seems to create a lot of build time generated code that in non-reproducible.
 
+```
 @@ -131,7 +131,7 @@
  v15 = virtualinvoke v13.<org.kohsuke.github.Requester: org.kohsuke.github.GitHubRequest$Builder withPreview(org.kohsuke.github.internal.Previews)>(v14);
  v16 = <org.kohsuke.github.internal.Previews: org.kohsuke.github.internal.Previews FLASH>;
@@ -27,6 +28,7 @@ It seems to create a lot of build time generated code that in non-reproducible.
  v7 = virtualinvoke v5.<org.kohsuke.github.Requester: org.kohsuke.github.PagedIterable toIterable(java.lang.Class,java.util.function.Consumer)>(class "[Lorg/kohsuke/github/GHRelease;", v6);
  return v7;
  }
+```
 In rebuild, `org.kohsuke.github.GHRepository`, `3312` is added by `jNorm`. It is not present in the bytecode.
 
 For some weird reason, the following exists.

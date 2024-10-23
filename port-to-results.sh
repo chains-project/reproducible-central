@@ -20,7 +20,7 @@ is_in_csv() {
     local group_id=$1
     local artifact_id=$2
     local version=$3
-    grep -q "$group_id,$artifact_id,$version" releases_with_diffs.csv
+    grep -q "$group_id:$artifact_id:$version" projects_with_differences.txt
     return $?
 }
 

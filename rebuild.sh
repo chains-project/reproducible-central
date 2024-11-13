@@ -56,9 +56,11 @@ logtofile "Starting project $groupId:$artifactId:$version" $RESULT_DIR/out.log
 mkdir -p "$(dirname $buildspec)/jNorm"
 echo '{
   "gav": "'$groupId:$artifactId:$version'",
-  "build_success": false,
+  "maven_build": -1,
   "artifacts": []
 }' > "$(dirname $buildspec)/jNorm/jNorm_summary.json"
+
+PATH_TO_JNORM_SUMMARY_JSON="$(realpath $(dirname $buildspec)/jNorm/jNorm_summary.json)"
 
 echo "| 1. rebuild what binaries?"
 displayOptional  "referenceRepo" "$DEFAULT_referenceRepo"
@@ -117,7 +119,7 @@ fetchSource
 echo
 case ${tool} in
   mvn*)
-    rebuildToolMvn
+    rebuildToolMvn $PATH_TO_JNORM_SUMMARY_JSON
     ;;
   sbt)
     rebuildToolSbt

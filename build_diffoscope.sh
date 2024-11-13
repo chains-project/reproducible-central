@@ -83,8 +83,10 @@ do
 
   jnorm_diff_exit_code=$exit_code
 
-  runcommand cp $(realpath $builddir)/$reference $dir_with_version/jNorm/$(basename $reference)/reference
-  runcommand cp $(realpath $builddir)/$rebuild $dir_with_version/jNorm/$(basename $rebuild)/rebuild
+  mkdir -p $dir_with_version/reference
+  mkdir -p $dir_with_version/rebuild
+  runcommand cp $(realpath $builddir)/$reference $dir_with_version/reference
+  runcommand cp $(realpath $builddir)/$rebuild $dir_with_version/rebuild
 
   # Determine jNorm status
   if [ $jnorm_reference_exit_code -eq 0 ] && [ $jnorm_rebuild_exit_code -eq 0 ] && [ $jnorm_diff_exit_code -eq 0 ]

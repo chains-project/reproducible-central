@@ -22,9 +22,9 @@ def process_details(details, group_id, artifact_id, count_of_tools, version, dif
             if tool in source1 or tool in source2:
                 key = f"{group_id}:{artifact_id}:{version}"
                 if key not in count_of_tools[tool]:
-                    count_of_tools[tool][key] = set([artifact_name])
+                    count_of_tools[tool][key] = set([f"{group_id}:{artifact_id}:{version}:{artifact_name}"])
                 else:
-                    count_of_tools[tool][key].add(artifact_name)
+                    count_of_tools[tool][key].add(f"{group_id}:{artifact_id}:{version}:{artifact_name}")
         
         # Recursively process nested details
         if 'details' in detail:
@@ -53,9 +53,9 @@ def analyze_diffoscope(diffoscope_file):
             if tool in source1 or tool in source2:
                 key = f"{group_id}:{artifact_id}:{version}"
                 if key not in count_of_tools[tool]:
-                    count_of_tools[tool][key] = set([artifact_name])
+                    count_of_tools[tool][key] = set([f"{group_id}:{artifact_id}:{version}:{artifact_name}"])
                 else:
-                    count_of_tools[tool][key].add(artifact_name)
+                    count_of_tools[tool][key].add(f"{group_id}:{artifact_id}:{version}:{artifact_name}")
 
 def get_artifact_name_or_none(source):
     if source.endswith(".jar"):
@@ -69,5 +69,13 @@ if __name__ == "__main__":
             if file.endswith(".diffoscope.json"):
                 analyze_diffoscope(os.path.join(root, file))
 
-    print(count_of_tools)
+    artifacts = set()
+    for tool in ['procyon', 'javap']:
+        for key, value in count_of_tools[tool].items(): 
+            for artifact in value:
+                artifacts.add(artifact)
+
+    with open("artifacts.txt", "w") as file:
+        for artifact in artifacts:
+            file.write(f"{artifact}\n")
 

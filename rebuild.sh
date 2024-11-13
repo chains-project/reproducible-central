@@ -52,6 +52,14 @@ DEFAULT_oci_engine_run_opts="$([[ 'docker' == ${RB_OCI_ENGINE:-$DEFAULT_oci_engi
 
 logtofile "Starting project $groupId:$artifactId:$version" $RESULT_DIR/out.log
 
+# Initialize JSON array if it doesn't exist
+mkdir -p "$(dirname $buildspec)/jNorm"
+echo '{
+  "gav": "'$groupId:$artifactId:$version'",
+  "build_success": false,
+  "artifacts": []
+}' > "$(dirname $buildspec)/jNorm/jNorm_summary.json"
+
 echo "| 1. rebuild what binaries?"
 displayOptional  "referenceRepo" "$DEFAULT_referenceRepo"
 displayMandatory "groupId"

@@ -21,12 +21,6 @@ then
   sed="gsed"
 fi
 
-jNorm_successful_normalization=0
-echo $jNorm_successful_normalization > /tmp/jNorm_successful_normalization.txt
-jNorm_failed_normalization=0
-echo $jNorm_failed_normalization > /tmp/jNorm_failed_normalization.txt
-jNorm_failures=0
-echo $jNorm_failures > /tmp/jNorm_failures.txt
 dir_with_version=$(pwd)
 
 counter=0
@@ -92,11 +86,6 @@ do
   runcommand cp $(realpath $builddir)/$reference $dir_with_version/jNorm/$(basename $reference)/reference
   runcommand cp $(realpath $builddir)/$rebuild $dir_with_version/jNorm/$(basename $rebuild)/rebuild
 
-  # Initialize JSON array if it doesn't exist
-  if [ ! -f "$dir_with_version/jNorm/jNorm_summary.json" ]; then
-    echo "[]" > "$dir_with_version/jNorm/jNorm_summary.json"
-  fi
-
   # Determine jNorm status
   if [ $jnorm_reference_exit_code -eq 0 ] && [ $jnorm_rebuild_exit_code -eq 0 ] && [ $jnorm_diff_exit_code -eq 0 ]
   then
@@ -108,12 +97,12 @@ do
     jnorm_status=2  # normalization failed
   fi
 
-  # Create JSON entry for current artifact
+  # Update JSON with new artifact
   tmp_json=$(mktemp)
   jq --arg name "$(basename $reference)" \
-     --arg status "$jnorm_status" \
-     '. += [{"artifact_name": $name, "jNorm": ($status|tonumber)}]' \
-     "$dir_with_version/jNorm/jNorm_summary.json" > "$tmp_json" && mv "$tmp_json" "$dir_with_version/jNorm/jNorm_summary.json"
+    --arg status "$jnorm_status" \
+    '.artifacts += [{"artifact_name": $name, "jNorm": ($status|tonumber)}]' \
+    "$dir_with_version/jNorm/jNorm_summary.json" > "$tmp_json" && mv "$tmp_json" "$dir_with_version/jNorm/jNorm_summary.json"
 
   popd
   # remove ansi escape codes from file

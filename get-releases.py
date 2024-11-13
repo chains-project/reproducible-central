@@ -8,7 +8,7 @@ import csv
 projects = set()
 def analyze_diffoscope(diffoscope_file):
     with open(diffoscope_file, 'r') as file:
-        data = json.load(file)
+        data = file.read()
 
     diffoscope_file = Path(diffoscope_file)
     version = diffoscope_file.parent.name

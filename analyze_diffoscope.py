@@ -16,8 +16,8 @@ def process_details(details, group_id, artifact_id, count_of_tools, version, dif
         source2 = detail.get('source2', '')
         candidate = get_artifact_name_or_none(source1)
         if candidate:
+            global artifact_name
             artifact_name = candidate
-
         for tool in ['procyon', 'javap']:
             if tool in source1 or tool in source2:
                 key = f"{group_id}:{artifact_id}:{version}"
@@ -39,14 +39,16 @@ def analyze_diffoscope(diffoscope_file):
     artifact_id = diffoscope_file.parent.parent.name
     group_id = diffoscope_file.parent.parent.parent.name
     
+    source1 = data.get('source1', '')
+    source2 = data.get('source2', '')
+    candidate = get_artifact_name_or_none(source1)
+    if candidate:
+        global artifact_name
+        artifact_name = candidate
+
     if 'details' in data:
         process_details(data['details'], group_id, artifact_id, count_of_tools, version, str(diffoscope_file))
     else:
-        source1 = data.get('source1', '')
-        source2 = data.get('source2', '')
-        candidate = get_artifact_name_or_none(source1)
-        if candidate:
-            artifact_name = candidate
         for tool in ['procyon', 'javap']:
             if tool in source1 or tool in source2:
                 key = f"{group_id}:{artifact_id}:{version}"
@@ -56,7 +58,7 @@ def analyze_diffoscope(diffoscope_file):
                     count_of_tools[tool][key].add(artifact_name)
 
 def get_artifact_name_or_none(source):
-    if source.endswith(".jar") or source.endswith(".zip"):
+    if source.endswith(".jar"):
         return source.split("/")[-1]
     
     return None

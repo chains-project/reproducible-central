@@ -56,10 +56,8 @@ do
   #       --json /output/$(basename ${diffoscope_file_path}) \
   #       /$reference /$rebuild
   # exit_code=$?
-  # logtofile "diffoscope exit_code=$exit_code" $RESULT_DIR/out.log
 
-  logtofile "jNorm $(basename $reference)" $RESULT_DIR/out.log
-  mkdir -p $dir_with_version/$(basename $reference)/jNorm/
+  mkdir -p $dir_with_version/jNorm/$(basename $reference)/
   runcommand docker run --user $(id -u) --rm \
     -w /mnt \
     -v $(realpath $builddir):/mnt \
@@ -68,9 +66,8 @@ do
     algomaster99/jnorm \
       -o -n -s -a -p \
       -i /$reference \
-      -d /output/$(basename $reference)/jNorm/reference/ &> $dir_with_version/$(basename $reference)/jNorm/reference.log
+      -d /output/jNorm/$(basename $reference)/reference/ &> $dir_with_version/jNorm/$(basename $reference)/reference.log
   exit_code=$?
-  logtofile "reference exit_code=$exit_code" $RESULT_DIR/out.log
 
   jnorm_reference_exit_code=$exit_code
 
@@ -82,43 +79,43 @@ do
     algomaster99/jnorm \
       -o -n -s -a -p \
       -i /$rebuild \
-      -d /output/$(basename $rebuild)/jNorm/rebuild/ &> $dir_with_version/$(basename $rebuild)/jNorm/rebuild.log
+      -d /output/jNorm/$(basename $rebuild)/rebuild/ &> $dir_with_version/jNorm/$(basename $rebuild)/rebuild.log
   exit_code=$?
-  logtofile "rebuild exit_code=$exit_code" $RESULT_DIR/out.log
 
   jnorm_rebuild_exit_code=$exit_code
 
-  diff -u $dir_with_version/$(basename $reference)/jNorm/reference/ $dir_with_version/$(basename $rebuild)/jNorm/rebuild/ > $dir_with_version/$(basename $reference)/jNorm/diff.diff
+  diff -u $dir_with_version/jNorm/$(basename $reference)/reference/ $dir_with_version/jNorm/$(basename $rebuild)/rebuild/ > $dir_with_version/jNorm/$(basename $reference)/diff.diff
   exit_code=$?
-  logtofile "jNorm diff exit_code=$exit_code" $RESULT_DIR/out.log
 
   jnorm_diff_exit_code=$exit_code
 
-  runcommand cp $(realpath $builddir)/$reference $dir_with_version/$(basename $reference)/jNorm/reference
-  runcommand cp $(realpath $builddir)/$rebuild $dir_with_version/$(basename $rebuild)/jNorm/rebuild
+  runcommand cp $(realpath $builddir)/$reference $dir_with_version/jNorm/$(basename $reference)/reference
+  runcommand cp $(realpath $builddir)/$rebuild $dir_with_version/jNorm/$(basename $rebuild)/rebuild
 
-  jNorm_successful_normalization=$(< /tmp/jNorm_successful_normalization.txt)
-  jNorm_failed_normalization=$(< /tmp/jNorm_failed_normalization.txt)
-  jNorm_failures=$(< /tmp/jNorm_failures.txt)
+  # Initialize JSON array if it doesn't exist
+  if [ ! -f "$dir_with_version/jNorm/jNorm_summary.json" ]; then
+    echo "[]" > "$dir_with_version/jNorm/jNorm_summary.json"
+  fi
 
+  # Determine jNorm status
   if [ $jnorm_reference_exit_code -eq 0 ] && [ $jnorm_rebuild_exit_code -eq 0 ] && [ $jnorm_diff_exit_code -eq 0 ]
   then
-    (( jNorm_successful_normalization++ ))
-    echo $jNorm_successful_normalization > /tmp/jNorm_successful_normalization.txt
+    jnorm_status=0  # successful normalization, no diff
   elif [ $jnorm_reference_exit_code -eq 0 ] && [ $jnorm_rebuild_exit_code -eq 0 ] && [ $jnorm_diff_exit_code -eq 1 ]
   then
-    (( jNorm_failed_normalization++ ))
-    echo $jNorm_failed_normalization > /tmp/jNorm_failed_normalization.txt
+    jnorm_status=1  # successful normalization, has diff
   else
-    (( jNorm_failures++ ))
-    echo $jNorm_failures > /tmp/jNorm_failures.txt
+    jnorm_status=2  # normalization failed
   fi
+
+  # Create JSON entry for current artifact
+  tmp_json=$(mktemp)
+  jq --arg name "$(basename $reference)" \
+     --arg status "$jnorm_status" \
+     '. += [{"artifact_name": $name, "jNorm": ($status|tonumber)}]' \
+     "$dir_with_version/jNorm/jNorm_summary.json" > "$tmp_json" && mv "$tmp_json" "$dir_with_version/jNorm/jNorm_summary.json"
 
   popd
   # remove ansi escape codes from file
   ${sed} -i 's/\x1b\[[0-9;]*m//g' ${diffoscope_file_path}
 done )
-
-echo "jNorm_successful_normalization=$(< /tmp/jNorm_successful_normalization.txt)" > $dir_with_version/jNorm_summary.txt
-echo "jNorm_failed_normalization=$(< /tmp/jNorm_failed_normalization.txt)" >> $dir_with_version/jNorm_summary.txt
-echo "jNorm_failures=$(< /tmp/jNorm_failures.txt)" >> $dir_with_version/jNorm_summary.txt

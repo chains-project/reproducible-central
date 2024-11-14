@@ -31,6 +31,9 @@ do
 
   reference=$(echo "$line" | cut -d' ' -f1)
   rebuild=$(echo "$line" | cut -d' ' -f2)
+  echo "$line"
+  echo "Reference: $reference"
+  echo "Rebuild: $rebuild"
   path1=$builddir/$reference
   path2=$builddir/$rebuild
   diffoscope_file="$(basename $reference).diffoscope.json"
@@ -73,7 +76,7 @@ do
     algomaster99/jnorm \
       -o -n -s -a -p \
       -i /$rebuild \
-      -d /output/jNorm/$(basename $rebuild)/rebuild/ &> $dir_with_version/jNorm/$(basename $rebuild)/rebuild.log
+      -d /output/jNorm/$(basename $reference)/rebuild/ &> $dir_with_version/jNorm/$(basename $reference)/rebuild.log
   exit_code=$?
 
   jnorm_rebuild_exit_code=$exit_code
@@ -103,10 +106,11 @@ do
   tmp_json=$(mktemp)
   jq --arg name "$(basename $reference)" \
     --arg status "$jnorm_status" \
-    '.artifacts += [{"artifact_name": $name, "jNorm": ($status|tonumber)}]' \
+    --arg rebuild_name "$(basename $rebuild)" \
+    '.artifacts += [{"artifact_name": $name, "jNorm": ($status|tonumber), "reference": $name, "rebuild": $rebuild_name}]' \
     "$dir_with_version/jNorm/jNorm_summary.json" > "$tmp_json" && mv "$tmp_json" "$dir_with_version/jNorm/jNorm_summary.json"
 
   popd
   # remove ansi escape codes from file
-  ${sed} -i 's/\x1b\[[0-9;]*m//g' ${diffoscope_file_path}
+  # ${sed} -i 's/\x1b\[[0-9;]*m//g' ${diffoscope_file_path}
 done )

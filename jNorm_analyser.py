@@ -1,5 +1,6 @@
 import os
 import json
+from collections import defaultdict
 
 # Directory containing the JSON files
 base_dir = "results"
@@ -11,6 +12,9 @@ gavs_failed = []  # Includes all GAVs with jNorm 1 or jNorm 2
 # Counters for artifact counts by jNorm value
 artifact_counts = {0: 0, 1: 0, 2: 0}
 sources_artifact_counts = {0: 0, 1: 0, 2: 0}  # Counts for *sources.jar
+
+# Enumeration of extensions
+extension_counts = defaultdict(int)
 
 # Iterate through the directory structure
 for root, _, files in os.walk(base_dir):
@@ -28,14 +32,22 @@ for root, _, files in os.walk(base_dir):
             # Track jNorm values for the current GAV
             jNorm_values = [artifact["jNorm"] for artifact in artifacts]
 
-            # Update artifact counts
+            # Update artifact counts and extensions
             for artifact in artifacts:
                 jNorm = artifact["jNorm"]
+                artifact_name = artifact["artifact_name"]
+
+                # Update artifact counts by jNorm
                 if jNorm in artifact_counts:
                     artifact_counts[jNorm] += 1
+
                 # Check if the artifact is a *sources.jar
-                if artifact["artifact_name"].endswith("sources.jar") and jNorm in sources_artifact_counts:
+                if artifact_name.endswith("sources.jar") and jNorm in sources_artifact_counts:
                     sources_artifact_counts[jNorm] += 1
+
+                # Count the file extension
+                _, ext = os.path.splitext(artifact_name)
+                extension_counts[ext] += 1
 
             # Classify GAVs
             if all(jNorm == 0 for jNorm in jNorm_values):
@@ -61,3 +73,7 @@ print("\nNumber of *sources.jar artifacts with jNorm:")
 print("jNorm 0:", sources_artifact_counts[0])
 print("jNorm 1:", sources_artifact_counts[1])
 print("jNorm 2:", sources_artifact_counts[2])
+
+print("\nEnumeration of extensions in artifact names:")
+for ext, count in extension_counts.items():
+    print(f"{ext}: {count}")

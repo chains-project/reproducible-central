@@ -10,6 +10,7 @@ gavs_failed = []  # Includes all GAVs with jNorm 1 or jNorm 2
 
 # Counters for artifact counts by jNorm value
 artifact_counts = {0: 0, 1: 0, 2: 0}
+sources_artifact_counts = {0: 0, 1: 0, 2: 0}  # Counts for *sources.jar
 
 # Iterate through the directory structure
 for root, _, files in os.walk(base_dir):
@@ -28,9 +29,13 @@ for root, _, files in os.walk(base_dir):
             jNorm_values = [artifact["jNorm"] for artifact in artifacts]
 
             # Update artifact counts
-            for jNorm in jNorm_values:
+            for artifact in artifacts:
+                jNorm = artifact["jNorm"]
                 if jNorm in artifact_counts:
                     artifact_counts[jNorm] += 1
+                # Check if the artifact is a *sources.jar
+                if artifact["artifact_name"].endswith("sources.jar") and jNorm in sources_artifact_counts:
+                    sources_artifact_counts[jNorm] += 1
 
             # Classify GAVs
             if all(jNorm == 0 for jNorm in jNorm_values):
@@ -52,3 +57,7 @@ print("jNorm 0:", artifact_counts[0])
 print("jNorm 1:", artifact_counts[1])
 print("jNorm 2:", artifact_counts[2])
 
+print("\nNumber of *sources.jar artifacts with jNorm:")
+print("jNorm 0:", sources_artifact_counts[0])
+print("jNorm 1:", sources_artifact_counts[1])
+print("jNorm 2:", sources_artifact_counts[2])

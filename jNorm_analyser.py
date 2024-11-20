@@ -3,7 +3,7 @@ import json
 from collections import defaultdict
 
 # Directory containing the JSON files
-base_dir = "results"
+base_dir = "from-repairnator"
 
 # Initialize counters and lists for GAVs
 gavs_all_0 = []

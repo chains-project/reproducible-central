@@ -27,11 +27,6 @@ do
     # Source the buildspec file
     source $buildspec
 
-    if [[ $groupId == "io.fabric8" ]]
-    then
-        continue
-    fi
-
     if [[ "${jdk}" == ??.0.* || -n "${RB_SHELL}" || ${command} == SHELL* ]]
     then
         continue

@@ -5,14 +5,20 @@ import requests
 import re
 from time import sleep
 import logging
+from enum import Enum
+import zipfile
 
 # Set up logging
 logging.basicConfig(
-    filename='maven_check_failures.log',
+    filename='make-release-consistent.log',
     level=logging.WARNING,
     format='%(asctime)s - %(message)s',
     datefmt='%Y-%m-%d %H:%M:%S'
 )
+
+class ArtifactSource(Enum):
+    REBUILD = "rebuild"
+    REFERENCE = "reference"
 
 def check_maven_central(group_id, artifact_id, version):
     url = f"https://repo1.maven.org/maven2/{group_id.replace('.', '/')}/{artifact_id}/{version}"
@@ -38,14 +44,38 @@ def extract_artifact_id(artifact_name, version):
     cleaned_name = cleaned_name.replace(".jar", "")
     return cleaned_name
 
+def total_classfiles(root_dir, artifact_name, source):
+    path = os.path.join(root_dir, source.value, artifact_name)
+    try:
+        jar_file = zipfile.ZipFile(path)
+        return sum(1 for _ in jar_file.namelist() if _.endswith('.class'))
+    except FileNotFoundError:
+        logging.warning(f"Artifact {artifact_name} missing {source.value}")
+        return 0
+
+def get_artifact_size(root_dir, artifact_name, source):
+    # Get paths for both reference and rebuild
+    ref_path = os.path.join(root_dir, source.value, artifact_name)
+    
+    # Check if both files exist and get their sizes
+    if os.path.exists(ref_path):
+        ref_size = os.path.getsize(ref_path)
+        return ref_size
+    else:
+        logging.warning(f"Missing {source} file: {ref_path}")
+        return 0
+
 def process_jnorm_summaries():
     base_dir = "from-repairnator"
-    gav_to_artifact_map = {}  # New map for GAV to artifact name mapping
+    gav_to_artifact_map = {}
+    reference_total_size = 0
+    rebuild_total_size = 0
 
     for root, _, files in os.walk(base_dir):
         for file in files:
             if file == "jNorm_summary.json":
                 file_path = Path(root) / file
+                version_dir = file_path.parent.parent
                 
                 with open(file_path) as f:
                     try:
@@ -66,17 +96,26 @@ def process_jnorm_summaries():
                                 if artifact.get("reference") != artifact.get("rebuild"):
                                     Exception(f"Error: reference and rebuild mismatch for {artifact_name}")
 
+                                reference_size = get_artifact_size(str(version_dir), artifact_name, ArtifactSource.REFERENCE)
+                                rebuild_size = get_artifact_size(str(version_dir), artifact_name, ArtifactSource.REBUILD)
+                                reference_total_size += reference_size
+                                rebuild_total_size += rebuild_size
+
+
                                 extracted_artifact_id = extract_artifact_id(artifact_name, version)
                                 
                                 if extracted_artifact_id:
                                     gav = f"{group_id}:{extracted_artifact_id}:{version}"
                                     
-                                    # Add to mapping as a list
                                     if gav not in gav_to_artifact_map:
                                         gav_to_artifact_map[gav] = []
                                     gav_to_artifact_map[gav].append({
-                                        "artifact_name": artifact_name,
-                                        "jNorm": artifact.get("jNorm")
+                                        "name": artifact_name,
+                                        "jNorm": artifact.get('jNorm'),
+                                        "reference_size": reference_size,
+                                        "rebuild_size": rebuild_size,
+                                        "reference_classfiles": total_classfiles(str(version_dir), artifact_name, ArtifactSource.REFERENCE),
+                                        "rebuild_classfiles": total_classfiles(str(version_dir), artifact_name, ArtifactSource.REBUILD)
                                     })
                                     
                                     if group_id == "org.apache.cxf.fediz" and extracted_artifact_id == "common":
@@ -99,9 +138,9 @@ def process_jnorm_summaries():
                     except json.JSONDecodeError:
                         continue
 
-    return gav_to_artifact_map
+    return gav_to_artifact_map, reference_total_size, rebuild_total_size
 
-gav_map = process_jnorm_summaries()
+gav_map, reference_total_size, rebuild_total_size = process_jnorm_summaries()
 
 unique_maven_central_releases = set()
 for artifact in gav_map.keys():
@@ -114,4 +153,6 @@ with open('make-release-consistent.txt', 'w') as f:
     f.write(f'{len(gav_map)} unique GAVs found\n')
     f.write(f'{sum(len(artifacts) for artifacts in gav_map.values())} artifacts found\n')
     f.write(f'{len(unique_maven_central_releases)} unique Maven Central releases found\n')
+    f.write(f'Reference total size: {reference_total_size / 1024} KB\n')
+    f.write(f'Rebuild total size: {rebuild_total_size / 1024} KB\n')
     f.write(f"GAV mapping saved to gav_to_artifact_map.json\n")

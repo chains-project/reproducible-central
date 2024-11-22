@@ -103,10 +103,15 @@ def process_jnorm_summaries():
 
 gav_map = process_jnorm_summaries()
 
+unique_maven_central_releases = set()
+for artifact in gav_map.keys():
+    unique_maven_central_releases.add(':'.join(artifact.split(':')[:2]))
+
 with open('make-release-consistent.json', 'w') as f:
     json.dump(gav_map, f, indent=2)
 
 with open('make-release-consistent.txt', 'w') as f:
     f.write(f'{len(gav_map)} unique GAVs found\n')
     f.write(f'{sum(len(artifacts) for artifacts in gav_map.values())} artifacts found\n')
+    f.write(f'{len(unique_maven_central_releases)} unique Maven Central releases found\n')
     f.write(f"GAV mapping saved to gav_to_artifact_map.json\n")

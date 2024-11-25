@@ -68,6 +68,7 @@ def get_artifact_size(root_dir, artifact_name, source):
 def process_jnorm_summaries():
     base_dir = "from-repairnator"
     gav_to_artifact_map = {}
+    gav_to_file_path_map = {}
     reference_total_size = 0
     rebuild_total_size = 0
 
@@ -94,7 +95,7 @@ def process_jnorm_summaries():
                                 
                                 # Verify reference and rebuild are same
                                 if artifact.get("reference") != artifact.get("rebuild"):
-                                    Exception(f"Error: reference and rebuild mismatch for {artifact_name}")
+                                    logging.warning(f"Reference Rebuild mismatch: {group_id}:{artifact_id}:{version} {artifact_name}")
 
                                 reference_size = get_artifact_size(str(version_dir), artifact_name, ArtifactSource.REFERENCE)
                                 rebuild_size = get_artifact_size(str(version_dir), artifact_name, ArtifactSource.REBUILD)
@@ -103,12 +104,32 @@ def process_jnorm_summaries():
 
 
                                 extracted_artifact_id = extract_artifact_id(artifact_name, version)
+                                if group_id == "org.apache.cxf.fediz" and extracted_artifact_id == "common":
+                                    modified_group_id = "org.apache.cxf.fediz.examples.wsclientWebapp.webservice"
+
+                                if group_id == "org.apache.hive" and extracted_artifact_id == "hive-webhcat":
+                                    modified_group_id = "org.apache.hive.hcatalog"
+
+                                if group_id == "org.apache.drill":
+                                    possible_group_ids = ['org.apache.drill', 'org.apache.drill.contrib', 'org.apache.drill.exec', 'org.apache.drill.memory', 'org.apache.drill.metastore', 'org.apache.drill.contrib.data', 'org.apache.drill.tools', 'org.apache.drill.contrib.storage-hive']
+                                    for candidate_group_id in possible_group_ids:
+                                        if check_maven_central(candidate_group_id, extracted_artifact_id, version):
+                                            modified_group_id = candidate_group_id
+                                            break
+                                    else:
+                                        logging.warning(f"Failed to find artifact in Maven Central: {group_id}:{extracted_artifact_id}:{version}")
+                                        continue
+
+                                if group_id != "org.apache.drill" and not check_maven_central(modified_group_id, extracted_artifact_id, version):
+                                    logging.warning(f"Failed to find artifact in Maven Central: {modified_group_id}:{extracted_artifact_id}:{version}")
+                                    continue
                                 
                                 if extracted_artifact_id:
-                                    gav = f"{group_id}:{extracted_artifact_id}:{version}"
+                                    gav = f"{modified_group_id}:{extracted_artifact_id}:{version}"
                                     
                                     if gav not in gav_to_artifact_map:
                                         gav_to_artifact_map[gav] = []
+                                        gav_to_file_path_map[gav] = []
                                     gav_to_artifact_map[gav].append({
                                         "name": artifact_name,
                                         "jNorm": artifact.get('jNorm'),
@@ -117,30 +138,19 @@ def process_jnorm_summaries():
                                         "reference_classfiles": total_classfiles(str(version_dir), artifact_name, ArtifactSource.REFERENCE),
                                         "rebuild_classfiles": total_classfiles(str(version_dir), artifact_name, ArtifactSource.REBUILD)
                                     })
-                                    
-                                    if group_id == "org.apache.cxf.fediz" and extracted_artifact_id == "common":
-                                        modified_group_id = "org.apache.cxf.fediz.examples.wsclientWebapp.webservice"
-                                    
-                                    if group_id == "org.apache.hive" and extracted_artifact_id == "hive-webhcat":
-                                        modified_group_id = "org.apache.hive.hcatalog"
-
-                                    if group_id == "org.apache.drill":
-                                        possible_group_ids = ['org.apache.drill', 'org.apache.drill.contrib', 'org.apache.drill.exec', 'org.apache.drill.memory', 'org.apache.drill.metastore', 'org.apache.drill.contrib.data', 'org.apache.drill.tools', 'org.apache.drill.contrib.storage-hive']
-                                        for candidate_group_id in possible_group_ids:
-                                            if check_maven_central(candidate_group_id, extracted_artifact_id, version):
-                                                break
-                                        else:
-                                            logging.warning(f"Failed to find artifact in Maven Central: {group_id}:{extracted_artifact_id}:{version}")
-                                    
-                                    if group_id != "org.apache.drill" and not check_maven_central(modified_group_id, extracted_artifact_id, version):
-                                        logging.warning(f"Failed to find artifact in Maven Central: {modified_group_id}:{extracted_artifact_id}:{version}")
+                                    reference_artifact_path = os.path.join(str(version_dir), ArtifactSource.REFERENCE.value, artifact_name)
+                                    rebuild_artifact_path = os.path.join(str(version_dir), ArtifactSource.REBUILD.value, artifact_name)
+                                    gav_to_file_path_map[gav].append({
+                                        "reference": reference_artifact_path if os.path.exists(reference_artifact_path) else None,
+                                        "rebuild": rebuild_artifact_path if os.path.exists(rebuild_artifact_path) else None
+                                    })
                                     
                     except json.JSONDecodeError:
                         continue
 
-    return gav_to_artifact_map, reference_total_size, rebuild_total_size
+    return gav_to_artifact_map, reference_total_size, rebuild_total_size, gav_to_file_path_map
 
-gav_map, reference_total_size, rebuild_total_size = process_jnorm_summaries()
+gav_map, reference_total_size, rebuild_total_size, gav_to_file_path_map = process_jnorm_summaries()
 
 unique_maven_central_releases = set()
 for artifact in gav_map.keys():
@@ -149,6 +159,9 @@ for artifact in gav_map.keys():
 with open('make-release-consistent.json', 'w') as f:
     json.dump(gav_map, f, indent=2)
 
+with open('make-release-consistent-file-paths.json', 'w') as f:
+    json.dump(gav_to_file_path_map, f, indent=2)
+
 with open('make-release-consistent.txt', 'w') as f:
     f.write(f'{len(gav_map)} unique GAVs found\n')
     f.write(f'{sum(len(artifacts) for artifacts in gav_map.values())} artifacts found\n')
@@ -156,3 +169,4 @@ with open('make-release-consistent.txt', 'w') as f:
     f.write(f'Reference total size: {reference_total_size / 1024} KB\n')
     f.write(f'Rebuild total size: {rebuild_total_size / 1024} KB\n')
     f.write(f"GAV mapping saved to gav_to_artifact_map.json\n")
+    f.write(f"GAV to file path mapping saved to gav_to_file_path_map.json\n")

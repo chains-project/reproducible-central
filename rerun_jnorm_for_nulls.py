@@ -138,7 +138,6 @@ def main():
             if artifact['rebuild'] is None:
                 print(f"\nProcessing {gav} - {artifact['reference']}")
                 process_artifact(gav, artifact)
-                return
 
 if __name__ == "__main__":
     main() 

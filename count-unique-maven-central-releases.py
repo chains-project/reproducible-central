@@ -1,6 +1,9 @@
 import json
 from collections import defaultdict
 from statistics import mean, median
+import pandas as pd
+import seaborn as sns
+import matplotlib.pyplot as plt
 
 with open('make-release-consistent.json', 'r') as f:
     gav_map = json.load(f)
@@ -22,6 +25,25 @@ versions_counts = [len(versions) for versions in versions_per_artifact.values()]
 mean_versions = mean(versions_counts)
 max_versions = max(versions_counts)
 min_versions = min(versions_counts)
+
+plot_data = {
+    'Number of Maven Central Modules': versions_per_artifact.keys(),
+    'Number of releases for each maven module': versions_counts
+}
+
+violin_df = pd.DataFrame(plot_data)
+
+
+plt.figure(figsize=(8, 6))
+sns.violinplot(data=violin_df, inner="point")
+
+plt.title("Violin Plot: Number of Releases per Maven Central Modules")
+plt.ylabel("Number of releases")
+plt.tight_layout()
+
+# Save plots before showing
+plt.savefig('number_of_releases_per_maven_module.svg', format='svg', bbox_inches='tight')
+plt.savefig('number_of_releases_per_maven_module.pdf', format='pdf', bbox_inches='tight')
 
 # Collect all jar sizes (using reference_size)
 jar_sizes = []

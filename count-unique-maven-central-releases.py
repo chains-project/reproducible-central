@@ -37,7 +37,6 @@ violin_df = pd.DataFrame(plot_data)
 plt.figure(figsize=(8, 6))
 sns.violinplot(data=violin_df, inner="point")
 
-plt.title("Violin Plot: Number of Releases per Maven Central Modules")
 plt.ylabel("Number of releases")
 plt.tight_layout()
 

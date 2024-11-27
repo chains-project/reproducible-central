@@ -139,6 +139,10 @@ def process_jnorm_summaries():
                                         "rebuild_classfiles": total_classfiles(str(version_dir), artifact_name, ArtifactSource.REBUILD)
                                     })
                                     reference_artifact_path = os.path.join(str(version_dir), ArtifactSource.REFERENCE.value, artifact_name)
+                                    if 'dependency-check-cli' in reference_artifact_path:
+                                        artifact_name = artifact_name.replace('-cli', '')
+                                    elif 'drill-hive-exec-shaded' in reference_artifact_path:
+                                        artifact_name = artifact_name.replace('-jar', '') 
                                     rebuild_artifact_path = os.path.join(str(version_dir), ArtifactSource.REBUILD.value, artifact_name)
                                     gav_to_file_path_map[gav].append({
                                         "reference": reference_artifact_path if os.path.exists(reference_artifact_path) else None,

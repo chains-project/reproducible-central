@@ -97,10 +97,6 @@ def process_jnorm_summaries():
                                 if artifact.get("reference") != artifact.get("rebuild"):
                                     logging.warning(f"Reference Rebuild mismatch: {group_id}:{artifact_id}:{version} {artifact_name}")
 
-                                reference_size = get_artifact_size(str(version_dir), artifact_name, ArtifactSource.REFERENCE)
-                                rebuild_size = get_artifact_size(str(version_dir), artifact_name, ArtifactSource.REBUILD)
-                                reference_total_size += reference_size
-                                rebuild_total_size += rebuild_size
 
 
                                 extracted_artifact_id = extract_artifact_id(artifact_name, version)
@@ -130,19 +126,27 @@ def process_jnorm_summaries():
                                     if gav not in gav_to_artifact_map:
                                         gav_to_artifact_map[gav] = []
                                         gav_to_file_path_map[gav] = []
-                                    gav_to_artifact_map[gav].append({
-                                        "name": artifact_name,
-                                        "jNorm": artifact.get('jNorm'),
-                                        "reference_size": reference_size,
-                                        "rebuild_size": rebuild_size,
-                                        "reference_classfiles": total_classfiles(str(version_dir), artifact_name, ArtifactSource.REFERENCE),
-                                        "rebuild_classfiles": total_classfiles(str(version_dir), artifact_name, ArtifactSource.REBUILD)
-                                    })
+
                                     reference_artifact_path = os.path.join(str(version_dir), ArtifactSource.REFERENCE.value, artifact_name)
+                                    original_artifact_name = artifact_name
                                     if 'dependency-check-cli' in reference_artifact_path:
                                         artifact_name = artifact_name.replace('-cli', '')
                                     elif 'drill-hive-exec-shaded' in reference_artifact_path:
-                                        artifact_name = artifact_name.replace('-jar', '') 
+                                        artifact_name = artifact_name.replace('-jar', '')
+                                    
+                                    reference_size = get_artifact_size(str(version_dir), original_artifact_name, ArtifactSource.REFERENCE)
+                                    rebuild_size = get_artifact_size(str(version_dir), artifact_name, ArtifactSource.REBUILD)
+                                    reference_total_size += reference_size
+                                    rebuild_total_size += rebuild_size
+
+                                    gav_to_artifact_map[gav].append({
+                                        "name": original_artifact_name,
+                                        "jNorm": artifact.get('jNorm'),
+                                        "reference_size": reference_size,
+                                        "rebuild_size": rebuild_size,
+                                        "reference_classfiles": total_classfiles(str(version_dir), original_artifact_name, ArtifactSource.REFERENCE),
+                                        "rebuild_classfiles": total_classfiles(str(version_dir), artifact_name, ArtifactSource.REBUILD)
+                                    })
                                     rebuild_artifact_path = os.path.join(str(version_dir), ArtifactSource.REBUILD.value, artifact_name)
                                     gav_to_file_path_map[gav].append({
                                         "reference": reference_artifact_path if os.path.exists(reference_artifact_path) else None,

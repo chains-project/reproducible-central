@@ -7,6 +7,28 @@ import matplotlib.pyplot as plt
 
 with open('make-release-consistent.json', 'r') as f:
     gav_map = json.load(f)
+
+with open('jar_analysis.json', 'r') as f:
+    jar_analysis = json.load(f)
+
+
+classfile_counts = []
+sizes = []
+
+for gav, artifacts in jar_analysis.items():
+    total_classfiles = 0
+    total_size = 0
+    for artifact in artifacts:
+        name = artifact['artifactName']
+        # Skip source, javadoc and test JARs
+        if any(x in name for x in ['-sources.', '-javadoc.', '-tests.', '-test-']):
+            continue
+        if name.endswith('.jar'):
+            total_classfiles += artifact['numberOfClassfiles']
+            total_size += artifact['size']
+    
+    classfile_counts.append(total_classfiles)
+    sizes.append(total_size)
     
 # Count unique Maven Central releases
 unique_maven_central_releases = set()
@@ -28,7 +50,7 @@ min_versions = min(versions_counts)
 
 plot_data = {
     'Number of Maven Central Modules': versions_per_artifact.keys(),
-    'Number of releases for each maven module': versions_counts
+    'Number of releases for each maven module': versions_counts,
 }
 
 violin_df = pd.DataFrame(plot_data)
@@ -44,23 +66,30 @@ plt.tight_layout()
 plt.savefig('number_of_releases_per_maven_module.svg', format='svg', bbox_inches='tight')
 plt.savefig('number_of_releases_per_maven_module.pdf', format='pdf', bbox_inches='tight')
 
-# Collect all jar sizes (using reference_size)
-jar_sizes = []
-for artifacts in gav_map.values():
-    for artifact in artifacts:
-        if artifact['name'].endswith('.jar'):
-            jar_sizes.append(artifact['reference_size'])
-
-# Calculate statistics
-min_size = min(jar_sizes)
-max_size = max(jar_sizes)
-median_size = median(jar_sizes)
 
 print(f"Maven central packages: {len(unique_maven_central_releases)}")
 print(f"Mean releases per package: {mean_versions:.2f}")
 print(f"Max releases per package: {max_versions}")
 print(f"Min releases per package: {min_versions}")
 print(f"Total releases: {sum(versions_counts)}")
-print(f"Median jar size: {median_size/1024:.2f} KB")
-print(f"Max jar size: {max_size/1024:.2f} KB")
-print(f"Min jar size: {min_size/1024:.2f} KB")
+
+fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(12, 6))
+
+# Plot 1: Number of class files
+sns.violinplot(y=classfile_counts, ax=ax1)
+ax1.set_title('Number of Class Files per JAR')
+ax1.set_ylabel('Number of Class Files')
+
+# Plot 2: JAR sizes
+sns.violinplot(y=[s/1024 for s in sizes], ax=ax2)  # Convert to KB
+ax2.set_title('JAR Sizes')
+ax2.set_ylabel('Size (KB)')
+
+plt.tight_layout()
+plt.savefig('jar_metrics_violin.pdf')
+plt.savefig('jar_metrics_violin.png')
+
+# Print summary statistics
+print(f"Total JARs analyzed: {len(classfile_counts)}")
+print(f"Average class files per maven release: {sum(classfile_counts)/len(classfile_counts):.2f}")
+print(f"Average JAR size: {sum(sizes)/len(sizes)/1024:.2f} KB")

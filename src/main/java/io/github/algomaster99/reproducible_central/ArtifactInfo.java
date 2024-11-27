@@ -1,22 +1,22 @@
 package io.github.algomaster99.reproducible_central;
 
 public class ArtifactInfo {
-	private String reference;
-	private String rebuild;
+	private String artifactName;
+    private long size;
+    private long numberOfClassfiles;
 
-	public String getReference() {
-		return reference;
-	}
+    public ArtifactInfo() {}
 
-	public void setReference(String reference) {
-		this.reference = reference;
-	}
+    public ArtifactInfo(String artifactName, long size, long classCount) {
+        this.artifactName = artifactName;
+        this.size = size;
+        this.numberOfClassfiles = classCount;
+    }
 
-	public String getRebuild() {
-		return rebuild;
-	}
-
-	public void setRebuild(String rebuild) {
-		this.rebuild = rebuild;
-	}
+    public String getArtifactName() { return artifactName; }
+    public void setArtifactName(String artifactName) { this.artifactName = artifactName; }
+    public long getSize() { return size; }
+    public void setSize(long size) { this.size = size; }
+    public long getNumberOfClassfiles() { return numberOfClassfiles; }
+    public void setNumberOfClassfiles(long count) { this.numberOfClassfiles = count; }
 }

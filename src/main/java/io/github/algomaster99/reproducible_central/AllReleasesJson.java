@@ -7,14 +7,14 @@ import java.util.List;
 import java.util.Map;
 
 public class AllReleasesJson {
-	private Map<String, List<ArtifactInfo>> releasesToJars = new HashMap<>();
+	private Map<String, List<ArtifactPath>> releasesToJars = new HashMap<>();
 
-	public Map<String, List<ArtifactInfo>> getReleasesToJars() {
+	public Map<String, List<ArtifactPath>> getReleasesToJars() {
 		return releasesToJars;
 	}
 
 	@JsonAnySetter
-	public void addModule(String key, List<ArtifactInfo> artifacts) {
+	public void addModule(String key, List<ArtifactPath> artifacts) {
 		releasesToJars.put(key, artifacts);
 	}
 }

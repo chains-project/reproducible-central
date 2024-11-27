@@ -14,7 +14,6 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
@@ -27,18 +26,18 @@ public class ExtractUrlFromPom {
         ObjectMapper objectMapper = new ObjectMapper();
         AllReleasesJson allReleasesJson = objectMapper.readValue(ARTIFACTS_JSON, AllReleasesJson.class);
 
-        for (Map.Entry<String, List<ArtifactInfo>> entry: allReleasesJson.getReleasesToJars().entrySet()) {
+        for (Map.Entry<String, List<ArtifactPath>> entry: allReleasesJson.getReleasesToJars().entrySet()) {
             String moduleName = entry.getKey();
             Pair<String, String> ga = getGA(moduleName);
-            List<ArtifactInfo> artifactInfos = entry.getValue();
-            for (ArtifactInfo artifactInfo: artifactInfos) {
-                File referenceJar = new File(artifactInfo.getReference()).getAbsoluteFile();
+            List<ArtifactPath> artifactPaths = entry.getValue();
+            for (ArtifactPath artifactPath : artifactPaths) {
+                File referenceJar = new File(artifactPath.getReference()).getAbsoluteFile();
                 Set<String> referenceCandidateUrls = extractUrlFromPom(referenceJar, ga.getLeft(), ga.getRight());
 
                 Set<String> rebuildCandidateUrls = Set.of();
                 // TODO: fix artifacts where rebuild is null
-                if (artifactInfo.getRebuild() != null) {
-                    File rebuildJar = new File(artifactInfo.getRebuild()).getAbsoluteFile();
+                if (artifactPath.getRebuild() != null) {
+                    File rebuildJar = new File(artifactPath.getRebuild()).getAbsoluteFile();
                     rebuildCandidateUrls = extractUrlFromPom(rebuildJar, ga.getLeft(), ga.getRight());
                 }
                 File versionDir = referenceJar.getParentFile().getParentFile();
@@ -52,7 +51,7 @@ public class ExtractUrlFromPom {
                 }
                 String sourceRepositoryUrl = normaliseSourceRepositoryUrl(extractUrlFromBuildSpec(buildSpec));
 
-                if (!rebuildCandidateUrls.equals(referenceCandidateUrls) && artifactInfo.getRebuild() != null) {
+                if (!rebuildCandidateUrls.equals(referenceCandidateUrls) && artifactPath.getRebuild() != null) {
                     throw new RuntimeException("different pom files");
                 }
                 if (referenceCandidateUrls.contains(sourceRepositoryUrl) && rebuildCandidateUrls.contains(sourceRepositoryUrl)) {

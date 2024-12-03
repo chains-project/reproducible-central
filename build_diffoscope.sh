@@ -88,8 +88,13 @@ do
 
   mkdir -p $dir_with_version/reference
   mkdir -p $dir_with_version/rebuild
-  runcommand cp $(realpath $builddir)/$reference $dir_with_version/reference/"$(basename $reference):$(basename $rebuild)"
-  runcommand cp $(realpath $builddir)/$rebuild $dir_with_version/rebuild/"$(basename $reference):$(basename $rebuild)"
+  copied_reference=$dir_with_version/reference/"$(basename $reference):$(basename $rebuild)"
+  copied_rebuild=$dir_with_version/rebuild/"$(basename $reference):$(basename $rebuild)"
+  runcommand cp $(realpath $builddir)/$reference $copied_reference
+  runcommand cp $(realpath $builddir)/$rebuild $copied_rebuild
+
+  relative_reference=$(realpath --relative-to=${SCRIPTDIR} $copied_reference)
+  relative_rebuild=$(realpath --relative-to=${SCRIPTDIR} $copied_rebuild)
 
   # Determine jNorm status
   if [ $jnorm_reference_exit_code -eq 0 ] && [ $jnorm_rebuild_exit_code -eq 0 ] && [ $jnorm_diff_exit_code -eq 0 ]
@@ -106,8 +111,9 @@ do
   tmp_json=$(mktemp)
   jq --arg name "$(basename $reference)" \
     --arg status "$jnorm_status" \
-    --arg rebuild_name "$(basename $rebuild)" \
-    '.artifacts += [{"artifact_name": $name, "jNorm": ($status|tonumber), "reference": $name, "rebuild": $rebuild_name}]' \
+    --arg reference_path "$([ -z "$copied_reference" ] && echo "" || echo "$relative_reference")" \
+    --arg rebuild_path "$([ -z "$copied_rebuild" ] && echo "" || echo "$relative_rebuild")" \
+    '.artifacts += [{"artifact_name": $name, "jNorm": ($status|tonumber), "reference": $reference_path, "rebuild": $rebuild_path}]' \
     "$dir_with_version/jNorm/jNorm_summary.json" > "$tmp_json" && mv "$tmp_json" "$dir_with_version/jNorm/jNorm_summary.json"
 
   popd

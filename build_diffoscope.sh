@@ -54,7 +54,7 @@ do
   #       /$reference /$rebuild
   # exit_code=$?
 
-  mkdir -p $dir_with_version/jNorm/$(basename $reference)/
+  mkdir -p $dir_with_version/jNorm/$(basename $reference):$(basename $rebuild)/
   runcommand docker run --user $(id -u) --rm \
     -w /mnt \
     -v $(realpath $builddir):/mnt \
@@ -63,7 +63,7 @@ do
     algomaster99/jnorm \
       -o -n -s -a -p \
       -i /$reference \
-      -d /output/jNorm/$(basename $reference)/reference/ &> $dir_with_version/jNorm/$(basename $reference)/reference.log
+      -d /output/jNorm/$(basename $reference):$(basename $rebuild)/reference/ &> $dir_with_version/jNorm/$(basename $reference):$(basename $rebuild)/reference.log
   exit_code=$?
 
   jnorm_reference_exit_code=$exit_code
@@ -76,20 +76,20 @@ do
     algomaster99/jnorm \
       -o -n -s -a -p \
       -i /$rebuild \
-      -d /output/jNorm/$(basename $reference)/rebuild/ &> $dir_with_version/jNorm/$(basename $reference)/rebuild.log
+      -d /output/jNorm/$(basename $reference):$(basename $rebuild)/rebuild/ &> $dir_with_version/jNorm/$(basename $reference):$(basename $rebuild)/rebuild.log
   exit_code=$?
 
   jnorm_rebuild_exit_code=$exit_code
 
-  diff -u $dir_with_version/jNorm/$(basename $reference)/reference/ $dir_with_version/jNorm/$(basename $rebuild)/rebuild/ > $dir_with_version/jNorm/$(basename $reference)/diff.diff
+  diff -u $dir_with_version/jNorm/$(basename $reference):$(basename $rebuild)/reference/ $dir_with_version/jNorm/$(basename $reference):$(basename $rebuild)/rebuild/ > $dir_with_version/jNorm/$(basename $reference):$(basename $rebuild)/diff.diff
   exit_code=$?
 
   jnorm_diff_exit_code=$exit_code
 
   mkdir -p $dir_with_version/reference
   mkdir -p $dir_with_version/rebuild
-  runcommand cp $(realpath $builddir)/$reference $dir_with_version/reference
-  runcommand cp $(realpath $builddir)/$rebuild $dir_with_version/rebuild
+  runcommand cp $(realpath $builddir)/$reference $dir_with_version/reference/"$(basename $reference):$(basename $rebuild)"
+  runcommand cp $(realpath $builddir)/$rebuild $dir_with_version/rebuild/"$(basename $reference):$(basename $rebuild)"
 
   # Determine jNorm status
   if [ $jnorm_reference_exit_code -eq 0 ] && [ $jnorm_rebuild_exit_code -eq 0 ] && [ $jnorm_diff_exit_code -eq 0 ]

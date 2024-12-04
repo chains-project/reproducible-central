@@ -18,6 +18,7 @@ mvnBuildDocker() {
   mvnCommand="$1"
   PATH_TO_JNORM_SUMMARY_JSON="$2"
   crlfDocker="no"
+  dir_with_version=$(dirname $(dirname "$PATH_TO_JNORM_SUMMARY_JSON"))
   mvn_engine_params="$([ "$CI" = true ] && echo "--no-transfer-progress -Dstyle.color=always")"
 
   mvnVersion="3.6.3"
@@ -133,16 +134,19 @@ mvnBuildDocker() {
   then
     if [[ "${crlfDocker}" == "yes" ]]
     then
-      runcommand ${engine_command} ${mvnImage} ${mvnCommand} ${mvn_engine_params} -Dline.separator=$'\r\n'
+      runcommand ${engine_command} ${mvnImage} ${mvnCommand} ${mvn_engine_params} -Dline.separator=$'\r\n'  &> $dir_with_version/mvn.log
       exit_code=$?
+      echo "mvn exit_code=$exit_code" >> $dir_with_version/mvn.log
     else
       mvnCommand="$(echo "${mvnCommand}" | sed "s_^mvn _/var/maven/.m2/mvncrlf _")"
-      runcommand ${engine_command} ${mvnImage} ${mvnCommand} ${mvn_engine_params}
+      runcommand ${engine_command} ${mvnImage} ${mvnCommand} ${mvn_engine_params} &> $dir_with_version/mvn.log
       exit_code=$?
+      echo "mvn exit_code=$exit_code" >> $dir_with_version/mvn.log
     fi
   else
-    runcommand ${engine_command} ${mvnImage} ${mvnCommand} ${mvn_engine_params}
+    runcommand ${engine_command} ${mvnImage} ${mvnCommand} ${mvn_engine_params} &> $dir_with_version/mvn.log
     exit_code=$?
+    echo "mvn exit_code=$exit_code" >> $dir_with_version/mvn.log
   fi
   tmp_json=$(mktemp)
   jq '.maven_build = '${exit_code}'' "$PATH_TO_JNORM_SUMMARY_JSON" > "$tmp_json" && mv "$tmp_json" "$PATH_TO_JNORM_SUMMARY_JSON"

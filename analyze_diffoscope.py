@@ -7,7 +7,10 @@ import sys
 import argparse
 import shutil
 
-count_of_tools = {'procyon': {}, 'javap': {}}
+PROCYON_TOOL = "procyon -ec"
+JAVAP_TOOL = "javap -verbose"
+
+count_of_tools = {PROCYON_TOOL: {}, JAVAP_TOOL: {}}
 artifact_name = ""
 
 def process_details(details, group_id, artifact_id, count_of_tools, version, diffoscope_file):
@@ -18,7 +21,7 @@ def process_details(details, group_id, artifact_id, count_of_tools, version, dif
         if candidate:
             global artifact_name
             artifact_name = candidate
-        for tool in ['procyon', 'javap']:
+        for tool in [PROCYON_TOOL, JAVAP_TOOL]:
             if tool in source1 or tool in source2:
                 key = f"{group_id}:{artifact_id}:{version}"
                 if key not in count_of_tools[tool]:
@@ -49,7 +52,7 @@ def analyze_diffoscope(diffoscope_file):
     if 'details' in data:
         process_details(data['details'], group_id, artifact_id, count_of_tools, version, str(diffoscope_file))
     else:
-        for tool in ['procyon', 'javap']:
+        for tool in [PROCYON_TOOL, JAVAP_TOOL]:
             if tool in source1 or tool in source2:
                 key = f"{group_id}:{artifact_id}:{version}"
                 if key not in count_of_tools[tool]:
@@ -70,12 +73,12 @@ if __name__ == "__main__":
                 analyze_diffoscope(os.path.join(root, file))
 
     artifacts = set()
-    for tool in ['procyon', 'javap']:
+    for tool in [PROCYON_TOOL, JAVAP_TOOL]:
         for key, value in count_of_tools[tool].items(): 
             for artifact in value:
                 artifacts.add(artifact)
 
-    with open("artifacts.txt", "w") as file:
+    with open("artifacts_with_differences_javap_procyon.txt", "w") as file:
         for artifact in artifacts:
             file.write(f"{artifact}\n")
 

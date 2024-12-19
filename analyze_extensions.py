@@ -70,12 +70,12 @@ def print_statistics(extension_stats, total_stats):
 
     # Print stats for each extension
     for ext, stats in sorted(extension_stats.items()):
-        success_rate = (stats['jnorm_0'] + stats['jnorm_1']) / stats['total'] * 100 if stats['total'] > 0 else 0
+        success_rate = stats['jnorm_0'] / stats['total'] * 100 if stats['total'] > 0 else 0
         print(f"{ext:<{max_ext_length}}\t{stats['total']:<7}{stats['jnorm_0']:<8}{stats['jnorm_1']:<8}{stats['jnorm_2']:<8}{success_rate:>.1f}%")
 
     # Print total
     print("-" * (max_ext_length + 65))  # Adjust line length based on max extension
-    success_rate = (total_stats['jnorm_0'] + total_stats['jnorm_1']) / total_stats['total'] * 100 if total_stats['total'] > 0 else 0
+    success_rate = total_stats['jnorm_0'] / total_stats['total'] * 100 if total_stats['total'] > 0 else 0
     print(f"{'TOTAL':<{max_ext_length}}\t{total_stats['total']:<7}{total_stats['jnorm_0']:<8}{total_stats['jnorm_1']:<8}{total_stats['jnorm_2']:<8}{success_rate:>.1f}%")
 
 print_statistics(extension_stats, total_stats) 

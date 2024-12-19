@@ -29,7 +29,7 @@ def check_maven_central(group_id, artifact_id, version):
 
 def extract_artifact_id(artifact_name, version):
     # Get the extension
-    for ext in ['.tar.gz', '.gz', '.rar', '.mar', '.zip','.jar', '.war', '.far', '.pom', '.xml', '.json']:
+    for ext in ['.tar.gz', '.gz', '.rar', '.mar', '.zip','.jar', '.war', '.far', '.pom', '.xml', '.json', '.tar']:
         if artifact_name.endswith(ext):
             # Find where version starts
             version_start = artifact_name.find(f"-{version}")

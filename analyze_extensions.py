@@ -14,6 +14,17 @@ def parse_args():
                        help='Base directory for analysis (default: results)')
     return parser.parse_args()
 
+def get_extension(filename):
+    """Get the compound extension from a filename (handles multi-part extensions)"""
+    parts = filename.split('.')
+    if len(parts) <= 1:
+        return ''
+    
+    # Handle compound extensions like .tar.gz
+    if len(parts) > 2 and parts[-2] in ['tar']:
+        return f'.{parts[-2]}.{parts[-1]}'
+    return f'.{parts[-1]}'
+
 # Walk through the directory
 args = parse_args()
 base_dir = args.base_dir
@@ -33,18 +44,17 @@ for root, _, files in os.walk(base_dir):
                         jnorm = artifact['jNorm']
                         
                         # Find the extension
-                        for ext in ['.tar.gz', '.gz', '.tar', '.rar', '.far', '.zip', '.war', '.mar', '.jar']:
-                            if name.endswith(ext):
-                                if ext not in extension_stats:
-                                    extension_stats[ext] = {'total': 0, 'jnorm_0': 0, 'jnorm_1': 0, 'jnorm_2': 0}
-                                
-                                extension_stats[ext]['total'] += 1
-                                extension_stats[ext][f'jnorm_{jnorm}'] += 1
-                                
-                                # Update totals
-                                total_stats['total'] += 1
-                                total_stats[f'jnorm_{jnorm}'] += 1
-                                break
+                        ext = get_extension(name)
+                        if ext:  # Only process files with extensions
+                            if ext not in extension_stats:
+                                extension_stats[ext] = {'total': 0, 'jnorm_0': 0, 'jnorm_1': 0, 'jnorm_2': 0}
+                            
+                            extension_stats[ext]['total'] += 1
+                            extension_stats[ext][f'jnorm_{jnorm}'] += 1
+                            
+                            # Update totals
+                            total_stats['total'] += 1
+                            total_stats[f'jnorm_{jnorm}'] += 1
                 except json.JSONDecodeError:
                     print(f"Error reading {file_path}")
                     continue

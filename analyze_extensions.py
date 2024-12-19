@@ -59,16 +59,23 @@ for root, _, files in os.walk(base_dir):
                     print(f"Error reading {file_path}")
                     continue
 
-# Print results
-print("Extension Statistics:")
-print("\nExt\t\tTotal\tjNorm 0\tjNorm 1\tjNorm 2\tSuccess Rate")
-print("-" * 65)
-for ext, stats in extension_stats.items():
-    success_rate = (stats['jnorm_0'] / stats['total'] * 100) if stats['total'] > 0 else 0
-    ext_padded = f"{ext}\t" if len(ext) >= 8 else f"{ext}\t\t"
-    print(f"{ext_padded}{stats['total']}\t{stats['jnorm_0']}\t{stats['jnorm_1']}\t{stats['jnorm_2']}\t{success_rate:.1f}%")
+def print_statistics(extension_stats, total_stats):
+    # Find the longest extension for padding
+    max_ext_length = max(len(ext) for ext in extension_stats.keys())
+    
+    # Header
+    print("\nExtension Statistics:\n")
+    print(f"{'Ext':<{max_ext_length}}\tTotal\tjNorm 0\tjNorm 1\tjNorm 2\tSuccess Rate")
+    print("-" * (max_ext_length + 65))  # Adjust line length based on max extension
 
-# Print totals
-print("-" * 65)
-total_success_rate = (total_stats['jnorm_0'] / total_stats['total'] * 100) if total_stats['total'] > 0 else 0
-print(f"TOTAL\t\t{total_stats['total']}\t{total_stats['jnorm_0']}\t{total_stats['jnorm_1']}\t{total_stats['jnorm_2']}\t{total_success_rate:.1f}%") 
+    # Print stats for each extension
+    for ext, stats in sorted(extension_stats.items()):
+        success_rate = (stats['jnorm_0'] + stats['jnorm_1']) / stats['total'] * 100 if stats['total'] > 0 else 0
+        print(f"{ext:<{max_ext_length}}\t{stats['total']:<7}{stats['jnorm_0']:<8}{stats['jnorm_1']:<8}{stats['jnorm_2']:<8}{success_rate:>.1f}%")
+
+    # Print total
+    print("-" * (max_ext_length + 65))  # Adjust line length based on max extension
+    success_rate = (total_stats['jnorm_0'] + total_stats['jnorm_1']) / total_stats['total'] * 100 if total_stats['total'] > 0 else 0
+    print(f"{'TOTAL':<{max_ext_length}}\t{total_stats['total']:<7}{total_stats['jnorm_0']:<8}{total_stats['jnorm_1']:<8}{total_stats['jnorm_2']:<8}{success_rate:>.1f}%")
+
+print_statistics(extension_stats, total_stats) 

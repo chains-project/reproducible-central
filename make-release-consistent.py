@@ -29,7 +29,7 @@ def check_maven_central(group_id, artifact_id, version):
 
 def extract_artifact_id(artifact_name, version):
     # Get the extension
-    for ext in ['.zip','.jar']:
+    for ext in ['.tar.gz', '.gz', '.rar', '.mar', '.zip','.jar', '.war', '.far', '.pom', '.xml', '.json']:
         if artifact_name.endswith(ext):
             # Find where version starts
             version_start = artifact_name.find(f"-{version}")
@@ -85,10 +85,6 @@ def process_jnorm_summaries():
                                 # reset group_id to original value
                                 modified_group_id = group_id
                                 artifact_name = artifact.get("artifact_name", "")
-                                
-                                # Skip if not a jar file
-                                if not artifact_name.endswith('.jar') and not artifact_name.endswith('.zip'):
-                                    continue
                                 
 
                                 extracted_artifact_id = extract_artifact_id(artifact_name, version)

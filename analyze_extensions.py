@@ -1,13 +1,22 @@
 import json
 import os
 from pathlib import Path
-
+import argparse
 # Dictionary to store extensions and their jNorm values
 extension_stats = {}
 total_stats = {'total': 0, 'jnorm_0': 0, 'jnorm_1': 0, 'jnorm_2': 0}
 
+
+def parse_args():
+    parser = argparse.ArgumentParser(description='Analyze file extensions')
+    parser.add_argument('--base-dir', 
+                       default="results",
+                       help='Base directory for analysis (default: results)')
+    return parser.parse_args()
+
 # Walk through the directory
-base_dir = "from-repairnator"
+args = parse_args()
+base_dir = args.base_dir
 for root, _, files in os.walk(base_dir):
     for file in files:
         if file == "jNorm_summary.json":

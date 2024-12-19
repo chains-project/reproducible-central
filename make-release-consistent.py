@@ -7,6 +7,7 @@ from time import sleep
 import logging
 from enum import Enum
 import zipfile
+import argparse
 
 # Set up logging
 logging.basicConfig(
@@ -55,8 +56,16 @@ def extract_artifact_id(artifact_name, version):
         logging.warning(f"Missing {source} file: {ref_path}")
         return 0
 
+def parse_args():
+    parser = argparse.ArgumentParser(description='Process release consistency')
+    parser.add_argument('--base-dir', 
+                       default="results",
+                       help='Base directory for processing (default: results)')
+    return parser.parse_args()
+
 def process_jnorm_summaries():
-    base_dir = "from-repairnator"
+    args = parse_args()
+    base_dir = args.base_dir
     gav_to_artifact_map = {}
     gav_to_file_path_map = {}
 
@@ -117,7 +126,7 @@ def process_jnorm_summaries():
                                         gav_to_artifact_map[gav] = []
                                         gav_to_file_path_map[gav] = []
 
-                                    reference_artifact_path = artifact.get("reference").replace(f"results/", 'from-repairnator/')
+                                    reference_artifact_path = artifact.get("reference").replace(f"results/", f'{base_dir}/')
                                     original_artifact_name = artifact_name
                                     if 'dependency-check-cli' in reference_artifact_path:
                                         artifact_name = artifact_name.replace('-cli', '')
@@ -128,7 +137,7 @@ def process_jnorm_summaries():
                                         "name": original_artifact_name,
                                         "jNorm": artifact.get('jNorm'),
                                     })
-                                    rebuild_artifact_path = artifact.get("rebuild").replace(f"results/", 'from-repairnator/')
+                                    rebuild_artifact_path = artifact.get("rebuild").replace(f"results/", f'{base_dir}/')
                                     gav_to_file_path_map[gav].append({
                                         "reference": reference_artifact_path if os.path.exists(reference_artifact_path) else None,
                                         "rebuild": rebuild_artifact_path if os.path.exists(rebuild_artifact_path) else None

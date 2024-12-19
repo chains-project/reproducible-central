@@ -81,11 +81,6 @@ def process_jnorm_summaries():
                                 if not artifact_name.endswith('.jar') and not artifact_name.endswith('.zip'):
                                     continue
                                 
-                                # Verify reference and rebuild are same
-                                if artifact.get("reference") != artifact.get("rebuild"):
-                                    logging.warning(f"Reference Rebuild mismatch: {group_id}:{artifact_id}:{version} {artifact_name}")
-
-
 
                                 extracted_artifact_id = extract_artifact_id(artifact_name, version)
                                 if group_id == "org.apache.cxf.fediz":
@@ -122,7 +117,7 @@ def process_jnorm_summaries():
                                         gav_to_artifact_map[gav] = []
                                         gav_to_file_path_map[gav] = []
 
-                                    reference_artifact_path = os.path.join(str(version_dir), ArtifactSource.REFERENCE.value, artifact_name)
+                                    reference_artifact_path = artifact.get("reference").replace(f"results/", 'from-repairnator/')
                                     original_artifact_name = artifact_name
                                     if 'dependency-check-cli' in reference_artifact_path:
                                         artifact_name = artifact_name.replace('-cli', '')
@@ -133,7 +128,7 @@ def process_jnorm_summaries():
                                         "name": original_artifact_name,
                                         "jNorm": artifact.get('jNorm'),
                                     })
-                                    rebuild_artifact_path = os.path.join(str(version_dir), ArtifactSource.REBUILD.value, artifact_name)
+                                    rebuild_artifact_path = artifact.get("rebuild").replace(f"results/", 'from-repairnator/')
                                     gav_to_file_path_map[gav].append({
                                         "reference": reference_artifact_path if os.path.exists(reference_artifact_path) else None,
                                         "rebuild": rebuild_artifact_path if os.path.exists(rebuild_artifact_path) else None

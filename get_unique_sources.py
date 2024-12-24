@@ -15,6 +15,7 @@ def parse_args():
 
 def get_unique_sources(diffoscope_file):
     sources = defaultdict(int)
+    sources_with_comments = defaultdict(set)
     with open(diffoscope_file, 'r') as file:
         data = json.load(file)
     
@@ -26,12 +27,20 @@ def get_unique_sources(diffoscope_file):
             else:
                 if 'source1' in detail:
                     sources[detail['source1']] += 1
+                    comments = detail.get('comments', [])
+                    sources_with_comments[detail['source1']].update(comments)
                 if 'source2' in detail:
                     sources[detail['source2']] += 1
+                    comments = detail.get('comments', [])
+                    sources_with_comments[detail['source2']].update(comments)
 
     
     if 'details' in data:
         process_details(data['details'])
+    
+    else:
+        sources[data['source1']] += 1
+        sources[data['source2']] += 1
     
     return sources
 

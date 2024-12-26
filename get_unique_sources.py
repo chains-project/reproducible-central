@@ -27,11 +27,11 @@ def get_unique_sources(diffoscope_file):
             else:
                 if 'source1' in detail:
                     sources[detail['source1']] += 1
-                    comments = detail.get('comments', [])
+                    comments = detail.get('comments', set())
                     sources_with_comments[detail['source1']].update(comments)
                 if 'source2' in detail:
                     sources[detail['source2']] += 1
-                    comments = detail.get('comments', [])
+                    comments = detail.get('comments', set())
                     sources_with_comments[detail['source2']].update(comments)
 
     
@@ -41,14 +41,14 @@ def get_unique_sources(diffoscope_file):
     else:
         sources[data['source1']] += 1
         sources[data['source2']] += 1
-    
+
     return sources, sources_with_comments
 
 if __name__ == "__main__":
     args = parse_args()
     base_dir = args.base_dir
     all_sources = defaultdict(int)
-    
+    all_sources_with_comments = defaultdict(set)
     # Walk through results directory
     for root, dirs, files in os.walk(base_dir):
         for file in files:
@@ -56,8 +56,8 @@ if __name__ == "__main__":
                 file_sources, file_sources_with_comments = get_unique_sources(os.path.join(root, file))
                 for source, count in file_sources.items():
                     all_sources[source] += count
-    
+                all_sources_with_comments.update(file_sources_with_comments)
     # Write results to file
     with open("unique_sources_with_frequency.txt", "w") as file:
         for source, count in sorted(all_sources.items()):
-            file.write(f"{source},{count},[{','.join(file_sources_with_comments[source])}]\n") 
+            file.write(f"{source},{count},[{','.join(all_sources_with_comments[source])}]\n") 

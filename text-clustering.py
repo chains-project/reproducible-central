@@ -1,89 +1,116 @@
+import tlsh
+from collections import defaultdict
+import argparse
 import os
 import json
-from sklearn.feature_extraction.text import TfidfVectorizer
-from sklearn.cluster import KMeans
-from sklearn.metrics import silhouette_score
 
-def load_diffs_from_nested_files(root_directory):
-    """
-    Recursively load diffs from .diffoscope.json files within a root directory.
+all_diffoscope_files = []
+all_sources = []
 
-    Parameters:
-    root_directory (str): Path to the root directory.
+def parse_args():
+    parser = argparse.ArgumentParser(description='Process release consistency')
+    parser.add_argument('--base-dir', 
+                       default="results",
+                       help='Base directory for processing (default: results)')
+    return parser.parse_args()
 
-    Returns:
-    list of tuple: A list of tuples containing filenames and their corresponding unified diffs.
-    """
-    diffs = []
-    for dirpath, _, filenames in os.walk(root_directory):
-        for filename in filenames:
-            if filename.endswith(".diffoscope.json"):
-                filepath = os.path.join(dirpath, filename)
-                with open(filepath, 'r', encoding='utf-8') as file:
-                    try:
-                        data = file.read()
-                        diffs.extend([
-                            (filepath, data) 
-                        ])
-                    except json.JSONDecodeError as e:
-                        print(f"Failed to parse {filepath}: {e}")
-    return diffs
+args = parse_args()
 
-def recurse_over_diffoscope_file(data):
-    """
-    Recursively extract unified diffs from nested diffoscope JSON data.
+def get_unified_diff(file_path):
+    with open(file_path, 'r') as file:
+        data = json.load(file)
+    
+    s = ''
+    unified_diff = data.get('unified_diff', '')
+    if unified_diff:
+        s += unified_diff
+    if 'details' in data:
+        s += process_details(data['details'])
+    
+    return s
 
-    Parameters:
-    data (dict): A JSON object.
+def process_details(details):
+    s = ''
+    for detail in details:
+        unified_diff = detail.get('unified_diff', '')
+        if unified_diff:
+            s += unified_diff
+    if 'details' in details:
+        s += process_details(details['details'])
 
-    Returns:
-    list of str: A list of unified diffs.
-    """
-    all_diffs = []
-    if 'details' not in data:
-        diff = data.get('unified_diff')
-        if diff:
-            all_diffs.append(diff)
-    else:
-        for detail in data.get('details', []):
-            all_diffs.extend(recurse_over_diffoscope_file(detail))
-    return all_diffs
+    return s
 
-def cluster_diffs(diffs, n_clusters=5):
-    """
-    Cluster textual diffs into groups based on similarity.
+for root, dirs, files in os.walk(args.base_dir):
+    for file in files:
+        if file.endswith(".diffoscope.json"):
+            all_diffoscope_files.append(os.path.join(root, file))
+            all_sources.append(get_unified_diff(os.path.join(root, file)))
 
-    Parameters:
-    diffs (list of tuple): List of tuples containing filenames and diffs.
-    n_clusters (int): Number of clusters to form.
+similarity_matrix = []
+similarity_matrix_visited = []
+for i in range(len(all_sources)):
+    similarity_matrix.append([-1] * len(all_sources))
+    similarity_matrix_visited.append([False] * len(all_sources))
 
-    Returns:
-    dict: A dictionary where keys are cluster labels and values are lists of tuples (filename, diff).
-    """
-    diff_texts = [diff[1] for diff in diffs]
-    vectorizer = TfidfVectorizer(stop_words='english', max_features=5000)
-    tfidf_matrix = vectorizer.fit_transform(diff_texts)
 
-    kmeans = KMeans(n_clusters=n_clusters, random_state=42)
-    labels = kmeans.fit_predict(tfidf_matrix)
+for i in range(len(all_sources)):
+    row = []
+    for j in range(len(all_sources)):
+        if similarity_matrix_visited[i][j] or similarity_matrix_visited[j][i]:
+            continue
+        
+        source1 = all_sources[i].encode()
+        source2 = all_sources[j].encode()
 
-    clustered_diffs = {i: [] for i in range(n_clusters)}
-    for label, diff in zip(labels, diffs):
-        clustered_diffs[label].append(diff)
+        tlsh1 = tlsh.hash(source1)
+        tlsh2 = tlsh.hash(source2)
 
-    if len(diffs) > 1:
-        silhouette_avg = silhouette_score(tfidf_matrix, labels)
-        print(f"Silhouette Score: {silhouette_avg:.2f}")
+        if source1 == source2:
+            score = 0
+        elif tlsh1 == 'TNULL' or tlsh2 == 'TNULL':
+            score = -1
+        else:
+            score = tlsh.diff(tlsh1, tlsh2)
 
-    return clustered_diffs
+        similarity_matrix_visited[i][j] = True
+        similarity_matrix_visited[j][i] = True
+        similarity_matrix[i][j] = score
+        similarity_matrix[j][i] = score
+    
+print("[")
+for row in similarity_matrix:
+    print(row)
+print("]")
+for i in range(len(all_diffoscope_files)):
+    print(f'{i}: {all_diffoscope_files[i]}')
 
-# Main execution
-root_directory = "results"
-raw_diffs = load_diffs_from_nested_files(root_directory)
-clusters = cluster_diffs(raw_diffs, n_clusters=3)
+too_small = set()
+clusters = defaultdict(set)
+visited_matrix = []
+for i in range(len(similarity_matrix)):
+    visited_matrix.append([False] * len(similarity_matrix[i]))
 
-for cluster_id, cluster_diffs in clusters.items():
-    print(f"Cluster {cluster_id}:")
-    for filename, diff in cluster_diffs:
-        print(f"  - File: {filename}")
-        print(f"  - Diff: {diff[:100]}...")  # Print first 100 chars for brevity
+for i in range(len(similarity_matrix)):
+    for j in range(len(similarity_matrix[i])):
+        if i == j:
+            continue
+        # if similarity_matrix[i][j] == -1 and not visited_matrix[i][j]:
+        #     if len(all_sources[i]) < len(all_sources[j]):
+        #         too_small.add(all_sources[i])
+        #     else:
+        #         too_small.add(all_sources[j])
+        elif similarity_matrix[i][j] <= 1000 and not visited_matrix[i][j]:
+            clusters[all_diffoscope_files[i]].add(all_diffoscope_files[j])
+            for k in range(len(similarity_matrix)):
+                visited_matrix[j][k] = True
+
+    visited_matrix[i][j] = True
+    
+
+with open('text-clusters-too-small.txt', 'w') as f:
+    for file in too_small:
+        f.write(file + "\n")
+
+with open('text-clusters.txt', 'w') as f:
+    for cluster in clusters:
+        f.write(str(cluster) + ": " + str(clusters[cluster]) + "\n")

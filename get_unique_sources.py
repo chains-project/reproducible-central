@@ -42,7 +42,7 @@ def get_unique_sources(diffoscope_file):
         sources[data['source1']] += 1
         sources[data['source2']] += 1
     
-    return sources
+    return sources, sources_with_comments
 
 if __name__ == "__main__":
     args = parse_args()
@@ -53,11 +53,11 @@ if __name__ == "__main__":
     for root, dirs, files in os.walk(base_dir):
         for file in files:
             if file.endswith(".diffoscope.json"):
-                file_sources = get_unique_sources(os.path.join(root, file))
+                file_sources, file_sources_with_comments = get_unique_sources(os.path.join(root, file))
                 for source, count in file_sources.items():
                     all_sources[source] += count
     
     # Write results to file
     with open("unique_sources_with_frequency.txt", "w") as file:
         for source, count in sorted(all_sources.items()):
-            file.write(f"{source}: {count}\n") 
+            file.write(f"{source},{count},[{','.join(file_sources_with_comments[source])}]\n") 

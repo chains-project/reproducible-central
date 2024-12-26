@@ -60,4 +60,9 @@ if __name__ == "__main__":
     # Write results to file
     with open("unique_sources_with_frequency.txt", "w") as file:
         for source, count in sorted(all_sources.items()):
-            file.write(f"{source},{count},[{','.join(all_sources_with_comments[source])}]\n") 
+            file.write(f"{source},{count},[{','.join(all_sources_with_comments[source])}]\n")
+    
+    with open("unique_sources_with_comments.txt", "w") as file:
+        values = [i for i in all_sources_with_comments.values() if len(i) > 0]
+        for value in values:
+            file.write(f"{value}\n")

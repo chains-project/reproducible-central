@@ -49,16 +49,16 @@ for root, dirs, files in os.walk(args.base_dir):
             all_sources.append(tlsh_hash)
 
 similarity_matrix = []
-similarity_matrix_visited = []
+visited_matrix = []
 for i in range(len(all_sources)):
     similarity_matrix.append([-1] * len(all_sources))
-    similarity_matrix_visited.append([False] * len(all_sources))
+    visited_matrix.append([False] * len(all_sources))
 
 
 for i in range(len(all_sources)):
     row = []
-    for j in range(len(all_sources)):
-        if similarity_matrix_visited[i][j] or similarity_matrix_visited[j][i]:
+    for j in range(i + 1, len(all_sources)):
+        if visited_matrix[i][j] or visited_matrix[j][i]:
             continue
         
         source1 = all_sources[i]
@@ -69,19 +69,19 @@ for i in range(len(all_sources)):
         else:
             score = tlsh.diff(source1, source2)
 
-        similarity_matrix_visited[i][j] = True
-        similarity_matrix_visited[j][i] = True
+        visited_matrix[i][j] = True
+        visited_matrix[j][i] = True
         similarity_matrix[i][j] = score
         similarity_matrix[j][i] = score
     
-print("[")
-for row in similarity_matrix:
-    print(row)
-print("]")
-for i in range(len(all_diffoscope_files)):
-    print(f'{i}: {all_diffoscope_files[i]}')
+# print("[")
+# for row in similarity_matrix:
+#     print(row)
+# print("]")
+# for i in range(len(all_diffoscope_files)):
+#     print(f'{i}: {all_diffoscope_files[i]}')
 
-too_small = set()
+# too_small = set()
 clusters = defaultdict(set)
 visited_matrix = []
 for i in range(len(similarity_matrix)):
@@ -104,9 +104,9 @@ for i in range(len(similarity_matrix)):
     visited_matrix[i][j] = True
     
 
-with open('text-clusters-too-small.txt', 'w') as f:
-    for file in too_small:
-        f.write(file + "\n")
+# with open('text-clusters-too-small.txt', 'w') as f:
+#     for file in too_small:
+#         f.write(file + "\n")
 
 with open('text-clusters.txt', 'w') as f:
     for cluster in clusters:

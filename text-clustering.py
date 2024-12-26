@@ -44,7 +44,9 @@ for root, dirs, files in os.walk(args.base_dir):
     for file in files:
         if file.endswith(".diffoscope.json"):
             all_diffoscope_files.append(os.path.join(root, file))
-            all_sources.append(get_unified_diff(os.path.join(root, file)))
+            concatenated_diff = get_unified_diff(os.path.join(root, file))
+            tlsh_hash = tlsh.hash(concatenated_diff.encode())
+            all_sources.append(tlsh_hash)
 
 similarity_matrix = []
 similarity_matrix_visited = []
@@ -59,18 +61,13 @@ for i in range(len(all_sources)):
         if similarity_matrix_visited[i][j] or similarity_matrix_visited[j][i]:
             continue
         
-        source1 = all_sources[i].encode()
-        source2 = all_sources[j].encode()
-
-        tlsh1 = tlsh.hash(source1)
-        tlsh2 = tlsh.hash(source2)
+        source1 = all_sources[i]
+        source2 = all_sources[j]
 
         if source1 == source2:
             score = 0
-        elif tlsh1 == 'TNULL' or tlsh2 == 'TNULL':
-            score = -1
         else:
-            score = tlsh.diff(tlsh1, tlsh2)
+            score = tlsh.diff(source1, source2)
 
         similarity_matrix_visited[i][j] = True
         similarity_matrix_visited[j][i] = True

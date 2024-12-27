@@ -67,6 +67,8 @@ for i in range(len(all_sources)):
 
         if source1 == source2:
             score = 0
+        elif source1 == 'TNULL' or source2 == 'TNULL':
+            score = -100
         else:
             score = tlsh.diff(source1, source2)
 

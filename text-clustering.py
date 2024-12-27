@@ -20,23 +20,24 @@ def get_unified_diff(file_path):
     with open(file_path, 'r') as file:
         data = json.load(file)
     
-    s = ''
     unified_diff = data.get('unified_diff', '')
     if unified_diff:
-        s += unified_diff
+        return unified_diff
     if 'details' in data:
-        s += process_details(data['details'])
+        return process_details(data['details'])
     
-    return s
+    return ''
 
 def process_details(details):
     s = ''
-    for detail in details:
+    for i in range(len(details)):
+        detail = details[i]
         unified_diff = detail.get('unified_diff', '')
         if unified_diff:
-            s += unified_diff
+            s = unified_diff
+            
     if 'details' in details:
-        s += process_details(details['details'])
+        process_details(details['details'])
 
     return s
 

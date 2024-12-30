@@ -20,8 +20,9 @@ args = parse_args()
 tree_dir = 'trees'
 os.makedirs(tree_dir, exist_ok=True)
 
-def create_level_order_traversal_for_diffoscope(data, file_name):
-    with open(f'{tree_dir}/{file_name}.txt', 'w') as f:
+def create_level_order_traversal_for_diffoscope(data, file_name, group_id, artifact_id, version):
+    os.makedirs(f'trees/{group_id}/{artifact_id}/{version}', exist_ok=True)
+    with open(f'trees/{group_id}/{artifact_id}/{version}/{file_name}.txt', 'w') as f:
         q = queue.Queue()
         q.put(data)
         while not q.empty():
@@ -40,7 +41,10 @@ for root, dirs, files in os.walk(args.base_dir):
     for file in files:
         last_two_sources = []
         if file.endswith(".diffoscope.json"):
+            _, group_id, artifact_id, version = root.split('/')
+
             with open(os.path.join(root, file), 'r') as f:
                 data = json.load(f)
+            
 
-            create_level_order_traversal_for_diffoscope(data, file)
+            create_level_order_traversal_for_diffoscope(data, file, group_id, artifact_id, version)

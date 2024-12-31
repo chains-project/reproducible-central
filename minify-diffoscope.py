@@ -33,7 +33,7 @@ def minify_diffoscope(diffoscope_root, diffoscope_filename, base_dir):
 
 def minify(source, diffoscope_file, minified_diffoscope_file):
     with open(minified_diffoscope_file, 'w') as file:
-        file.write(json.dumps(get_diffoscope_for_source(diffoscope_file, source), indent=2).replace('\\n', '\n'))
+        file.write(json.dumps(get_diffoscope_for_source(diffoscope_file, source), indent=2))
 
 def get_diffoscope_for_source(diffoscope_file, source):
     with open(diffoscope_file, 'r') as file:

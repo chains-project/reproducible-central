@@ -90,8 +90,8 @@ do
   mkdir -p $dir_with_version/rebuild
   copied_reference=$dir_with_version/reference/"$(basename $reference):$(basename $rebuild)"
   copied_rebuild=$dir_with_version/rebuild/"$(basename $reference):$(basename $rebuild)"
-  runcommand cp $(realpath $builddir)/$reference $copied_reference
-  runcommand cp $(realpath $builddir)/$rebuild $copied_rebuild
+  runcommand cp -r $(realpath $builddir)/$reference $copied_reference
+  runcommand cp -r $(realpath $builddir)/$rebuild $copied_rebuild
 
   relative_reference=$(realpath --relative-to=${SCRIPTDIR} $copied_reference)
   relative_rebuild=$(realpath --relative-to=${SCRIPTDIR} $copied_rebuild)

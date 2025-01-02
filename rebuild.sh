@@ -14,7 +14,7 @@ export SCRIPTDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null && pwd )"
 
 . "${SCRIPTDIR}/bin/includes/displayResult.sh"
 
-export RESULT_DIR=$SCRIPTDIR/results
+export RESULT_DIR=$SCRIPTDIR/failed-for-real
 
 
 # ----------------------------------------------------------------------------------------------------

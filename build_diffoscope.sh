@@ -41,18 +41,18 @@ do
 
 
   pushd ..
-  # echo -e "$counter / $count \033[1m$reference $rebuild\033[0m"
-  # runcommand docker run --rm \
-  #     -w /mnt \
-  #     -v $(realpath $builddir):/mnt \
-  #     -v $(realpath $path1):/$reference \
-  #     -v $(realpath $path2):/$rebuild \
-  #     -v $dir_with_version:/output \
-  #     custom-diffoscope \
-  #       --no-progress \
-  #       --json /output/$(basename ${diffoscope_file_path}) \
-  #       /$reference /$rebuild
-  # exit_code=$?
+  echo -e "$counter / $count \033[1m$reference $rebuild\033[0m"
+  runcommand docker run --rm \
+      -w /mnt \
+      -v $(realpath $builddir):/mnt \
+      -v $(realpath $path1):/$reference \
+      -v $(realpath $path2):/$rebuild \
+      -v $dir_with_version:/output \
+      algomaster99/diffoscope \
+        --no-progress \
+        --json /output/$(basename ${diffoscope_file_path}) \
+        /$reference /$rebuild
+  exit_code=$?
 
   mkdir -p $dir_with_version/jNorm/$(basename $reference):$(basename $rebuild)/
   runcommand docker run --user $(id -u) --rm \

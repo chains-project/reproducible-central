@@ -17,7 +17,7 @@ is_in_csv() {
     local group_id=$1
     local artifact_id=$2
     local version=$3
-    grep -E "^${group_id}:${artifact_id}:${version}$" projects_with_differences.txt
+    grep -E "^${group_id}:${artifact_id}:${version}$" diffoscope-failures/could-not-even-start.txt
     return $?
 }
 
@@ -45,8 +45,8 @@ do
         continue
     fi
 
-    mkdir -p results/$groupId/$artifactId/$version
-    cp $buildspec results/$groupId/$artifactId/$version
+    mkdir -p wont-even-start/$groupId/$artifactId/$version
+    cp $buildspec wont-even-start/$groupId/$artifactId/$version
 
     info "Processed Maven project: $groupId:$artifactId:$version"
 

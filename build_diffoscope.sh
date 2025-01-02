@@ -42,7 +42,7 @@ do
 
   pushd ..
   echo -e "$counter / $count \033[1m$reference $rebuild\033[0m"
-  runcommand docker run --rm \
+  runcommand docker run --user $(id -u) --rm \
       -w /mnt \
       -v $(realpath $builddir):/mnt \
       -v $(realpath $path1):/$reference \

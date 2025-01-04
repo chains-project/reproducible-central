@@ -121,12 +121,7 @@ pushd ../../${version} > /dev/null || fatal "Unable to move into ../../${version
 
 exit_code=$(java -jar $SCRIPTDIR/maven-module-graph-1.0.0-SNAPSHOT.jar --project-root $project_root --plain-text output.txt --json output.json)
 
-if [[ ${exit_code} -ne 0 ]]
-then
-  echo "counter_exit_code=1" >> $RESULT_DIR/out.log
-else
-  echo "counter_exit_code=0" >> $RESULT_DIR/out.log
-fi
+echo "counter_exit_code=$exit_code" >> $RESULT_DIR/out.log
 
 popd > /dev/null || fatal "Unable to return to starting directory"
 

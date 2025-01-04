@@ -119,7 +119,8 @@ project_root=$(pwd)
 
 pushd ../../${version} > /dev/null || fatal "Unable to move into ../../${version}"
 
-exit_code=$(java -jar $SCRIPTDIR/maven-module-graph-1.0.0-SNAPSHOT.jar --project-root $project_root --plain-text output.txt --json output.json)
+java -jar $SCRIPTDIR/maven-module-graph-1.0.0-SNAPSHOT.jar --project-root $project_root --plain-text output.txt --json output.json
+exit_code=$?
 
 echo "counter_exit_code=$exit_code" >> $RESULT_DIR/out.log
 

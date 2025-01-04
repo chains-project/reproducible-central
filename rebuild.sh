@@ -14,7 +14,7 @@ export SCRIPTDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null && pwd )"
 
 . "${SCRIPTDIR}/bin/includes/displayResult.sh"
 
-export RESULT_DIR=$SCRIPTDIR/results
+export RESULT_DIR=$SCRIPTDIR/release-counter
 
 
 # ----------------------------------------------------------------------------------------------------
@@ -114,54 +114,23 @@ umask $umask
 export MVN_UMASK=${umask}
 fetchSource
 
-[ -n "$execBefore" ] && info "executing before command: $execBefore" && eval "$execBefore"
+project_root=$(pwd)
 
-echo
-case ${tool} in
-  mvn*)
-    rebuildToolMvn $PATH_TO_JNORM_SUMMARY_JSON
-    ;;
-  sbt)
-    rebuildToolSbt
-    ;;
-  gradle)
-    rebuildToolGradle
-    ;;
-  *)
-    fatal "build tool not yet supported: ${tool}"
-esac
-
-echo
-displayResult
-
-displayOptional  "os"
-displayOptional  "arch"
-[ -n "$execAfter" ] && info "executing after command: $execAfter" && eval "$execAfter"
-
-#git reset --hard
-buildcompare="$(dirname "${buildinfo}")/$(basename ${buildinfo} .buildinfo).buildcompare"
-
-compare=""
-for f in ${buildcompare}
-do
-  compare=$f
-done
-
-source ${buildcompare}
 
 pushd ../../${version} > /dev/null || fatal "Unable to move into ../../${version}"
-if [[ ${ko} -gt 0 ]]
+
+exit_code=$(java -jar $SCRIPTDIR/maven-module-graph-1.0.0-SNAPSHOT.jar --project-root $project_root --plain-text output.txt --json output.json)
+
+if [[ ${exit_code} -ne 0 ]]
 then
-  if [ -z "${sourcePath}" ]
-  then
-    runcommand $SCRIPTDIR/build_diffoscope.sh $(basename ${compare}) buildcache/${artifactId}
-  else
-    runcommand $SCRIPTDIR/build_diffoscope.sh $(basename ${compare}) buildcache/${sourcePath}
-  fi
+  echo "${groupId}:${artifactId}:${version}" >> $RESULT_DIR/release-counter-failed.log
+else
+  echo "${groupId}:${artifactId}:${version}" >> $RESULT_DIR/release-counter-success.log
 fi
 
 popd > /dev/null || fatal "Unable to return to starting directory"
 
 popd > /dev/null || fatal "Unable to return to starting directory"
+
 
 

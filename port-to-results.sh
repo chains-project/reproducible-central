@@ -32,12 +32,6 @@ do
         continue
     fi
 
-    if ! is_in_csv $groupId $artifactId $version
-    then
-        info "Skipping $buildspec as it's not in the CSV"
-        continue
-    fi
-
     # Check if this is a Maven project
     if [[ "$tool" != "mvn" ]]
     then
@@ -45,8 +39,8 @@ do
         continue
     fi
 
-    mkdir -p results/$groupId/$artifactId/$version
-    cp $buildspec results/$groupId/$artifactId/$version
+    mkdir -p release-counter/$groupId/$artifactId/$version
+    cp $buildspec release-counter/$groupId/$artifactId/$version
 
     info "Processed Maven project: $groupId:$artifactId:$version"
 

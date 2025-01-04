@@ -123,9 +123,9 @@ exit_code=$(java -jar $SCRIPTDIR/maven-module-graph-1.0.0-SNAPSHOT.jar --project
 
 if [[ ${exit_code} -ne 0 ]]
 then
-  echo "${groupId}:${artifactId}:${version}" >> $RESULT_DIR/release-counter-failed.log
+  echo "counter_exit_code=1" >> $RESULT_DIR/out.log
 else
-  echo "${groupId}:${artifactId}:${version}" >> $RESULT_DIR/release-counter-success.log
+  echo "counter_exit_code=0" >> $RESULT_DIR/out.log
 fi
 
 popd > /dev/null || fatal "Unable to return to starting directory"

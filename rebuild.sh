@@ -179,6 +179,11 @@ then
   java -jar $SCRIPTDIR/maven-module-graph-1.0.0-SNAPSHOT.jar --project-root $project_root/kubernetes-model-generator --plain-text output.txt --json output.json --exclude-profiles &> release.log
   exit_code=$?
   echo "counter_exit_code=$exit_code" >> $RESULT_DIR/out.log
+elif [ $artifactId == "mybatis-generator" ]
+then
+  java -jar $SCRIPTDIR/maven-module-graph-1.0.0-SNAPSHOT.jar --project-root $project_root/core --plain-text output.txt --json output.json &> release.log
+  exit_code=$?
+  echo "counter_exit_code=$exit_code" >> $RESULT_DIR/out.log
 else
   java -jar $SCRIPTDIR/maven-module-graph-1.0.0-SNAPSHOT.jar --project-root $project_root --plain-text output.txt --json output.json &> release.log
   exit_code=$?

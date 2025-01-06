@@ -122,32 +122,46 @@ pushd ../../${version} > /dev/null || fatal "Unable to move into ../../${version
 if [ $artifactId == "jakarta.persistence-api"]
 then
   java -jar $SCRIPTDIR/maven-module-graph-1.0.0-SNAPSHOT.jar --project-root $project_root/api --plain-text output.txt --json output.json &> release.log
+  exit_code=$?
+  echo "counter_exit_code=$exit_code" >> $RESULT_DIR/out.log
 elif [ $artifactId == "felix-parent"]
 then
   java -jar $SCRIPTDIR/maven-module-graph-1.0.0-SNAPSHOT.jar --project-root $project_root/pom --plain-text output.txt --json output.json &> release.log
+  exit_code=$?
+  echo "counter_exit_code=$exit_code" >> $RESULT_DIR/out.log
 elif [ $artifactId == "maven-bundle-plugin"]
 then
   java -jar $SCRIPTDIR/maven-module-graph-1.0.0-SNAPSHOT.jar --project-root $project_root/tools/maven-bundle-plugin --plain-text output.txt --json output.json &> release.log
+  exit_code=$?
+  echo "counter_exit_code=$exit_code" >> $RESULT_DIR/out.log
 elif [ $artifactId == "org.apache.felix.http.parent"]
 then
   java -jar $SCRIPTDIR/maven-module-graph-1.0.0-SNAPSHOT.jar --project-root $project_root/http/parent --plain-text output.txt --json output.json &> release.log
+  exit_code=$?
+  echo "counter_exit_code=$exit_code" >> $RESULT_DIR/out.log
 elif [ $artifactId == "org.apache.felix.healthcheck.core"]
 then
   java -jar $SCRIPTDIR/maven-module-graph-1.0.0-SNAPSHOT.jar --project-root $project_root/healthcheck/core --plain-text output.txt --json output.json &> release.log
+  exit_code=$?
+  echo "counter_exit_code=$exit_code" >> $RESULT_DIR/out.log
 elif [ $artifactId == "org.apache.felix.feature"]
 then
   java -jar $SCRIPTDIR/maven-module-graph-1.0.0-SNAPSHOT.jar --project-root $project_root/features --plain-text output.txt --json output.json &> release.log
+  exit_code=$?
+  echo "counter_exit_code=$exit_code" >> $RESULT_DIR/out.log
 elif [ $groupId == "io.cucumber"]
-then
   java -jar $SCRIPTDIR/maven-module-graph-1.0.0-SNAPSHOT.jar --project-root $project_root/java --plain-text output.txt --json output.json &> release.log
+  exit_code=$?
+  echo "counter_exit_code=$exit_code" >> $RESULT_DIR/out.log
 elif [ $groupId == "org.apache.karaf"]
   java -jar $SCRIPTDIR/maven-module-graph-1.0.0-SNAPSHOT.jar --project-root $project_root/ --plain-text output.txt --json output.json --exclude-profiles &> release.log
+  exit_code=$?
+  echo "counter_exit_code=$exit_code" >> $RESULT_DIR/out.log
 else
   java -jar $SCRIPTDIR/maven-module-graph-1.0.0-SNAPSHOT.jar --project-root $project_root --plain-text output.txt --json output.json &> release.log
+  exit_code=$?
+  echo "counter_exit_code=$exit_code" >> $RESULT_DIR/out.log
 fi
-exit_code=$?
-
-echo "counter_exit_code=$exit_code" >> $RESULT_DIR/out.log
 
 popd > /dev/null || fatal "Unable to return to starting directory"
 

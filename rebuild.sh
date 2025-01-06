@@ -149,6 +149,11 @@ then
   java -jar $SCRIPTDIR/maven-module-graph-1.0.0-SNAPSHOT.jar --project-root $project_root/features --plain-text output.txt --json output.json &> release.log
   exit_code=$?
   echo "counter_exit_code=$exit_code" >> $RESULT_DIR/out.log
+elif [ $artifactId == "cucumber-jvm" ]
+then
+  java -jar $SCRIPTDIR/maven-module-graph-1.0.0-SNAPSHOT.jar --project-root $project_root --plain-text output.txt --json output.json &> release.log
+  exit_code=$?
+  echo "counter_exit_code=$exit_code" >> $RESULT_DIR/out.log
 elif [ $groupId == "io.cucumber" ]
 then
   java -jar $SCRIPTDIR/maven-module-graph-1.0.0-SNAPSHOT.jar --project-root $project_root/java --plain-text output.txt --json output.json &> release.log
@@ -157,6 +162,16 @@ then
 elif [ $groupId == "org.apache.karaf" ]
 then
   java -jar $SCRIPTDIR/maven-module-graph-1.0.0-SNAPSHOT.jar --project-root $project_root/ --plain-text output.txt --json output.json --exclude-profiles &> release.log
+  exit_code=$?
+  echo "counter_exit_code=$exit_code" >> $RESULT_DIR/out.log
+elif [ $artifactId == "bnd-plugin-parent" ]
+then
+  java -jar $SCRIPTDIR/maven-module-graph-1.0.0-SNAPSHOT.jar --project-root $project_root/maven --plain-text output.txt --json output.json &> release.log
+  exit_code=$?
+  echo "counter_exit_code=$exit_code" >> $RESULT_DIR/out.log
+elif [ $artifactId == "kubernetes-client-project" ]
+then
+  java -jar $SCRIPTDIR/maven-module-graph-1.0.0-SNAPSHOT.jar --project-root $project_root/kubernetes-model-generator --plain-text output.txt --json output.json --exclude-profiles &> release.log
   exit_code=$?
   echo "counter_exit_code=$exit_code" >> $RESULT_DIR/out.log
 else

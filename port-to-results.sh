@@ -27,26 +27,31 @@ do
     # Source the buildspec file
     source $buildspec
 
-    if [[ "${jdk}" == ??.0.* || -n "${RB_SHELL}" || ${command} == SHELL* ]]
+    # if [[ "${jdk}" == ??.0.* || -n "${RB_SHELL}" || ${command} == SHELL* ]]
+    # then
+    #     continue
+    # fi
+
+    # if ! is_in_csv $groupId $artifactId $version
+    # then
+    #     info "Skipping $buildspec as it's not in the CSV"
+    #     continue
+    # fi
+
+    # # Check if this is a Maven project
+    # if [[ "$tool" != "mvn" ]]
+    # then
+    #     info "Skipping $buildspec as it's not a Maven project"
+    #     continue
+    # fi
+
+    if [[ $groupId != "io.fabric8" ]]
     then
         continue
     fi
 
-    if ! is_in_csv $groupId $artifactId $version
-    then
-        info "Skipping $buildspec as it's not in the CSV"
-        continue
-    fi
-
-    # Check if this is a Maven project
-    if [[ "$tool" != "mvn" ]]
-    then
-        info "Skipping $buildspec as it's not a Maven project"
-        continue
-    fi
-
-    mkdir -p results/$groupId/$artifactId/$version
-    cp $buildspec results/$groupId/$artifactId/$version
+    mkdir -p fabric8/$groupId/$artifactId/$version
+    cp $buildspec fabric8/$groupId/$artifactId/$version
 
     info "Processed Maven project: $groupId:$artifactId:$version"
 

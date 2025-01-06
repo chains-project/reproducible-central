@@ -4,7 +4,7 @@ export CI=true
 success_count=0
 failure_count=0
 # Set the path to the result directory
-RESULT_DIR="./results"
+RESULT_DIR="./fabric8"
 
 # Set the path to the rebuild_to_get_diffoscope.sh script
 REBUILD_SCRIPT="./rebuild.sh"

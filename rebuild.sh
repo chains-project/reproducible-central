@@ -164,6 +164,11 @@ then
   java -jar $SCRIPTDIR/maven-module-graph-1.0.0-SNAPSHOT.jar --project-root $project_root/ --plain-text output.txt --json output.json --exclude-profiles &> release.log
   exit_code=$?
   echo "counter_exit_code=$exit_code" >> $RESULT_DIR/out.log
+elif [[ $artifactId == "bnd-plugin-parent" && $version == "7.0.0" ]]
+then
+  java -jar $SCRIPTDIR/maven-module-graph-1.0.0-SNAPSHOT.jar --project-root $project_root/maven-plugins --plain-text output.txt --json output.json &> release.log
+  exit_code=$?
+  echo "counter_exit_code=$exit_code" >> $RESULT_DIR/out.log
 elif [ $artifactId == "bnd-plugin-parent" ]
 then
   java -jar $SCRIPTDIR/maven-module-graph-1.0.0-SNAPSHOT.jar --project-root $project_root/maven --plain-text output.txt --json output.json &> release.log

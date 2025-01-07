@@ -37,11 +37,17 @@ def create_level_order_traversal_for_diffoscope(data, file_name, group_id, artif
             f.write(",".join(sources) + "\n")
 
 
+with open(os.path.join('diffoscope-failures', "all_success.txt"), 'r') as f:
+    all_success = [i.strip() for i in f.readlines()]
+
+
 for root, dirs, files in os.walk(args.base_dir):
     for file in files:
-        last_two_sources = []
         if file.endswith(".diffoscope.json"):
             _, group_id, artifact_id, version = root.split('/')
+
+            if f"{group_id}:{artifact_id}:{version}" not in all_success:
+                continue
 
             with open(os.path.join(root, file), 'r') as f:
                 data = json.load(f)

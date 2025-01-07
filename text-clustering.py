@@ -40,6 +40,24 @@ def create_level_order_traversal_for_diffoscope(data, file_name, group_id, artif
 with open(os.path.join('diffoscope-failures', "all_success.txt"), 'r') as f:
     all_success = [i.strip() for i in f.readlines()]
 
+with open('unreproducible_maven_projects_to_releases.json', 'r') as f:
+    unreproducible_projects = json.load(f)
+
+for project in unreproducible_projects:
+    project_name = project['name']
+    original_group_id, original_artifact_id, original_version = project_name.split(":")
+
+    for release in project['maven_releases']:
+        group_id, artifact_id, version = release['gav'].split(":")
+        
+        for unreproducible_artifact in release['unreproducible_artifacts']:
+            file_name = unreproducible_artifact
+
+            path_to_diffoscope_file = os.path.join(args.base_dir, original_group_id, original_artifact_id, original_version, file_name)
+            with open(path_to_diffoscope_file, 'r') as f:
+                data = json.load(f)
+
+            create_level_order_traversal_for_diffoscope(data, file_name, group_id, artifact_id, version)
 
 for root, dirs, files in os.walk(args.base_dir):
     for file in files:

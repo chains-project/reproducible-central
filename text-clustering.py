@@ -1,5 +1,3 @@
-import tlsh
-from collections import defaultdict
 import argparse
 import os
 import queue
@@ -59,16 +57,3 @@ for project in unreproducible_projects:
 
             create_level_order_traversal_for_diffoscope(data, file_name, group_id, artifact_id, version)
 
-for root, dirs, files in os.walk(args.base_dir):
-    for file in files:
-        if file.endswith(".diffoscope.json"):
-            _, group_id, artifact_id, version = root.split('/')
-
-            if f"{group_id}:{artifact_id}:{version}" not in all_success:
-                continue
-
-            with open(os.path.join(root, file), 'r') as f:
-                data = json.load(f)
-            
-
-            create_level_order_traversal_for_diffoscope(data, file, group_id, artifact_id, version)

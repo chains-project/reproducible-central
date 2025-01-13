@@ -19,6 +19,10 @@ def minify_diffoscope(diffoscope_file_path, diffoscope_filename, base_dir, tree_
     with open(diffoscope_file_tree, 'r') as file:
         sources = get_and_sanitize_leaf_nodes(file.readlines())
 
+    # huge files cannot be read
+    if os.path.getsize(diffoscope_file_path) > 1000000000:
+        return
+
     if len(sources) == 0:
         return
     
@@ -58,16 +62,11 @@ def get_and_sanitize_leaf_nodes(all_lines):
 
     result = []
     for source in leaf_nodes.split(','):
-        if 'zipinfo' in source:
-            continue
-        if 'zipdetails' in source:
-            continue
-        if 'zipnote' in source:
-            continue
-        # we want to skip these tools because they require much deeper analysis
-        if PROCYON_TOOL in source or JAVAP_TOOL in source:
-            continue
-        result.append(source.strip())
+        if 'zipinfo' in source or 'zipdetails' in source or 'zipnote' in source:
+            result.append(source.strip())
+        else:
+            # if it is any thing other than the above, we return empty list
+            return []
     return result
 
 

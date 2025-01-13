@@ -1,43 +1,50 @@
 import json
-from collections import defaultdict
-from statistics import median
-import seaborn as sns
+import numpy as np
 import matplotlib.pyplot as plt
 
-# Read the JSON file
-with open('make-release-consistent.json', 'r') as f:
-    gav_map = json.load(f)
+with open('unreproducible_maven_projects_to_releases.json', 'r') as f:
+    input_data = json.load(f)
 
-# Count versions per artifact
-versions_per_artifact = defaultdict(set)
-for gav in gav_map.keys():
-    group_id, artifact_id, version = gav.split(':')
-    artifact_key = f"{group_id}:{artifact_id}"
-    versions_per_artifact[artifact_key].add(version)
+ga_counts = {}
+for item in input_data:
+    for release in item["maven_releases"]:
+        gav = release["gav"]
+        ga = ":".join(gav.split(":")[:2])  # Extract GA by excluding the version
+        ga_counts[ga] = ga_counts.get(ga, 0) + 1
 
-# Get the count of versions for each artifact
-versions_counts = [len(versions) for versions in versions_per_artifact.values()]
+print(ga_counts)
+# Group by the number of versions (values)
+version_distribution = {}
+for count in ga_counts.values():
+    version_distribution[count] = version_distribution.get(count, 0) + 1
 
-# Create the plot with adjusted figure size
-plt.figure(figsize=(8, 6))
-violin = sns.violinplot(x=versions_counts, orient='h', inner="point")
+print(version_distribution)
 
-# Calculate and add median line
-median_value = median(versions_counts)
-plt.axvline(x=median_value, color='r', linestyle='--', alpha=0.5)
-plt.text(median_value * 1.1, 0.02, f'Median: {median_value:.1f}', 
-         color='r', horizontalalignment='left', verticalalignment='bottom',
-         rotation=0)
+# Prepare data for violin plot
+violin_data = []
+for version_count, ga_count in version_distribution.items():
+    violin_data.extend([version_count] * ga_count)
 
-plt.xlabel("Number of versions per Maven module")
-plt.tight_layout()
+violin_data.sort()
+print(violin_data)
 
-# Save plots
-plt.savefig('number_of_releases_per_maven_module.svg', format='svg', bbox_inches='tight')
-plt.savefig('number_of_releases_per_maven_module.pdf', format='pdf', bbox_inches='tight')
+min_value = min(violin_data)
+max_value = max(violin_data)
+median_value = np.median(violin_data)
+mean_value = np.mean(violin_data)
 
-# Print some statistics
-print(f"Total Maven modules: {len(versions_per_artifact)}")
-print(f"Average versions per module: {sum(versions_counts)/len(versions_counts):.2f}")
-print(f"Maximum versions for a module: {max(versions_counts)}")
-print(f"Minimum versions for a module: {min(versions_counts)}")
+# Create the plot
+fig, ax = plt.subplots(figsize=(6, 4))
+ax.violinplot([violin_data], orientation='horizontal', showextrema=True, showmeans=True)
+
+# Set labels and title
+ax.set_yticks([1, 1.25])
+ax.set_yticklabels([f'{min(version_distribution.values())}', f'{max(version_distribution.values())}'])
+ax.set_ylabel("# Maven Modules")
+ax.set_xlabel("# Versions")
+
+plt.text(max_value*0.92, 1.1, f"Max: {max_value}", fontsize=10, color="red")
+plt.text(mean_value*1.2, 1.07, f"Mean: {mean_value:.2f}", fontsize=10, color="blue")
+plt.text(median_value, 1.12, f"Median: {median_value}", fontsize=10, color="green")
+
+plt.savefig('number_of_releases_per_maven_module.pdf')

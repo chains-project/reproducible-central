@@ -30,7 +30,7 @@ public class ParseJson {
         for (MavenProject mavenProject : mavenProjects) {
             for (MavenRelease mavenRelease : mavenProject.maven_releases()) {
                 parseRelease(mavenRelease);
-                boolean match = mavenRelease.getUnreproducibleArtifacts().stream().map(a -> a.replace(".diffoscope.json", "")).anyMatch(mavenRelease.getAllArtifacts()::contains);
+                boolean match = mavenRelease.getUnreproducibleArtifacts().stream().map(a -> a.replace(".diffoscope.json", "")).allMatch(mavenRelease.getAllArtifacts()::contains);
 				if (!match) {
 					System.out.println("Does not match" + mavenRelease.getGav());
 				}

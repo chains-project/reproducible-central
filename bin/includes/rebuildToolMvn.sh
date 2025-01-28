@@ -69,8 +69,18 @@ rebuildToolMvn() {
     fi
   fi
 
+  if [ ! -f ${buildinfo} ]
+  then
+    logtofile "buildinfo does not exist" $RESULT_DIR/out.log
+  fi
+
   dos2unix ${buildinfo} || fatal "failed to convert buildinfo newlines"
   cp ${buildinfo} ../../${version} || fatal "failed to copy buildinfo file"
+
+  if [ ! -f ${buildcompare} ]
+  then
+    logtofile "buildcompare does not exist" $RESULT_DIR/out.log
+  fi
 
   buildcompare="$(dirname "${buildinfo}")/$(basename ${buildinfo} .buildinfo).buildcompare"
   dos2unix ${buildcompare} || fatal "failed to convert buildcompare newlines"

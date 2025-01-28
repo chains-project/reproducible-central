@@ -23,6 +23,9 @@ fi
 
 dir_with_version=$(pwd)
 
+echo "" > $dir_with_version/copy_reference.log
+echo "" > $dir_with_version/copy_rebuild.log
+
 counter=0
 grep '# diffoscope ' ${compare} | ${sed} -e 's/# diffoscope //' | ( while read -r line
 do
@@ -44,8 +47,10 @@ do
   mkdir -p $dir_with_version/rebuild
   copied_reference=$dir_with_version/reference/"$(basename $reference):$(basename $rebuild)"
   copied_rebuild=$dir_with_version/rebuild/"$(basename $reference):$(basename $rebuild)"
-  runcommand cp -r $(realpath $builddir)/$reference $copied_reference
-  runcommand cp -r $(realpath $builddir)/$rebuild $copied_rebuild
+  echo "Copying $(realpath $builddir)/$reference to $copied_reference" >> $dir_with_version/copy_reference.log
+  runcommand cp -r $(realpath $builddir)/$reference $copied_reference &>> $dir_with_version/copy_reference.log
+  echo "Copying $(realpath $builddir)/$rebuild to $copied_rebuild" >> $dir_with_version/copy_rebuild.log
+  runcommand cp -r $(realpath $builddir)/$rebuild $copied_rebuild &>> $dir_with_version/copy_rebuild.log
 
   relative_reference=$(realpath --relative-to=${SCRIPTDIR} $copied_reference)
   relative_rebuild=$(realpath --relative-to=${SCRIPTDIR} $copied_rebuild)

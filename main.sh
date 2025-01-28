@@ -22,7 +22,7 @@ if [ ! -x "$REBUILD_SCRIPT" ]; then
 fi
 
 # Find all buildspec files in the result directory and its subdirectories
-find "$RESULT_DIR" -type f -name "*.buildspec" | while read -r buildspec; do
+while read -r buildspec; do
     echo "Processing buildspec: $buildspec"
     
     buildspec_dir=$(dirname "$buildspec")
@@ -38,7 +38,7 @@ find "$RESULT_DIR" -type f -name "*.buildspec" | while read -r buildspec; do
     
     # Check the exit status of the rebuild script
     if [ $? -ne 0 ]; then
-        echo "Warning: rebuild_to_get_diffoscope.sh failed for $buildspec"
+        echo "Warning: rebuild_to_get_diffoscope.sh failed for $buildspec" >> "$RESULT_DIR/failed_rebuilds.txt"
         ((failure_count++))
     else
         ((success_count++))
@@ -46,7 +46,7 @@ find "$RESULT_DIR" -type f -name "*.buildspec" | while read -r buildspec; do
     
     echo "Finished processing: $buildspec"
     echo "----------------------------------------"
-done
+done < <(find "$RESULT_DIR" -type f -name "*.buildspec")
 
 echo "All buildspec files have been processed."
 echo "Summary: $success_count successes, $failure_count failures"

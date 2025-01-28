@@ -16,9 +16,8 @@
 mvnBuildDocker() {
   local mvnCommand mvnImage baseImageAlreadyHasJavaAndMaven crlfDocker mvnVersion mvn_engine_params
   mvnCommand="$1"
-  PATH_TO_JNORM_SUMMARY_JSON="$2"
   crlfDocker="no"
-  dir_with_version=$(dirname $(dirname "$PATH_TO_JNORM_SUMMARY_JSON"))
+  dir_with_version="$2"
   mvn_engine_params="$([ "$CI" = true ] && echo "--no-transfer-progress -Dstyle.color=always")"
 
   mvnVersion="3.6.3"
@@ -148,8 +147,6 @@ mvnBuildDocker() {
     exit_code=$?
     echo "mvn exit_code=$exit_code" >> $dir_with_version/mvn.log
   fi
-  tmp_json=$(mktemp)
-  jq '.maven_build = '${exit_code}'' "$PATH_TO_JNORM_SUMMARY_JSON" > "$tmp_json" && mv "$tmp_json" "$PATH_TO_JNORM_SUMMARY_JSON"
 
   logtofile "maven build exit_code=$exit_code" $RESULT_DIR/out.log
 }

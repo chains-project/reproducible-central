@@ -21,7 +21,6 @@ rebuildToolMvn() {
   # the effective rebuild command, adding artifact:buildinfo goal to compare with central content
   #local mvn_rebuild="${command} -V -e artifact:compare -Dbuildinfo.reproducible"
 
-  PATH_TO_JNORM_SUMMARY_JSON=$1
   local mvn_rebuild="${command} -V -e org.apache.maven.plugins:maven-artifact-plugin:3.5.1:compare -Dbuildinfo.reproducible -Dcompare.fail=false"
   if [ -n "${referenceRepo}" ]
   then
@@ -65,7 +64,8 @@ rebuildToolMvn() {
       # TODO: on parameter, use instead mvnBuildLocal after selecting JDK
       #   jenv shell ${jdk}
       #   sdk use java ${jdk}
-      mvnBuildDocker "${mvn_rebuild}" "${PATH_TO_JNORM_SUMMARY_JSON}" || fatal "failed to build"
+      dir_with_version=../../${version}
+      mvnBuildDocker "${mvn_rebuild}" $dir_with_version || fatal "failed to build"
     fi
   fi
 

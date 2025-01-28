@@ -17,7 +17,7 @@ is_in_csv() {
     local group_id=$1
     local artifact_id=$2
     local version=$3
-    grep -E "^${group_id}:${artifact_id}:${version}$" projects_with_differences.txt
+    grep -E "^${group_id}:${artifact_id}:${version}$" diffoscope-failures/could-not-even-start.txt
     return $?
 }
 
@@ -32,14 +32,15 @@ do
         continue
     fi
 
-    if ! is_in_csv $groupId $artifactId $version
+    # Todo: verify this manually later by running all releases here
+    if is_in_csv $groupId $artifactId $version
     then
-        info "Skipping $buildspec as it's not in the CSV"
+        info "Skipping $buildspec as it is marked as 'could not even start'"
         continue
     fi
 
     # Check if this is a Maven project
-    if [[ "$tool" != "mvn" ]]
+    if [[ "$tool" != mvn* ]]
     then
         info "Skipping $buildspec as it's not a Maven project"
         continue

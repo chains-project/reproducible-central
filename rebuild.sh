@@ -52,16 +52,6 @@ DEFAULT_oci_engine_run_opts="$([[ 'docker' == ${RB_OCI_ENGINE:-$DEFAULT_oci_engi
 
 logtofile "Starting project $groupId:$artifactId:$version" $RESULT_DIR/out.log
 
-# Initialize JSON array if it doesn't exist
-mkdir -p "$(dirname $buildspec)/jNorm"
-echo '{
-  "gav": "'$groupId:$artifactId:$version'",
-  "maven_build": -1,
-  "artifacts": []
-}' > "$(dirname $buildspec)/jNorm/jNorm_summary.json"
-
-PATH_TO_JNORM_SUMMARY_JSON="$(realpath $(dirname $buildspec)/jNorm/jNorm_summary.json)"
-
 echo "| 1. rebuild what binaries?"
 displayOptional  "referenceRepo" "$DEFAULT_referenceRepo"
 displayMandatory "groupId"
@@ -119,7 +109,7 @@ fetchSource
 echo
 case ${tool} in
   mvn*)
-    rebuildToolMvn $PATH_TO_JNORM_SUMMARY_JSON
+    rebuildToolMvn
     ;;
   sbt)
     rebuildToolSbt

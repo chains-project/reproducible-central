@@ -78,11 +78,11 @@ public class ParallelRunner {
 			switch (exitCode) {
 				case 0:
 					System.out.printf("There is a no difference between %s and %s%n", reference, rebuild);
-					Files.writeString(noDifference, reference + " " + rebuild + "\n", java.nio.file.StandardOpenOption.APPEND);
+					Files.writeString(noDifference, reference + "," + rebuild + "\n", java.nio.file.StandardOpenOption.APPEND);
 					break;
 				case 1:
 					System.out.printf("Difference between %s and %s%n", reference, rebuild);
-					Files.writeString(difference, reference + " " + rebuild + "\n", java.nio.file.StandardOpenOption.APPEND);
+					Files.writeString(difference, reference + "," + rebuild + "\n", java.nio.file.StandardOpenOption.APPEND);
 					break;
 				default:
 					throw new RuntimeException("exit code: " + exitCode);

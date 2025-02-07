@@ -29,12 +29,14 @@ public class Operands {
 	private static final Path logEmptyVersionDirectory = rootLogDir.resolve("empty_version_directory.log");
 	private static final Path nonExistentReferenceOrRebuild = rootLogDir.resolve("non_existent_reference_or_rebuild.log");
 	private static final Path emptyReferenceOrRebuild = rootLogDir.resolve("empty_reference_or_rebuild.log");
+	private static final Path artifactMismatch = rootLogDir.resolve("artifact_mismatch.log");
 
 	static {
 		try {
 			Files.createFile(logEmptyVersionDirectory);
 			Files.createFile(nonExistentReferenceOrRebuild);
 			Files.createFile(emptyReferenceOrRebuild);
+			Files.createFile(artifactMismatch);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -90,6 +92,11 @@ public class Operands {
 
 		if (!refArtifacts.equals(rebArtifacts)) {
 			System.out.println("Reference and rebuild directories do not contain the same artifacts" + versionDir.toAbsolutePath());
+			try {
+				Files.writeString(artifactMismatch, versionDir.toAbsolutePath() + "\n", java.nio.file.StandardOpenOption.APPEND);
+			} catch (IOException e) {
+				throw new RuntimeException(e);
+			}
 			return new Operands(groupId, artifactId, version, List.of(), versionDir);
 		}
 

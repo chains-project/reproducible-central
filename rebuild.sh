@@ -121,6 +121,11 @@ then
   runcommand java -jar $SCRIPTDIR/maven-module-graph-1.0.0-SNAPSHOT.jar --project-root $project_root/pom --plain-text output.txt --json output.json &> release.log
   exit_code=$?
   echo "counter_exit_code=$exit_code" >> $RESULT_DIR/maven-module.log
+elif [[ $artifactId == "orc" && $groupId == "org.apache.orc" ]]
+then
+  runcommand java -jar $SCRIPTDIR/maven-module-graph-1.0.0-SNAPSHOT.jar --project-root $project_root/java --plain-text output.txt --json output.json &> release.log
+  exit_code=$?
+  echo "counter_exit_code=$exit_code" >> $RESULT_DIR/maven-module.log
 elif [ $artifactId == "maven-bundle-plugin" ]
 then
   runcommand java -jar $SCRIPTDIR/maven-module-graph-1.0.0-SNAPSHOT.jar --project-root $project_root/tools/maven-bundle-plugin --plain-text output.txt --json output.json &> release.log

@@ -7,13 +7,25 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Stream;
 
 public class ParallelRunner {
     private static final String BASE_DIR = "results";
     private static final int MAX_WORKERS = Math.max(1, Runtime.getRuntime().availableProcessors() / 2);
-    private static final AtomicInteger completedTasks = new AtomicInteger(0);
+
+	static final Path rootLogDir = Path.of("parallel_diffoscope");
+	private static final Path noDifference = rootLogDir.resolve("no_difference.log");
+	private static final Path difference = rootLogDir.resolve("difference.log");
+
+	static {
+		try {
+			Files.createDirectories(rootLogDir);
+			Files.createFile(noDifference);
+			Files.createFile(difference);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
 
     public static void main(String[] args) throws IOException {
         ExecutorService executor = Executors.newFixedThreadPool(MAX_WORKERS);
@@ -22,12 +34,12 @@ public class ParallelRunner {
             paths
 				.filter(Files::isDirectory)
 				.filter(path -> path.getNameCount() == Paths.get(BASE_DIR).getNameCount() + 3)
+				.filter(path -> !path.getFileName().toString().equals("buildcache"))
 				.map(Operands::fromTestDirectory)
 				.forEach(operands -> {
 					operands.referenceRebuildPairs.forEach(pair -> {
 						executor.submit(() -> {
 							processPair(pair.left(), pair.right(), operands.versionDir);
-							updateProgress(operands.referenceRebuildPairs.size());
 						});
 					});
 				});
@@ -60,37 +72,24 @@ public class ParallelRunner {
 
 		try {
 			Process process = processBuilder.start();
+			process.getErrorStream().transferTo(System.out);
 			int exitCode = process.waitFor();
 
-			if (exitCode == 0) {
-				System.out.printf("There is a no difference between %s and %s%n", reference, rebuild);
-			} else if (exitCode == 1) {
-				System.out.printf("Difference between %s and %s%n", reference, rebuild);
-			} else {
-				throw new RuntimeException("exit code: " + exitCode);
+			switch (exitCode) {
+				case 0:
+					System.out.printf("There is a no difference between %s and %s%n", reference, rebuild);
+					Files.writeString(noDifference, reference + " " + rebuild + "\n", java.nio.file.StandardOpenOption.APPEND);
+					break;
+				case 1:
+					System.out.printf("Difference between %s and %s%n", reference, rebuild);
+					Files.writeString(difference, reference + " " + rebuild + "\n", java.nio.file.StandardOpenOption.APPEND);
+					break;
+				default:
+					throw new RuntimeException("exit code: " + exitCode);
 			}
 		} catch (IOException | InterruptedException e) {
-			System.out.println("⚠️ Exception: " + e.getMessage());
+			System.out.println("Exception: " + e.getMessage());
 			Thread.currentThread().interrupt();
 		}
-	}
-
-	private static synchronized void updateProgress(int totalTasks) {
-		int completed = completedTasks.incrementAndGet();
-		int progressBarWidth = 50;  // Width of the progress bar
-		int progress = (int) (((double) completed / totalTasks) * progressBarWidth);
-
-		StringBuilder bar = new StringBuilder("[");
-		for (int i = 0; i < progressBarWidth; i++) {
-			if (i < progress) {
-				bar.append("#");
-			} else {
-				bar.append("-");
-			}
-		}
-		bar.append("] ");
-		bar.append(completed).append("/").append(totalTasks);
-
-		System.out.print("\r" + bar.toString()); // Update the same line
 	}
 }

@@ -4,7 +4,7 @@ export CI=true
 success_count=0
 failure_count=0
 # Set the path to the result directory
-RESULT_DIR="./release-counter"
+RESULT_DIR="./results"
 
 # Set the path to the rebuild_to_get_diffoscope.sh script
 REBUILD_SCRIPT="./rebuild.sh"
@@ -22,14 +22,14 @@ if [ ! -x "$REBUILD_SCRIPT" ]; then
 fi
 
 # Find all buildspec files in the result directory and its subdirectories
-find "$RESULT_DIR" -type f -name "*.buildspec" | while read -r buildspec; do
+while read -r buildspec; do
     echo "Processing buildspec: $buildspec"
     
     buildspec_dir=$(dirname "$buildspec")
 
-    if ls $buildspec_dir/*.buildcompare 1> /dev/null 2>&1;
+    if ls $buildspec_dir/counter.log 1> /dev/null 2>&1;
     then
-        echo "Skipping $buildspec as .buildcompare file exists"
+        echo "Skipping $buildspec as counter.log file exists"
         continue
     fi
 
@@ -46,7 +46,7 @@ find "$RESULT_DIR" -type f -name "*.buildspec" | while read -r buildspec; do
     
     echo "Finished processing: $buildspec"
     echo "----------------------------------------"
-done
+done < <(find "$RESULT_DIR" -type f -name "*.buildspec")
 
 echo "All buildspec files have been processed."
 echo "Summary: $success_count successes, $failure_count failures"

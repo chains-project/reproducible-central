@@ -19,7 +19,7 @@ export RESULT_DIR=$SCRIPTDIR/results
 
 # ----------------------------------------------------------------------------------------------------
 
-logtofile "" $RESULT_DIR/out.log
+logtofile "" $RESULT_DIR/maven-module.log
 
 buildspec=$1
 if [ -z "${buildspec}" ]
@@ -50,7 +50,7 @@ DEFAULT_oci_engine_volumeflags=""
 DEFAULT_oci_engine_build_opts="$([[ 'docker' == ${RB_OCI_ENGINE:-$DEFAULT_oci_engine} ]] && echo $DEFAULT_docker_build_opts || echo $DEFAULT_podman_build_opts)"
 DEFAULT_oci_engine_run_opts="$([[ 'docker' == ${RB_OCI_ENGINE:-$DEFAULT_oci_engine} ]] && echo $DEFAULT_docker_run_opts || echo $DEFAULT_podman_run_opts)"
 
-logtofile "Starting project $groupId:$artifactId:$version" $RESULT_DIR/out.log
+logtofile "Starting project $groupId:$artifactId:$version" $RESULT_DIR/maven-module.log
 
 # Initialize JSON array if it doesn't exist
 
@@ -115,71 +115,71 @@ if [ $artifactId == "jakarta.persistence-api" ]
 then
   java -jar $SCRIPTDIR/maven-module-graph-1.0.0-SNAPSHOT.jar --project-root $project_root/api --plain-text output.txt --json output.json &> release.log
   exit_code=$?
-  echo "counter_exit_code=$exit_code" >> $RESULT_DIR/out.log
+  echo "counter_exit_code=$exit_code" >> $RESULT_DIR/maven-module.log
 elif [ $artifactId == "felix-parent" ]
 then
   java -jar $SCRIPTDIR/maven-module-graph-1.0.0-SNAPSHOT.jar --project-root $project_root/pom --plain-text output.txt --json output.json &> release.log
   exit_code=$?
-  echo "counter_exit_code=$exit_code" >> $RESULT_DIR/out.log
+  echo "counter_exit_code=$exit_code" >> $RESULT_DIR/maven-module.log
 elif [ $artifactId == "maven-bundle-plugin" ]
 then
   java -jar $SCRIPTDIR/maven-module-graph-1.0.0-SNAPSHOT.jar --project-root $project_root/tools/maven-bundle-plugin --plain-text output.txt --json output.json &> release.log
   exit_code=$?
-  echo "counter_exit_code=$exit_code" >> $RESULT_DIR/out.log
+  echo "counter_exit_code=$exit_code" >> $RESULT_DIR/maven-module.log
 elif [ $artifactId == "org.apache.felix.http.parent" ]
 then
   java -jar $SCRIPTDIR/maven-module-graph-1.0.0-SNAPSHOT.jar --project-root $project_root/http/parent --plain-text output.txt --json output.json &> release.log
   exit_code=$?
-  echo "counter_exit_code=$exit_code" >> $RESULT_DIR/out.log
+  echo "counter_exit_code=$exit_code" >> $RESULT_DIR/maven-module.log
 elif [ $artifactId == "org.apache.felix.healthcheck.core" ]
 then
   java -jar $SCRIPTDIR/maven-module-graph-1.0.0-SNAPSHOT.jar --project-root $project_root/healthcheck/core --plain-text output.txt --json output.json &> release.log
   exit_code=$?
-  echo "counter_exit_code=$exit_code" >> $RESULT_DIR/out.log
+  echo "counter_exit_code=$exit_code" >> $RESULT_DIR/maven-module.log
 elif [ $artifactId == "org.apache.felix.feature" ]
 then
   java -jar $SCRIPTDIR/maven-module-graph-1.0.0-SNAPSHOT.jar --project-root $project_root/features --plain-text output.txt --json output.json &> release.log
   exit_code=$?
-  echo "counter_exit_code=$exit_code" >> $RESULT_DIR/out.log
+  echo "counter_exit_code=$exit_code" >> $RESULT_DIR/maven-module.log
 elif [ $artifactId == "cucumber-jvm" ]
 then
   java -jar $SCRIPTDIR/maven-module-graph-1.0.0-SNAPSHOT.jar --project-root $project_root --plain-text output.txt --json output.json &> release.log
   exit_code=$?
-  echo "counter_exit_code=$exit_code" >> $RESULT_DIR/out.log
+  echo "counter_exit_code=$exit_code" >> $RESULT_DIR/maven-module.log
 elif [ $groupId == "io.cucumber" ]
 then
   java -jar $SCRIPTDIR/maven-module-graph-1.0.0-SNAPSHOT.jar --project-root $project_root/java --plain-text output.txt --json output.json &> release.log
   exit_code=$?
-  echo "counter_exit_code=$exit_code" >> $RESULT_DIR/out.log
+  echo "counter_exit_code=$exit_code" >> $RESULT_DIR/maven-module.log
 elif [ $groupId == "org.apache.karaf" ]
 then
   java -jar $SCRIPTDIR/maven-module-graph-1.0.0-SNAPSHOT.jar --project-root $project_root/ --plain-text output.txt --json output.json --exclude-profiles &> release.log
   exit_code=$?
-  echo "counter_exit_code=$exit_code" >> $RESULT_DIR/out.log
+  echo "counter_exit_code=$exit_code" >> $RESULT_DIR/maven-module.log
 elif [[ $artifactId == "bnd-plugin-parent" && $version == "7.0.0" ]]
 then
   java -jar $SCRIPTDIR/maven-module-graph-1.0.0-SNAPSHOT.jar --project-root $project_root/maven-plugins --plain-text output.txt --json output.json &> release.log
   exit_code=$?
-  echo "counter_exit_code=$exit_code" >> $RESULT_DIR/out.log
+  echo "counter_exit_code=$exit_code" >> $RESULT_DIR/maven-module.log
 elif [ $artifactId == "bnd-plugin-parent" ]
 then
   java -jar $SCRIPTDIR/maven-module-graph-1.0.0-SNAPSHOT.jar --project-root $project_root/maven --plain-text output.txt --json output.json &> release.log
   exit_code=$?
-  echo "counter_exit_code=$exit_code" >> $RESULT_DIR/out.log
+  echo "counter_exit_code=$exit_code" >> $RESULT_DIR/maven-module.log
 elif [ $artifactId == "kubernetes-client-project" ]
 then
   java -jar $SCRIPTDIR/maven-module-graph-1.0.0-SNAPSHOT.jar --project-root $project_root/kubernetes-model-generator --plain-text output.txt --json output.json --exclude-profiles &> release.log
   exit_code=$?
-  echo "counter_exit_code=$exit_code" >> $RESULT_DIR/out.log
+  echo "counter_exit_code=$exit_code" >> $RESULT_DIR/maven-module.log
 elif [ $artifactId == "mybatis-generator" ]
 then
   java -jar $SCRIPTDIR/maven-module-graph-1.0.0-SNAPSHOT.jar --project-root $project_root/core --plain-text output.txt --json output.json &> release.log
   exit_code=$?
-  echo "counter_exit_code=$exit_code" >> $RESULT_DIR/out.log
+  echo "counter_exit_code=$exit_code" >> $RESULT_DIR/maven-module.log
 else
   java -jar $SCRIPTDIR/maven-module-graph-1.0.0-SNAPSHOT.jar --project-root $project_root --plain-text output.txt --json output.json &> release.log
   exit_code=$?
-  echo "counter_exit_code=$exit_code" >> $RESULT_DIR/out.log
+  echo "counter_exit_code=$exit_code" >> $RESULT_DIR/maven-module.log
 fi
 
 popd > /dev/null || fatal "Unable to return to starting directory"

@@ -27,11 +27,6 @@ while read -r buildspec; do
     
     buildspec_dir=$(dirname "$buildspec")
 
-    if ls $buildspec_dir/counter.log 1> /dev/null 2>&1;
-    then
-        echo "Skipping $buildspec as counter.log file exists"
-        continue
-    fi
 
     # Call the rebuild_to_get_diffoscope.sh script with the buildspec file
     "$REBUILD_SCRIPT" "$buildspec"

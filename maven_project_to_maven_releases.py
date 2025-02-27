@@ -11,7 +11,7 @@ def parse_args():
     return parser.parse_args()
 
 def load_success_builds():
-    path_to_file = os.path.join('diffoscope-failures', "all_success.txt")
+    path_to_file = os.path.join('diffoscope-failures', "success_after_excluding_f_should_be_respected.txt")
     with open(path_to_file, 'r') as f:
         return set([line.strip() for line in f.readlines()])
 

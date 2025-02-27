@@ -3,6 +3,7 @@ from dataclasses import dataclass
 import glob
 import os
 import sys
+import re
 import json
 import pathlib
 from typing import List
@@ -78,7 +79,17 @@ if __name__ == '__main__':
                 diffoscope_files = glob.glob(os.path.join(root, directory, '*.diffoscope.json'))
 
                 if len(diffoscope_files) != expected_ko:
-                    print(f'{os.path.join(root, directory)}: {len(diffoscope_files)} != {expected_ko}')
+                    buildspec = glob.glob(os.path.join(root, directory, '*.buildspec'))[0]
+                    with open(buildspec, 'r') as f:
+                        buildspec_content = f.read()
+                    
+                    regex = r"(?<=mvn).*-f.*(?=pom\.xml)"
+                    regex = re.compile(regex)
+                    if regex.search(buildspec_content):
+                        print(f'{os.path.join(root, directory)}: -f should be respected')
+                    else:
+                        print(f'{os.path.join(root, directory)}: file not there in reference or rebuild')
+                    
                 
                 
 

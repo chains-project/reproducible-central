@@ -62,8 +62,8 @@ if __name__ == '__main__':
     depth = 3
 
     success_count = 0
-    _f_count = 0
-    file_not_there_count = 0
+    _f = []
+    file_not_there = []
     for root, dirs, files in os.walk(PATH):
         for directory in dirs:
             if os.path.join(root, directory).count(os.sep) == depth:
@@ -90,14 +90,16 @@ if __name__ == '__main__':
                     regex = r"(?<=mvn).*-f.*(?=pom\.xml)"
                     regex = re.compile(regex)
                     if regex.search(buildspec_content):
-                        print(f'{os.path.join(root, directory)}: -f should be respected')
-                        _f_count += 1
+                        gav = f"{os.path.join(root, directory).split(os.sep)[1]}:{os.path.join(root, directory).split(os.sep)[2]}:{os.path.join(root, directory).split(os.sep)[3]}"
+                        print(f'{gav}: -f should be respected')
+                        _f.append(f"{gav}")
                     else:
-                        print(f'{os.path.join(root, directory)}: file not there in reference or rebuild')
-                        file_not_there_count += 1
+                        gav = f"{os.path.join(root, directory).split(os.sep)[1]}:{os.path.join(root, directory).split(os.sep)[2]}:{os.path.join(root, directory).split(os.sep)[3]}"
+                        print(f'{gav}: file not there in reference or rebuild')
+                        file_not_there.append(f"{gav}")
                 else:
                     success_count += 1
     
     print(f"Success count: {success_count}")
-    print(f"File not there count: {file_not_there_count}")
-    print(f"_f count: {_f_count}")
+    print(f"File not there count: {len(file_not_there)}")
+    print(f"_f count: {len(_f)}")

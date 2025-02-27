@@ -60,6 +60,10 @@ if __name__ == '__main__':
     ground_truth_is_not_there = 0
 
     depth = 3
+
+    success_count = 0
+    _f_count = 0
+    file_not_there_count = 0
     for root, dirs, files in os.walk(PATH):
         for directory in dirs:
             if os.path.join(root, directory).count(os.sep) == depth:
@@ -87,63 +91,13 @@ if __name__ == '__main__':
                     regex = re.compile(regex)
                     if regex.search(buildspec_content):
                         print(f'{os.path.join(root, directory)}: -f should be respected')
+                        _f_count += 1
                     else:
                         print(f'{os.path.join(root, directory)}: file not there in reference or rebuild')
-                    
-                
-                
-
-    # with open('mapping.json', 'r') as f:
-    #     mapping = json.load(f)
+                        file_not_there_count += 1
+                else:
+                    success_count += 1
     
-    # for buildspec in mapping:
-    #     groupId = mapping[buildspec]['groupId']
-    #     artifactId = mapping[buildspec]['artifactId']
-    #     version = mapping[buildspec]['version']
-
-    #     path_to_results = os.path.join(PATH, groupId, artifactId, version)
-    #     if not os.path.exists(path_to_results):
-    #         print(f"Path {path_to_results} does not exist")
-    #         continue
-
-    #     total_projects += 1
-
-    #     buildcompare_candidate = glob.glob(os.path.join(PATH, groupId, artifactId, version, '*.buildcompare'))
-    #     if len(buildcompare_candidate) == 0:
-    #         print(f"Build failed for {os.path.join(PATH, groupId, artifactId, version)}")
-    #         continue
-        
-    #     total_projects_without_build_failed += 1
-
-    #     parent_buildspec = pathlib.Path(buildspec).parent
-    #     actual_buildcompare_candidate = glob.glob(os.path.join(parent_buildspec, '*.buildcompare'))
-    #     actual_buildcompare = None
-    #     for actual_buildcompare_it in actual_buildcompare_candidate:
-    #         if version in actual_buildcompare_it:
-    #             actual_buildcompare = actual_buildcompare_it
-    #             break
-    #     else:
-    #         print(f"Ground truth is not there")
-    #         ground_truth_is_not_there += 1
-    #         continue
-
-
-    #     if len(buildcompare_candidate) != 1:
-    #         print(f"Expected one buildcompare file, but found {len(buildcompare_candidate)}, {os.path.join(PATH, groupId, artifactId, version)}")
-    #         sys.exit(1)
-    #     expected_buildcompare = buildcompare_candidate[0]
-        
-    #     print(f"Comparing {expected_buildcompare} with {actual_buildcompare}")
-    #     if main(expected_buildcompare, actual_buildcompare):
-    #         reproducible_project_count += 1
-    #     else:
-    #         unreproducible_project_count += 1
-
-    # print(f"Total projects: {total_projects}")
-    # print(f"Total projects without build failed: {total_projects_without_build_failed}")
-    # print(f"Reproducible projects: {reproducible_project_count}")
-    # print(f"Unreproducible projects: {unreproducible_project_count}")
-    # print(f"Ground truth is not there: {ground_truth_is_not_there}")
-    
-
-
+    print(f"Success count: {success_count}")
+    print(f"File not there count: {file_not_there_count}")
+    print(f"_f count: {_f_count}")

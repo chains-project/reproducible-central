@@ -103,3 +103,10 @@ if __name__ == '__main__':
     print(f"Success count: {success_count}")
     print(f"File not there count: {len(file_not_there)}")
     print(f"_f count: {len(_f)}")
+
+    with open('-f-should-be-respected.txt', 'w') as f:
+        f.writelines([f"{line}\n" for line in _f])
+    
+    with open('file-not-there.txt', 'w') as f:
+        f.writelines([f"{line}\n" for line in file_not_there])
+

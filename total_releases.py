@@ -2,6 +2,9 @@ import os
 import argparse
 import glob
 import json
+import requests
+
+MAVEN_CENTRAL_URL = "https://repo.maven.apache.org/maven2/"
 
 def parse_args():
     parser = argparse.ArgumentParser(description='Process release consistency')
@@ -20,7 +23,7 @@ def get_GAV(path_to_output):
     return f"{group_id}:{artifact_id}:{version}"
 
 def main():
-    number_of_releases = []
+    number_of_releases = 0
     args = parse_args()
     base_level = len(args.base_dir.split(os.path.sep))
     success_builds = load_success_builds()
@@ -32,9 +35,17 @@ def main():
                 if gav in success_builds:
                     modules = os.path.join(root, directory, "output.txt")
                     with open(modules, 'r') as f:
-                        number_of_releases.append(len(f.readlines()))
+                        releases = [line.strip() for line in f.readlines()]
+                        
+                        for release in releases:
+                            g,a,v = release.split(":")
+                            gav = requests.get(MAVEN_CENTRAL_URL + g.replace(".", "/") + "/" + a + "/" + v + "/")
+                            if gav.status_code == 200:
+                                number_of_releases += 1
+                            else:
+                                print(f"Release {g}:{a}:{v} not found in Maven Central")
     
-    print(f"Total number of modules: {sum(number_of_releases)}")
+    print(f"Total number of modules: {number_of_releases}")
 
 if __name__ == "__main__":
     main()

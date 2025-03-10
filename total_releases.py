@@ -44,7 +44,7 @@ def main():
                             if gav.status_code == 200:
                                 number_of_releases += 1
                             else:
-                                print(f"Release {url} not found in Maven Central")
+                                print(f"Release {url} not found in Maven Central: {gav.status_code}")
     
     print(f"Total number of modules: {number_of_releases}")
 

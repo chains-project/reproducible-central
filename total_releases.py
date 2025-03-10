@@ -39,11 +39,12 @@ def main():
                         
                         for release in releases:
                             g,a,v = release.split(":")
-                            gav = requests.get(MAVEN_CENTRAL_URL + g.replace(".", "/") + "/" + a + "/" + v + "/")
+                            url = MAVEN_CENTRAL_URL + g.replace(".", "/") + "/" + a + "/" + v + "/"
+                            gav = requests.get(url)
                             if gav.status_code == 200:
                                 number_of_releases += 1
                             else:
-                                print(f"Release {g}:{a}:{v} not found in Maven Central")
+                                print(f"Release {url} not found in Maven Central")
     
     print(f"Total number of modules: {number_of_releases}")
 

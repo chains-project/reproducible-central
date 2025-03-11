@@ -1,48 +1,55 @@
 package io.github.algomaster99.reproducible_central;
 
 
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.stream.Stream;
 
-public class ParallelRunner {
-    private static final String BASE_DIR = "results";
-    private static final int MAX_WORKERS = Math.max(1, Runtime.getRuntime().availableProcessors() / 2);
+import com.fasterxml.jackson.databind.ObjectMapper;
 
-	static final Path rootLogDir = Path.of("parallel_diffoscope");
-	private static final Path noDifference = rootLogDir.resolve("no_difference.log");
-	private static final Path difference = rootLogDir.resolve("difference.log");
+public class ParallelRunner {
+	static final Path rootLogDir = Path.of("parallel_jnorm");
+	private static final String BASE_DIR = "results";
+	private static final int MAX_WORKERS = Math.max(1, Runtime.getRuntime().availableProcessors() / 2);
 
 	static {
 		try {
 			Files.createDirectories(rootLogDir);
-			Files.createFile(noDifference);
-			Files.createFile(difference);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
 	}
 
-    public static void main(String[] args) throws IOException {
-        ExecutorService executor = Executors.newFixedThreadPool(MAX_WORKERS);
+	public static void main(String[] args) throws IOException {
+		ExecutorService executor = Executors.newFixedThreadPool(MAX_WORKERS);
 
-        try (Stream<Path> paths = Files.walk(Paths.get(BASE_DIR))) {
-            paths
-				.filter(Files::isDirectory)
-				.filter(path -> path.getNameCount() == Paths.get(BASE_DIR).getNameCount() + 3)
-				.filter(path -> !path.getFileName().toString().equals("buildcache"))
-				.map(Operands::fromTestDirectory)
-				.forEach(operands -> {
-					operands.referenceRebuildPairs.forEach(pair -> {
-						executor.submit(() -> {
-							processPair(pair.left(), pair.right(), operands.versionDir);
+		try (Stream<Path> paths = Files.walk(Paths.get(BASE_DIR))) {
+			paths
+					.filter(Files::isDirectory)
+					.filter(path -> path.getNameCount() == Paths.get(BASE_DIR).getNameCount() + 3)
+					.filter(path -> !path.getFileName().toString().equals("buildcache"))
+					.map(Operands::fromTestDirectory)
+					.forEach(operands -> {
+						operands.referenceRebuildPairs.forEach(pair -> {
+							executor.submit(() -> {
+								try {
+									processPair(pair.left(), pair.right(), operands.versionDir);
+								} catch (IOException e) {
+									throw new RuntimeException(e);
+								}
+							});
 						});
 					});
-				});
 		}
 
 		executor.shutdown();
@@ -52,41 +59,111 @@ public class ParallelRunner {
 		return artifactPath.getFileName().toString().split(":")[0];
 	}
 
-	private static void processPair(Path reference, Path rebuild, Path versionDir) {
+	private static void processPair(Path reference, Path rebuild, Path versionDir) throws IOException {
 		System.out.println("Processing: " + reference + " and " + rebuild);
 
-		ProcessBuilder processBuilder = new ProcessBuilder(
-				"docker", "run", "--rm",
-				"--user", System.getProperty("userid"),
-				"-w", "/mnt",
-				"--mount",
-				String.format("type=bind,source=%s,target=/input1", reference.toAbsolutePath()),
-				"--mount",
-				String.format("type=bind,source=%s,target=/input2", rebuild.toAbsolutePath()),
-				"-v", versionDir.toAbsolutePath() + ":/mnt",
-				"algomaster99/diffoscope:latest",
-				"/input1", "/input2",
-				"--json", "/mnt/" + getPathFromArtifact(reference.toAbsolutePath()) + ".diffoscope.json"
+		int exitCodeReference = -1;
+		if (reference.toFile().exists()) {
+			ProcessBuilder processBuilder1 = new ProcessBuilder(
+					"docker", "run", "--rm",
+					// "--user", System.getProperty("userid"),
+					"-w", "/mnt",
+					"--mount",
+					String.format("type=bind,source=%s,target=/reference.jar", reference.toAbsolutePath()),
+					"-v", versionDir.toAbsolutePath() + ":/mnt",
+					"algomaster99/jnorm:latest",
+					"-o",
+					"-n",
+					"-a",
+					"-s",
+					"-p",
+					"-c",
+					"-r2",
+					"-i", "/reference.jar",
+					"-d", "/mnt/jnorm/reference/" + reference.getFileName().toString() + "/"
+			);
+			processBuilder1.redirectErrorStream(true);
+
+			try {
+				Process process = processBuilder1.start();
+				exitCodeReference = process.waitFor();
+
+				BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
+				String line;
+				List<String> lines = new ArrayList<>();
+				while ((line = reader.readLine()) != null) {
+					lines.add(line);
+				}
+				Files.write(versionDir.resolve("jnorm").resolve("reference").resolve(getPathFromArtifact(reference) + ".jnorm.log"), lines);
+
+			} catch (Exception e) {
+				System.out.println("Exception: " + e.getMessage());
+				Thread.currentThread().interrupt();
+			}
+		}
+
+		int exitCodeRebuild = -1;
+		if (rebuild.toFile().exists()) {
+			ProcessBuilder processBuilder2 = new ProcessBuilder(
+					"docker", "run", "--rm",
+//		 		"--user", System.getProperty("userid"),
+					"-w", "/mnt",
+					"--mount",
+					String.format("type=bind,source=%s,target=/rebuild.jar", rebuild.toAbsolutePath()),
+					"-v", versionDir.toAbsolutePath() + ":/mnt",
+					"algomaster99/jnorm:latest",
+					"-o",
+					"-n",
+					"-a",
+					"-s",
+					"-p",
+					"-c",
+					"-r2",
+					"-i", "/rebuild.jar",
+					"-d", "/mnt/jnorm/rebuild/" + rebuild.getFileName().toString() + "/"
+			);
+			processBuilder2.redirectErrorStream(true);
+
+			try {
+				Process process = processBuilder2.start();
+				exitCodeRebuild = process.waitFor();
+
+				BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
+				String line;
+				List<String> lines = new ArrayList<>();
+				while ((line = reader.readLine()) != null) {
+					lines.add(line);
+				}
+				Files.write(versionDir.resolve("jnorm").resolve("rebuild").resolve(getPathFromArtifact(reference) + ".jnorm.log"), lines);
+
+			} catch (Exception e) {
+				System.out.println("Exception: " + e.getMessage());
+				Thread.currentThread().interrupt();
+			}
+		}
+
+
+		ProcessBuilder diffProcessBuilder = new ProcessBuilder(
+				"diff",
+				"-u",
+				versionDir.resolve("jnorm").resolve("reference").resolve(reference.getFileName().toString()).toString(),
+				versionDir.resolve("jnorm").resolve("rebuild").resolve(rebuild.getFileName().toString()).toString()
 		);
-		processBuilder.inheritIO();
+		diffProcessBuilder.redirectOutput(versionDir.resolve("jnorm").resolve(getPathFromArtifact(reference) + ".diff").toFile());
 
 		try {
-			Process process = processBuilder.start();
+			Process process = diffProcessBuilder.start();
 			process.getErrorStream().transferTo(System.out);
-			int exitCode = process.waitFor();
+			int exitCodeDiff = process.waitFor();
 
-			switch (exitCode) {
-				case 0:
-					System.out.printf("There is a no difference between %s and %s%n", reference, rebuild);
-					Files.writeString(noDifference, reference + "," + rebuild + "\n", java.nio.file.StandardOpenOption.APPEND);
-					break;
-				case 1:
-					System.out.printf("Difference between %s and %s%n", reference, rebuild);
-					Files.writeString(difference, reference + "," + rebuild + "\n", java.nio.file.StandardOpenOption.APPEND);
-					break;
-				default:
-					throw new RuntimeException("exit code: " + exitCode);
-			}
+			Map<String, Integer> exitCodeMap = new HashMap<>();
+			exitCodeMap.put("reference", exitCodeReference);
+			exitCodeMap.put("rebuild", exitCodeRebuild);
+			exitCodeMap.put("diff", exitCodeDiff);
+
+			ObjectMapper objectMapper = new ObjectMapper();
+			Files.writeString(versionDir.resolve("jnorm").resolve(getPathFromArtifact(reference) + ".json"), objectMapper.writeValueAsString(exitCodeMap) + "\n");
+
 		} catch (IOException | InterruptedException e) {
 			System.out.println("Exception: " + e.getMessage());
 			Thread.currentThread().interrupt();

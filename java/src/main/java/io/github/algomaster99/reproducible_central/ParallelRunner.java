@@ -20,11 +20,13 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 public class ParallelRunner {
 	static final Path rootLogDir = Path.of("parallel_jnorm");
 	private static final String BASE_DIR = "results";
+	private static final Path skippedFile = rootLogDir.resolve("skipped");
 	private static final int MAX_WORKERS = Math.max(1, Runtime.getRuntime().availableProcessors() / 2);
 
 	static {
 		try {
 			Files.createDirectories(rootLogDir);
+			Files.createFile(skippedFile);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -33,6 +35,7 @@ public class ParallelRunner {
 	public static void main(String[] args) throws IOException {
 		ExecutorService executor = Executors.newFixedThreadPool(MAX_WORKERS);
 
+		List<String> gavs = Files.readAllLines(Paths.get("projects_with_jvm_differences.txt"));
 		try (Stream<Path> paths = Files.walk(Paths.get(BASE_DIR))) {
 			paths
 					.filter(Files::isDirectory)
@@ -40,15 +43,23 @@ public class ParallelRunner {
 					.filter(path -> !path.getFileName().toString().equals("buildcache"))
 					.map(Operands::fromTestDirectory)
 					.forEach(operands -> {
-						operands.referenceRebuildPairs.forEach(pair -> {
-							executor.submit(() -> {
-								try {
-									processPair(pair.left(), pair.right(), operands.versionDir);
-								} catch (IOException e) {
-									throw new RuntimeException(e);
-								}
+						if (gavs.contains(String.format("%s:%s:%s", operands.groupId, operands.artifactId, operands.version))) {
+							operands.referenceRebuildPairs.forEach(pair -> {
+								executor.submit(() -> {
+									try {
+										processPair(pair.left(), pair.right(), operands.versionDir);
+									} catch (IOException e) {
+										throw new RuntimeException(e);
+									}
+								});
 							});
-						});
+						} else {
+							try {
+								Files.writeString(skippedFile,String.format("%s:%s:%s\n", operands.groupId, operands.artifactId, operands.version), java.nio.file.StandardOpenOption.APPEND);
+							} catch (IOException e) {
+								throw new RuntimeException(e);
+							}
+						}
 					});
 		}
 

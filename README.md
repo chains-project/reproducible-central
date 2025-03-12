@@ -1,16 +1,10 @@
-Number of diffs that are shown by `procyon` and `javap`:
+Structured as
+<groupId>/<artifactId>/<version>
 
-```json
-{
-  "procyon": {
-    "releases": 49,
-    "diffs": 14945
-  },
-  "javap": {
-    "releases": 69,
-    "diffs": 9769
-  }
-}
-```
+Each of these directories have:
+1. `reference` - artifact on Maven central
+2. `rebuild` - artifact that is built using `buildspec`
+3. `*.diffoscope.json` - difference between reference and rebuild
+> If there are no diffoscope files, it means that the build either failed or there is no difference between the artifacts.
+You can see failed builds in `mvn.log`. You can confirm the project is fully reproducible by referring to `ko` attribute in `.buildcompare`.
 
-There are `49 U 69` projects that can be analysed.

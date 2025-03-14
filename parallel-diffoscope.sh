@@ -20,8 +20,8 @@ compare_jars() {
     
     VERSION=$(echo "$JAR" | sed -E 's/.*-([0-9]+\.[0-9]+\.[0-9]+).*/\1/')
 
-    REF_PATH="$BASE_PATH/$VERSION/reference/$JAR"
-    REB_PATH="$BASE_PATH/$VERSION/rebuild/$JAR"
+    REF_PATH="$BASE_PATH/$VERSION/reference/$JAR_PAIR"
+    REB_PATH="$BASE_PATH/$VERSION/rebuild/$JAR_PAIR"
 
     docker run --rm --user $(id -u) \
         -w /mnt \

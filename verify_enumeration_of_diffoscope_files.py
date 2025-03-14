@@ -62,6 +62,7 @@ if __name__ == '__main__':
     depth = 3
 
     success_count = 0
+    failure_count = 0
     _f = []
     file_not_there = []
     for root, dirs, files in os.walk(PATH):
@@ -80,33 +81,17 @@ if __name__ == '__main__':
                 buildcompare = parse_buildcompare(buildcompare_candidate[0])
                 expected_ko = buildcompare.ko
 
-                diffoscope_files = glob.glob(os.path.join(root, directory, '*.diffoscope.json'))
+                jNorm_files = glob.glob(os.path.join(root, directory, 'jnorm', '*.json'))
 
-                if len(diffoscope_files) != expected_ko:
-                    buildspec = glob.glob(os.path.join(root, directory, '*.buildspec'))[0]
-                    with open(buildspec, 'r') as f:
-                        buildspec_content = f.read()
-                    
-                    regex = r"(?<=mvn).*-f.*(?=pom\.xml)"
-                    regex = re.compile(regex)
-                    if regex.search(buildspec_content):
-                        gav = f"{os.path.join(root, directory).split(os.sep)[1]}:{os.path.join(root, directory).split(os.sep)[2]}:{os.path.join(root, directory).split(os.sep)[3]}"
-                        print(f'{gav}: -f should be respected')
-                        _f.append(f"{gav}")
-                    else:
-                        gav = f"{os.path.join(root, directory).split(os.sep)[1]}:{os.path.join(root, directory).split(os.sep)[2]}:{os.path.join(root, directory).split(os.sep)[3]}"
-                        print(f'{gav}: file not there in reference or rebuild')
-                        file_not_there.append(f"{gav}")
-                else:
+                if len(jNorm_files) <= 0:
+                    continue
+
+                if expected_ko == len(jNorm_files):
                     success_count += 1
+                
+                else:
+                    failure_count += 1
     
     print(f"Success count: {success_count}")
-    print(f"File not there count: {len(file_not_there)}")
-    print(f"_f count: {len(_f)}")
-
-    with open('-f-should-be-respected.txt', 'w') as f:
-        f.writelines([f"{line}\n" for line in _f])
-    
-    with open('file-not-there.txt', 'w') as f:
-        f.writelines([f"{line}\n" for line in file_not_there])
+    print(f"Failure count: {failure_count}")
 

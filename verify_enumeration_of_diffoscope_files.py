@@ -90,6 +90,7 @@ if __name__ == '__main__':
                     success_count += 1
                 
                 else:
+                    print(f"Expected {expected_ko} but found {len(jNorm_files)} for {os.path.join(root, directory)}")
                     failure_count += 1
     
     print(f"Success count: {success_count}")

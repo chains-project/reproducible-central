@@ -1,7 +1,16 @@
 #!/bin/bash
 
-# Array of JAR files to compare
+# Define an array of JAR files
 desktop_JARS=(
+    "legend-engine-pure-code-compiled-core-4.4.7.jar:legend-engine-pure-code-compiled-core-4.4.7.jar"
+    "legend-engine-pure-code-compiled-core-4.7.0.jar:legend-engine-pure-code-compiled-core-4.7.0.jar"
+    "legend-engine-pure-code-compiled-core-4.4.8.jar:legend-engine-pure-code-compiled-core-4.4.8.jar"
+    "legend-engine-xt-relationalStore-pure-4.56.0.jar:legend-engine-xt-relationalStore-pure-4.56.0.jar"
+    "legend-engine-xt-sql-pure-metamodel-4.56.0.jar:legend-engine-xt-sql-pure-metamodel-4.56.0.jar"
+    "legend-engine-xt-elasticsearch-V7-pure-metamodel-4.56.0.jar:legend-engine-xt-elasticsearch-V7-pure-metamodel-4.56.0.jar"
+    "legend-engine-pure-code-compiled-core-4.56.0-sources.jar:legend-engine-pure-code-compiled-core-4.56.0-sources.jar"
+    "legend-engine-xt-analytics-mapping-pure-4.56.0.jar:legend-engine-xt-analytics-mapping-pure-4.56.0.jar"
+    "legend-engine-xt-serviceStore-pure-4.56.0.jar:legend-engine-xt-serviceStore-pure-4.56.0.jar"
     "legend-engine-pure-runtime-java-extension-compiled-functions-json-4.56.0.jar:legend-engine-pure-runtime-java-extension-compiled-functions-json-4.56.0.jar"
     "legend-engine-xt-protobuf-pure-4.56.0.jar:legend-engine-xt-protobuf-pure-4.56.0.jar"
     "legend-engine-xt-openapi-pure-4.56.0.jar:legend-engine-xt-openapi-pure-4.56.0.jar"
@@ -12,16 +21,15 @@ desktop_JARS=(
 # Base path for source files
 BASE_PATH="/mnt/hdd2/amansha/reproducible-central/results/org.finos.legend.engine/legend-engine"
 
-# Function to compare JAR files
-compare_jars() {
-    JAR_PAIR=$1
-    JAR=$(echo "$JAR_PAIR" | awk -F':' '{print $1}')
+# Loop over JAR files and run in parallel
+for JAR in "${desktop_JARS[@]}"; do
     echo "Comparing $JAR"
-    
     VERSION=$(echo "$JAR" | sed -E 's/.*-([0-9]+\.[0-9]+\.[0-9]+).*/\1/')
 
-    REF_PATH="$BASE_PATH/$VERSION/reference/$JAR_PAIR"
-    REB_PATH="$BASE_PATH/$VERSION/rebuild/$JAR_PAIR"
+
+    
+    REF_PATH="$BASE_PATH/$VERSION/reference/$JAR"
+    REB_PATH="$BASE_PATH/$VERSION/rebuild/$JAR"
 
     docker run --rm --user $(id -u) \
         -w /mnt \
@@ -30,12 +38,12 @@ compare_jars() {
         -v $(pwd):/mnt \
         algomaster99/diffoscope:latest \
         /input1 /input2 \
-        --json /mnt/results/org.finos.legend.engine/legend-engine/$VERSION/$JAR
-}
+        --json /mnt/results/org.finos.legend.engine/legend-engine/$VERSION/$JAR &
+
+done
 
 export -f compare_jars
 
-# Run comparisons in parallel
+# Run comparisons in parallel using the specified number of cores
 parallel -j 12 compare_jars ::: "${desktop_JARS[@]}"
-
 echo "All comparisons completed."

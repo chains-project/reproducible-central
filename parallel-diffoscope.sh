@@ -22,7 +22,9 @@ desktop_JARS=(
 BASE_PATH="/mnt/hdd2/amansha/reproducible-central/results/org.finos.legend.engine/legend-engine"
 
 # Loop over JAR files and run in parallel
-for JAR in "${desktop_JARS[@]}"; do
+
+compare_jars() {
+    JAR=$1
     echo "Comparing $JAR"
     VERSION=$(echo "$JAR" | sed -E 's/.*-([0-9]+\.[0-9]+\.[0-9]+).*/\1/')
 
@@ -40,7 +42,7 @@ for JAR in "${desktop_JARS[@]}"; do
         /input1 /input2 \
         --json /mnt/results/org.finos.legend.engine/legend-engine/$VERSION/$JAR &
 
-done
+}
 
 export -f compare_jars
 

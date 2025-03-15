@@ -69,7 +69,7 @@ compare_jars() {
 
     diff_exit_code=$?
 
-    echo "\{\"reference\": $reference_exit_code, \"rebuild\": $rebuild_exit_code, \"diff\": $diff_exit_code\}" > $BASE_PATH/$VERSION/jnorm/${SINGLE_JAR}.diff
+    echo "{\"reference\": $reference_exit_code, \"rebuild\": $rebuild_exit_code, \"diff\": $diff_exit_code}" > $BASE_PATH/$VERSION/jnorm/${SINGLE_JAR}.json
 
 }
 

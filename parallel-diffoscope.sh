@@ -30,7 +30,7 @@ compare_jars() {
     echo "Single JAR: $SINGLE_JAR"
     VERSION=$(echo "$JAR" | sed -E 's/.*-([0-9]+\.[0-9]+\.[0-9]+).*/\1/')
 
-
+    DIFFOSCOPE_FILE="${SINGLE_JAR}.diffoscope.json"
     
     REF_PATH="$BASE_PATH/$VERSION/reference/$JAR"
     REB_PATH="$BASE_PATH/$VERSION/rebuild/$JAR"
@@ -42,7 +42,7 @@ compare_jars() {
         -v $(pwd):/mnt \
         algomaster99/diffoscope:latest \
         /input1 /input2 \
-        --json /mnt/results/org.finos.legend.engine/legend-engine/$VERSION/$SINGLE_JAR.diffoscope.json &
+        --json /mnt/results/org.finos.legend.engine/legend-engine/$VERSION/$DIFFOSCOPE_FILE &
 
 }
 

@@ -2,20 +2,10 @@
 
 # Define an array of JAR files
 desktop_JARS=(
-    "legend-engine-pure-code-compiled-core-4.4.7.jar:legend-engine-pure-code-compiled-core-4.4.7.jar"
-    "legend-engine-pure-code-compiled-core-4.7.0.jar:legend-engine-pure-code-compiled-core-4.7.0.jar"
-    "legend-engine-pure-code-compiled-core-4.4.8.jar:legend-engine-pure-code-compiled-core-4.4.8.jar"
-    "legend-engine-xt-relationalStore-pure-4.56.0.jar:legend-engine-xt-relationalStore-pure-4.56.0.jar"
-    "legend-engine-xt-sql-pure-metamodel-4.56.0.jar:legend-engine-xt-sql-pure-metamodel-4.56.0.jar"
-    "legend-engine-xt-elasticsearch-V7-pure-metamodel-4.56.0.jar:legend-engine-xt-elasticsearch-V7-pure-metamodel-4.56.0.jar"
-    "legend-engine-pure-code-compiled-core-4.56.0-sources.jar:legend-engine-pure-code-compiled-core-4.56.0-sources.jar"
-    "legend-engine-xt-analytics-mapping-pure-4.56.0.jar:legend-engine-xt-analytics-mapping-pure-4.56.0.jar"
-    "legend-engine-xt-serviceStore-pure-4.56.0.jar:legend-engine-xt-serviceStore-pure-4.56.0.jar"
-    "legend-engine-pure-runtime-java-extension-compiled-functions-json-4.56.0.jar:legend-engine-pure-runtime-java-extension-compiled-functions-json-4.56.0.jar"
-    "legend-engine-xt-protobuf-pure-4.56.0.jar:legend-engine-xt-protobuf-pure-4.56.0.jar"
-    "legend-engine-xt-openapi-pure-4.56.0.jar:legend-engine-xt-openapi-pure-4.56.0.jar"
-    "legend-engine-pure-code-compiled-core-4.56.0.jar:legend-engine-pure-code-compiled-core-4.56.0.jar"
-    "legend-engine-xt-authentication-pure-4.56.0.jar:legend-engine-xt-authentication-pure-4.56.0.jar"
+    "legend-engine-server-4.6.1-shaded.jar:legend-engine-server-4.6.1-shaded.jar"
+    "legend-engine-server-http-server-4.56.0-shaded.jar:legend-engine-server-http-server-4.56.0-shaded.jar"
+    "hive-jdbc-4.0.0-standalone.jar:hive-jdbc-4.0.0-standalone.jar"
+    "legend-engine-xt-relationalStore-spanner-jdbc-shaded-4.56.0.jar:legend-engine-xt-relationalStore-spanner-jdbc-shaded-4.56.0.jar"
 )
 
 # Base path for source files
@@ -25,7 +15,11 @@ desktop_JARS=(
 compare_jars() {
     BASE_PATH="/mnt/hdd2/amansha/reproducible-central/results/org.finos.legend.engine/legend-engine"
     JAR=$1
-    echo "Comparing $JAR"
+    if [ $1 == "hive-jdbc-4.0.0-standalone.jar:hive-jdbc-4.0.0-standalone.jar"] 
+    then
+        BASE_PATH="/mnt/hdd2/amansha/reproducible-central/results/org.apache.hive/hive"
+    fi
+    echo "JNORM $JAR"
     SINGLE_JAR=$(echo "$JAR" | cut -d ':' -f 1)
     echo "Single JAR: $SINGLE_JAR"
     VERSION=$(echo "$JAR" | sed -E 's/.*-([0-9]+\.[0-9]+\.[0-9]+).*/\1/')
@@ -39,12 +33,43 @@ compare_jars() {
 
     docker run --rm --user $(id -u) \
         -w /mnt \
-        --mount type=bind,source="$REF_PATH",target=/input1 \
-        --mount type=bind,source="$REB_PATH",target=/input2 \
+        --mount type=bind,source="$REF_PATH",target=/reference.jar \
         -v $(pwd):/mnt \
-        algomaster99/diffoscope:latest \
-        /input1 /input2 \
-        --json /mnt/results/org.finos.legend.engine/legend-engine/$VERSION/$DIFFOSCOPE_FILE
+        algomaster99/jnorm:latest \
+        -o \
+        -n \
+        -a \
+        -s \
+        -p \
+        -c \
+        -r2 \
+        -i /reference.jar \
+        -d $BASE_PATH/$VERSION/jnorm/reference/$SINGLE_JAR &> $BASE_PATH/$VERSION/jnorm/reference/${SINGLE_JAR}.jnorm.log
+    
+    reference_exit_code=$?
+    
+    docker run --rm --user $(id -u) \
+        -w /mnt \
+        --mount type=bind,source="$REB_PATH",target=/rebuild.jar \
+        -v $(pwd):/mnt \
+        algomaster99/jnorm:latest \
+        -o \
+        -n \
+        -a \
+        -s \
+        -p \
+        -c \
+        -r2 \
+        -i /rebuild.jar \
+        -d $BASE_PATH/$VERSION/jnorm/rebuild/$SINGLE_JAR &> $BASE_PATH/$VERSION/jnorm/rebuild/${SINGLE_JAR}.jnorm.log
+
+    rebuild_exit_code=$?
+    
+    diff -u $BASE_PATH/$VERSION/jnorm/reference/$SINGLE_JAR $BASE_PATH/$VERSION/jnorm/rebuild/$SINGLE_JAR &> $BASE_PATH/$VERSION/jnorm/${SINGLE_JAR}.diff
+
+    diff_exit_code=$?
+
+    echo "\{\"reference\": $reference_exit_code, \"rebuild\": $rebuild_exit_code, \"diff\": $diff_exit_code\}" > $BASE_PATH/$VERSION/jnorm/${SINGLE_JAR}.diff
 
 }
 

@@ -15,7 +15,7 @@ desktop_JARS=(
 compare_jars() {
     BASE_PATH="/mnt/hdd2/amansha/reproducible-central/results/org.finos.legend.engine/legend-engine"
     JAR=$1
-    if [ $1 == "hive-jdbc-4.0.0-standalone.jar:hive-jdbc-4.0.0-standalone.jar"] 
+    if [[ "$1" == "hive-jdbc-4.0.0-standalone.jar:hive-jdbc-4.0.0-standalone.jar" ]] 
     then
         BASE_PATH="/mnt/hdd2/amansha/reproducible-central/results/org.apache.hive/hive"
     fi

@@ -26,6 +26,7 @@ BASE_PATH="/mnt/hdd2/amansha/reproducible-central/results/org.finos.legend.engin
 compare_jars() {
     JAR=$1
     echo "Comparing $JAR"
+    SINGLE_JAR=$(echo "$JAR" | cut -d ':' -f 1)
     VERSION=$(echo "$JAR" | sed -E 's/.*-([0-9]+\.[0-9]+\.[0-9]+).*/\1/')
 
 
@@ -40,7 +41,7 @@ compare_jars() {
         -v $(pwd):/mnt \
         algomaster99/diffoscope:latest \
         /input1 /input2 \
-        --json /mnt/results/org.finos.legend.engine/legend-engine/$VERSION/$JAR &
+        --json /mnt/results/org.finos.legend.engine/legend-engine/$VERSION/$SINGLE_JAR.diffoscope.json &
 
 }
 

@@ -27,6 +27,7 @@ compare_jars() {
     JAR=$1
     echo "Comparing $JAR"
     SINGLE_JAR=$(echo "$JAR" | cut -d ':' -f 1)
+    echo "Single JAR: $SINGLE_JAR"
     VERSION=$(echo "$JAR" | sed -E 's/.*-([0-9]+\.[0-9]+\.[0-9]+).*/\1/')
 
 

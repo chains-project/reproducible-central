@@ -44,7 +44,7 @@ compare_jars() {
         -v $(pwd):/mnt \
         algomaster99/diffoscope:latest \
         /input1 /input2 \
-        --json /mnt/results/org.finos.legend.engine/legend-engine/$VERSION/$DIFFOSCOPE_FILE &
+        --json /mnt/results/org.finos.legend.engine/legend-engine/$VERSION/$DIFFOSCOPE_FILE
 
 }
 

@@ -19,11 +19,11 @@ desktop_JARS=(
 )
 
 # Base path for source files
-BASE_PATH="/mnt/hdd2/amansha/reproducible-central/results/org.finos.legend.engine/legend-engine"
 
 # Loop over JAR files and run in parallel
 
 compare_jars() {
+    BASE_PATH="/mnt/hdd2/amansha/reproducible-central/results/org.finos.legend.engine/legend-engine"
     JAR=$1
     echo "Comparing $JAR"
     SINGLE_JAR=$(echo "$JAR" | cut -d ':' -f 1)

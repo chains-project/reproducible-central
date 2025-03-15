@@ -31,6 +31,8 @@ compare_jars() {
     VERSION=$(echo "$JAR" | sed -E 's/.*-([0-9]+\.[0-9]+\.[0-9]+).*/\1/')
 
     DIFFOSCOPE_FILE="${SINGLE_JAR}.diffoscope.json"
+
+    echo "Diffoscope file: $DIFFOSCOPE_FILE"
     
     REF_PATH="$BASE_PATH/$VERSION/reference/$JAR"
     REB_PATH="$BASE_PATH/$VERSION/rebuild/$JAR"

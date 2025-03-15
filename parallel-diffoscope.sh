@@ -44,7 +44,7 @@ compare_jars() {
         -c \
         -r2 \
         -i /reference.jar \
-        -d $BASE_PATH/$VERSION/jnorm/reference/$SINGLE_JAR &> $BASE_PATH/$VERSION/jnorm/reference/${SINGLE_JAR}.jnorm.log
+        -d $BASE_PATH/$VERSION/jnorm/reference/$JAR &> $BASE_PATH/$VERSION/jnorm/reference/${SINGLE_JAR}.jnorm.log
     
     reference_exit_code=$?
     
@@ -61,11 +61,11 @@ compare_jars() {
         -c \
         -r2 \
         -i /rebuild.jar \
-        -d $BASE_PATH/$VERSION/jnorm/rebuild/$SINGLE_JAR &> $BASE_PATH/$VERSION/jnorm/rebuild/${SINGLE_JAR}.jnorm.log
+        -d $BASE_PATH/$VERSION/jnorm/rebuild/$JAR &> $BASE_PATH/$VERSION/jnorm/rebuild/${SINGLE_JAR}.jnorm.log
 
     rebuild_exit_code=$?
     
-    diff -u $BASE_PATH/$VERSION/jnorm/reference/$SINGLE_JAR $BASE_PATH/$VERSION/jnorm/rebuild/$SINGLE_JAR &> $BASE_PATH/$VERSION/jnorm/${SINGLE_JAR}.diff
+    diff -u $BASE_PATH/$VERSION/jnorm/reference/$JAR $BASE_PATH/$VERSION/jnorm/rebuild/$JAR &> $BASE_PATH/$VERSION/jnorm/${SINGLE_JAR}.diff
 
     diff_exit_code=$?
 

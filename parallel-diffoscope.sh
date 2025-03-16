@@ -2,8 +2,14 @@
 
 # Define an array of JAR files
 desktop_JARS=(
-    "legend-engine-server-4.6.1-shaded.jar:legend-engine-server-4.6.1-shaded.jar"
-    "legend-engine-server-http-server-4.56.0-shaded.jar:legend-engine-server-http-server-4.56.0-shaded.jar"
+    "legend-engine-server-4.4.5-shaded.jar:legend-engine-server-4.4.5-shaded.jar"
+    "legend-engine-server-4.4.6-shaded.jar:legend-engine-server-4.4.6-shaded.jar"
+    "legend-engine-server-4.4.7-shaded.jar:legend-engine-server-4.4.7-shaded.jar"
+    "legend-engine-server-4.4.8-shaded.jar:legend-engine-server-4.4.8-shaded.jar"
+    "legend-engine-server-4.5.0-shaded.jar:legend-engine-server-4.5.0-shaded.jar"
+    "legend-engine-server-4.6.0-shaded.jar:legend-engine-server-4.6.0-shaded.jar"
+    "legend-engine-server-4.6.2-shaded.jar:legend-engine-server-4.6.2-shaded.jar"
+    "legend-engine-server-4.7.0-shaded.jar:legend-engine-server-4.7.0-shaded.jar"
     "hive-jdbc-4.0.0-standalone.jar:hive-jdbc-4.0.0-standalone.jar"
     "legend-engine-xt-relationalStore-spanner-jdbc-shaded-4.56.0.jar:legend-engine-xt-relationalStore-spanner-jdbc-shaded-4.56.0.jar"
 )

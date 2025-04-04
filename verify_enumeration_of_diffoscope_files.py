@@ -53,12 +53,6 @@ if __name__ == '__main__':
     args = parse_args()
     PATH = args.base_dir
 
-    total_projects = 0
-    total_projects_without_build_failed = 0
-    reproducible_project_count = 0
-    unreproducible_project_count = 0
-    ground_truth_is_not_there = 0
-
     depth = 3
 
     success_count = 0
@@ -81,16 +75,17 @@ if __name__ == '__main__':
                 buildcompare = parse_buildcompare(buildcompare_candidate[0])
                 expected_ko = buildcompare.ko
 
-                jNorm_files = glob.glob(os.path.join(root, directory, 'jnorm', '*.json'))
+                oss_rebuild_files = glob.glob(os.path.join(root, directory, 'oss-rebuild', '*.json'))
 
-                if len(jNorm_files) <= 0:
+                if len(oss_rebuild_files) <= 0:
                     continue
 
-                if expected_ko == len(jNorm_files):
+                if expected_ko == len(oss_rebuild_files):
                     success_count += 1
                 
                 else:
-                    print(f"Expected {expected_ko} but found {len(jNorm_files)} for {os.path.join(root, directory)}")
+                    print(set(buildcompare.ko_files) - set([i.split('/')[5].replace('.json', '') for i in oss_rebuild_files]))
+                    print(f"Expected {expected_ko} but found {len(oss_rebuild_files)} for {os.path.join(root, directory)}")
                     failure_count += 1
     
     print(f"Success count: {success_count}")

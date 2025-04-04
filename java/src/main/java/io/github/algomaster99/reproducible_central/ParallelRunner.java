@@ -18,7 +18,7 @@ import java.util.stream.Stream;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class ParallelRunner {
-	static final Path rootLogDir = Path.of("parallel_oss-rebuild");
+	static final Path rootLogDir = Path.of("parallel_oss-rebuild-improved");
 	private static final String BASE_DIR = "results";
 	private static final Path skippedFile = rootLogDir.resolve("skipped");
 	private static final int MAX_WORKERS = Math.max(1, Runtime.getRuntime().availableProcessors() / 2);
@@ -79,7 +79,7 @@ public class ParallelRunner {
 		int exitCodeReference = -1;
 		if (reference.toFile().exists()) {
 			// Create the oss-rebuild directory if it doesn't exist
-			Files.createDirectories(versionDir.resolve("oss-rebuild").resolve("reference"));
+			Files.createDirectories(versionDir.resolve("oss-rebuild-improved").resolve("reference"));
 
 			ProcessBuilder processBuilder1 = new ProcessBuilder(
 					"docker", "run", "--rm",
@@ -88,9 +88,9 @@ public class ParallelRunner {
 					"--mount",
 					String.format("type=bind,source=%s,target=/%s", reference.toAbsolutePath(), reference.getFileName()),
 					"-v", versionDir.toAbsolutePath() + ":/mnt",
-					"algomaster99/oss-rebuild-stabilize:4ef4c013fe6903cda40a9ee4244e3b65b5834325",
+					"algomaster99/oss-rebuild-stabilize:1f0625a9cf3511f8ce0385ec0c91b4f64895fd58",
 					"-infile", "/" + reference.getFileName().toString(),
-					"-outfile", "/mnt/oss-rebuild/reference/" + reference.getFileName().toString()
+					"-outfile", "/mnt/oss-rebuild-improved/reference/" + reference.getFileName().toString()
 			);
 			System.out.println("Running reference: " + processBuilder1.command());
 			processBuilder1.redirectErrorStream(true);
@@ -105,7 +105,7 @@ public class ParallelRunner {
 				while ((line = reader.readLine()) != null) {
 					lines.add(line);
 				}
-				Files.write(versionDir.resolve("oss-rebuild").resolve("reference").resolve(getPathFromArtifact(reference) + ".oss-rebuild.log"), lines);
+				Files.write(versionDir.resolve("oss-rebuild-improved").resolve("reference").resolve(getPathFromArtifact(reference) + ".oss-rebuild-improved.log"), lines);
 
 			} catch (Exception e) {
 				System.out.println("Exception: " + e.getMessage());
@@ -115,7 +115,7 @@ public class ParallelRunner {
 
 		int exitCodeRebuild = -1;
 		if (rebuild.toFile().exists()) {
-			Files.createDirectories(versionDir.resolve("oss-rebuild").resolve("rebuild"));
+			Files.createDirectories(versionDir.resolve("oss-rebuild-improved").resolve("rebuild"));
 			ProcessBuilder processBuilder2 = new ProcessBuilder(
 					"docker", "run", "--rm",
 //		 		"--user", System.getProperty("userid"),
@@ -123,9 +123,9 @@ public class ParallelRunner {
 					"--mount",
 					String.format("type=bind,source=%s,target=/%s", rebuild.toAbsolutePath(), rebuild.getFileName()),
 					"-v", versionDir.toAbsolutePath() + ":/mnt",
-					"algomaster99/oss-rebuild-stabilize:4ef4c013fe6903cda40a9ee4244e3b65b5834325",
+					"algomaster99/oss-rebuild-stabilize:1f0625a9cf3511f8ce0385ec0c91b4f64895fd58",
 					"-infile", "/" + rebuild.getFileName().toString(),
-					"-outfile", "/mnt/oss-rebuild/rebuild/" + rebuild.getFileName().toString()
+					"-outfile", "/mnt/oss-rebuild-improved/rebuild/" + rebuild.getFileName().toString()
 			);
 			processBuilder2.redirectErrorStream(true);
 
@@ -139,7 +139,7 @@ public class ParallelRunner {
 				while ((line = reader.readLine()) != null) {
 					lines.add(line);
 				}
-				Files.write(versionDir.resolve("oss-rebuild").resolve("rebuild").resolve(getPathFromArtifact(reference) + ".oss-rebuild.log"), lines);
+				Files.write(versionDir.resolve("oss-rebuild-improved").resolve("rebuild").resolve(getPathFromArtifact(reference) + ".oss-rebuild-improved.log"), lines);
 
 			} catch (Exception e) {
 				System.out.println("Exception: " + e.getMessage());
@@ -151,10 +151,10 @@ public class ParallelRunner {
 		ProcessBuilder diffProcessBuilder = new ProcessBuilder(
 				"diff",
 				"-u",
-				versionDir.resolve("oss-rebuild").resolve("reference").resolve(reference.getFileName().toString()).toString(),
-				versionDir.resolve("oss-rebuild").resolve("rebuild").resolve(rebuild.getFileName().toString()).toString()
+				versionDir.resolve("oss-rebuild-improved").resolve("reference").resolve(reference.getFileName().toString()).toString(),
+				versionDir.resolve("oss-rebuild-improved").resolve("rebuild").resolve(rebuild.getFileName().toString()).toString()
 		);
-		diffProcessBuilder.redirectOutput(versionDir.resolve("oss-rebuild").resolve(getPathFromArtifact(reference) + ".diff").toFile());
+		diffProcessBuilder.redirectOutput(versionDir.resolve("oss-rebuild-improved").resolve(getPathFromArtifact(reference) + ".diff").toFile());
 
 		try {
 			Process process = diffProcessBuilder.start();
@@ -167,7 +167,7 @@ public class ParallelRunner {
 			exitCodeMap.put("diff", exitCodeDiff);
 
 			ObjectMapper objectMapper = new ObjectMapper();
-			Files.writeString(versionDir.resolve("oss-rebuild").resolve(getPathFromArtifact(reference) + ".json"), objectMapper.writeValueAsString(exitCodeMap) + "\n");
+			Files.writeString(versionDir.resolve("oss-rebuild-improved").resolve(getPathFromArtifact(reference) + ".json"), objectMapper.writeValueAsString(exitCodeMap) + "\n");
 
 		} catch (IOException | InterruptedException e) {
 			System.out.println("Exception: " + e.getMessage());

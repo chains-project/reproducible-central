@@ -1,5 +1,5 @@
 # Start from the official diffoscope image
-FROM registry.salsa.debian.org/reproducible-builds/diffoscope
+FROM registry.salsa.debian.org/reproducible-builds/diffoscope:latest
 
 # Set the working directory
 WORKDIR /mnt

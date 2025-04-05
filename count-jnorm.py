@@ -43,7 +43,6 @@ for root, dirs, files in os.walk(base_dir):
                         continue
 
                     file_name = ''.join(jnorm_file.split("/")[5].rsplit('.json', 1))
-                    print(jnorm_file)
                     diffoscope_path = pathlib.Path(jnorm_file).parent.parent
 
                     diffoscope_file_path = os.path.join(diffoscope_path, f"{file_name}.diffoscope.json")

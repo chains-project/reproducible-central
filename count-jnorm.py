@@ -39,10 +39,11 @@ for root, dirs, files in os.walk(base_dir):
                     rebuild_exit_code = jnorm['rebuild']
                     diff_exit_code = jnorm['diff']
                     
-                    if jnorm_file.split("/")[5].replace('.json', '') not in diffoscope_files_with_all:
+                    if ''.join(jnorm_file.split("/")[5].rsplit('.json', 1)) not in diffoscope_files_with_all:
                         continue
 
-                    file_name = jnorm_file.split("/")[5].replace('.json', '')
+                    file_name = ''.join(jnorm_file.split("/")[5].rsplit('.json', 1))
+                    print(jnorm_file)
                     diffoscope_path = pathlib.Path(jnorm_file).parent.parent
 
                     diffoscope_file_path = os.path.join(diffoscope_path, f"{file_name}.diffoscope.json")

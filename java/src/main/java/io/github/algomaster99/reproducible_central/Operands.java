@@ -98,6 +98,9 @@ public class Operands {
 		List<Pair<Path, Path>> referenceRebuildPairs = new ArrayList<>();
 		Arrays.stream(Objects.requireNonNull(refDir.listFiles()))
 				.forEach(f -> {
+					if (f.toPath().getFileName().endsWith(".oss-rebuild-improved-2.log")) {
+						return;
+					}
 					Path ref = f.toPath();
 					Path reb = ossRebuildDir.resolve(REB_DIR).resolve(ref.getFileName());
 					if (reb.toFile().exists()) {

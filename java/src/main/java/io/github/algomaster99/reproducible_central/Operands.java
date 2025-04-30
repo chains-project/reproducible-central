@@ -50,6 +50,64 @@ public class Operands {
 		this.versionDir = versionDir;
 	}
 
+	public static Operands fromOssRebuildDirectory(Path ossRebuildDir) {
+		String artifactId = ossRebuildDir.getParent().getParent().getFileName().toString();
+		String groupId = ossRebuildDir.getParent().getParent().getParent().getFileName().toString();
+		String version = ossRebuildDir.getParent().getFileName().toString();
+
+		// empty version dir
+		if (Objects.requireNonNull(ossRebuildDir.toFile().listFiles()).length == 0) {
+			return new Operands(groupId, artifactId, version, List.of(), ossRebuildDir);
+		}
+
+		if (!ossRebuildDir.resolve(REF_DIR).toFile().exists() || !ossRebuildDir.resolve(REB_DIR).toFile().exists()) {
+			try {
+				Files.writeString(nonExistentReferenceOrRebuild, ossRebuildDir.toAbsolutePath() + "\n", java.nio.file.StandardOpenOption.APPEND);
+			} catch (IOException e) {
+				throw new RuntimeException(e);
+			}
+			return new Operands(groupId, artifactId, version, List.of(), ossRebuildDir);
+		}
+
+		// empty reference or rebuild
+		if (ossRebuildDir.resolve(REF_DIR).toFile().list().length == 0 || ossRebuildDir.resolve(REB_DIR).toFile().list().length == 0) {
+			try {
+				Files.writeString(emptyReferenceOrRebuild, ossRebuildDir.toAbsolutePath() + "\n", java.nio.file.StandardOpenOption.APPEND);
+			} catch (IOException e) {
+				throw new RuntimeException(e);
+			}
+			return new Operands(groupId, artifactId, version, List.of(), ossRebuildDir);
+		}
+
+		Set<String> refArtifacts = Arrays.stream(ossRebuildDir.resolve(REF_DIR).toFile().list())
+		.collect(Collectors.toSet());
+		Set<String> rebArtifacts = Arrays.stream(ossRebuildDir.resolve(REB_DIR).toFile().list())
+				.collect(Collectors.toSet());
+
+		if (!refArtifacts.equals(rebArtifacts)) {
+			System.out.println("Reference and rebuild directories do not contain the same artifacts" + ossRebuildDir.toAbsolutePath());
+			try {
+				Files.writeString(artifactMismatch, ossRebuildDir.toAbsolutePath() + "\n", java.nio.file.StandardOpenOption.APPEND);
+			} catch (IOException e) {
+				throw new RuntimeException(e);
+			}
+			return new Operands(groupId, artifactId, version, List.of(), ossRebuildDir);
+		}
+
+		File refDir = ossRebuildDir.resolve(REF_DIR).toFile();
+		List<Pair<Path, Path>> referenceRebuildPairs = new ArrayList<>();
+		Arrays.stream(Objects.requireNonNull(refDir.listFiles()))
+				.forEach(f -> {
+					Path ref = f.toPath();
+					Path reb = ossRebuildDir.resolve(REB_DIR).resolve(ref.getFileName());
+					if (reb.toFile().exists()) {
+						referenceRebuildPairs.add(Pair.of(ref, reb));
+					}
+				});
+
+		return new Operands(groupId, artifactId, version, referenceRebuildPairs, ossRebuildDir);
+	}
+
 	public static Operands fromTestDirectory(Path versionDir) {
 		String artifactId = versionDir.getParent().getFileName().toString();
 		String groupId = versionDir.getParent().getParent().getFileName().toString();

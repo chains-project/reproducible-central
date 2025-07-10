@@ -14,6 +14,10 @@
 #
 
 # rebuild with Gradle tool (tool=gradle) and generate .buildinfo and .buildcompare files
+
+. "${SCRIPTDIR}/bin/includes/bashcolors.sh"
+. "${SCRIPTDIR}/bin/includes/logging.sh"
+
 rebuildToolGradle() {
 
   ### 1. rebuild

@@ -90,11 +90,22 @@ compareOutput() {
   echo "koFiles=\"${koFiles[@]}\"" >> ${buildcompare}
   # TODO reference_java_version
   # TODO reference_os_name
+
+    if [ ! -f ${buildinfo} ]
+    then
+      logtofile "buildinfo does not exist" $RESULT_DIR/out.log
+    fi
+
+    if [ ! -f ${buildcompare} ]
+    then
+      logtofile "buildcompare does not exist" $RESULT_DIR/out.log
+    fi
+
   for f in ${ko[@]}
   do
     echo "# diffoscope central/$f ${outputDir}/$f" >> ${buildcompare}
   done
 
-  cp ${buildinfo} ../.. || fatal "failed to copy buildinfo file"
-  cp ${buildcompare} ../.. || fatal "failed to copy buildcompare file"
+  cp ${buildinfo} ../../${version} || fatal "failed to copy buildinfo file"
+  cp ${buildcompare} ../../${version} || fatal "failed to copy buildcompare file"
 }

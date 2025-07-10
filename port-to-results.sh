@@ -32,15 +32,8 @@ do
         continue
     fi
 
-    # Todo: verify this manually later by running all releases here
-    if is_in_csv $groupId $artifactId $version
-    then
-        info "Skipping $buildspec as it is marked as 'could not even start'"
-        continue
-    fi
-
-    # Check if this is a Maven project
-    if [[ "$tool" != mvn* ]]
+    # Check if this is not a Maven project
+    if [[ "$tool" == mvn* ]]
     then
         info "Skipping $buildspec as it's not a Maven project"
         continue

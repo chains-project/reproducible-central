@@ -54,7 +54,9 @@ rebuildToolGradle() {
     -w /var/gradle/app"
   local gradle_engine_params="-Duser.home=/home/gradle"
 
-  runcommand_time ${engine_command} ${jdkImage} ${command} ${gradle_engine_params}
+  runcommand_time ${engine_command} ${jdkImage} ${command} ${gradle_engine_params} &> ../../${version}/gradle.log
+
+  echo "gradle exit_code=$?" >> ../../${version}/gradle.log
   
   if [ $? -eq 0 ]; then
       # output content is expected to be available in repository/ directory

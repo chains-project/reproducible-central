@@ -21,7 +21,7 @@ import io.github.algomaster99.reproducible_central.jsonutil.MavenProject;
 import io.github.algomaster99.reproducible_central.jsonutil.MavenRelease;
 
 public class ParseJson {
-    private static final String MAVEN_CENTRAL_URL = "https://repo.maven.apache.org/maven2/";
+    private static final String MAVEN_CENTRAL_URL = "https://repo1.maven.org/maven2/";
 
     public static void main(String[] args) throws IOException, InterruptedException {
         Path jsonFile = Path.of(args[0]);
@@ -51,11 +51,25 @@ public class ParseJson {
 			version = "10.4.0";
 		}
 
+        if ("sigstore-java".equals(artifactId)) {
+			version = version.replace("-SNAPSHOT", "");
+		}
+
         String artifactUrl = getArtifactUrl(groupId, artifactId, version);
         String indexPage = getIndexPageOfRepository(artifactUrl);
 		if (indexPage == null) {
-			System.out.println(artifactUrl);
-			return;
+            if ("io.opentelemetry".equals(groupId)) {
+                version = version + "-alpha";
+                artifactUrl = getArtifactUrl(groupId, artifactId, version);
+                indexPage = getIndexPageOfRepository(artifactUrl);
+                if (indexPage == null) {
+                    System.out.println("even-alpha did not work: " + artifactUrl);
+                    return;
+                }
+            } else {
+                System.out.println(artifactUrl);
+                return;
+            }
 		}
 		mavenRelease.setUrl(artifactUrl);
         List<String> artifacts = extractArtifactsFromIndexPage(indexPage);

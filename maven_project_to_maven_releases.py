@@ -2,6 +2,7 @@ import os
 import argparse
 import glob
 import json
+import re
 
 def parse_args():
     parser = argparse.ArgumentParser(description='Process release consistency')
@@ -30,6 +31,28 @@ def extract_artifact_id(artifact_name, version):
         return "arice-tests"
     if artifact_name.startswith("arice-tests-1.1.0"):
         return "arice-tests"
+    if artifact_name.startswith("junit-platform-console-standalone"):
+        version = re.sub(r'^5(?=\.\d+\.\d+)', '1', version)
+    if artifact_name.startswith("junit-platform-reporting"):
+        version = re.sub(r'^5(?=\.\d+\.\d+)', '1', version)
+    if artifact_name.startswith("junit-platform-commons"):
+        version = re.sub(r'^5(?=\.\d+\.\d+)', '1', version)
+    if artifact_name.startswith("junit-platform-console"):
+        version = re.sub(r'^5(?=\.\d+\.\d+)', '1', version)
+    if artifact_name.startswith("junit-platform-suite-commons"):
+        version = re.sub(r'^5(?=\.\d+\.\d+)', '1', version)
+    if artifact_name.startswith("junit-platform-jfr"):
+        version = re.sub(r'^5(?=\.\d+\.\d+)', '1', version)
+    if artifact_name.startswith("junit-platform-testkit"):
+        version = re.sub(r'^5(?=\.\d+\.\d+)', '1', version)
+    if artifact_name.startswith("junit-platform-suite"):
+        version = re.sub(r'^5(?=\.\d+\.\d+)', '1', version)
+    if artifact_name.startswith("junit-platform-launcher"):
+        version = re.sub(r'^5(?=\.\d+\.\d+)', '1', version)
+    if artifact_name.startswith("junit-platform-engine"):
+        version = re.sub(r'^5(?=\.\d+\.\d+)', '1', version)
+    if artifact_name.startswith("junit-platform-runner"):
+        version = re.sub(r'^5(?=\.\d+\.\d+)', '1', version)
     version_start = artifact_name.find(f"-{version}")
     if version_start != -1:
         # Keep everything before version, don't add extension
@@ -38,8 +61,23 @@ def extract_artifact_id(artifact_name, version):
     return None
 
 def get_matching_gav(artifact_id, maven_modules):
-    if maven_modules.get('artifactId') == artifact_id:
-        return maven_modules.get('groupId'), maven_modules.get('artifactId'), maven_modules.get('version')
+    artifact_id_from_module = maven_modules.get("artifactId")
+    if maven_modules.get('groupId') == 'io.opentelemetry':
+        return maven_modules.get('groupId'), artifact_id, maven_modules.get("version")
+    
+    if maven_modules.get('groupId') ==  'io.opentelemetry.instrumentation' and 'opentelemetry-javaagent-rmi' == artifact_id:
+        return "io.opentelemetry.javaagent.instrumentation", artifact_id, maven_modules.get("version")
+    if maven_modules.get('groupId') ==  'io.opentelemetry.instrumentation' and 'opentelemetry-javaagent' == artifact_id:
+        return "io.opentelemetry.javaagent", artifact_id, maven_modules.get("version").replace('-alpha', '')
+    if maven_modules.get('groupId') ==  'io.opentelemetry.instrumentation':
+        return maven_modules.get('groupId'), artifact_id, maven_modules.get("version")
+    if maven_modules.get('groupId') == 'org.mockito':
+        if artifact_id_from_module == 'mockito':
+            artifact_id_from_module = 'mockito-core'
+        else:
+            artifact_id_from_module = f"{maven_modules.get('groupId').replace('org.','')}-{artifact_id_from_module}"
+    if artifact_id_from_module == artifact_id:
+        return maven_modules.get('groupId'), artifact_id_from_module, maven_modules.get('version')
     for submodule in maven_modules.get('submodules', []):
         g, a, v = get_matching_gav(artifact_id, submodule)
         if g != None:
@@ -80,26 +118,24 @@ def main():
     maven_projects = []
     args = parse_args()
     base_level = len(args.base_dir.split(os.path.sep))
-    success_builds = load_success_builds()
     for root, dirs, files in os.walk(args.base_dir):
         for directory in dirs:
             current_level = len(root.split(os.path.sep))
             if current_level - base_level == 2:
                 gav = get_GAV(os.path.join(root, directory))
-                if gav in success_builds:
-                    diffoscope_json_files = glob.glob("*.diffoscope.json", root_dir=os.path.join(root, directory))
-                    if len(diffoscope_json_files) == 0:
-                        continue
-                    with open(os.path.join(root, directory, "output.json"), "r") as f:
-                        maven_modules = json.load(f)
-                
-                    maven_releases = cluster_releases(diffoscope_json_files, maven_modules, directory, root)
-                    maven_projects.append({
-                        "name": gav,
-                        "maven_releases": maven_releases
-                    })
+                diffoscope_json_files = glob.glob("*.diffoscope.json", root_dir=os.path.join(root, directory))
+                if len(diffoscope_json_files) == 0:
+                    continue
+                with open(os.path.join(root, directory, "output.json"), "r") as f:
+                    maven_modules = json.load(f)
+            
+                maven_releases = cluster_releases(diffoscope_json_files, maven_modules, directory, root)
+                maven_projects.append({
+                    "name": gav,
+                    "maven_releases": maven_releases
+                })
 
-    json.dump(maven_projects, open("unreproducible_maven_projects_to_releases.json", "w"), indent=2)
+    json.dump(maven_projects, open("unreproducible_maven_projects_to_releases-1.json", "w"), indent=2)
                     
             
 

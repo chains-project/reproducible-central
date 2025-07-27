@@ -27,9 +27,9 @@ while read -r buildspec; do
     
     buildspec_dir=$(dirname "$buildspec")
 
-    if ls $buildspec_dir/*.buildcompare 1> /dev/null 2>&1;
+    if ls $buildspec_dir/output.json 1> /dev/null 2>&1;
     then
-        echo "Skipping $buildspec as .buildcompare file exists"
+        echo "Skipping $buildspec as output.json file exists"
         continue
     fi
 

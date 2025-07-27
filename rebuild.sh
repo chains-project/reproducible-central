@@ -104,53 +104,13 @@ umask $umask
 export MVN_UMASK=${umask}
 fetchSource
 
-[ -n "$execBefore" ] && info "executing before command: $execBefore" && eval "$execBefore"
+project_root=$(pwd)
 
-echo
-case ${tool} in
-  mvn*)
-    rebuildToolMvn
-    ;;
-  sbt)
-    rebuildToolSbt
-    ;;
-  gradle)
-    rebuildToolGradle
-    ;;
-  *)
-    fatal "build tool not yet supported: ${tool}"
-esac
+GRAPH_OUTPUT_DIR=../../${version} ./gradlew printCoordinates --no-daemon --no-build-cache --no-parallel \
+  --init-script /home/aman/Desktop/personal/maven-module-counter/src/main/resources/graph.gradle  &> ../../${version}/release.log
 
-echo
-displayResult
-
-displayOptional  "os"
-displayOptional  "arch"
-[ -n "$execAfter" ] && info "executing after command: $execAfter" && eval "$execAfter"
-
-#git reset --hard
-buildcompare="$(dirname "${buildinfo}")/$(basename ${buildinfo} .buildinfo).buildcompare"
-
-compare=""
-for f in ${buildcompare}
-do
-  compare=$f
-done
-
-source ${buildcompare}
-
-pushd ../../${version} > /dev/null || fatal "Unable to move into ../../${version}"
-if [[ ${ko} -gt 0 ]]
-then
-  if [ -z "${sourcePath}" ]
-  then
-    runcommand $SCRIPTDIR/build_diffoscope.sh $(basename ${compare}) buildcache/${artifactId}
-  else
-    runcommand $SCRIPTDIR/build_diffoscope.sh $(basename ${compare}) buildcache/${sourcePath}
-  fi
-fi
-
-popd > /dev/null || fatal "Unable to return to starting directory"
+exit_code=$?
+echo "${groupId}:${artifactId}:${version} counter_exit_code=$exit_code" >> $RESULT_DIR/gradle-module.log
 
 popd > /dev/null || fatal "Unable to return to starting directory"
 

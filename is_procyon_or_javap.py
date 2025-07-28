@@ -14,7 +14,7 @@ JAVAP_TOOL = "javap -verbose"
 
 args = parse_args()
 
-with open('java/unreproducible_maven_projects_to_releases.json', 'r') as f:
+with open('java/unreproducible_gradle_projects_to_releases.json', 'r') as f:
     unreproducible_maven_projects_to_releases = json.load(f)
 
 list_of_artifacts_with_jvm_changes = []
@@ -37,7 +37,7 @@ for project in unreproducible_maven_projects_to_releases:
                 if PROCYON_TOOL in data or JAVAP_TOOL in data:
                     list_of_artifacts_with_jvm_changes.append(path_to_diffoscope_file)
 
-with open('diffoscope_files_with_jvm.txt', 'w+') as f:
+with open('gradle_diffoscope_files_with_jvm.txt', 'w+') as f:
     f.writelines([f"{line}\n" for line in sorted(list_of_artifacts_with_jvm_changes)])
 
 print(f"Total number of unreproducible artifacts: {total_artifacts}")

@@ -11,7 +11,7 @@ def parse_args():
                        help='Base directory for processing (default: release-counter)')
     return parser.parse_args()
 
-diffoscope_files_with_all = 'diffoscope_files_with_all.txt'
+diffoscope_files_with_all = 'gradle_diffoscope_files_with_jvm.txt'
 with open(diffoscope_files_with_all, 'r') as f:
     diffoscope_files_with_all = [i.strip().split("/")[4].replace('.diffoscope.json', '') for i in f.readlines()]
 
@@ -30,7 +30,7 @@ result = {
 }
 for root, dirs, files in os.walk(base_dir):
     for directory in dirs:
-        if directory == 'oss-rebuild-improved-2':
+        if directory == 'jnorm':
             jnorm_files = glob.glob(os.path.join(root, directory, '*.json'))
             for jnorm_file in jnorm_files:
                 with open(jnorm_file, 'r') as f:
@@ -51,7 +51,7 @@ for root, dirs, files in os.walk(base_dir):
 
                     diff_files = {
                         "diffoscope_diff": diffoscope_file_path,
-                        "oss_rebuild_improved_2_diff": jnorm_file.replace('.json', '.diff')
+                        "jnorm_diff": jnorm_file.replace('.json', '.diff')
                     }
 
                     if reference_exit_code == 0 and rebuild_exit_code == 0 and diff_exit_code == 0:
@@ -78,7 +78,7 @@ print(f"Successful normalization: {SUCCESSFUL_NORMALIZATION}")
 print(f"Failed normalization: {FAILED_NORMALIZATION}")
 print(f"Error in normalization: {ERROR_IN_NORMALIZATION}")
 
-with open('oss_rebuild_improved_2_result.json', 'w+') as f:
+with open('jnorm_gradle_result.json', 'w+') as f:
     json.dump(result, f, indent=4)
 
             

@@ -30,13 +30,13 @@ result = {
 }
 for root, dirs, files in os.walk(base_dir):
     for directory in dirs:
-        if directory == 'jnorm':
+        if directory == 'daleq':
             jnorm_files = glob.glob(os.path.join(root, directory, '*.json'))
             for jnorm_file in jnorm_files:
                 with open(jnorm_file, 'r') as f:
                     jnorm = json.load(f)
-                    reference_exit_code = jnorm['reference']
-                    rebuild_exit_code = jnorm['rebuild']
+                    # reference_exit_code = jnorm['reference']
+                    # rebuild_exit_code = jnorm['rebuild']
                     diff_exit_code = jnorm['diff']
                     
                     if ''.join(jnorm_file.split("/")[5].rsplit('.json', 1)) not in diffoscope_files_with_all:
@@ -54,31 +54,33 @@ for root, dirs, files in os.walk(base_dir):
                         "jnorm_diff": jnorm_file.replace('.json', '.diff')
                     }
 
-                    if reference_exit_code == 0 and rebuild_exit_code == 0 and diff_exit_code == 0:
+                    if diff_exit_code == 1:
                         SUCCESSFUL_NORMALIZATION += 1
                         if f'{g}:{a}:{v}' in result["successful_normalization"]:
                             result["successful_normalization"][f'{g}:{a}:{v}'].append(diff_files)
                         else:
                             result["successful_normalization"][f'{g}:{a}:{v}'] = [diff_files]
-                    elif reference_exit_code == 0 and rebuild_exit_code == 0 and diff_exit_code != 0:
+                    elif diff_exit_code == 2:
                         FAILED_NORMALIZATION += 1
                         if f'{g}:{a}:{v}' in result["failed_normalization"]:
                             result["failed_normalization"][f'{g}:{a}:{v}'].append(diff_files)
                         else:
                             result["failed_normalization"][f'{g}:{a}:{v}'] = [diff_files]
-                    else:
+                    elif diff_exit_code == 0:
                         ERROR_IN_NORMALIZATION += 1
+                        print(jnorm_file)
                         if f'{g}:{a}:{v}' in result["error_in_normalization"]:
                             result["error_in_normalization"][f'{g}:{a}:{v}'].append(diff_files)
                         else:
                             result["error_in_normalization"][f'{g}:{a}:{v}'] = [diff_files]
+                    # else:
+                    #     ERROR_IN_NORMALIZATION += 1
+                    #     if f'{g}:{a}:{v}' in result["error_in_normalization"]:
+                    #         result["error_in_normalization"][f'{g}:{a}:{v}'].append(diff_files)
+                    #     else:
+                    #         result["error_in_normalization"][f'{g}:{a}:{v}'] = [diff_files]
 
 # Exclude these as they don't have javap or procyon
 print(f"Successful normalization: {SUCCESSFUL_NORMALIZATION}")
 print(f"Failed normalization: {FAILED_NORMALIZATION}")
 print(f"Error in normalization: {ERROR_IN_NORMALIZATION}")
-
-with open('jnorm_gradle_result.json', 'w+') as f:
-    json.dump(result, f, indent=4)
-
-            

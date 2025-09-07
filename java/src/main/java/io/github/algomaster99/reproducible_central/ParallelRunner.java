@@ -11,7 +11,7 @@ import java.util.concurrent.Executors;
 import java.util.stream.Stream;
 
 public class ParallelRunner {
-	static final Path rootLogDir = Path.of("parallel_oss-rebuild-improved-2-diffoscope");
+	static final Path rootLogDir = Path.of("parallel_daleq");
 	private static final String BASE_DIR = "results";
 	private static final Path skippedFile = rootLogDir.resolve("skipped");
 	private static final int MAX_WORKERS = Math.max(1, (Runtime.getRuntime().availableProcessors() / 3) * 2);

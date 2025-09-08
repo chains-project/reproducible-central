@@ -32,6 +32,8 @@ for root, dirs, files in os.walk(base_dir):
     for directory in dirs:
         if directory == 'daleq':
             jnorm_files = glob.glob(os.path.join(root, directory, '*.json'))
+            if len(jnorm_files) != len([i for i in os.listdir(os.path.join(root, directory)) if os.path.isdir(os.path.join(root, directory, i))]):
+                print(os.path.join(root, directory))
             for jnorm_file in jnorm_files:
                 with open(jnorm_file, 'r') as f:
                     jnorm = json.load(f)
@@ -66,7 +68,7 @@ for root, dirs, files in os.walk(base_dir):
                             result["failed_normalization"][f'{g}:{a}:{v}'].append(diff_files)
                         else:
                             result["failed_normalization"][f'{g}:{a}:{v}'] = [diff_files]
-                    elif diff_exit_code == 0:
+                    else:
                         ERROR_IN_NORMALIZATION += 1
                         print(jnorm_file)
                         if f'{g}:{a}:{v}' in result["error_in_normalization"]:

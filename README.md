@@ -37,5 +37,3 @@ Each of these directories have:
 7. `output.txt` and `output.json` - module hierarchy of the project
 > If there are no diffoscope files, it means that the build either failed or there is no difference between the artifacts.
 You can see failed builds in `mvn.log`. You can confirm the project is fully reproducible by referring to `ko` attribute in `.buildcompare`.
-
-> Note that `oss-rebuild-improved-2` is called CHAINS-rebuild in the paper.

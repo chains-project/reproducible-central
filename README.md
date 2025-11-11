@@ -1,3 +1,19 @@
+### Paper
+
+[Causes and Canonicalization of Unreproducible Builds in Java](http://oadoi.org/10.1109/tse.2025.3627891) (Aman Sharma, Benoit Baudry and Martin Monperrus), In IEEE Transactions on Software Engineering, 2025.
+
+```bibtex
+@article{10.1109-tse.2025.3627891,
+ title = {Causes and Canonicalization of Unreproducible Builds in Java},
+ year = {2025},
+ doi = {10.1109/tse.2025.3627891},
+ author = {Aman Sharma and Benoit Baudry and Martin Monperrus},
+ url = {http://oadoi.org/10.1109/tse.2025.3627891},
+ journal = {IEEE Transactions on Software Engineering},
+}
+```
+
+
 ### Dataset
 
 1. List of [unreproducible Maven releases](java/unreproducible_maven_projects_to_releases.json).
